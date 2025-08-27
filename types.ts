@@ -9,6 +9,7 @@ export enum View {
 
 export type Theme = 'light' | 'dark' | 'system';
 export type FontSize = 'sm' | 'base' | 'lg';
+export type Language = 'en' | 'de';
 
 export interface NotificationSettings {
   stageChange: boolean;
@@ -19,6 +20,7 @@ export interface NotificationSettings {
 export interface AppSettings {
   theme: Theme;
   fontSize: FontSize;
+  language: Language;
   notificationsEnabled: boolean;
   notificationSettings: NotificationSettings;
   onboardingCompleted: boolean;
@@ -75,7 +77,18 @@ export enum PlantStage {
   Finished = 'Abgeschlossen',
 }
 
-export type PlantProblemType = 'Overwatering' | 'Underwatering' | 'NutrientBurn' | 'NutrientDeficiency' | 'HeatStress' | 'LightStress' | 'PhTooHigh' | 'PhTooLow';
+export type PlantProblemType = 
+  | 'Overwatering' 
+  | 'Underwatering' 
+  | 'NutrientBurn' 
+  | 'NutrientDeficiency' 
+  | 'TempTooHigh' 
+  | 'TempTooLow'
+  | 'HumidityTooHigh'
+  | 'HumidityTooLow'
+  | 'LightStress' 
+  | 'PhTooHigh' 
+  | 'PhTooLow';
 
 export interface PlantProblem {
   type: PlantProblemType;
@@ -116,6 +129,9 @@ export interface GrowSetup {
   lightType: 'LED' | 'HPS' | 'CFL';
   potSize: 5 | 10 | 15; // in Liters
   medium: 'Soil' | 'Coco' | 'Hydro';
+  temperature: number; // °C
+  humidity: number; // %
+  lightHours: number; // hours per day
 }
 
 export interface PlantHistoryEntry {

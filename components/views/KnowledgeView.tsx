@@ -178,6 +178,58 @@ const JourneyStep: React.FC<{
     );
 };
 
+const AiMentor: React.FC = () => {
+    const [query, setQuery] = useState('');
+    const [response, setResponse] = useState<AIResponse | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
+    const handleAsk = async () => {
+        if (!query.trim()) return;
+        setIsLoading(true);
+        setResponse(null);
+        const res = await geminiService.askAboutKnowledge(query);
+        setResponse(res);
+        setIsLoading(false);
+        setQuery('');
+    };
+
+    return (
+        <Card className="mb-8">
+            <h3 className="text-xl font-bold mb-4 text-primary-600 dark:text-primary-400 flex items-center gap-2">
+                <PhosphorIcons.Sparkle className="w-6 h-6" />
+                Frag den KI-Mentor
+            </h3>
+            <p className="text-slate-600 dark:text-slate-400 mb-4">
+                Hast du eine spezifische Frage zum Anbau? Stelle sie hier und erhalte eine detaillierte Antwort.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAsk()}
+                    placeholder="z.B. Was ist der beste pH-Wert in der Blütephase?"
+                    className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white"
+                />
+                <Button onClick={handleAsk} disabled={isLoading || !query.trim()} className="shrink-0">
+                    {isLoading ? 'Frage wird analysiert...' : 'Frage stellen'}
+                </Button>
+            </div>
+            <div className="mt-4">
+                {isLoading && <SkeletonLoader count={3} />}
+                {response && (
+                    <div className="bg-slate-100 dark:bg-slate-900/50 p-4 rounded-lg animate-fade-in">
+                        <article className="prose dark:prose-invert max-w-none">
+                            <h4 className="!text-primary-600 dark:!text-primary-300 !mt-0">{response.title}</h4>
+                            <div dangerouslySetInnerHTML={{ __html: response.content }} />
+                        </article>
+                    </div>
+                )}
+            </div>
+        </Card>
+    );
+};
+
 
 export const KnowledgeView: React.FC = () => {
     const [openAccordion, setOpenAccordion] = useState<string | null>('phase1');
@@ -212,6 +264,8 @@ export const KnowledgeView: React.FC = () => {
                 </div>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-right">{`${completedItems} von ${totalItems} Schritten erledigt`}</p>
             </Card>
+
+            <AiMentor />
             
             <div className="mt-8">
                  {sectionsConfig.map(section => (

@@ -14,6 +14,7 @@ import { exportService } from '../../services/exportService';
 import { AddStrainModal } from './strains/AddStrainModal';
 import { useExportsManager } from '../../hooks/useExportsManager';
 import { ExportsManagerView } from './strains/ExportsManagerView';
+import { useTranslations } from '../../hooks/useTranslations';
 
 type SortKey = 'name' | 'difficulty';
 type SortDirection = 'asc' | 'desc';
@@ -23,12 +24,6 @@ interface SortOption {
     key: SortKey;
     direction: SortDirection;
 }
-
-const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
-    Easy: 'Einfach',
-    Medium: 'Mittel',
-    Hard: 'Schwer',
-};
 
 const difficultyValues: Record<Strain['agronomic']['difficulty'], number> = {
     Easy: 1,
@@ -52,7 +47,13 @@ const StrainDetailModal: React.FC<{
   plants: (Plant | null)[];
   onSelectSimilarStrain: (strain: Strain) => void;
 }> = ({ strain, isFavorite, onClose, onToggleFavorite, onStartGrowing, plants, onSelectSimilarStrain }) => {
-
+    const { t } = useTranslations();
+    const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
+        Easy: t('strainsView.difficulty.easy'),
+        Medium: t('strainsView.difficulty.medium'),
+        Hard: t('strainsView.difficulty.hard'),
+    };
+    
     const findSimilarStrains = (baseStrain: Strain): Strain[] => {
         if (!baseStrain) return [];
         return INITIAL_STRAINS.filter(s =>
@@ -74,13 +75,13 @@ const StrainDetailModal: React.FC<{
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose}>
             <Card className="w-full max-w-3xl h-[90vh] relative flex flex-col" onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 z-10 transition-colors" aria-label="Schließen">
+                <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
                     <PhosphorIcons.X className="w-6 h-6" />
                 </button>
                 <div className="overflow-y-auto p-2 sm:p-4 flex-grow">
                     <div className="flex justify-between items-start mb-2">
                         <h2 className="text-3xl font-bold text-blue-500 dark:text-blue-300 pr-4">{strain.name}</h2>
-                        <button onClick={() => onToggleFavorite(strain.id)} className={`favorite-btn-glow p-1 text-slate-400 hover:text-red-400 ${isFavorite ? 'is-favorite' : ''}`} aria-label="Favorit umschalten">
+                        <button onClick={() => onToggleFavorite(strain.id)} className={`favorite-btn-glow p-1 text-slate-400 hover:text-red-400 ${isFavorite ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-7 h-7" />
                         </button>
                     </div>
@@ -97,15 +98,15 @@ const StrainDetailModal: React.FC<{
                     )}
 
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4">
-                        <p><strong>THC:</strong> {strain.thcRange || `${strain.thc}%`}</p>
-                        <p><strong>CBD:</strong> {strain.cbdRange || `${strain.cbd}%`}</p>
-                        <p><strong>Schwierigkeit:</strong> {difficultyLabels[strain.agronomic.difficulty]}</p>
-                        <p><strong>Blütezeit:</strong> {strain.floweringTimeRange || `${strain.floweringTime} Wochen`}</p>
+                        <p><strong>{t('strainsView.strainModal.thc')}:</strong> {strain.thcRange || `${strain.thc}%`}</p>
+                        <p><strong>{t('strainsView.strainModal.cbd')}:</strong> {strain.cbdRange || `${strain.cbd}%`}</p>
+                        <p><strong>{t('strainsView.strainModal.difficulty')}:</strong> {difficultyLabels[strain.agronomic.difficulty]}</p>
+                        <p><strong>{t('strainsView.strainModal.floweringTime')}:</strong> {strain.floweringTimeRange || `${strain.floweringTime} ${t('strainsView.floweringTime')}`}</p>
                     </div>
 
                     {strain.aromas && strain.aromas.length > 0 && (
                         <div className="mb-4">
-                            <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">Aromen</h4>
+                            <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">{t('strainsView.strainModal.aromas')}</h4>
                             <div className="flex flex-wrap gap-2">
                                 {strain.aromas.map(a => <div key={a} className="bg-slate-200 dark:bg-slate-700 rounded-full px-3 py-1 text-sm text-slate-800 dark:text-slate-200">{a}</div>)}
                             </div>
@@ -114,7 +115,7 @@ const StrainDetailModal: React.FC<{
 
                     {strain.dominantTerpenes && strain.dominantTerpenes.length > 0 && (
                         <div className="mb-4">
-                            <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">Dominante Terpene</h4>
+                            <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">{t('strainsView.strainModal.dominantTerpenes')}</h4>
                             <div className="flex flex-wrap gap-2">
                                 {strain.dominantTerpenes.map(t => <div key={t} className="bg-slate-200 dark:bg-slate-700 rounded-full px-3 py-1 text-sm text-slate-800 dark:text-slate-200">{t}</div>)}
                             </div>
@@ -123,19 +124,19 @@ const StrainDetailModal: React.FC<{
 
                     {(strain.agronomic.yieldDetails || strain.agronomic.heightDetails) && (
                         <div className="mb-4">
-                             <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">Agronomische Daten</h4>
+                             <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">{t('strainsView.strainModal.agronomicData')}</h4>
                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                {strain.agronomic.yieldDetails?.indoor && <p><strong>Ertrag (Indoor):</strong> {strain.agronomic.yieldDetails.indoor}</p>}
-                                {strain.agronomic.yieldDetails?.outdoor && <p><strong>Ertrag (Outdoor):</strong> {strain.agronomic.yieldDetails.outdoor}</p>}
-                                {strain.agronomic.heightDetails?.indoor && <p><strong>Höhe (Indoor):</strong> {strain.agronomic.heightDetails.indoor}</p>}
-                                {strain.agronomic.heightDetails?.outdoor && <p><strong>Höhe (Outdoor):</strong> {strain.agronomic.heightDetails.outdoor}</p>}
+                                {strain.agronomic.yieldDetails?.indoor && <p><strong>{t('strainsView.strainModal.yieldIndoor')}:</strong> {strain.agronomic.yieldDetails.indoor}</p>}
+                                {strain.agronomic.yieldDetails?.outdoor && <p><strong>{t('strainsView.strainModal.yieldOutdoor')}:</strong> {strain.agronomic.yieldDetails.outdoor}</p>}
+                                {strain.agronomic.heightDetails?.indoor && <p><strong>{t('strainsView.strainModal.heightIndoor')}:</strong> {strain.agronomic.heightDetails.indoor}</p>}
+                                {strain.agronomic.heightDetails?.outdoor && <p><strong>{t('strainsView.strainModal.heightOutdoor')}:</strong> {strain.agronomic.heightDetails.outdoor}</p>}
                              </div>
                         </div>
                     )}
 
                     {similarStrains.length > 0 && (
                         <div className="mt-6">
-                            <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">Ähnliche Sorten</h4>
+                            <h4 className="font-bold text-lg text-blue-600 dark:text-blue-400 mb-2">{t('strainsView.strainModal.similarStrains')}</h4>
                             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
                                 {similarStrains.map(s => (
                                     <Card 
@@ -153,7 +154,7 @@ const StrainDetailModal: React.FC<{
 
                     <div className="mt-auto pt-4">
                       <Button onClick={() => onStartGrowing(strain)} className="w-full text-lg" disabled={plants.every(p => p !== null)}>
-                        {plants.every(p => p !== null) ? 'Alle Slots voll' : 'Anbau starten'}
+                        {plants.every(p => p !== null) ? t('strainsView.strainModal.allSlotsFull') : t('strainsView.strainModal.startGrowing')}
                       </Button>
                     </div>
                 </div>
@@ -182,18 +183,25 @@ const AdvancedFilterModal: React.FC<{
     count: number,
 }> = ({ isOpen, onClose, onApply, thcRange, setThcRange, floweringRange, setFloweringRange, selectedDifficulties, handleToggleDifficulty, selectedAromas, allAromas, handleToggleAroma, selectedTerpenes, allTerpenes, handleToggleTerpene, resetAdvancedFilters, count }) => {
     if (!isOpen) return null;
+    const { t } = useTranslations();
+    const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
+        Easy: t('strainsView.difficulty.easy'),
+        Medium: t('strainsView.difficulty.medium'),
+        Hard: t('strainsView.difficulty.hard'),
+    };
+
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose}>
             <Card className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start flex-shrink-0">
-                    <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">Erweiterte Filter</h2>
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md">{count} passende Sorten</span>
+                    <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">{t('strainsView.advancedFilters')}</h2>
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md">{t('strainsView.matchingStrains', { count })}</span>
                 </div>
                 <div className="overflow-y-auto pr-2 flex-grow space-y-4">
-                    <RangeSlider label="THC% max." min={0} max={35} step={5} value={thcRange} onChange={setThcRange} unit=" %" />
-                    <RangeSlider label="Blütezeit" min={6} max={16} step={1} value={floweringRange} onChange={setFloweringRange} unit=" Wochen" />
+                    <RangeSlider label={t('strainsView.thcMax')} min={0} max={35} step={5} value={thcRange} onChange={setThcRange} unit=" %" />
+                    <RangeSlider label={t('strainsView.floweringTime')} min={6} max={16} step={1} value={floweringRange} onChange={setFloweringRange} unit={` ${t('strainsView.floweringTime')}`} />
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">Level</h4>
+                      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">{t('strainsView.level')}</h4>
                       <div className="flex flex-wrap gap-2">
                         {(['Easy', 'Medium', 'Hard'] as Strain['agronomic']['difficulty'][]).map(difficulty => (
                             <button 
@@ -207,17 +215,17 @@ const AdvancedFilterModal: React.FC<{
                       </div>
                     </div>
                      <div>
-                      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">Terpene</h4>
+                      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">{t('strainsView.terpenes')}</h4>
                       <div className="flex flex-wrap gap-2">{allTerpenes.map(terpene => (<button key={terpene} onClick={() => handleToggleTerpene(terpene)} className={`px-3 py-1 text-sm rounded-full transition-colors ${selectedTerpenes.has(terpene) ? 'bg-blue-600 text-white font-semibold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}>{terpene}</button>))}</div>
                     </div>
                     <div>
-                      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">Aroma</h4>
+                      <h4 className="text-sm font-semibold text-slate-600 dark:text-slate-300 mb-2">{t('strainsView.aromas')}</h4>
                       <div className="flex flex-wrap gap-2">{allAromas.map(aroma => (<button key={aroma} onClick={() => handleToggleAroma(aroma)} className={`px-3 py-1 text-sm rounded-full transition-colors ${selectedAromas.has(aroma) ? 'bg-blue-600 text-white font-semibold' : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'}`}>{aroma}</button>))}</div>
                     </div>
                 </div>
                 <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex-shrink-0">
-                    <Button variant="secondary" size="sm" onClick={resetAdvancedFilters}>Filter zurücksetzen</Button>
-                    <Button size="base" onClick={onApply}>Anwenden</Button>
+                    <Button variant="secondary" size="sm" onClick={resetAdvancedFilters}>{t('strainsView.resetFilters')}</Button>
+                    <Button size="base" onClick={onApply}>{t('common.apply')}</Button>
                 </div>
             </Card>
         </div>
@@ -226,10 +234,17 @@ const AdvancedFilterModal: React.FC<{
 
 
 export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, setActiveView }) => {
+  const { t } = useTranslations();
   const { addNotification } = useNotifications();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { savedExports, addExport, deleteExport } = useExportsManager();
   
+  const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
+    Easy: t('strainsView.difficulty.easy'),
+    Medium: t('strainsView.difficulty.medium'),
+    Hard: t('strainsView.difficulty.hard'),
+  };
+
   const [userStrains, setUserStrains] = useState<Strain[]>(() => {
     try {
         const saved = localStorage.getItem('user_added_strains');
@@ -291,10 +306,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
         localStorage.setItem('user_added_strains', JSON.stringify(updatedUserStrains));
         setUserStrains(updatedUserStrains);
         setIsAddStrainModalOpen(false);
-        addNotification(`Sorte "${newStrain.name}" erfolgreich hinzugefügt!`, 'success');
+        addNotification(t('strainsView.addStrainModal.addStrainSuccess', { name: newStrain.name }), 'success');
         setActiveTab('user'); // Switch to user tab
     } catch(e) {
-        addNotification('Fehler beim Speichern der Sorte.', 'error');
+        addNotification(t('strainsView.addStrainModal.addStrainError'), 'error');
     }
   };
   
@@ -302,15 +317,16 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     if (!strainToGrow) return;
     const firstEmptySlot = plants.findIndex(p => p === null);
     if (firstEmptySlot === -1) {
-      addNotification("Alle Pflanzen-Slots sind belegt.", 'error');
+      addNotification(t('plantsView.notifications.allSlotsFull'), 'error');
       return;
     }
     const now = Date.now();
     const initialVitals = { substrateMoisture: 80, ph: 6.5, ec: 0.2 };
     const newPlant: Plant = {
       id: `${strainToGrow.id}-${now}`, name: strainToGrow.name, strain: strainToGrow, stage: PlantStage.Seed, age: 0, height: 0, startedAt: now, lastUpdated: now, growSetup: setup, vitals: initialVitals, stressLevel: 0,
-      environment: { temperature: 24, humidity: 65, light: 100 }, problems: [],
-      journal: [{ id: `sys-${now}`, timestamp: now, type: 'SYSTEM', notes: `Anbau von ${strainToGrow.name} gestartet.` }],
+      environment: { temperature: setup.temperature, humidity: setup.humidity, light: 100 },
+      problems: [],
+      journal: [{ id: `sys-${now}`, timestamp: now, type: 'SYSTEM', notes: `${t('plantsView.notifications.startSuccess', { name: strainToGrow.name })}` }],
       tasks: [], history: [{ day: 0, vitals: initialVitals, stressLevel: 0, height: 0 }],
     };
     const newPlants = [...plants];
@@ -320,7 +336,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     setIsSetupModalOpen(false);
     setSelectedStrain(null);
     setActiveView(View.Plants);
-    addNotification(`Anbau von ${newPlant.name} gestartet!`, 'success');
+    addNotification(t('plantsView.notifications.startSuccess', { name: newPlant.name }), 'success');
   };
   
   const baseFilteredStrains = useMemo(() => {
@@ -416,7 +432,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
         case 'filtered': dataToExport = sortedAndFilteredStrains; break;
         case 'all': dataToExport = allStrains; break;
     }
-    if (dataToExport.length === 0) { addNotification('Keine Daten zum Exportieren vorhanden.', 'error'); return; }
+    if (dataToExport.length === 0) { addNotification(t('common.noDataToExport'), 'error'); return; }
 
     addExport({ name: filename, format, source }, dataToExport.map(s => s.id));
     
@@ -425,7 +441,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
         case 'csv': exportService.exportAsCSV(dataToExport, filename); break;
         case 'pdf': exportService.exportAsPDF(dataToExport, filename); break;
     }
-    addNotification(`Erfolgreich ${dataToExport.length} Sorten als ${format.toUpperCase()} exportiert & in "Meine Exporte" gespeichert.`, 'success');
+    addNotification(t('common.successfullyExported', { count: dataToExport.length, format: format.toUpperCase() }), 'success');
   };
 
   const handleSort = (key: SortKey) => {
@@ -439,26 +455,26 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
 
   const typeOptions: ('All' | 'Sativa' | 'Indica' | 'Hybrid')[] = ['All', 'Sativa', 'Indica', 'Hybrid'];
   const tableHeaders: { key: SortKey, label: string, className?: string }[] = [
-      { key: 'name', label: 'Name', className: 'text-left' },
-      { key: 'difficulty', label: 'Level', className: 'text-center' },
+      { key: 'name', label: t('strainsView.table.name'), className: 'text-left' },
+      { key: 'difficulty', label: t('strainsView.table.level'), className: 'text-center' },
   ];
 
   const tabs: {id: StrainViewTab, label: string}[] = [
-    { id: 'all', label: 'Alle Sorten' },
-    { id: 'user', label: `Meine Sorten (${userStrains.length})` },
-    { id: 'exports', label: `Meine Exporte (${savedExports.length})` },
+    { id: 'all', label: t('strainsView.tabs.all') },
+    { id: 'user', label: t('strainsView.tabs.user', { count: userStrains.length }) },
+    { id: 'exports', label: t('strainsView.tabs.exports', { count: savedExports.length }) },
   ];
 
   return (
     <>
       <div className="flex justify-between items-center mb-4 flex-shrink-0">
-        <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">Sorten-Datenbank</h2>
+        <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">{t('strainsView.title')}</h2>
         <div className="flex items-center gap-2">
           <Button variant="secondary" onClick={() => setIsAddStrainModalOpen(true)}>
-              <PhosphorIcons.PlusCircle className="inline w-5 h-5 mr-1.5" />Hinzufügen
+              <PhosphorIcons.PlusCircle className="inline w-5 h-5 mr-1.5" />{t('common.add')}
           </Button>
           <Button variant="secondary" onClick={() => setIsExportModalOpen(true)}>
-              <PhosphorIcons.UploadSimple className="inline w-5 h-5 mr-1.5" />Export
+              <PhosphorIcons.UploadSimple className="inline w-5 h-5 mr-1.5" />{t('common.export')}
           </Button>
         </div>
       </div>
@@ -477,21 +493,21 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
         <div className="flex flex-col h-[calc(100vh-178px)] mt-4">
           <Card className="p-2 mb-4 flex-shrink-0">
             <div className="flex flex-col sm:flex-row gap-2">
-              <input type="text" placeholder="Sorte suchen..." className="flex-grow bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <input type="text" placeholder={t('strainsView.searchPlaceholder')} className="flex-grow bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
               <div className="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-md">
                 {typeOptions.map(option => (
-                    <button key={option} onClick={() => setTypeFilter(option)} className={`px-2 py-1 text-xs rounded-md flex-1 transition-colors ${typeFilter === option ? 'bg-white dark:bg-slate-800 text-primary-600 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{option}</button>
+                    <button key={option} onClick={() => setTypeFilter(option)} className={`px-2 py-1 text-xs rounded-md flex-1 transition-colors ${typeFilter === option ? 'bg-white dark:bg-slate-800 text-primary-600 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{t(`strainsView.${option.toLowerCase()}`)}</button>
                 ))}
               </div>
               <Button variant="secondary" size="sm" onClick={openAdvancedFilterModal} className="px-3 py-2 text-sm">
-                  <PhosphorIcons.FunnelSimple className="inline w-4 h-4 mr-1"/> Erweitert
+                  <PhosphorIcons.FunnelSimple className="inline w-4 h-4 mr-1"/> {t('strainsView.advancedFilters')}
               </Button>
             </div>
           </Card>
           
           <div className="flex-grow min-h-0 border border-slate-200 dark:border-slate-700 rounded-lg flex flex-col">
             <div className="grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-1.5 font-bold text-xs text-slate-600 dark:text-slate-300 border-b-2 border-slate-200 dark:border-slate-700 flex-shrink-0 bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
-              <input type="checkbox" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:ring-primary-500"/>
+              <input type="checkbox" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
               <div className="w-4 h-4 text-center"><PhosphorIcons.Heart /></div>
               {tableHeaders.map(h => (
                 <button key={h.key} onClick={() => handleSort(h.key)} className={`flex items-center gap-1 ${h.className || ''}`}>
@@ -507,8 +523,8 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                   {sortedAndFilteredStrains.map(strain => {
                     return (
                       <div key={strain.id} onClick={() => setSelectedStrain(strain)} className={`grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2.5 cursor-pointer transition-colors duration-150 text-sm ${selectedStrain?.id === strain.id ? 'bg-primary-100/50 dark:bg-primary-900/50' : 'hover:bg-slate-50 dark:hover:bg-slate-700/70'}`}>
-                        <input type="checkbox" checked={selectedIds.has(strain.id)} onChange={e => {e.stopPropagation(); toggleSelection(strain.id);}} onClick={e => e.stopPropagation()} className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:ring-primary-500"/>
-                        <button onClick={e => {e.stopPropagation(); toggleFavorite(strain.id)}} className={`favorite-btn-glow text-slate-400 hover:text-red-400 ${favoriteIds.has(strain.id) ? 'is-favorite' : ''}`}><PhosphorIcons.Heart weight={favoriteIds.has(strain.id) ? 'fill' : 'regular'} className="w-4 h-4" /></button>
+                        <input type="checkbox" checked={selectedIds.has(strain.id)} onChange={e => {e.stopPropagation(); toggleSelection(strain.id);}} onClick={e => e.stopPropagation()} className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                        <button onClick={e => {e.stopPropagation(); toggleFavorite(strain.id)}} className={`favorite-btn-glow text-slate-400 hover:text-red-400 ${favoriteIds.has(strain.id) ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}><PhosphorIcons.Heart weight={favoriteIds.has(strain.id) ? 'fill' : 'regular'} className="w-4 h-4" /></button>
                         <div className="min-w-0">
                           <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">{strain.name}</span>
                         </div>
@@ -545,13 +561,13 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                 <div className="text-center py-10 text-slate-500">
                   {activeTab === 'user' && userStrains.length === 0 ? (
                       <>
-                          <p className="font-semibold">Du hast noch keine eigenen Sorten hinzugefügt.</p>
-                          <p className="text-sm">Klicke auf "Hinzufügen", um deine erste Sorte zu erstellen.</p>
+                          <p className="font-semibold">{t('strainsView.noUserStrains.title')}</p>
+                          <p className="text-sm">{t('strainsView.noUserStrains.subtitle')}</p>
                       </>
                   ) : (
                       <>
-                          <p className="font-semibold">Keine Sorten gefunden.</p>
-                          <p className="text-sm">Passe deine Filter an.</p>
+                          <p className="font-semibold">{t('strainsView.noStrainsFound.title')}</p>
+                          <p className="text-sm">{t('strainsView.noStrainsFound.subtitle')}</p>
                       </>
                   )}
                 </div>
@@ -561,12 +577,12 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
             <div className="flex-shrink-0 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
               <div>
                 <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={showFavorites} onChange={e => setShowFavorites(e.target.checked)} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:ring-primary-500 bg-transparent"/>
-                  Nur Favoriten ({favoriteIds.size})
+                  <input type="checkbox" checked={showFavorites} onChange={e => setShowFavorites(e.target.checked)} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 bg-transparent"/>
+                  {t('strainsView.footer.showFavorites', { count: favoriteIds.size })}
                 </label>
               </div>
-              <span>{selectedIds.size} ausgewählt</span>
-              <span>Zeige {sortedAndFilteredStrains.length} von {strainsToDisplay.length} Sorten</span>
+              <span>{t('strainsView.footer.selected', { count: selectedIds.size })}</span>
+              <span>{t('strainsView.footer.showing', { shown: sortedAndFilteredStrains.length, total: strainsToDisplay.length })}</span>
             </div>
           </div>
         </div>

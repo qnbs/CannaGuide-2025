@@ -21,6 +21,21 @@ const StatIndicator: React.FC<{ value: string, label: string, icon: React.ReactN
     </div>
 );
 
+const VitalBar: React.FC<{ label: string; value: number; max: number; unit: string; color: string }> = ({ label, value, max, unit, color }) => {
+    const percentage = Math.min(100, Math.max(0, (value / max) * 100));
+    return (
+        <div className="text-sm">
+            <div className="flex justify-between items-baseline font-semibold text-slate-600 dark:text-slate-300">
+                <span>{label}</span>
+                <span>{value.toFixed(label === 'EC' ? 2 : 0)}{unit}</span>
+            </div>
+            <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-0.5">
+                <div className={`${color} h-2 rounded-full`} style={{ width: `${percentage}%` }}></div>
+            </div>
+        </div>
+    );
+};
+
 const ActionButton: React.FC<{ label: string; icon: React.ReactNode; onClick: (e: React.MouseEvent) => void }> = ({ label, icon, onClick }) => (
     <button
       onClick={onClick}
@@ -84,9 +99,9 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect, onWater,
 
             <div className="grid grid-cols-2 gap-x-4 gap-y-3 p-3 bg-slate-100 dark:bg-slate-800/50 rounded-md">
                  <StatIndicator value={plant.vitals.ph.toFixed(1)} label="pH" icon={<span className="font-bold text-sm">pH</span>} />
-                 <StatIndicator value={plant.vitals.ec.toFixed(2)} label="EC" icon={<span className="font-bold text-sm">EC</span>} />
                  <StatIndicator value={`${plant.environment.temperature.toFixed(0)}°C`} label="Temperatur" icon={<PhosphorIcons.ThermometerSimple />} />
-                 <StatIndicator value={`${plant.vitals.substrateMoisture.toFixed(0)}%`} label="Luftfeuchtigkeit" icon={<PhosphorIcons.Drop />} />
+                 <VitalBar label="Feuchtigkeit" value={plant.vitals.substrateMoisture} max={100} unit="%" color="bg-blue-500" />
+                 <VitalBar label="EC" value={plant.vitals.ec} max={3.0} unit="" color="bg-amber-500" />
             </div>
 
             <div className="flex justify-around items-center gap-2 mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">

@@ -12,11 +12,14 @@ import { useSettings } from './hooks/useSettings';
 import { PhosphorIcons } from './components/icons/PhosphorIcons';
 import { NotificationProvider } from './context/NotificationContext';
 import { OnboardingModal } from './components/common/OnboardingModal';
+import { LanguageProvider } from './context/LanguageContext';
+import { useTranslations } from './hooks/useTranslations';
 
 
 const AppContent: React.FC = () => {
   const [activeView, setActiveView] = useState<View>(View.Plants);
   const { settings, setSetting } = useSettings();
+  const { t } = useTranslations();
   
   const [plants, setPlants] = useState<(Plant | null)[]>(() => {
     try {
@@ -78,10 +81,18 @@ const AppContent: React.FC = () => {
                 </h1>
             </div>
             <div className="flex items-center gap-2">
-                <button onClick={() => setActiveView(View.Help)} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+                <button 
+                  onClick={() => setActiveView(View.Help)} 
+                  className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+                  aria-label={t('nav.help')}
+                >
                     <PhosphorIcons.Question className="w-6 h-6" />
                 </button>
-                 <button onClick={() => setActiveView(View.Settings)} className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full">
+                 <button 
+                  onClick={() => setActiveView(View.Settings)} 
+                  className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+                  aria-label={t('nav.settings')}
+                 >
                     <PhosphorIcons.Gear className="w-6 h-6" />
                 </button>
             </div>
@@ -100,9 +111,11 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <SettingsProvider>
-      <NotificationProvider>
-        <AppContent />
-      </NotificationProvider>
+      <LanguageProvider>
+        <NotificationProvider>
+          <AppContent />
+        </NotificationProvider>
+      </LanguageProvider>
     </SettingsProvider>
   )
 }

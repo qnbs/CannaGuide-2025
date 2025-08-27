@@ -3,6 +3,7 @@ import { GrowSetup, Strain } from '../../../types';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
 import { useNotifications } from '../../../context/NotificationContext';
+import { useTranslations } from '../../../hooks/useTranslations';
 
 
 interface GrowSetupModalProps {
@@ -12,30 +13,45 @@ interface GrowSetupModalProps {
 }
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
+  const { t } = useTranslations();
   const { addNotification } = useNotifications();
   const [setup, setSetup] = useState<GrowSetup>({
     lightType: 'LED',
     potSize: 10,
     medium: 'Soil',
+    temperature: 24,
+    humidity: 60,
+    lightHours: 18,
   });
 
   const handleConfirm = () => {
+    if (setup.lightHours < 1 || setup.lightHours > 24) {
+        addNotification(t('plantsView.setupModal.validation.light'), 'error');
+        return;
+    }
+     if (setup.temperature < 10 || setup.temperature > 40) {
+        addNotification(t('plantsView.setupModal.validation.temp'), 'error');
+        return;
+    }
+     if (setup.humidity < 10 || setup.humidity > 99) {
+        addNotification(t('plantsView.setupModal.validation.humidity'), 'error');
+        return;
+    }
     onConfirm(setup);
-    addNotification(`Anbau von ${strain.name} erfolgreich gestartet!`, 'success');
   };
 
   type SetupOption = 'lightType' | 'potSize' | 'medium';
   const options: { id: SetupOption, label: string, choices: (string|number)[], display?: (s: string|number) => string }[] = [
-      { id: 'lightType', label: 'Lichtquelle', choices: ['LED', 'HPS', 'CFL'] },
-      { id: 'potSize', label: 'Topfgröße', choices: [5, 10, 15], display: s => `${s}L` },
-      { id: 'medium', label: 'Anbaumedium', choices: ['Soil', 'Coco', 'Hydro'], display: s => s === 'Soil' ? 'Erde' : String(s) },
+      { id: 'lightType', label: t('plantsView.setupModal.lightSource'), choices: ['LED', 'HPS', 'CFL'] },
+      { id: 'potSize', label: t('plantsView.setupModal.potSize'), choices: [5, 10, 15], display: s => `${s}L` },
+      { id: 'medium', label: t('plantsView.setupModal.medium'), choices: ['Soil', 'Coco', 'Hydro'], display: s => String(t(`plantsView.setupModal.mediums.${String(s).toLowerCase()}`)) },
   ];
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md">
-        <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-2">{`Setup für ${strain.name}`}</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-6">Konfiguriere dein Anbau-Setup für diese Sorte.</p>
+        <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-2">{t('plantsView.setupModal.title', { name: strain.name })}</h2>
+        <p className="text-slate-600 dark:text-slate-400 mb-6">{t('plantsView.setupModal.subtitle')}</p>
         
         <div className="space-y-6">
             {options.map(opt => (
@@ -60,9 +76,27 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
             ))}
         </div>
 
+        <div className="mt-6">
+            <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">{t('plantsView.setupModal.environment')}</label>
+            <div className="grid grid-cols-3 gap-3">
+                <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('plantsView.setupModal.temp')}</label>
+                    <input type="number" value={setup.temperature} onChange={e => setSetup(s => ({...s, temperature: parseInt(e.target.value, 10) || 24}))} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('plantsView.setupModal.humidity')}</label>
+                    <input type="number" value={setup.humidity} onChange={e => setSetup(s => ({...s, humidity: parseInt(e.target.value, 10) || 60}))} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                </div>
+                <div>
+                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('plantsView.setupModal.lightHours')}</label>
+                    <input type="number" value={setup.lightHours} onChange={e => setSetup(s => ({...s, lightHours: parseInt(e.target.value, 10) || 18}))} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                </div>
+            </div>
+        </div>
+
         <div className="flex justify-end gap-4 mt-8">
-          <Button variant="secondary" onClick={onClose}>Abbrechen</Button>
-          <Button onClick={handleConfirm}>Bestätigen & Starten</Button>
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button onClick={handleConfirm}>{t('common.confirm')} & {t('common.start')}</Button>
         </div>
       </Card>
     </div>

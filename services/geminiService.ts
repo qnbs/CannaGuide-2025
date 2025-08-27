@@ -1,173 +1,325 @@
-// import { GoogleGenAI, GenerateContentResponse, Type } from "@google/ai";
-import { AIResponse, Plant, AIProTip } from '../types';
+import { GoogleGenAI, Type } from "@google/genai";
+import { AIResponse, Plant } from '../types';
 
-// This is a MOCK service. In a real application, you would initialize Gemini API here.
-// const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// Initialize the Google Gemini AI client
+// The API key is expected to be available as an environment variable
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const model = 'gemini-2.5-flash';
 
-const KNOWLEDGE_ARTICLES: Record<string, { title: string; content: string }> = {
-  curing: {
-    title: 'Die Kunst des Curing: Veredelung der Ernte',
-    content: `
-      Curing, oder Aushärten, ist der entscheidende letzte Schritt, um das volle Potenzial Ihrer Cannabisblüten freizusetzen. Es wird oft übersehen, aber es ist der Schlüssel zu einem sanfteren Rauch, einem besseren Geschmack und einer stärkeren Wirkung.
-
-      <h3 class="text-xl font-bold mt-4 mb-2">Warum ist Curing wichtig?</h3>
-      <ul class="list-disc list-inside space-y-2">
-        <li><strong>Geschmacksverbesserung:</strong> Während des Curing-Prozesses bauen sich Chlorophyll und andere unerwünschte Verbindungen ab. Dies führt zu einem viel sanfteren und angenehmeren Geschmack. Terpene, die für das Aroma verantwortlich sind, können sich voll entfalten.</li>
-        <li><strong>Wirkungssteigerung:</strong> Chemische Prozesse während des Aushärtens können die Potenz von Cannabinoiden wie THC erhöhen.</li>
-        <li><strong>Haltbarkeit:</strong> Richtig ausgehärtetes Cannabis ist besser vor Schimmel und Bakterien geschützt und kann monatelang gelagert werden, ohne an Qualität zu verlieren.</li>
-      </ul>
-
-      <h3 class="text-xl font-bold mt-6 mb-2">Schritt-für-Schritt-Anleitung</h3>
-      <ol class="list-decimal list-inside space-y-3">
-        <li><strong>Trocknen:</strong> Bevor das Curing beginnt, müssen die Blüten richtig getrocknet werden. Hängen Sie die Zweige kopfüber in einem dunklen, gut belüfteten Raum bei ca. 18-20°C und 50-60% Luftfeuchtigkeit für 7-14 Tage auf. Die Stängel sollten brechen, nicht biegen.</li>
-        <li><strong>Eintopfen:</strong> Füllen Sie die getrockneten Blüten locker in luftdichte Gläser (Einmachgläser sind ideal). Füllen Sie die Gläser nur zu etwa 75%, um Luftzirkulation zu ermöglichen.</li>
-        <li><strong>"Burping" (Lüften):</strong> In der ersten Woche öffnen Sie die Gläser 2-3 Mal täglich für jeweils 5-10 Minuten. Dies setzt Feuchtigkeit und Gase frei. Riechen Sie dabei an den Blüten – sie sollten zunehmend aromatischer riechen, nicht nach Ammoniak oder Heu.</li>
-        <li><strong>Fortgesetztes Curing:</strong> Nach der ersten Woche reicht es aus, die Gläser alle paar Tage für einige Minuten zu lüften. Dieser Prozess sollte mindestens 2-4 Wochen dauern, aber viele Kenner lassen ihre Ernte 6 Monate oder länger aushärten.</li>
-        <li><strong>Lagerung:</strong> Nach dem Curing lagern Sie die Gläser an einem kühlen, dunklen Ort. Die ideale Lagertemperatur liegt unter 21°C.</li>
-      </ol>
-      <p class="mt-4">Geduld ist der Schlüssel zum perfekten Curing. Ihre Mühe wird mit einem Endprodukt von höchster Qualität belohnt.</p>
-    `,
-  },
-  watering: {
-    title: 'Richtiges Gießen: Die Grundlage des Erfolgs',
-    content: 'Das richtige Gießen ist eine Kunst. Überwässerung ist einer der häufigsten Fehler bei Anfängern. Fühlen Sie die obersten Zentimeter der Erde. Wenn sie trocken ist, ist es Zeit zu gießen. Gießen Sie langsam und gleichmäßig, bis etwa 10-20% des Wassers unten aus dem Topf abfließen (Drainage). Dies stellt sicher, dass alle Wurzeln Wasser bekommen und alte Nährstoffsalze ausgespült werden.',
-  },
-  lighting: {
-    title: 'Beleuchtung für den Indoor-Anbau',
-    content: 'Licht ist die Energiequelle Ihrer Pflanze. In der vegetativen Phase benötigen Pflanzen typischerweise 18 Stunden Licht und 6 Stunden Dunkelheit. In der Blütephase wird der Zyklus auf 12 Stunden Licht und 12 Stunden Dunkelheit umgestellt, um die Blütenbildung zu simulieren. LED-Lampen sind heutzutage die effizienteste Wahl, da sie weniger Wärme erzeugen und ein volles Lichtspektrum bieten.',
-  },
-};
-
-const EQUIPMENT_DATA = {
-    shops: [
-        { name: "Growmart", url: "growmart.de", description: "Einer der größten Growshops in Deutschland mit einer riesigen Auswahl an Produkten für Einsteiger und Profis." },
-        { name: "Zamnesia", url: "zamnesia.com", description: "Ein europäischer Online-Shop, der nicht nur Grow-Equipment, sondern auch Samen, Headshop-Artikel und mehr anbietet." },
-        { name: "Grow-Shop24", url: "grow-shop24.de", description: "Bietet komplette Growbox-Sets und eine breite Palette an Beleuchtung, Belüftung und Düngemitteln." },
-    ],
-    gear: [
-        { name: "Growbox (Zelt)", description: "Ein geschlossenes System, das es Ihnen ermöglicht, Licht, Temperatur und Luftfeuchtigkeit vollständig zu kontrollieren." },
-        { name: "LED-Beleuchtung", description: "Moderne, energieeffiziente Lampen, die das für das Pflanzenwachstum notwendige Lichtspektrum liefern." },
-        { name: "Abluftsystem mit Aktivkohlefilter", description: "Entfernt Gerüche und sorgt für einen konstanten Luftaustausch, der für die Pflanzengesundheit entscheidend ist." },
-        { name: "Töpfe mit Untersetzern", description: "Stofftöpfe sind eine gute Wahl, da sie eine bessere Belüftung der Wurzeln ermöglichen (Air-Pruning)." },
-        { name: "PH-Messgerät und pH-Regulatoren", description: "Der richtige pH-Wert des Wassers (normalerweise 6.0-7.0 in Erde) ist entscheidend für die Nährstoffaufnahme." },
-    ]
-};
-
-const AI_KNOWLEDGE_RESPONSES: Record<string, AIResponse> = {
-    "spinnmilben": {
-        title: "Spinnmilben erkennen und bekämpfen",
-        content: `
-            Spinnmilben sind ein häufiger Schädling beim Indoor-Anbau. Hier sind die wichtigsten Punkte:
-            <h3 class="text-lg font-semibold mt-3 mb-1">Erkennung:</h3>
-            <ul class="list-disc list-inside space-y-1">
-                <li>Winzige weiße oder gelbe Punkte auf der Blattoberseite.</li>
-                <li>Feine Spinnweben zwischen Blättern und Stängeln (bei starkem Befall).</li>
-                <li>Mit einer Lupe kann man die winzigen Tierchen auf der Blattunterseite erkennen.</li>
-            </ul>
-            <h3 class="text-lg font-semibold mt-3 mb-1">Bekämpfung:</h3>
-            <ul class="list-disc list-inside space-y-1">
-                <li><strong>Sofortmaßnahme:</strong> Befallene Blätter entfernen und die Pflanze vorsichtig mit Wasser absprühen.</li>
-                <li><strong>Biologische Mittel:</strong> Neemöl-Lösungen sind sehr effektiv. Alle paar Tage auf die Pflanze sprühen, besonders die Blattunterseiten.</li>
-                <li><strong>Nützlinge:</strong> Raubmilben sind natürliche Feinde von Spinnmilben und können online bestellt werden.</li>
-                <li><strong>Prävention:</strong> Eine saubere Umgebung und eine gute Luftzirkulation sind der beste Schutz.</li>
-            </ul>
-        `,
-    },
-    "standard": {
-        title: "Antwort der KI",
-        content: "Das ist eine ausgezeichnete Frage. Basierend auf den verfügbaren Daten würde ich empfehlen, einen ganzheitlichen Ansatz zu verfolgen. Stellen Sie sicher, dass die Grundlagen wie Licht, Wasser und Nährstoffe stimmen. Bei spezifischen Problemen ist eine genaue Diagnose entscheidend, bevor man handelt. Beobachten Sie Ihre Pflanze genau."
-    }
-};
-
-const AI_EQUIPMENT_RESPONSES: Record<string, AIResponse> = {
-    "licht": {
-        title: "Die beste Beleuchtung für Anfänger",
-        content: `
-            Für Anfänger sind <strong>LED-Lampen</strong> fast immer die beste Wahl. Hier ist warum:
-            <ul class="list-disc list-inside space-y-1 mt-2">
-                <li><strong>Energieeffizienz:</strong> LEDs verbrauchen deutlich weniger Strom als ältere Technologien wie HPS-Lampen, was Ihre Stromrechnung schont.</li>
-                <li><strong>Geringe Wärmeentwicklung:</strong> Sie produzieren weniger Abwärme, was die Temperaturkontrolle in der Growbox erleichtert und das Risiko von Hitzestress für die Pflanzen verringert.</li>
-                <li><strong>Volles Spektrum:</strong> Moderne LED-Lampen bieten ein Lichtspektrum, das sowohl für die Wachstums- als auch für die Blütephase optimiert ist.</li>
-                <li><strong>Lange Lebensdauer:</strong> LEDs halten viele Jahre, was sie zu einer guten langfristigen Investition macht.</li>
-            </ul>
-            <p class="mt-3">Achten Sie beim Kauf auf eine Lampe mit einer Leistung, die zur Größe Ihrer Anbaufläche passt. Für eine Standard-Growbox von 80x80cm ist eine LED-Lampe mit ca. 150-250 Watt eine gute Ausgangsbasis.</p>
-        `,
-    },
-    "standard": {
-        title: "KI-Ausrüstungsberater",
-        content: "Die Wahl der richtigen Ausrüstung hängt stark von Ihrem Budget, Ihrer Anbaufläche und Ihren Zielen ab. Für ein Standard-Setup empfehle ich eine Growbox, eine dimmbare LED-Lampe, ein Abluftset mit Aktivkohlefilter und Stofftöpfe. Diese Kombination bietet die beste Balance aus Kontrolle, Effizienz und Kosten für den Einstieg."
-    }
+// Helper to safely parse JSON from AI response
+function safeJsonParse<T>(jsonString: string, fallback: T): T {
+  try {
+    // The Gemini API for JSON mode often returns the JSON string wrapped in markdown backticks.
+    const cleanedString = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+    return JSON.parse(cleanedString) as T;
+  } catch (e) {
+    console.error("Failed to parse AI JSON response:", e);
+    return fallback;
+  }
 }
+
+// Define the response schema for AIResponse
+const aiResponseSchema = {
+  type: Type.OBJECT,
+  properties: {
+    title: { type: Type.STRING },
+    content: { type: Type.STRING },
+  },
+  required: ['title', 'content'],
+};
+
+// Define a generic error response. The UI will provide the translated message.
+const errorResponse: AIResponse = {
+  title: 'Error',
+  content: 'The AI could not generate a response. Please try again later or rephrase your request.',
+};
+
+const recommendationItemSchema = {
+    type: Type.OBJECT,
+    properties: {
+        name: { type: Type.STRING, description: "The name of the recommended product or component." },
+        price: { type: Type.NUMBER, description: "The estimated price in Euros." },
+        rationale: { type: Type.STRING, description: "A short rationale (1-2 sentences) explaining why this item is suitable for the chosen setup." },
+    },
+    required: ['name', 'price', 'rationale'],
+};
+
+const recommendationSchema = {
+    type: Type.OBJECT,
+    properties: {
+        tent: recommendationItemSchema,
+        light: { 
+            ...recommendationItemSchema, 
+            properties: { 
+                ...recommendationItemSchema.properties, 
+                watts: {type: Type.NUMBER, description: "The wattage of the lamp."} 
+            },
+            required: [...recommendationItemSchema.required, 'watts'],
+        },
+        ventilation: recommendationItemSchema,
+        pots: recommendationItemSchema,
+        soil: recommendationItemSchema,
+        nutrients: recommendationItemSchema,
+        extra: recommendationItemSchema,
+    },
+    required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra'],
+};
 
 
 export const geminiService = {
   getKnowledgeArticle: async (topic: string): Promise<AIResponse> => {
-    console.log(`Fetching mock article for: ${topic}`);
-    await new Promise(res => setTimeout(res, 500));
-    return KNOWLEDGE_ARTICLES[topic] || { title: 'Nicht gefunden', content: 'Dieser Artikel ist noch nicht verfügbar.' };
+    try {
+      const prompt = `Create a detailed, helpful article on the topic "${topic}" in the context of cannabis cultivation for beginners and advanced growers.
+      The article should be well-structured and contain practical tips.
+      Format the response as a JSON object with the keys "title" and "content".
+      The "title" should be concise and related to the topic.
+      The "content" should be the answer as well-formatted HTML. Use <h3> for subheadings, <ul> and <ol> for lists, and <p> for paragraphs to maximize readability.`;
+
+      const response = await ai.models.generateContent({
+        model,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: aiResponseSchema,
+        },
+      });
+
+      return safeJsonParse(response.text, errorResponse);
+    } catch (error) {
+      console.error(`Error fetching knowledge article for ${topic}:`, error);
+      return errorResponse;
+    }
   },
+
   askAboutKnowledge: async (prompt: string): Promise<AIResponse> => {
-    console.log(`Asking mock AI about knowledge: ${prompt}`);
-    await new Promise(res => setTimeout(res, 800));
-    const normalizedPrompt = prompt.toLowerCase();
-    if (normalizedPrompt.includes('spinnmilben')) {
-        return AI_KNOWLEDGE_RESPONSES['spinnmilben'];
+    try {
+      const fullPrompt = `Answer the following question about cannabis cultivation: "${prompt}".
+      Format the response as a JSON object with the keys "title" and "content".
+      The "title" should be a short summary of the question.
+      The "content" should be the answer as well-formatted HTML that answers the question clearly and helpfully.`;
+      
+      const response = await ai.models.generateContent({
+        model,
+        contents: fullPrompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: aiResponseSchema,
+        },
+      });
+
+      return safeJsonParse(response.text, errorResponse);
+    } catch (error) {
+      console.error(`Error asking about knowledge with prompt "${prompt}":`, error);
+      return errorResponse;
     }
-    return AI_KNOWLEDGE_RESPONSES['standard'];
   },
+
   getEquipmentInfo: async () => {
-    console.log('Fetching mock equipment info');
-    await new Promise(res => setTimeout(res, 500));
-    return EQUIPMENT_DATA;
+    const fallback = { shops: [], gear: [] };
+    try {
+        const prompt = `Create a list of 3-4 recommended, reputable online grow shops that deliver to the EU, and a list of 5-6 essential pieces of equipment for indoor cannabis cultivation.
+        Provide a short, helpful description for each shop and each piece of equipment.
+        Format the response exclusively as a JSON object.`;
+
+        const response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        shops: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    url: { type: Type.STRING },
+                                    description: { type: Type.STRING },
+                                },
+                            },
+                        },
+                        gear: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    description: { type: Type.STRING },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return safeJsonParse(response.text, fallback);
+    } catch (error) {
+        console.error('Error fetching equipment info:', error);
+        return fallback;
+    }
   },
+  
   askAboutEquipment: async (prompt: string): Promise<AIResponse> => {
-    console.log(`Asking mock AI about equipment: ${prompt}`);
-    await new Promise(res => setTimeout(res, 800));
-    const normalizedPrompt = prompt.toLowerCase();
-    if (normalizedPrompt.includes('licht') || normalizedPrompt.includes('lampe')) {
-        return AI_EQUIPMENT_RESPONSES['licht'];
+     try {
+      const fullPrompt = `Answer the following question about equipment for cannabis cultivation: "${prompt}".
+      Format the response as a JSON object with the keys "title" and "content".
+      The "title" should be a short summary of the question (e.g., "AI Equipment Advisor").
+      The "content" should be the answer as well-formatted HTML that answers the question clearly and helpfully.`;
+      
+      const response = await ai.models.generateContent({
+        model,
+        contents: fullPrompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: aiResponseSchema,
+        },
+      });
+
+      return safeJsonParse(response.text, errorResponse);
+    } catch (error) {
+      console.error(`Error asking about equipment with prompt "${prompt}":`, error);
+      return errorResponse;
     }
-    return AI_EQUIPMENT_RESPONSES['standard'];
   },
-  askAboutPlant: async (plant: Plant, prompt: string): Promise<AIResponse> => {
-    console.log(`Asking mock AI about plant ${plant.name}: ${prompt}`);
-    await new Promise(res => setTimeout(res, 1000));
 
-    // Simple context-aware mock logic
-    if (plant.problems.some(p => p.type === 'PhTooLow')) {
-        return {
-            title: `KI-Analyse für ${plant.name}`,
-            content: `
-                Ich habe die Daten deiner Pflanze analysiert. Der pH-Wert von <strong>${plant.vitals.ph.toFixed(1)}</strong> ist kritisch niedrig. Dies führt wahrscheinlich zu einer <strong>Nährstoffsperre</strong>, bei der die Wurzeln keine Nährstoffe aufnehmen können, selbst wenn sie im Medium vorhanden sind.
-                <h3 class="text-lg font-semibold mt-3 mb-1">Empfehlung:</h3>
-                <ul class="list-disc list-inside space-y-1">
-                    <li>Spüle das Substrat sofort mit pH-neutralem Wasser (ca. 6.5).</li>
-                    <li>Passe den pH-Wert deiner nächsten Nährlösung mit einem "pH Up"-Produkt an, um den Wert im Substrat langsam wieder in den idealen Bereich von 6.0-6.8 zu bringen.</li>
-                </ul>
-            `
-        }
-    }
-    
-    if (plant.vitals.substrateMoisture < 20) {
-        return {
-            title: `KI-Analyse für ${plant.name}`,
-            content: `
-               Die Daten zeigen, dass das Substrat mit <strong>${plant.vitals.substrateMoisture.toFixed(0)}%</strong> extrem trocken ist. Dies verursacht erheblichen Stress und stoppt das Wachstum.
-                <h3 class="text-lg font-semibold mt-3 mb-1">Empfehlung:</h3>
-                <ul class="list-disc list-inside space-y-1">
-                    <li>Gieße die Pflanze sofort und langsam, bis du etwa 15-20% Drainage am Boden des Topfes siehst.</li>
-                    <li>Überprüfe die Bewässerungsroutine. Eventuell musst du häufiger oder mit mehr Volumen gießen, besonders wenn die Pflanze größer wird.</li>
-                </ul>
-            `
-        }
-    }
+  getSetupRecommendation: async (area: string, growStyle: string, budget: string): Promise<Record<string, {name: string, price: number, rationale: string, watts?: number}> | null> => {
+    const fallback = null;
+    try {
+        const prompt = `Create a detailed equipment recommendation for an indoor cannabis grow.
+        The configuration should be based on the following user preferences:
+        - Grow area: ${area} cm
+        - Grow style: ${growStyle}
+        - Budget: ${budget}
 
-    return {
-        title: `KI-Analyse für ${plant.name}`,
-        content: `
-            Die aktuellen Werte deiner Pflanze sehen stabil aus. Der pH-Wert liegt bei <strong>${plant.vitals.ph.toFixed(1)}</strong> und der EC-Wert bei <strong>${plant.vitals.ec.toFixed(2)}</strong>. Das Substrat hat eine gute Feuchtigkeit.
-            <p class="mt-2">Behalte die Werte weiterhin im Auge, besonders wenn die Pflanze in die Blütephase eintritt, da sich ihr Nährstoffbedarf ändern wird. Gut gemacht bisher!</p>
-        `
+        For each of the following 7 categories, provide ONE specific product recommendation (e.g., "150W Dimmable LED" instead of just "LED Lamp"):
+        1. tent
+        2. light
+        3. ventilation
+        4. pots
+        5. soil
+        6. nutrients
+        7. extra (Important accessories like timers, meters, etc.)
+
+        For each item, provide:
+        - "name": A specific product name or description.
+        - "price": A realistic, estimated price in Euros (number only).
+        - "rationale": A short, concise reason (1-2 sentences) why this item fits the chosen setup (area, style, budget).
+        - "watts" (only for the "light" category): The wattage of the lamp (number only).
+
+        Format the response exclusively as a JSON object that adheres to the provided schema.`;
+        
+        const response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: recommendationSchema,
+            },
+        });
+        
+        return safeJsonParse(response.text, fallback);
+    } catch (error) {
+        console.error('Error fetching setup recommendation:', error);
+        return fallback;
+    }
+  },
+  
+  askAboutPlant: async (plant: Plant, prompt: string, titleTemplate: string): Promise<AIResponse> => {
+     try {
+        const plantProblems = plant.problems.length > 0
+            ? plant.problems.map(p => p.message).join(', ')
+            : 'None';
+
+        const plantSummary = `
+            - Name: ${plant.name}
+            - Strain: ${plant.strain.name} (${plant.strain.type})
+            - Stage: ${plant.stage}
+            - Age: ${plant.age} days
+            - Height: ${plant.height.toFixed(1)} cm
+            - Vitals: pH ${plant.vitals.ph.toFixed(1)}, EC ${plant.vitals.ec.toFixed(2)}, Substrate Moisture ${plant.vitals.substrateMoisture.toFixed(0)}%
+            - Environment: ${plant.environment.temperature}°C, ${plant.environment.humidity}% humidity
+            - Stress Level: ${plant.stressLevel.toFixed(0)}%
+            - Current Problems: ${plantProblems}
+        `;
+
+        const fullPrompt = `You are an experienced AI advisor for cannabis cultivation. Analyze the following plant data and answer the user's question.
+        
+        PLANT DATA:
+        ${plantSummary}
+
+        USER'S QUESTION:
+        "${prompt}"
+
+        INSTRUCTIONS:
+        1. Provide a concise analysis and specific recommendations for action.
+        2. Directly address the user's question and use the provided data to support your reasoning.
+        3. Format the response as a JSON object with the keys "title" and "content".
+        4. The "title" should be "${titleTemplate}".
+        5. The "content" should be the answer as well-formatted HTML, using <strong> tags to highlight important values and terms.`;
+
+        const response = await ai.models.generateContent({
+            model,
+            contents: fullPrompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: aiResponseSchema,
+            },
+        });
+        
+        return safeJsonParse(response.text, errorResponse);
+    } catch (error) {
+        console.error(`Error asking about plant ${plant.name}:`, error);
+        return errorResponse;
+    }
+  },
+
+  getProactiveTip: async (plant: Plant, title: string, contentFallback: string): Promise<AIResponse> => {
+    const specificErrorResponse: AIResponse = {
+      title: title,
+      content: contentFallback,
     };
-  }
+    
+    try {
+        const plantProblems = plant.problems.length > 0
+            ? plant.problems.map(p => p.message).join(', ')
+            : 'None';
+
+        const plantSummary = `
+            - Stage: ${plant.stage}
+            - Age: ${plant.age} days
+            - Vitals: pH ${plant.vitals.ph.toFixed(1)}, EC ${plant.vitals.ec.toFixed(2)}, Substrate Moisture ${plant.vitals.substrateMoisture.toFixed(0)}%
+            - Environment: ${plant.environment.temperature}°C, ${plant.environment.humidity}% humidity
+            - Current Problems: ${plantProblems}
+        `;
+
+        const prompt = `You are an experienced AI cultivation expert. Analyze the following data from a cannabis plant and provide ONE short, proactive care tip (1-2 sentences) tailored exactly to the current situation. The tip should be practical and easy to implement.
+
+        PLANT DATA:
+        ${plantSummary}
+
+        Examples of good tips:
+        - For high humidity in flowering: "Your humidity is a bit high for the flowering stage. Increase exhaust fan speed to prevent mold."
+        - For low EC in vegetation: "The EC value is low. Consider slightly increasing the nutrient dose at the next feeding to promote growth."
+        - If everything is good: "All values look optimal for this stage. Keep it up! Watch for the first signs of pre-flowering in the coming days."
+
+        Format the response as a JSON object with the keys "title" and "content". The "title" should be "${title}". Provide only a concise recommendation for action, not long explanations.`;
+
+        const response = await ai.models.generateContent({
+            model,
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: aiResponseSchema,
+            },
+        });
+        
+        return safeJsonParse(response.text, specificErrorResponse);
+    } catch (error) {
+      console.error(`Error fetching proactive tip for plant ${plant.name}:`, error);
+      return specificErrorResponse;
+    }
+  },
 };

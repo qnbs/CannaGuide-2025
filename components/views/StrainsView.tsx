@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat, SavedExport } from '../../types';
 import { INITIAL_STRAINS } from '../../data/strains/index';
@@ -54,6 +55,18 @@ const StrainDetailModal: React.FC<{
         Hard: t('strainsView.difficulty.hard'),
     };
     
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [onClose]);
+    
     const findSimilarStrains = (baseStrain: Strain): Strain[] => {
         if (!baseStrain) return [];
         return INITIAL_STRAINS.filter(s =>
@@ -73,14 +86,14 @@ const StrainDetailModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
             <Card className="w-full max-w-3xl h-[90vh] relative flex flex-col" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
                     <PhosphorIcons.X className="w-6 h-6" />
                 </button>
                 <div className="overflow-y-auto p-2 sm:p-4 flex-grow">
                     <div className="flex justify-between items-start mb-2">
-                        <h2 className="text-3xl font-bold text-blue-500 dark:text-blue-300 pr-4">{strain.name}</h2>
+                        <h2 id="strain-detail-modal-title" className="text-3xl font-bold text-blue-500 dark:text-blue-300 pr-4">{strain.name}</h2>
                         <button onClick={() => onToggleFavorite(strain.id)} className={`favorite-btn-glow p-1 text-slate-400 hover:text-red-400 ${isFavorite ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-7 h-7" />
                         </button>
@@ -182,8 +195,23 @@ const AdvancedFilterModal: React.FC<{
     resetAdvancedFilters: () => void,
     count: number,
 }> = ({ isOpen, onClose, onApply, thcRange, setThcRange, floweringRange, setFloweringRange, selectedDifficulties, handleToggleDifficulty, selectedAromas, allAromas, handleToggleAroma, selectedTerpenes, allTerpenes, handleToggleTerpene, resetAdvancedFilters, count }) => {
-    if (!isOpen) return null;
     const { t } = useTranslations();
+    
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen, onClose]);
+    
+    if (!isOpen) return null;
+
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
         Medium: t('strainsView.difficulty.medium'),
@@ -191,10 +219,10 @@ const AdvancedFilterModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="advanced-filter-modal-title">
             <Card className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start flex-shrink-0">
-                    <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">{t('strainsView.advancedFilters')}</h2>
+                    <h2 id="advanced-filter-modal-title" className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">{t('strainsView.advancedFilters')}</h2>
                     <span className="text-sm font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md">{t('strainsView.matchingStrains', { count })}</span>
                 </div>
                 <div className="overflow-y-auto pr-2 flex-grow space-y-4">
@@ -522,7 +550,13 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                 <div className="divide-y divide-slate-200 dark:divide-slate-700">
                   {sortedAndFilteredStrains.map(strain => {
                     return (
-                      <div key={strain.id} onClick={() => setSelectedStrain(strain)} className={`grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2.5 cursor-pointer transition-colors duration-150 text-sm ${selectedStrain?.id === strain.id ? 'bg-primary-100/50 dark:bg-primary-900/50' : 'hover:bg-slate-50 dark:hover:bg-slate-700/70'}`}>
+                      <div 
+                        key={strain.id} 
+                        onClick={() => setSelectedStrain(strain)} 
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedStrain(strain); } }}
+                        role="button"
+                        tabIndex={0}
+                        className={`grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${selectedStrain?.id === strain.id ? 'bg-primary-100/50 dark:bg-primary-900/50' : 'hover:bg-slate-50 dark:hover:bg-slate-700/70'}`}>
                         <input type="checkbox" checked={selectedIds.has(strain.id)} onChange={e => {e.stopPropagation(); toggleSelection(strain.id);}} onClick={e => e.stopPropagation()} className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
                         <button onClick={e => {e.stopPropagation(); toggleFavorite(strain.id)}} className={`favorite-btn-glow text-slate-400 hover:text-red-400 ${favoriteIds.has(strain.id) ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}><PhosphorIcons.Heart weight={favoriteIds.has(strain.id) ? 'fill' : 'regular'} className="w-4 h-4" /></button>
                         <div className="min-w-0">

@@ -212,7 +212,8 @@ export const SetupConfigurator: React.FC = () => {
                                 </div>
                                 <div className="space-y-6">
                                     <Card>
-                                        <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3"><PhosphorIcons.Stack/>Kostenaufschlüsselung</h4>
+                                        {/* FIX: Replaced non-existent PhosphorIcons.Stack with PhosphorIcons.Calculator for the cost breakdown section. */}
+                                        <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3"><PhosphorIcons.Calculator/>Kostenaufschlüsselung</h4>
                                         <div className="space-y-1 text-sm">
                                             {costBreakdown.breakdown.map(item => (
                                                 <div key={item.category} className="flex justify-between">

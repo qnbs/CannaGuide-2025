@@ -51,35 +51,28 @@ const ToggleSwitch: React.FC<{ checked: boolean; onChange: () => void; id: strin
 export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
   const { settings, setSetting } = useSettings();
   const { addNotification } = useNotifications();
-  // FIX: Added useTranslations hook to enable internationalization for this component.
   const { t } = useTranslations();
   const importFileRef = useRef<HTMLInputElement>(null);
 
   const handleFullReset = () => {
-      // FIX: Replaced hardcoded string with translation key.
       if (window.confirm(t('settingsView.notifications.fullResetConfirm'))) {
         localStorage.clear();
-        // FIX: Replaced hardcoded string with translation key.
         addNotification(t('settingsView.notifications.fullResetSuccess'), 'success');
         setTimeout(() => window.location.reload(), 1000);
     }
   }
 
   const handleResetUserStrains = () => {
-    // FIX: Replaced hardcoded string with translation key.
     if (window.confirm(t('settingsView.notifications.userStrainsResetConfirm'))) {
         localStorage.removeItem('user_added_strains');
-        // FIX: Replaced hardcoded string with translation key.
         addNotification(t('settingsView.notifications.userStrainsResetSuccess'), 'success');
         setTimeout(() => window.location.reload(), 1000);
     }
   };
 
   const handleResetExportsHistory = () => {
-    // FIX: Replaced hardcoded string with translation key.
     if (window.confirm(t('settingsView.notifications.exportsResetConfirm'))) {
         localStorage.removeItem('cannabis-grow-guide-exports');
-        // FIX: Replaced hardcoded string with translation key.
         addNotification(t('settingsView.notifications.exportsResetSuccess'), 'success');
         setTimeout(() => window.location.reload(), 1000);
     }
@@ -109,11 +102,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
       link.href = jsonString;
       link.download = `grow-guide-backup-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
-      // FIX: Replaced hardcoded string with translation key.
       addNotification(t('settingsView.notifications.exportSuccess'), 'success');
     } catch (error) {
       console.error("Failed to export data", error);
-      // FIX: Replaced hardcoded string with translation key.
       addNotification(t('settingsView.notifications.exportError'), 'error');
     }
   };
@@ -148,7 +139,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
              localStorage.setItem('cannabis-grow-guide-exports', JSON.stringify(data.exportsHistory));
           }
 
-          // FIX: Replaced hardcoded string with translation key.
           addNotification(t('settingsView.notifications.importSuccess'), 'success');
           setTimeout(() => window.location.reload(), 1000);
         } else {
@@ -156,7 +146,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
         }
       } catch (error) {
         console.error("Failed to import data", error);
-        // FIX: Replaced hardcoded string with translation key.
         addNotification(t('settingsView.notifications.importError'), 'error');
       } finally {
         if(event.target) event.target.value = '';
@@ -189,7 +178,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
                 </div>
             </SettingItem>
             
-            {/* FIX: Added missing language selector UI. */}
             <SettingItem label={t('settingsView.language')} description={t('settingsView.languageDescription')}>
                 {(['de', 'en'] as Language[]).map(lang => (
                   <Button key={lang} variant={settings.language === lang ? 'primary' : 'secondary'} onClick={() => setSetting('language', lang)}>{t(`settingsView.languages.${lang}`)}</Button>
@@ -199,7 +187,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
         </Card>
 
         <Card>
-          {/* FIX: Changed key to 'notificationsTitle' to match the fix in locale files. */}
           <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.notificationsTitle')}</h2>
           <div className="flex flex-col">
             <SettingItem label={t('settingsView.notificationsEnable')} description={t('settingsView.notificationsEnableDescription')}>

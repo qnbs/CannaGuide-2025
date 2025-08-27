@@ -2,36 +2,38 @@ import React, { useState } from 'react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useTranslations } from '../../hooks/useTranslations';
 
 interface OnboardingModalProps {
     onClose: () => void;
 }
 
-const steps = [
-    {
-        icon: <PhosphorIcons.Leafy className="w-16 h-16 text-primary-400" />,
-        title: 'Willkommen beim Grow Guide!',
-        text: 'Entdecke hunderte von Sorten. Finde die perfekte Genetik für deine Bedürfnisse und speichere deine Favoriten.',
-    },
-    {
-        icon: <PhosphorIcons.Plant className="w-16 h-16 text-primary-400" />,
-        title: 'Verfolge deine Pflanzen',
-        text: 'Starte einen virtuellen Anbau, verfolge das Wachstum deiner Pflanzen, protokolliere Maßnahmen und reagiere auf ihre Bedürfnisse.',
-    },
-    {
-        icon: <PhosphorIcons.Flask className="w-16 h-16 text-primary-400" />,
-        title: 'Plane deine Ausrüstung',
-        text: 'Nutze den Setup-Konfigurator und praktische Rechner, um deine ideale Ausrüstung zu finden, egal ob Anfänger oder Profi.',
-    },
-    {
-        icon: <PhosphorIcons.GraduationCap className="w-16 h-16 text-primary-400" />,
-        title: 'Lerne & Wachse',
-        text: 'Folge der interaktiven Anleitung, um die Grundlagen des Anbaus zu meistern und deinen Wissensfortschritt zu verfolgen.',
-    },
-];
-
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
     const [currentStep, setCurrentStep] = useState(0);
+    const { t } = useTranslations();
+
+    const steps = [
+        {
+            icon: <PhosphorIcons.Leafy className="w-16 h-16 text-primary-400" />,
+            title: t('onboarding.step1.title'),
+            text: t('onboarding.step1.text'),
+        },
+        {
+            icon: <PhosphorIcons.Plant className="w-16 h-16 text-primary-400" />,
+            title: t('onboarding.step2.title'),
+            text: t('onboarding.step2.text'),
+        },
+        {
+            icon: <PhosphorIcons.Flask className="w-16 h-16 text-primary-400" />,
+            title: t('onboarding.step3.title'),
+            text: t('onboarding.step3.text'),
+        },
+        {
+            icon: <PhosphorIcons.GraduationCap className="w-16 h-16 text-primary-400" />,
+            title: t('onboarding.step4.title'),
+            text: t('onboarding.step4.text'),
+        },
+    ];
 
     const handleNext = () => {
         if (currentStep < steps.length - 1) {
@@ -59,7 +61,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                         ))}
                     </div>
                     <Button onClick={handleNext}>
-                        {currentStep < steps.length - 1 ? 'Weiter' : 'Los geht\'s!'}
+                        {currentStep < steps.length - 1 ? t('common.next') : t('common.start')}
                     </Button>
                 </div>
             </Card>

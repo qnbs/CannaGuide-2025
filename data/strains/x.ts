@@ -1,0 +1,46 @@
+import { Strain } from '../../types';
+
+export const strains: Strain[] = [
+    {
+        id: 'xanadu',
+        name: 'Xanadu',
+        type: 'Hybrid',
+        typeDetails: 'Sativa-dominant',
+        genetics: 'Unbekannt',
+        thc: 20,
+        cbd: 1,
+        floweringTime: 9,
+        description: 'Eine Sativa-dominante Sorte, die für ihre erhebende und kreative Wirkung bekannt ist. Das Aroma ist oft eine Mischung aus süßen, fruchtigen und erdigen Noten. Ideal für den Tagesgebrauch.',
+        aromas: ['Süß', 'Fruchtig', 'Erdig'],
+        dominantTerpenes: [],
+        agronomic: {
+            difficulty: 'Medium',
+            yield: 'Medium',
+            height: 'Tall',
+            yieldDetails: { indoor: '400-500 g/m²', outdoor: '~550 g/Pflanze' },
+            heightDetails: { indoor: 'Hoch', outdoor: 'Hoch (bis 2.5 m)' },
+        },
+    },
+    {
+        id: 'xeno',
+        name: 'Xeno',
+        type: 'Hybrid',
+        typeDetails: 'Hybrid 50% / 50%',
+        genetics: 'Zkittlez x Kush Mints',
+        thc: 23,
+        cbd: 1,
+        thcRange: '20-26%',
+        cbdRange: '<1%',
+        floweringTime: 9,
+        description: 'Eine potente und geschmackvolle Hybride, die das süße Bonbon-Aroma von Zkittlez mit den kühlen, minzigen Noten von Kush Mints kombiniert. Sie bietet eine starke, ausgewogene Wirkung, die glücklich, entspannend und erhebend ist.',
+        aromas: ['Süß', 'Fruchtig', 'Minze', 'Kiefer'],
+        dominantTerpenes: ['Limonen', 'Caryophyllen', 'Myrcen'],
+        agronomic: {
+            difficulty: 'Medium',
+            yield: 'High',
+            height: 'Medium',
+            yieldDetails: { indoor: '500-600 g/m²', outdoor: '~650 g/Pflanze' },
+            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 2m)' },
+        },
+    }
+];

@@ -92,3 +92,23 @@ export const YIELD_FACTORS = {
         }
     }
 };
+
+export const SIMULATION_CONSTANTS = {
+  // pH values below/above which nutrient uptake is reduced
+  NUTRIENT_LOCKOUT_PH_LOW: 5.8,
+  NUTRIENT_LOCKOUT_PH_HIGH: 7.0,
+  // The pH value towards which the substrate naturally drifts
+  PH_DRIFT_TARGET: 6.5,
+  // The factor determining how fast pH drifts per day
+  PH_DRIFT_FACTOR: 0.05,
+  // A higher value means stress has less impact on growth
+  STRESS_GROWTH_PENALTY_DIVISOR: 150,
+  // Substrate moisture percentage below which a watering task is generated
+  WATERING_TASK_THRESHOLD: 30,
+  // Substrate moisture percentage below which "Water All" becomes effective
+  WATER_ALL_THRESHOLD: 50,
+  // A factor determining how much moisture is replenished relative to water amount and pot size
+  WATER_REPLENISH_FACTOR: 200,
+  // Milliliters per liter
+  ML_PER_LITER: 1000,
+};

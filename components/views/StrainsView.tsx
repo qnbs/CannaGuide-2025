@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat, SavedExport } from '../../types';
 import { INITIAL_STRAINS } from '../../data/strains/index';
@@ -521,12 +522,14 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
         <div className="flex flex-col h-[calc(100vh-178px)] mt-4">
           <Card className="p-2 mb-4 flex-shrink-0">
             <div className="flex flex-col sm:flex-row gap-2">
-              <input type="text" placeholder={t('strainsView.searchPlaceholder')} className="flex-grow bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              <div className="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-md">
+              <label htmlFor="strain-search" className="sr-only">{t('strainsView.searchPlaceholder')}</label>
+              <input id="strain-search" type="text" placeholder={t('strainsView.searchPlaceholder')} className="flex-grow bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+              <fieldset className="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-md">
+                <legend className="sr-only">Filter by strain type</legend>
                 {typeOptions.map(option => (
                     <button key={option} onClick={() => setTypeFilter(option)} className={`px-2 py-1 text-xs rounded-md flex-1 transition-colors ${typeFilter === option ? 'bg-white dark:bg-slate-800 text-primary-600 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{t(`strainsView.${option.toLowerCase()}`)}</button>
                 ))}
-              </div>
+              </fieldset>
               <Button variant="secondary" size="sm" onClick={openAdvancedFilterModal} className="px-3 py-2 text-sm">
                   <PhosphorIcons.FunnelSimple className="inline w-4 h-4 mr-1"/> {t('strainsView.advancedFilters')}
               </Button>
@@ -535,7 +538,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
           
           <div className="flex-grow min-h-0 border border-slate-200 dark:border-slate-700 rounded-lg flex flex-col">
             <div className="grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-1.5 font-bold text-xs text-slate-600 dark:text-slate-300 border-b-2 border-slate-200 dark:border-slate-700 flex-shrink-0 bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
-              <input type="checkbox" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+              <input type="checkbox" aria-label="Select all strains" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
               <div className="w-4 h-4 text-center"><PhosphorIcons.Heart /></div>
               {tableHeaders.map(h => (
                 <button key={h.key} onClick={() => handleSort(h.key)} className={`flex items-center gap-1 ${h.className || ''}`}>
@@ -557,12 +560,12 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                         role="button"
                         tabIndex={0}
                         className={`grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${selectedStrain?.id === strain.id ? 'bg-primary-100/50 dark:bg-primary-900/50' : 'hover:bg-slate-50 dark:hover:bg-slate-700/70'}`}>
-                        <input type="checkbox" checked={selectedIds.has(strain.id)} onChange={e => {e.stopPropagation(); toggleSelection(strain.id);}} onClick={e => e.stopPropagation()} className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                        <input type="checkbox" aria-label={`Select ${strain.name}`} checked={selectedIds.has(strain.id)} onChange={e => {e.stopPropagation(); toggleSelection(strain.id);}} onClick={e => e.stopPropagation()} className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
                         <button onClick={e => {e.stopPropagation(); toggleFavorite(strain.id)}} className={`favorite-btn-glow text-slate-400 hover:text-red-400 ${favoriteIds.has(strain.id) ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}><PhosphorIcons.Heart weight={favoriteIds.has(strain.id) ? 'fill' : 'regular'} className="w-4 h-4" /></button>
                         <div className="min-w-0">
                           <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">{strain.name}</span>
                         </div>
-                        <div className="flex justify-center" title={difficultyLabels[strain.agronomic.difficulty]}>
+                        <div className="flex justify-center" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                           <div className="flex">
                               {strain.agronomic.difficulty === 'Easy' && (
                                   <>

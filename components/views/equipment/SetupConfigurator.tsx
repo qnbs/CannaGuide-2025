@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
@@ -212,7 +213,6 @@ export const SetupConfigurator: React.FC = () => {
                                 </div>
                                 <div className="space-y-6">
                                     <Card>
-                                        {/* FIX: Replaced non-existent PhosphorIcons.Stack with PhosphorIcons.Calculator for the cost breakdown section. */}
                                         <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3"><PhosphorIcons.Calculator/>Kostenaufschlüsselung</h4>
                                         <div className="space-y-1 text-sm">
                                             {costBreakdown.breakdown.map(item => (

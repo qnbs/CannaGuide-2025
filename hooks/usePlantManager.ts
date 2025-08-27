@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plant, PlantStage, PlantProblem, JournalEntry, Task, JournalEntryType } from '../types';
-import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS } from '../constants';
+import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
 
@@ -89,17 +89,17 @@ export const usePlantManager = (
 
             // Vitals simulation
             if (newPlantState.stage !== PlantStage.Drying && newPlantState.stage !== PlantStage.Curing && newPlantState.stage !== PlantStage.Finished) {
-                const isNutrientLockout = newPlantState.vitals.ph < 5.8 || newPlantState.vitals.ph > 7.0;
+                const isNutrientLockout = newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH;
                 const nutrientUptakeMultiplier = isNutrientLockout ? 0.2 : 1;
 
                 newPlantState.vitals.substrateMoisture = Math.max(0, newPlantState.vitals.substrateMoisture - currentStageInfo.waterConsumption * elapsedDays);
                 newPlantState.vitals.ec = Math.max(0, newPlantState.vitals.ec - currentStageInfo.nutrientConsumption * nutrientUptakeMultiplier * elapsedDays);
                 
                 // pH tends to drift towards neutral
-                newPlantState.vitals.ph += (6.5 - newPlantState.vitals.ph) * 0.05 * elapsedDays;
+                newPlantState.vitals.ph += (SIMULATION_CONSTANTS.PH_DRIFT_TARGET - newPlantState.vitals.ph) * SIMULATION_CONSTANTS.PH_DRIFT_FACTOR * elapsedDays;
 
                 // Growth
-                const growthFactor = 1 - (newPlantState.stressLevel / 150); // Stress reduces growth
+                const growthFactor = 1 - (newPlantState.stressLevel / SIMULATION_CONSTANTS.STRESS_GROWTH_PENALTY_DIVISOR); // Stress reduces growth
                 newPlantState.height += currentStageInfo.growthRate * growthFactor * elapsedDays;
             }
 
@@ -155,7 +155,7 @@ export const usePlantManager = (
             const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
             
             const wateringTaskTitle = 'Gießen erforderlich';
-            if(newPlantState.vitals.substrateMoisture < 30 && !hasTask(wateringTaskTitle)) {
+            if(newPlantState.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATERING_TASK_THRESHOLD && !hasTask(wateringTaskTitle)) {
                 newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: 'Das Substrat ist zu trocken.', priority: 'high', isCompleted: false, createdAt: now });
             }
 
@@ -165,7 +165,7 @@ export const usePlantManager = (
             }
 
              const checkPhTaskTitle = 'pH-Wert prüfen';
-             if((newPlantState.vitals.ph < 5.8 || newPlantState.vitals.ph > 7.0) && !hasTask(checkPhTaskTitle)) {
+             if((newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH) && !hasTask(checkPhTaskTitle)) {
                 newPlantState.tasks.push({id: `task-${Date.now()}`, title: checkPhTaskTitle, description: 'Der pH-Wert liegt außerhalb des optimalen Bereichs.', priority: 'medium', isCompleted: false, createdAt: now });
             }
 
@@ -207,7 +207,7 @@ export const usePlantManager = (
             // If watering/feeding, update vitals and complete tasks
             if ((entry.type === 'WATERING' || entry.type === 'FEEDING') && entry.details) {
                 // Replenish moisture based on pot size, assuming waterAmount is for a standard pot.
-                const moistureReplenish = (entry.details.waterAmount / (p.growSetup.potSize * 1000)) * 200;
+                const moistureReplenish = (entry.details.waterAmount / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
                 updatedPlant.vitals.ph = entry.details.ph || p.vitals.ph;
                 
@@ -241,13 +241,13 @@ export const usePlantManager = (
         const now = Date.now();
 
         setPlants(currentPlants => currentPlants.map(p => {
-            if (p && p.vitals.substrateMoisture < 50 && p.stage !== PlantStage.Finished) {
+            if (p && p.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && p.stage !== PlantStage.Finished) {
                 wateredCount++;
                 const updatedPlant = JSON.parse(JSON.stringify(p));
                 
-                const moistureReplenish = (500 / (p.growSetup.potSize * 1000)) * 200;
+                const moistureReplenish = (500 / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
-                updatedPlant.vitals.ph = 6.5; 
+                updatedPlant.vitals.ph = SIMULATION_CONSTANTS.PH_DRIFT_TARGET;
 
                 const wateringTaskTitle = 'Gießen erforderlich';
                 updatedPlant.tasks = updatedPlant.tasks.map((task: Task) => 
@@ -261,7 +261,7 @@ export const usePlantManager = (
                     timestamp: now,
                     type: 'WATERING',
                     notes: 'Bewässerung',
-                    details: { waterAmount: 500, ph: 6.5 }
+                    details: { waterAmount: 500, ph: SIMULATION_CONSTANTS.PH_DRIFT_TARGET }
                 });
                 
                 updatedPlant.lastUpdated = now;

@@ -15,7 +15,7 @@ interface PlantCardProps {
 }
 
 const StatIndicator: React.FC<{ value: string, label: string, icon: React.ReactNode }> = ({ value, label, icon }) => (
-    <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300" title={label}>
+    <div className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300" title={label} aria-label={`${label}: ${value}`}>
         <div className="w-4 h-4 text-slate-500">{icon}</div>
         <span className="font-semibold">{value}</span>
     </div>
@@ -39,7 +39,7 @@ const VitalBar: React.FC<{ label: string; value: number; max: number; unit: stri
 const ActionButton: React.FC<{ label: string; icon: React.ReactNode; onClick: (e: React.MouseEvent) => void }> = ({ label, icon, onClick }) => (
     <button
       onClick={onClick}
-      title={label}
+      aria-label={label}
       className="flex-1 flex flex-col items-center justify-center p-1 rounded-md text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
     >
       <div className="w-6 h-6">{icon}</div>

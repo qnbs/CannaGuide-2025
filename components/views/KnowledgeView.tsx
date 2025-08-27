@@ -121,7 +121,9 @@ const AiMentor: React.FC = () => {
                 {t('knowledgeView.aiMentor.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
+                <label htmlFor="ai-mentor-input" className="sr-only">{t('knowledgeView.aiMentor.placeholder')}</label>
                 <input
+                    id="ai-mentor-input"
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}

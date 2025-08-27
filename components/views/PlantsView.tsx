@@ -191,8 +191,8 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ plants: initialPlants, s
                     <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200">Deine Growbox</h2>
                         <div className="flex items-center gap-2">
-                           <span className="text-sm font-semibold text-slate-600 dark:text-slate-300">Sortieren nach:</span>
-                            <select value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500">
+                           <label htmlFor="plant-sort-select" className="text-sm font-semibold text-slate-600 dark:text-slate-300">Sortieren nach:</label>
+                            <select id="plant-sort-select" value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500">
                                 <option value="age">Alter</option>
                                 <option value="stage">Phase</option>
                                 <option value="name">Name</option>

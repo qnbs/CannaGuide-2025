@@ -1,3 +1,4 @@
+
 export const de = {
   common: {
     close: 'Schließen',
@@ -468,6 +469,7 @@ export const de = {
             'c1': 'Samen keimen lassen.',
             'c2': 'Gekeimten Samen in kleinen Topf pflanzen.',
             'c3': 'Für hohe Luftfeuchtigkeit (60-70%) sorgen, z.B. mit einem Mini-Gewächshaus.',
+            'c4': 'Sämlinge nicht überwässern.'
         },
         proTip: 'Überwässere deine Sämlinge nicht! Dies ist der häufigste Fehler. Die kleinen Wurzeln können schnell faulen. Lass die Erde zwischen dem Gießen leicht antrocknen.'
       },
@@ -482,6 +484,7 @@ export const de = {
             'c1': 'Pflanze bei Bedarf in den Endtopf umtopfen.',
             'c2': 'Mit der Düngung nach Herstellerangabe beginnen (halbe Dosis am Anfang).',
             'c3': 'Regelmäßig gießen, wenn die Erde trocken ist und auf den pH-Wert achten.',
+            'c4': 'Trainingstechniken (z.B. LST) anwenden.'
         },
         proTip: 'Low Stress Training (LST) ist anfängerfreundlich und sehr effektiv. Biege den Haupttrieb sanft zur Seite und binde ihn fest. Dadurch werden die unteren Triebe angeregt, nach oben zu wachsen, was zu einem gleichmäßigeren Blätterdach und mehr Ertrag führt.'
       },
@@ -496,6 +499,7 @@ export const de = {
             'c1': 'Lichtzyklus auf 12/12 umstellen.',
             'c2': 'Auf Blütedünger umstellen und Cal/Mag ergänzen.',
             'c3': 'Luftfeuchtigkeit senken und für gute Luftzirkulation sorgen.',
+            'c4': 'Die letzten 1-2 Wochen nur mit Wasser spülen.'
         },
         proTip: 'In den letzten 1-2 Wochen vor der Ernte solltest du aufhören zu düngen und nur noch mit klarem Wasser spülen. Dies verbessert den Geschmack und die Qualität des Endprodukts erheblich.'
       },
@@ -510,6 +514,7 @@ export const de = {
             'c1': 'Trichome prüfen und ernten.',
             'c2': 'Pflanze kopfüber an einem dunklen, kühlen Ort aufhängen.',
             'c3': 'Blüten in Gläsern aushärten (curen) und regelmäßig lüften.',
+            'c4': 'Geduldig sein - gutes Curing dauert mindestens 2-4 Wochen.'
         },
         proTip: 'Die ideale Luftfeuchtigkeit für das Curing liegt bei 62%. Verwende kleine Hygrometer in deinen Gläsern oder spezielle Feuchtigkeitspacks (z.B. Boveda), um perfekte Ergebnisse zu erzielen.'
       }
@@ -618,7 +623,7 @@ export const de = {
         items: {
           pc1: { term: 'Lebensphasen im Detail', def: '<ul><li><strong>Samen/Keimung:</strong> Der Samen benötigt Feuchtigkeit, Wärme und Dunkelheit. Die Pfahlwurzel erscheint.</li><li><strong>Sämling:</strong> Die Pflanze entwickelt die ersten Keimblätter (Cotyledonen) und danach die ersten echten, gefingerten Blätter. Sehr verletzliche Phase.</li><li><strong>Wachstum (Vegetation):</strong> Die Pflanze konzentriert sich auf das Wachstum von Blättern, Stängeln und Wurzeln. Benötigt viel Licht (18+ Stunden) und stickstoffreichen Dünger.</li><li><strong>Blüte:</strong> Nach Umstellung auf 12/12 Licht (bei photoperiodischen Sorten) stellt die Pflanze das vegetative Wachstum ein und entwickelt Blüten (Buds). Der Nährstoffbedarf verschiebt sich zu Phosphor und Kalium.</li><li><strong>Ernte, Trocknung & Curing:</strong> Die entscheidenden Schritte zur Veredelung. Richtiges Trocknen und Aushärten sind entscheidend für Qualität, Geschmack und Haltbarkeit.</li></ul>' },
           pc2: { term: 'Vitalwerte meistern', def: '<ul><li><strong>pH-Wert & Nährstoffsperre:</strong> Der pH-Wert beeinflusst die Fähigkeit der Wurzeln, Nährstoffe aufzunehmen. Ein falscher pH-Wert führt zur "Nährstoffsperre" (Lockout), bei der die Pflanze hungert, obwohl Nährstoffe im Substrat vorhanden sind. Ideal in Erde: 6.0-7.0, in Hydro/Coco: 5.5-6.5.</li><li><strong>EC-Wert (Elektrische Leitfähigkeit):</strong> Misst die Nährstoffkonzentration. Ein zu hoher EC-Wert führt zu "Nährstoffbrand" (verbrannte Blattspitzen), ein zu niedriger zu Mangelerscheinungen.</li><li><strong>Substratfeuchtigkeit & Wurzelatmung:</strong> Die Wurzeln benötigen nicht nur Wasser, sondern auch Sauerstoff. Ein ständiger Wechsel zwischen feucht und leicht trocken ist ideal. Chronische Nässe führt zu Wurzelfäule.</li></ul>' },
-          pc3: { term: 'Fortgeschrittene Trainingstechniken', def: 'Training formt die Pflanze für maximalen Lichteinfall und Ertrag.<ul><li><strong>LST (Low Stress Training):</strong> Sanftes Herunterbiegen von Ästen, um ein breites, flaches Blätterdach zu erzeugen.</li><li><strong>Topping:</strong> Abschneiden des Haupttriebs, um die Pflanze zu zwingen, zwei neue Haupttriebe zu bilden (buschiger Wuchs).</li><li><strong>FIMing (Fuck I Missed):</strong> Eine Variante des Toppings, bei der nur ein Teil des Haupttriebs entfernt wird, was zu 4+ neuen Trieben führen kann.</li><li><strong>SCROG (Screen of Green):</strong> Ein Netz wird über die Pflanzen gespannt. Alle Triebe werden durch das Netz geflochten, um eine perfekt ebene und lichteffiziente Oberfläche aus Blüten zu erzeugen.</li><li><strong>Entlaubung (Defoliation):</strong> Gezieltes Entfernen von großen Fächerblättern, um die Lichtdurchdringung und Luftzirkulation zu den unteren Blüten zu verbessern.</li></ul>' },
+          pc3: { term: 'Fortgeschrittene Trainingstechniken', def: 'Training formt die Pflanze für maximalen Lichteinfall und Ertrag.<ul><li><strong>LST (Low Stress Training):</strong> Sanftes Herunterbiegen von Ästen, um ein breites, flaches Blätterdach zu erzeugen.</li><li><strong>Topping:</strong> Abschneiden des Haupttriebs, um die Pflanze zu zwingen, zwei neue Haupttriebe zu bilden (buschiger Wuchs).</li><li><strong>FIMing (Fuck I Missed):</strong> Eine Variante des Toppings, bei der nur ein Teil des Hauptriebs entfernt wird, was zu 4+ neuen Trieben führen kann.</li><li><strong>SCROG (Screen of Green):</strong> Ein Netz wird über die Pflanzen gespannt. Alle Triebe werden durch das Netz geflochten, um eine perfekt ebene und lichteffiziente Oberfläche aus Blüten zu erzeugen.</li><li><strong>Entlaubung (Defoliation):</strong> Gezieltes Entfernen von großen Fächerblättern, um die Lichtdurchdringung und Luftzirkulation zu den unteren Blüten zu verbessern.</li></ul>' },
           pc4: { term: 'Häufige Probleme & Lösungen', def: '<ul><li><strong>Nährstoffmängel (Mobile Nährstoffe wie N, P, K, Mg):</strong> Symptome zeigen sich zuerst an den unteren, älteren Blättern, da die Pflanze die Nährstoffe zu den neuen Trieben verschiebt. <strong>Lösung:</strong> Düngung anpassen.</li><li><strong>Nährstoffmängel (Immobile Nährstoffe wie Ca, S, B):</strong> Symptome zeigen sich zuerst an den oberen, neuen Blättern, da die Pflanze diese Nährstoffe nicht intern bewegen kann. <strong>Lösung:</strong> Düngung anpassen, oft ist Cal/Mag-Zusatz nötig.</li><li><strong>Schädlinge:</strong><ul><li><strong>Spinnmilben:</strong> Winzige weiße Punkte auf Blättern, feine Spinnweben. <strong>Lösung:</strong> Neemöl, Raubmilben.</li><li><strong>Trauermücken:</strong> Kleine schwarze Fliegen um die Erde. <strong>Lösung:</strong> Gelbtafeln, Erde trockener halten, Nematoden.</li></ul></li></ul>' },
         }
       },
@@ -672,7 +677,6 @@ export const de = {
       de: 'Deutsch',
       en: 'English',
     },
-    // FIX: Renamed 'notifications' to 'notificationsTitle' to avoid duplicate key error.
     notificationsTitle: 'Benachrichtigungen',
     notificationsEnable: 'Benachrichtigungen aktivieren',
     notificationsEnableDescription: 'Erhalte Benachrichtigungen über wichtige Ereignisse.',

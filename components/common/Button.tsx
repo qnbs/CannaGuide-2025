@@ -7,12 +7,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export const Button: React.FC<ButtonProps> = ({ children, className, variant = 'primary', size = 'base', ...props }) => {
-    const baseClasses = "rounded-md font-semibold text-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed shadow-md";
+    const baseClasses = "rounded-md font-semibold text-white transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed shadow-md";
 
     const variantClasses = {
-        primary: "bg-primary-600 hover:bg-primary-700 focus:ring-primary-500",
-        secondary: "bg-slate-600 hover:bg-slate-700 focus:ring-slate-500 text-white",
-        danger: "bg-red-600 hover:bg-red-700 focus:ring-red-500",
+        primary: "bg-primary-600 hover:bg-primary-700 focus-visible:ring-primary-500",
+        secondary: "bg-slate-600 hover:bg-slate-700 focus-visible:ring-slate-500 text-white",
+        danger: "bg-red-600 hover:bg-red-700 focus-visible:ring-red-500",
     };
     
     const sizeClasses = {

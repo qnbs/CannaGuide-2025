@@ -201,6 +201,15 @@ html.dark .history-chart-labels {
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
 
+.range-slider-input:focus-visible::-webkit-slider-thumb {
+  --tw-ring-color: var(--thumb-color, #3b82f6);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tw-ring-color);
+}
+html.dark .range-slider-input:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px var(--tw-ring-color);
+}
+
+
 .range-slider-input::-moz-range-thumb {
   width: 1rem;
   height: 1rem;
@@ -213,6 +222,15 @@ html.dark .history-chart-labels {
   transform: scale(var(--thumb-scale, 1));
   transition: transform 0.2s ease, background-color 0.2s ease;
 }
+
+.range-slider-input:focus-visible::-moz-range-thumb {
+  --tw-ring-color: var(--thumb-color, #3b82f6);
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--tw-ring-color);
+}
+html.dark .range-slider-input:focus-visible::-moz-range-thumb {
+   box-shadow: 0 0 0 2px #1e293b, 0 0 0 4px var(--tw-ring-color);
+}
+
 
 html.dark .range-slider-input::-webkit-slider-thumb {
   border-color: #1e293b; /* slate-800 */
@@ -276,6 +294,13 @@ html.dark .action-bar {
 .checklist input[type="checkbox"] {
     margin-top: -3px; /* vertically center with text */
 }
+
+/* Accessibility focus ring for checkboxes */
+.checklist input[type="checkbox"]:focus-visible, input[type="checkbox"]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
 .checklist input[type="checkbox"]:checked + span {
     text-decoration: line-through;
     color: #64748b; /* slate-500 */

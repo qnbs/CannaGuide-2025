@@ -52,9 +52,10 @@ export const HelpView: React.FC = () => {
         { id: 'q1', q: 'Wie starte ich meinen ersten Anbau?', a: `Gehe zum Bereich <strong>Sorten</strong>, wähle eine anfängerfreundliche Sorte (markiert mit "Einfach"), und klicke auf "Anbau starten". Fülle die Setup-Details aus und deine Pflanze erscheint im Bereich <strong>Pflanzen</strong>, wo die Simulation beginnt.` },
         { id: 'q2', q: 'Meine Pflanze hat Probleme. Was soll ich tun?', a: `Gehe zur Detailansicht deiner Pflanze im Bereich <strong>Pflanzen</strong>. Überprüfe die Vitalwerte und Warnungen. Nutze den <strong>KI-Berater</strong>, um eine Analyse und Handlungsempfehlungen basierend auf den aktuellen Daten deiner Pflanze zu erhalten. Vergleiche die Symptome auch mit den Beschreibungen im Abschnitt "Pflanzenpflege-ABC" hier im Hilfe-Center.` },
         { id: 'q3', q: 'Kann ich meine Daten sichern oder übertragen?', a: `Ja! Gehe zum <strong>Setup</strong>-Bereich unter "Datenverwaltung". Dort kannst du alle deine Daten (Pflanzen, Einstellungen, eigene Sorten, Favoriten) in eine einzige Backup-Datei exportieren. Diese Datei kannst du später auf demselben oder einem anderen Gerät wieder importieren.` },
-        { id: 'q4', q: 'Wie genau ist die Simulation?', a: `Die App simuliert das Pflanzenwachstum basierend auf allgemeinen Modellen und den spezifischen Daten der Sorten. Faktoren wie Genetik, Alter und Stress beeinflussen die Entwicklung. Die Simulation ist ein pädagogisches Werkzeug und kann von einem echten Anbau abweichen. Regelmäßige Interaktionen (Gießen, Düngen) halten deine simulierte Pflanze gesund.` },
-        { id: 'q5', q: 'Was bedeuten die Schwierigkeitslevel?', a: `<ul><li><strong>Einfach:</strong> Robuste, widerstandsfähige Pflanzen, die kleine Fehler verzeihen. Ideal für Anfänger.</li><li><strong>Mittel:</strong> Benötigen etwas mehr Aufmerksamkeit bei Düngung, Training oder Umweltbedingungen.</li><li><strong>Schwer:</strong> Anspruchsvolle, empfindliche Sorten, die präzise Bedingungen und fortgeschrittene Techniken erfordern.</li></ul>`},
-        { id: 'q6', q: 'Kann ich meine hinzugefügten Sorten bearbeiten oder löschen?', a: `Derzeit kannst du deine eigenen Sorten nur über die "Datenverwaltung" im <strong>Setup</strong>-Bereich komplett zurücksetzen. Eine Funktion zum Bearbeiten oder Löschen einzelner Sorten ist für ein zukünftiges Update geplant.`},
+        { id: 'q4', q: 'In welchen Sprachen ist die App verfügbar?', a: `Die App ist vollständig auf <strong>Deutsch</strong> und <strong>Englisch</strong> verfügbar. Du kannst die Sprache jederzeit im <strong>Setup</strong>-Bereich unter "Anzeige" -> "Sprache" ändern. Deine Auswahl wird automatisch gespeichert.` },
+        { id: 'q5', q: 'Ist die App barrierefrei?', a: `Ja, die Barrierefreiheit wurde stark verbessert. Die App unterstützt die Navigation per <strong>Tastatur</strong> und ist für die Nutzung mit <strong>Screenreadern</strong> optimiert. Alle interaktiven Elemente haben entsprechende Labels für eine klare Bedienung.` },
+        { id: 'q6', q: 'Wie genau ist die Simulation?', a: `Die App simuliert das Pflanzenwachstum basierend auf allgemeinen Modellen und den spezifischen Daten der Sorten. Faktoren wie Genetik, Alter und Stress beeinflussen die Entwicklung. Die Simulation ist ein pädagogisches Werkzeug und kann von einem echten Anbau abweichen. Regelmäßige Interaktionen (Gießen, Düngen) halten deine simulierte Pflanze gesund.` },
+        { id: 'q7', q: 'Kann ich meine hinzugefügten Sorten bearbeiten oder löschen?', a: `Derzeit kannst du deine eigenen Sorten nur über die "Datenverwaltung" im <strong>Setup</strong>-Bereich komplett zurücksetzen. Eine Funktion zum Bearbeiten oder Löschen einzelner Sorten ist für ein zukünftiges Update geplant.`},
     ];
 
     const cannabinoidItems = [
@@ -114,26 +115,31 @@ export const HelpView: React.FC = () => {
         { id: 'g8', term: 'Pistil (Stempel/Blütennarbe)', def: 'Die kleinen "Härchen" auf den Calyxen, die anfangs weiß sind und sich im Laufe der Reifung orange/braun verfärben. Sie dienen dem Einfangen von Pollen.' },
         { id: 'g9', term: 'Trichome', def: 'Die winzigen, pilzförmigen Harzdrüsen auf den Blüten und Blättern, die Cannabinoide und Terpene produzieren. Ihre Farbe (klar, milchig, bernsteinfarben) ist der beste Indikator für den Erntezeitpunkt.' },
     ];
-
-    const p1Text = `Blättere durch die <strong>${View.Strains}</strong>-Datenbank, nutze die Filter und die Suchfunktion, um die perfekte Sorte zu finden. Speichere Favoriten und starte einen neuen Grow direkt aus der Detailansicht.`;
-    const p2Text = `Verwalte bis zu drei Pflanzen im Bereich <strong>${View.Plants}</strong>. Beobachte ihre Entwicklung in Echtzeit, protokolliere alle Maßnahmen im Journal und reagiere auf Probleme und Aufgaben.`;
-    const p3Text = `Folge der Schritt-für-Schritt-<strong>${View.Knowledge}</strong>, um die Grundlagen zu lernen. Hake die Checklistenpunkte ab, um deinen Fortschritt zu verfolgen.`;
-    const p4Text = `Plane dein Setup mit dem <strong>${View.Equipment}</strong>-Konfigurator oder nutze die praktischen Rechner für Licht, Belüftung und Nährstoffe.`;
-
-
+    
     return (
         <div>
             <h1 className="text-3xl font-bold mb-6 text-primary-600 dark:text-primary-400">Hilfe-Center</h1>
             
             <div className="space-y-6">
-                <SectionCard icon={<PhosphorIcons.RocketLaunch />} title="Erste Schritte">
-                    <p className="text-slate-600 dark:text-slate-300">Willkommen beim Grow Guide! Diese App ist dein interaktiver Begleiter für den Cannabis-Anbau. Hier sind die Hauptfunktionen:</p>
+                <SectionCard icon={<PhosphorIcons.RocketLaunch />} title="Erste Schritte & Hauptfunktionen">
+                    <p className="text-slate-600 dark:text-slate-300">Willkommen beim Grow Guide! Diese App ist dein interaktiver Begleiter für den Cannabis-Anbau. Hier ist ein kurzer Überblick:</p>
                     <ul className="list-disc list-inside space-y-2 mt-4 text-slate-600 dark:text-slate-300 prose prose-sm dark:prose-invert max-w-none">
-                        <li dangerouslySetInnerHTML={{ __html: p1Text }} />
-                        <li dangerouslySetInnerHTML={{ __html: p2Text }} />
-                        <li dangerouslySetInnerHTML={{ __html: p3Text }} />
-                        <li dangerouslySetInnerHTML={{ __html: p4Text }} />
+                       <li><strong>Sorten entdecken:</strong> Blättere durch die <strong>{View.Strains}</strong>-Datenbank, nutze Filter und Suche, um die perfekte Sorte zu finden. Speichere Favoriten und starte einen neuen Grow direkt aus der Detailansicht.</li>
+                       <li><strong>Pflanzen managen:</strong> Verwalte bis zu drei Pflanzen im Bereich <strong>{View.Plants}</strong>. Beobachte ihre Entwicklung in Echtzeit, protokolliere alle Maßnahmen im Journal und reagiere auf Probleme und Aufgaben.</li>
+                       <li><strong>Wissen aneignen:</strong> Folge der Schritt-für-Schritt-<strong>{View.Knowledge}</strong>, um die Grundlagen zu lernen. Hake die Checklistenpunkte ab, um deinen Fortschritt zu verfolgen und stelle dem KI-Mentor deine Fragen.</li>
+                       <li><strong>Setup planen:</strong> Plane dein Setup mit dem <strong>{View.Equipment}</strong>-Konfigurator oder nutze die praktischen Rechner für Licht, Belüftung und Nährstoffe.</li>
+                       <li><strong>App anpassen:</strong> Im <strong>{View.Settings}</strong>-Bereich kannst du das Farbschema (Hell/Dunkel), die Schriftgröße und die Sprache (Deutsch/Englisch) anpassen sowie deine Daten sichern und importieren.</li>
                     </ul>
+                </SectionCard>
+
+                <SectionCard icon={<PhosphorIcons.Question />} title="Häufig gestellte Fragen (FAQ)">
+                    <Card className="p-0">
+                        {faqItems.map(item => (
+                            <AccordionItem key={item.id} title={item.q} isOpen={openAccordion === `faq-${item.id}`} onToggle={() => handleToggle(item.id, 'faq')}>
+                                <p dangerouslySetInnerHTML={{ __html: item.a }} />
+                            </AccordionItem>
+                        ))}
+                    </Card>
                 </SectionCard>
 
                 <SectionCard icon={<PhosphorIcons.Brain />} title="Umfassendes Cannabinoid-Lexikon">
@@ -186,16 +192,6 @@ export const HelpView: React.FC = () => {
                     </Card>
                 </SectionCard>
 
-                <SectionCard icon={<PhosphorIcons.Question />} title="Häufig gestellte Fragen (FAQ)">
-                    <Card className="p-0">
-                        {faqItems.map(item => (
-                            <AccordionItem key={item.id} title={item.q} isOpen={openAccordion === `faq-${item.id}`} onToggle={() => handleToggle(item.id, 'faq')}>
-                                <p dangerouslySetInnerHTML={{ __html: item.a }} />
-                            </AccordionItem>
-                        ))}
-                    </Card>
-                </SectionCard>
-
                 <SectionCard icon={<PhosphorIcons.Book />} title="Umfassendes Glossar">
                     <Card className="p-0">
                         {glossaryItems.map(item => (
@@ -210,9 +206,10 @@ export const HelpView: React.FC = () => {
                      <div className="space-y-4 text-slate-600 dark:text-slate-300 prose prose-sm dark:prose-invert max-w-none">
                         <div className="flex justify-between items-center">
                             <h3 className="text-lg font-semibold !text-slate-800 dark:!text-slate-200 !m-0">Cannabis Grow Guide</h3>
-                            <span className="text-sm font-mono bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">v2.1.0</span>
+                            <span className="text-sm font-mono bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">v2.2.0</span>
                         </div>
-                        <p>Diese App ist ein interaktiver Guide, der dir hilft, deine Cannabis-Anbau-Reise zu managen, von der Saat bis zur Ernte. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.</p>
+                        <p>Diese App ist ein interaktiver Guide, der dir hilft, deine Cannabis-Anbau-Reise zu managen. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.</p>
+                         <p><strong>Neue Features:</strong> Diese Version enthält eine vollständige Übersetzung für Englisch und Deutsch sowie umfassende Verbesserungen der Barrierefreiheit (Tastatur- & Screenreader-Unterstützung).</p>
                         <div>
                             <h4 className="font-semibold !text-primary-600 dark:!text-primary-400">Haftungsausschluss</h4>
                             <p>Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Regelungen, die von Land zu Land unterschiedlich sind. Bitte informiere dich über die Gesetze in deiner Region und handle stets verantwortungsbewusst und gesetzeskonform.</p>

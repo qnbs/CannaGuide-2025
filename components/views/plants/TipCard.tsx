@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../common/Card';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { Button } from '../../common/Button';

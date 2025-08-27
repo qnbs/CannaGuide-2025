@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import { Plant, FontSize, Theme as LightDarkTheme } from '../../types';
+import { Plant, FontSize, Theme as LightDarkTheme, Language } from '../../types';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useTranslations } from '../../hooks/useTranslations';
 
 interface SettingsViewProps {
   setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
@@ -50,28 +51,36 @@ const ToggleSwitch: React.FC<{ checked: boolean; onChange: () => void; id: strin
 export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
   const { settings, setSetting } = useSettings();
   const { addNotification } = useNotifications();
+  // FIX: Added useTranslations hook to enable internationalization for this component.
+  const { t } = useTranslations();
   const importFileRef = useRef<HTMLInputElement>(null);
 
   const handleFullReset = () => {
-      if (window.confirm('Möchtest du wirklich alle App-Daten unwiderruflich löschen? Dies kann nicht rückgängig gemacht werden.')) {
+      // FIX: Replaced hardcoded string with translation key.
+      if (window.confirm(t('settingsView.notifications.fullResetConfirm'))) {
         localStorage.clear();
-        addNotification('Alle Daten wurden zurückgesetzt. Die App wird neu geladen.', 'success');
+        // FIX: Replaced hardcoded string with translation key.
+        addNotification(t('settingsView.notifications.fullResetSuccess'), 'success');
         setTimeout(() => window.location.reload(), 1000);
     }
   }
 
   const handleResetUserStrains = () => {
-    if (window.confirm('Möchtest du wirklich alle von dir hinzugefügten Sorten löschen? Deine Pflanzen und Exporte bleiben erhalten.')) {
+    // FIX: Replaced hardcoded string with translation key.
+    if (window.confirm(t('settingsView.notifications.userStrainsResetConfirm'))) {
         localStorage.removeItem('user_added_strains');
-        addNotification('Deine selbst erstellten Sorten wurden gelöscht.', 'success');
+        // FIX: Replaced hardcoded string with translation key.
+        addNotification(t('settingsView.notifications.userStrainsResetSuccess'), 'success');
         setTimeout(() => window.location.reload(), 1000);
     }
   };
 
   const handleResetExportsHistory = () => {
-    if (window.confirm('Möchtest du wirklich deine Exporthistorie löschen? Deine Pflanzen und eigenen Sorten bleiben erhalten.')) {
+    // FIX: Replaced hardcoded string with translation key.
+    if (window.confirm(t('settingsView.notifications.exportsResetConfirm'))) {
         localStorage.removeItem('cannabis-grow-guide-exports');
-        addNotification('Exporthistorie wurde gelöscht.', 'success');
+        // FIX: Replaced hardcoded string with translation key.
+        addNotification(t('settingsView.notifications.exportsResetSuccess'), 'success');
         setTimeout(() => window.location.reload(), 1000);
     }
   };
@@ -100,10 +109,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
       link.href = jsonString;
       link.download = `grow-guide-backup-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
-      addNotification('Alle App-Daten erfolgreich exportiert.', 'success');
+      // FIX: Replaced hardcoded string with translation key.
+      addNotification(t('settingsView.notifications.exportSuccess'), 'success');
     } catch (error) {
       console.error("Failed to export data", error);
-      addNotification('Fehler beim Exportieren der Daten.', 'error');
+      // FIX: Replaced hardcoded string with translation key.
+      addNotification(t('settingsView.notifications.exportError'), 'error');
     }
   };
 
@@ -137,14 +148,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
              localStorage.setItem('cannabis-grow-guide-exports', JSON.stringify(data.exportsHistory));
           }
 
-          addNotification('Daten erfolgreich importiert. App wird neu geladen.', 'success');
+          // FIX: Replaced hardcoded string with translation key.
+          addNotification(t('settingsView.notifications.importSuccess'), 'success');
           setTimeout(() => window.location.reload(), 1000);
         } else {
           throw new Error("Invalid backup file format");
         }
       } catch (error) {
         console.error("Failed to import data", error);
-        addNotification('Fehler beim Importieren der Daten. Ungültiges Format?', 'error');
+        // FIX: Replaced hardcoded string with translation key.
+        addNotification(t('settingsView.notifications.importError'), 'error');
       } finally {
         if(event.target) event.target.value = '';
       }
@@ -154,45 +167,53 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
   
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6 text-primary-600 dark:text-primary-400">Einstellungen</h1>
+      <h1 className="text-3xl font-bold mb-6 text-primary-600 dark:text-primary-400">{t('settingsView.title')}</h1>
       <div className="space-y-6">
         
         <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">Anzeige</h2>
+          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.display')}</h2>
           <div className="flex flex-col">
-            <SettingItem label="Farbschema" description="Wähle zwischen hellem, dunklem oder systembasiertem Modus.">
+            <SettingItem label={t('settingsView.theme')} description={t('settingsView.themeDescription')}>
                 {(['light', 'dark', 'system'] as LightDarkTheme[]).map(theme => (
-                  <Button key={theme} variant={settings.theme === theme ? 'primary' : 'secondary'} onClick={() => setSetting('theme', theme)}>{theme === 'light' ? 'Hell' : theme === 'dark' ? 'Dunkel' : 'System'}</Button>
+                  <Button key={theme} variant={settings.theme === theme ? 'primary' : 'secondary'} onClick={() => setSetting('theme', theme)}>{t(`settingsView.themes.${theme}`)}</Button>
                 ))}
             </SettingItem>
 
-            <SettingItem label="Schriftgröße" description="Passe die Schriftgröße der gesamten App an.">
+            <SettingItem label={t('settingsView.fontSize')} description={t('settingsView.fontSizeDescription')}>
                 <div className="flex rounded-md shadow-sm" role="group">
                  {(['sm', 'base', 'lg'] as FontSize[]).map((size, idx) => (
                   <button key={size} type="button" onClick={() => setSetting('fontSize', size)} className={`px-4 py-2 text-sm font-medium transition-colors ${settings.fontSize === size ? 'bg-primary-600 text-white' : 'bg-slate-600 text-slate-50 hover:bg-slate-700'} ${idx === 0 ? 'rounded-l-lg' : ''} ${idx === 2 ? 'rounded-r-lg' : ''} border-y border-l border-slate-800 last:border-r`}>
-                      {size === 'sm' ? 'Klein' : size === 'base' ? 'Standard' : 'Groß'}
+                      {t(`settingsView.fontSizes.${size}`)}
                   </button>
                 ))}
                 </div>
+            </SettingItem>
+            
+            {/* FIX: Added missing language selector UI. */}
+            <SettingItem label={t('settingsView.language')} description={t('settingsView.languageDescription')}>
+                {(['de', 'en'] as Language[]).map(lang => (
+                  <Button key={lang} variant={settings.language === lang ? 'primary' : 'secondary'} onClick={() => setSetting('language', lang)}>{t(`settingsView.languages.${lang}`)}</Button>
+                ))}
             </SettingItem>
           </div>
         </Card>
 
         <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">Benachrichtigungen</h2>
+          {/* FIX: Changed key to 'notificationsTitle' to match the fix in locale files. */}
+          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.notificationsTitle')}</h2>
           <div className="flex flex-col">
-            <SettingItem label="Benachrichtigungen aktivieren" description="Erhalte Benachrichtigungen über wichtige Ereignisse.">
+            <SettingItem label={t('settingsView.notificationsEnable')} description={t('settingsView.notificationsEnableDescription')}>
                 <ToggleSwitch id="notifications-toggle" checked={settings.notificationsEnabled} onChange={() => setSetting('notificationsEnabled', !settings.notificationsEnabled)} />
             </SettingItem>
 
             <fieldset disabled={!settings.notificationsEnabled} className="contents">
-              <SettingItem label="Phasenwechsel" description="Benachrichtigung, wenn eine Pflanze eine neue Lebensphase erreicht.">
+              <SettingItem label={t('settingsView.stageChange')} description={t('settingsView.stageChangeDescription')}>
                 <ToggleSwitch id="notifications-stage-toggle" checked={settings.notificationSettings.stageChange} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, stageChange: !settings.notificationSettings.stageChange })} disabled={!settings.notificationsEnabled} />
               </SettingItem>
-              <SettingItem label="Problemerkennung" description="Benachrichtigung, wenn bei einer Pflanze ein Problem festgestellt wird.">
+              <SettingItem label={t('settingsView.problemDetected')} description={t('settingsView.problemDetectedDescription')}>
                 <ToggleSwitch id="notifications-problem-toggle" checked={settings.notificationSettings.problemDetected} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, problemDetected: !settings.notificationSettings.problemDetected })} disabled={!settings.notificationsEnabled}/>
               </SettingItem>
-              <SettingItem label="Erntezeitpunkt" description="Benachrichtigung, wenn eine Pflanze erntereif ist.">
+              <SettingItem label={t('settingsView.harvestReady')} description={t('settingsView.harvestReadyDescription')}>
                 <ToggleSwitch id="notifications-harvest-toggle" checked={settings.notificationSettings.harvestReady} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, harvestReady: !settings.notificationSettings.harvestReady })} disabled={!settings.notificationsEnabled}/>
               </SettingItem>
             </fieldset>
@@ -201,30 +222,30 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
         </Card>
 
         <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">Datenverwaltung</h2>
+          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.dataManagement')}</h2>
            <div className="flex flex-col">
-              <SettingItem label="Backup exportieren" description="Sichere alle deine App-Daten: Pflanzen, Favoriten, eigene Sorten, Exporthistorie und Einstellungen.">
-                  <Button variant="secondary" onClick={handleExport}>Vollständiges Backup exportieren</Button>
+              <SettingItem label={t('settingsView.exportBackup')} description={t('settingsView.exportBackupDescription')}>
+                  <Button variant="secondary" onClick={handleExport}>{t('settingsView.exportButton')}</Button>
               </SettingItem>
 
-              <SettingItem label="Backup importieren" description="Stelle alle deine Daten aus einer zuvor exportierten Backup-Datei wieder her.">
+              <SettingItem label={t('settingsView.importBackup')} description={t('settingsView.importBackupDescription')}>
                    <input type="file" ref={importFileRef} onChange={handleImport} accept=".json" className="hidden" />
-                  <Button variant="secondary" onClick={handleImportClick}>Backup importieren</Button>
+                  <Button variant="secondary" onClick={handleImportClick}>{t('settingsView.importButton')}</Button>
               </SettingItem>
               
               <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                   <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
                     <PhosphorIcons.WarningCircle className="w-5 h-5" />
-                    Gefahrenzone
+                    {t('settingsView.dangerZone')}
                   </h3>
-                  <DangerZoneItem title='"Meine Sorten" zurücksetzen' description="Löscht nur die von dir hinzugefügten Sorten. Alle anderen Daten bleiben erhalten.">
-                      <Button variant="danger" size="sm" onClick={handleResetUserStrains}>Meine Sorten löschen</Button>
+                  <DangerZoneItem title={t('settingsView.resetUserStrainsTitle')} description={t('settingsView.resetUserStrainsDescription')}>
+                      <Button variant="danger" size="sm" onClick={handleResetUserStrains}>{t('settingsView.resetUserStrainsButton')}</Button>
                   </DangerZoneItem>
-                   <DangerZoneItem title='"Meine Exporte" zurücksetzen' description="Löscht nur deine Exporthistorie. Alle anderen Daten bleiben erhalten.">
-                      <Button variant="danger" size="sm" onClick={handleResetExportsHistory}>Exporthistorie löschen</Button>
+                   <DangerZoneItem title={t('settingsView.resetExportsHistoryTitle')} description={t('settingsView.resetExportsHistoryDescription')}>
+                      <Button variant="danger" size="sm" onClick={handleResetExportsHistory}>{t('settingsView.resetExportsHistoryButton')}</Button>
                   </DangerZoneItem>
-                   <DangerZoneItem title="App vollständig zurücksetzen" description="Löscht alle deine gespeicherten Daten (Pflanzen, Favoriten, Einstellungen etc.) endgültig.">
-                      <Button variant="danger" onClick={handleFullReset}>Alles zurücksetzen</Button>
+                   <DangerZoneItem title={t('settingsView.fullResetTitle')} description={t('settingsView.fullResetDescription')}>
+                      <Button variant="danger" onClick={handleFullReset}>{t('settingsView.fullResetButton')}</Button>
                   </DangerZoneItem>
               </div>
           </div>

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings } from '../types';
+import { AppSettings, Language } from '../types';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -8,9 +8,15 @@ interface SettingsContextType {
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
+// Detect initial language
+const detectedLang = navigator.language.split('-')[0];
+const initialLang: Language = detectedLang === 'de' ? 'de' : 'en';
+
+
 const defaultSettings: AppSettings = {
   theme: 'system',
   fontSize: 'base',
+  language: initialLang,
   notificationsEnabled: true,
   notificationSettings: {
     stageChange: true,
@@ -25,7 +31,6 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       const savedSettings = localStorage.getItem('cannabis-grow-guide-settings');
       const parsed = savedSettings ? JSON.parse(savedSettings) : {};
-      // Ensure that old, deprecated settings are not carried over
       const validSettings: Partial<AppSettings> = {};
       for (const key of Object.keys(defaultSettings) as (keyof AppSettings)[]) {
         if (key in parsed) {
@@ -48,8 +53,10 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     root.classList.toggle('dark', isDark);
 
     // Font Size
-    root.classList.remove('sm', 'base', 'lg');
-    root.classList.add(settings.fontSize);
+    root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
+
+    // Language
+    root.lang = settings.language;
 
     try {
       localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(settings));

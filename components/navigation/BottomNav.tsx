@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from '../../types';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useTranslations } from '../../hooks/useTranslations';
 
 const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,
@@ -18,6 +19,15 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView }) => {
+    const { t } = useTranslations();
+    const navLabels: Record<View, string> = {
+        [View.Strains]: t('nav.strains'),
+        [View.Plants]: t('nav.plants'),
+        [View.Equipment]: t('nav.equipment'),
+        [View.Knowledge]: t('nav.knowledge'),
+        [View.Settings]: t('nav.settings'),
+        [View.Help]: t('nav.help'),
+    };
     
     return (
         <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg">
@@ -32,7 +42,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
                             }`}
                         >
                             <div className="w-7 h-7 mb-0.5">{navIcons[viewValue]}</div>
-                            <span className="text-xs font-medium">{viewValue}</span>
+                            <span className="text-xs font-medium">{navLabels[viewValue]}</span>
                         </button>
                     );
                 })}

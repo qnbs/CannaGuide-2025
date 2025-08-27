@@ -3,6 +3,7 @@ import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { SkeletonLoader } from '../../common/SkeletonLoader';
+import { geminiService } from '../../../services/geminiService';
 
 type Step = 1 | 2 | 3 | 4; // 1: Area, 2: Style, 3: Budget, 4: Results
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
@@ -15,58 +16,21 @@ interface RecommendationItem {
     watts?: number;
     price: number;
     category: RecommendationCategory;
+    rationale: string;
 }
 type Recommendation = Record<RecommendationCategory, RecommendationItem>;
 
-// Data for recommendations and costs
-const baseRecommendations: Record<Area, Record<Budget, Recommendation>> = {
-    // Basic setups for each size and budget. Style modifiers will be applied to these.
-    '60x60': {
-        low: { tent: {name: '60x60x160cm Growbox', price: 60, category: 'tent'}, light: { name: '100W LED Full Spectrum', watts: 100, price: 70, category: 'light' }, ventilation: { name: '150 m³/h Exhaust Kit', price: 80, category: 'ventilation' }, pots: { name: '2x 11L Fabric Pots', price: 15, category: 'pots' }, soil: { name: '25L Light-Mix Soil', price: 15, category: 'soil' }, nutrients: { name: 'Organic Starter Set', price: 20, category: 'nutrients' }, extra: { name: 'Timer, Thermo/Hygro', price: 20, category: 'extra' } },
-        medium: { tent: {name: '60x60x180cm Brand Growbox', price: 90, category: 'tent'}, light: { name: '150W Dimmable LED', watts: 150, price: 120, category: 'light' }, ventilation: { name: '180 m³/h Exhaust Kit', price: 110, category: 'ventilation' }, pots: { name: '2x 11L Fabric Pots', price: 15, category: 'pots' }, soil: { name: '50L Quality Soil', price: 25, category: 'soil' }, nutrients: { name: 'Mineral Nutrient Set + Cal/Mag', price: 40, category: 'nutrients' }, extra: { name: 'Timer, pH Meter', price: 35, category: 'extra' } },
-        high: { tent: {name: '60x60x180cm Premium Growbox', price: 150, category: 'tent'}, light: { name: '200W High-End LED', watts: 200, price: 250, category: 'light' }, ventilation: { name: 'EC Fan w/ Controller (~200 m³/h)', price: 200, category: 'ventilation' }, pots: { name: '2x 15L Air-Pots', price: 25, category: 'pots' }, soil: { name: '50L Coco Coir', price: 20, category: 'soil' }, nutrients: { name: 'Complete Coco Nutrient Line', price: 80, category: 'nutrients' }, extra: { name: 'Digital Controller, pH/EC Meter', price: 100, category: 'extra' } }
-    },
-    '80x80': {
-        low: { tent: {name: '80x80x180cm Growbox', price: 80, category: 'tent'}, light: { name: '150W LED Full Spectrum', watts: 150, price: 100, category: 'light' }, ventilation: { name: '250 m³/h Exhaust Kit', price: 90, category: 'ventilation' }, pots: { name: '3x 11L Fabric Pots', price: 20, category: 'pots' }, soil: { name: '50L Light-Mix Soil', price: 25, category: 'soil' }, nutrients: { name: 'Organic Starter Set', price: 20, category: 'nutrients' }, extra: { name: 'Timer, Thermo/Hygro', price: 20, category: 'extra' } },
-        medium: { tent: {name: '80x80x180cm Brand Growbox', price: 120, category: 'tent'}, light: { name: '250W Dimmable LED', watts: 250, price: 220, category: 'light' }, ventilation: { name: '350 m³/h Exhaust Kit', price: 130, category: 'ventilation' }, pots: { name: '3x 15L Fabric Pots', price: 25, category: 'pots' }, soil: { name: '75L Quality Soil', price: 35, category: 'soil' }, nutrients: { name: 'Mineral Nutrient Set + Root Stimulator', price: 50, category: 'nutrients' }, extra: { name: 'Timer, pH Meter, Clip Fan', price: 50, category: 'extra' } },
-        high: { tent: {name: '80x80x200cm Premium Growbox', price: 180, category: 'tent'}, light: { name: '320W High-End LED', watts: 320, price: 350, category: 'light' }, ventilation: { name: 'EC Fan w/ Controller (~400 m³/h)', price: 250, category: 'ventilation' }, pots: { name: '3x 18L Air-Pots', price: 30, category: 'pots' }, soil: { name: '75L Coco Coir', price: 30, category: 'soil' }, nutrients: { name: 'Complete Nutrient Line (A+B, PK)', price: 100, category: 'nutrients' }, extra: { name: 'Digital Controller, pH/EC Meter, Fans', price: 120, category: 'extra' } }
-    },
-    '100x100': {
-        low: { tent: {name: '100x100x200cm Growbox', price: 100, category: 'tent'}, light: { name: '250W LED Full Spectrum', watts: 250, price: 180, category: 'light' }, ventilation: { name: '350 m³/h Exhaust Kit', price: 130, category: 'ventilation' }, pots: { name: '4x 15L Fabric Pots', price: 30, category: 'pots' }, soil: { name: '75L Light-Mix Soil', price: 35, category: 'soil' }, nutrients: { name: 'Organic Starter Set', price: 20, category: 'nutrients' }, extra: { name: 'Timer, Thermo/Hygro, Fan', price: 40, category: 'extra' } },
-        medium: { tent: {name: '100x100x200cm Brand Growbox', price: 150, category: 'tent'}, light: { name: '400W Dimmable LED', watts: 400, price: 350, category: 'light' }, ventilation: { name: '500 m³/h Exhaust Kit', price: 180, category: 'ventilation' }, pots: { name: '4x 18L Fabric Pots', price: 35, category: 'pots' }, soil: { name: '100L Quality Soil', price: 45, category: 'soil' }, nutrients: { name: 'Large Mineral Nutrient Set', price: 70, category: 'nutrients' }, extra: { name: 'Timer, pH/EC Meter, Fans', price: 80, category: 'extra' } },
-        high: { tent: {name: '100x100x200cm Premium Growbox', price: 220, category: 'tent'}, light: { name: '500W High-End LED Bar System', watts: 500, price: 550, category: 'light' }, ventilation: { name: 'EC Fan w/ Controller (~600 m³/h)', price: 300, category: 'ventilation' }, pots: { name: '4x 20L Air-Pots', price: 40, category: 'pots' }, soil: { name: '100L Coco Coir', price: 40, category: 'soil' }, nutrients: { name: 'Full Professional Nutrient Line', price: 150, category: 'nutrients' }, extra: { name: 'Digital Controller, Humidifier', price: 150, category: 'extra' } }
-    },
-    '120x120': {
-        low: { tent: {name: '120x120x200cm Growbox', price: 120, category: 'tent'}, light: { name: '400W LED Full Spectrum', watts: 400, price: 280, category: 'light' }, ventilation: { name: '500 m³/h Exhaust Kit', price: 180, category: 'ventilation' }, pots: { name: '4x 18L Fabric Pots', price: 35, category: 'pots' }, soil: { name: '100L Light-Mix Soil', price: 45, category: 'soil' }, nutrients: { name: 'Organic Starter Set', price: 20, category: 'nutrients' }, extra: { name: 'Timer, Thermo/Hygro, Fan', price: 40, category: 'extra' } },
-        medium: { tent: {name: '120x120x200cm Brand Growbox', price: 180, category: 'tent'}, light: { name: '600W Dimmable LED', watts: 600, price: 500, category: 'light' }, ventilation: { name: '800 m³/h Exhaust Kit', price: 250, category: 'ventilation' }, pots: { name: '5x 20L Fabric Pots', price: 45, category: 'pots' }, soil: { name: '150L Quality Soil', price: 60, category: 'soil' }, nutrients: { name: 'Large Mineral Nutrient Set', price: 70, category: 'nutrients' }, extra: { name: 'Timer, pH/EC Meter, Fans', price: 80, category: 'extra' } },
-        high: { tent: {name: '120x120x220cm Premium Growbox', price: 280, category: 'tent'}, light: { name: '720W High-End LED Bar System', watts: 720, price: 800, category: 'light' }, ventilation: { name: 'EC Fan w/ Controller (~1000 m³/h)', price: 400, category: 'ventilation' }, pots: { name: '5x 25L Air-Pots', price: 50, category: 'pots' }, soil: { name: '150L Coco Coir', price: 50, category: 'soil' }, nutrients: { name: 'Full Professional Nutrient Line', price: 150, category: 'nutrients' }, extra: { name: 'Digital Controller, Humidifier, Fan', price: 180, category: 'extra' } }
-    },
-};
-
-const styleModifiers: Record<GrowStyle, Partial<Record<Budget, Partial<Recommendation>>>> = {
-    'Anfängerfreundlich': {
-        low: { nutrients: { name: 'Bio-Tabs Starterkit', price: 25, category: 'nutrients' } },
-        medium: { nutrients: { name: 'BioBizz Starter-Pack', price: 30, category: 'nutrients' } },
-    },
-    'Maximaler Ertrag': {
-        medium: { light: { name: '320W High-End LED', watts: 320, price: 350, category: 'light' } }, // Example for 80x80
-        high: { soil: { name: '150L Coco Coir + Perlite', price: 55, category: 'soil' }, nutrients: { name: 'Advanced Nutrients Pro Line', price: 200, category: 'nutrients' } }
-    },
-    'Diskret': {
-        low: { ventilation: { name: '180 m³/h Silent Exhaust Kit', price: 120, category: 'ventilation' } },
-        medium: { ventilation: { name: '350 m³/h Silent Exhaust Kit', price: 160, category: 'ventilation' } },
-        high: { ventilation: { name: 'EC Fan w/ Silencer (~400 m³/h)', price: 300, category: 'ventilation' } }
-    }
-};
-
-const getFinalRecommendation = (area: Area, budget: Budget, growStyle: GrowStyle): Recommendation => {
-    const baseRec = { ...baseRecommendations[area][budget] };
-    const modifier = styleModifiers[growStyle]?.[budget];
-    if (modifier) {
-        return { ...baseRec, ...modifier };
-    }
-    return baseRec;
-};
+const RationaleModal: React.FC<{ content: { title: string, content: string }, onClose: () => void }> = ({ content, onClose }) => (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
+            <p className="text-slate-600 dark:text-slate-300">{content.content}</p>
+            <div className="text-right mt-6">
+                <Button onClick={onClose}>Schließen</Button>
+            </div>
+        </Card>
+    </div>
+);
 
 export const SetupConfigurator: React.FC = () => {
     const [step, setStep] = useState<Step>(1);
@@ -76,22 +40,42 @@ export const SetupConfigurator: React.FC = () => {
     
     const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [rationaleModalContent, setRationaleModalContent] = useState<{title: string, content: string} | null>(null);
 
-    const handleGenerate = () => {
+
+    const handleGenerate = async () => {
         setIsLoading(true);
-        setStep(4);
+        setError(null);
         setRecommendation(null);
+        setStep(4);
         
-        setTimeout(() => {
-            const rec = getFinalRecommendation(area, budget, growStyle);
-            setRecommendation(rec);
+        try {
+            const result = await geminiService.getSetupRecommendation(area, growStyle, budget);
+            if (result) {
+                const transformed: Recommendation = (Object.keys(result) as RecommendationCategory[]).reduce((acc, key) => {
+                    acc[key] = {
+                        ...result[key],
+                        category: key,
+                    };
+                    return acc;
+                }, {} as Recommendation);
+                setRecommendation(transformed);
+            } else {
+                setError("Die KI konnte keine Empfehlung generieren. Bitte versuche es später erneut.");
+            }
+        } catch (e) {
+            console.error(e);
+            setError("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
+        } finally {
             setIsLoading(false);
-        }, 300);
+        }
     };
     
     const startOver = () => {
         setStep(1);
         setRecommendation(null);
+        setError(null);
     };
 
     const costBreakdown = useMemo(() => {
@@ -128,7 +112,7 @@ export const SetupConfigurator: React.FC = () => {
                         <span className="font-bold text-slate-400">{`Schritt ${step}/3`}</span>
                     </div>
                      <div className="relative h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full my-6">
-                        <div className="absolute h-1 bg-primary-500 rounded-full transition-all duration-300" style={{width: `${(step-1)/3 * 100}%`}}></div>
+                        <div className="absolute h-1 bg-primary-500 rounded-full transition-all duration-300" style={{width: `${(step/3) * 100}%`}}></div>
                     </div>
                     
                     {step === 1 && (
@@ -183,19 +167,23 @@ export const SetupConfigurator: React.FC = () => {
             )}
             
             {(step === 4) && (
-                <>
+                <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h3 className="text-2xl font-bold text-center">Deine persönliche Setup-Empfehlung</h3>
+                            <Button onClick={startOver} variant="secondary" size="sm"><PhosphorIcons.ArrowClockwise className="inline w-4 h-4 mr-1.5"/>Neu starten</Button>
+                    </div>
                     {isLoading ? (
-                        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700"><SkeletonLoader count={5}/></div>
+                        <SkeletonLoader count={7}/>
+                    ) : error ? (
+                        <Card className="text-center bg-red-50 dark:bg-red-900/20 border-red-500/50">
+                            <h4 className="font-bold text-red-700 dark:text-red-300">Fehler</h4>
+                            <p className="text-red-600 dark:text-red-400">{error}</p>
+                        </Card>
                     ) : recommendation && costBreakdown && (
-                        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-6">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-2xl font-bold text-center">Deine persönliche Setup-Empfehlung</h3>
-                                 <Button onClick={startOver} variant="secondary" size="sm"><PhosphorIcons.ArrowClockwise className="inline w-4 h-4 mr-1.5"/>Neu starten</Button>
-                            </div>
-                            
+                       <>
                             <Card className="bg-primary-50 dark:bg-primary-900/20">
                                 <p className="prose prose-sm dark:prose-invert max-w-none text-center">
-                                    {`Für deine ${area}cm Fläche, mit einem ${budget === 'low' ? 'niedrigen' : budget === 'medium' ? 'mittleren' : 'hohen'} Budget und dem Stil "${growStyle}", ist dies eine empfohlene Konfiguration.`}
+                                    {`Für deine ${area}cm Fläche, mit einem ${budget === 'low' ? 'niedrigen' : budget === 'medium' ? 'mittleren' : 'hohen'} Budget und dem Stil "${growStyle}", ist dies eine von der KI generierte Konfiguration.`}
                                 </p>
                             </Card>
 
@@ -211,6 +199,12 @@ export const SetupConfigurator: React.FC = () => {
                                                         <h4 className="font-bold text-slate-800 dark:text-white">{categoryLabels[key]}</h4>
                                                         <p className="text-sm text-slate-600 dark:text-slate-400">{item.name}</p>
                                                     </div>
+                                                </div>
+                                                <div className="text-right flex-shrink-0">
+                                                    <p className="font-bold">{item.price} €</p>
+                                                    <Button variant="secondary" size="sm" className="mt-1 !shadow-none !bg-slate-200/50 dark:!bg-slate-700/50" onClick={() => setRationaleModalContent({title: `Warum ${categoryLabels[key]}?`, content: item.rationale})}>
+                                                        Warum?
+                                                    </Button>
                                                 </div>
                                             </Card>
                                         )
@@ -234,10 +228,11 @@ export const SetupConfigurator: React.FC = () => {
                                     </Card>
                                 </div>
                              </div>
-                        </div>
+                        </>
                     )}
-                </>
+                </div>
             )}
+            {rationaleModalContent && <RationaleModal content={rationaleModalContent} onClose={() => setRationaleModalContent(null)} />}
         </Card>
     );
 };

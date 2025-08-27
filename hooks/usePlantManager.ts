@@ -5,8 +5,16 @@ import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
 
 const problemMessages = {
+    Overwatering: { message: "Überwässerung.", solution: "Weniger häufig gießen. Substrat austrocknen lassen." },
+    Underwatering: { message: "Unterwässerung.", solution: "Pflanze gründlich gießen." },
+    NutrientBurn: { message: "Nährstoffverbrennung.", solution: "EC-Wert der Nährlösung reduzieren. Mit klarem Wasser spülen." },
+    NutrientDeficiency: { message: "Nährstoffmangel.", solution: "EC-Wert der Nährlösung erhöhen. Düngen." },
     PhTooLow: { message: "pH-Wert ist zu niedrig.", solution: "pH-Wert mit 'pH Up' anheben." },
     PhTooHigh: { message: "pH-Wert ist zu hoch.", solution: "pH-Wert mit 'pH Down' senken." },
+    TempTooHigh: { message: "Hitzestress.", solution: "Temperatur senken, für mehr Luftzirkulation sorgen." },
+    TempTooLow: { message: "Kältestress.", solution: "Temperatur erhöhen. Wachstum kann verlangsamt sein." },
+    HumidityTooHigh: { message: "Luftfeuchtigkeit zu hoch.", solution: "Abluft erhöhen. In der Blütephase besteht Schimmelgefahr!" },
+    HumidityTooLow: { message: "Luftfeuchtigkeit zu niedrig.", solution: "Luftbefeuchter einsetzen oder Wasserschalen aufstellen." },
 }
 
 export const usePlantManager = (
@@ -97,29 +105,65 @@ export const usePlantManager = (
 
             // Stress and Problems
             let stressFromProblems = 0;
-            const ideal = { ...currentStageInfo.idealEnv, ...currentStageInfo.idealVitals };
+            const idealVitals = currentStageInfo.idealVitals;
+            const idealEnv = currentStageInfo.idealEnv;
+            
+            const { vitals, environment } = newPlantState;
 
-            if (Math.abs(newPlantState.vitals.ph - (ideal.ph.min + ideal.ph.max)/2) > 0.5) stressFromProblems += 5;
-            if (newPlantState.vitals.ec > ideal.ec.max) stressFromProblems += (newPlantState.vitals.ec - ideal.ec.max) * 10;
-            if (newPlantState.vitals.substrateMoisture < 30) stressFromProblems += (30 - newPlantState.vitals.substrateMoisture) * 0.2;
+            if (Math.abs(vitals.ph - (idealVitals.ph.min + idealVitals.ph.max)/2) > 0.5) stressFromProblems += 5;
+            if (vitals.ec > idealVitals.ec.max * 1.2) stressFromProblems += (vitals.ec - idealVitals.ec.max) * 10;
+            if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) stressFromProblems += (PROBLEM_THRESHOLDS.moisture.under - vitals.substrateMoisture) * 0.3;
+            if (vitals.substrateMoisture > PROBLEM_THRESHOLDS.moisture.over) stressFromProblems += (vitals.substrateMoisture - PROBLEM_THRESHOLDS.moisture.over) * 0.3;
+            
+            if (environment.temperature > idealEnv.temp.max) {
+                stressFromProblems += (environment.temperature - idealEnv.temp.max) * 2;
+            } else if (environment.temperature < idealEnv.temp.min) {
+                stressFromProblems += (idealEnv.temp.min - environment.temperature) * 1.5;
+            }
+            if (environment.humidity > idealEnv.humidity.max) {
+                stressFromProblems += (environment.humidity - idealEnv.humidity.max) * 1;
+            } else if (environment.humidity < idealEnv.humidity.min) {
+                stressFromProblems += (idealEnv.humidity.min - environment.humidity) * 1;
+            }
+
 
             const stressDecayFactor = Math.pow(0.9, elapsedDays);
             newPlantState.stressLevel = newPlantState.stressLevel * stressDecayFactor + stressFromProblems * elapsedDays;
             newPlantState.stressLevel = Math.min(100, Math.max(0, newPlantState.stressLevel));
 
             // Generate new problems and tasks
-            let newProblems: PlantProblem[] = [];
-            if(newPlantState.vitals.ph < PROBLEM_THRESHOLDS.ph.low) newProblems.push({type: 'PhTooLow', message: problemMessages.PhTooLow.message, solution: problemMessages.PhTooLow.solution});
-            if(newPlantState.vitals.ph > PROBLEM_THRESHOLDS.ph.high) newProblems.push({type: 'PhTooHigh', message: problemMessages.PhTooHigh.message, solution: problemMessages.PhTooHigh.solution});
+            const newProblems: PlantProblem[] = [];
+            const humidityThresholds = newPlantState.stage === PlantStage.Flowering ? PROBLEM_THRESHOLDS.humidity.flowering : PROBLEM_THRESHOLDS.humidity.vegetative;
+
+            if (vitals.ph < PROBLEM_THRESHOLDS.ph.low) newProblems.push({ type: 'PhTooLow', ...problemMessages.PhTooLow });
+            if (vitals.ph > PROBLEM_THRESHOLDS.ph.high) newProblems.push({ type: 'PhTooHigh', ...problemMessages.PhTooHigh });
+            if (vitals.substrateMoisture > PROBLEM_THRESHOLDS.moisture.over) newProblems.push({ type: 'Overwatering', ...problemMessages.Overwatering });
+            if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...problemMessages.Underwatering });
+            if (vitals.ec > idealVitals.ec.max * 1.5) newProblems.push({ type: 'NutrientBurn', ...problemMessages.NutrientBurn });
+            if (vitals.ec < PROBLEM_THRESHOLDS.ec.under && [PlantStage.Seedling, PlantStage.Vegetative, PlantStage.Flowering].includes(newPlantState.stage)) {
+                newProblems.push({ type: 'NutrientDeficiency', ...problemMessages.NutrientDeficiency });
+            }
+            if (environment.temperature > PROBLEM_THRESHOLDS.temp.high) newProblems.push({ type: 'TempTooHigh', ...problemMessages.TempTooHigh });
+            if (environment.temperature < PROBLEM_THRESHOLDS.temp.low) newProblems.push({ type: 'TempTooLow', ...problemMessages.TempTooLow });
+            if (environment.humidity > humidityThresholds.high) newProblems.push({ type: 'HumidityTooHigh', ...problemMessages.HumidityTooHigh });
+            if (environment.humidity < humidityThresholds.low) newProblems.push({ type: 'HumidityTooLow', ...problemMessages.HumidityTooLow });
+
 
             newPlantState.problems = newProblems; // Simple replacement for now
 
             // Task generation
             const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
+            
             const wateringTaskTitle = 'Gießen erforderlich';
             if(newPlantState.vitals.substrateMoisture < 30 && !hasTask(wateringTaskTitle)) {
                 newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: 'Das Substrat ist zu trocken.', priority: 'high', isCompleted: false, createdAt: now });
             }
+
+            const feedingTaskTitle = 'Düngung erforderlich';
+            if (newPlantState.vitals.ec < PROBLEM_THRESHOLDS.ec.under && !hasTask(feedingTaskTitle) && [PlantStage.Seedling, PlantStage.Vegetative, PlantStage.Flowering].includes(newPlantState.stage)) {
+                newPlantState.tasks.push({id: `task-${Date.now() + 1}`, title: feedingTaskTitle, description: 'Die Nährstoffkonzentration ist zu niedrig.', priority: 'high', isCompleted: false, createdAt: now });
+            }
+
              const checkPhTaskTitle = 'pH-Wert prüfen';
              if((newPlantState.vitals.ph < 5.8 || newPlantState.vitals.ph > 7.0) && !hasTask(checkPhTaskTitle)) {
                 newPlantState.tasks.push({id: `task-${Date.now()}`, title: checkPhTaskTitle, description: 'Der pH-Wert liegt außerhalb des optimalen Bereichs.', priority: 'medium', isCompleted: false, createdAt: now });

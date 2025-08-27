@@ -1,11 +1,14 @@
 import { de } from './de';
+import { en } from './en';
+import { es } from './es';
+import { fr } from './fr';
+import { it } from './it';
 
-export type Language = 'de';
+export { de, en, es, fr, it };
 
-export const LANGUAGES: Record<Language, string> = {
-    de: 'Deutsch',
-};
+export type Locale = 'en' | 'de';
 
-export const translations = {
+export const locales: Record<Locale, any> = {
+  en,
   de,
 };

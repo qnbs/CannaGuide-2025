@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plant, View, Task, PlantProblem, JournalEntry, JournalEntryType } from '../../types';
+import { Plant, View, Task, PlantProblem, JournalEntry, JournalEntryType, TaskPriority } from '../../types';
 import { PlantCard } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
@@ -107,10 +107,32 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ plants: initialPlants, s
           addJournalEntry(modalState.plantId, entry);
       }
   };
+  
+  const priorityClasses: Record<TaskPriority, string> = {
+    high: 'border-red-500/50 bg-red-500/10',
+    medium: 'border-amber-500/50 bg-amber-500/10',
+    low: 'border-blue-500/50 bg-blue-500/10',
+  };
+  const priorityOrder: Record<TaskPriority, number> = { high: 1, medium: 2, low: 3 };
 
-  const allTasks = plants
+  const priorityIcons: Record<TaskPriority, { icon: React.ReactNode; color: string }> = {
+    high: { icon: <PhosphorIcons.Lightning />, color: 'text-red-500' },
+    medium: { icon: <PhosphorIcons.ArrowUp />, color: 'text-amber-500' },
+    low: { icon: <PhosphorIcons.ArrowDown />, color: 'text-blue-500' },
+  };
+
+  const priorityLabels: Record<TaskPriority, string> = {
+    high: 'Hoch',
+    medium: 'Mittel',
+    low: 'Niedrig',
+  };
+
+
+  const allTasks = useMemo(() => plants
     .filter((p): p is Plant => p !== null)
-    .flatMap(p => p.tasks.filter(t => !t.isCompleted).map(task => ({ ...task, plantId: p.id, plantName: p.name })));
+    .flatMap(p => p.tasks.filter(t => !t.isCompleted).map(task => ({ ...task, plantId: p.id, plantName: p.name })))
+    .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]),
+  [plants]);
   
   const allProblems = plants
     .filter((p): p is Plant => p !== null)
@@ -196,20 +218,25 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ plants: initialPlants, s
 
         <div className="lg:col-span-1 space-y-6">
             <Card>
-                <h3 className="text-xl font-bold mb-4 text-red-600 dark:text-red-400 flex items-center gap-2">
-                    <PhosphorIcons.Checks className="w-6 h-6" /> Dringende Aufgaben
+                <h3 className="text-xl font-bold mb-4 text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                    <PhosphorIcons.Checks className="w-6 h-6" /> Offene Aufgaben
                 </h3>
                 {allTasks.length > 0 ? (
                     <div className="space-y-3">
                         {allTasks.map(task => (
-                            <div key={`${task.plantId}-${task.id}`} className="p-2 border-l-4 border-red-500/50 bg-red-500/10 rounded-r-md">
-                                <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{task.title}</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{task.plantName}</p>
+                            <div key={`${task.plantId}-${task.id}`} className={`p-2 border-l-4 ${priorityClasses[task.priority]} rounded-r-md flex items-center justify-between`}>
+                                <div>
+                                    <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{task.title}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{task.plantName}</p>
+                                </div>
+                                <div className={`w-5 h-5 flex-shrink-0 ${priorityIcons[task.priority].color}`} title={`Priorität: ${priorityLabels[task.priority]}`}>
+                                    {priorityIcons[task.priority].icon}
+                                </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">Keine dringenden Aufgaben. Alles im grünen Bereich!</p>
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Keine offenen Aufgaben. Alles im grünen Bereich!</p>
                 )}
             </Card>
              <Card>

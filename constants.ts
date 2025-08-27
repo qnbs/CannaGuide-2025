@@ -48,7 +48,18 @@ export const PROBLEM_THRESHOLDS = {
       low: 5.5,
   },
   temp: {
-    heat: 32,
+    high: 32,
+    low: 15,
+  },
+  humidity: {
+    vegetative: {
+        high: 75,
+        low: 35,
+    },
+    flowering: {
+        high: 55, // Lower threshold in flowering to prevent mold
+        low: 25,
+    }
   },
   light: {
     stress: 98

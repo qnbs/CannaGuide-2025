@@ -3,19 +3,7 @@ import { Plant, PlantStage, PlantProblem, JournalEntry, Task, JournalEntryType }
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
-
-const problemMessages = {
-    Overwatering: { message: "Überwässerung.", solution: "Weniger häufig gießen. Substrat austrocknen lassen." },
-    Underwatering: { message: "Unterwässerung.", solution: "Pflanze gründlich gießen." },
-    NutrientBurn: { message: "Nährstoffverbrennung.", solution: "EC-Wert der Nährlösung reduzieren. Mit klarem Wasser spülen." },
-    NutrientDeficiency: { message: "Nährstoffmangel.", solution: "EC-Wert der Nährlösung erhöhen. Düngen." },
-    PhTooLow: { message: "pH-Wert ist zu niedrig.", solution: "pH-Wert mit 'pH Up' anheben." },
-    PhTooHigh: { message: "pH-Wert ist zu hoch.", solution: "pH-Wert mit 'pH Down' senken." },
-    TempTooHigh: { message: "Hitzestress.", solution: "Temperatur senken, für mehr Luftzirkulation sorgen." },
-    TempTooLow: { message: "Kältestress.", solution: "Temperatur erhöhen. Wachstum kann verlangsamt sein." },
-    HumidityTooHigh: { message: "Luftfeuchtigkeit zu hoch.", solution: "Abluft erhöhen. In der Blütephase besteht Schimmelgefahr!" },
-    HumidityTooLow: { message: "Luftfeuchtigkeit zu niedrig.", solution: "Luftbefeuchter einsetzen oder Wasserschalen aufstellen." },
-}
+import { useTranslations } from './useTranslations';
 
 export const usePlantManager = (
     initialPlants: (Plant | null)[],
@@ -23,7 +11,21 @@ export const usePlantManager = (
 ) => {
     const { settings } = useSettings();
     const { addNotification } = useNotifications();
+    const { t } = useTranslations();
     const [plants, setPlants] = useState(initialPlants);
+
+    const problemMessages = useMemo(() => ({
+        Overwatering: { message: t('problemMessages.overwatering.message'), solution: t('problemMessages.overwatering.solution') },
+        Underwatering: { message: t('problemMessages.underwatering.message'), solution: t('problemMessages.underwatering.solution') },
+        NutrientBurn: { message: t('problemMessages.nutrientBurn.message'), solution: t('problemMessages.nutrientBurn.solution') },
+        NutrientDeficiency: { message: t('problemMessages.nutrientDeficiency.message'), solution: t('problemMessages.nutrientDeficiency.solution') },
+        PhTooLow: { message: t('problemMessages.phTooLow.message'), solution: t('problemMessages.phTooLow.solution') },
+        PhTooHigh: { message: t('problemMessages.phTooHigh.message'), solution: t('problemMessages.phTooHigh.solution') },
+        TempTooHigh: { message: t('problemMessages.tempTooHigh.message'), solution: t('problemMessages.tempTooHigh.solution') },
+        TempTooLow: { message: t('problemMessages.tempTooLow.message'), solution: t('problemMessages.tempTooLow.solution') },
+        HumidityTooHigh: { message: t('problemMessages.humidityTooHigh.message'), solution: t('problemMessages.humidityTooHigh.solution') },
+        HumidityTooLow: { message: t('problemMessages.humidityTooLow.message'), solution: t('problemMessages.humidityTooLow.solution') },
+    }), [t]);
 
     const calculateYield = (plant: Plant): number => {
         const baseYield = YIELD_FACTORS.base[plant.strain.agronomic.yield] || YIELD_FACTORS.base.Medium;
@@ -57,17 +59,19 @@ export const usePlantManager = (
             }
 
             const now = Date.now();
-            const elapsedMs = now - plant.lastUpdated;
-            if (elapsedMs <= 1000) { // Only update if significant time has passed
+            const timeSinceLastUpdate = now - plant.lastUpdated;
+            if (timeSinceLastUpdate <= 1000) { // Only update if significant time has passed
                  updatedPlant = plant;
                  return currentPlants;
             }
             
+            const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5 }[settings.simulationSettings.speed];
+            const elapsedMs = timeSinceLastUpdate * speedMultiplier;
             const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
 
             let newPlantState = JSON.parse(JSON.stringify(plant)); // Deep copy
             
-            const totalElapsedMsFromStart = now - newPlantState.startedAt;
+            const totalElapsedMsFromStart = (newPlantState.lastUpdated - newPlantState.startedAt) + elapsedMs;
             newPlantState.age = Math.floor(totalElapsedMsFromStart / (1000 * 60 * 60 * 24));
 
             let currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
@@ -76,13 +80,13 @@ export const usePlantManager = (
             if (currentStageInfo.next && (newPlantState.age - stageProgress) >= currentStageInfo.duration) {
                 newPlantState.stage = currentStageInfo.next;
                 currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
-                const logMessage = `Neue Phase erreicht: ${newPlantState.stage}`;
+                const logMessage = t('plantsView.notifications.stageChange', { stage: t(`plantStages.${newPlantState.stage}`) });
                 newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: now, type: 'SYSTEM', notes: logMessage });
                 if (settings.notificationSettings.stageChange) addNotification(`${plant.name}: ${logMessage}`, 'info');
-                if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(`${plant.name} ist bereit zur Ernte!`, 'info');
+                if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(t('plantsView.notifications.harvestReady', { name: plant.name }), 'info');
                 if(newPlantState.stage === PlantStage.Finished) {
                     newPlantState.yield = calculateYield(newPlantState);
-                    const yieldMessage = `Endgültiger Ertrag nach Aushärtung: ${newPlantState.yield.toFixed(2)}g`;
+                    const yieldMessage = t('plantsView.notifications.finalYield', { yield: newPlantState.yield.toFixed(2) });
                     newPlantState.journal.push({ id: `sys-${Date.now()+1}`, timestamp: now, type: 'SYSTEM', notes: yieldMessage });
                 }
             }
@@ -126,6 +130,8 @@ export const usePlantManager = (
                 stressFromProblems += (idealEnv.humidity.min - environment.humidity) * 1;
             }
 
+            const stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty];
+            stressFromProblems *= stressDifficultyModifier;
 
             const stressDecayFactor = Math.pow(0.9, elapsedDays);
             newPlantState.stressLevel = newPlantState.stressLevel * stressDecayFactor + stressFromProblems * elapsedDays;
@@ -154,19 +160,19 @@ export const usePlantManager = (
             // Task generation
             const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
             
-            const wateringTaskTitle = 'Gießen erforderlich';
+            const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
             if(newPlantState.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATERING_TASK_THRESHOLD && !hasTask(wateringTaskTitle)) {
-                newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: 'Das Substrat ist zu trocken.', priority: 'high', isCompleted: false, createdAt: now });
+                newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high', isCompleted: false, createdAt: now });
             }
 
-            const feedingTaskTitle = 'Düngung erforderlich';
+            const feedingTaskTitle = t('plantsView.tasks.feedingTask.title');
             if (newPlantState.vitals.ec < PROBLEM_THRESHOLDS.ec.under && !hasTask(feedingTaskTitle) && [PlantStage.Seedling, PlantStage.Vegetative, PlantStage.Flowering].includes(newPlantState.stage)) {
-                newPlantState.tasks.push({id: `task-${Date.now() + 1}`, title: feedingTaskTitle, description: 'Die Nährstoffkonzentration ist zu niedrig.', priority: 'high', isCompleted: false, createdAt: now });
+                newPlantState.tasks.push({id: `task-${Date.now() + 1}`, title: feedingTaskTitle, description: t('plantsView.tasks.feedingTask.description'), priority: 'high', isCompleted: false, createdAt: now });
             }
 
-             const checkPhTaskTitle = 'pH-Wert prüfen';
+             const checkPhTaskTitle = t('plantsView.tasks.phTask.title');
              if((newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH) && !hasTask(checkPhTaskTitle)) {
-                newPlantState.tasks.push({id: `task-${Date.now()}`, title: checkPhTaskTitle, description: 'Der pH-Wert liegt außerhalb des optimalen Bereichs.', priority: 'medium', isCompleted: false, createdAt: now });
+                newPlantState.tasks.push({id: `task-${Date.now()}`, title: checkPhTaskTitle, description: t('plantsView.tasks.phTask.description'), priority: 'medium', isCompleted: false, createdAt: now });
             }
 
             if (newPlantState.age > (plant.history[plant.history.length-1]?.day || -1)) {
@@ -180,7 +186,7 @@ export const usePlantManager = (
         });
 
         return updatedPlant;
-    }, [settings.notificationSettings, addNotification]);
+    }, [settings.notificationSettings, settings.simulationSettings, addNotification, problemMessages, t]);
 
     useEffect(() => {
         const updateInterval = setInterval(() => {
@@ -216,7 +222,7 @@ export const usePlantManager = (
                 }
 
                 // Auto-complete watering task
-                const wateringTaskTitle = 'Gießen erforderlich';
+                const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
                 updatedPlant.tasks = updatedPlant.tasks.map((task: Task) => 
                     task.title === wateringTaskTitle && !task.isCompleted
                         ? { ...task, isCompleted: true, completedAt: Date.now() }
@@ -249,7 +255,7 @@ export const usePlantManager = (
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
                 updatedPlant.vitals.ph = SIMULATION_CONSTANTS.PH_DRIFT_TARGET;
 
-                const wateringTaskTitle = 'Gießen erforderlich';
+                const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
                 updatedPlant.tasks = updatedPlant.tasks.map((task: Task) => 
                     task.title === wateringTaskTitle && !task.isCompleted
                         ? { ...task, isCompleted: true, completedAt: now }
@@ -260,7 +266,7 @@ export const usePlantManager = (
                     id: `manual-${now}-${p.id}`,
                     timestamp: now,
                     type: 'WATERING',
-                    notes: 'Bewässerung',
+                    notes: t('plantsView.actionModals.defaultNotes.watering'),
                     details: { waterAmount: 500, ph: SIMULATION_CONSTANTS.PH_DRIFT_TARGET }
                 });
                 

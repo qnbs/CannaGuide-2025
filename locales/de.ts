@@ -60,7 +60,7 @@ export const de = {
   },
   strainsView: {
     title: 'Sorten-Datenbank',
-    searchPlaceholder: 'Sorte suchen...',
+    searchPlaceholder: 'Sorte oder Genetik suchen...',
     all: 'Alle',
     sativa: 'Sativa',
     indica: 'Indica',
@@ -68,6 +68,7 @@ export const de = {
     advancedFilters: 'Erweiterte Filter',
     matchingStrains: '{count} passende Sorten',
     thcMax: 'THC% max.',
+    cbdMax: 'CBD% max.',
     floweringTime: 'Blütezeit',
     level: 'Level',
     terpenes: 'Terpene',
@@ -94,6 +95,7 @@ export const de = {
     noUserStrains: {
       title: 'Du hast noch keine eigenen Sorten hinzugefügt.',
       subtitle: 'Klicke auf "Hinzufügen", um deine erste Sorte zu erstellen.',
+      button: 'Erste Sorte hinzufügen',
     },
     footer: {
       showFavorites: 'Nur Favoriten ({count})',
@@ -148,7 +150,11 @@ export const de = {
       terpenesPlaceholder: 'Werte mit Komma trennen',
       addStrainSuccess: 'Sorte "{name}" erfolgreich hinzugefügt!',
       addStrainError: 'Fehler beim Speichern der Sorte.',
-      validationError: 'Bitte fülle alle Pflichtfelder aus (Name, THC, Blütezeit).',
+      validation: {
+        name: 'Der Name ist erforderlich.',
+        thc: 'THC muss zwischen 0 und 50 liegen.',
+        floweringTime: 'Die Blütezeit muss zwischen 4 und 20 Wochen liegen.',
+      }
     },
     exportModal: {
       title: 'Daten exportieren',
@@ -222,21 +228,32 @@ export const de = {
         medium: 'Mittel',
         low: 'Niedrig',
       },
+      wateringTask: {
+        title: 'Pflanze gießen',
+        description: 'Die Substratfeuchtigkeit ist niedrig.'
+      },
+      feedingTask: {
+        title: 'Pflanze düngen',
+        description: 'Der EC-Wert ist niedrig, Nährstoffe werden benötigt.'
+      },
+      phTask: {
+        title: 'pH-Wert prüfen',
+        description: 'Der pH-Wert liegt außerhalb des optimalen Bereichs.'
+      },
     },
     warnings: {
       title: 'Aktive Warnungen',
       none: 'Keine Probleme bei deinen Pflanzen festgestellt. Weiter so!',
     },
-    tipCard: {
-      title: 'Tipp des Tages',
-      next: 'Nächster Tipp',
-      tips: [
-        "Überwässere deine Pflanzen nicht! Es ist der häufigste Fehler bei Anfängern. Fühle die obersten Zentimeter der Erde, bevor du erneut gießt.",
-        "Der richtige pH-Wert (normalerweise 6.0-7.0 in Erde) ist entscheidend für die Nährstoffaufnahme. Ein günstiges pH-Messgerät ist eine lohnende Investition.",
-        "Gute Luftzirkulation ist der Schlüssel zur Vermeidung von Schimmel und Schädlingen. Ein kleiner Clip-Ventilator in der Growbox kann Wunder wirken.",
-        "Lerne Low Stress Training (LST). Das sanfte Herunterbiegen von Ästen kann deinen Ertrag erheblich steigern, indem mehr Licht an die unteren Blüten gelangt.",
-        "Geduld beim Trocknen und Curen macht den Unterschied zwischen gutem und großartigem Cannabis. Überspringe diesen Schritt nicht!"
-      ],
+    aiDiagnostics: {
+      title: 'KI-Pflanzendoktor',
+      description: 'Lade ein Foto eines betroffenen Blattes hoch, um eine KI-gestützte Diagnose und Lösungsvorschläge zu erhalten.',
+      buttonLabel: 'Foto auswählen',
+      prompt: 'oder hierher ziehen',
+      analyzing: 'Analysiere Bild...',
+      diagnoseButton: 'Diagnose starten',
+      resultTitle: 'KI-Diagnose',
+      error: 'Analyse fehlgeschlagen. Bitte versuche es erneut.',
     },
     notifications: {
       allSlotsFull: "Alle Pflanzen-Slots sind belegt.",
@@ -244,6 +261,9 @@ export const de = {
       waterAllSuccess: "{count} Pflanzen gegossen.",
       waterAllNone: "Keine Pflanzen müssen gegossen werden.",
       photoGallerySoon: 'Fotogalerie-Funktion kommt bald!',
+      stageChange: 'Neue Phase erreicht: {stage}',
+      harvestReady: '{name} ist erntereif!',
+      finalYield: 'Endertrag berechnet: {yield}g',
     },
     detailedView: {
       back: 'Zurück zum Dashboard',
@@ -397,24 +417,37 @@ export const de = {
       ventilation: {
         title: 'Lüfter-Rechner',
         description: 'Berechne die benötigte Lüfterleistung (m³/h) für deine Growbox.',
-        width: 'Breite (cm)',
-        depth: 'Tiefe (cm)',
-        height: 'Höhe (cm)',
+        width: 'Breite',
+        depth: 'Tiefe',
+        height: 'Höhe',
         result: 'Empfohlene Abluftleistung',
       },
       light: {
         title: 'Licht-Rechner',
         description: 'Schätze die benötigte LED-Lichtleistung für deine Fläche.',
-        width: 'Breite (cm)',
-        depth: 'Tiefe (cm)',
+        width: 'Breite',
+        depth: 'Tiefe',
         result: 'Empfohlene LED-Leistung',
       },
       nutrients: {
         title: 'Nährstoff-Rechner',
         description: 'Berechne die richtige Düngermenge für deine Gießkanne.',
-        waterAmount: 'Wassermenge (L)',
-        dose: 'Dosis (ml/L)',
+        waterAmount: 'Wassermenge',
+        dose: 'Dosis',
         result: 'Benötigter Dünger',
+      },
+      yield: {
+        title: 'Ertrags-Schätzer',
+        description: 'Erhalte eine grobe Schätzung deines potenziellen Ertrags (g).',
+        area: 'Fläche',
+        wattage: 'Lichtleistung',
+        level: 'Erfahrungslevel',
+        levels: {
+            beginner: 'Anfänger',
+            advanced: 'Fortgeschritten',
+            expert: 'Experte'
+        },
+        result: 'Geschätzter Ertrag'
       },
       calculate: 'Berechnen',
     },
@@ -579,7 +612,7 @@ export const de = {
           c3: { term: 'CBD (Cannabidiol)', def: '<strong>Eigenschaft:</strong> Das zweithäufigste Cannabinoid, nicht-psychoaktiv. Es erzeugt kein "High" und kann sogar die psychoaktiven Effekte von THC abschwächen.<br><strong>Potenzielle Wirkung:</strong> Angstlösend, entzündungshemmend, antikonvulsiv (krampflösend), neuroprotektiv. Sehr beliebt für therapeutische Anwendungen.<br><strong>Siedepunkt:</strong> ~160-180°C' },
           c4: { term: 'CBG (Cannabigerol)', def: '<strong>Eigenschaft:</strong> Oft als "Mutter aller Cannabinoide" bezeichnet, da es die Vorstufe ist, aus der andere Cannabinoide (THC, CBD, CBC) in der Pflanze synthetisiert werden. Nicht-psychoaktiv.<br><strong>Potenzielle Wirkung:</strong> Antibakteriell, entzündungshemmend, schmerzlindernd, kann den Augeninnendruck senken. Vielversprechend in der Forschung.<br><strong>Siedepunkt:</strong> ~52°C (Decarboxylierung)' },
           c5: { term: 'CBN (Cannabinol)', def: '<strong>Eigenschaft:</strong> Entsteht hauptsächlich, wenn THC durch Oxidation (Alterung, Lichteinwirkung) abgebaut wird. Nur sehr mild psychoaktiv.<br><strong>Potenzielle Wirkung:</strong> Bekannt für seine stark sedierenden und schlaffördernden Eigenschaften. Oft in gealtertem Cannabis zu finden.<br><strong>Siedepunkt:</strong> ~185°C' },
-          c6: { term: 'CBC (Cannabichromen)', def: '<strong>Eigenschaft:</strong> Ein weiteres nicht-psychoaktives Cannabinoid, das aus CBG entsteht. Bindet nicht gut an CB1-Rezeptoren im Gehirn, aber an andere Rezeptoren im Körper.<br><strong>Potenzielle Wirkung:</strong> Stark entzündungshemmend, potenziell antidepressiv, fördert die Gehirnfunktion (Neurogenese).<br><strong>Siedepunkt:</strong> ~220°C' },
+          c6: { term: 'CBC (Cannabichromene)', def: '<strong>Eigenschaft:</strong> Ein weiteres nicht-psychoaktives Cannabinoid, das aus CBG entsteht. Bindet nicht gut an CB1-Rezeptoren im Gehirn, aber an andere Rezeptoren im Körper.<br><strong>Potenzielle Wirkung:</strong> Stark entzündungshemmend, potenziell antidepressiv, fördert die Gehirnfunktion (Neurogenese).<br><strong>Siedepunkt:</strong> ~220°C' },
           c7: { term: 'THCV (Tetrahydrocannabivarin)', def: '<strong>Eigenschaft:</strong> Ein Analogon von THC mit einer etwas anderen chemischen Struktur. Die psychoaktive Wirkung ist oft klarer, energetischer und kürzer als bei THC.<br><strong>Potenzielle Wirkung:</strong> Appetitzügelnd (im Gegensatz zu THC), kann den Blutzuckerspiegel regulieren. In geringen Dosen nicht psychoaktiv, in hohen Dosen schon.<br><strong>Siedepunkt:</strong> ~220°C' },
           c8: { term: 'Säureformen (THCA, CBDA, etc.)', def: 'In der rohen Cannabispflanze liegen die meisten Cannabinoide in ihrer sauren Form vor (z.B. THCA, CBDA). Diese sind nicht psychoaktiv. Erst durch Erhitzung (z.B. beim Rauchen, Verdampfen oder Kochen) wird ein Carboxygruppe abgespalten – ein Prozess namens <strong>Decarboxylierung</strong> –, der sie in ihre aktive Form (THC, CBD) umwandelt.' },
         }
@@ -647,6 +680,9 @@ export const de = {
         appName: 'Cannabis Grow Guide',
         description: 'Diese App ist ein interaktiver Guide, der dir hilft, deine Cannabis-Anbau-Reise zu managen. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.',
         features: '<strong>Neue Features:</strong> Diese Version enthält eine vollständige Übersetzung für Englisch und Deutsch sowie umfassende Verbesserungen der Barrierefreiheit (Tastatur- & Screenreader-Unterstützung).',
+        devWithAIStudioTitle: 'Entwicklung mit AI Studio',
+        devWithAIStudioText: 'Diese App wurde mit <strong>AI Studio</strong> von Google entwickelt, einer innovativen Plattform, die es ermöglicht, komplexe Webanwendungen durch natürliche Sprachbefehle zu erstellen und zu modifizieren. Durch iterative Prompts wurde die Benutzeroberfläche gestaltet, die Funktionalität implementiert und die Integration der Gemini KI für intelligente Features realisiert. AI Studio beschleunigt den Entwicklungsprozess erheblich und eröffnet neue Wege für die App-Erstellung.',
+        getTheAppHere: 'Holen Sie sich die App hier',
         disclaimerTitle: 'Haftungsausschluss',
         disclaimerText: 'Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Regelungen, die von Land zu Land unterschiedlich sind. Bitte informiere dich über die Gesetze in deiner Region und handle stets verantwortungsbewusst und gesetzeskonform.',
         privacyTitle: 'Datenschutz',
@@ -686,6 +722,16 @@ export const de = {
     problemDetectedDescription: 'Benachrichtigung, wenn bei einer Pflanze ein Problem festgestellt wird.',
     harvestReady: 'Erntezeitpunkt',
     harvestReadyDescription: 'Benachrichtigung, wenn eine Pflanze erntereif ist.',
+    simulation: 'Simulation & Gameplay',
+    simulationSpeed: 'Simulationsgeschwindigkeit',
+    simulationSpeedDescription: 'Bestimmt, wie schnell die Zeit für deine Pflanzen vergeht.',
+    simulationDifficulty: 'Schwierigkeitsgrad',
+    simulationDifficultyDescription: 'Beeinflusst, wie stark sich Probleme auf den Stress der Pflanzen auswirken.',
+    difficulties: {
+      easy: 'Einfach',
+      normal: 'Normal',
+      hard: 'Schwer',
+    },
     dataManagement: 'Datenverwaltung',
     exportBackup: 'Backup exportieren',
     exportBackupDescription: 'Sichere alle deine App-Daten: Pflanzen, Favoriten, eigene Sorten, Exporthistorie und Einstellungen.',
@@ -715,5 +761,36 @@ export const de = {
       importSuccess: 'Daten erfolgreich importiert. App wird neu geladen.',
       importError: 'Fehler beim Importieren der Daten. Ungültiges Format?',
     }
+  },
+  problemMessages: {
+    overwatering: { message: 'Überwässerung', solution: 'Reduziere die Gießhäufigkeit.' },
+    underwatering: { message: 'Unterwässerung', solution: 'Gieße die Pflanze sofort.' },
+    nutrientBurn: { message: 'Nährstoffbrand (EC zu hoch)', solution: 'Spüle das Substrat und reduziere die Düngerdosis.' },
+    nutrientDeficiency: { message: 'Nährstoffmangel (EC zu niedrig)', solution: 'Erhöhe die Düngerdosis leicht.' },
+    phTooLow: { message: 'pH-Wert zu niedrig', solution: 'Passe den pH-Wert des Gießwassers nach oben an.' },
+    phTooHigh: { message: 'pH-Wert zu hoch', solution: 'Passe den pH-Wert des Gießwassers nach unten an.' },
+    tempTooHigh: { message: 'Temperatur zu hoch', solution: 'Verbessere die Belüftung oder kühle den Raum.' },
+    tempTooLow: { message: 'Temperatur zu niedrig', solution: 'Erhöhe die Raumtemperatur.' },
+    humidityTooHigh: { message: 'Luftfeuchtigkeit zu hoch', solution: 'Erhöhe die Abluftleistung oder verwende einen Entfeuchter.' },
+    humidityTooLow: { message: 'Luftfeuchtigkeit zu niedrig', solution: 'Verwende einen Luftbefeuchter.' },
+  },
+  plantStages: {
+    SEED: 'Samen',
+    GERMINATION: 'Keimung',
+    SEEDLING: 'Sämling',
+    VEGETATIVE: 'Wachstum',
+    FLOWERING: 'Blüte',
+    HARVEST: 'Ernte',
+    DRYING: 'Trocknung',
+    CURING: 'Curing',
+    FINISHED: 'Abgeschlossen',
+  },
+  commandPalette: {
+    placeholder: 'Befehl eingeben oder suchen...',
+    noResults: 'Keine Befehle gefunden.',
+    actions: 'Aktionen',
+    navigation: 'Navigation',
+    settings: 'Einstellungen',
+    plants: 'Pflanzen',
   },
 };

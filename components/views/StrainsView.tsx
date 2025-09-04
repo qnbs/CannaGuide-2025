@@ -1,8 +1,5 @@
-
-
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat, SavedExport } from '../../types';
-import { INITIAL_STRAINS } from '../../data/strains/index';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { GrowSetupModal } from './plants/GrowSetupModal';
@@ -17,6 +14,9 @@ import { AddStrainModal } from './strains/AddStrainModal';
 import { useExportsManager } from '../../hooks/useExportsManager';
 import { ExportsManagerView } from './strains/ExportsManagerView';
 import { useTranslations } from '../../hooks/useTranslations';
+import { SkeletonLoader } from '../common/SkeletonLoader';
+import StrainListItem from './strains/StrainListItem';
+
 
 type SortKey = 'name' | 'difficulty';
 type SortDirection = 'asc' | 'desc';
@@ -48,7 +48,8 @@ const StrainDetailModal: React.FC<{
   onStartGrowing: (strain: Strain) => void;
   plants: (Plant | null)[];
   onSelectSimilarStrain: (strain: Strain) => void;
-}> = ({ strain, isFavorite, onClose, onToggleFavorite, onStartGrowing, plants, onSelectSimilarStrain }) => {
+  allStrains: Strain[];
+}> = ({ strain, isFavorite, onClose, onToggleFavorite, onStartGrowing, plants, onSelectSimilarStrain, allStrains }) => {
     const { t } = useTranslations();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
@@ -70,14 +71,14 @@ const StrainDetailModal: React.FC<{
     
     const findSimilarStrains = (baseStrain: Strain): Strain[] => {
         if (!baseStrain) return [];
-        return INITIAL_STRAINS.filter(s =>
+        return allStrains.filter(s =>
             s.id !== baseStrain.id &&
             s.type === baseStrain.type &&
             Math.abs(s.thc - baseStrain.thc) <= 5
         ).slice(0, 4);
     };
 
-    const similarStrains = useMemo(() => findSimilarStrains(strain), [strain]);
+    const similarStrains = useMemo(() => findSimilarStrains(strain), [strain, allStrains]);
 
     const TypeDisplay: React.FC<{ type: Strain['type'], details?: string }> = ({ type, details }) => {
         const typeClasses = { Sativa: 'bg-amber-400/20 text-amber-400', Indica: 'bg-indigo-400/20 text-indigo-400', Hybrid: 'bg-blue-500/20 text-blue-400',};
@@ -268,11 +269,40 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { savedExports, addExport, deleteExport } = useExportsManager();
   
-  const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
-    Easy: t('strainsView.difficulty.easy'),
-    Medium: t('strainsView.difficulty.medium'),
-    Hard: t('strainsView.difficulty.hard'),
-  };
+  const [initialStrains, setInitialStrains] = useState<Strain[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchStrains = async () => {
+        try {
+            const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
+            const files = [...letters, 'numeric'].map(l => `/data/strains/${l}.json`);
+
+            const responses = await Promise.all(
+                files.map(file => 
+                    fetch(file).then(res => {
+                        if (!res.ok) {
+                            console.warn(`Could not load strain file: ${file}`);
+                            return []; // Return empty array for missing files
+                        }
+                        return res.json();
+                    })
+                )
+            );
+            
+            const allStrainsData: Strain[] = responses.flat();
+            setInitialStrains(allStrainsData);
+        } catch (e: any) {
+            console.error("Failed to load strains:", e);
+            setError("Could not load strain database.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    fetchStrains();
+  }, []);
+
 
   const [userStrains, setUserStrains] = useState<Strain[]>(() => {
     try {
@@ -285,8 +315,8 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   });
 
   const allStrains = useMemo(() => 
-    [...INITIAL_STRAINS, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
-    [userStrains]
+    [...initialStrains, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
+    [initialStrains, userStrains]
   );
   
   const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
@@ -448,8 +478,18 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     setTempSelectedTerpenes(new Set());
   };
 
+  const toggleSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        return newSet;
+    });
+  }, []);
 
-  const toggleSelection = (id: string) => setSelectedIds(prev => { const newSet = new Set(prev); newSet.has(id) ? newSet.delete(id) : newSet.add(id); return newSet; });
   const toggleSelectAll = () => setSelectedIds(prev => prev.size === sortedAndFilteredStrains.length ? new Set() : new Set(sortedAndFilteredStrains.map(s => s.id)));
 
   const handleExport = (source: ExportSource, format: ExportFormat) => {
@@ -494,168 +534,174 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     { id: 'exports', label: t('strainsView.tabs.exports', { count: savedExports.length }) },
   ];
 
-  return (
-    <>
-      <div className="flex justify-between items-center mb-4 flex-shrink-0">
-        <h2 className="text-2xl font-bold text-blue-600 dark:text-blue-400">{t('strainsView.title')}</h2>
-        <div className="flex items-center gap-2">
-          <Button variant="secondary" onClick={() => setIsAddStrainModalOpen(true)}>
-              <PhosphorIcons.PlusCircle className="inline w-5 h-5 mr-1.5" />{t('common.add')}
-          </Button>
-          <Button variant="secondary" onClick={() => setIsExportModalOpen(true)}>
-              <PhosphorIcons.UploadSimple className="inline w-5 h-5 mr-1.5" />{t('common.export')}
-          </Button>
-        </div>
-      </div>
+  const memoizedToggleFavorite = useCallback(toggleFavorite, []);
 
-      <div className="border-b border-slate-200 dark:border-slate-700">
-        <nav className="-mb-px flex space-x-6">
-            {tabs.map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`shrink-0 flex items-center gap-2 px-1 pb-4 text-sm md:text-base font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}>
-                    {tab.label}
-                </button>
-            ))}
-        </nav>
+  const renderContent = () => {
+    if (isLoading) {
+        return (
+             <div className="flex flex-col h-[calc(100vh-178px)] mt-4">
+                <Card className="p-2 mb-4 flex-shrink-0">
+                   <SkeletonLoader className="h-10" />
+                </Card>
+                <div className="flex-grow min-h-0 border border-slate-200 dark:border-slate-700 rounded-lg flex flex-col">
+                    <SkeletonLoader className="h-10 flex-shrink-0" />
+                    <div className="p-2 space-y-2 overflow-hidden">
+                        <SkeletonLoader count={10} className="h-12"/>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (error) {
+        return <div className="text-center py-10 text-red-500">{error}</div>
+    }
+
+    return (
+        <>
+            {activeTab !== 'exports' && (
+                <div className="flex flex-col h-[calc(100vh-178px)] mt-4">
+                    <Card className="p-2 mb-4 flex-shrink-0">
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <label htmlFor="strain-search" className="sr-only">{t('strainsView.searchPlaceholder')}</label>
+                            <input id="strain-search" type="text" placeholder={t('strainsView.searchPlaceholder')} className="flex-grow bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                            <fieldset className="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-md">
+                                <legend className="sr-only">Filter by strain type</legend>
+                                {typeOptions.map(option => (
+                                    <button 
+                                        key={option}
+                                        onClick={() => setTypeFilter(option)}
+                                        className={`px-3 py-1 text-xs rounded-md transition-colors ${typeFilter === option ? 'bg-white dark:bg-slate-900 shadow font-semibold' : 'hover:bg-white/60 dark:hover:bg-slate-800'}`}
+                                    >
+                                        {option === 'All' ? t('strainsView.all') : t(`strainsView.${option.toLowerCase() as 'sativa' | 'indica' | 'hybrid'}`)}
+                                    </button>
+                                ))}
+                            </fieldset>
+                            <Button variant="secondary" size="sm" onClick={openAdvancedFilterModal} className="shrink-0"><PhosphorIcons.FunnelSimple className="inline w-4 h-4 mr-1"/>{t('strainsView.advancedFilters')}</Button>
+                        </div>
+                    </Card>
+
+                    <div className="flex-grow min-h-0 border border-slate-200 dark:border-slate-700 rounded-lg flex flex-col">
+                        <div className="flex-shrink-0 grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                            <input type="checkbox" aria-label={t('common.add')} checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:ring-primary-500" />
+                            <span className="sr-only">{t('strainsView.strainModal.toggleFavorite')}</span>
+                            {tableHeaders.map(header => (
+                                <button key={header.key} onClick={() => handleSort(header.key)} className={`text-xs font-bold uppercase text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 ${header.className || ''}`}>
+                                    {header.label} {sort.key === header.key && (sort.direction === 'asc' ? <PhosphorIcons.ArrowUp className="inline w-3 h-3"/> : <PhosphorIcons.ArrowDown className="inline w-3 h-3"/>)}
+                                </button>
+                            ))}
+                        </div>
+                        <div className="overflow-y-auto flex-grow">
+                             {sortedAndFilteredStrains.length > 0 ? (
+                                sortedAndFilteredStrains.map(strain => (
+                                    <StrainListItem
+                                        key={strain.id}
+                                        strain={strain}
+                                        isSelected={selectedIds.has(strain.id)}
+                                        isFavorite={favoriteIds.has(strain.id)}
+                                        onSelect={setSelectedStrain}
+                                        onToggleSelection={toggleSelection}
+                                        onToggleFavorite={memoizedToggleFavorite}
+                                    />
+                                ))
+                            ) : (
+                                <div className="text-center py-10">
+                                    <h3 className="font-semibold text-slate-700 dark:text-slate-300">{activeTab === 'user' ? t('strainsView.noUserStrains.title') : t('strainsView.noStrainsFound.title')}</h3>
+                                    <p className="text-sm text-slate-500">{activeTab === 'user' ? t('strainsView.noUserStrains.subtitle') : t('strainsView.noStrainsFound.subtitle')}</p>
+                                    {activeTab === 'user' && userStrains.length === 0 && <Button size="sm" onClick={() => setIsAddStrainModalOpen(true)} className="mt-4">{t('strainsView.noUserStrains.button')}</Button>}
+                                </div>
+                            )}
+                        </div>
+                         <div className="flex-shrink-0 flex justify-between items-center p-2 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 text-sm">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" checked={showFavorites} onChange={() => setShowFavorites(p => !p)} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:ring-primary-500" />
+                                {t('strainsView.footer.showFavorites', { count: favoriteIds.size })}
+                            </label>
+                            <span className="font-semibold">{t('strainsView.footer.selected', { count: selectedIds.size })}</span>
+                            <span className="text-slate-500">{t('strainsView.footer.showing', { shown: sortedAndFilteredStrains.length, total: strainsToDisplay.length })}</span>
+                         </div>
+                    </div>
+                </div>
+            )}
+            {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} allStrains={allStrains} />}
+        </>
+    );
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">{t('strainsView.title')}</h1>
+        <div className="flex gap-2">
+            {activeTab === 'user' && <Button variant="secondary" size="sm" onClick={() => setIsAddStrainModalOpen(true)}><PhosphorIcons.PlusCircle className="inline w-4 h-4 mr-1"/> {t('common.add')}</Button>}
+            {activeTab !== 'exports' && <Button variant="secondary" size="sm" onClick={() => setIsExportModalOpen(true)}><PhosphorIcons.UploadSimple className="inline w-4 h-4 mr-1"/> {t('common.export')}</Button>}
+        </div>
       </div>
       
-      {activeTab !== 'exports' && (
-        <div className="flex flex-col h-[calc(100vh-178px)] mt-4">
-          <Card className="p-2 mb-4 flex-shrink-0">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <label htmlFor="strain-search" className="sr-only">{t('strainsView.searchPlaceholder')}</label>
-              <input id="strain-search" type="text" placeholder={t('strainsView.searchPlaceholder')} className="flex-grow bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-sm" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-              <fieldset className="flex items-center bg-slate-100 dark:bg-slate-700 p-1 rounded-md">
-                <legend className="sr-only">Filter by strain type</legend>
-                {typeOptions.map(option => (
-                    <button key={option} onClick={() => setTypeFilter(option)} className={`px-2 py-1 text-xs rounded-md flex-1 transition-colors ${typeFilter === option ? 'bg-white dark:bg-slate-800 text-primary-600 font-bold shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'}`}>{t(`strainsView.${option.toLowerCase()}`)}</button>
-                ))}
-              </fieldset>
-              <Button variant="secondary" size="sm" onClick={openAdvancedFilterModal} className="px-3 py-2 text-sm">
-                  <PhosphorIcons.FunnelSimple className="inline w-4 h-4 mr-1"/> {t('strainsView.advancedFilters')}
-              </Button>
-            </div>
-          </Card>
-          
-          <div className="flex-grow min-h-0 border border-slate-200 dark:border-slate-700 rounded-lg flex flex-col">
-            <div className="grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-1.5 font-bold text-xs text-slate-600 dark:text-slate-300 border-b-2 border-slate-200 dark:border-slate-700 flex-shrink-0 bg-slate-50 dark:bg-slate-800/50 sticky top-0 z-10">
-              <input type="checkbox" aria-label="Select all strains" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
-              <div className="w-4 h-4 text-center"><PhosphorIcons.Heart /></div>
-              {tableHeaders.map(h => (
-                <button key={h.key} onClick={() => handleSort(h.key)} className={`flex items-center gap-1 ${h.className || ''}`}>
-                  {h.label}
-                  {sort.key === h.key && (sort.direction === 'asc' ? <PhosphorIcons.ArrowUp className="w-3 h-3"/> : <PhosphorIcons.ArrowDown className="w-3 h-3"/>)}
-                </button>
-              ))}
-            </div>
-            
-            <div className="overflow-y-auto pr-1 flex-grow">
-              {sortedAndFilteredStrains.length > 0 ? (
-                <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                  {sortedAndFilteredStrains.map(strain => {
-                    return (
-                      <div 
-                        key={strain.id} 
-                        onClick={() => setSelectedStrain(strain)} 
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedStrain(strain); } }}
-                        role="button"
-                        tabIndex={0}
-                        className={`grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${selectedStrain?.id === strain.id ? 'bg-primary-100/50 dark:bg-primary-900/50' : 'hover:bg-slate-50 dark:hover:bg-slate-700/70'}`}>
-                        <input type="checkbox" aria-label={`Select ${strain.name}`} checked={selectedIds.has(strain.id)} onChange={e => {e.stopPropagation(); toggleSelection(strain.id);}} onClick={e => e.stopPropagation()} className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
-                        <button onClick={e => {e.stopPropagation(); toggleFavorite(strain.id)}} className={`favorite-btn-glow text-slate-400 hover:text-red-400 ${favoriteIds.has(strain.id) ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}><PhosphorIcons.Heart weight={favoriteIds.has(strain.id) ? 'fill' : 'regular'} className="w-4 h-4" /></button>
-                        <div className="min-w-0">
-                          <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">{strain.name}</span>
-                        </div>
-                        <div className="flex justify-center" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
-                          <div className="flex">
-                              {strain.agronomic.difficulty === 'Easy' && (
-                                  <>
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-green-500" />
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
-                                  </>
-                              )}
-                              {strain.agronomic.difficulty === 'Medium' && (
-                                  <>
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-amber-500" />
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-amber-500" />
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
-                                  </>
-                              )}
-                              {strain.agronomic.difficulty === 'Hard' && (
-                                  <>
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-red-500" />
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-red-500" />
-                                      <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-red-500" />
-                                  </>
-                              )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-10 text-slate-500">
-                  {activeTab === 'user' && userStrains.length === 0 ? (
-                      <>
-                          <p className="font-semibold">{t('strainsView.noUserStrains.title')}</p>
-                          <p className="text-sm">{t('strainsView.noUserStrains.subtitle')}</p>
-                      </>
-                  ) : (
-                      <>
-                          <p className="font-semibold">{t('strainsView.noStrainsFound.title')}</p>
-                          <p className="text-sm">{t('strainsView.noStrainsFound.subtitle')}</p>
-                      </>
-                  )}
-                </div>
-              )}
-            </div>
+      <div className="border-b border-slate-200 dark:border-slate-700">
+        <nav className="-mb-px flex space-x-6 overflow-x-auto">
+          {tabs.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`shrink-0 flex items-center gap-2 px-1 pb-4 text-sm md:text-base font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-500 hover:text-slate-700 dark:hover:text-slate-200'}`}>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
 
-            <div className="flex-shrink-0 border-t border-slate-200 dark:border-slate-700 p-2 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
-              <div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="checkbox" checked={showFavorites} onChange={e => setShowFavorites(e.target.checked)} className="h-4 w-4 rounded border-slate-400 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 bg-transparent"/>
-                  {t('strainsView.footer.showFavorites', { count: favoriteIds.size })}
-                </label>
-              </div>
-              <span>{t('strainsView.footer.selected', { count: selectedIds.size })}</span>
-              <span>{t('strainsView.footer.showing', { shown: sortedAndFilteredStrains.length, total: strainsToDisplay.length })}</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {renderContent()}
 
-      {activeTab === 'exports' && (
-        <ExportsManagerView
-          savedExports={savedExports}
-          deleteExport={deleteExport}
+      {selectedStrain && (
+        <StrainDetailModal
+          strain={selectedStrain}
+          isFavorite={favoriteIds.has(selectedStrain.id)}
+          onClose={() => setSelectedStrain(null)}
+          onToggleFavorite={memoizedToggleFavorite}
+          onStartGrowing={handleStartGrowingRequest}
+          plants={plants}
+          onSelectSimilarStrain={(strain) => setSelectedStrain(strain)}
           allStrains={allStrains}
         />
       )}
-      
-      {selectedStrain && <StrainDetailModal strain={selectedStrain} isFavorite={favoriteIds.has(selectedStrain.id)} onClose={() => setSelectedStrain(null)} onToggleFavorite={toggleFavorite} onStartGrowing={handleStartGrowingRequest} plants={plants} onSelectSimilarStrain={setSelectedStrain} />}
-      <AdvancedFilterModal 
-        isOpen={isAdvancedFilterModalOpen} 
-        onClose={() => setIsAdvancedFilterModalOpen(false)}
-        onApply={handleApplyAdvancedFilters}
-        count={previewFilteredStrains.length}
-        thcRange={tempThcRange}
-        setThcRange={setTempThcRange}
-        floweringRange={tempFloweringRange}
-        setFloweringRange={setTempFloweringRange}
-        selectedDifficulties={tempSelectedDifficulties}
-        handleToggleDifficulty={handleTempToggleDifficulty}
-        selectedAromas={tempSelectedAromas}
-        allAromas={allAromas}
-        handleToggleAroma={handleTempToggleAroma}
-        selectedTerpenes={tempSelectedTerpenes}
-        allTerpenes={allTerpenes}
-        handleToggleTerpene={handleTempToggleTerpene}
-        resetAdvancedFilters={resetTempAdvancedFilters}
-      />
-      {isSetupModalOpen && strainToGrow && <GrowSetupModal strain={strainToGrow} onClose={() => setIsSetupModalOpen(false)} onConfirm={handleStartGrowingConfirm} />}
-      <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={allStrains.length} />
-      <AddStrainModal isOpen={isAddStrainModalOpen} onClose={() => setIsAddStrainModalOpen(false)} onAddStrain={handleAddStrain} />
-    </>
+      {isSetupModalOpen && strainToGrow && (
+        <GrowSetupModal
+          strain={strainToGrow}
+          onClose={() => setIsSetupModalOpen(false)}
+          onConfirm={handleStartGrowingConfirm}
+        />
+      )}
+       <ExportModal 
+            isOpen={isExportModalOpen}
+            onClose={() => setIsExportModalOpen(false)}
+            onExport={handleExport}
+            selectionCount={selectedIds.size}
+            favoritesCount={favoriteIds.size}
+            filteredCount={sortedAndFilteredStrains.length}
+            totalCount={allStrains.length}
+        />
+        <AddStrainModal 
+            isOpen={isAddStrainModalOpen}
+            onClose={() => setIsAddStrainModalOpen(false)}
+            onAddStrain={handleAddStrain}
+        />
+         <AdvancedFilterModal
+            isOpen={isAdvancedFilterModalOpen}
+            onClose={() => setIsAdvancedFilterModalOpen(false)}
+            onApply={handleApplyAdvancedFilters}
+            thcRange={tempThcRange}
+            setThcRange={setTempThcRange}
+            floweringRange={tempFloweringRange}
+            setFloweringRange={setTempFloweringRange}
+            selectedDifficulties={tempSelectedDifficulties}
+            handleToggleDifficulty={handleTempToggleDifficulty}
+            selectedAromas={tempSelectedAromas}
+            allAromas={allAromas}
+            handleToggleAroma={handleTempToggleAroma}
+            selectedTerpenes={tempSelectedTerpenes}
+            allTerpenes={allTerpenes}
+            handleToggleTerpene={handleTempToggleTerpene}
+            resetAdvancedFilters={resetTempAdvancedFilters}
+            count={previewFilteredStrains.length}
+        />
+    </div>
   );
 };

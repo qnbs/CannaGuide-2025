@@ -4,13 +4,14 @@ interface RangeSliderProps {
     min: number;
     max: number;
     step: number;
-    value: number[];
-    onChange: (newValue: number[]) => void;
+    value: [number, number];
+    onChange: (newValue: [number, number]) => void;
     label: string;
     unit: string;
+    color?: 'primary' | 'green' | 'blue';
 }
 
-export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value, onChange, label, unit }) => {
+export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value, onChange, label, unit, color = 'primary' }) => {
     
     // z-index state to determine which thumb is on top and visually active
     const [minZIndex, setMinZIndex] = useState(1);
@@ -43,10 +44,14 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
     // Visual feedback variables for CSS
     const minIsActive = minZIndex > maxZIndex;
     const maxIsActive = maxZIndex > minZIndex;
-    const activeColor = '#2563eb';   // primary-600 (a bit darker/more saturated)
-    const inactiveColor = '#3b82f6'; // primary-500
-    const activeScale = 1.2;
-    const inactiveScale = 1;
+
+    const colorMap = {
+        primary: { active: '#2563eb', inactive: '#3b82f6', bg: 'bg-primary-500' },
+        green: { active: '#16a34a', inactive: '#22c55e', bg: 'bg-green-500' },
+        blue: { active: '#2563eb', inactive: '#3b82f6', bg: 'bg-blue-500' },
+    };
+    
+    const { active, inactive, bg } = colorMap[color] || colorMap.primary;
 
     return (
         <div>
@@ -57,7 +62,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
             <div className="relative h-4 flex items-center">
                 <div className="relative w-full h-1 bg-slate-200 dark:bg-slate-600 rounded-full">
                     <div 
-                        className="absolute h-1 bg-primary-500 rounded-full"
+                        className={`absolute h-1 ${bg} rounded-full`}
                         style={{ left: `${minPos}%`, right: `${100 - maxPos}%` }}
                     ></div>
                     <input
@@ -72,8 +77,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
                         className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
                         style={{
                             zIndex: minZIndex,
-                            '--thumb-color': minIsActive ? activeColor : inactiveColor,
-                            '--thumb-scale': minIsActive ? activeScale : inactiveScale,
+                            '--thumb-color': minIsActive ? active : inactive,
+                            '--thumb-scale': minIsActive ? 1.2 : 1,
                         } as React.CSSProperties}
                         aria-label={`${label} minimum`}
                     />
@@ -89,8 +94,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
                         className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
                         style={{
                             zIndex: maxZIndex,
-                            '--thumb-color': maxIsActive ? activeColor : inactiveColor,
-                            '--thumb-scale': maxIsActive ? activeScale : inactiveScale,
+                            '--thumb-color': maxIsActive ? active : inactive,
+                            '--thumb-scale': maxIsActive ? 1.2 : 1,
                         } as React.CSSProperties}
                         aria-label={`${label} maximum`}
                     />

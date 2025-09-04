@@ -1,0 +1,816 @@
+[
+    {
+        "id": "sage",
+        "name": "S.A.G.E.",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Big Sur Holy Weed x Afghani",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 11,
+        "description": "S.A.G.E. steht für Sativa Afghani Genetic Equilibrium. Eine preisgekrönte Hybride, die eine erhebende, zerebrale Sativa-dominante Wirkung mit der Harzproduktion einer Indica kombiniert. Das Aroma ist würzig und sandelholzartig.",
+        "aromas": ["Würzig", "Sandelholz"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Low",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "bis 500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch (120-160 cm)", "outdoor": "Sehr hoch (bis 4 m)" }
+        }
+    },
+    {
+        "id": "scotty-2-hotty",
+        "name": "Scotty 2 Hotty",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Biscotti x Rainbow Chip",
+        "thc": 27,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Hybride mit einem komplexen, gasartigen und süßen Aroma. Die Wirkung ist ausgewogen, bietet sowohl zerebrale Euphorie als auch körperliche Entspannung.",
+        "aromas": ["Gasartig", "Süß", "Komplex"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "bis 750 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel bis Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "scouts-honor",
+        "name": "Scout's Honor",
+        "type": "Hybrid",
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "OGKB x OG Kush",
+        "thc": 26,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Indica-dominante Sorte mit einem süßen, erdigen Aroma. Die Wirkung ist stark entspannend und ideal für den Abend.",
+        "aromas": ["Süß", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz bis Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "secret-cookies",
+        "name": "Secret Cookies",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Cherry Pie x GSC",
+        "thc": 28,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Hybride mit einem süßen, teigigen und erdigen Aroma. Die Wirkung ist ausgewogen, entspannend und euphorisch.",
+        "aromas": ["Süß", "Teigig", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "bis 650 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "secret-weapon",
+        "name": "Secret Weapon",
+        "type": "Hybrid",
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Cheese Quake x White Widow",
+        "thc": 25,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine potente Hybride mit einem komplexen Aroma von Kiefer, Zitrone und Erde. Die Wirkung ist ausgewogen, bietet sowohl zerebrale Klarheit als auch körperliche Entspannung.",
+        "aromas": ["Kiefer", "Zitrone", "Erde"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "sensi-star",
+        "name": "Sensi Star",
+        "type": "Hybrid",
+        "typeDetails": "Indica 90% / Sativa 10%",
+        "genetics": "Unbekannte afghanische Genetik",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine legendäre, preisgekrönte Indica, bekannt für ihre dichten, harzigen Knospen und ihre starke, körperlich entspannende Wirkung. Das Aroma ist metallisch, zitronig und erdig.",
+        "aromas": ["Metallisch", "Zitronig", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Low",
+            "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "bis 500 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz (bis 100 cm)", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "sfv-og",
+        "name": "SFV OG",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "OG Kush Phänotyp",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Ein Sativa-dominanter Phänotyp von OG Kush aus dem San Fernando Valley. Bekannt für sein erdiges, kiefernartiges Aroma und eine Wirkung, die entspannend, aber nicht sedierend ist.",
+        "aromas": ["Erdig", "Kiefer"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "bis 600 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "shaman",
+        "name": "Shaman",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 87.5% / Indica 12.5%",
+        "genetics": "Purple #1 x Skunk",
+        "thc": 14,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine robuste Sativa-dominante Sorte, die für den Anbau im Freien gezüchtet wurde. Sie bietet eine klare, erhebende Sativa-Wirkung und hat ein süßes, holziges Aroma.",
+        "aromas": ["Süß", "Holzig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Low",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "bis 500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Sehr hoch (bis 3 m)" }
+        }
+    },
+    {
+        "id": "sherbet",
+        "name": "Sherbet",
+        "type": "Hybrid",
+        "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "GSC x Pink Panties",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Auch bekannt als Sunset Sherbet. Eine Indica-dominante Sorte mit einem süßen, fruchtigen Aroma. Die Wirkung ist stark, entspannend und euphorisch, ideal zum Stressabbau.",
+        "aromas": ["Süß", "Fruchtig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "shiva-skunk",
+        "name": "Shiva Skunk",
+        "type": "Hybrid",
+        "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "Northern Lights #5 x Skunk #1",
+        "thc": 20,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine potente Indica aus Skunk #1 und Northern Lights #5. Bekannt für ihr starkes, moschusartiges Aroma und ihre tief entspannende, fast meditative Wirkung.",
+        "aromas": ["Moschus", "Skunk", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "sehr hoch", "outdoor": "bis 800 g/Pflanze" },
+            "heightDetails": { "indoor": "110-120 cm", "outdoor": "Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "sinmint-cookies",
+        "name": "SinMint Cookies",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "GSC (Forum Cut) x Blue Power",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "22-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "description": "Eine ausgewogene Hybride, die für ihr süßes, minziges Keksaroma und ihre starke, ausgewogene Wirkung bekannt ist. Sie bietet eine euphorische, erhebende zerebrale Wirkung, gepaart mit einer entspannenden Körperberuhigung.",
+        "aromas": ["Minze", "Süß", "Erdig", "Keks"],
+        "dominantTerpenes": ["Caryophyllen", "Limonen", "Myrcen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~550 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8m)" }
+        }
+    },
+    {
+        "id": "skunk-1",
+        "name": "Skunk #1",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 65% / Indica 35%",
+        "genetics": "(Acapulco Gold x Colombian Gold) x Afghani",
+        "thc": 19,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine der wichtigsten Sorten in der Cannabis-Geschichte. Diese Hybride war die erste stabile Indica-Sativa-Kreuzung und ist bekannt für ihr starkes Skunk-Aroma und ihre ausgewogene, erhebende Wirkung.",
+        "aromas": ["Skunk", "Erdig", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "groß", "outdoor": "sehr groß" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "skywalker",
+        "name": "Skywalker",
+        "type": "Hybrid",
+        "typeDetails": "Indica 50% / Sativa 50%",
+        "genetics": "Blueberry x Mazar",
+        "thc": 23,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine ausgewogene Hybride aus Blueberry und Mazar. Sie hat ein süßes, fruchtiges Aroma und bietet eine entspannende Körperwirkung, die ideal bei Schmerzen und Stress ist.",
+        "aromas": ["Süß", "Fruchtig", "Beere"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz bis Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "skywalker-og",
+        "name": "Skywalker OG",
+        "type": "Hybrid",
+        "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "Skywalker x OG Kush",
+        "thc": 28,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Indica-dominante Kreuzung aus Skywalker und OG Kush. Sie hat ein scharfes, erdiges Aroma und bietet eine starke, körperlich entspannende Wirkung, ideal für den Abend.",
+        "aromas": ["Scharf", "Erdig", "Kush"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" }
+        }
+    },
+    {
+        "id": "slurricane",
+        "name": "Slurricane",
+        "type": "Hybrid",
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Do-Si-Dos x Purple Punch",
+        "thc": 28,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Indica-dominante Sorte aus Do-Si-Dos und Purple Punch. Sie hat ein süßes, fruchtiges Aroma und bietet eine stark entspannende, beruhigende Wirkung.",
+        "aromas": ["Süß", "Fruchtig", "Beere"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-500 g/m²", "outdoor": "bis 600 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "slurty3",
+        "name": "Slurty3",
+        "type": "Hybrid",
+        "typeDetails": "Indica-dominant",
+        "genetics": "Slurricane x Gelato 33",
+        "thc": 27,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Indica-dominante Hybride mit einem süßen, gasartigen Aroma. Die Wirkung ist stark, entspannend und euphorisch.",
+        "aromas": ["Süß", "Fruchtig", "Gasartig", "Erdig"],
+        "dominantTerpenes": ["Limonen", "Caryophyllen", "Myrcen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "bis 700 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" }
+        }
+    },
+    {
+        "id": "snoops-dream",
+        "name": "Snoop's Dream",
+        "type": "Hybrid",
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Blue Dream x Master Kush",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Indica-dominante Sorte mit einem süßen Blaubeeraroma. Sie bietet eine entspannende, aber nicht zu sedierende Wirkung, die ideal für den Nachmittag ist.",
+        "aromas": ["Blaubeere", "Süß", "Vanille"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "snowman",
+        "name": "Snowman",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "GSC Phänotyp",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Ein Sativa-dominanter Phänotyp von Girl Scout Cookies. Bekannt für seine erhebende, euphorische Wirkung und sein süßes, vanilleartiges Aroma.",
+        "aromas": ["Süß", "Vanille", "Diesel"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel-Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "somango",
+        "name": "Somango",
+        "type": "Hybrid",
+        "typeDetails": "Indica 75% / Sativa 25%",
+        "genetics": "Jack Herer x Big Skunk Korean",
+        "thc": 20,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Indica-dominante Sorte mit einem starken, süßen Mangoaroma. Die Wirkung ist erhebend und zerebral, aber gleichzeitig körperlich entspannend.",
+        "aromas": ["Mango", "Süß", "Tropisch"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "bis 600 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz (bis 100 cm)", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "sour-apple",
+        "name": "Sour Apple",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Sour Diesel x Cinderella 99",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Eine Sativa-dominante Hybride, die für ihr starkes, säuerliches Apfelaroma bekannt ist. Sie bietet eine energetisierende, erhebende und kreative Wirkung, die ideal für den Tagesgebrauch ist.",
+        "aromas": ["Apfel", "Sauer", "Süß", "Diesel"],
+        "dominantTerpenes": ["Myrcen", "Pinen", "Caryophyllen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Hoch (bis 2.5m)" }
+        }
+    },
+    {
+        "id": "sour-diesel",
+        "name": "Sour Diesel",
+        "type": "Sativa",
+        "typeDetails": "Sativa 90% / Indica 10%",
+        "genetics": "Chemdawg x Super Skunk",
+        "thc": 26,
+        "cbd": 2,
+        "floweringTime": 11,
+        "description": "Eine legendäre Sativa, die für ihr scharfes, dieselartiges Aroma bekannt ist. Die Wirkung ist schnell einsetzend, energetisierend, verträumt und zerebral.",
+        "aromas": ["Diesel", "Scharf", "Skunk"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "475-525 g/m²", "outdoor": "550-600 g/Pflanze" },
+            "heightDetails": { "indoor": "90-160 cm", "outdoor": "Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "sour-dubble",
+        "name": "Sour Dubble",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Sour Diesel IBL x Sour Bubble",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "description": "Eine ausgewogene Hybride, die für ihr süß-saures Aroma und ihre starke, ausgewogene Wirkung bekannt ist. Sie ist eine der Elternsorten von Gorilla Glue #4 und bietet eine euphorische, entspannende Erfahrung.",
+        "aromas": ["Sauer", "Süß", "Diesel", "Fruchtig"],
+        "dominantTerpenes": ["Caryophyllen", "Myrcen", "Limonen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~550 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8m)" }
+        }
+    },
+    {
+        "id": "sour-kush",
+        "name": "Sour Kush",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Sour Diesel x OG Kush",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Kreuzung aus Sour Diesel und OG Kush. Sie bietet eine ausgewogene Wirkung, die sowohl zerebral als auch körperlich ist, und hat ein klassisches saures Kush-Aroma.",
+        "aromas": ["Sauer", "Kush", "Diesel"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "bis 700 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Hoch (bis 2.2 m)" }
+        }
+    },
+    {
+        "id": "sour-tangie",
+        "name": "Sour Tangie",
+        "type": "Sativa",
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "East Coast Sour Diesel x Tangie",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Sativa-dominante Sorte, die das saure Diesel-Aroma mit dem süßen Zitrusgeschmack von Tangie kombiniert. Die Wirkung ist erhebend und kreativ.",
+        "aromas": ["Diesel", "Zitrus", "Sauer"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "bis 750 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "south-florida-og",
+        "name": "South Florida OG",
+        "type": "Hybrid",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Chemdawg x (Lemon Thai x Hindu Kush)",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Eine potente, Indica-dominante Hybride, die als eine der Elternsorten von Biscotti bekannt ist. Sie bietet eine stark entspannende Wirkung mit dem klassischen erdigen, kiefernartigen OG Kush-Aroma.",
+        "aromas": ["Erdig", "Kiefer", "Scharf", "Zitrus"],
+        "dominantTerpenes": ["Myrcen", "Limonen", "Caryophyllen"],
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2m)" }
+        }
+    },
+    {
+        "id": "space-cake",
+        "name": "Space Cake",
+        "type": "Hybrid",
+        "typeDetails": "Indica 65% / Sativa 35%",
+        "genetics": "GSC (Forum Cut) x Snow Lotus",
+        "thc": 23,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Hybride mit einem süßen, cremigen und nussigen Aroma. Die Wirkung ist entspannend und euphorisch, ideal zum Stressabbau.",
+        "aromas": ["Süß", "Cremig", "Nussig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "bis 650 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" }
+        }
+    },
+    {
+        "id": "space-queen",
+        "name": "Space Queen",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Romulan x Cinderella 99",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-23%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "description": "Eine klassische Hybride, die für ihr süßes, fruchtiges Aroma von Ananas und Kirsche bekannt ist. Sie bietet eine schnelle, intensive und zerebrale Wirkung, die oft als trippig beschrieben wird, aber auch eine entspannende körperliche Komponente hat.",
+        "aromas": ["Ananas", "Kirsche", "Süß", "Fruchtig"],
+        "dominantTerpenes": ["Myrcen", "Caryophyllen", "Pinen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8m)" }
+        }
+    },
+    {
+        "id": "stardawg",
+        "name": "Stardawg",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 90% / Indica 10%",
+        "genetics": "Chemdawg 4 x Tres Dawg",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Sativa-dominante Hybride aus der Chemdawg-Linie. Bekannt für ihr erdiges, kiefernartiges Aroma mit Diesel-Noten. Die Wirkung ist erhebend und ideal für soziale Anlässe.",
+        "aromas": ["Erdig", "Kiefer", "Diesel"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "550-700 g/m²", "outdoor": "bis 800 g/Pflanze" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "strawberry-banana",
+        "name": "Strawberry Banana",
+        "type": "Hybrid",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Banana Kush x Bubble Gum (Strawberry Phänotyp)",
+        "thc": 26,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Indica-dominante Sorte mit einem süßen, fruchtigen Geschmack nach Erdbeeren und Bananen. Sie ist bekannt für ihre hohe Harzproduktion und ihre glückliche, friedliche Wirkung.",
+        "aromas": ["Erdbeere", "Banane", "Süß", "Fruchtig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "bis 750 g/Pflanze" },
+            "heightDetails": { "indoor": "120-150 cm", "outdoor": "Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "strawberry-cough",
+        "name": "Strawberry Cough",
+        "type": "Sativa",
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Haze x Strawberry Fields",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 11,
+        "description": "Eine Sativa-Sorte, die für ihren süßen Erdbeergeschmack und ihre erhebende, zerebrale Wirkung bekannt ist, die oft zum Husten reizt. Ideal für gesellige und kreative Momente.",
+        "aromas": ["Erdbeere", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "bis 500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "strawberry-gary",
+        "name": "Strawberry Gary",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Gary Payton x Red Pop",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine ausgewogene Hybride mit einem süßen Erdbeer- und Fruchtaroma. Die Wirkung ist entspannend und euphorisch, ideal für den ganzen Tag.",
+        "aromas": ["Erdbeere", "Fruchtig", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "bis 700 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" }
+        }
+    },
+    {
+        "id": "strawberry-kush",
+        "name": "Strawberry Kush",
+        "type": "Hybrid",
+        "typeDetails": "Indica-dominant",
+        "genetics": "Strawberry Cough x OG Kush",
+        "thc": 23,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Indica-dominante Sorte mit einem süßen Erdbeer- und erdigen Kush-Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abend.",
+        "aromas": ["Erdbeere", "Kush", "Süß", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "bis 750 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "sugar-black-rose",
+        "name": "Sugar Black Rose",
+        "type": "Hybrid",
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Critical Mass x Black Domina",
+        "thc": 25,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine preisgekrönte Indica mit einem süßen, fruchtigen Aroma. Die Wirkung ist stark, langanhaltend, körperlich entspannend und fast narkotisch.",
+        "aromas": ["Süß", "Fruchtig", "Blumig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "bis 900 g/Pflanze" },
+            "heightDetails": { "indoor": "70-100 cm", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "sundae-driver",
+        "name": "Sundae Driver",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Fruity Pebbles OG x Grape Pie",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine ausgewogene Hybride mit einem süßen, cremigen und schokoladigen Aroma. Die Wirkung ist entspannt und glücklich, ideal für einen ruhigen Tag.",
+        "aromas": ["Süß", "Cremig", "Schokolade"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Low",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "bis 500 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "sunset-sherbet",
+        "name": "Sunset Sherbet",
+        "type": "Hybrid",
+        "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "GSC x Pink Panties",
+        "thc": 21,
+        "cbd": 1,
+        "thcRange": "18-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "description": "Eine Indica-dominante Sorte, die für ihr süßes, dessertartiges Aroma bekannt ist, das an Beeren, Zitrusfrüchte und süße Sahne erinnert. Die Wirkung ist stark, bietet eine Ganzkörperentspannung mit einem Hauch von zerebraler Energie und Euphorie.",
+        "aromas": ["Süß", "Zitrus", "Beere", "Cremig"],
+        "dominantTerpenes": ["Caryophyllen", "Limonen", "Myrcen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Low",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "~400 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8m)" }
+        }
+    },
+    {
+        "id": "super-critical",
+        "name": "Super Critical",
+        "type": "Hybrid",
+        "typeDetails": "Indica-dominant",
+        "genetics": "Big Bud x Skunk #1 x White Widow",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine ertragreiche Indica-Sorte, die für ihre schnelle Blüte und ihre stark entspannende, fast narkotische Wirkung bekannt ist.",
+        "aromas": ["Süß", "Skunk", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "bis 800 g/m²", "outdoor": "bis 1200 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "super-lemon-haze",
+        "name": "Super Lemon Haze",
+        "type": "Sativa",
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Lemon Skunk x Super Silver Haze",
+        "thc": 25,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine mehrfache Cannabis-Cup-Gewinnerin. Diese Sativa-dominante Sorte hat ein intensives Zitronenaroma und eine energetisierende, lebhafte Wirkung.",
+        "aromas": ["Zitrone", "Haze", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "bis 800 g/m²", "outdoor": "bis 1200 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "super-silver-haze",
+        "name": "Super Silver Haze",
+        "type": "Sativa",
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Skunk x Northern Lights x Haze",
+        "thc": 23,
+        "cbd": 1,
+        "floweringTime": 11,
+        "description": "Eine legendäre, preisgekrönte Sativa. Sie ist bekannt für ihre langanhaltende, energetisierende und erhebende Wirkung, die ideal für den Tagesgebrauch ist.",
+        "aromas": ["Skunk", "Haze", "Zitrus"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "bis 800 g/m²", "outdoor": "bis 1500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Sehr hoch (bis 4 m)" }
+        }
+    },
+    {
+        "id": "super-skunk",
+        "name": "Super Skunk",
+        "type": "Hybrid",
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Skunk #1 x Afghani",
+        "thc": 20,
+        "cbd": 2.4,
+        "floweringTime": 8,
+        "description": "Eine Kreuzung aus Skunk #1 und einer afghanischen Indica. Sie ist bekannt für ihr extra starkes Skunk-Aroma und ihre stark entspannende Körperwirkung.",
+        "aromas": ["Skunk", "Erdig", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "groß", "outdoor": "sehr groß" },
+            "heightDetails": { "indoor": "120-150 cm", "outdoor": "Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "sweet-tooth",
+        "name": "Sweet Tooth",
+        "type": "Hybrid",
+        "typeDetails": "Indica-dominant",
+        "genetics": "Afghani x Nepalese x Hawaiian",
+        "thc": 19,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine Indica-dominante Sorte, die für ihren extrem süßen, beerenartigen Geschmack bekannt ist. Die Wirkung ist erhebend und entspannend, ideal zum Stressabbau.",
+        "aromas": ["Süß", "Beere", "Blumig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~550 g/m²", "outdoor": "bis 650 g/Pflanze" },
+            "heightDetails": { "indoor": "50-60 cm", "outdoor": "Kurz (bis 1 m)" }
+        }
+    }
+]

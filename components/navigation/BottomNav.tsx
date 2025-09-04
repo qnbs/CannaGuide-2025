@@ -30,7 +30,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
     };
     
     return (
-        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-lg">
+        <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] dark:shadow-[0_-2px_10px_rgba(0,0,0,0.2)]">
             <div className="flex justify-around max-w-5xl mx-auto">
                 {mainNavViews.map((viewValue) => {
                     return (

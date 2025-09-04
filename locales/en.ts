@@ -1,5 +1,9 @@
 
 
+
+
+
+
 export const en = {
   common: {
     close: 'Close',
@@ -61,7 +65,7 @@ export const en = {
   },
   strainsView: {
     title: 'Strain Database',
-    searchPlaceholder: 'Search strain...',
+    searchPlaceholder: 'Search strain or genetics...',
     all: 'All',
     sativa: 'Sativa',
     indica: 'Indica',
@@ -69,6 +73,7 @@ export const en = {
     advancedFilters: 'Advanced Filters',
     matchingStrains: '{count} matching strains',
     thcMax: 'THC% max.',
+    cbdMax: 'CBD% max.',
     floweringTime: 'Flowering Time',
     level: 'Level',
     terpenes: 'Terpenes',
@@ -95,6 +100,7 @@ export const en = {
     noUserStrains: {
       title: 'You haven\'t added any custom strains yet.',
       subtitle: 'Click "Add" to create your first one.',
+      button: 'Add first strain',
     },
     footer: {
       showFavorites: 'Favorites only ({count})',
@@ -149,7 +155,11 @@ export const en = {
       terpenesPlaceholder: 'Separate values with commas',
       addStrainSuccess: 'Strain "{name}" added successfully!',
       addStrainError: 'Error saving strain.',
-      validationError: 'Please fill out all required fields (Name, THC, Flowering Time).',
+      validation: {
+        name: 'Name is required.',
+        thc: 'THC must be between 0 and 50.',
+        floweringTime: 'Flowering time must be between 4 and 20 weeks.',
+      }
     },
     exportModal: {
       title: 'Export Data',
@@ -223,21 +233,32 @@ export const en = {
         medium: 'Medium',
         low: 'Low',
       },
+      wateringTask: {
+        title: 'Water Plant',
+        description: 'Substrate moisture is low.'
+      },
+      feedingTask: {
+        title: 'Feed Plant',
+        description: 'EC is low, nutrients are needed.'
+      },
+      phTask: {
+        title: 'Check pH',
+        description: 'pH is outside the optimal range.'
+      },
     },
     warnings: {
       title: 'Active Warnings',
       none: 'No problems detected with your plants. Keep it up!',
     },
-    tipCard: {
-      title: 'Tip of the Day',
-      next: 'Next Tip',
-      tips: [
-        "Don't overwater your plants! It's the most common beginner mistake. Feel the top inch of soil before watering again.",
-        "The correct pH level (usually 6.0-7.0 in soil) is crucial for nutrient uptake. An inexpensive pH meter is a worthwhile investment.",
-        "Good air circulation is key to preventing mold and pests. A small clip-on fan in your grow tent can work wonders.",
-        "Learn Low Stress Training (LST). Gently bending down branches can significantly increase your yield by allowing more light to reach lower bud sites.",
-        "Patience during drying and curing makes the difference between good and great cannabis. Don't skip this step!"
-      ],
+    aiDiagnostics: {
+      title: 'AI Plant Doctor',
+      description: 'Upload a photo of an affected leaf to get an AI-powered diagnosis and solution suggestions.',
+      buttonLabel: 'Select Photo',
+      prompt: 'or drop it here',
+      analyzing: 'Analyzing image...',
+      diagnoseButton: 'Start Diagnosis',
+      resultTitle: 'AI Diagnosis',
+      error: 'Analysis failed. Please try again.',
     },
     notifications: {
       allSlotsFull: "All plant slots are occupied.",
@@ -245,6 +266,9 @@ export const en = {
       waterAllSuccess: "Watered {count} plants.",
       waterAllNone: "No plants need watering.",
       photoGallerySoon: 'Photo gallery feature is coming soon!',
+      stageChange: 'New stage reached: {stage}',
+      harvestReady: '{name} is ready for harvest!',
+      finalYield: 'Final yield calculated: {yield}g',
     },
     detailedView: {
       back: 'Back to Dashboard',
@@ -398,24 +422,37 @@ export const en = {
       ventilation: {
         title: 'Fan Calculator',
         description: 'Calculate the required fan power (m³/h) for your grow tent.',
-        width: 'Width (cm)',
-        depth: 'Depth (cm)',
-        height: 'Height (cm)',
+        width: 'Width',
+        depth: 'Depth',
+        height: 'Height',
         result: 'Recommended exhaust fan power',
       },
       light: {
         title: 'Light Calculator',
         description: 'Estimate the required LED light power for your area.',
-        width: 'Width (cm)',
-        depth: 'Depth (cm)',
+        width: 'Width',
+        depth: 'Depth',
         result: 'Recommended LED power',
       },
       nutrients: {
         title: 'Nutrient Calculator',
         description: 'Calculate the right amount of fertilizer for your watering can.',
-        waterAmount: 'Water Amount (L)',
-        dose: 'Dose (ml/L)',
+        waterAmount: 'Water Amount',
+        dose: 'Dose',
         result: 'Required fertilizer',
+      },
+      yield: {
+        title: 'Yield Estimator',
+        description: 'Get a rough estimate of your potential harvest yield (g).',
+        area: 'Area',
+        wattage: 'Light Wattage',
+        level: 'Experience Level',
+        levels: {
+            beginner: 'Beginner',
+            advanced: 'Advanced',
+            expert: 'Expert'
+        },
+        result: 'Estimated Yield'
       },
       calculate: 'Calculate',
     },
@@ -648,6 +685,9 @@ export const en = {
         appName: 'Cannabis Grow Guide',
         description: 'This app is an interactive guide to help you manage your cannabis cultivation journey. Track your plants, learn about strains, and get expert tips on equipment and techniques.',
         features: '<strong>New Features:</strong> This version includes a full translation for English and German, as well as comprehensive accessibility improvements (keyboard & screen reader support).',
+        devWithAIStudioTitle: 'Development with AI Studio',
+        devWithAIStudioText: 'This app was developed using Google\'s <strong>AI Studio</strong>, an innovative platform that allows for the creation and modification of complex web applications through natural language commands. Through iterative prompts, the user interface was designed, functionality was implemented, and the Gemini AI was integrated for intelligent features. AI Studio significantly accelerates the development process and opens up new possibilities for app creation.',
+        getTheAppHere: 'Get the app here',
         disclaimerTitle: 'Disclaimer',
         disclaimerText: 'All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations that vary from country to country. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.',
         privacyTitle: 'Privacy',
@@ -687,6 +727,16 @@ export const en = {
     problemDetectedDescription: 'Notify when a problem is detected with a plant.',
     harvestReady: 'Harvest Ready',
     harvestReadyDescription: 'Notify when a plant is ready for harvest.',
+    simulation: 'Simulation & Gameplay',
+    simulationSpeed: 'Simulation Speed',
+    simulationSpeedDescription: 'Determines how fast time passes for your plants.',
+    simulationDifficulty: 'Difficulty Level',
+    simulationDifficultyDescription: 'Affects how much problems impact plant stress.',
+    difficulties: {
+      easy: 'Easy',
+      normal: 'Normal',
+      hard: 'Hard',
+    },
     dataManagement: 'Data Management',
     exportBackup: 'Export Backup',
     exportBackupDescription: 'Back up all your app data: plants, favorites, custom strains, export history, and settings.',
@@ -716,5 +766,36 @@ export const en = {
       importSuccess: 'Data imported successfully. The app will now reload.',
       importError: 'Failed to import data. Invalid file format?',
     }
+  },
+  problemMessages: {
+    overwatering: { message: 'Overwatering', solution: 'Reduce watering frequency.' },
+    underwatering: { message: 'Underwatering', solution: 'Water the plant immediately.' },
+    nutrientBurn: { message: 'Nutrient Burn (EC too high)', solution: 'Flush the substrate and reduce fertilizer dose.' },
+    nutrientDeficiency: { message: 'Nutrient Deficiency (EC too low)', solution: 'Slightly increase fertilizer dose.' },
+    phTooLow: { message: 'pH Too Low', solution: 'Adjust the pH of your water upwards.' },
+    phTooHigh: { message: 'pH Too High', solution: 'Adjust the pH of your water downwards.' },
+    tempTooHigh: { message: 'Temperature Too High', solution: 'Improve ventilation or cool the room.' },
+    tempTooLow: { message: 'Temperature Too Low', solution: 'Increase the room temperature.' },
+    humidityTooHigh: { message: 'Humidity Too High', solution: 'Increase exhaust fan speed or use a dehumidifier.' },
+    humidityTooLow: { message: 'Humidity Too Low', solution: 'Use a humidifier.' },
+  },
+  plantStages: {
+    SEED: 'Seed',
+    GERMINATION: 'Germination',
+    SEEDLING: 'Seedling',
+    VEGETATIVE: 'Vegetative',
+    FLOWERING: 'Flowering',
+    HARVEST: 'Harvest',
+    DRYING: 'Drying',
+    CURING: 'Curing',
+    FINISHED: 'Finished',
+  },
+  commandPalette: {
+    placeholder: 'Type a command or search...',
+    noResults: 'No commands found.',
+    actions: 'Actions',
+    navigation: 'Navigation',
+    settings: 'Settings',
+    plants: 'Plants',
   },
 };

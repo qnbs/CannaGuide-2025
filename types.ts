@@ -1,10 +1,10 @@
 export enum View {
-  Strains = 'Sorten',
-  Plants = 'Pflanzen',
-  Equipment = 'Equipment',
-  Knowledge = 'Wissen',
-  Settings = 'Setup',
-  Help = 'Hilfe',
+  Strains = 'STRAINS',
+  Plants = 'PLANTS',
+  Equipment = 'EQUIPMENT',
+  Knowledge = 'KNOWLEDGE',
+  Settings = 'SETTINGS',
+  Help = 'HELP',
 }
 
 export type Theme = 'light' | 'dark' | 'system';
@@ -17,6 +17,14 @@ export interface NotificationSettings {
   harvestReady: boolean;
 }
 
+export type SimulationSpeed = '1x' | '2x' | '5x';
+export type SimulationDifficulty = 'easy' | 'normal' | 'hard';
+
+export interface SimulationSettings {
+    speed: SimulationSpeed;
+    difficulty: SimulationDifficulty;
+}
+
 export interface AppSettings {
   theme: Theme;
   fontSize: FontSize;
@@ -24,6 +32,7 @@ export interface AppSettings {
   notificationsEnabled: boolean;
   notificationSettings: NotificationSettings;
   onboardingCompleted: boolean;
+  simulationSettings: SimulationSettings;
 }
 
 export type NotificationType = 'success' | 'error' | 'info';
@@ -66,15 +75,15 @@ export interface Strain {
 }
 
 export enum PlantStage {
-  Seed = 'Samen',
-  Germination = 'Keimung',
-  Seedling = 'Sämling',
-  Vegetative = 'Wachstum',
-  Flowering = 'Blüte',
-  Harvest = 'Ernte',
-  Drying = 'Trocknung',
-  Curing = 'Aushärtung',
-  Finished = 'Abgeschlossen',
+  Seed = 'SEED',
+  Germination = 'GERMINATION',
+  Seedling = 'SEEDLING',
+  Vegetative = 'VEGETATIVE',
+  Flowering = 'FLOWERING',
+  Harvest = 'HARVEST',
+  Drying = 'DRYING',
+  Curing = 'CURING',
+  Finished = 'FINISHED',
 }
 
 export type PlantProblemType = 
@@ -193,4 +202,13 @@ export interface SavedExport {
   source: ExportSource;
   count: number;
   strainIds: string[];
+}
+
+export interface Command {
+  id: string;
+  title: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  action: () => void;
+  keywords?: string;
 }

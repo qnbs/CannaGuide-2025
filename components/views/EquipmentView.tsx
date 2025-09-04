@@ -5,6 +5,7 @@ import { geminiService } from '../../services/geminiService';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import { SetupConfigurator } from './equipment/SetupConfigurator';
 import { Calculators } from './equipment/Calculators';
+import { useTranslations } from '../../hooks/useTranslations';
 
 type ActiveTab = 'configurator' | 'calculators' | 'gear';
 
@@ -19,30 +20,30 @@ interface Gear {
     description: string;
 }
 
-const gearIcons: Record<string, React.ReactNode> = {
-    "Growbox (Zelt)": <PhosphorIcons.Cube />,
-    "LED-Beleuchtung": <PhosphorIcons.Lightbulb />,
-    "Abluftsystem mit Aktivkohlefilter": <PhosphorIcons.Fan />,
-    "Töpfe mit Untersetzern": <PhosphorIcons.Plant />,
-    "PH-Messgerät und pH-Regulatoren": <PhosphorIcons.Flask />,
-};
-
-
 const GearAndShops: React.FC = () => {
+    const { t, locale } = useTranslations();
     const [shops, setShops] = useState<Shop[]>([]);
     const [gear, setGear] = useState<Gear[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const gearIcons: Record<string, React.ReactNode> = {
+        [t('equipmentView.gearAndShops.gearItems.tent')]: <PhosphorIcons.Cube />,
+        [t('equipmentView.gearAndShops.gearItems.led')]: <PhosphorIcons.Lightbulb />,
+        [t('equipmentView.gearAndShops.gearItems.ventilation')]: <PhosphorIcons.Fan />,
+        [t('equipmentView.gearAndShops.gearItems.pots')]: <PhosphorIcons.Plant />,
+        [t('equipmentView.gearAndShops.gearItems.phMeter')]: <PhosphorIcons.Flask />,
+    };
+    
     React.useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
-            const data = await geminiService.getEquipmentInfo();
+            const data = await geminiService.getEquipmentInfo(locale);
             setShops(data.shops);
             setGear(data.gear);
             setLoading(false);
         };
         fetchData();
-    }, []);
+    }, [locale]);
 
     if (loading) {
         return (
@@ -70,7 +71,7 @@ const GearAndShops: React.FC = () => {
             <div>
                 <h2 className="text-2xl font-semibold mb-4 text-primary-500 dark:text-primary-300 flex items-center gap-2">
                     <PhosphorIcons.Storefront className="w-7 h-7" />
-                    Empfohlene Online-Shops (EU)
+                    {t('equipmentView.gearAndShops.shopsTitle')}
                 </h2>
                 <div className="space-y-4">
                     {shops.map((shop) => (
@@ -85,7 +86,7 @@ const GearAndShops: React.FC = () => {
             <div>
                 <h2 className="text-2xl font-semibold mb-4 text-primary-500 dark:text-primary-300 flex items-center gap-2">
                      <PhosphorIcons.Wrench className="w-7 h-7" />
-                    Essenzielle Ausrüstung
+                     {t('equipmentView.gearAndShops.gearTitle')}
                 </h2>
                 <div className="space-y-4">
                     {gear.map((item) => (
@@ -106,17 +107,18 @@ const GearAndShops: React.FC = () => {
 }
 
 export const EquipmentView: React.FC = () => {
+    const { t } = useTranslations();
     const [activeTab, setActiveTab] = useState<ActiveTab>('configurator');
     
     const tabs: {id: ActiveTab, label: string, icon: React.ReactNode}[] = [
-        { id: 'configurator', label: 'Konfigurator', icon: <PhosphorIcons.Wrench /> },
-        { id: 'calculators', label: 'Rechner', icon: <PhosphorIcons.Calculator /> },
-        { id: 'gear', label: 'Ausrüstung & Shops', icon: <PhosphorIcons.Storefront /> },
+        { id: 'configurator', label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.Wrench /> },
+        { id: 'calculators', label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
+        { id: 'gear', label: t('equipmentView.tabs.gear'), icon: <PhosphorIcons.Storefront /> },
     ];
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">Ausrüstungs-Planer</h1>
+            <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">{t('equipmentView.title')}</h1>
             
             <div className="border-b border-slate-200 dark:border-slate-700">
                 <nav className="-mb-px flex space-x-6 overflow-x-auto">

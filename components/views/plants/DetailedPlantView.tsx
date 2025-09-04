@@ -45,7 +45,7 @@ const VitalStat: React.FC<{ label: string, value: number, unit: string, idealMin
 };
 
 const ProactiveAITipCard: React.FC<{ plant: Plant }> = ({ plant }) => {
-    const { t } = useTranslations();
+    const { t, locale } = useTranslations();
     const [aiTip, setAiTip] = useState<AIResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -54,7 +54,7 @@ const ProactiveAITipCard: React.FC<{ plant: Plant }> = ({ plant }) => {
         setIsLoading(true);
         setError(null);
         try {
-            const tip = await geminiService.getProactiveTip(plant, t('plantsView.detailedView.aiTip'), 'All values seem to be in the optimal range. Keep it up!');
+            const tip = await geminiService.getProactiveTip(plant, t('plantsView.detailedView.aiTip'), t('common.aiResponseError'), locale);
             setAiTip(tip);
         } catch (e) {
             setError(t('plantsView.detailedView.aiTipError'));
@@ -62,7 +62,7 @@ const ProactiveAITipCard: React.FC<{ plant: Plant }> = ({ plant }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [plant, t]);
+    }, [plant, t, locale]);
 
     React.useEffect(() => {
         fetchTip();
@@ -91,7 +91,7 @@ const ProactiveAITipCard: React.FC<{ plant: Plant }> = ({ plant }) => {
 };
 
 const AIAdvisorCard: React.FC<{ plant: Plant }> = ({ plant }) => {
-    const { t } = useTranslations();
+    const { t, locale } = useTranslations();
     const [query, setQuery] = useState('');
     const [aiResponse, setAiResponse] = useState<AIResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -101,7 +101,7 @@ const AIAdvisorCard: React.FC<{ plant: Plant }> = ({ plant }) => {
         setIsLoading(true);
         setAiResponse(null);
         const titleTemplate = t('plantsView.detailedView.aiAdvisor.titleTemplate', { name: plant.name });
-        const res = await geminiService.askAboutPlant(plant, query, titleTemplate);
+        const res = await geminiService.askAboutPlant(plant, query, titleTemplate, locale);
         setAiResponse(res);
         setIsLoading(false);
     };
@@ -213,7 +213,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
 
         <div className="text-center mb-6">
           <h1 className="text-4xl font-bold text-primary-600 dark:text-primary-400">{plant.name}</h1>
-          <p className="text-lg text-slate-500 dark:text-slate-400">{plant.strain.name} - {plant.stage}, {t('plantsView.plantCard.day')} {plant.age}</p>
+          <p className="text-lg text-slate-500 dark:text-slate-400">{plant.strain.name} - {t(`plantStages.${plant.stage}`)}, {t('plantsView.plantCard.day')} {plant.age}</p>
         </div>
 
         <div className="border-b border-slate-200 dark:border-slate-700">
@@ -298,8 +298,8 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
                      {sortedTasks.length > 0 ? sortedTasks.map(task => (
                         <div key={task.id} className={`p-3 rounded-lg flex items-center justify-between ${task.isCompleted ? 'bg-slate-100 dark:bg-slate-800 opacity-60' : 'bg-white dark:bg-slate-700/50'}`}>
                             <div>
-                                <p className={`font-bold ${task.isCompleted ? 'line-through' : ''}`}>{task.title}</p>
-                                <p className="text-sm text-slate-500">{task.description}</p>
+                                <p className={`font-bold ${task.isCompleted ? 'line-through' : ''}`}>{t(task.title)}</p>
+                                <p className="text-sm text-slate-500">{t(task.description)}</p>
                             </div>
                             {!task.isCompleted && <Button size="sm" onClick={() => onCompleteTask(task.id)}>{t('plantsView.detailedView.tasksComplete')}</Button>}
                         </div>

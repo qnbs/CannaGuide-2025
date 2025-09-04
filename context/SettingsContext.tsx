@@ -24,6 +24,10 @@ const defaultSettings: AppSettings = {
     harvestReady: true,
   },
   onboardingCompleted: false,
+  simulationSettings: {
+    speed: '1x',
+    difficulty: 'normal',
+  },
 };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -31,13 +35,22 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     try {
       const savedSettings = localStorage.getItem('cannabis-grow-guide-settings');
       const parsed = savedSettings ? JSON.parse(savedSettings) : {};
-      const validSettings: Partial<AppSettings> = {};
-      for (const key of Object.keys(defaultSettings) as (keyof AppSettings)[]) {
-        if (key in parsed) {
-          (validSettings as any)[key] = parsed[key];
+      
+      // Deep merge with defaults to ensure new settings are applied
+      const mergedSettings = {
+        ...defaultSettings,
+        ...parsed,
+        notificationSettings: {
+          ...defaultSettings.notificationSettings,
+          ...(parsed.notificationSettings || {}),
+        },
+        simulationSettings: {
+          ...defaultSettings.simulationSettings,
+          ...(parsed.simulationSettings || {}),
         }
-      }
-      return { ...defaultSettings, ...validSettings };
+      };
+      return mergedSettings;
+
     } catch (e) {
       return defaultSettings;
     }

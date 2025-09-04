@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from '../common/Card';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { View } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
 
 const AccordionItem: React.FC<{
@@ -100,11 +99,11 @@ export const HelpView: React.FC = () => {
                 <SectionCard icon={<PhosphorIcons.RocketLaunch />} title={t('helpView.sections.firstSteps.title')}>
                     <p className="text-slate-600 dark:text-slate-300">{t('helpView.sections.firstSteps.description')}</p>
                     <ul className="list-disc list-inside space-y-2 mt-4 text-slate-600 dark:text-slate-300 prose prose-sm dark:prose-invert max-w-none">
-                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.strains', { strainsView: View.Strains }) }} />
-                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.plants', { plantsView: View.Plants }) }} />
-                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.knowledge', { knowledgeView: View.Knowledge }) }} />
-                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.equipment', { equipmentView: View.Equipment }) }} />
-                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.settings', { settingsView: View.Settings }) }} />
+                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.strains', { strainsView: `<strong>${t('nav.strains')}</strong>` }) }} />
+                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.plants', { plantsView: `<strong>${t('nav.plants')}</strong>` }) }} />
+                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.knowledge', { knowledgeView: `<strong>${t('nav.knowledge')}</strong>` }) }} />
+                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.equipment', { equipmentView: `<strong>${t('nav.equipment')}</strong>` }) }} />
+                       <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.settings', { settingsView: `<strong>${t('nav.settings')}</strong>` }) }} />
                     </ul>
                 </SectionCard>
 
@@ -186,6 +185,13 @@ export const HelpView: React.FC = () => {
                         </div>
                         <p>{t('helpView.sections.about.description')}</p>
                          <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.features')}} />
+                        <div>
+                            <h4 className="font-semibold !text-primary-600 dark:!text-primary-400">{t('helpView.sections.about.devWithAIStudioTitle')}</h4>
+                            <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.devWithAIStudioText')}} />
+                             <a href="https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-primary-600 hover:underline dark:text-primary-400">
+                                {t('helpView.sections.about.getTheAppHere')} &rarr;
+                            </a>
+                        </div>
                         <div>
                             <h4 className="font-semibold !text-primary-600 dark:!text-primary-400">{t('helpView.sections.about.disclaimerTitle')}</h4>
                             <p>{t('helpView.sections.about.disclaimerText')}</p>

@@ -1,0 +1,389 @@
+[
+    {
+        "id": "la-cake",
+        "name": "LA Cake",
+        "type": "Hybrid",
+        "typeDetails": "Indica-dominant",
+        "genetics": "LA Kush x Gorilla Glue #4",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine potente Indica-dominante Sorte, die aus der Kreuzung von LA Kush und Gorilla Glue #4 entstanden ist. Sie hat einen süßen, kuchenartigen Geschmack und eine stark entspannende Wirkung.",
+        "aromas": ["Süß", "Kuchen"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "450-550 g/m^2", "outdoor": "~600 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "la-confidential",
+        "name": "LA Confidential",
+        "type": "Hybrid",
+        "typeDetails": "Indica 95% / Sativa 5%",
+        "genetics": "Afghani x LA Affie",
+        "thc": 25,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "Eine preisgekrönte, fast reine Indica, die für ihre beruhigende und fast psychedelische Wirkung bekannt ist. Das Aroma ist sanft, skunkig und kiefernartig.",
+        "aromas": ["Skunk", "Kiefer", "Sanft"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~450 g/m^2", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz (bis 1.2 m)" }
+        }
+    },
+    {
+        "id": "la-kush",
+        "name": "LA Kush",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "OG Kush Phänotyp",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "description": "Ein potenter Phänotyp von OG Kush aus Los Angeles. Diese Sorte ist bekannt für ihr klassisches erdiges, kiefernartiges Kush-Aroma und eine starke, ausgewogene Wirkung, die sowohl den Geist anregt als auch den Körper entspannt.",
+        "aromas": ["Erdig", "Kiefer", "Süß", "Diesel"],
+        "dominantTerpenes": ["Myrcen", "Limonen", "Caryophyllen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8m)" }
+        }
+    },
+    {
+        "id": "lambs-bread",
+        "name": "Lamb's Bread",
+        "type": "Sativa",
+        "typeDetails": "Sativa 100%",
+        "genetics": "Jamaikanische Landrasse",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Auch 'Lamb's Breath' genannt, ist dies eine berühmte jamaikanische Sativa-Landrasse. Sie ist bekannt für ihre energetisierende und erhebende Wirkung, die Stress abbaut und die Kreativität fördert. Das Aroma ist grasig, würzig und scharf.",
+        "aromas": ["Grasig", "Würzig", "Scharf"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "~400 g/m^2", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "larry-og",
+        "name": "Larry OG",
+        "type": "Hybrid",
+        "typeDetails": "Indica 50% / Sativa 50%",
+        "genetics": "OG Kush x SFV OG",
+        "thc": 26,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Kreuzung aus OG Kush und SFV OG. Diese Hybride bietet eine ausgewogene Wirkung, die sowohl körperlich entspannend als auch zerebral erhebend ist. Das Aroma ist rein, kiefernartig und zitronig.",
+        "aromas": ["Kiefer", "Zitronig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "~450 g/m^2", "outdoor": "~550 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "lava-cake",
+        "name": "Lava Cake",
+        "type": "Hybrid",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Thin Mint GSC x Grape Pie",
+        "thc": 23,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Indica-dominante Kreuzung aus Thin Mint GSC und Grape Pie. Bekannt für ihren köstlichen, süßen und schokoladigen Geschmack. Die Wirkung ist tief entspannend und ideal für den Abend.",
+        "aromas": ["Süß", "Schokolade", "Köstlich"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~400 g/m^2", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "legend-orange-apricot",
+        "name": "Legend Orange Apricot",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Legend OG x Orange Apricot",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "description": "Eine Sativa-dominante Hybride, die für ihr außergewöhnlich fruchtiges und zitrusartiges Aroma bekannt ist. Sie kombiniert Noten von süßer Orange und Aprikose mit einem Hauch von Diesel. Die Wirkung ist erhebend, energetisierend und fördert die Kreativität.",
+        "aromas": ["Orange", "Aprikose", "Zitrus", "Süß", "Diesel"],
+        "dominantTerpenes": ["Terpinolen", "Myrcen", "Caryophyllen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel bis Hoch (bis 2m)" }
+        }
+    },
+    {
+        "id": "lemon-berry",
+        "name": "Lemon Berry",
+        "type": "Hybrid",
+        "typeDetails": "Sativa-dominant",
+        "genetics": "Lemon Thai x Dabney Blue",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Sativa-dominante Sorte, die für ihren süßen Zitronen- und Beerengeschmack bekannt ist. Die Wirkung ist energetisierend, erhebend und fördert die Geselligkeit.",
+        "aromas": ["Zitrone", "Beere", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m^2", "outdoor": "bis 800 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "lemon-haze",
+        "name": "Lemon Haze",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Lemon Skunk x Silver Haze",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Sativa-dominante Hybride, die aus Lemon Skunk und Silver Haze gezüchtet wurde. Sie hat einen starken Zitronenduft und -geschmack und bietet eine energetisierende, glückliche und erhebende Wirkung.",
+        "aromas": ["Zitrone", "Haze"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "450-550 g/m^2", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "lemon-kush",
+        "name": "Lemon Kush",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Master Kush x Lemon Joy",
+        "thc": 26,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Hybridsorte mit einem süßen Zitronen- und erdigen Kush-Aroma. Die Wirkung ist ausgewogen, bietet sowohl zerebrale Stimulation als auch körperliche Entspannung.",
+        "aromas": ["Zitrone", "Kush", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "~500 g/m^2", "outdoor": "~600 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "lemon-pepper",
+        "name": "Lemon Pepper",
+        "type": "Hybrid",
+        "typeDetails": "Sativa-dominant",
+        "genetics": "Lemonnade x Unbekannt",
+        "thc": 24,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Sativa-dominante Sorte mit einem scharfen, pfeffrigen Zitronenaroma. Die Wirkung ist energetisierend und fokussierend, ideal für den Tag.",
+        "aromas": ["Zitrone", "Pfeffer", "Scharf"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "~500 g/m^2", "outdoor": "~600 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
+        }
+    },
+    {
+        "id": "lemon-skunk",
+        "name": "Lemon Skunk",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Zwei Skunk #1 Phänotypen",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "Eine preisgekrönte, Sativa-dominante Hybride, die für ihr extrem intensives, süß-saures Zitronenaroma bekannt ist. Sie bietet eine glückliche, energetisierende und erhebende Wirkung, die ideal für den Tagesgebrauch ist.",
+        "aromas": ["Zitrone", "Skunk", "Süß", "Sauer"],
+        "dominantTerpenes": ["Myrcen", "Terpinolen", "Pinen"],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~800 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Hoch (bis 2.5m)" }
+        }
+    },
+    {
+        "id": "lemon-thai",
+        "name": "Lemon Thai",
+        "type": "Sativa",
+        "typeDetails": "Sativa 100%",
+        "genetics": "Thailändische Sativa x Hawaiianische Sativa",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 11,
+        "description": "Eine klassische Sativa-Kreuzung, die für ihr starkes Zitronen- und Minzaroma bekannt ist. Sie bietet eine erhebende, fokussierte und glückliche Wirkung, die ideal für den Tag ist.",
+        "aromas": ["Zitrone", "Minze", "Würzig", "Erdig"],
+        "dominantTerpenes": ["Terpinolen", "Myrcen", "Limonen"],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 3m)" }
+        }
+    },
+    {
+        "id": "lemon-tree",
+        "name": "Lemon Tree",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Lemon Skunk x Sour Diesel",
+        "thc": 25,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine preisgekrönte, ausgewogene Hybride aus Lemon Skunk und Sour Diesel. Sie hat ein starkes Zitronenaroma und bietet eine glückliche, entspannende Wirkung.",
+        "aromas": ["Zitrone"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m^2", "outdoor": "bis 1500 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel bis Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "lemonchello",
+        "name": "Lemonchello",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "The Original Lemonnade x Cherry Pie",
+        "thc": 20,
+        "cbd": 1,
+        "floweringTime": 10,
+        "description": "Eine Sativa-dominante Hybride, die für ihren süßen Zitronen- und Kirscharoma bekannt ist. Die Wirkung ist erhebend und entspannend, ideal für gesellige Anlässe.",
+        "aromas": ["Zitrone", "Kirsche", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "~500 g/m^2", "outdoor": "~600 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel bis Hoch (bis 2 m)" }
+        }
+    },
+    {
+        "id": "liberty-haze",
+        "name": "Liberty Haze",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "G13 x Chemdawg 91",
+        "thc": 26,
+        "cbd": 1.3,
+        "floweringTime": 9,
+        "description": "Eine preisgekrönte, schnell blühende Sorte von Barney's Farm. Sie bietet eine schnell einsetzende, euphorische und erhebende zerebrale Wirkung. Das Aroma ist eine Mischung aus Limette und Kiefer.",
+        "aromas": ["Limette", "Kiefer"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "bis 600 g/m^2", "outdoor": "~650 g/Pflanze" },
+            "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.5 m)" }
+        }
+    },
+    {
+        "id": "london-pound-cake",
+        "name": "London Pound Cake",
+        "type": "Hybrid",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Sunset Sherbet x Unbekannte Indica",
+        "thc": 25,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "Eine Indica-dominante Sorte, die für ihren süßen, kuchenartigen Geschmack mit Noten von Beeren und Zitrusfrüchten bekannt ist. Die Wirkung ist stark entspannend und beruhigend.",
+        "aromas": ["Süß", "Kuchen", "Beere", "Zitrus"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~450 g/m^2", "outdoor": "~500 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Mittel (bis 1.8 m)" }
+        }
+    },
+    {
+        "id": "lowryder",
+        "name": "Lowryder",
+        "type": "Hybrid",
+        "typeDetails": "Indica / Sativa / Ruderalis",
+        "genetics": "Northern Lights #2 x William's Wonder x Ruderalis",
+        "thc": 15,
+        "cbd": 1,
+        "floweringTime": 6,
+        "description": "Die ursprüngliche Autoflower-Sorte, die die Cannabis-Zucht revolutionierte. Sie ist klein, diskret und blüht automatisch, unabhängig vom Lichtzyklus. Die Wirkung ist mild und entspannend.",
+        "aromas": ["Kiefer", "Erdig"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Low",
+            "height": "Short",
+            "yieldDetails": { "indoor": "~150 g/m^2", "outdoor": "25-50 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz (bis 0.5 m)" }
+        }
+    },
+    {
+        "id": "lsd",
+        "name": "LSD",
+        "type": "Hybrid",
+        "typeDetails": "Indica 55% / Sativa 45%",
+        "genetics": "Mazar x Skunk #1",
+        "thc": 24,
+        "cbd": 1.2,
+        "floweringTime": 9,
+        "description": "Eine Sorte von Barney's Farm, die für ihre lebhafte, fast psychedelische zerebrale Wirkung bekannt ist, gefolgt von einer tiefen Körperentspannung. Das Aroma ist moschusartig, erdig und süß.",
+        "aromas": ["Moschus", "Erdig", "Süß"],
+        "dominantTerpenes": [],
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Short",
+            "yieldDetails": { "indoor": "600-700 g/m^2", "outdoor": "bis 750 g/Pflanze" },
+            "heightDetails": { "indoor": "Kurz", "outdoor": "Mittel (bis 1.2 m)" }
+        }
+    }
+]

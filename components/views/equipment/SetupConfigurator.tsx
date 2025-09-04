@@ -1,15 +1,15 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { SkeletonLoader } from '../../common/SkeletonLoader';
 import { geminiService } from '../../../services/geminiService';
+import { useTranslations } from '../../../hooks/useTranslations';
 
 type Step = 1 | 2 | 3 | 4; // 1: Area, 2: Style, 3: Budget, 4: Results
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
-type GrowStyle = 'Anfängerfreundlich' | 'Maximaler Ertrag' | 'Diskret';
+type GrowStyle = 'beginner' | 'yield' | 'stealth';
 type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'pots' | 'soil' | 'nutrients' | 'extra';
 
 interface RecommendationItem {
@@ -21,29 +21,32 @@ interface RecommendationItem {
 }
 type Recommendation = Record<RecommendationCategory, RecommendationItem>;
 
-const RationaleModal: React.FC<{ content: { title: string, content: string }, onClose: () => void }> = ({ content, onClose }) => (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-        <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
-            <p className="text-slate-600 dark:text-slate-300">{content.content}</p>
-            <div className="text-right mt-6">
-                <Button onClick={onClose}>Schließen</Button>
-            </div>
-        </Card>
-    </div>
-);
+const RationaleModal: React.FC<{ content: { title: string, content: string }, onClose: () => void }> = ({ content, onClose }) => {
+    const { t } = useTranslations();
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+                <h3 className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
+                <p className="text-slate-600 dark:text-slate-300">{content.content}</p>
+                <div className="text-right mt-6">
+                    <Button onClick={onClose}>{t('common.close')}</Button>
+                </div>
+            </Card>
+        </div>
+    );
+};
 
 export const SetupConfigurator: React.FC = () => {
+    const { t, locale } = useTranslations();
     const [step, setStep] = useState<Step>(1);
     const [area, setArea] = useState<Area>('80x80');
     const [budget, setBudget] = useState<Budget>('medium');
-    const [growStyle, setGrowStyle] = useState<GrowStyle>('Anfängerfreundlich');
+    const [growStyle, setGrowStyle] = useState<GrowStyle>('beginner');
     
     const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [rationaleModalContent, setRationaleModalContent] = useState<{title: string, content: string} | null>(null);
-
 
     const handleGenerate = async () => {
         setIsLoading(true);
@@ -52,7 +55,7 @@ export const SetupConfigurator: React.FC = () => {
         setStep(4);
         
         try {
-            const result = await geminiService.getSetupRecommendation(area, growStyle, budget);
+            const result = await geminiService.getSetupRecommendation(area, t(`equipmentView.configurator.styles.${growStyle}`), t(`equipmentView.configurator.budgets.${budget}`), locale);
             if (result) {
                 const transformed: Recommendation = (Object.keys(result) as RecommendationCategory[]).reduce((acc, key) => {
                     acc[key] = {
@@ -63,11 +66,11 @@ export const SetupConfigurator: React.FC = () => {
                 }, {} as Recommendation);
                 setRecommendation(transformed);
             } else {
-                setError("Die KI konnte keine Empfehlung generieren. Bitte versuche es später erneut.");
+                setError(t('equipmentView.configurator.error'));
             }
         } catch (e) {
             console.error(e);
-            setError("Ein Fehler ist aufgetreten. Bitte versuche es später erneut.");
+            setError(t('equipmentView.configurator.errorNetwork'));
         } finally {
             setIsLoading(false);
         }
@@ -97,8 +100,13 @@ export const SetupConfigurator: React.FC = () => {
     };
 
     const categoryLabels: Record<RecommendationCategory, string> = {
-        tent: 'Growbox (Zelt)', light: 'Beleuchtung', ventilation: 'Abluftsystem', pots: 'Töpfe',
-        soil: 'Erde & Substrat', nutrients: 'Dünger', extra: 'Zubehör'
+        tent: t('equipmentView.configurator.categories.tent'),
+        light: t('equipmentView.configurator.categories.light'),
+        ventilation: t('equipmentView.configurator.categories.ventilation'),
+        pots: t('equipmentView.configurator.categories.pots'),
+        soil: t('equipmentView.configurator.categories.soil'),
+        nutrients: t('equipmentView.configurator.categories.nutrients'),
+        extra: t('equipmentView.configurator.categories.extra')
     };
 
     return (
@@ -107,10 +115,10 @@ export const SetupConfigurator: React.FC = () => {
                  <>
                     <div className="flex justify-between items-start mb-2">
                         <div>
-                            <h2 className="text-2xl font-bold text-primary-600 dark:text-primary-400">Setup Konfigurator</h2>
-                            <p className="text-slate-600 dark:text-slate-400">Finde die passende Ausrüstung in 3 einfachen Schritten.</p>
+                            <h2 className="text-2xl font-bold text-primary-600 dark:text-primary-400">{t('equipmentView.configurator.title')}</h2>
+                            <p className="text-slate-600 dark:text-slate-400">{t('equipmentView.configurator.subtitle')}</p>
                         </div>
-                        <span className="font-bold text-slate-400">{`Schritt ${step}/3`}</span>
+                        <span className="font-bold text-slate-400">{t('equipmentView.configurator.step', { current: step, total: 3 })}</span>
                     </div>
                      <div className="relative h-1 w-full bg-slate-200 dark:bg-slate-700 rounded-full my-6">
                         <div className="absolute h-1 bg-primary-500 rounded-full transition-all duration-300" style={{width: `${(step/3) * 100}%`}}></div>
@@ -118,7 +126,7 @@ export const SetupConfigurator: React.FC = () => {
                     
                     {step === 1 && (
                         <div>
-                            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-3">Wähle deine Anbaufläche</h3>
+                            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('equipmentView.configurator.step1Title')}</h3>
                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {(['60x60', '80x80', '100x100', '120x120'] as Area[]).map(val => 
                                     <button key={val} onClick={() => setArea(val)} className={`p-4 text-center rounded-lg border-2 transition-colors ${area === val ? 'bg-primary-100 dark:bg-primary-900/50 border-primary-500' : 'bg-slate-100 dark:bg-slate-800 border-transparent hover:border-slate-400'}`}>
@@ -131,12 +139,12 @@ export const SetupConfigurator: React.FC = () => {
                     )}
                     {step === 2 && (
                          <div>
-                            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-3">Wähle deinen Grow-Stil</h3>
+                            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('equipmentView.configurator.step2Title')}</h3>
                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                {(['Anfängerfreundlich', 'Maximaler Ertrag', 'Diskret'] as GrowStyle[]).map(val => 
+                                {(['beginner', 'yield', 'stealth'] as GrowStyle[]).map(val => 
                                     <button key={val} onClick={() => setGrowStyle(val)} className={`p-4 text-center rounded-lg border-2 transition-colors ${growStyle === val ? 'bg-primary-100 dark:bg-primary-900/50 border-primary-500' : 'bg-slate-100 dark:bg-slate-800 border-transparent hover:border-slate-400'}`}>
-                                        <span className="font-bold">{val}</span>
-                                        <p className="text-xs text-slate-500 mt-1">{val === 'Anfängerfreundlich' ? 'Einfach zu bedienende und fehlerverzeihende Komponenten.' : val === 'Maximaler Ertrag' ? 'Fokus auf Leistung und hohe Ernteergebnisse.' : 'Leise und unauffällige Komponenten für einen Stealth-Grow.'}</p>
+                                        <span className="font-bold">{t(`equipmentView.configurator.styles.${val}`)}</span>
+                                        <p className="text-xs text-slate-500 mt-1">{t(`equipmentView.configurator.styleDescriptions.${val}`)}</p>
                                     </button>
                                 )}
                              </div>
@@ -144,12 +152,12 @@ export const SetupConfigurator: React.FC = () => {
                     )}
                     {step === 3 && (
                          <div>
-                            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-3">Wähle dein Budget</h3>
+                            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-200 mb-3">{t('equipmentView.configurator.step3Title')}</h3>
                              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 {(['low', 'medium', 'high'] as Budget[]).map(val => 
                                     <button key={val} onClick={() => setBudget(val)} className={`p-4 text-center rounded-lg border-2 transition-colors ${budget === val ? 'bg-primary-100 dark:bg-primary-900/50 border-primary-500' : 'bg-slate-100 dark:bg-slate-800 border-transparent hover:border-slate-400'}`}>
-                                        <span className="font-bold">{val === 'low' ? 'Niedrig' : val === 'medium' ? 'Mittel' : 'Hoch'}</span>
-                                         <p className="text-xs text-slate-500 mt-1">{val === 'low' ? 'Grundausstattung für den Start.' : val === 'medium' ? 'Gute Balance aus Preis und Leistung.' : 'Premium-Komponenten für optimale Kontrolle.'}</p>
+                                        <span className="font-bold">{t(`equipmentView.configurator.budgets.${val}`)}</span>
+                                         <p className="text-xs text-slate-500 mt-1">{t(`equipmentView.configurator.budgetDescriptions.${val}`)}</p>
                                     </button>
                                 )}
                              </div>
@@ -157,11 +165,11 @@ export const SetupConfigurator: React.FC = () => {
                     )}
 
                     <div className="flex justify-between mt-8">
-                        <Button variant="secondary" onClick={() => setStep(prev => Math.max(1, prev-1) as Step)} disabled={step === 1}>Zurück</Button>
+                        <Button variant="secondary" onClick={() => setStep(prev => Math.max(1, prev-1) as Step)} disabled={step === 1}>{t('common.back')}</Button>
                         {step < 3 ? (
-                             <Button onClick={() => setStep(prev => Math.min(3, prev+1) as Step)}>Nächster Schritt</Button>
+                             <Button onClick={() => setStep(prev => Math.min(3, prev+1) as Step)}>{t('common.next')}</Button>
                         ) : (
-                             <Button onClick={handleGenerate}><PhosphorIcons.Sparkle className="inline w-5 h-5 mr-2" />Setup generieren</Button>
+                             <Button onClick={handleGenerate}><PhosphorIcons.Sparkle className="inline w-5 h-5 mr-2" />{t('equipmentView.configurator.generate')}</Button>
                         )}
                     </div>
                  </>
@@ -170,21 +178,21 @@ export const SetupConfigurator: React.FC = () => {
             {(step === 4) && (
                 <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700 space-y-6">
                     <div className="flex justify-between items-center">
-                        <h3 className="text-2xl font-bold text-center">Deine persönliche Setup-Empfehlung</h3>
-                            <Button onClick={startOver} variant="secondary" size="sm"><PhosphorIcons.ArrowClockwise className="inline w-4 h-4 mr-1.5"/>Neu starten</Button>
+                        <h3 className="text-2xl font-bold text-center">{t('equipmentView.configurator.resultsTitle')}</h3>
+                            <Button onClick={startOver} variant="secondary" size="sm"><PhosphorIcons.ArrowClockwise className="inline w-4 h-4 mr-1.5"/>{t('equipmentView.configurator.startOver')}</Button>
                     </div>
                     {isLoading ? (
                         <SkeletonLoader count={7}/>
                     ) : error ? (
                         <Card className="text-center bg-red-50 dark:bg-red-900/20 border-red-500/50">
-                            <h4 className="font-bold text-red-700 dark:text-red-300">Fehler</h4>
+                            <h4 className="font-bold text-red-700 dark:text-red-300">{t('common.error')}</h4>
                             <p className="text-red-600 dark:text-red-400">{error}</p>
                         </Card>
                     ) : recommendation && costBreakdown && (
                        <>
                             <Card className="bg-primary-50 dark:bg-primary-900/20">
                                 <p className="prose prose-sm dark:prose-invert max-w-none text-center">
-                                    {`Für deine ${area}cm Fläche, mit einem ${budget === 'low' ? 'niedrigen' : budget === 'medium' ? 'mittleren' : 'hohen'} Budget und dem Stil "${growStyle}", ist dies eine von der KI generierte Konfiguration.`}
+                                    {t('equipmentView.configurator.resultsSubtitle', {area, budget: t(`equipmentView.configurator.budgets.${budget}`), style: t(`equipmentView.configurator.styles.${growStyle}`)})}
                                 </p>
                             </Card>
 
@@ -203,8 +211,8 @@ export const SetupConfigurator: React.FC = () => {
                                                 </div>
                                                 <div className="text-right flex-shrink-0">
                                                     <p className="font-bold">{item.price} €</p>
-                                                    <Button variant="secondary" size="sm" className="mt-1 !shadow-none !bg-slate-200/50 dark:!bg-slate-700/50" onClick={() => setRationaleModalContent({title: `Warum ${categoryLabels[key]}?`, content: item.rationale})}>
-                                                        Warum?
+                                                    <Button variant="secondary" size="sm" className="mt-1 !shadow-none !bg-slate-200/50 dark:!bg-slate-700/50" onClick={() => setRationaleModalContent({title: t('equipmentView.configurator.rationaleModalTitle', { category: categoryLabels[key] }), content: item.rationale})}>
+                                                        {t('common.why')}
                                                     </Button>
                                                 </div>
                                             </Card>
@@ -213,7 +221,7 @@ export const SetupConfigurator: React.FC = () => {
                                 </div>
                                 <div className="space-y-6">
                                     <Card>
-                                        <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3"><PhosphorIcons.Calculator/>Kostenaufschlüsselung</h4>
+                                        <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2 mb-3"><PhosphorIcons.Calculator/>{t('equipmentView.configurator.costBreakdown')}</h4>
                                         <div className="space-y-1 text-sm">
                                             {costBreakdown.breakdown.map(item => (
                                                 <div key={item.category} className="flex justify-between">
@@ -222,7 +230,7 @@ export const SetupConfigurator: React.FC = () => {
                                                 </div>
                                             ))}
                                             <div className="flex justify-between font-bold border-t border-slate-300 dark:border-slate-600 pt-2 mt-2">
-                                                <span>Total</span>
+                                                <span>{t('equipmentView.configurator.total')}</span>
                                                 <span>≈ {costBreakdown.total} €</span>
                                             </div>
                                         </div>

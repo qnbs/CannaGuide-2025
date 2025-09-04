@@ -1,21 +1,18 @@
 html {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', 'sans-serif';
 }
 
 /* Default to light mode colors */
 body {
   background-color: #f8fafc; /* slate-50 */
-  color: #0f172a; /* slate-900 */
-  background-image: radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.04) 1px, transparent 0);
-  background-size: 25px 25px;
+  color: #1e293b; /* slate-800 */
+  transition: background-color 0.3s ease;
 }
 
 /* Dark mode overrides */
 html.dark body {
   background-color: #0f172a; /* slate-900 */
   color: #f1f5f9; /* slate-100 */
-  background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
-  background-size: 25px 25px;
 }
 
 
@@ -66,13 +63,13 @@ html.dark .prose-invert h3, html.dark .prose-invert .text-xl {
 }
 
 .prose p, .prose li, .prose ul, .prose strong {
-  color: #334155; /* slate-700 */
+  color: #1e293b; /* slate-800 */
 }
 html.dark .prose p, html.dark .prose li, html.dark .prose ul, html.dark .prose strong {
   color: #cbd5e1; /* slate-300 */
 }
 .prose-invert p, .prose-invert li, .prose-invert ul, .prose-invert strong {
-  color: #334155; /* slate-700 */
+  color: #1e293b; /* slate-800 */
 }
 html.dark .prose-invert p, html.dark .prose-invert li, html.dark .prose-invert ul, html.dark .prose-invert strong {
   color: #cbd5e1; /* slate-300 */
@@ -126,13 +123,15 @@ html.dark .prose-invert p, html.dark .prose-invert li, html.dark .prose-invert u
 }
 
 .toast {
-  background-color: #ffffff;
-  border-color: #e2e8f0; /* slate-200 */
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(226, 232, 240, 1); /* slate-200 */
 }
 
 html.dark .toast {
-  background-color: #1e293b; /* slate-800 */
-  border-color: #334155; /* slate-700 */
+  background-color: rgba(30, 41, 59, 0.8); /* slate-800 */
+  border-color: rgba(51, 65, 85, 1); /* slate-700 */
 }
 
 .toast.toast-entering {
@@ -155,6 +154,7 @@ html.dark .toast {
 
 .skeleton-pulse {
   animation: skeleton-pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  @apply bg-slate-200/50 dark:bg-slate-700/50;
 }
 
 /* History Chart */
@@ -261,15 +261,13 @@ html.dark .range-slider-input::-moz-range-thumb {
   right: 0;
   margin: 0 -1rem; /* Bleed into horizontal padding */
   padding: 0.75rem 1rem;
-  background-color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background-color: #ffffff;
   border-top: 1px solid #e2e8f0; /* slate-200 */
   box-shadow: 0 -4px 15px -5px rgba(0,0,0,0.05);
 }
 
 html.dark .action-bar {
-  background-color: rgba(15, 23, 42, 0.8); /* slate-900 with opacity */
+  background-color: #0f172a; /* slate-900 */
   border-top-color: #1e293b; /* slate-800 */
 }
 

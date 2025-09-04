@@ -99,13 +99,13 @@ const AiMentor: React.FC = () => {
     const [query, setQuery] = useState('');
     const [response, setResponse] = useState<AIResponse | null>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const { t } = useTranslations();
+    const { t, locale } = useTranslations();
 
     const handleAsk = async () => {
         if (!query.trim()) return;
         setIsLoading(true);
         setResponse(null);
-        const res = await geminiService.askAboutKnowledge(query);
+        const res = await geminiService.askAboutKnowledge(query, locale);
         setResponse(res);
         setIsLoading(false);
         setQuery('');

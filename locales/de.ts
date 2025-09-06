@@ -73,7 +73,7 @@ export const de = {
     floweringTime: 'Blütezeit',
     weeks: 'Wochen',
     level: 'Level',
-    terpenes: 'Terpenene',
+    terpenes: 'Terpene',
     aromas: 'Aromen',
     resetFilters: 'Filter zurücksetzen',
     view: {
@@ -646,7 +646,8 @@ export const de = {
           plants: '<strong>Pflanzen managen:</strong> Verwalte bis zu drei Pflanzen im Bereich <strong>{plantsView}</strong>. Beobachte ihre Entwicklung in Echtzeit, protokolliere alle Maßnahmen im Journal und reagiere auf Probleme und Aufgaben.',
           knowledge: '<strong>Wissen aneignen:</strong> Folge der Schritt-für-Schritt-Anleitung unter <strong>{knowledgeView}</strong>, um die Grundlagen zu lernen. Hake die Checklisten ab, um deinen Wissensfortschritt zu verfolgen, und stelle dem KI-Mentor deine Fragen.',
           equipment: '<strong>Setup planen:</strong> Plane dein Setup mit dem <strong>{equipmentView}</strong>-Konfigurator oder nutze die praktischen Rechner für Licht, Lüftung und Nährstoffe.',
-          settings: '<strong>App anpassen:</strong> Im <strong>{settingsView}</strong>-Bereich kannst du das Farbschema (Hell/Dunkel), die Schriftgröße und die Sprache (Deutsch/Englisch) anpassen sowie deine Daten sichern und importieren.'
+          settings: '<strong>App anpassen:</strong> Im <strong>{settingsView}</strong>-Bereich kannst du die Schriftgröße und die Sprache anpassen sowie deine Daten sichern und importieren.',
+          commandPalette: '<strong>Befehlspalette:</strong> Drücke überall <strong>Cmd/Strg + K</strong>, um schnell zu navigieren, Aktionen wie "Alle gießen" auszuführen oder eine bestimmte Pflanze zu inspizieren.'
         }
       },
       faq: {
@@ -679,6 +680,18 @@ export const de = {
           q7: {
             q: 'Kann ich meine hinzugefügten Sorten bearbeiten oder löschen?',
             a: 'Ja, wenn du im Tab "Meine Sorten" bist, erscheinen bei den Listeneinträgen und in der Rasteransicht (beim Hover) Bearbeiten- und Löschen-Buttons.'
+          },
+          q8: {
+            q: 'Wie funktionieren die KI-Funktionen?',
+            a: 'Die App nutzt Googles Gemini API für ihre intelligenten Funktionen. Der <strong>Setup-Konfigurator</strong> generiert Empfehlungen basierend auf deinen Eingaben. Der <strong>KI-Pflanzendoktor</strong> analysiert Blattbilder, um Probleme zu diagnostizieren. Der <strong>KI-Mentor</strong> beantwortet allgemeine Anbaufragen, und der <strong>KI-Berater</strong> gibt spezifische, datengestützte Ratschläge für deine Pflanzen in der Detailansicht.'
+          },
+          q9: {
+            q: 'Wie funktioniert die Befehlspalette?',
+            a: 'Drücke <strong>Cmd/Strg + K</strong>, um die Befehlspalette zu öffnen. Es ist ein mächtiges Werkzeug, mit dem du sofort zu jedem Bereich der App springen, allgemeine Aktionen wie "Alle gießen" ausführen oder eine Pflanze direkt inspizieren kannst, ohne durch Menüs zu klicken. Beginne einfach zu tippen, um zu finden, was du brauchst!'
+          },
+          q10: {
+            q: 'Wie funktioniert der Export und was sind die Formate?',
+            a: 'In der Sorten-Ansicht kannst du deine Sortenlisten in verschiedenen Formaten exportieren. <strong>PDF</strong> ist ideal für einen druckbaren, gut formatierten Bericht. <strong>CSV</strong> ist perfekt für Tabellenkalkulationen. <strong>TXT</strong> liefert eine einfache Textdatei, und <strong>JSON</strong> ist ideal für Datensicherungen oder die Verwendung in anderen Anwendungen. Alle Exporte werden auch im "Exporte"-Tab für einen schnellen erneuten Download gespeichert.'
           }
         }
       },
@@ -754,7 +767,7 @@ export const de = {
       },
       about: {
         title: 'Über die App',
-        version: 'v2.2.0',
+        version: 'v2.3.0',
         appName: 'Cannabis Grow Guide',
         description: 'Diese App ist ein interaktiver Leitfaden, der dich auf deiner Reise des Cannabis-Anbaus unterstützt. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.',
         features: '<strong>Neue Funktionen:</strong> Diese Version enthält eine vollständige Übersetzung für Deutsch und Englisch sowie umfassende Verbesserungen der Barrierefreiheit (Tastatur- & Screenreader-Unterstützung).',

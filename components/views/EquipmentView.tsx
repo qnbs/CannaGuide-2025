@@ -123,10 +123,40 @@ export const EquipmentView: React.FC = () => {
 
     const tabs: {id: ActiveTab, label: string, icon: React.ReactNode}[] = [
         { id: 'configurator', label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.Wrench /> },
-        { id: 'calculators', label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
         { id: 'setups', label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Archive /> },
+        { id: 'calculators', label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
         { id: 'gear', label: t('equipmentView.tabs.gear'), icon: <PhosphorIcons.Storefront /> },
     ];
+    
+    const renderTabContent = () => {
+        switch (activeTab) {
+            case 'configurator':
+                return <SetupConfigurator
+                    onSaveSetup={addSetup}
+                    step={step}
+                    setStep={setStep}
+                    area={area}
+                    setArea={setArea}
+                    budget={budget}
+                    setBudget={setBudget}
+                    growStyle={growStyle}
+                    setGrowStyle={setGrowStyle}
+                    recommendation={recommendation}
+                    isLoading={isLoading}
+                    error={error}
+                    handleGenerate={handleGenerate}
+                    startOver={startOver}
+                />;
+            case 'setups':
+                return <SavedSetupsView savedSetups={savedSetups} updateSetup={updateSetup} deleteSetup={deleteSetup} />;
+            case 'calculators':
+                return <Calculators />;
+            case 'gear':
+                return <GearAndShops />;
+            default:
+                return null;
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -141,27 +171,7 @@ export const EquipmentView: React.FC = () => {
             </div>
             
             <div>
-                {activeTab === 'configurator' && (
-                    <SetupConfigurator
-                        onSaveSetup={addSetup}
-                        step={step}
-                        setStep={setStep}
-                        area={area}
-                        setArea={setArea}
-                        budget={budget}
-                        setBudget={setBudget}
-                        growStyle={growStyle}
-                        setGrowStyle={setGrowStyle}
-                        recommendation={recommendation}
-                        isLoading={isLoading}
-                        error={error}
-                        handleGenerate={handleGenerate}
-                        startOver={startOver}
-                    />
-                )}
-                {activeTab === 'calculators' && <Calculators />}
-                {activeTab === 'setups' && <SavedSetupsView savedSetups={savedSetups} updateSetup={updateSetup} deleteSetup={deleteSetup} />}
-                {activeTab === 'gear' && <GearAndShops />}
+                {renderTabContent()}
             </div>
         </div>
     );

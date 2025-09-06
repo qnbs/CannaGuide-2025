@@ -441,6 +441,7 @@ export const en = {
       startOver: 'Start Over',
       saveSetup: 'Save Setup',
       setupNamePrompt: 'What would you like to name this setup?',
+      setupSaveConfirm: 'Are you sure you want to save the setup as "{name}"?',
       setupSaveSuccess: 'Setup "{name}" saved successfully!',
       setupSaveError: 'Error saving setup.',
       error: 'The AI could not generate a recommendation. Please try again later.',
@@ -645,7 +646,8 @@ export const en = {
           plants: '<strong>Manage Plants:</strong> Manage up to three plants in the <strong>{plantsView}</strong> section. Observe their development in real-time, log all actions in the journal, and respond to problems and tasks.',
           knowledge: '<strong>Acquire Knowledge:</strong> Follow the step-by-step <strong>{knowledgeView}</strong> to learn the basics. Check off the checklist items to track your progress and ask the AI mentor your questions.',
           equipment: '<strong>Plan Setup:</strong> Plan your setup with the <strong>{equipmentView}</strong> configurator or use the practical calculators for light, ventilation, and nutrients.',
-          settings: '<strong>Customize App:</strong> In the <strong>{settingsView}</strong> section, you can customize the color scheme (Light/Dark), font size, and language (German/English), as well as back up and import your data.'
+          settings: '<strong>Customize App:</strong> In the <strong>{settingsView}</strong> section, you can customize the font size and language, as well as back up and import your data.',
+          commandPalette: '<strong>Command Palette:</strong> Press <strong>Cmd/Ctrl + K</strong> anywhere to quickly navigate, perform actions like "Water All", or inspect a specific plant.'
         }
       },
       faq: {
@@ -678,6 +680,18 @@ export const en = {
           q7: {
             q: 'Can I edit or delete my added strains?',
             a: 'Yes, when in the "My Strains" tab, edit and delete buttons will appear on list items, and on grid items when you hover over them.'
+          },
+          q8: {
+            q: 'How do the AI features work?',
+            a: 'The app uses Google\'s Gemini API for its intelligent features. The <strong>Setup Configurator</strong> generates recommendations based on your input. The <strong>AI Plant Doctor</strong> analyzes leaf images to diagnose problems. The <strong>AI Mentor</strong> answers general cultivation questions, and the <strong>AI Advisor</strong> provides specific, data-driven advice for your plants in the detailed view.'
+          },
+          q9: {
+            q: 'How does the Command Palette work?',
+            a: 'Press <strong>Cmd/Ctrl + K</strong> to open the Command Palette. It\'s a powerful tool that lets you instantly jump to any section of the app, perform common actions like "Water All", or directly inspect a plant without clicking through menus. Just start typing to find what you need!'
+          },
+          q10: {
+            q: 'How does exporting work and what are the formats?',
+            a: 'In the Strains view, you can export your strain lists in various formats. <strong>PDF</strong> is great for a printable, well-formatted report. <strong>CSV</strong> is perfect for spreadsheets. <strong>TXT</strong> provides a simple text file, and <strong>JSON</strong> is ideal for data backup or use in other applications. All exports are also saved in the "Exports" tab for quick re-downloading.'
           }
         }
       },
@@ -753,7 +767,7 @@ export const en = {
       },
       about: {
         title: 'About the App',
-        version: 'v2.2.0',
+        version: 'v2.3.0',
         appName: 'Cannabis Grow Guide',
         description: 'This app is an interactive guide that supports you on your cannabis cultivation journey. Track your plants, learn about strains, and get expert tips on equipment and techniques.',
         features: '<strong>New Features:</strong> This version includes a full translation for English and German, as well as comprehensive accessibility improvements (keyboard & screen reader support).',

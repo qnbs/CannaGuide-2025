@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Plant, Command, PlantStage } from './types';
 import { BottomNav } from './components/navigation/BottomNav';

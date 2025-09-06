@@ -38,7 +38,7 @@ export const en = {
     plants: 'Plants',
     equipment: 'Equipment',
     knowledge: 'Knowledge',
-    settings: 'Setup',
+    settings: 'Settings',
     help: 'Help',
   },
   onboarding: {
@@ -91,7 +91,7 @@ export const en = {
         flowering_asc: 'Flowering (Short-Long)',
         flowering_desc: 'Flowering (Long-Short)',
     },
-    deleteStrainConfirm: 'Are you sure you want to delete the strain "{name}"? This cannot be undone.',
+    deleteStrainConfirm: 'Are you sure you want to permanently delete the strain "{name}"? This action cannot be undone.',
     deleteStrainSuccess: 'Strain "{name}" has been deleted.',
     deleteStrainError: 'Error deleting strain.',
     difficulty: {
@@ -197,7 +197,9 @@ export const en = {
         json: 'JSON',
         csv: 'CSV',
         pdf: 'PDF',
+        txt: 'TXT',
       },
+      exportConfirm: 'Are you sure you want to export {count} strains as {format}?',
     },
     exportsManager: {
       noExports: {
@@ -206,9 +208,10 @@ export const en = {
       },
       sourceLabel: 'Source',
       exportRemoved: 'Export removed from list.',
-      redownloadConfirm: 'Are you sure you want to remove this export from the list?',
+      deleteConfirm: 'Are you sure you want to remove this export from the list?',
       strainsNotFound: 'The strains required for this export could not be found.',
       downloadingExport: 'Downloading export "{name}.{format}".',
+      strainsUnit: 'Strains',
     }
   },
   plantsView: {
@@ -219,6 +222,8 @@ export const en = {
       openTasks: 'Open Tasks',
       waterAll: 'Water All',
       addPlant: 'Add Plant',
+      gardenHealth: 'Garden Health',
+      simulateNextDay: 'Simulate Next Day',
     },
     yourGrowbox: 'Your Growbox',
     sortBy: 'Sort by',
@@ -334,6 +339,12 @@ export const en = {
         button: 'Ask',
         titleTemplate: 'AI Analysis for {name}'
       },
+      ai: {
+        journalAnalysisTitle: 'Journal Analysis',
+        journalAnalysisDescription: 'Let the AI analyze the entire grow journal to provide a summary, highlight key events, and suggest improvements.',
+        analyzing: 'Analyzing...',
+        analyzeButton: 'Analyze Grow Journal',
+      },
       actions: {
         water: 'Water',
         feed: 'Feed',
@@ -393,6 +404,7 @@ export const en = {
       configurator: 'Configurator',
       calculators: 'Calculators',
       gear: 'Gear & Shops',
+      setups: 'My Setups',
     },
     configurator: {
       title: 'Setup Configurator',
@@ -427,6 +439,10 @@ export const en = {
       costBreakdown: 'Cost Breakdown',
       total: 'Total',
       startOver: 'Start Over',
+      saveSetup: 'Save Setup',
+      setupNamePrompt: 'What would you like to name this setup?',
+      setupSaveSuccess: 'Setup "{name}" saved successfully!',
+      setupSaveError: 'Error saving setup.',
       error: 'The AI could not generate a recommendation. Please try again later.',
       errorNetwork: 'An error occurred. Please try again later.',
       categories: {
@@ -495,6 +511,28 @@ export const en = {
         timers: { name: 'Timer(s)', desc: 'At least one for the light cycle (e.g., 18/6 or 12/12 hours). Another one for ventilation can be useful.' },
         meters: { name: 'Meters (pH/EC, Thermo-Hygrometer)', desc: 'Essential for monitoring. pH & EC meters for the nutrient solution, thermo-hygrometer for temperature & humidity.' },
         harvest: { name: 'Harvesting Tools', desc: 'Sharp trimming scissors, a jeweler\'s loupe (60x) for checking trichomes, and airtight jars for curing.' },
+      }
+    },
+    savedSetups: {
+      title: 'My Saved Setups',
+      noSetups: {
+        title: 'No Saved Setups',
+        subtitle: 'When you save a recommendation from the configurator, it will appear here.',
+      },
+      inspect: 'Inspect',
+      deleteConfirm: 'Are you sure you want to permanently delete the setup "{name}"?',
+      deleteSuccess: 'Setup "{name}" has been deleted.',
+      updateSuccess: 'Setup "{name}" has been updated.',
+      updateError: 'Error updating setup.',
+      exportConfirm: 'Are you sure you want to export the setup "{name}" as {format}?',
+      exportSuccess: 'Setup "{name}" exported successfully.',
+      modal: {
+        title: 'Setup Details',
+        editMode: 'Edit Mode',
+        saveChanges: 'Save Changes',
+        item: 'Item',
+        price: 'Price',
+        rationale: 'Rationale',
       }
     }
   },
@@ -594,6 +632,10 @@ export const en = {
   },
   helpView: {
     title: 'Help Center',
+    tabs: {
+      guides: 'Guides & Basics',
+      lexicon: 'Lexicon',
+    },
     sections: {
       firstSteps: {
         title: 'First Steps & Main Features',
@@ -619,11 +661,11 @@ export const en = {
           },
           q3: {
             q: 'Can I back up or transfer my data?',
-            a: 'Yes! Go to the <strong>Setup</strong> section under "Data Management". There you can export all your data (plants, settings, custom strains, favorites) into a single backup file. You can later import this file on the same or another device.'
+            a: 'Yes! Go to the <strong>Settings</strong> section under "Data Management". There you can export all your data (plants, settings, custom strains, favorites) into a single backup file. You can later import this file on the same or another device.'
           },
           q4: {
             q: 'In which languages is the app available?',
-            a: 'The app is fully available in <strong>German</strong> and <strong>English</strong>. You can change the language at any time in the <strong>Setup</strong> section under "Display" -> "Language". Your selection is saved automatically.'
+            a: 'The app is fully available in <strong>German</strong> and <strong>English</strong>. You can change the language at any time in the <strong>Settings</strong> section under "Display" -> "Language". Your selection is saved automatically.'
           },
           q5: {
             q: 'Is the app accessible?',
@@ -808,14 +850,16 @@ export const en = {
     notifications: {
       fullResetConfirm: 'Are you sure you want to permanently delete all app data? This cannot be undone.',
       fullResetSuccess: 'All data has been reset. The app will now reload.',
-      userStrainsResetConfirm: 'Are you sure you want to delete all strains you have added? Your plants and exports will remain.',
+      userStrainsResetConfirm: 'Are you sure you want to permanently delete all strains you have added? Your plants and exports will remain.',
       userStrainsResetSuccess: 'Your custom strains have been deleted.',
-      exportsResetConfirm: 'Are you sure you want to delete your export history? Your plants and custom strains will remain.',
+      exportsResetConfirm: 'Are you sure you want to permanently delete your export history? Your plants and custom strains will remain.',
       exportsResetSuccess: 'Export history has been deleted.',
       exportSuccess: 'All app data successfully exported.',
       exportError: 'Error exporting data.',
       importSuccess: 'Data successfully imported. The app will now reload.',
       importError: 'Error importing data. Invalid file format?',
+      exportConfirm: 'Are you sure you want to export a backup of all your app data?',
+      importConfirm: 'Are you sure you want to import data from this file? All your current data (plants, settings, etc.) will be overwritten. This cannot be undone.',
     }
   },
   problemMessages: {
@@ -849,4 +893,29 @@ export const en = {
     settings: 'Settings',
     plants: 'Plants',
   },
+  tipOfTheDay: {
+    title: "Tip of the Day",
+    tips: [
+      "Regularly check the pH of your nutrient solution. A stable pH (usually 6.0-6.5 in soil) is crucial for nutrient uptake.",
+      "Don't overwater your plants! Lift the pot to check its weight. Only water when it feels significantly lighter.",
+      "Ensure good air circulation with a small fan. This strengthens stems and helps prevent mold.",
+      "Pay attention to the distance between your light and the plant canopy. Too close can cause light burn; too far reduces growth.",
+      "During the flowering stage, humidity is critical. Try to keep it below 50% to minimize the risk of bud rot.",
+      "Less is often more with nutrients. Start with half the recommended dose and observe your plant's reaction before increasing.",
+      "Cal/Mag supplements are often necessary, especially with LED lighting and in coco coir, to prevent deficiencies.",
+      "LST (Low Stress Training) is a beginner-friendly method to increase yield by gently bending branches downwards.",
+      "The color of the trichomes is the best indicator for harvest time. A 60x jeweler's loupe is a worthwhile investment.",
+      "Document everything in your journal! Notes on watering, feeding, and observations are invaluable for future grows.",
+      "Cleanliness is key. Keep your grow area tidy to minimize the risk of pests and diseases.",
+      "Nighttime temperatures shouldn't drop more than 10°C (18°F) below daytime temperatures to avoid stressing the plant.",
+      "In late flower, selectively removing some large fan leaves (defoliation) can improve light penetration to lower buds.",
+      "Flush your plants with plain water for the last 1-2 weeks before harvest to improve the final taste.",
+      "Proper drying and curing is just as important as the grow itself. Take your time with this process; it's worth it!",
+      "Yellow sticky traps are a simple and effective way to detect an infestation of fungus gnats or other flying pests early on.",
+      "Use fabric pots to promote healthier roots through better oxygen exchange (air pruning).",
+      "Learn to read the leaves for signs of nutrient deficiency. Yellowing from the bottom up often indicates a nitrogen deficiency.",
+      "An EC meter is a valuable tool for accurately controlling the nutrient concentration of your solution.",
+      "Be patient! Growing cannabis is a process that requires time and attention. Every mistake is a learning opportunity."
+    ]
+  }
 };

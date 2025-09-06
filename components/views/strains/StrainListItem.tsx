@@ -1,3 +1,5 @@
+
+
 import React from 'react';
 import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
@@ -16,7 +18,7 @@ interface StrainListItemProps {
     onDelete?: (id: string) => void;
 }
 
-const listGridClass = "grid grid-cols-[auto_auto_1fr_repeat(3,_minmax(0,_auto))_minmax(0,_auto)] sm:grid-cols-[auto_auto_minmax(120px,_1.5fr)_minmax(80px,_0.5fr)_minmax(0,_0.5fr)_minmax(0,_0.5fr)_minmax(0,_0.7fr)_minmax(0,_0.6fr)_minmax(0,_0.7fr)] gap-x-2 md:gap-x-4 items-center";
+const listGridClass = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
 
 const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
@@ -71,16 +73,16 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                  <p className="text-xs text-slate-400 sm:hidden">{strain.type}</p>
             </div>
 
-            <div className="hidden sm:flex text-slate-300 font-medium">{strain.type}</div>
+            <div className="hidden sm:flex text-slate-300 font-medium">{strain.typeDetails || strain.type}</div>
             <div className="hidden sm:flex font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>
             <div className="hidden sm:flex font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>
-            <div className="hidden md:flex text-slate-200">{strain.floweringTime} {t('strainsView.weeks')}</div>
+            <div className="hidden sm:flex text-slate-200">{strain.floweringTime} {t('strainsView.weeks')}</div>
             
             <div className="hidden md:flex text-sm text-slate-300">
                 {strain.agronomic.yieldDetails?.indoor || 'N/A'}
             </div>
             
-            <div className="flex justify-center" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
+            <div className="flex" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Easy' ? 'text-green-500' : strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : 'text-red-500'}`} />
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />

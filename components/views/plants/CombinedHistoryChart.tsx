@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Plant, PlantHistoryEntry } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';

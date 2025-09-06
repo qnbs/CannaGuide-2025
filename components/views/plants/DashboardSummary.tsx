@@ -36,12 +36,12 @@ export const DashboardSummary: React.FC<DashboardSummaryProps> = ({ plants, open
                 </div>
                 <div className="p-3 bg-slate-900 rounded-lg text-center">
                     <p className={`text-3xl font-bold ${healthColor}`}>{gardenHealth.toFixed(0)}%</p>
-                    <p className="text-sm text-slate-400">Garden Health</p>
+                    <p className="text-sm text-slate-400">{t('plantsView.summary.gardenHealth')}</p>
                 </div>
                  <div className="p-3 flex items-center justify-center">
                     <Button onClick={onAdvanceDay} disabled={activePlantsCount === 0} className="w-full h-full">
                         <PhosphorIcons.ArrowClockwise className="inline w-5 h-5 mr-1.5"/>
-                        Simulate Next Day
+                        {t('plantsView.summary.simulateNextDay')}
                     </Button>
                 </div>
             </div>

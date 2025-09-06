@@ -1,3 +1,4 @@
+
 // FIX: Import useEffect from react to resolve usage errors.
 import React, { useState, useCallback, useEffect } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat } from '../../types';
@@ -425,6 +426,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     }
     if (dataToExport.length === 0) { addNotification(t('common.noDataToExport'), 'error'); return; }
 
+    if (!window.confirm(t('strainsView.exportModal.exportConfirm', { count: dataToExport.length, format: format.toUpperCase() }))) {
+        return;
+    }
+
     addExport({ name: filename, format, source }, dataToExport.map(s => s.id));
     
     switch(format) {
@@ -436,7 +441,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     addNotification(t('common.successfullyExported', { count: dataToExport.length, format: format.toUpperCase() }), 'success');
   };
   
-  const listGridClass = "grid grid-cols-[auto_auto_minmax(120px,_2fr)_minmax(80px,_1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
+  const listGridClass = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
 
   const tableHeaders: { key: string, label: string }[] = [
       { key: 'name', label: t('strainsView.table.name') },
@@ -450,10 +455,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
 
   const headerVisibilityClasses = [
       '', // Name
-      'hidden md:flex', // Type
+      'hidden sm:flex', // Type
       'hidden sm:flex', // THC
       'hidden sm:flex', // CBD
-      'hidden md:flex', // Flowering
+      'hidden sm:flex', // Flowering
       'hidden md:flex', // Yield
       'flex', // Difficulty
   ];

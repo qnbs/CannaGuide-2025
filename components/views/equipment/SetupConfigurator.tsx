@@ -1,25 +1,34 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { SkeletonLoader } from '../../common/SkeletonLoader';
-import { geminiService } from '../../../services/geminiService';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { useNotifications } from '../../../context/NotificationContext';
+import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '../../../types';
 
-type Step = 1 | 2 | 3 | 4; // 1: Area, 2: Style, 3: Budget, 4: Results
+type Step = 1 | 2 | 3 | 4;
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
 type GrowStyle = 'beginner' | 'yield' | 'stealth';
-type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'pots' | 'soil' | 'nutrients' | 'extra';
 
-interface RecommendationItem {
-    name: string;
-    watts?: number;
-    price: number;
-    category: RecommendationCategory;
-    rationale: string;
+interface SetupConfiguratorProps {
+    onSaveSetup: (setup: Omit<SavedSetup, 'id' | 'createdAt'>) => void;
+    step: Step;
+    setStep: (step: Step) => void;
+    area: Area;
+    setArea: (area: Area) => void;
+    budget: Budget;
+    setBudget: (budget: Budget) => void;
+    growStyle: GrowStyle;
+    setGrowStyle: (style: GrowStyle) => void;
+    recommendation: Recommendation | null;
+    isLoading: boolean;
+    error: string | null;
+    handleGenerate: () => void;
+    startOver: () => void;
 }
-type Recommendation = Record<RecommendationCategory, RecommendationItem>;
+
 
 const RationaleModal: React.FC<{ content: { title: string, content: string }, onClose: () => void }> = ({ content, onClose }) => {
     const { t } = useTranslations();
@@ -36,63 +45,62 @@ const RationaleModal: React.FC<{ content: { title: string, content: string }, on
     );
 };
 
-export const SetupConfigurator: React.FC = () => {
-    const { t, locale } = useTranslations();
-    const [step, setStep] = useState<Step>(1);
-    const [area, setArea] = useState<Area>('80x80');
-    const [budget, setBudget] = useState<Budget>('medium');
-    const [growStyle, setGrowStyle] = useState<GrowStyle>('beginner');
-    
-    const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ 
+    onSaveSetup, 
+    step, setStep, 
+    area, setArea, 
+    budget, setBudget, 
+    growStyle, setGrowStyle,
+    recommendation, isLoading, error,
+    handleGenerate, startOver
+}) => {
+    const { t } = useTranslations();
+    const { addNotification } = useNotifications();
     const [rationaleModalContent, setRationaleModalContent] = useState<{title: string, content: string} | null>(null);
+    const [setupName, setSetupName] = useState('');
 
-    const handleGenerate = async () => {
-        setIsLoading(true);
-        setError(null);
-        setRecommendation(null);
-        setStep(4);
-        
-        try {
-            const result = await geminiService.getSetupRecommendation(area, t(`equipmentView.configurator.styles.${growStyle}`), t(`equipmentView.configurator.budgets.${budget}`), locale);
-            if (result) {
-                const transformed: Recommendation = (Object.keys(result) as RecommendationCategory[]).reduce((acc, key) => {
-                    acc[key] = {
-                        ...result[key],
-                        category: key,
-                    };
-                    return acc;
-                }, {} as Recommendation);
-                setRecommendation(transformed);
-            } else {
-                setError(t('equipmentView.configurator.error'));
-            }
-        } catch (e) {
-            console.error(e);
-            setError(t('equipmentView.configurator.errorNetwork'));
-        } finally {
-            setIsLoading(false);
+     useEffect(() => {
+        if (recommendation) {
+            const defaultName = `${area} ${t(`equipmentView.configurator.styles.${growStyle}`)} ${t(`equipmentView.configurator.budgets.${budget}`)}`;
+            setSetupName(defaultName);
         }
-    };
-    
-    const startOver = () => {
-        setStep(1);
-        setRecommendation(null);
-        setError(null);
-    };
+    }, [recommendation, area, growStyle, budget, t]);
 
     const costBreakdown = useMemo(() => {
         if (!recommendation) return null;
-        const breakdown: { category: RecommendationCategory; price: number }[] = [];
         let total = 0;
-        for (const key in recommendation) {
-            const item = recommendation[key as RecommendationCategory];
-            breakdown.push({ category: item.category, price: item.price });
+        const breakdownData = (Object.keys(recommendation) as RecommendationCategory[]).map(key => {
+            const item = recommendation[key];
             total += item.price;
-        }
-        return { breakdown, total };
+            return { category: key, price: item.price };
+        });
+        return { breakdown: breakdownData, total };
     }, [recommendation]);
+    
+    const handleSaveSetup = () => {
+        const name = setupName.trim();
+        if (name && recommendation && costBreakdown) {
+            if (window.confirm(t('equipmentView.configurator.setupSaveConfirm', { name }))) {
+                try {
+                    const newSetup: Omit<SavedSetup, 'id' | 'createdAt'> = {
+                        name,
+                        recommendation,
+                        sourceDetails: {
+                            area,
+                            budget: t(`equipmentView.configurator.budgets.${budget}`),
+                            growStyle: t(`equipmentView.configurator.styles.${growStyle}`),
+                        },
+                        totalCost: costBreakdown.total,
+                    };
+                    onSaveSetup(newSetup);
+                    addNotification(t('equipmentView.configurator.setupSaveSuccess', { name }), 'success');
+                } catch (e) {
+                    addNotification(t('equipmentView.configurator.setupSaveError'), 'error');
+                    console.error(e);
+                }
+            }
+        }
+    };
     
     const gearIcons: Record<RecommendationCategory, React.ReactNode> = {
         tent: <PhosphorIcons.Cube />, light: <PhosphorIcons.LightbulbFilament />, ventilation: <PhosphorIcons.Fan />,
@@ -165,9 +173,9 @@ export const SetupConfigurator: React.FC = () => {
                     )}
 
                     <div className="flex justify-between mt-8">
-                        <Button variant="secondary" onClick={() => setStep(prev => Math.max(1, prev-1) as Step)} disabled={step === 1}>{t('common.back')}</Button>
+                        <Button variant="secondary" onClick={() => setStep(Math.max(1, step-1) as Step)} disabled={step === 1}>{t('common.back')}</Button>
                         {step < 3 ? (
-                             <Button onClick={() => setStep(prev => Math.min(3, prev+1) as Step)}>{t('common.next')}</Button>
+                             <Button onClick={() => setStep(Math.min(3, step+1) as Step)}>{t('common.next')}</Button>
                         ) : (
                              <Button onClick={handleGenerate}><PhosphorIcons.Sparkle className="inline w-5 h-5 mr-2" />{t('equipmentView.configurator.generate')}</Button>
                         )}
@@ -233,6 +241,20 @@ export const SetupConfigurator: React.FC = () => {
                                                 <span>{t('equipmentView.configurator.total')}</span>
                                                 <span>≈ {costBreakdown.total} €</span>
                                             </div>
+                                        </div>
+                                        <div className="mt-4 space-y-2 pt-4 border-t border-slate-700">
+                                            <label htmlFor="setup-name" className="block text-sm font-semibold text-slate-300">{t('common.name')}</label>
+                                            <input
+                                                id="setup-name"
+                                                type="text"
+                                                value={setupName}
+                                                onChange={(e) => setSetupName(e.target.value)}
+                                                className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-slate-100"
+                                                placeholder={t('equipmentView.configurator.setupNamePrompt')}
+                                            />
+                                            <Button onClick={handleSaveSetup} className="w-full" disabled={!setupName.trim()}>
+                                                {t('equipmentView.configurator.saveSetup')}
+                                            </Button>
                                         </div>
                                     </Card>
                                 </div>

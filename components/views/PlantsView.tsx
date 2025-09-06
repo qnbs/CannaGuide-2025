@@ -13,6 +13,7 @@ import { Button } from '../common/Button';
 import { ModalState } from '../common/ActionModalsContainer';
 import { AiDiagnostics } from './plants/AiDiagnostics';
 import { CombinedHistoryChart } from './plants/CombinedHistoryChart';
+import { TipOfTheDay } from './plants/TipOfTheDay';
 
 
 interface PlantsViewProps {
@@ -143,6 +144,7 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
                     </div>
                 </Card>
             )}
+            <TipOfTheDay />
             <AiDiagnostics />
             <TasksAndWarnings tasks={allTasks} problems={allProblems} />
         </div>

@@ -66,52 +66,75 @@ const exportAsCSV = (data: Strain[], fileName: string) => {
 };
 
 const exportAsTXT = (data: Strain[], fileName: string) => {
-    const wrapText = (text: string, maxLength: number): string[] => {
-        const words = text.split(' ');
-        const lines: string[] = [];
+    const textWidth = 80;
+    const hr = '─'.repeat(textWidth);
+
+    const formatLine = (label: string, value: string | undefined | null) => {
+        if (!value || value.trim() === '') return '';
+        const paddedLabel = `${label}:`.padEnd(22, ' ');
+        return `  ${paddedLabel}${value}\n`;
+    };
+    
+    const wrapText = (text: string, indent: number): string => {
+        if (!text) return '';
+        const maxLength = textWidth - indent - 2;
+        const words = text.replace(/<br\s*\/?>/gi, ' ').split(' ');
         let currentLine = '';
+        const lines: string[] = [];
+        const indentation = ' '.repeat(indent);
+
         for (const word of words) {
-            if ((currentLine + word).length + 1 > maxLength) {
-                lines.push(currentLine);
+            if ((currentLine + ' ' + word).length > maxLength) {
+                lines.push(indentation + currentLine);
                 currentLine = word;
             } else {
-                currentLine += ` ${word}`;
+                currentLine += (currentLine ? ' ' : '') + word;
             }
         }
-        lines.push(currentLine);
-        return lines.map(line => line.trim());
+        if (currentLine) {
+            lines.push(indentation + currentLine);
+        }
+        return lines.join('\n');
     };
 
-    let content = `Cannabis Grow Guide - Strain Report\nGenerated on: ${new Date().toLocaleString()}\n\n`;
+    let content = `CANNABIS GROW GUIDE 2025 - STRAIN REPORT\n`;
+    content += `Generated on: ${new Date().toLocaleString()}\n`;
+    content += `Total Strains: ${data.length}\n\n`;
 
     data.forEach(strain => {
-        content += '========================================================================\n';
-        content += `=== ${strain.name.toUpperCase()} ===\n`;
-        content += '========================================================================\n\n';
+        content += `${hr}\n`;
+        content += `| ${strain.name.toUpperCase().padEnd(textWidth - 4)} |\n`;
+        content += `${hr}\n\n`;
 
-        content += `Type: ${strain.type}${strain.typeDetails ? ` (${strain.typeDetails})` : ''}\n`;
-        if (strain.genetics) content += `Genetics: ${strain.genetics}\n`;
-        content += `THC: ${strain.thc}%${strain.thcRange ? ` (${strain.thcRange})` : ''}\n`;
-        content += `CBD: ${strain.cbd}%${strain.cbdRange ? ` (${strain.cbdRange})` : ''}\n`;
-        content += `Flowering Time: ${strain.floweringTime} weeks${strain.floweringTimeRange ? ` (${strain.floweringTimeRange})` : ''}\n\n`;
+        content += `  --- GENERAL ---\n`;
+        content += formatLine('Type', `${strain.type}${strain.typeDetails ? ` (${strain.typeDetails})` : ''}`);
+        content += formatLine('Genetics', strain.genetics);
+        content += formatLine('Flowering Time', `${strain.floweringTimeRange || strain.floweringTime} weeks`);
+        content += formatLine('Difficulty', strain.agronomic.difficulty);
+        content += '\n';
 
-        content += 'PROFILE\n------------------------------------------------------------------------\n';
-        if (strain.aromas?.length) content += `Aromas: ${(strain.aromas || []).join(', ')}\n`;
-        if (strain.dominantTerpenes?.length) content += `Dominant Terpenes: ${(strain.dominantTerpenes || []).join(', ')}\n\n`;
+        content += `  --- CANNABINOIDS ---\n`;
+        content += formatLine('THC', `${strain.thc}%${strain.thcRange ? ` (${strain.thcRange})` : ''}`);
+        content += formatLine('CBD', `${strain.cbd}%${strain.cbdRange ? ` (${strain.cbdRange})` : ''}`);
+        content += '\n';
+
+        content += `  --- PROFILE ---\n`;
+        content += formatLine('Aromas', (strain.aromas || []).join(', '));
+        content += formatLine('Dominant Terpenes', (strain.dominantTerpenes || []).join(', '));
+        content += '\n';
         
-        content += 'GROW INFO\n------------------------------------------------------------------------\n';
-        content += `Difficulty: ${strain.agronomic.difficulty}\n`;
-        if (strain.agronomic.yieldDetails?.indoor) content += `Yield (Indoor): ${strain.agronomic.yieldDetails.indoor}\n`;
-        if (strain.agronomic.yieldDetails?.outdoor) content += `Yield (Outdoor): ${strain.agronomic.yieldDetails.outdoor}\n`;
-        if (strain.agronomic.heightDetails?.indoor) content += `Height (Indoor): ${strain.agronomic.heightDetails.indoor}\n`;
-        if (strain.agronomic.heightDetails?.outdoor) content += `Height (Outdoor): ${strain.agronomic.heightDetails.outdoor}\n\n`;
+        content += `  --- GROW INFO ---\n`;
+        content += formatLine('Yield (Indoor)', strain.agronomic.yieldDetails?.indoor);
+        content += formatLine('Yield (Outdoor)', strain.agronomic.yieldDetails?.outdoor);
+        content += formatLine('Height (Indoor)', strain.agronomic.heightDetails?.indoor);
+        content += formatLine('Height (Outdoor)', strain.agronomic.heightDetails?.outdoor);
+        content += '\n';
 
         if (strain.description) {
-            content += 'DESCRIPTION\n------------------------------------------------------------------------\n';
-            const cleanedDesc = strain.description.replace(/<br\s*\/?>/gi, ' ');
-            content += wrapText(cleanedDesc, 72).join('\n') + '\n\n';
+            content += `  --- DESCRIPTION ---\n`;
+            content += wrapText(strain.description, 2) + '\n';
         }
-        content += '\n';
+        content += '\n\n';
     });
     
     downloadFile(content, `${fileName}.txt`, 'text/plain;charset=utf-8;');
@@ -120,125 +143,124 @@ const exportAsTXT = (data: Strain[], fileName: string) => {
 const exportAsPDF = (data: Strain[], fileName: string, t: TFunction) => {
     const doc = new jsPDF() as any;
     const pageHeight = doc.internal.pageSize.height;
+    const pageWidth = doc.internal.pageSize.width;
     const margin = 15;
-    let y = margin;
+    let y = 0;
 
-    const strainTypeColors: Record<Strain['type'], string> = {
-        Sativa: '#f59e0b',
-        Indica: '#4f46e5',
-        Hybrid: '#2563eb',
+    const strainTypeColors: Record<Strain['type'], [number, number, number]> = {
+        Sativa: [245, 158, 11], // amber-500
+        Indica: [79, 70, 229],  // indigo-600
+        Hybrid: [59, 130, 246], // blue-500
     };
 
-    const addHeaderFooter = () => {
+    const addHeaderFooter = (data: any) => {
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(51, 65, 85); // slate-700
+        doc.text('Cannabis Grow Guide - Strain Report', margin, 20);
+
         const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(10);
-            doc.setTextColor('#888888');
-            doc.text('Cannabis Grow Guide - Strain Report', margin, 10);
-            doc.text(`Page ${i} of ${pageCount}`, doc.internal.pageSize.width - margin, pageHeight - 10, { align: 'right' });
-        }
+        doc.setFontSize(9);
+        doc.setTextColor(100, 116, 139); // slate-500
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
     };
 
-    const estimateStrainHeight = (strain: Strain): number => {
-        let height = 20; // Title
-        height += 35; // Stats table
-        height += 15; // Profile header + content
-        if (strain.description) {
-            const lines = doc.splitTextToSize(strain.description.replace(/<br\s*\/?>/gi, ' '), 180);
-            height += (lines.length * 5) + 12;
-        }
-        return height;
-    };
+    y = 30;
 
-    data.forEach(strain => {
-        const neededHeight = estimateStrainHeight(strain);
-        if (y + neededHeight > pageHeight - margin) {
+    data.forEach((strain) => {
+        let neededHeight = 25; // Header + initial spacing
+        if (strain.description) neededHeight += doc.splitTextToSize(strain.description.replace(/<br\s*\/?>/gi, ' '), pageWidth - margin * 2).length * 4.5;
+        if (strain.aromas?.length) neededHeight += 12;
+        if (strain.dominantTerpenes?.length) neededHeight += 12;
+
+        if (y + neededHeight > pageHeight - 20) {
             doc.addPage();
-            y = margin;
+            y = 30;
+        }
+        
+        if (y > 30) {
+            doc.setDrawColor(226, 232, 240); // slate-200
+            doc.line(margin, y - 5, pageWidth - margin, y - 5);
         }
 
-        // --- Strain Header ---
-        doc.setFillColor(strainTypeColors[strain.type]);
-        doc.rect(margin, y, doc.internal.pageSize.width - (margin * 2), 10, 'F');
+        doc.setFillColor(...strainTypeColors[strain.type]);
+        doc.rect(margin, y, pageWidth - (margin * 2), 10, 'F');
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor('#FFFFFF');
-        doc.text(strain.name, margin + 2, y + 7);
+        doc.setTextColor(255, 255, 255);
+        doc.text(strain.name, margin + 3, y + 7);
         y += 15;
 
-        // --- Stats Table ---
         doc.autoTable({
             startY: y,
-            theme: 'plain',
-            styles: { fontSize: 9, cellPadding: 1.5 },
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 2, lineColor: [226, 232, 240], lineWidth: 0.1 },
+            headStyles: { fillColor: [241, 245, 249], textColor: [30, 41, 59], fontStyle: 'bold', cellPadding: {top: 2, right: 2, bottom: 2, left: 2} },
             body: [
                 [
-                    { content: `${t('common.type')}:`, styles: { fontStyle: 'bold' } },
+                    { content: t('common.type'), styles:{fontStyle: 'bold'} },
                     { content: `${strain.type} ${strain.typeDetails ? `(${strain.typeDetails})` : ''}` },
-                    { content: `${t('strainsView.strainModal.floweringTime')}:`, styles: { fontStyle: 'bold' } },
+                    { content: t('common.genetics'), styles:{fontStyle: 'bold'} },
+                    { content: strain.genetics || 'N/A' },
+                ],
+                [
+                    { content: 'THC / CBD', styles:{fontStyle: 'bold'} },
+                    { content: `${strain.thcRange || strain.thc + '%'} / ${strain.cbdRange || strain.cbd + '%'}` },
+                    { content: t('strainsView.strainModal.floweringTime'), styles:{fontStyle: 'bold'} },
                     { content: `${strain.floweringTimeRange || `${strain.floweringTime} ${t('strainsView.weeks')}`}` },
                 ],
-                [
-                    { content: `${t('common.genetics')}:`, styles: { fontStyle: 'bold' } },
-                    { content: strain.genetics || 'N/A' },
-                    { content: `${t('strainsView.strainModal.difficulty')}:`, styles: { fontStyle: 'bold' } },
+                 [
+                    { content: t('strainsView.strainModal.difficulty'), styles:{fontStyle: 'bold'} },
                     { content: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`) },
-                ],
-                [
-                    { content: 'THC / CBD:', styles: { fontStyle: 'bold' } },
-                    { content: `${strain.thcRange || strain.thc + '%'} / ${strain.cbdRange || strain.cbd + '%'}` },
-                    { content: `${t('strainsView.strainModal.yieldIndoor')}:`, styles: { fontStyle: 'bold' } },
+                    { content: t('strainsView.strainModal.yieldIndoor'), styles:{fontStyle: 'bold'} },
                     { content: strain.agronomic.yieldDetails?.indoor || 'N/A' },
                 ],
             ],
+            didDrawPage: addHeaderFooter
         });
-        y = doc.lastAutoTable.finalY + 5;
-
-        // --- Profile Section ---
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor('#334155');
-        doc.text(t('strainsView.addStrainModal.profile').toUpperCase(), margin, y);
-        y += 6;
-
-        const profileData = [];
-        if (strain.aromas?.length) profileData.push([{ content: `${t('strainsView.strainModal.aromas')}:`, styles: { fontStyle: 'bold' } }, { content: strain.aromas.join(', ') }]);
-        if (strain.dominantTerpenes?.length) profileData.push([{ content: `${t('strainsView.strainModal.dominantTerpenes')}:`, styles: { fontStyle: 'bold' } }, { content: strain.dominantTerpenes.join(', ') }]);
-
-        if (profileData.length > 0) {
+        y = doc.lastAutoTable.finalY + 8;
+        
+        if ((strain.aromas?.length || strain.dominantTerpenes?.length) && y < pageHeight - 20) {
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(51, 65, 85);
+            doc.text(t('strainsView.addStrainModal.profile').toUpperCase(), margin, y);
+            y += 6;
+            
             doc.autoTable({
                 startY: y,
                 theme: 'plain',
                 styles: { fontSize: 9, cellPadding: 1 },
-                columnStyles: { 0: { cellWidth: 40 } },
-                body: profileData,
+                columnStyles: { 0: { cellWidth: 40, fontStyle: 'bold' } },
+                body: [
+                    ...(strain.aromas?.length ? [[t('strainsView.strainModal.aromas'), strain.aromas.join(', ')]] : []),
+                    ...(strain.dominantTerpenes?.length ? [[t('strainsView.strainModal.dominantTerpenes'), strain.dominantTerpenes.join(', ')]] : []),
+                ],
+                didDrawPage: addHeaderFooter
             });
-            y = doc.lastAutoTable.finalY + 5;
-        } else {
-            y -= 6; // Revert if no profile data
+            y = doc.lastAutoTable.finalY + 8;
         }
 
-        // --- Description ---
-        if (strain.description) {
+        if (strain.description && y < pageHeight - 20) {
             doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
-            doc.setTextColor('#334155');
+            doc.setTextColor(51, 65, 85);
             doc.text(t('common.description').toUpperCase(), margin, y);
             y += 6;
 
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor('#475569');
-            const splitDescription = doc.splitTextToSize(strain.description.replace(/<br\s*\/?>/gi, ' '), doc.internal.pageSize.width - margin * 2);
+            doc.setTextColor(71, 85, 105);
+            const splitDescription = doc.splitTextToSize(strain.description.replace(/<br\s*\/?>/gi, ' '), pageWidth - margin * 2);
             doc.text(splitDescription, margin, y);
-            y += (splitDescription.length * 4) + 5;
+            y += (splitDescription.length * 4) + 10;
         }
-
-        y += 5; // Space between entries
     });
+    
+    // Call header/footer one last time to ensure the final page gets numbered.
+    const finalPageData = { pageNumber: doc.internal.getNumberOfPages() };
+    addHeaderFooter(finalPageData);
 
-    addHeaderFooter();
     doc.save(`${fileName}.pdf`);
 };
 

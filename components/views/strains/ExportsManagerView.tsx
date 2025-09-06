@@ -44,7 +44,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     };
     
     const handleDelete = (id: string) => {
-        if(window.confirm(t('strainsView.exportsManager.redownloadConfirm'))) {
+        if(window.confirm(t('strainsView.exportsManager.deleteConfirm'))) {
             deleteExport(id);
             addNotification(t('strainsView.exportsManager.exportRemoved'), 'info');
         }
@@ -76,7 +76,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                                 <div className="min-w-0">
                                     <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{exp.name}.{exp.format}</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        {new Date(exp.createdAt).toLocaleString()} | {exp.count} Strains | {t('strainsView.exportsManager.sourceLabel')}: {exp.source}
+                                        {new Date(exp.createdAt).toLocaleString()} | {exp.count} {t('strainsView.exportsManager.strainsUnit')} | {t('strainsView.exportsManager.sourceLabel')}: {exp.source}
                                     </p>
                                 </div>
                             </div>

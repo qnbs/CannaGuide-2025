@@ -196,8 +196,8 @@ export const HelpView: React.FC = () => {
     const tabs: {id: HelpTab, label: string, icon: React.ReactNode}[] = [
         { id: 'start', label: t('nav.help'), icon: <PhosphorIcons.RocketLaunch /> },
         { id: 'faq', label: t('helpView.sections.faq.title'), icon: <PhosphorIcons.Question /> },
-        { id: 'guides', label: 'Guides & Basics', icon: <PhosphorIcons.BookOpenText /> },
-        { id: 'lexicon', label: 'Lexikon', icon: <PhosphorIcons.GraduationCap /> },
+        { id: 'guides', label: t('helpView.tabs.guides'), icon: <PhosphorIcons.BookOpenText /> },
+        { id: 'lexicon', label: t('helpView.tabs.lexicon'), icon: <PhosphorIcons.GraduationCap /> },
     ];
     
     return (

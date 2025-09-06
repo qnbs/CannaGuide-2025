@@ -38,7 +38,7 @@ export const de = {
     plants: 'Pflanzen',
     equipment: 'Equipment',
     knowledge: 'Wissen',
-    settings: 'Setup',
+    settings: 'Einstellungen',
     help: 'Hilfe',
   },
   onboarding: {
@@ -91,7 +91,7 @@ export const de = {
         flowering_asc: 'Blütezeit (Kurz-Lang)',
         flowering_desc: 'Blütezeit (Lang-Kurz)',
     },
-    deleteStrainConfirm: 'Möchtest du die Sorte "{name}" wirklich löschen? Dies kann nicht rückgängig gemacht werden.',
+    deleteStrainConfirm: 'Möchtest du die Sorte "{name}" wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
     deleteStrainSuccess: 'Sorte "{name}" wurde gelöscht.',
     deleteStrainError: 'Fehler beim Löschen der Sorte.',
     difficulty: {
@@ -197,7 +197,9 @@ export const de = {
         json: 'JSON',
         csv: 'CSV',
         pdf: 'PDF',
+        txt: 'TXT',
       },
+      exportConfirm: 'Möchtest du wirklich {count} Sorten als {format} exportieren?',
     },
     exportsManager: {
       noExports: {
@@ -206,9 +208,10 @@ export const de = {
       },
       sourceLabel: 'Quelle',
       exportRemoved: 'Export aus der Liste entfernt.',
-      redownloadConfirm: 'Möchtest du diesen Export wirklich aus der Liste entfernen?',
+      deleteConfirm: 'Möchtest du diesen Export wirklich aus der Liste entfernen?',
       strainsNotFound: 'Die für diesen Export benötigten Sorten konnten nicht gefunden werden.',
       downloadingExport: 'Export "{name}.{format}" wird heruntergeladen.',
+      strainsUnit: 'Sorten',
     }
   },
   plantsView: {
@@ -219,6 +222,8 @@ export const de = {
       openTasks: 'Offene Aufgaben',
       waterAll: 'Alle gießen',
       addPlant: 'Pflanze hinzufügen',
+      gardenHealth: 'Gartengesundheit',
+      simulateNextDay: 'Nächsten Tag simulieren',
     },
     yourGrowbox: 'Deine Growbox',
     sortBy: 'Sortieren nach',
@@ -334,6 +339,12 @@ export const de = {
         button: 'Fragen',
         titleTemplate: 'KI-Analyse für {name}'
       },
+      ai: {
+        journalAnalysisTitle: 'Journal-Analyse',
+        journalAnalysisDescription: 'Lass die KI das gesamte Anbau-Journal analysieren, um eine Zusammenfassung zu erstellen, Schlüsselereignisse hervorzuheben und Verbesserungen vorzuschlagen.',
+        analyzing: 'Analysiere...',
+        analyzeButton: 'Anbau-Journal analysieren',
+      },
       actions: {
         water: 'Gießen',
         feed: 'Düngen',
@@ -393,6 +404,7 @@ export const de = {
       configurator: 'Konfigurator',
       calculators: 'Rechner',
       gear: 'Ausrüstung & Shops',
+      setups: 'Meine Setups',
     },
     configurator: {
       title: 'Setup Konfigurator',
@@ -427,6 +439,11 @@ export const de = {
       costBreakdown: 'Kostenaufschlüsselung',
       total: 'Total',
       startOver: 'Neu starten',
+      saveSetup: 'Setup speichern',
+      setupNamePrompt: 'Wie möchtest du dieses Setup nennen?',
+      setupSaveConfirm: 'Möchtest du das Setup als "{name}" speichern?',
+      setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
+      setupSaveError: 'Fehler beim Speichern des Setups.',
       error: 'Die KI konnte keine Empfehlung generieren. Bitte versuche es später erneut.',
       errorNetwork: 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.',
       categories: {
@@ -495,6 +512,28 @@ export const de = {
         timers: { name: 'Zeitschaltuhr(en)', desc: 'Mindestens eine für den Lichtzyklus (z.B. 18/6 oder 12/12 Stunden). Eine weitere für die Lüftung kann nützlich sein.' },
         meters: { name: 'Messgeräte (pH/EC, Thermo-Hygrometer)', desc: 'Unerlässlich zur Überwachung. pH- & EC-Messgeräte für die Nährlösung, Thermo-Hygrometer für Temperatur & Luftfeuchtigkeit.' },
         harvest: { name: 'Ernte-Zubehör', desc: 'Eine scharfe Trim-Schere, eine Taschenlupe (60x) zur Trichom-Kontrolle und luftdichte Gläser für das Curing.' },
+      }
+    },
+     savedSetups: {
+      title: 'Meine gespeicherten Setups',
+      noSetups: {
+        title: 'Keine gespeicherten Setups',
+        subtitle: 'Wenn du eine Empfehlung aus dem Konfigurator speicherst, erscheint sie hier.',
+      },
+      inspect: 'Inspizieren',
+      deleteConfirm: 'Möchtest du das Setup "{name}" wirklich endgültig löschen?',
+      deleteSuccess: 'Setup "{name}" wurde gelöscht.',
+      updateSuccess: 'Setup "{name}" wurde aktualisiert.',
+      updateError: 'Fehler beim Aktualisieren des Setups.',
+      exportConfirm: 'Möchtest du das Setup "{name}" wirklich als {format} exportieren?',
+      exportSuccess: 'Setup "{name}" erfolgreich exportiert.',
+      modal: {
+        title: 'Setup Details',
+        editMode: 'Bearbeitungsmodus',
+        saveChanges: 'Änderungen speichern',
+        item: 'Komponente',
+        price: 'Preis',
+        rationale: 'Begründung',
       }
     }
   },
@@ -594,6 +633,10 @@ export const de = {
   },
   helpView: {
     title: 'Hilfecenter',
+    tabs: {
+      guides: 'Anleitungen & Grundlagen',
+      lexicon: 'Lexikon',
+    },
     sections: {
       firstSteps: {
         title: 'Erste Schritte & Hauptfunktionen',
@@ -619,11 +662,11 @@ export const de = {
           },
           q3: {
             q: 'Kann ich meine Daten sichern oder übertragen?',
-            a: 'Ja! Gehe zum <strong>Setup</strong>-Bereich unter "Datenverwaltung". Dort kannst du alle deine Daten (Pflanzen, Einstellungen, eigene Sorten, Favoriten) in eine einzige Backup-Datei exportieren. Diese Datei kannst du später auf demselben oder einem anderen Gerät wieder importieren.'
+            a: 'Ja! Gehe zum <strong>Einstellungen</strong>-Bereich unter "Datenverwaltung". Dort kannst du alle deine Daten (Pflanzen, Einstellungen, eigene Sorten, Favoriten) in eine einzige Backup-Datei exportieren. Diese Datei kannst du später auf demselben oder einem anderen Gerät wieder importieren.'
           },
           q4: {
             q: 'In welchen Sprachen ist die App verfügbar?',
-            a: 'Die App ist vollständig in <strong>Deutsch</strong> und <strong>Englisch</strong> verfügbar. Du kannst die Sprache jederzeit im <strong>Setup</strong>-Bereich unter "Anzeige" -> "Sprache" ändern. Deine Auswahl wird automatisch gespeichert.'
+            a: 'Die App ist vollständig in <strong>Deutsch</strong> und <strong>Englisch</strong> verfügbar. Du kannst die Sprache jederzeit im <strong>Einstellungen</strong>-Bereich unter "Anzeige" -> "Sprache" ändern. Deine Auswahl wird automatisch gespeichert.'
           },
           q5: {
             q: 'Ist die App barrierefrei?',
@@ -682,30 +725,30 @@ export const de = {
         items: {
           a1: { term: 'Sativa, Indica & Hybrid', def: 'Diese Begriffe beschreiben die Hauptkategorien von Cannabis, die sich traditionell in Wachstumsmustern und Wirkungen unterscheiden:<ul><li><strong>Sativa:</strong> Wächst hoch und schlank mit schmalen Blättern. Die Wirkung wird oft als zerebral, energetisierend und kreativ beschrieben ("Kopf-High").</li><li><strong>Indica:</strong> Wächst kurz, buschig und kompakt mit breiten Blättern. Die Wirkung ist meist körperlich, entspannend und sedierend ("Körper-High").</li><li><strong>Hybrid:</strong> Eine Kreuzung aus Sativa- und Indica-Genetik. Moderne Sorten sind fast alle Hybride, deren Eigenschaften und Wirkungen eine Mischung beider Elternteile sind. Das Terpenprofil ist oft ein besserer Indikator für die zu erwartende Wirkung als die einfache Sativa/Indica-Klassifizierung.</li></ul>' },
           a2: { term: 'Der Entourage-Effekt', def: 'Der Entourage-Effekt beschreibt die Theorie, dass all diese Verbindungen (Cannabinoide, Terpene, Flavonoide) synergistisch zusammenwirken, um eine umfassendere und nuanciertere Wirkung zu erzeugen als jede einzelne Verbindung allein. Zum Beispiel wirken THC und CBD zusammen anders als isoliert. Ein Vollspektrum-Produkt ist daher oft wirksamer als ein Isolat.'},
-          a3: { term: 'Blütezeit: Photoperiodisch vs. Autoflower', def: '<ul><li><strong>Photoperiodisch:</strong> Diese Pflanzen benötigen eine Änderung des Lichtzyklus, um die Blütephase einzuleiten. Im Innenanbau geschieht dies durch die Umstellung auf 12 Stunden Licht und 12 Stunden Dunkelheit (12/12). Sie können theoretisch unbegrenzt in der vegetativen Phase gehalten werden.</li><li><strong>Autoflower (Autoflowering):</strong> Diese Sorten enthalten Ruderalis-Genetik, eine Cannabis-Unterart aus kalten Regionen. Sie beginnen nach einer genetisch festgelegten Zeit (typischerweise 2-4 Wochen) automatisch zu blühen, unabhängig vom Lichtzyklus. Sie haben einen kürzeren Lebenszyklus und sind oft anfängerfreundlicher und kompakter.</li></ul>' },
-          a4: { term: 'Ertrag & Höhe verstehen', def: 'Diese Angaben sind Schätzungen, die stark von den Anbaubedingungen abhängen.<ul><li><strong>Ertrag (g/m²):</strong> Gibt an, wie viel Ernte (in Gramm trockener Blüten) pro Quadratmeter Anbaufläche unter optimalen Bedingungen zu erwarten ist. Relevant für den Innenanbau.</li><li><strong>Ertrag (g/Pflanze):</strong> Gibt den zu erwartenden Ertrag für eine einzelne Pflanze an, typischerweise im Außenanbau.</li><li><strong>Faktoren:</strong> Genetik, Lichtintensität, Topfgröße, Nährstoffversorgung, Trainingstechniken und die Erfahrung des Züchters haben einen massiven Einfluss auf beide Werte.</li></ul>' },
+          a3: { term: 'Blütezeit: Photoperiodisch vs. Autoflower', def: '<ul><li><strong>Photoperiodisch:</strong> Diese Pflanzen benötigen eine Änderung des Lichtzyklus, um die Blütephase einzuleiten. Indoors wird dies durch den Wechsel zu 12 Stunden Licht und 12 Stunden Dunkelheit (12/12) erreicht. Sie können theoretisch unbegrenzt in der vegetativen Phase gehalten werden.</li><li><strong>Autoflower (Autoflowering):</strong> Diese Sorten enthalten Ruderalis-Genetik, eine Cannabis-Unterart aus kalten Regionen. Sie beginnen automatisch nach einer genetisch festgelegten Zeit (typischerweise 2-4 Wochen) zu blühen, unabhängig vom Lichtzyklus. Sie haben einen kürzeren Lebenszyklus und sind oft anfängerfreundlicher und kompakter.</li></ul>' },
+          a4: { term: 'Ertrag & Höhe verstehen', def: 'Diese Zahlen sind Schätzungen, die stark von den Anbaubedingungen abhängen.<ul><li><strong>Ertrag (g/m²):</strong> Gibt an, wie viel Ernte (in Gramm trockener Blüten) pro Quadratmeter Anbaufläche unter optimalen Bedingungen erwartet werden kann. Relevant für den Indoor-Anbau.</li><li><strong>Ertrag (g/Pflanze):</strong> Gibt den erwarteten Ertrag für eine einzelne Pflanze an, typischerweise im Outdoor-Anbau.</li><li><strong>Faktoren:</strong> Genetik, Lichtintensität, Topfgröße, Nährstoffversorgung, Trainingstechniken und die Erfahrung des Züchters haben einen massiven Einfluss auf beide Werte.</li></ul>' },
         }
       },
       plantCareABCs: {
         title: 'Pflanzenpflege-ABC',
         items: {
-          pc1: { term: 'Lebensphasen im Detail', def: '<ul><li><strong>Samen/Keimung:</strong> Der Samen braucht Feuchtigkeit, Wärme und Dunkelheit. Die Pfahlwurzel tritt aus.</li><li><strong>Sämling:</strong> Die Pflanze entwickelt ihre ersten Keimblätter und dann die ersten echten, gefingerten Blätter. Eine sehr verletzliche Phase.</li><li><strong>Vegetatives Wachstum:</strong> Die Pflanze konzentriert sich auf das Wachstum von Blättern, Stängeln und Wurzeln. Benötigt viel Licht (18+ Stunden) und stickstoffreichen Dünger.</li><li><strong>Blüte:</strong> Nach der Umstellung auf einen 12/12-Lichtzyklus (bei photoperiodischen Sorten) stellt die Pflanze das vegetative Wachstum ein und entwickelt Blüten. Der Nährstoffbedarf verlagert sich auf Phosphor und Kalium.</li><li><strong>Ernte, Trocknung & Curing:</strong> Die entscheidenden Abschlussarbeiten. Richtiges Trocknen und Aushärten (Curing) sind essentiell für Qualität, Geschmack und Haltbarkeit.</li></ul>' },
-          pc2: { term: 'Vitalwerte meistern', def: '<ul><li><strong>pH-Wert & Nährstoffsperre:</strong> Der pH-Wert beeinflusst die Fähigkeit der Wurzeln, Nährstoffe aufzunehmen. Ein falscher pH-Wert führt zur "Nährstoffsperre" (Nutrient Lockout), bei der die Pflanze verhungert, obwohl Nährstoffe im Substrat vorhanden sind. Ideal in Erde: 6.0-7.0, in Hydro/Coco: 5.5-6.5.</li><li><strong>EC-Wert (Elektrische Leitfähigkeit):</strong> Misst die Nährstoffkonzentration. Zu hoher EC führt zu "Nährstoffverbrennung" (verbrannte Blattspitzen), zu niedriger zu Mängeln.</li><li><strong>Substratfeuchtigkeit & Wurzelatmung:</strong> Die Wurzeln benötigen nicht nur Wasser, sondern auch Sauerstoff. Ein stetiger Wechsel zwischen feucht und leicht trocken ist ideal. Chronische Nässe führt zu Wurzelfäule.</li></ul>' },
-          pc3: { term: 'Fortgeschrittene Trainingstechniken', def: 'Training formt die Pflanze für maximale Lichtausbeute und Ertrag.<ul><li><strong>LST (Low Stress Training):</strong> Sanftes Herunterbiegen von Ästen, um eine breite, flache Krone zu erzeugen.</li><li><strong>Topping:</strong> Abschneiden des Haupttriebs, um die Pflanze zu zwingen, zwei neue Haupttriebe zu bilden (buschigeres Wachstum).</li><li><strong>FIMing (Fuck I Missed):</strong> Eine Variante des Toppings, bei der nur ein Teil des Haupttriebs entfernt wird, was zu 4+ neuen Trieben führen kann.</li><li><strong>SCROG (Screen of Green):</strong> Ein Netz wird über die Pflanzen gespannt. Alle Triebe werden durch das Netz geflochten, um eine perfekt ebene und lichteffiziente Fläche aus Blüten zu schaffen.</li><li><strong>Entlaubung (Defoliation):</strong> Gezieltes Entfernen großer Fächerblätter, um die Lichtdurchdringung und Luftzirkulation zu unteren Blütenansätzen zu verbessern.</li></ul>' },
-          pc4: { term: 'Häufige Probleme & Lösungen', def: '<ul><li><strong>Nährstoffmängel (Mobile Nährstoffe wie N, P, K, Mg):</strong> Symptome zeigen sich zuerst an den unteren, älteren Blättern, da die Pflanze Nährstoffe zu neuem Wachstum verschiebt. <strong>Lösung:</strong> Düngung anpassen.</li><li><strong>Nährstoffmängel (Immobile Nährstoffe wie Ca, S, B):</strong> Symptome zeigen sich zuerst an den oberen, neuen Blättern, da die Pflanze diese Nährstoffe intern nicht verschieben kann. <strong>Lösung:</strong> Düngung anpassen; oft ist ein Cal/Mag-Zusatz nötig.</li><li><strong>Schädlinge:</strong><ul><li><strong>Spinnmilben:</strong> Winzige weiße Punkte auf Blättern, feine Gespinste. <strong>Lösung:</strong> Neemöl, Raubmilben.</li><li><strong>Trauermücken:</strong> Kleine schwarze Fliegen um die Erde. <strong>Lösung:</strong> Gelbtafeln, Erde trockener halten, Nematoden.</li></ul></li></ul>' },
+          pc1: { term: 'Lebensphasen im Detail', def: '<ul><li><strong>Samen/Keimung:</strong> Der Samen benötigt Feuchtigkeit, Wärme und Dunkelheit. Die Pfahlwurzel tritt aus.</li><li><strong>Sämling:</strong> Die Pflanze entwickelt ihre ersten Keimblätter und dann die ersten echten, gezackten Blätter. Eine sehr verletzliche Phase.</li><li><strong>Wachstumsphase (vegetativ):</strong> Die Pflanze konzentriert sich auf das Wachstum von Blättern, Stängeln und Wurzeln. Benötigt viel Licht (18+ Stunden) und stickstoffreichen Dünger.</li><li><strong>Blütephase:</strong> Nach dem Wechsel zu einem 12/12-Lichtzyklus (bei photoperiodischen Sorten) stellt die Pflanze das vegetative Wachstum ein und entwickelt Blüten. Der Nährstoffbedarf verlagert sich zu Phosphor und Kalium.</li><li><strong>Ernte, Trocknung & Curing:</strong> Die entscheidenden letzten Schritte. Richtiges Trocknen und Aushärten sind für Qualität, Geschmack und Haltbarkeit unerlässlich.</li></ul>' },
+          pc2: { term: 'Vitalwerte meistern', def: '<ul><li><strong>pH & Nährstoffsperre:</strong> Der pH-Wert beeinflusst die Fähigkeit der Wurzeln, Nährstoffe aufzunehmen. Ein falscher pH-Wert führt zur "Nährstoffsperre", bei der die Pflanze hungert, obwohl Nährstoffe im Substrat vorhanden sind. Ideal in Erde: 6.0-7.0, in Hydro/Coco: 5.5-6.5.</li><li><strong>EC (Elektrische Leitfähigkeit):</strong> Misst die Nährstoffkonzentration. Zu hoher EC führt zu "Nährstoffbrand" (verbrannte Blattspitzen), zu niedriger zu Mängeln.</li><li><strong>Substratfeuchtigkeit & Wurzelatmung:</strong> Die Wurzeln benötigen nicht nur Wasser, sondern auch Sauerstoff. Ein ständiger Zyklus zwischen feucht und leicht trocken ist ideal. Chronische Nässe führt zu Wurzelfäule.</li></ul>' },
+          pc3: { term: 'Fortgeschrittene Trainingstechniken', def: 'Training formt die Pflanze für maximale Lichtausbeute und Ertrag.<ul><li><strong>LST (Low Stress Training):</strong> Sanftes Herunterbiegen von Ästen, um ein breites, flaches Blätterdach zu schaffen.</li><li><strong>Topping:</strong> Abschneiden des Haupttriebs, um die Pflanze zu zwingen, zwei neue Haupttriebe zu bilden (buschigeres Wachstum).</li><li><strong>FIMing (Fuck I Missed):</strong> Eine Variante des Toppings, bei der nur ein Teil des Haupttriebs entfernt wird, was zu 4+ neuen Trieben führen kann.</li><li><strong>SCROG (Screen of Green):</strong> Ein Netz wird über die Pflanzen gespannt. Alle Triebe werden durch das Netz geflochten, um ein perfekt ebenes und lichteffizientes Blütendach zu schaffen.</li><li><strong>Entlaubung (Defoliation):</strong> Gezieltes Entfernen großer Fächerblätter, um die Lichtdurchdringung und Luftzirkulation zu den unteren Blütenansätzen zu verbessern.</li></ul>' },
+          pc4: { term: 'Häufige Probleme & Lösungen', def: '<ul><li><strong>Nährstoffmängel (Mobile Nährstoffe wie N, P, K, Mg):</strong> Symptome treten zuerst an den unteren, älteren Blättern auf, da die Pflanze Nährstoffe zu neuem Wachstum verschiebt. <strong>Lösung:</strong> Düngung anpassen.</li><li><strong>Nährstoffmängel (Immobile Nährstoffe wie Ca, S, B):</strong> Symptome treten zuerst an den oberen, neuen Blättern auf, da die Pflanze diese Nährstoffe nicht intern verschieben kann. <strong>Lösung:</strong> Düngung anpassen; oft wird ein Cal/Mag-Zusatz benötigt.</li><li><strong>Schädlinge:</strong><ul><li><strong>Spinnmilben:</strong> Winzige weiße Punkte auf den Blättern, feine Gespinste. <strong>Lösung:</strong> Neemöl, Raubmilben.</li><li><strong>Trauermücken:</strong> Kleine schwarze Fliegen um die Erde. <strong>Lösung:</strong> Gelbe Klebefallen, Erde mehr austrocknen lassen, Nematoden.</li></ul></li></ul>' },
         }
       },
       glossary: {
         title: 'Umfassendes Glossar',
         items: {
-          g1: { term: 'Calyx (Blütenkelch)', def: 'Der eigentliche Teil der Blüte, der die Samenanlage umschließt. Die Calyxen sind die harzigsten Teile der Pflanze.' },
-          g2: { term: 'Klon (Steckling)', def: 'Ein genetisch identischer Ableger einer Mutterpflanze, der bewurzelt wird, um eine neue Pflanze zu züchten.' },
-          g3: { term: 'Feminisiert', def: 'Samen, die so behandelt wurden, dass sie fast ausschließlich (99%+) weibliche Pflanzen hervorbringen, welche die begehrten Blüten produzieren.' },
-          g4: { term: 'Spülen (Flushing)', def: 'Die Pflanze in den letzten 1-2 Wochen vor der Ernte nur mit klarem, pH-reguliertem Wasser zu gießen, um überschüssige Nährstoffsalze aus dem Substrat und der Pflanze zu entfernen, was den Geschmack verbessert.' },
-          g5: { term: 'Landrasse', def: 'Eine reine, ursprüngliche Cannabis-Sorte, die sich über lange Zeit natürlich in einer bestimmten geografischen Region entwickelt und angepasst hat (z.B. Afghan Kush, Durban Poison).' },
+          g1: { term: 'Calyx (Blütenkelch)', def: 'Der eigentliche Teil der Blüte, der die Samenanlage umschließt. Die Blütenkelche sind die harzreichsten Teile der Pflanze.' },
+          g2: { term: 'Klon (Steckling)', def: 'Ein genetisch identischer Schnittling von einer Mutterpflanze, der bewurzelt wird, um eine neue Pflanze zu züchten.' },
+          g3: { term: 'Feminisiert', def: 'Samen, die so behandelt wurden, dass sie fast ausschließlich (99%+) weibliche Pflanzen hervorbringen, die die begehrten Blüten produzieren.' },
+          g4: { term: 'Spülen (Flushing)', def: 'Die Pflanze in den letzten 1-2 Wochen vor der Ernte nur mit klarem, pH-angepasstem Wasser zu gießen, um überschüssige Nährstoffsalze aus dem Substrat und der Pflanze zu entfernen, was den Geschmack verbessert.' },
+          g5: { term: 'Landrasse', def: 'Eine reine, ursprüngliche Cannabissorte, die sich über lange Zeit auf natürliche Weise in einer bestimmten geografischen Region entwickelt und angepasst hat (z.B. Afghan Kush, Durban Poison).' },
           g6: { term: 'N-P-K', def: 'Das Verhältnis der drei primären Makronährstoffe, die Pflanzen benötigen: Stickstoff (N), Phosphor (P) und Kalium (K). Düngerflaschen geben dieses Verhältnis oft als Zahlen an (z.B. 5-10-5).' },
           g7: { term: 'Phänotyp', def: 'Die beobachtbaren Merkmale einer Pflanze, die aus der Interaktion ihrer Genetik (Genotyp) und der Umwelt resultieren. Samen derselben Sorte können unterschiedliche Phänotypen hervorbringen.' },
-          g8: { term: 'Pistill (Blütenstempel)', def: 'Die kleinen "Härchen" auf den Calyxen, die anfangs weiß sind und mit der Reife orange/braun werden. Sie dienen dem Einfangen von Pollen.' },
+          g8: { term: 'Pistill (Blütenstempel)', def: 'Die kleinen "Härchen" an den Blütenkelchen, die anfangs weiß sind und bei der Reifung orange/braun werden. Sie dienen dem Einfangen von Pollen.' },
           g9: { term: 'Trichome', def: 'Die winzigen, pilzförmigen Harzdrüsen auf den Blüten und Blättern, die Cannabinoide und Terpene produzieren. Ihre Farbe (klar, milchig, bernsteinfarben) ist der beste Indikator für den Erntezeitpunkt.' },
         }
       },
@@ -713,13 +756,13 @@ export const de = {
         title: 'Über die App',
         version: 'v2.2.0',
         appName: 'Cannabis Grow Guide',
-        description: 'Diese App ist ein interaktiver Leitfaden, der dich auf deiner Cannabis-Anbaureise unterstützt. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.',
-        features: '<strong>Neue Features:</strong> Diese Version enthält eine vollständige Übersetzung für Englisch und Deutsch sowie umfassende Verbesserungen der Barrierefreiheit (Tastatur & Screenreader-Unterstützung).',
-        devWithAIStudioTitle: 'Entwicklung mit AI Studio',
-        devWithAIStudioText: 'Diese App wurde mit Googles <strong>AI Studio</strong> entwickelt, einer innovativen Plattform, die es ermöglicht, komplexe Webanwendungen durch Befehle in natürlicher Sprache zu erstellen und zu verändern. Durch iterative Prompts wurden die Benutzeroberfläche gestaltet, Funktionalitäten implementiert und die Gemini KI für intelligente Features integriert. AI Studio beschleunigt den Entwicklungsprozess erheblich und eröffnet neue Möglichkeiten in der App-Erstellung.',
+        description: 'Diese App ist ein interaktiver Leitfaden, der dich auf deiner Reise des Cannabis-Anbaus unterstützt. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.',
+        features: '<strong>Neue Funktionen:</strong> Diese Version enthält eine vollständige Übersetzung für Deutsch und Englisch sowie umfassende Verbesserungen der Barrierefreiheit (Tastatur- & Screenreader-Unterstützung).',
+        devWithAIStudioTitle: 'Entwickelt mit AI Studio',
+        devWithAIStudioText: 'Diese App wurde mit <strong>AI Studio</strong> von Google entwickelt, einer innovativen Plattform, die die Erstellung und Änderung komplexer Webanwendungen durch Befehle in natürlicher Sprache ermöglicht. Die Benutzeroberfläche wurde entworfen, Funktionalitäten implementiert und die Gemini KI für intelligente Features durch iterative Prompts integriert. AI Studio beschleunigt den Entwicklungsprozess erheblich und eröffnet neue Möglichkeiten in der App-Erstellung.',
         getTheAppHere: 'Hol dir die App hier',
         disclaimerTitle: 'Haftungsausschluss',
-        disclaimerText: 'Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen, die von Land zu Land variieren. Bitte informiere dich über die Gesetze in deiner Region und handle stets verantwortungsbewusst und im Einklang mit dem Gesetz.',
+        disclaimerText: 'Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen, die von Land zu Land variieren. Bitte informiere dich über die Gesetze in deiner Region und handle stets verantwortungsbewusst und gesetzeskonform.',
         privacyTitle: 'Datenschutz',
         privacyText: 'Deine Privatsphäre ist uns wichtig. Alle deine Daten, einschließlich Pflanzen-Journale und Einstellungen, werden ausschließlich lokal in deinem Browser gespeichert und verlassen niemals dein Gerät.'
       }
@@ -728,34 +771,6 @@ export const de = {
   settingsView: {
     title: 'Einstellungen',
     display: 'Anzeige',
-    design: 'Gestaltung & Design',
-    designDescription: 'Passe das Erscheinungsbild der App an. Wähle aus handverlesenen, professionellen Designs.',
-    themes: {
-      'midnight-blue': {
-        label: 'Mitternachtsblau',
-        desc: 'Ein hochmodernes, dunkelblaues Design mit kühlen Cyan-Akzenten.',
-      },
-      'forest-deep': {
-        label: 'Waldtief',
-        desc: 'Das klassische, tiefgrüne Design mit leuchtenden Limetten-Highlights.',
-      },
-      'purple-haze': {
-        label: 'Lila Dunst',
-        desc: 'Ein cooles Thema mit satten Violett- und Magenta-Tönen.',
-      },
-      'og-kush': {
-        label: 'OG Kush',
-        desc: 'Ein erdiges Thema mit warmen Bernstein- und Goldtönen.',
-      },
-      'sativa-sun': {
-        label: 'Sativa Sonne',
-        desc: 'Ein lebhaftes, energiegeladenes Thema mit leuchtenden Orangen- und Gelbakzenten.',
-      },
-      'hydro-tech': {
-        label: 'Hydro-Tech',
-        desc: 'Ein sauberer, futuristischer Look mit kühlen Cyan- und Blaugrün-Farben.',
-      }
-    },
     fontSize: 'Schriftgröße',
     fontSizeDescription: 'Passe die Schriftgröße für die gesamte App an.',
     fontSizes: {
@@ -773,55 +788,47 @@ export const de = {
     notificationsEnable: 'Benachrichtigungen aktivieren',
     notificationsEnableDescription: 'Erhalte Benachrichtigungen über wichtige Ereignisse.',
     stageChange: 'Phasenwechsel',
-    stageChangeDescription: 'Benachrichtigen, wenn eine Pflanze eine neue Lebensphase erreicht.',
+    stageChangeDescription: 'Benachrichtigung, wenn eine Pflanze eine neue Lebensphase erreicht.',
     problemDetected: 'Problemerkennung',
-    problemDetectedDescription: 'Benachrichtigen, wenn ein Problem bei einer Pflanze festgestellt wird.',
-    harvestReady: 'Ernte bereit',
-    harvestReadyDescription: 'Benachrichtigen, wenn eine Pflanze erntereif ist.',
-    simulation: 'Simulation & Gameplay',
-    simulationSpeed: 'Simulationsgeschwindigkeit',
-    simulationSpeedDescription: 'Bestimmt, wie schnell die Zeit für deine Pflanzen vergeht.',
-    simulationDifficulty: 'Schwierigkeitsgrad',
-    simulationDifficultyDescription: 'Beeinflusst, wie stark sich Probleme auf den Stress der Pflanze auswirken.',
-    difficulties: {
-      easy: 'Einfach',
-      normal: 'Normal',
-      hard: 'Schwer',
-    },
+    problemDetectedDescription: 'Benachrichtigung, wenn bei einer Pflanze ein Problem festgestellt wird.',
+    harvestReady: 'Erntebereit',
+    harvestReadyDescription: 'Benachrichtigung, wenn eine Pflanze erntereif ist.',
     dataManagement: 'Datenverwaltung',
     exportBackup: 'Backup exportieren',
-    exportBackupDescription: 'Sichere alle deine App-Daten: Pflanzen, Favoriten, eigene Sorten, Exportverlauf und Einstellungen.',
+    exportBackupDescription: 'Sichere alle deine App-Daten: Pflanzen, Favoriten, eigene Sorten, Exporthistorie und Einstellungen.',
     exportButton: 'Vollständiges Backup exportieren',
     importBackup: 'Backup importieren',
     importBackupDescription: 'Stelle alle deine Daten aus einer zuvor exportierten Backup-Datei wieder her.',
     importButton: 'Backup importieren',
     dangerZone: 'Gefahrenzone',
-    resetUserStrainsTitle: '"Meine Sorten" zurücksetzen',
+    resetUserStrainsTitle: 'Zurücksetzen "Meine Sorten"',
     resetUserStrainsDescription: 'Löscht nur die von dir hinzugefügten Sorten. Alle anderen Daten bleiben erhalten.',
     resetUserStrainsButton: 'Meine Sorten löschen',
-    resetExportsHistoryTitle: '"Meine Exporte" zurücksetzen',
-    resetExportsHistoryDescription: 'Löscht nur deinen Exportverlauf. Alle anderen Daten bleiben erhalten.',
-    resetExportsHistoryButton: 'Exportverlauf löschen',
+    resetExportsHistoryTitle: 'Zurücksetzen "Meine Exporte"',
+    resetExportsHistoryDescription: 'Löscht nur deine Exporthistorie. Alle anderen Daten bleiben erhalten.',
+    resetExportsHistoryButton: 'Exporthistorie löschen',
     fullResetTitle: 'Vollständiger App-Reset',
-    fullResetDescription: 'Löscht dauerhaft alle deine gespeicherten Daten (Pflanzen, Favoriten, Einstellungen usw.).',
+    fullResetDescription: 'Löscht dauerhaft alle deine gespeicherten Daten (Pflanzen, Favoriten, Einstellungen, etc.).',
     fullResetButton: 'Alles zurücksetzen',
     notifications: {
       fullResetConfirm: 'Bist du sicher, dass du alle App-Daten dauerhaft löschen möchtest? Dies kann nicht rückgängig gemacht werden.',
-      fullResetSuccess: 'Alle Daten wurden zurückgesetzt. Die App wird jetzt neu geladen.',
-      userStrainsResetConfirm: 'Bist du sicher, dass du alle von dir hinzugefügten Sorten löschen möchtest? Deine Pflanzen und Exporte bleiben erhalten.',
-      userStrainsResetSuccess: 'Deine eigenen Sorten wurden gelöscht.',
-      exportsResetConfirm: 'Bist du sicher, dass du deinen Exportverlauf löschen möchtest? Deine Pflanzen und eigenen Sorten bleiben erhalten.',
-      exportsResetSuccess: 'Exportverlauf wurde gelöscht.',
+      fullResetSuccess: 'Alle Daten wurden zurückgesetzt. Die App wird nun neu geladen.',
+      userStrainsResetConfirm: 'Bist du sicher, dass du alle von dir hinzugefügten Sorten dauerhaft löschen möchtest? Deine Pflanzen und Exporte bleiben erhalten.',
+      userStrainsResetSuccess: 'Deine benutzerdefinierten Sorten wurden gelöscht.',
+      exportsResetConfirm: 'Bist du sicher, dass du deine Exporthistorie dauerhaft löschen möchtest? Deine Pflanzen und benutzerdefinierten Sorten bleiben erhalten.',
+      exportsResetSuccess: 'Exporthistorie wurde gelöscht.',
       exportSuccess: 'Alle App-Daten erfolgreich exportiert.',
       exportError: 'Fehler beim Exportieren der Daten.',
-      importSuccess: 'Daten erfolgreich importiert. Die App wird jetzt neu geladen.',
+      importSuccess: 'Daten erfolgreich importiert. Die App wird nun neu geladen.',
       importError: 'Fehler beim Importieren der Daten. Ungültiges Dateiformat?',
+      exportConfirm: 'Bist du sicher, dass du ein Backup all deiner App-Daten exportieren möchtest?',
+      importConfirm: 'Bist du sicher, dass du Daten aus dieser Datei importieren möchtest? Alle deine aktuellen Daten (Pflanzen, Einstellungen, etc.) werden überschrieben. Dies kann nicht rückgängig gemacht werden.',
     }
   },
   problemMessages: {
-    overwatering: { message: 'Überwässerung', solution: 'Reduziere die Gießfrequenz.' },
+    overwatering: { message: 'Überwässerung', solution: 'Reduziere die Gießhäufigkeit.' },
     underwatering: { message: 'Unterwässerung', solution: 'Gieße die Pflanze sofort.' },
-    nutrientBurn: { message: 'Nährstoffverbrennung (EC zu hoch)', solution: 'Spüle das Substrat und reduziere die Düngerdosis.' },
+    nutrientBurn: { message: 'Nährstoffbrand (EC zu hoch)', solution: 'Spüle das Substrat und reduziere die Düngerdosis.' },
     nutrientDeficiency: { message: 'Nährstoffmangel (EC zu niedrig)', solution: 'Erhöhe die Düngerdosis leicht.' },
     phTooLow: { message: 'pH-Wert zu niedrig', solution: 'Passe den pH-Wert deines Wassers nach oben an.' },
     phTooHigh: { message: 'pH-Wert zu hoch', solution: 'Passe den pH-Wert deines Wassers nach unten an.' },
@@ -838,7 +845,7 @@ export const de = {
     FLOWERING: 'Blüte',
     HARVEST: 'Ernte',
     DRYING: 'Trocknung',
-    CURING: 'Curing',
+    CURING: 'Aushärtung',
     FINISHED: 'Fertig',
   },
   commandPalette: {
@@ -849,4 +856,29 @@ export const de = {
     settings: 'Einstellungen',
     plants: 'Pflanzen',
   },
+  tipOfTheDay: {
+    title: "Tipp des Tages",
+    tips: [
+      "Überprüfe regelmäßig den pH-Wert deiner Nährlösung. Ein stabiler pH-Wert (normalerweise 6,0-6,5 in Erde) ist entscheidend für die Nährstoffaufnahme.",
+      "Überwässere deine Pflanzen nicht! Hebe den Topf an, um sein Gewicht zu prüfen. Gieße nur, wenn er sich deutlich leichter anfühlt.",
+      "Sorge mit einem kleinen Ventilator für eine gute Luftzirkulation. Das stärkt die Stängel und hilft, Schimmel vorzubeugen.",
+      "Achte auf den Abstand zwischen deiner Lampe und dem Pflanzendach. Zu nah kann zu Lichtbrand führen; zu weit entfernt reduziert das Wachstum.",
+      "Während der Blütephase ist die Luftfeuchtigkeit entscheidend. Versuche, sie unter 50% zu halten, um das Risiko von Knospenfäule zu minimieren.",
+      "Weniger ist oft mehr bei Nährstoffen. Beginne mit der halben empfohlenen Dosis und beobachte die Reaktion deiner Pflanze, bevor du sie erhöhst.",
+      "Cal/Mag-Zusätze sind oft notwendig, besonders bei LED-Beleuchtung und in Kokosfasern, um Mängel zu vermeiden.",
+      "LST (Low Stress Training) ist eine anfängerfreundliche Methode, um den Ertrag zu steigern, indem Äste sanft nach unten gebogen werden.",
+      "Die Farbe der Trichome ist der beste Indikator für den Erntezeitpunkt. Eine 60-fache Juwelierlupe ist eine lohnende Investition.",
+      "Dokumentiere alles in deinem Journal! Notizen zu Bewässerung, Düngung und Beobachtungen sind für zukünftige Grows von unschätzbarem Wert.",
+      "Sauberkeit ist der Schlüssel. Halte deinen Anbaubereich aufgeräumt, um das Risiko von Schädlingen und Krankheiten zu minimieren.",
+      "Die Nachttemperaturen sollten nicht mehr als 10°C unter die Tagestemperaturen fallen, um die Pflanze nicht zu stressen.",
+      "In der späten Blütephase kann das selektive Entfernen einiger großer Fächerblätter (Entlaubung) die Lichtdurchdringung zu den unteren Knospen verbessern.",
+      "Spüle deine Pflanzen in den letzten 1-2 Wochen vor der Ernte nur mit klarem Wasser, um den endgültigen Geschmack zu verbessern.",
+      "Das richtige Trocknen und Aushärten ist genauso wichtig wie der Anbau selbst. Nimm dir Zeit für diesen Prozess; es lohnt sich!",
+      "Gelbe Klebefallen sind eine einfache und effektive Methode, um einen Befall von Trauermücken oder anderen fliegenden Schädlingen frühzeitig zu erkennen.",
+      "Verwende Stofftöpfe, um gesündere Wurzeln durch besseren Sauerstoffaustausch (Luftschnitt) zu fördern.",
+      "Lerne, die Blätter auf Anzeichen von Nährstoffmangel zu lesen. Eine Vergilbung von unten nach oben deutet oft auf einen Stickstoffmangel hin.",
+      "Ein EC-Messgerät ist ein wertvolles Werkzeug zur genauen Kontrolle der Nährstoffkonzentration deiner Lösung.",
+      "Sei geduldig! Der Anbau von Cannabis ist ein Prozess, der Zeit und Aufmerksamkeit erfordert. Jeder Fehler ist eine Lernmöglichkeit."
+    ]
+  }
 };

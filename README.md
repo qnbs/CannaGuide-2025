@@ -8,8 +8,8 @@ Track your plants in a realistic simulation, learn all about hundreds of strains
 
 ## ✨ What's New in v2.3.0
 
-*   **Improved Equipment Planner:** The "My Setups" tab is now positioned more intuitively for a smoother workflow.
-*   **Enhanced Setup Persistence:** Your generated equipment setup now persists even when you switch to another view and come back.
+*   **Enhanced Settings View:** The settings page has been expanded with a new "Simulation & Gameplay" section, allowing you to control the simulation speed and difficulty.
+*   **Improved Equipment Planner:** Your generated equipment setup and configuration choices now persist even when you switch views. The tabs have also been reordered for a more intuitive workflow.
 *   **Upgraded Help Center:** The entire help section has been expanded with new FAQs on AI features, the Command Palette, and data exporting.
 *   **Full Documentation Overhaul:** The README has been completely rewritten and updated to reflect all current features in detail.
 
@@ -39,14 +39,14 @@ Track your plants in a realistic simulation, learn all about hundreds of strains
 
 ---
 
-## 🤖 Development with AI Studio
+## 🤖 Development with AI Studio & Open Source on GitHub
 
-This application was developed entirely using **Google's AI Studio**, an innovative platform that enables the creation and modification of complex, feature-rich web applications through natural language commands.
+This application was developed entirely using **Google's AI Studio**, an innovative platform that enables the creation and modification of complex, feature-rich web applications through natural language commands. The entire process, from scaffolding the initial project to implementing complex features, was guided by iterative prompts.
 
-The entire process, from scaffolding the initial project structure to implementing the dynamic plant simulation, integrating the Gemini API, and designing the user interface, was guided by iterative prompts. This approach demonstrates the power of AI in modern software development, significantly accelerating prototyping and allowing for a focus on user experience and functionality.
+This project is also fully open source. You are welcome to view the source code, report issues, or contribute to its development on GitHub.
 
-**See how it was made or fork the project yourself in AI Studio:**
-[https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **See how it was made or fork the project in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Contribute or view the source code on GitHub:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
 
 ---
 
@@ -90,8 +90,8 @@ Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles 
 
 ## ✨ Was ist neu in v2.3.0
 
-*   **Verbesserter Ausrüstungs-Planer:** Der Tab "Meine Setups" ist nun für einen reibungsloseren Arbeitsablauf intuitiver positioniert.
-*   **Erweiterte Setup-Persistenz:** Ihr generiertes Ausrüstungs-Setup bleibt nun erhalten, auch wenn Sie zu einer anderen Ansicht wechseln und zurückkehren.
+*   **Erweiterte Einstellungsansicht:** Die Einstellungsseite wurde um einen neuen Bereich "Simulation & Gameplay" erweitert, mit dem Sie die Simulationsgeschwindigkeit und den Schwierigkeitsgrad steuern können.
+*   **Verbesserter Ausrüstungs-Planer:** Ihr generiertes Ausrüstungs-Setup und Ihre Konfigurationsauswahl bleiben nun erhalten, auch wenn Sie die Ansicht wechseln. Die Tabs wurden ebenfalls für einen intuitiveren Arbeitsablauf neu angeordnet.
 *   **Verbessertes Hilfecenter:** Der gesamte Hilfebereich wurde um neue FAQs zu KI-Funktionen, der Befehlspalette und dem Datenexport erweitert.
 *   **Vollständige Überarbeitung der Dokumentation:** Die README-Datei wurde komplett neu geschrieben und aktualisiert, um alle aktuellen Funktionen detailliert widerzuspiegeln.
 
@@ -121,14 +121,14 @@ Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles 
 
 ---
 
-## 🤖 Entwicklung mit AI Studio
+## 🤖 Entwicklung mit AI Studio & Open Source auf GitHub
 
-Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer innovativen Plattform, die die Erstellung und Änderung komplexer, funktionsreicher Webanwendungen durch Befehle in natürlicher Sprache ermöglicht.
+Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer innovativen Plattform, die die Erstellung und Änderung komplexer, funktionsreicher Webanwendungen durch Befehle in natürlicher Sprache ermöglicht. Der gesamte Prozess, vom Aufbau des initialen Projekts bis zur Implementierung komplexer Funktionen, wurde durch iterative Prompts gesteuert.
 
-Der gesamte Prozess, vom Aufbau der initialen Projektstruktur über die Implementierung der dynamischen Pflanzensimulation und die Integration der Gemini-API bis hin zur Gestaltung der Benutzeroberfläche, wurde durch iterative Prompts gesteuert. Dieser Ansatz demonstriert die Leistungsfähigkeit von KI in der modernen Softwareentwicklung, beschleunigt das Prototyping erheblich und ermöglicht einen Fokus auf Benutzererfahrung und Funktionalität.
+Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
 
-**Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt selbst in AI Studio:**
-[https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
 
 ---
 

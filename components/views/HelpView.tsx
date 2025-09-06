@@ -75,6 +75,13 @@ const StartTab: React.FC = () => {
                             {t('helpView.sections.about.getTheAppHere')} &rarr;
                         </a>
                     </div>
+                     <div className="pt-4 border-t border-accent-800">
+                        <h4 className="font-semibold !text-primary-400">{t('helpView.sections.about.githubTitle')}</h4>
+                        <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.githubText')}} />
+                         <a href="https://github.com/qnbs/Cannabis-Grow-Guide-2025" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-primary-400 hover:underline">
+                            {t('helpView.sections.about.githubLinkText')} &rarr;
+                        </a>
+                    </div>
                     <div className="pt-4 border-t border-accent-800">
                         <h4 className="font-semibold !text-primary-400">{t('helpView.sections.about.disclaimerTitle')}</h4>
                         <p>{t('helpView.sections.about.disclaimerText')}</p>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { Card } from '../common/Card';
 import { SetupConfigurator } from './equipment/SetupConfigurator';
@@ -16,6 +16,23 @@ type Step = 1 | 2 | 3 | 4;
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
 type GrowStyle = 'beginner' | 'yield' | 'stealth';
+
+const CONFIG_STORAGE_KEY = 'equipment-configurator-state';
+
+// Helper to get initial state from localStorage
+const getInitialState = <T,>(key: string, defaultValue: T): T => {
+    try {
+        const saved = localStorage.getItem(CONFIG_STORAGE_KEY);
+        if (saved) {
+            const state = JSON.parse(saved);
+            return state[key] !== undefined ? state[key] : defaultValue;
+        }
+    } catch (e) {
+        console.error("Failed to load config state", e);
+    }
+    return defaultValue;
+};
+
 
 const GearAndShops: React.FC = () => {
     const { t } = useTranslations();
@@ -82,14 +99,24 @@ export const EquipmentView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<ActiveTab>('configurator');
     const { savedSetups, addSetup, updateSetup, deleteSetup } = useSetupManager();
     
-    // State lifted from SetupConfigurator for persistence
-    const [step, setStep] = useState<Step>(1);
-    const [area, setArea] = useState<Area>('80x80');
-    const [budget, setBudget] = useState<Budget>('medium');
-    const [growStyle, setGrowStyle] = useState<GrowStyle>('beginner');
-    const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+    // State for SetupConfigurator with persistence
+    const [step, setStep] = useState<Step>(() => getInitialState('step', 1));
+    const [area, setArea] = useState<Area>(() => getInitialState('area', '80x80'));
+    const [budget, setBudget] = useState<Budget>(() => getInitialState('budget', 'medium'));
+    const [growStyle, setGrowStyle] = useState<GrowStyle>(() => getInitialState('growStyle', 'beginner'));
+    const [recommendation, setRecommendation] = useState<Recommendation | null>(() => getInitialState('recommendation', null));
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+     // Save state to localStorage on change
+    useEffect(() => {
+        try {
+            const stateToSave = { step, area, budget, growStyle, recommendation };
+            localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(stateToSave));
+        } catch (e) {
+            console.error("Failed to save config state", e);
+        }
+    }, [step, area, budget, growStyle, recommendation]);
     
     const handleGenerate = async () => {
         setIsLoading(true);

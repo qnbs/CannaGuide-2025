@@ -3,6 +3,7 @@ import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { ExportFormat, ExportSource } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { useSettings } from '../../../hooks/useSettings';
 
 interface ExportModalProps {
     isOpen: boolean;
@@ -44,14 +45,18 @@ const RadioGroup: React.FC<{
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, selectionCount, favoritesCount, filteredCount, totalCount }) => {
     const { t } = useTranslations();
-    const [source, setSource] = useState<ExportSource>('selected');
-    const [format, setFormat] = useState<ExportFormat>('pdf');
+    const { settings } = useSettings();
+    const [source, setSource] = useState<ExportSource>(settings.defaultExportSettings.source);
+    const [format, setFormat] = useState<ExportFormat>(settings.defaultExportSettings.format);
 
     useEffect(() => {
         if(isOpen) {
-            setSource(selectionCount > 0 ? 'selected' : favoritesCount > 0 ? 'favorites' : 'filtered');
+             const defaultSource = selectionCount > 0 ? 'selected' : settings.defaultExportSettings.source;
+             setSource(defaultSource);
+             setFormat(settings.defaultExportSettings.format);
         }
-    }, [isOpen, selectionCount, favoritesCount]);
+    }, [isOpen, selectionCount, settings.defaultExportSettings]);
+
 
     if (!isOpen) return null;
 

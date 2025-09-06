@@ -19,16 +19,16 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
     return (
         <div className="space-y-6">
             <Card>
-                <h3 className="text-xl font-bold mb-4 text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                    <PhosphorIcons.Checks className="w-6 h-6" /> {t('plantsView.tasks.title')}
+                <h3 className="text-xl font-bold mb-4 text-slate-100 flex items-center gap-2">
+                    <PhosphorIcons.Checks className="w-6 h-6 text-primary-400" /> {t('plantsView.tasks.title')}
                 </h3>
                 {tasks.length > 0 ? (
                     <div className="space-y-3">
                         {tasks.map(task => (
                             <div key={`${task.plantId}-${task.id}`} className={`p-2 border-l-4 ${priorityClasses[task.priority]} rounded-r-md flex items-center justify-between`}>
                                 <div>
-                                    <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{t(task.title)}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{task.plantName}</p>
+                                    <p className="font-bold text-sm text-slate-100">{t(task.title)}</p>
+                                    <p className="text-xs text-slate-300">{task.plantName}</p>
                                 </div>
                                 <div className={`w-5 h-5 flex-shrink-0 ${priorityIcons[task.priority].color}`} title={`${t('plantsView.tasks.priority')}: ${priorityLabels[task.priority]}`}>
                                     {priorityIcons[task.priority].icon}
@@ -37,27 +37,26 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
                         ))}
                     </div>
                 ) : (
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">{t('plantsView.tasks.none')}</p>
+                    <p className="text-slate-300 text-sm">{t('plantsView.tasks.none')}</p>
                 )}
             </Card>
              <Card>
-                <h3 className="text-xl font-bold mb-4 text-amber-600 dark:text-amber-400 flex items-center gap-2">
+                <h3 className="text-xl font-bold mb-4 text-amber-400 flex items-center gap-2">
                     <PhosphorIcons.WarningCircle className="w-6 h-6" /> {t('plantsView.warnings.title')}
                 </h3>
                 {problems.length > 0 ? (
                     <div className="space-y-3">
                         {problems.map((problem, index) => (
                             <div key={`${problem.plantId}-${index}`} className="p-2 border-l-4 border-amber-500/50 bg-amber-500/10 rounded-r-md">
-                                <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{t(problem.message)}</p>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">{problem.plantName}</p>
+                                <p className="font-bold text-sm text-slate-100">{t(problem.message)}</p>
+                                <p className="text-xs text-slate-300">{problem.plantName}</p>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p className="text-slate-500 dark:text-slate-400 text-sm">{t('plantsView.warnings.none')}</p>
+                    <p className="text-slate-300 text-sm">{t('plantsView.warnings.none')}</p>
                 )}
             </Card>
-            <AiDiagnostics />
         </div>
     );
 }

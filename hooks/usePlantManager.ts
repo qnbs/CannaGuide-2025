@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Plant, PlantStage, PlantProblem, JournalEntry, Task, JournalEntryType } from '../types';
+import { Plant, PlantStage, PlantProblem, JournalEntry, Task } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
@@ -32,7 +32,7 @@ export const usePlantManager = (
         const avgStress = plant.history.reduce((acc, cur) => acc + cur.stressLevel, 0) / plant.history.length || 0;
         
         const stressPenalty = (avgStress / 100) * YIELD_FACTORS.stressModifier;
-        const heightBonus = (plant.height / 100) * YIELD_FACTORS.heightModifier; // Assume 100cm is a good baseline height
+        const heightBonus = (plant.height / 100) * YIELD_FACTORS.heightModifier;
         
         const setup = plant.growSetup;
         const lightMod = YIELD_FACTORS.setupModifier.light[setup.lightType];
@@ -45,153 +45,101 @@ export const usePlantManager = (
         return Math.max(5, finalYield);
     };
 
-    const updatePlantState = useCallback((plantId: string): Plant | null => {
-        let updatedPlant: Plant | null = null;
-        setPlants(currentPlants => {
-            const newPlants = currentPlants.map(p => p ? {...p} : null);
-            const plantIndex = newPlants.findIndex(p => p?.id === plantId);
-            if (plantIndex === -1) return currentPlants;
-            
-            const plant = newPlants[plantIndex];
-            if (!plant || plant.stage === PlantStage.Finished) {
-                updatedPlant = plant;
-                return currentPlants;
+    const simulatePlant = useCallback((plant: Plant, targetTimestamp: number): Plant => {
+        if (plant.stage === PlantStage.Finished) return plant;
+
+        const timeSinceLastUpdate = targetTimestamp - plant.lastUpdated;
+        if (timeSinceLastUpdate <= 0) return plant;
+        
+        const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5 }[settings.simulationSettings.speed];
+        const elapsedMs = timeSinceLastUpdate * speedMultiplier;
+        const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
+
+        let newPlantState = JSON.parse(JSON.stringify(plant));
+        
+        const totalElapsedMsFromStart = (newPlantState.lastUpdated - newPlantState.startedAt) + elapsedMs;
+        newPlantState.age = Math.floor(totalElapsedMsFromStart / (1000 * 60 * 60 * 24));
+
+        let currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
+        const stageProgress = STAGES_ORDER.slice(0, STAGES_ORDER.indexOf(newPlantState.stage)).reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
+
+        if (currentStageInfo.next && (newPlantState.age - stageProgress) >= currentStageInfo.duration) {
+            newPlantState.stage = currentStageInfo.next;
+            currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
+            const logMessage = t('plantsView.notifications.stageChange', { stage: t(`plantStages.${newPlantState.stage}`) });
+            newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: logMessage });
+            if (settings.notificationSettings.stageChange) addNotification(`${plant.name}: ${logMessage}`, 'info');
+            if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(t('plantsView.notifications.harvestReady', { name: plant.name }), 'info');
+            if(newPlantState.stage === PlantStage.Finished) {
+                newPlantState.yield = calculateYield(newPlantState);
+                const yieldMessage = t('plantsView.notifications.finalYield', { yield: newPlantState.yield.toFixed(2) });
+                newPlantState.journal.push({ id: `sys-${Date.now()+1}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: yieldMessage });
             }
+        }
+        
+        if (![PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(newPlantState.stage)) {
+            const isNutrientLockout = newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH;
+            const nutrientUptakeMultiplier = isNutrientLockout ? 0.2 : 1;
+            newPlantState.vitals.substrateMoisture = Math.max(0, newPlantState.vitals.substrateMoisture - currentStageInfo.waterConsumption * elapsedDays);
+            newPlantState.vitals.ec = Math.max(0, newPlantState.vitals.ec - currentStageInfo.nutrientConsumption * nutrientUptakeMultiplier * elapsedDays);
+            newPlantState.vitals.ph += (SIMULATION_CONSTANTS.PH_DRIFT_TARGET - newPlantState.vitals.ph) * SIMULATION_CONSTANTS.PH_DRIFT_FACTOR * elapsedDays;
+            const growthFactor = 1 - (newPlantState.stressLevel / SIMULATION_CONSTANTS.STRESS_GROWTH_PENALTY_DIVISOR);
+            newPlantState.height += currentStageInfo.growthRate * growthFactor * elapsedDays;
+        }
 
-            const now = Date.now();
-            const timeSinceLastUpdate = now - plant.lastUpdated;
-            if (timeSinceLastUpdate <= 1000) { // Only update if significant time has passed
-                 updatedPlant = plant;
-                 return currentPlants;
+        let stressFromProblems = 0;
+        const { vitals, environment } = newPlantState;
+        if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) stressFromProblems += (PROBLEM_THRESHOLDS.moisture.under - vitals.substrateMoisture) * 0.3;
+        const stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty];
+        stressFromProblems *= stressDifficultyModifier;
+        const stressDecayFactor = Math.pow(0.9, elapsedDays);
+        newPlantState.stressLevel = newPlantState.stressLevel * stressDecayFactor + stressFromProblems * elapsedDays;
+        newPlantState.stressLevel = Math.min(100, Math.max(0, newPlantState.stressLevel));
+
+        const newProblems: PlantProblem[] = [];
+        if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...problemMessages.Underwatering });
+        newPlantState.problems = newProblems;
+
+        const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
+        const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
+        if(newPlantState.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATERING_TASK_THRESHOLD && !hasTask(wateringTaskTitle)) {
+            newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high', isCompleted: false, createdAt: targetTimestamp });
+        }
+
+        if (newPlantState.age > (plant.history[plant.history.length-1]?.day || -1)) {
+            newPlantState.history.push({ day: newPlantState.age, vitals: { ...newPlantState.vitals }, stressLevel: newPlantState.stressLevel, height: newPlantState.height });
+        }
+
+        newPlantState.lastUpdated = targetTimestamp;
+        return newPlantState;
+    }, [settings.simulationSettings, settings.notificationSettings, addNotification, problemMessages, t]);
+
+    const updatePlantState = useCallback((plantId: string) => {
+        setPlants(currentPlants => currentPlants.map(p => {
+            if (p?.id === plantId) {
+                return simulatePlant(p, Date.now());
             }
-            
-            const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5 }[settings.simulationSettings.speed];
-            const elapsedMs = timeSinceLastUpdate * speedMultiplier;
-            const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
-
-            let newPlantState = JSON.parse(JSON.stringify(plant)); // Deep copy
-            
-            const totalElapsedMsFromStart = (newPlantState.lastUpdated - newPlantState.startedAt) + elapsedMs;
-            newPlantState.age = Math.floor(totalElapsedMsFromStart / (1000 * 60 * 60 * 24));
-
-            let currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
-            const stageProgress = STAGES_ORDER.slice(0, STAGES_ORDER.indexOf(newPlantState.stage)).reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
-
-            if (currentStageInfo.next && (newPlantState.age - stageProgress) >= currentStageInfo.duration) {
-                newPlantState.stage = currentStageInfo.next;
-                currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
-                const logMessage = t('plantsView.notifications.stageChange', { stage: t(`plantStages.${newPlantState.stage}`) });
-                newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: now, type: 'SYSTEM', notes: logMessage });
-                if (settings.notificationSettings.stageChange) addNotification(`${plant.name}: ${logMessage}`, 'info');
-                if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(t('plantsView.notifications.harvestReady', { name: plant.name }), 'info');
-                if(newPlantState.stage === PlantStage.Finished) {
-                    newPlantState.yield = calculateYield(newPlantState);
-                    const yieldMessage = t('plantsView.notifications.finalYield', { yield: newPlantState.yield.toFixed(2) });
-                    newPlantState.journal.push({ id: `sys-${Date.now()+1}`, timestamp: now, type: 'SYSTEM', notes: yieldMessage });
-                }
+            return p;
+        }));
+    }, [simulatePlant]);
+    
+    const advanceDay = useCallback(() => {
+        setPlants(currentPlants => currentPlants.map(p => {
+            if (p && p.stage !== PlantStage.Finished) {
+                const oneDayMs = 24 * 60 * 60 * 1000;
+                const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5 }[settings.simulationSettings.speed];
+                const targetTimestamp = p.lastUpdated + (oneDayMs / speedMultiplier); // We want to simulate one full day in-game
+                return simulatePlant(p, targetTimestamp);
             }
+            return p;
+        }));
+    }, [simulatePlant, settings.simulationSettings.speed]);
 
-            // Vitals simulation
-            if (newPlantState.stage !== PlantStage.Drying && newPlantState.stage !== PlantStage.Curing && newPlantState.stage !== PlantStage.Finished) {
-                const isNutrientLockout = newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH;
-                const nutrientUptakeMultiplier = isNutrientLockout ? 0.2 : 1;
-
-                newPlantState.vitals.substrateMoisture = Math.max(0, newPlantState.vitals.substrateMoisture - currentStageInfo.waterConsumption * elapsedDays);
-                newPlantState.vitals.ec = Math.max(0, newPlantState.vitals.ec - currentStageInfo.nutrientConsumption * nutrientUptakeMultiplier * elapsedDays);
-                
-                // pH tends to drift towards neutral
-                newPlantState.vitals.ph += (SIMULATION_CONSTANTS.PH_DRIFT_TARGET - newPlantState.vitals.ph) * SIMULATION_CONSTANTS.PH_DRIFT_FACTOR * elapsedDays;
-
-                // Growth
-                const growthFactor = 1 - (newPlantState.stressLevel / SIMULATION_CONSTANTS.STRESS_GROWTH_PENALTY_DIVISOR); // Stress reduces growth
-                newPlantState.height += currentStageInfo.growthRate * growthFactor * elapsedDays;
-            }
-
-            // Stress and Problems
-            let stressFromProblems = 0;
-            const idealVitals = currentStageInfo.idealVitals;
-            const idealEnv = currentStageInfo.idealEnv;
-            
-            const { vitals, environment } = newPlantState;
-
-            if (Math.abs(vitals.ph - (idealVitals.ph.min + idealVitals.ph.max)/2) > 0.5) stressFromProblems += 5;
-            if (vitals.ec > idealVitals.ec.max * 1.2) stressFromProblems += (vitals.ec - idealVitals.ec.max) * 10;
-            if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) stressFromProblems += (PROBLEM_THRESHOLDS.moisture.under - vitals.substrateMoisture) * 0.3;
-            if (vitals.substrateMoisture > PROBLEM_THRESHOLDS.moisture.over) stressFromProblems += (vitals.substrateMoisture - PROBLEM_THRESHOLDS.moisture.over) * 0.3;
-            
-            if (environment.temperature > idealEnv.temp.max) {
-                stressFromProblems += (environment.temperature - idealEnv.temp.max) * 2;
-            } else if (environment.temperature < idealEnv.temp.min) {
-                stressFromProblems += (idealEnv.temp.min - environment.temperature) * 1.5;
-            }
-            if (environment.humidity > idealEnv.humidity.max) {
-                stressFromProblems += (environment.humidity - idealEnv.humidity.max) * 1;
-            } else if (environment.humidity < idealEnv.humidity.min) {
-                stressFromProblems += (idealEnv.humidity.min - environment.humidity) * 1;
-            }
-
-            const stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty];
-            stressFromProblems *= stressDifficultyModifier;
-
-            const stressDecayFactor = Math.pow(0.9, elapsedDays);
-            newPlantState.stressLevel = newPlantState.stressLevel * stressDecayFactor + stressFromProblems * elapsedDays;
-            newPlantState.stressLevel = Math.min(100, Math.max(0, newPlantState.stressLevel));
-
-            // Generate new problems and tasks
-            const newProblems: PlantProblem[] = [];
-            const humidityThresholds = newPlantState.stage === PlantStage.Flowering ? PROBLEM_THRESHOLDS.humidity.flowering : PROBLEM_THRESHOLDS.humidity.vegetative;
-
-            if (vitals.ph < PROBLEM_THRESHOLDS.ph.low) newProblems.push({ type: 'PhTooLow', ...problemMessages.PhTooLow });
-            if (vitals.ph > PROBLEM_THRESHOLDS.ph.high) newProblems.push({ type: 'PhTooHigh', ...problemMessages.PhTooHigh });
-            if (vitals.substrateMoisture > PROBLEM_THRESHOLDS.moisture.over) newProblems.push({ type: 'Overwatering', ...problemMessages.Overwatering });
-            if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...problemMessages.Underwatering });
-            if (vitals.ec > idealVitals.ec.max * 1.5) newProblems.push({ type: 'NutrientBurn', ...problemMessages.NutrientBurn });
-            if (vitals.ec < PROBLEM_THRESHOLDS.ec.under && [PlantStage.Seedling, PlantStage.Vegetative, PlantStage.Flowering].includes(newPlantState.stage)) {
-                newProblems.push({ type: 'NutrientDeficiency', ...problemMessages.NutrientDeficiency });
-            }
-            if (environment.temperature > PROBLEM_THRESHOLDS.temp.high) newProblems.push({ type: 'TempTooHigh', ...problemMessages.TempTooHigh });
-            if (environment.temperature < PROBLEM_THRESHOLDS.temp.low) newProblems.push({ type: 'TempTooLow', ...problemMessages.TempTooLow });
-            if (environment.humidity > humidityThresholds.high) newProblems.push({ type: 'HumidityTooHigh', ...problemMessages.HumidityTooHigh });
-            if (environment.humidity < humidityThresholds.low) newProblems.push({ type: 'HumidityTooLow', ...problemMessages.HumidityTooLow });
-
-
-            newPlantState.problems = newProblems; // Simple replacement for now
-
-            // Task generation
-            const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
-            
-            const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
-            if(newPlantState.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATERING_TASK_THRESHOLD && !hasTask(wateringTaskTitle)) {
-                newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high', isCompleted: false, createdAt: now });
-            }
-
-            const feedingTaskTitle = t('plantsView.tasks.feedingTask.title');
-            if (newPlantState.vitals.ec < PROBLEM_THRESHOLDS.ec.under && !hasTask(feedingTaskTitle) && [PlantStage.Seedling, PlantStage.Vegetative, PlantStage.Flowering].includes(newPlantState.stage)) {
-                newPlantState.tasks.push({id: `task-${Date.now() + 1}`, title: feedingTaskTitle, description: t('plantsView.tasks.feedingTask.description'), priority: 'high', isCompleted: false, createdAt: now });
-            }
-
-             const checkPhTaskTitle = t('plantsView.tasks.phTask.title');
-             if((newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH) && !hasTask(checkPhTaskTitle)) {
-                newPlantState.tasks.push({id: `task-${Date.now()}`, title: checkPhTaskTitle, description: t('plantsView.tasks.phTask.description'), priority: 'medium', isCompleted: false, createdAt: now });
-            }
-
-            if (newPlantState.age > (plant.history[plant.history.length-1]?.day || -1)) {
-                newPlantState.history.push({ day: newPlantState.age, vitals: { ...newPlantState.vitals }, stressLevel: newPlantState.stressLevel, height: newPlantState.height });
-            }
-
-            newPlantState.lastUpdated = now;
-            newPlants[plantIndex] = newPlantState;
-            updatedPlant = newPlantState;
-            return newPlants;
-        });
-
-        return updatedPlant;
-    }, [settings.notificationSettings, settings.simulationSettings, addNotification, problemMessages, t]);
 
     useEffect(() => {
         const updateInterval = setInterval(() => {
             plants.forEach(p => p && updatePlantState(p.id));
-        }, 5000); // Standard update interval
+        }, 5000);
         return () => clearInterval(updateInterval);
     }, [plants, updatePlantState]);
 
@@ -207,12 +155,10 @@ export const usePlantManager = (
         setPlants(prev => prev.map(p => {
             if (p?.id !== plantId) return p;
 
-            const updatedPlant = JSON.parse(JSON.stringify(p));
+            let updatedPlant = JSON.parse(JSON.stringify(p));
             updatedPlant.journal.push({ ...entry, id: `manual-${Date.now()}`, timestamp: Date.now() });
 
-            // If watering/feeding, update vitals and complete tasks
             if ((entry.type === 'WATERING' || entry.type === 'FEEDING') && entry.details) {
-                // Replenish moisture based on pot size, assuming waterAmount is for a standard pot.
                 const moistureReplenish = (entry.details.waterAmount / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
                 updatedPlant.vitals.ph = entry.details.ph || p.vitals.ph;
@@ -221,7 +167,6 @@ export const usePlantManager = (
                    updatedPlant.vitals.ec = entry.details.ec || p.vitals.ec;
                 }
 
-                // Auto-complete watering task
                 const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
                 updatedPlant.tasks = updatedPlant.tasks.map((task: Task) => 
                     task.title === wateringTaskTitle && !task.isCompleted
@@ -242,41 +187,29 @@ export const usePlantManager = (
         }));
     };
 
-    const waterAllPlants = (): number => {
-        let wateredCount = 0;
+    const waterAllPlants = () => {
         const now = Date.now();
-
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && p.stage !== PlantStage.Finished) {
-                wateredCount++;
-                const updatedPlant = JSON.parse(JSON.stringify(p));
-                
+                let updatedPlant = JSON.parse(JSON.stringify(p));
                 const moistureReplenish = (500 / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
                 updatedPlant.vitals.ph = SIMULATION_CONSTANTS.PH_DRIFT_TARGET;
-
                 const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
                 updatedPlant.tasks = updatedPlant.tasks.map((task: Task) => 
                     task.title === wateringTaskTitle && !task.isCompleted
                         ? { ...task, isCompleted: true, completedAt: now }
                         : task
                 );
-
                 updatedPlant.journal.push({
-                    id: `manual-${now}-${p.id}`,
-                    timestamp: now,
-                    type: 'WATERING',
-                    notes: t('plantsView.actionModals.defaultNotes.watering'),
+                    id: `manual-${now}-${p.id}`, timestamp: now, type: 'WATERING', notes: t('plantsView.actionModals.defaultNotes.watering'),
                     details: { waterAmount: 500, ph: SIMULATION_CONSTANTS.PH_DRIFT_TARGET }
                 });
-                
                 updatedPlant.lastUpdated = now;
                 return updatedPlant;
             }
             return p;
         }));
-        
-        return wateredCount;
     };
 
     return {
@@ -285,5 +218,6 @@ export const usePlantManager = (
         addJournalEntry,
         completeTask,
         waterAllPlants,
+        advanceDay,
     };
 };

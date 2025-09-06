@@ -19,9 +19,9 @@ const ChecklistItem: React.FC<{
                 type="checkbox"
                 checked={isChecked}
                 onChange={onToggle}
-                className="h-5 w-5 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:ring-primary-500 bg-transparent mt-0.5 flex-shrink-0"
+                className="h-5 w-5 rounded border-accent-500 bg-transparent text-primary-500 focus:ring-primary-500 mt-0.5 flex-shrink-0"
             />
-            <span className={`transition-colors ${isChecked ? 'line-through text-slate-500 dark:text-slate-400' : 'text-slate-700 dark:text-slate-300'}`}>
+            <span className={`transition-colors ${isChecked ? 'line-through text-accent-400' : 'text-accent-200'}`}>
                 {text}
             </span>
         </li>
@@ -33,10 +33,10 @@ const ProTip: React.FC<{ content: string }> = ({ content }) => {
     const { t } = useTranslations();
 
     return (
-        <div className="mt-6 p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-400">
-            <h4 className="font-bold text-amber-800 dark:text-amber-200">{t('knowledgeView.proTip.title')}</h4>
+        <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border-l-4 border-amber-400">
+            <h4 className="font-bold text-amber-200">{t('knowledgeView.proTip.title')}</h4>
             {isRevealed ? (
-                <p className="text-amber-700 dark:text-amber-300">{content}</p>
+                <p className="text-amber-300">{content}</p>
             ) : (
                 <Button variant="secondary" size="sm" onClick={() => setIsRevealed(true)} className="mt-2">{t('knowledgeView.proTip.button')}</Button>
             )}
@@ -55,18 +55,18 @@ const JourneyStep: React.FC<{
 
     return (
         <div className="relative flex items-start group">
-            <div className="absolute left-8 top-8 w-px h-full bg-slate-300 dark:bg-slate-700 journey-step-line"></div>
-            <div className={`relative z-10 w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 border-4 border-slate-50 dark:border-slate-900 journey-step-icon ${isOpen ? 'is-open border-primary-500/50' : ''}`}>
-                 <div className="text-primary-500">{section.icon}</div>
+            <div className="absolute left-8 top-8 w-px h-full bg-accent-700 journey-step-line"></div>
+            <div className={`relative z-10 w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-accent-900 border-4 border-accent-950 journey-step-icon ${isOpen ? 'is-open border-primary-500/50' : ''}`}>
+                 <div className="text-primary-400">{section.icon}</div>
             </div>
             <div className="ml-4 w-full">
-                 <div className="p-4 rounded-lg bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50">
+                 <div className="p-4 rounded-lg glass-pane">
                      <button type="button" className="flex items-center justify-between w-full font-medium text-left" onClick={onToggle} aria-expanded={isOpen}>
                         <div>
-                            <span className="text-lg font-bold text-slate-800 dark:text-slate-200">{section.title}</span>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">{section.subtitle}</p>
+                            <span className="text-lg font-bold text-accent-100">{section.title}</span>
+                            <p className="text-sm text-accent-300">{section.subtitle}</p>
                         </div>
-                        <PhosphorIcons.ChevronDown className={`w-6 h-6 shrink-0 transition-transform duration-300 text-slate-500 ${isOpen ? 'rotate-180' : ''}`} />
+                        <PhosphorIcons.ChevronDown className={`w-6 h-6 shrink-0 transition-transform duration-300 text-accent-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
                      <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-[3000px] pt-4' : 'max-h-0'}`}>
                         <div className="prose prose-sm dark:prose-invert max-w-none">
@@ -113,11 +113,11 @@ const AiMentor: React.FC = () => {
 
     return (
         <Card className="mb-8">
-            <h3 className="text-xl font-bold mb-4 text-primary-600 dark:text-primary-400 flex items-center gap-2">
+            <h3 className="text-xl font-bold font-display mb-4 text-primary-400 flex items-center gap-2">
                 <PhosphorIcons.Sparkle className="w-6 h-6" />
                 {t('knowledgeView.aiMentor.title')}
             </h3>
-            <p className="text-slate-600 dark:text-slate-400 mb-4">
+            <p className="text-accent-200 mb-4">
                 {t('knowledgeView.aiMentor.subtitle')}
             </p>
             <div className="flex flex-col sm:flex-row gap-2">
@@ -129,7 +129,7 @@ const AiMentor: React.FC = () => {
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleAsk()}
                     placeholder={t('knowledgeView.aiMentor.placeholder')}
-                    className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white"
+                    className="w-full bg-accent-900/50 border border-accent-700 rounded-lg px-3 py-2 text-accent-100 placeholder-accent-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 />
                 <Button onClick={handleAsk} disabled={isLoading || !query.trim()} className="shrink-0">
                     {isLoading ? t('knowledgeView.aiMentor.loading') : t('knowledgeView.aiMentor.button')}
@@ -138,9 +138,9 @@ const AiMentor: React.FC = () => {
             <div className="mt-4">
                 {isLoading && <SkeletonLoader count={3} />}
                 {response && (
-                    <div className="bg-slate-100 dark:bg-slate-900/50 p-4 rounded-lg animate-fade-in">
+                    <div className="bg-accent-900/50 p-4 rounded-lg animate-fade-in">
                         <article className="prose dark:prose-invert max-w-none">
-                            <h4 className="!text-primary-600 dark:!text-primary-300 !mt-0">{response.title}</h4>
+                            <h4 className="!text-primary-300 !mt-0">{response.title}</h4>
                             <div dangerouslySetInnerHTML={{ __html: response.content }} />
                         </article>
                     </div>
@@ -152,7 +152,7 @@ const AiMentor: React.FC = () => {
 
 
 export const KnowledgeView: React.FC = () => {
-    const [openAccordion, setOpenAccordion] = useState<string | null>('phase1');
+    const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['phase1']));
     const { progress } = useKnowledgeProgress();
     const { t } = useTranslations();
 
@@ -188,25 +188,28 @@ export const KnowledgeView: React.FC = () => {
     const completionPercentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
 
     const handleToggle = (id: string) => {
-        setOpenAccordion(openAccordion === id ? null : id);
+        setOpenAccordions(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
     };
 
     return (
         <div>
-            <div className="mb-6 text-center">
-                <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">{t('knowledgeView.title')}</h1>
-                <p className="text-lg text-slate-600 dark:text-slate-300 mt-1">{t('knowledgeView.subtitle')}</p>
-            </div>
-
             <Card className="mb-8">
-                <h3 className="font-bold text-slate-700 dark:text-slate-200">{t('knowledgeView.progress')}</h3>
+                <h3 className="font-bold text-accent-100">{t('knowledgeView.progress')}</h3>
                 <div className="flex items-center gap-4 mt-2">
-                    <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-4">
+                    <div className="w-full bg-accent-800/70 rounded-full h-4">
                         <div className="bg-primary-500 h-4 rounded-full transition-all duration-500" style={{ width: `${completionPercentage}%` }}></div>
                     </div>
-                    <span className="font-bold text-primary-600 dark:text-primary-300">{completionPercentage.toFixed(0)}%</span>
+                    <span className="font-bold text-primary-400">{completionPercentage.toFixed(0)}%</span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 text-right">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: totalItems })}</p>
+                <p className="text-xs text-accent-300 mt-1 text-right">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: totalItems })}</p>
             </Card>
 
             <AiMentor />
@@ -216,7 +219,7 @@ export const KnowledgeView: React.FC = () => {
                      <JourneyStep
                         key={section.id}
                         section={section}
-                        isOpen={openAccordion === section.id}
+                        isOpen={openAccordions.has(section.id)}
                         onToggle={() => handleToggle(section.id)}
                     />
                  ))}

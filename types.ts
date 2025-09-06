@@ -7,7 +7,6 @@ export enum View {
   Help = 'HELP',
 }
 
-export type Theme = 'light' | 'dark' | 'system';
 export type FontSize = 'sm' | 'base' | 'lg';
 export type Language = 'en' | 'de';
 
@@ -26,7 +25,6 @@ export interface SimulationSettings {
 }
 
 export interface AppSettings {
-  theme: Theme;
   fontSize: FontSize;
   language: Language;
   notificationsEnabled: boolean;
@@ -118,7 +116,8 @@ export interface JournalEntry {
     ph?: number;
     ec?: number; // mS/cm
     trainingType?: TrainingType;
-    imageUrl?: string;
+    imageUrl?: string; // For old data and preview
+    imageId?: string; // For IndexedDB storage
   }
 }
 
@@ -192,7 +191,7 @@ export interface AIProTip {
 export type KnowledgeProgress = Record<string, string[]>;
 
 export type ExportSource = 'selected' | 'favorites' | 'filtered' | 'all';
-export type ExportFormat = 'json' | 'csv' | 'pdf';
+export type ExportFormat = 'json' | 'csv' | 'pdf' | 'txt';
 
 export interface SavedExport {
   id: string;

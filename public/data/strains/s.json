@@ -407,7 +407,7 @@
     {
         "id": "sour-diesel",
         "name": "Sour Diesel",
-        "type": "Sativa",
+        "type": "Hybrid",
         "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "Chemdawg x Super Skunk",
         "thc": 26,
@@ -469,7 +469,7 @@
     {
         "id": "sour-tangie",
         "name": "Sour Tangie",
-        "type": "Sativa",
+        "type": "Hybrid",
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "East Coast Sour Diesel x Tangie",
         "thc": 22,
@@ -594,7 +594,7 @@
     {
         "id": "strawberry-cough",
         "name": "Strawberry Cough",
-        "type": "Sativa",
+        "type": "Hybrid",
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Haze x Strawberry Fields",
         "thc": 24,
@@ -736,7 +736,7 @@
     {
         "id": "super-lemon-haze",
         "name": "Super Lemon Haze",
-        "type": "Sativa",
+        "type": "Hybrid",
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Lemon Skunk x Super Silver Haze",
         "thc": 25,
@@ -756,7 +756,7 @@
     {
         "id": "super-silver-haze",
         "name": "Super Silver Haze",
-        "type": "Sativa",
+        "type": "Hybrid",
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Skunk x Northern Lights x Haze",
         "thc": 23,

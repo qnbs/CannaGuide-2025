@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import { Plant, FontSize, Theme as LightDarkTheme, Language } from '../../types';
+import { Plant, FontSize, Language } from '../../types';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
@@ -16,10 +16,10 @@ const SettingItem: React.FC<{
   description: string;
   children: React.ReactNode;
 }> = ({ label, description, children }) => (
-  <div className="grid grid-cols-1 gap-4 border-t border-slate-200 dark:border-slate-700 py-4 first:border-t-0 first:pt-0 md:grid-cols-3 md:items-center">
+  <div className="grid grid-cols-1 gap-4 border-t border-slate-700 py-4 first:border-t-0 first:pt-0 md:grid-cols-3 md:items-center">
     <div className="md:col-span-2">
-      <h3 className="text-base font-semibold text-slate-900 dark:text-slate-200">{label}</h3>
-      <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
+      <h3 className="text-base font-semibold text-slate-100">{label}</h3>
+      <p className="text-sm text-slate-400">{description}</p>
     </div>
     <div className="flex flex-wrap items-center justify-start gap-2 md:justify-end">
       {children}
@@ -30,8 +30,8 @@ const SettingItem: React.FC<{
 const DangerZoneItem: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
     <div className="grid grid-cols-1 gap-4 border-t border-red-500/20 py-4 md:grid-cols-3 md:items-center">
         <div className="md:col-span-2">
-            <h4 className="font-semibold text-red-800 dark:text-red-300">{title}</h4>
-            <p className="text-sm text-red-600 dark:text-red-400">{description}</p>
+            <h4 className="font-semibold text-red-400">{title}</h4>
+            <p className="text-sm text-red-400/80">{description}</p>
         </div>
         <div className="flex justify-start md:justify-end">
             {children}
@@ -43,7 +43,7 @@ const DangerZoneItem: React.FC<{ title: string; description: string; children: R
 const ToggleSwitch: React.FC<{ checked: boolean; onChange: () => void; id: string; disabled?: boolean;}> = ({ checked, onChange, id, disabled=false }) => (
     <label htmlFor={id} className={`relative inline-flex items-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
         <input type="checkbox" id={id} className="sr-only peer" checked={checked} onChange={onChange} disabled={disabled} />
-        <div className="w-11 h-6 bg-slate-200 dark:bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+        <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
     </label>
 );
 
@@ -156,22 +156,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
   
   return (
     <div>
-      <h1 className="text-3xl font-bold mb-6 text-primary-600 dark:text-primary-400">{t('settingsView.title')}</h1>
       <div className="space-y-6">
-        
-        <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.display')}</h2>
-          <div className="flex flex-col">
-            <SettingItem label={t('settingsView.theme')} description={t('settingsView.themeDescription')}>
-                {(['light', 'dark', 'system'] as LightDarkTheme[]).map(theme => (
-                  <Button key={theme} variant={settings.theme === theme ? 'primary' : 'secondary'} onClick={() => setSetting('theme', theme)}>{t(`settingsView.themes.${theme}`)}</Button>
-                ))}
-            </SettingItem>
 
+        <Card>
+          <h2 className="text-xl font-semibold font-display mb-4 text-primary-400">{t('settingsView.display')}</h2>
+          <div className="flex flex-col">
             <SettingItem label={t('settingsView.fontSize')} description={t('settingsView.fontSizeDescription')}>
-                <div className="flex rounded-md shadow-sm" role="group">
+                <div className="flex rounded-lg shadow-sm" role="group">
                  {(['sm', 'base', 'lg'] as FontSize[]).map((size, idx) => (
-                  <button key={size} type="button" onClick={() => setSetting('fontSize', size)} className={`px-4 py-2 text-sm font-medium transition-colors ${settings.fontSize === size ? 'bg-primary-600 text-white' : 'bg-slate-600 text-slate-50 hover:bg-slate-700'} ${idx === 0 ? 'rounded-l-lg' : ''} ${idx === 2 ? 'rounded-r-lg' : ''} border-y border-l border-slate-800 last:border-r`}>
+                  <button key={size} type="button" onClick={() => setSetting('fontSize', size)} className={`px-4 py-2 text-sm font-medium transition-colors ${settings.fontSize === size ? 'bg-primary-600 text-on-accent' : 'bg-slate-800 text-slate-100 hover:bg-slate-700'} ${idx === 0 ? 'rounded-l-lg' : ''} ${idx === 2 ? 'rounded-r-lg' : ''} border-y border-l border-slate-700 last:border-r`}>
                       {t(`settingsView.fontSizes.${size}`)}
                   </button>
                 ))}
@@ -187,7 +180,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
         </Card>
 
         <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.notificationsTitle')}</h2>
+          <h2 className="text-xl font-semibold font-display mb-4 text-primary-400">{t('settingsView.notificationsTitle')}</h2>
           <div className="flex flex-col">
             <SettingItem label={t('settingsView.notificationsEnable')} description={t('settingsView.notificationsEnableDescription')}>
                 <ToggleSwitch id="notifications-toggle" checked={settings.notificationsEnabled} onChange={() => setSetting('notificationsEnabled', !settings.notificationsEnabled)} />
@@ -209,7 +202,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
         </Card>
 
         <Card>
-          <h2 className="text-xl font-semibold mb-4 text-primary-500 dark:text-primary-300">{t('settingsView.dataManagement')}</h2>
+          <h2 className="text-xl font-semibold font-display mb-4 text-primary-400">{t('settingsView.dataManagement')}</h2>
            <div className="flex flex-col">
               <SettingItem label={t('settingsView.exportBackup')} description={t('settingsView.exportBackupDescription')}>
                   <Button variant="secondary" onClick={handleExport}>{t('settingsView.exportButton')}</Button>
@@ -220,8 +213,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
                   <Button variant="secondary" onClick={handleImportClick}>{t('settingsView.importButton')}</Button>
               </SettingItem>
               
-              <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                  <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
+              <div className="mt-4 pt-4 border-t border-slate-700">
+                  <h3 className="text-lg font-semibold text-red-500 flex items-center gap-2">
                     <PhosphorIcons.WarningCircle className="w-5 h-5" />
                     {t('settingsView.dangerZone')}
                   </h3>

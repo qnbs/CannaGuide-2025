@@ -154,55 +154,6 @@ export const geminiService = {
         return errorResponse;
     }
   },
-
-  getEquipmentInfo: async (language: Language) => {
-    const fallback = { shops: [], gear: [] };
-    try {
-        const prompt = `Create a list of 3-4 recommended, reputable online grow shops that deliver to the EU, and a list of 5-6 essential pieces of equipment for indoor cannabis cultivation.
-        Provide a short, helpful description for each shop and each piece of equipment.
-        Format the response exclusively as a JSON object.
-        ${getLanguageInstruction(language)}`;
-
-        const response = await ai.models.generateContent({
-            model,
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.OBJECT,
-                    properties: {
-                        shops: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    url: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                },
-                            },
-                        },
-                        gear: {
-                            type: Type.ARRAY,
-                            items: {
-                                type: Type.OBJECT,
-                                properties: {
-                                    name: { type: Type.STRING },
-                                    description: { type: Type.STRING },
-                                },
-                            },
-                        },
-                    },
-                },
-            },
-        });
-
-        return safeJsonParse(response.text, fallback);
-    } catch (error) {
-        console.error('Error fetching equipment info:', error);
-        return fallback;
-    }
-  },
   
   askAboutEquipment: async (prompt: string, language: Language): Promise<AIResponse> => {
      try {
@@ -317,8 +268,8 @@ export const geminiService = {
         
         return safeJsonParse(response.text, errorResponse);
     } catch (error) {
-        console.error(`Error asking about plant ${plant.name}:`, error);
-        return errorResponse;
+      console.error(`Error asking about plant ${plant.name}:`, error);
+      return errorResponse;
     }
   },
 
@@ -368,6 +319,63 @@ export const geminiService = {
     } catch (error) {
       console.error(`Error fetching proactive tip for plant ${plant.name}:`, error);
       return specificErrorResponse;
+    }
+  },
+
+  getJournalAnalysis: async (plant: Plant, language: Language): Promise<AIResponse> => {
+    try {
+        const journalText = plant.journal.map(entry => {
+            const date = new Date(entry.timestamp).toLocaleString();
+            const details = entry.details ? ` Details: ${JSON.stringify(entry.details)}` : '';
+            return `- [${date}] ${entry.type}: ${entry.notes}.${details}`;
+        }).join('\n');
+
+        const plantProblems = plant.problems.length > 0
+            ? plant.problems.map(p => p.message).join(', ')
+            : 'None';
+
+        const plantSummary = `
+            - Name: ${plant.name}, Strain: ${plant.strain.name} (${plant.strain.type})
+            - Stage: ${plant.stage}, Age: ${plant.age} days, Height: ${plant.height.toFixed(1)} cm
+            - Vitals: pH ${plant.vitals.ph.toFixed(1)}, EC ${plant.vitals.ec.toFixed(2)}, Moisture ${plant.vitals.substrateMoisture.toFixed(0)}%
+            - Environment: ${plant.environment.temperature}°C, ${plant.environment.humidity}% humidity
+            - Stress Level: ${plant.stressLevel.toFixed(0)}%
+            - Current Problems: ${plantProblems}
+        `;
+
+        const fullPrompt = `As an expert cannabis cultivation advisor, analyze the provided plant data and its complete journal. 
+        Provide a comprehensive summary of the grow so far.
+        
+        INSTRUCTIONS:
+        1. Start with a brief overview of the plant's current health and status.
+        2. Identify key positive events or periods of healthy growth from the journal.
+        3. Identify any challenges, problems, or periods of stress. Mention when they occurred and how they were (or were not) addressed based on the journal entries.
+        4. Conclude with 2-3 concrete recommendations or areas for improvement for the remainder of the grow cycle.
+        5. The analysis should be insightful and based directly on the provided data.
+        6. Format the response as a JSON object with "title" and "content" keys. The title should be "Grow Journal Analysis for ${plant.name}". The content should be well-formatted HTML using <h3>, <p>, <ul>, and <strong> tags.
+        ${getLanguageInstruction(language)}
+
+        PLANT DATA:
+        ${plantSummary}
+
+        GROW JOURNAL:
+        ${journalText}
+        `;
+
+        const response = await ai.models.generateContent({
+            model,
+            contents: fullPrompt,
+            config: {
+                systemInstruction: "You are an expert AI advisor for cannabis cultivation.",
+                responseMimeType: "application/json",
+                responseSchema: aiResponseSchema,
+            },
+        });
+        
+        return safeJsonParse(response.text, errorResponse);
+    } catch (error) {
+        console.error(`Error analyzing journal for plant ${plant.name}:`, error);
+        return errorResponse;
     }
   },
 };

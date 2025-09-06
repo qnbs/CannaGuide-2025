@@ -1,9 +1,3 @@
-
-
-
-
-
-
 export const en = {
   common: {
     close: 'Close',
@@ -15,6 +9,7 @@ export const en = {
     add: 'Add',
     export: 'Export',
     delete: 'Delete',
+    edit: 'Edit',
     next: 'Next',
     back: 'Back',
     start: 'Let\'s Go!',
@@ -36,6 +31,7 @@ export const en = {
     aiResponseError: 'The AI could not generate a response. Please try again later or rephrase your request.',
     noDataToExport: 'No data available to export.',
     successfullyExported: 'Successfully exported {count} strains as {format} & saved to "My Exports".',
+    actions: 'Actions',
   },
   nav: {
     strains: 'Strains',
@@ -64,8 +60,8 @@ export const en = {
     },
   },
   strainsView: {
-    title: 'Strain Database',
-    searchPlaceholder: 'Search strain or genetics...',
+    title: 'Strains',
+    searchPlaceholder: 'Search strain...',
     all: 'All',
     sativa: 'Sativa',
     indica: 'Indica',
@@ -75,10 +71,29 @@ export const en = {
     thcMax: 'THC% max.',
     cbdMax: 'CBD% max.',
     floweringTime: 'Flowering Time',
+    weeks: 'weeks',
     level: 'Level',
     terpenes: 'Terpenes',
-    aromas: 'Aroma',
+    aromas: 'Aromas',
     resetFilters: 'Reset Filters',
+    view: {
+      list: 'List',
+      grid: 'Grid',
+    },
+    sortBy: 'Sort by:',
+    sortOptions: {
+        name_asc: 'Name (A-Z)',
+        name_desc: 'Name (Z-A)',
+        thc_desc: 'THC (High-Low)',
+        thc_asc: 'THC (Low-High)',
+        cbd_desc: 'CBD (High-Low)',
+        cbd_asc: 'CBD (Low-High)',
+        flowering_asc: 'Flowering (Short-Long)',
+        flowering_desc: 'Flowering (Long-Short)',
+    },
+    deleteStrainConfirm: 'Are you sure you want to delete the strain "{name}"? This cannot be undone.',
+    deleteStrainSuccess: 'Strain "{name}" has been deleted.',
+    deleteStrainError: 'Error deleting strain.',
     difficulty: {
       easy: 'Easy',
       medium: 'Medium',
@@ -86,12 +101,17 @@ export const en = {
     },
     table: {
       name: 'Name',
+      type: 'Type',
+      thc: 'THC',
+      cbd: 'CBD',
+      flowering: 'Flowering',
+      agronomics: 'Agronomics',
       level: 'Level',
     },
     tabs: {
-      all: 'All Strains',
-      user: 'My Strains ({count})',
-      exports: 'My Exports ({count})',
+      all: 'All',
+      user: 'My ({count})',
+      exports: 'Exports ({count})',
     },
     noStrainsFound: {
       title: 'No strains found.',
@@ -126,6 +146,8 @@ export const en = {
     },
     addStrainModal: {
       title: 'Add New Strain',
+      editTitle: 'Edit Strain',
+      editSuccess: 'Strain "{name}" successfully updated!',
       generalInfo: 'General Information',
       strainName: 'Strain Name',
       typeDetailsPlaceholder: 'e.g. Sativa 60% / Indica 40%',
@@ -459,12 +481,20 @@ export const en = {
     gearAndShops: {
       shopsTitle: 'Recommended Online Shops (EU)',
       gearTitle: 'Essential Equipment',
+      shops: {
+        zamnesia: 'One of the largest and most well-known head and grow shops in Europe with a huge selection of seeds and accessories.',
+        rqs: 'Royal Queen Seeds is a famous breeder and shop that offers high-quality seeds and a complete line of grow accessories.',
+        growmart: 'An established German grow shop with a comprehensive range, from complete kits for beginners to professional equipment.'
+      },
       gearItems: {
-        tent: 'Grow Tent',
-        led: 'LED Lighting',
-        ventilation: 'Exhaust System with Carbon Filter',
-        pots: 'Pots with saucers',
-        phMeter: 'pH Meter and pH regulators',
+        tent: { name: 'Grow Tent', desc: 'Creates a controlled environment with reflective interior walls to make optimal use of light.' },
+        led: { name: 'LED Lighting', desc: 'Modern full-spectrum LEDs are energy-efficient, produce little heat, and deliver excellent results.' },
+        ventilation: { name: 'Exhaust Kit (Fan + Carbon Filter)', desc: 'Absolutely crucial. Removes stale air, controls temperature/humidity, and neutralizes odors.' },
+        circulation: { name: 'Circulation Fan(s)', desc: 'One or more small fans inside the tent simulate wind, strengthen stems, and prevent air stagnation.' },
+        pots: { name: 'Pots (Fabric or Air-Pots)', desc: 'Fabric pots or Air-Pots promote healthy root development through "air-pruning" and prevent root circling.' },
+        timers: { name: 'Timer(s)', desc: 'At least one for the light cycle (e.g., 18/6 or 12/12 hours). Another one for ventilation can be useful.' },
+        meters: { name: 'Meters (pH/EC, Thermo-Hygrometer)', desc: 'Essential for monitoring. pH & EC meters for the nutrient solution, thermo-hygrometer for temperature & humidity.' },
+        harvest: { name: 'Harvesting Tools', desc: 'Sharp trimming scissors, a jeweler\'s loupe (60x) for checking trichomes, and airtight jars for curing.' },
       }
     }
   },
@@ -605,7 +635,7 @@ export const en = {
           },
           q7: {
             q: 'Can I edit or delete my added strains?',
-            a: 'Currently, you can only reset all of your custom strains via "Data Management" in the <strong>Setup</strong> section. A feature to edit or delete individual strains is planned for a future update.'
+            a: 'Yes, when in the "My Strains" tab, edit and delete buttons will appear on list items, and on grid items when you hover over them.'
           }
         }
       },
@@ -625,55 +655,55 @@ export const en = {
       terpeneLexicon: {
         title: 'Terpene Lexicon',
         items: {
-          t1: { term: 'What are terpenes?', def: 'Terpenes are aromatic oils found in many plants that give them their characteristic scent and flavor (e.g., the smell of pine trees or lavender). In cannabis, they modulate the effects of cannabinoids like THC and CBD—a phenomenon known as the <strong>"entourage effect."</strong> Each terpene has a unique aroma profile and potential therapeutic properties.' },
-          t2: { term: 'Myrcene', def: '<strong>Aroma:</strong> Earthy, musky, herbal, with notes of cloves and tropical fruits like mango.<br><strong>Potential Effects:</strong> Often has relaxing and sedative effects. It is believed to enhance the effects of THC and make the blood-brain barrier more permeable, speeding up the onset of effects.<br><strong>Boiling Point:</strong> ~167°C' },
+          t1: { term: 'What are Terpenes?', def: 'Terpenes are aromatic oils found in many plants that give them their characteristic scent and flavor (e.g., the smell of pine or lavender). In cannabis, they modulate the effects of cannabinoids like THC and CBD—a phenomenon known as the <strong>"entourage effect"</strong>. Each terpene has a unique aroma profile and potential therapeutic properties.' },
+          t2: { term: 'Myrcene', def: '<strong>Aroma:</strong> Earthy, musky, herbaceous, with notes of cloves and tropical fruits like mango.<br><strong>Potential Effects:</strong> Often relaxing and sedating. Believed to enhance the effects of THC and make the blood-brain barrier more permeable, speeding up the onset of effects.<br><strong>Boiling Point:</strong> ~167°C' },
           t3: { term: 'Limonene', def: '<strong>Aroma:</strong> Strong, fresh citrus aroma reminiscent of lemons, oranges, and limes.<br><strong>Potential Effects:</strong> Mood-elevating, stress-relieving, and anxiolytic. Can provide a sense of energy and well-being.<br><strong>Boiling Point:</strong> ~176°C' },
-          t4: { term: 'Caryophyllene', def: '<strong>Aroma:</strong> Peppery, spicy, woody, with notes of cloves and cinnamon.<br><strong>Potential Effects:</strong> Unique in that it binds to the CB2 receptors in the endocannabinoid system (similar to a cannabinoid). Has strong anti-inflammatory and analgesic effects.<br><strong>Boiling Point:</strong> ~130°C' },
-          t5: { term: 'Pinene', def: '<strong>Aroma:</strong> Fresh, sharp aroma of pine needles and fir trees.<br><strong>Potential Effects:</strong> Promotes alertness, memory, and concentration. Can act as a bronchodilator (opens airways) and has anti-inflammatory properties.<br><strong>Boiling Point:</strong> ~155°C' },
-          t6: { term: 'Terpinolene', def: '<strong>Aroma:</strong> Complex, multi-layered aroma: floral, herbal, piney with a hint of citrus and apple.<br><strong>Potential Effects:</strong> Often slightly sedative and calming. Has antioxidant and antibacterial properties.<br><strong>Boiling Point:</strong> ~186°C' },
+          t4: { term: 'Caryophyllene', def: '<strong>Aroma:</strong> Peppery, spicy, woody, with notes of cloves and cinnamon.<br><strong>Potential Effects:</strong> Unique in that it binds to CB2 receptors in the endocannabinoid system (similar to a cannabinoid). Strongly anti-inflammatory and analgesic.<br><strong>Boiling Point:</strong> ~130°C' },
+          t5: { term: 'Pinene', def: '<strong>Aroma:</strong> Fresh, sharp aroma of pine needles and fir trees.<br><strong>Potential Effects:</strong> Promotes alertness, memory, and focus. Can act as a bronchodilator (widens airways) and has anti-inflammatory properties.<br><strong>Boiling Point:</strong> ~155°C' },
+          t6: { term: 'Terpinolene', def: '<strong>Aroma:</strong> Complex, multi-layered aroma: floral, herbaceous, piney with a hint of citrus and apple.<br><strong>Potential Effects:</strong> Often slightly sedating and calming. Has antioxidant and antibacterial properties.<br><strong>Boiling Point:</strong> ~186°C' },
           t7: { term: 'Linalool', def: '<strong>Aroma:</strong> Floral, sweet, with a strong lavender character.<br><strong>Potential Effects:</strong> Known for its calming, anxiolytic, and sleep-promoting properties. Reduces stress.<br><strong>Boiling Point:</strong> ~198°C' },
-          t8: { term: 'Humulene', def: '<strong>Aroma:</strong> Earthy, woody, hoppy (it is the main terpene in hops).<br><strong>Potential Effects:</strong> Appetite suppressant and anti-inflammatory. Contributes to the "earthy" taste of many strains.<br><strong>Boiling Point:</strong> ~106°C' },
-          t9: { term: 'Ocimene', def: '<strong>Aroma:</strong> Sweet, herbal, and woody. Reminiscent of a mix of mint and parsley.<br><strong>Potential Effects:</strong> Uplifting, antiviral, and decongestant. Often found in Sativa strains that have an energetic effect.<br><strong>Boiling Point:</strong> ~100°C' },
-          t10: { term: 'Bisabolol', def: '<strong>Aroma:</strong> Slightly sweet, floral, with notes of chamomile and a hint of pepper.<br><strong>Potential Effects:</strong> Strong anti-inflammatory and skin-soothing properties. Commonly used in cosmetics.<br><strong>Boiling Point:</strong> ~153°C' },
+          t8: { term: 'Humulene', def: '<strong>Aroma:</strong> Earthy, woody, hoppy (it is the primary terpene in hops).<br><strong>Potential Effects:</strong> Appetite suppressant and anti-inflammatory. Contributes to the "earthy" taste of many strains.<br><strong>Boiling Point:</strong> ~106°C' },
+          t9: { term: 'Ocimene', def: '<strong>Aroma:</strong> Sweet, herbaceous, and woody. Reminiscent of a mix of mint and parsley.<br><strong>Potential Effects:</strong> Uplifting, antiviral, and decongestant. Often found in Sativa strains that have an energetic effect.<br><strong>Boiling Point:</strong> ~100°C' },
+          t10: { term: 'Bisabolol', def: '<strong>Aroma:</strong> Slightly sweet, floral, with notes of chamomile and a hint of pepper.<br><strong>Potential Effects:</strong> Strong anti-inflammatory and skin-soothing properties. Frequently used in cosmetics.<br><strong>Boiling Point:</strong> ~153°C' },
         }
       },
       flavonoidLexicon: {
         title: 'Flavonoid Lexicon',
         items: {
-          f1: { term: 'What are flavonoids?', def: 'Flavonoids are a diverse group of plant compounds responsible for the vibrant colors of many fruits, vegetables, and flowers (e.g., the blue of blueberries or the red of strawberries). In cannabis, they not only contribute to coloration (e.g., purple hues) but also to aroma and flavor, working synergistically with cannabinoids and terpenes in the entourage effect. They possess strong antioxidant and anti-inflammatory properties.' },
-          f2: { term: 'Cannflavins (A, B, C)', def: '<strong>Property:</strong> A group of flavonoids found exclusively in the cannabis plant.<br><strong>Potential Effects:</strong> Particularly known for their extremely potent anti-inflammatory properties. Studies have shown that cannflavin A and B can be up to 30 times more effective than aspirin.' },
-          f3: { term: 'Quercetin', def: '<strong>Property:</strong> One of the most abundant flavonoids in nature, also found in kale, apples, and onions.<br><strong>Potential Effects:</strong> A powerful antioxidant with antiviral and potentially anti-cancer properties.' },
+          f1: { term: 'What are Flavonoids?', def: 'Flavonoids are a diverse group of plant compounds responsible for the vibrant colors of many fruits, vegetables, and flowers (e.g., the blue of blueberries or the red of strawberries). In cannabis, they contribute not only to coloration (e.g., purple hues) but also to aroma and flavor, acting synergistically with cannabinoids and terpenes in the entourage effect. They possess strong antioxidant and anti-inflammatory properties.' },
+          f2: { term: 'Cannflavins (A, B, C)', def: '<strong>Property:</strong> A group of flavonoids found exclusively in the cannabis plant.<br><strong>Potential Effects:</strong> Particularly known for their extremely potent anti-inflammatory properties. Studies have shown that Cannflavin A and B can be up to 30 times more effective than aspirin.' },
+          f3: { term: 'Quercetin', def: '<strong>Property:</strong> One of the most common flavonoids in nature, also found in kale, apples, and onions.<br><strong>Potential Effects:</strong> A powerful antioxidant with antiviral and potentially anti-cancer properties.' },
           f4: { term: 'Kaempferol', def: '<strong>Property:</strong> Widespread in fruits and vegetables like broccoli and grapes.<br><strong>Potential Effects:</strong> Acts as a strong antioxidant and is being studied for its ability to reduce the risk of chronic diseases.' },
           f5: { term: 'Apigenin', def: '<strong>Property:</strong> Found in large quantities in chamomile, parsley, and celery.<br><strong>Potential Effects:</strong> Known for its anxiolytic, calming, and sedative properties, similar to the effects of chamomile tea.' },
         }
       },
       agronomyBasics: {
-        title: 'Agronomy Basics',
+        title: 'Agronomic Basics',
         items: {
-          a1: { term: 'Sativa, Indica & Hybrid', def: 'These terms describe the main categories of cannabis, traditionally differing in growth patterns and effects:<ul><li><strong>Sativa:</strong> Grows tall and slender with narrow leaves. The effect is often described as cerebral, energizing, and creative ("head high").</li><li><strong>Indica:</strong> Grows short, bushy, and compact with broad leaves. The effect is mostly physical, relaxing, and sedative ("body high").</li><li><strong>Hybrid:</strong> A cross between Sativa and Indica genetics. Modern strains are almost all hybrids, with characteristics and effects being a mix of both parents. The terpene profile is often a better indicator of the expected effect than the simple Sativa/Indica classification.</li></ul>' },
-          a2: { term: 'The Entourage Effect', def: 'The entourage effect describes the theory that all these compounds (cannabinoids, terpenes, flavonoids) work together synergistically to produce a more comprehensive and nuanced effect than any single compound alone. For example, THC and CBD work differently together than they do in isolation. A full-spectrum product is therefore often more effective than an isolate.'},
-          a3: { term: 'Flowering Time: Photoperiod vs. Autoflower', def: '<ul><li><strong>Photoperiod:</strong> These plants require a change in the light cycle to initiate the flowering stage. In indoor growing, this is achieved by switching to 12 hours of light and 12 hours of darkness (12/12). They can theoretically be kept in the vegetative stage indefinitely.</li><li><strong>Autoflower (Autoflowering):</strong> These strains contain Ruderalis genetics, a cannabis subspecies from cold regions. They automatically begin to flower after a genetically determined period (typically 2-4 weeks), regardless of the light cycle. They have a shorter life cycle and are often more beginner-friendly and compact.</li></ul>' },
-          a4: { term: 'Understanding Yield & Height', def: 'These figures are estimates that depend heavily on growing conditions.<ul><li><strong>Yield (g/m²):</strong> Indicates how much harvest (in grams of dried flowers) can be expected per square meter of growing area under optimal conditions. Relevant for indoor growing.</li><li><strong>Yield (g/plant):</strong> Indicates the expected yield for a single plant, typically in outdoor growing.</li><li><strong>Factors:</strong> Genetics, light intensity, pot size, nutrient supply, training techniques, and the grower\'s experience have a massive impact on both values.</li></ul>' },
+          a1: { term: 'Sativa, Indica & Hybrid', def: 'These terms describe the main categories of cannabis, which traditionally differ in growth patterns and effects:<ul><li><strong>Sativa:</strong> Grows tall and slender with narrow leaves. The effect is often described as cerebral, energizing, and creative ("head high").</li><li><strong>Indica:</strong> Grows short, bushy, and compact with broad leaves. The effect is mostly physical, relaxing, and sedating ("body high").</li><li><strong>Hybrid:</strong> A cross between Sativa and Indica genetics. Modern strains are almost all hybrids, whose properties and effects are a mix of both parents. The terpene profile is often a better indicator of the expected effect than the simple Sativa/Indica classification.</li></ul>' },
+          a2: { term: 'The Entourage Effect', def: 'The entourage effect describes the theory that all these compounds (cannabinoids, terpenes, flavonoids) work together synergistically to produce a more comprehensive and nuanced effect than any single compound alone. For example, THC and CBD work differently together than when isolated. A full-spectrum product is therefore often more effective than an isolate.'},
+          a3: { term: 'Flowering Time: Photoperiod vs. Autoflower', def: '<ul><li><strong>Photoperiod:</strong> These plants require a change in the light cycle to initiate the flowering phase. Indoors, this is done by switching to 12 hours of light and 12 hours of darkness (12/12). They can theoretically be kept in the vegetative phase indefinitely.</li><li><strong>Autoflower (Autoflowering):</strong> These strains contain Ruderalis genetics, a cannabis subspecies from cold regions. They automatically start flowering after a genetically determined time (typically 2-4 weeks), regardless of the light cycle. They have a shorter life cycle and are often more beginner-friendly and compact.</li></ul>' },
+          a4: { term: 'Understanding Yield & Height', def: 'These figures are estimates that depend heavily on growing conditions.<ul><li><strong>Yield (g/m²):</strong> Indicates how much harvest (in grams of dry buds) can be expected per square meter of cultivation area under optimal conditions. Relevant for indoor growing.</li><li><strong>Yield (g/plant):</strong> Indicates the expected yield for a single plant, typically in outdoor cultivation.</li><li><strong>Factors:</strong> Genetics, light intensity, pot size, nutrient supply, training techniques, and the grower\'s experience have a massive impact on both values.</li></ul>' },
         }
       },
       plantCareABCs: {
         title: 'Plant Care ABCs',
         items: {
-          pc1: { term: 'Life Stages in Detail', def: '<ul><li><strong>Seed/Germination:</strong> The seed needs moisture, warmth, and darkness. The taproot emerges.</li><li><strong>Seedling:</strong> The plant develops its first cotyledons (seed leaves) and then the first true, fingered leaves. A very vulnerable phase.</li><li><strong>Vegetative Growth:</strong> The plant focuses on growing leaves, stems, and roots. Requires plenty of light (18+ hours) and nitrogen-rich fertilizer.</li><li><strong>Flowering:</strong> After switching to a 12/12 light cycle (for photoperiod strains), the plant stops vegetative growth and develops flowers (buds). The nutrient requirement shifts to phosphorus and potassium.</li><li><strong>Harvest, Drying & Curing:</strong> The crucial finishing steps. Proper drying and curing are essential for quality, taste, and longevity.</li></ul>' },
-          pc2: { term: 'Mastering Vitals', def: '<ul><li><strong>pH & Nutrient Lockout:</strong> The pH value affects the roots\' ability to absorb nutrients. An incorrect pH leads to "nutrient lockout," where the plant starves even though nutrients are present in the substrate. Ideal in soil: 6.0-7.0, in hydro/coco: 5.5-6.5.</li><li><strong>EC (Electrical Conductivity):</strong> Measures nutrient concentration. Too high EC leads to "nutrient burn" (burnt leaf tips), while too low leads to deficiencies.</li><li><strong>Substrate Moisture & Root Respiration:</strong> The roots need not only water but also oxygen. A constant cycle between moist and slightly dry is ideal. Chronic wetness leads to root rot.</li></ul>' },
-          pc3: { term: 'Advanced Training Techniques', def: 'Training shapes the plant for maximum light exposure and yield.<ul><li><strong>LST (Low Stress Training):</strong> Gently bending branches down to create a wide, flat canopy.</li><li><strong>Topping:</strong> Cutting off the main shoot to force the plant to grow two new main shoots (bushier growth).</li><li><strong>FIMing (Fuck I Missed):</strong> A variation of topping where only part of the main shoot is removed, which can result in 4+ new shoots.</li><li><strong>SCROG (Screen of Green):</strong> A screen is placed over the plants. All shoots are woven through the screen to create a perfectly level and light-efficient surface of buds.</li><li><strong>Defoliation:</strong> Targeted removal of large fan leaves to improve light penetration and air circulation to lower bud sites.</li></ul>' },
-          pc4: { term: 'Common Problems & Solutions', def: '<ul><li><strong>Nutrient Deficiencies (Mobile Nutrients like N, P, K, Mg):</strong> Symptoms first appear on the lower, older leaves as the plant moves nutrients to new growth. <strong>Solution:</strong> Adjust fertilization.</li><li><strong>Nutrient Deficiencies (Immobile Nutrients like Ca, S, B):</strong> Symptoms first appear on the upper, new leaves as the plant cannot move these nutrients internally. <strong>Solution:</strong> Adjust fertilization; often a Cal/Mag supplement is needed.</li><li><strong>Pests:</strong><ul><li><strong>Spider Mites:</strong> Tiny white dots on leaves, fine webs. <strong>Solution:</strong> Neem oil, predatory mites.</li><li><strong>Fungus Gnats:</strong> Small black flies around the soil. <strong>Solution:</strong> Yellow sticky traps, let soil dry out more, nematodes.</li></ul></li></ul>' },
+          pc1: { term: 'Life Stages in Detail', def: '<ul><li><strong>Seed/Germination:</strong> The seed needs moisture, warmth, and darkness. The taproot emerges.</li><li><strong>Seedling:</strong> The plant develops its first cotyledons and then the first true, serrated leaves. A very vulnerable phase.</li><li><strong>Vegetative Growth:</strong> The plant focuses on growing leaves, stems, and roots. Needs lots of light (18+ hours) and nitrogen-rich fertilizer.</li><li><strong>Flowering:</strong> After switching to a 12/12 light cycle (for photoperiod strains), the plant stops vegetative growth and develops flowers. The nutrient needs shift to phosphorus and potassium.</li><li><strong>Harvest, Drying & Curing:</strong> The crucial finishing steps. Proper drying and curing are essential for quality, taste, and longevity.</li></ul>' },
+          pc2: { term: 'Mastering Vitals', def: '<ul><li><strong>pH & Nutrient Lockout:</strong> The pH value influences the roots\' ability to absorb nutrients. An incorrect pH leads to "nutrient lockout," where the plant starves even though nutrients are present in the substrate. Ideal in soil: 6.0-7.0, in hydro/coco: 5.5-6.5.</li><li><strong>EC (Electrical Conductivity):</strong> Measures nutrient concentration. Too high EC leads to "nutrient burn" (burnt leaf tips), too low leads to deficiencies.</li><li><strong>Substrate Moisture & Root Respiration:</strong> The roots need not only water but also oxygen. A constant cycle between moist and slightly dry is ideal. Chronic wetness leads to root rot.</li></ul>' },
+          pc3: { term: 'Advanced Training Techniques', def: 'Training shapes the plant for maximum light exposure and yield.<ul><li><strong>LST (Low Stress Training):</strong> Gently bending branches down to create a wide, flat canopy.</li><li><strong>Topping:</strong> Cutting off the main shoot to force the plant to grow two new main shoots (bushier growth).</li><li><strong>FIMing (Fuck I Missed):</strong> A variation of topping where only part of the main shoot is removed, which can result in 4+ new shoots.</li><li><strong>SCROG (Screen of Green):</strong> A net is stretched over the plants. All shoots are woven through the net to create a perfectly level and light-efficient canopy of flowers.</li><li><strong>Defoliation:</strong> Targeted removal of large fan leaves to improve light penetration and air circulation to lower bud sites.</li></ul>' },
+          pc4: { term: 'Common Problems & Solutions', def: '<ul><li><strong>Nutrient Deficiencies (Mobile Nutrients like N, P, K, Mg):</strong> Symptoms first appear on the lower, older leaves as the plant moves nutrients to new growth. <strong>Solution:</strong> Adjust fertilization.</li><li><strong>Nutrient Deficiencies (Immobile Nutrients like Ca, S, B):</strong> Symptoms first appear on the upper, new leaves as the plant cannot move these nutrients internally. <strong>Solution:</strong> Adjust fertilization; often a Cal/Mag supplement is needed.</li><li><strong>Pests:</strong><ul><li><strong>Spider Mites:</strong> Tiny white dots on leaves, fine webbing. <strong>Solution:</strong> Neem oil, predatory mites.</li><li><strong>Fungus Gnats:</strong> Small black flies around the soil. <strong>Solution:</strong> Yellow sticky traps, let soil dry out more, nematodes.</li></ul></li></ul>' },
         }
       },
       glossary: {
         title: 'Comprehensive Glossary',
         items: {
           g1: { term: 'Calyx', def: 'The actual part of the flower that encloses the ovule. The calyxes are the most resinous parts of the plant.' },
-          g2: { term: 'Clone', def: 'A genetically identical cutting from a mother plant that is rooted to grow a new plant.' },
+          g2: { term: 'Clone (Cutting)', def: 'A genetically identical cutting from a mother plant that is rooted to grow a new plant.' },
           g3: { term: 'Feminized', def: 'Seeds that have been treated to produce almost exclusively (99%+) female plants, which produce the desired flowers.' },
-          g4: { term: 'Flushing', def: 'Watering the plant with plain, pH-balanced water for the last 1-2 weeks before harvest to remove excess nutrient salts from the substrate and the plant, which improves the taste.' },
+          g4: { term: 'Flushing', def: 'Watering the plant only with plain, pH-adjusted water in the last 1-2 weeks before harvest to remove excess nutrient salts from the substrate and the plant, which improves the taste.' },
           g5: { term: 'Landrace', def: 'A pure, original cannabis strain that has naturally developed and adapted over a long time in a specific geographical region (e.g., Afghan Kush, Durban Poison).' },
-          g6: { term: 'N-P-K', def: 'The ratio of the three primary macronutrients that plants need: Nitrogen (N), Phosphorus (P), and Potassium (K). Fertilizer bottles often state this ratio as numbers (e.g., 5-10-5).' },
+          g6: { term: 'N-P-K', def: 'The ratio of the three primary macronutrients that plants need: Nitrogen (N), Phosphorus (P), and Potassium (K). Fertilizer bottles often indicate this ratio as numbers (e.g., 5-10-5).' },
           g7: { term: 'Phenotype', def: 'The observable characteristics of a plant, resulting from the interaction of its genetics (genotype) and the environment. Seeds of the same strain can produce different phenotypes.' },
           g8: { term: 'Pistil', def: 'The small "hairs" on the calyxes that are initially white and turn orange/brown as they mature. They serve to catch pollen.' },
           g9: { term: 'Trichomes', def: 'The tiny, mushroom-shaped resin glands on the flowers and leaves that produce cannabinoids and terpenes. Their color (clear, milky, amber) is the best indicator of harvest time.' },
@@ -683,11 +713,11 @@ export const en = {
         title: 'About the App',
         version: 'v2.2.0',
         appName: 'Cannabis Grow Guide',
-        description: 'This app is an interactive guide to help you manage your cannabis cultivation journey. Track your plants, learn about strains, and get expert tips on equipment and techniques.',
+        description: 'This app is an interactive guide that supports you on your cannabis cultivation journey. Track your plants, learn about strains, and get expert tips on equipment and techniques.',
         features: '<strong>New Features:</strong> This version includes a full translation for English and German, as well as comprehensive accessibility improvements (keyboard & screen reader support).',
-        devWithAIStudioTitle: 'Development with AI Studio',
-        devWithAIStudioText: 'This app was developed using Google\'s <strong>AI Studio</strong>, an innovative platform that allows for the creation and modification of complex web applications through natural language commands. Through iterative prompts, the user interface was designed, functionality was implemented, and the Gemini AI was integrated for intelligent features. AI Studio significantly accelerates the development process and opens up new possibilities for app creation.',
-        getTheAppHere: 'Get the app here',
+        devWithAIStudioTitle: 'Developed with AI Studio',
+        devWithAIStudioText: 'This app was developed with Google\'s <strong>AI Studio</strong>, an innovative platform that allows for the creation and modification of complex web applications through natural language commands. The user interface was designed, functionalities implemented, and the Gemini AI integrated for intelligent features through iterative prompts. AI Studio significantly accelerates the development process and opens up new possibilities in app creation.',
+        getTheAppHere: 'Get the App Here',
         disclaimerTitle: 'Disclaimer',
         disclaimerText: 'All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations that vary from country to country. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.',
         privacyTitle: 'Privacy',
@@ -698,12 +728,33 @@ export const en = {
   settingsView: {
     title: 'Settings',
     display: 'Display',
-    theme: 'Color Scheme',
-    themeDescription: 'Choose between light, dark, or system-based mode.',
+    design: 'Appearance & Design',
+    designDescription: 'Customize the look and feel of the app. Choose from curated, professional designs.',
     themes: {
-      light: 'Light',
-      dark: 'Dark',
-      system: 'System',
+      'midnight-blue': {
+        label: 'Midnight Blue',
+        desc: 'A cutting-edge, dark blue design with cool cyan accents.',
+      },
+      'forest-deep': {
+        label: 'Forest Deep',
+        desc: 'The classic, deep green design with vibrant lime highlights.',
+      },
+      'purple-haze': {
+        label: 'Purple Haze',
+        desc: 'A cool theme with rich purples and magenta highlights.',
+      },
+      'og-kush': {
+        label: 'OG Kush',
+        desc: 'An earthy theme with warm amber and gold tones.',
+      },
+      'sativa-sun': {
+        label: 'Sativa Sun',
+        desc: 'A vibrant, energetic theme with bright orange and yellow accents.',
+      },
+      'hydro-tech': {
+        label: 'Hydro-Tech',
+        desc: 'A clean, futuristic look with cool cyan and teal colors.',
+      }
     },
     fontSize: 'Font Size',
     fontSizeDescription: 'Adjust the font size for the entire app.',
@@ -731,7 +782,7 @@ export const en = {
     simulationSpeed: 'Simulation Speed',
     simulationSpeedDescription: 'Determines how fast time passes for your plants.',
     simulationDifficulty: 'Difficulty Level',
-    simulationDifficultyDescription: 'Affects how much problems impact plant stress.',
+    simulationDifficultyDescription: 'Affects how much problems impact the plant\'s stress.',
     difficulties: {
       easy: 'Easy',
       normal: 'Normal',
@@ -746,10 +797,10 @@ export const en = {
     importButton: 'Import Backup',
     dangerZone: 'Danger Zone',
     resetUserStrainsTitle: 'Reset "My Strains"',
-    resetUserStrainsDescription: 'Deletes only the strains you have added. All other data remains.',
+    resetUserStrainsDescription: 'Deletes only the strains you have added. All other data will remain.',
     resetUserStrainsButton: 'Delete My Strains',
     resetExportsHistoryTitle: 'Reset "My Exports"',
-    resetExportsHistoryDescription: 'Deletes only your export history. All other data remains.',
+    resetExportsHistoryDescription: 'Deletes only your export history. All other data will remain.',
     resetExportsHistoryButton: 'Delete Export History',
     fullResetTitle: 'Full App Reset',
     fullResetDescription: 'Permanently deletes all your saved data (plants, favorites, settings, etc.).',
@@ -757,14 +808,14 @@ export const en = {
     notifications: {
       fullResetConfirm: 'Are you sure you want to permanently delete all app data? This cannot be undone.',
       fullResetSuccess: 'All data has been reset. The app will now reload.',
-      userStrainsResetConfirm: 'Are you sure you want to delete all the strains you added? Your plants and exports will remain.',
+      userStrainsResetConfirm: 'Are you sure you want to delete all strains you have added? Your plants and exports will remain.',
       userStrainsResetSuccess: 'Your custom strains have been deleted.',
       exportsResetConfirm: 'Are you sure you want to delete your export history? Your plants and custom strains will remain.',
       exportsResetSuccess: 'Export history has been deleted.',
-      exportSuccess: 'All app data exported successfully.',
-      exportError: 'Failed to export data.',
-      importSuccess: 'Data imported successfully. The app will now reload.',
-      importError: 'Failed to import data. Invalid file format?',
+      exportSuccess: 'All app data successfully exported.',
+      exportError: 'Error exporting data.',
+      importSuccess: 'Data successfully imported. The app will now reload.',
+      importError: 'Error importing data. Invalid file format?',
     }
   },
   problemMessages: {
@@ -772,12 +823,12 @@ export const en = {
     underwatering: { message: 'Underwatering', solution: 'Water the plant immediately.' },
     nutrientBurn: { message: 'Nutrient Burn (EC too high)', solution: 'Flush the substrate and reduce fertilizer dose.' },
     nutrientDeficiency: { message: 'Nutrient Deficiency (EC too low)', solution: 'Slightly increase fertilizer dose.' },
-    phTooLow: { message: 'pH Too Low', solution: 'Adjust the pH of your water upwards.' },
-    phTooHigh: { message: 'pH Too High', solution: 'Adjust the pH of your water downwards.' },
-    tempTooHigh: { message: 'Temperature Too High', solution: 'Improve ventilation or cool the room.' },
-    tempTooLow: { message: 'Temperature Too Low', solution: 'Increase the room temperature.' },
-    humidityTooHigh: { message: 'Humidity Too High', solution: 'Increase exhaust fan speed or use a dehumidifier.' },
-    humidityTooLow: { message: 'Humidity Too Low', solution: 'Use a humidifier.' },
+    phTooLow: { message: 'pH Level too low', solution: 'Adjust the pH of your water upwards.' },
+    phTooHigh: { message: 'pH Level too high', solution: 'Adjust the pH of your water downwards.' },
+    tempTooHigh: { message: 'Temperature too high', solution: 'Improve ventilation or cool the room.' },
+    tempTooLow: { message: 'Temperature too low', solution: 'Increase the room temperature.' },
+    humidityTooHigh: { message: 'Humidity too high', solution: 'Increase exhaust fan speed or use a dehumidifier.' },
+    humidityTooLow: { message: 'Humidity too low', solution: 'Use a humidifier.' },
   },
   plantStages: {
     SEED: 'Seed',

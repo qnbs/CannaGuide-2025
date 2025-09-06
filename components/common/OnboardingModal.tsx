@@ -50,14 +50,14 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
             <Card className="w-full max-w-lg text-center">
                 <div className="flex flex-col items-center">
                     <div className="mb-4">{step.icon}</div>
-                    <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-300 mb-2">{step.title}</h2>
-                    <p className="text-slate-600 dark:text-slate-300 mb-6">{step.text}</p>
+                    <h2 className="text-2xl font-bold font-display text-primary-300 mb-2">{step.title}</h2>
+                    <p className="text-slate-300 mb-6">{step.text}</p>
                 </div>
                 
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex gap-2">
                         {steps.map((_, index) => (
-                            <div key={index} className={`w-3 h-3 rounded-full transition-colors ${index === currentStep ? 'bg-primary-500' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+                            <div key={index} className={`w-3 h-3 rounded-full transition-colors ${index === currentStep ? 'bg-primary-500' : 'bg-slate-700'}`}></div>
                         ))}
                     </div>
                     <Button onClick={handleNext}>

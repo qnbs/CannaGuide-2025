@@ -78,7 +78,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
                 <div className="relative">
                      <label htmlFor="command-search" id="command-palette-label" className="sr-only">{t('commandPalette.placeholder')}</label>
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <PhosphorIcons.MagnifyingGlass className="w-5 h-5 text-slate-400" />
+                        <PhosphorIcons.MagnifyingGlass className="w-5 h-5 text-accent-400" />
                     </div>
                     <input
                         id="command-search"
@@ -87,7 +87,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder={t('commandPalette.placeholder')}
-                        className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-md pl-10 pr-4 py-2 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="w-full bg-accent-900/50 border border-accent-700 rounded-lg pl-10 pr-4 py-2 text-accent-100 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         autoComplete="off"
                     />
                 </div>
@@ -100,22 +100,22 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
                                 onClick={cmd.action}
                                 onMouseMove={() => setSelectedIndex(index)}
                                 className={`flex items-center justify-between gap-4 p-3 rounded-md cursor-pointer ${
-                                    index === selectedIndex ? 'bg-primary-500/20' : 'hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
+                                    index === selectedIndex ? 'bg-primary-500/20' : 'hover:bg-accent-800/50'
                                 }`}
                                 role="option"
                                 aria-selected={index === selectedIndex}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className="w-6 h-6 text-slate-500 dark:text-slate-400 flex-shrink-0">{cmd.icon}</div>
+                                    <div className="w-6 h-6 text-accent-300 flex-shrink-0">{cmd.icon}</div>
                                     <div>
-                                        <p className="font-semibold text-slate-800 dark:text-slate-200">{cmd.title}</p>
-                                        {cmd.subtitle && <p className="text-xs text-slate-500">{cmd.subtitle}</p>}
+                                        <p className="font-semibold text-accent-100">{cmd.title}</p>
+                                        {cmd.subtitle && <p className="text-xs text-accent-400">{cmd.subtitle}</p>}
                                     </div>
                                 </div>
                             </li>
                         ))
                     ) : (
-                        <li className="p-4 text-center text-slate-500">{t('commandPalette.noResults')}</li>
+                        <li className="p-4 text-center text-accent-300">{t('commandPalette.noResults')}</li>
                     )}
                 </ul>
             </Card>

@@ -14,7 +14,6 @@ const initialLang: Language = detectedLang === 'de' ? 'de' : 'en';
 
 
 const defaultSettings: AppSettings = {
-  theme: 'system',
   fontSize: 'base',
   language: initialLang,
   notificationsEnabled: true,
@@ -58,12 +57,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   useEffect(() => {
     const root = window.document.documentElement;
-
-    // Light/Dark mode
-    const isDark =
-      settings.theme === 'dark' ||
-      (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    root.classList.toggle('dark', isDark);
+    
+    // Ensure dark mode is always applied
+    root.className = 'dark';
 
     // Font Size
     root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
@@ -72,7 +68,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     root.lang = settings.language;
 
     try {
-      localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(settings));
+      // Create a new object without the obsolete theme property to save to localStorage
+      const { theme, ...settingsToSave } = settings as any;
+      localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(settingsToSave));
     } catch (e) {
       console.error("Failed to save settings to localStorage", e);
     }

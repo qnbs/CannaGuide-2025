@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { JournalEntry, TrainingType } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { dbService } from '../../../services/dbService';
 
 interface ModalProps {
     onClose: () => void;
@@ -166,31 +168,78 @@ export const TrainingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
 export const PhotoModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { t } = useTranslations();
     const [notes, setNotes] = useState('');
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleConfirm = () => {
-        // In a real app, this would involve camera access and image upload.
-        // Here, we simulate it by providing a placeholder image URL.
-        const placeholderImages = [
-            'https://source.unsplash.com/random/400x300/?cannabis,leaf',
-            'https://source.unsplash.com/random/400x300/?cannabis,plant',
-            'https://source.unsplash.com/random/400x300/?marijuana,closeup',
-            'https://source.unsplash.com/random/400x300/?cannabis,bud',
-        ];
-        const imageUrl = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
-        const noteText = notes.trim() || t('plantsView.detailedView.journalFilters.photo');
-        onConfirm({ imageUrl }, noteText);
-        onClose();
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleConfirm = async () => {
+        if (!imageFile || !imagePreview) return;
+        
+        const imageId = `img-${Date.now()}`;
+        try {
+            await dbService.addImage(imageId, imagePreview);
+            const noteText = notes.trim() || t('plantsView.detailedView.journalFilters.photo');
+            onConfirm({ imageId, imageUrl: imagePreview }, noteText); // also pass imageUrl for immediate preview
+            onClose();
+        } catch (error) {
+            console.error("Failed to save image to IndexedDB", error);
+            onClose();
+        }
+    };
+
+    const handleReset = () => {
+        setImageFile(null);
+        setImagePreview(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
     };
 
     return (
         <ModalBase title={t('plantsView.actionModals.photoTitle')} onClose={onClose}>
              <div className="space-y-4">
                 <InputField label={t('plantsView.actionModals.photoNotes')} type="text" value={notes} onChange={setNotes} />
-                <p className="text-xs text-center text-slate-500">{t('plantsView.actionModals.photoSimulated')}</p>
+                
+                {!imagePreview ? (
+                    <div 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    >
+                        <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2" />
+                        <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">{t('plantsView.aiDiagnostics.buttonLabel')}</p>
+                        <p className="text-xs text-slate-400">{t('plantsView.aiDiagnostics.prompt')}</p>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                            className="hidden"
+                        />
+                    </div>
+                ) : (
+                    <div className="relative">
+                        <img src={imagePreview} alt="Preview" className="rounded-lg w-full max-h-60 object-contain" />
+                        <button onClick={handleReset} className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-black/70" aria-label={t('common.delete')}>
+                            <PhosphorIcons.X className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
             </div>
              <div className="flex justify-end gap-4 mt-8">
                 <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-                <Button onClick={handleConfirm}>{t('common.add')}</Button>
+                <Button onClick={handleConfirm} disabled={!imageFile}>{t('common.add')}</Button>
             </div>
         </ModalBase>
     );

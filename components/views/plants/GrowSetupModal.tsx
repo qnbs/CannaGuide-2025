@@ -50,13 +50,13 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md">
-        <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-2">{t('plantsView.setupModal.title', { name: strain.name })}</h2>
-        <p className="text-slate-600 dark:text-slate-400 mb-6">{t('plantsView.setupModal.subtitle')}</p>
+        <h2 className="text-2xl font-bold font-display text-primary-400 mb-2">{t('plantsView.setupModal.title', { name: strain.name })}</h2>
+        <p className="text-accent-200/90 mb-6">{t('plantsView.setupModal.subtitle')}</p>
         
         <div className="space-y-6">
             {options.map(opt => (
                 <div key={opt.id}>
-                    <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">{opt.label}</label>
+                    <label className="block text-lg font-semibold text-accent-100 mb-2">{opt.label}</label>
                     <div className="flex gap-2">
                     {opt.choices.map(choice => (
                         <button
@@ -64,8 +64,8 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                             onClick={() => setSetup(s => ({ ...s, [opt.id]: choice }))}
                             className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors ${
                                 setup[opt.id] === choice
-                                ? 'bg-primary-600 text-white font-bold shadow-lg'
-                                : 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600'
+                                ? 'bg-primary-600 text-on-accent font-bold shadow-lg'
+                                : 'bg-accent-800 text-accent-200 hover:bg-accent-700'
                             }`}
                         >
                             {opt.display ? opt.display(choice) : String(choice)}
@@ -77,19 +77,19 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
         </div>
 
         <div className="mt-6">
-            <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">{t('plantsView.setupModal.environment')}</label>
+            <label className="block text-lg font-semibold text-accent-100 mb-2">{t('plantsView.setupModal.environment')}</label>
             <div className="grid grid-cols-3 gap-3">
                 <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('plantsView.setupModal.temp')}</label>
-                    <input type="number" value={setup.temperature} onChange={e => setSetup(s => ({...s, temperature: parseInt(e.target.value, 10) || 24}))} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                    <label className="block text-xs font-medium text-accent-300 mb-1">{t('plantsView.setupModal.temp')}</label>
+                    <input type="number" value={setup.temperature} onChange={e => setSetup(s => ({...s, temperature: parseInt(e.target.value, 10) || 24}))} className="w-full bg-accent-900/50 border border-accent-700 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('plantsView.setupModal.humidity')}</label>
-                    <input type="number" value={setup.humidity} onChange={e => setSetup(s => ({...s, humidity: parseInt(e.target.value, 10) || 60}))} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                    <label className="block text-xs font-medium text-accent-300 mb-1">{t('plantsView.setupModal.humidity')}</label>
+                    <input type="number" value={setup.humidity} onChange={e => setSetup(s => ({...s, humidity: parseInt(e.target.value, 10) || 60}))} className="w-full bg-accent-900/50 border border-accent-700 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
                 </div>
                 <div>
-                    <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">{t('plantsView.setupModal.lightHours')}</label>
-                    <input type="number" value={setup.lightHours} onChange={e => setSetup(s => ({...s, lightHours: parseInt(e.target.value, 10) || 18}))} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
+                    <label className="block text-xs font-medium text-accent-300 mb-1">{t('plantsView.setupModal.lightHours')}</label>
+                    <input type="number" value={setup.lightHours} onChange={e => setSetup(s => ({...s, lightHours: parseInt(e.target.value, 10) || 18}))} className="w-full bg-accent-900/50 border border-accent-700 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
                 </div>
             </div>
         </div>

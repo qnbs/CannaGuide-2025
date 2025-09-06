@@ -142,7 +142,7 @@
     {
         "id": "mars-og",
         "name": "Mars OG",
-        "type": "Indica",
+        "type": "Hybrid",
         "typeDetails": "Indica-dominant",
         "genetics": "Mars x OG",
         "thc": 21,
@@ -244,7 +244,7 @@
     {
         "id": "maui-wowie",
         "name": "Maui Wowie",
-        "type": "Sativa",
+        "type": "Hybrid",
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Hawaiianische Landrasse",
         "thc": 20,

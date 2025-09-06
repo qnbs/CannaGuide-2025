@@ -71,11 +71,11 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
             <Card>
                 <h3 className="text-xl font-bold font-display mb-4 text-primary-400 flex items-center gap-2">
                     <PhosphorIcons.BookOpenText className="w-6 h-6" />
-                    Journal Analysis
+                    {t('plantsView.detailedView.ai.journalAnalysisTitle')}
                 </h3>
-                <p className="text-sm text-slate-400 mb-4">Let the AI analyze the entire grow journal to provide a summary, highlight key events, and suggest improvements.</p>
+                <p className="text-sm text-slate-400 mb-4">{t('plantsView.detailedView.ai.journalAnalysisDescription')}</p>
                 <Button onClick={handleAnalyzeJournal} disabled={isAnalysisLoading}>
-                    {isAnalysisLoading ? 'Analyzing...' : 'Analyze Grow Journal'}
+                    {isAnalysisLoading ? t('plantsView.detailedView.ai.analyzing') : t('plantsView.detailedView.ai.analyzeButton')}
                 </Button>
                 <div className="mt-4">
                     {isAnalysisLoading && <SkeletonLoader count={3} />}

@@ -45,7 +45,7 @@ const RadioGroup: React.FC<{
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, selectionCount, favoritesCount, filteredCount, totalCount }) => {
     const { t } = useTranslations();
     const [source, setSource] = useState<ExportSource>('selected');
-    const [format, setFormat] = useState<ExportFormat>('json');
+    const [format, setFormat] = useState<ExportFormat>('pdf');
 
     useEffect(() => {
         if(isOpen) {
@@ -68,10 +68,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
     ];
 
     const formatOptions = [
-        { value: 'json', label: t('strainsView.exportModal.formats.json') },
-        { value: 'csv', label: t('strainsView.exportModal.formats.csv') },
         { value: 'pdf', label: t('strainsView.exportModal.formats.pdf') },
         { value: 'txt', label: 'TXT' },
+        { value: 'csv', label: t('strainsView.exportModal.formats.csv') },
+        { value: 'json', label: t('strainsView.exportModal.formats.json') },
     ];
 
     return (

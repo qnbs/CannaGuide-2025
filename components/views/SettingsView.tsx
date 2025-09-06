@@ -80,6 +80,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
 
 
   const handleExport = () => {
+    if (!window.confirm(t('settingsView.notifications.exportConfirm'))) {
+      return;
+    }
     try {
       const plants = localStorage.getItem('cannabis-grow-guide-plants');
       const settingsData = localStorage.getItem('cannabis-grow-guide-settings');
@@ -119,6 +122,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
 
     const reader = new FileReader();
     reader.onload = (e) => {
+      if (!window.confirm(t('settingsView.notifications.importConfirm'))) {
+        if(event.target) event.target.value = '';
+        return;
+      }
       try {
         const text = e.target?.result;
         if (typeof text !== 'string') throw new Error("File is not readable");

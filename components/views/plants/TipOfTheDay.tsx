@@ -1,0 +1,38 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Card } from '../../common/Card';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { useTranslations } from '../../../hooks/useTranslations';
+
+export const TipOfTheDay: React.FC = () => {
+    const { t } = useTranslations();
+    const [tip, setTip] = useState('');
+
+    const allTips = useMemo(() => {
+        // The translation function t() might return the key if not found,
+        // or it might return an object/array if the key points to one.
+        // We need to handle the case where it returns the array of tips.
+        const tipsOrKey = t('tipOfTheDay.tips');
+        return Array.isArray(tipsOrKey) ? tipsOrKey : [];
+    }, [t]);
+
+    useEffect(() => {
+        if (allTips.length > 0) {
+            const randomIndex = Math.floor(Math.random() * allTips.length);
+            setTip(allTips[randomIndex]);
+        }
+    }, [allTips]);
+
+    if (!tip) {
+        return null;
+    }
+
+    return (
+        <Card className="bg-primary-500/10 border-l-4 border-primary-400">
+            <h3 className="font-bold text-primary-200 flex items-center gap-2 mb-2">
+                <PhosphorIcons.LightbulbFilament className="w-5 h-5" />
+                {t('tipOfTheDay.title')}
+            </h3>
+            <p className="text-primary-300 text-sm">{tip}</p>
+        </Card>
+    );
+};

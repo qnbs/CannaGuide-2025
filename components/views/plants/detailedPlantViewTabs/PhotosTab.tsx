@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { JournalEntry } from '../../../../types';
 import { Card } from '../../../common/Card';
@@ -15,7 +16,7 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
 
     useEffect(() => {
         let isMounted = true;
-        if (entry.details?.imageId && !entry.details?.imageUrl) {
+        if (entry.details?.imageId && !imageUrl) {
             setIsLoading(true);
             dbService.getImage(entry.details.imageId)
                 .then(data => {
@@ -25,9 +26,11 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
                 .finally(() => {
                     if (isMounted) setIsLoading(false)
                 });
+        } else if (imageUrl) {
+            setIsLoading(false);
         }
         return () => { isMounted = false; }
-    }, [entry.details]);
+    }, [entry.details, imageUrl]);
 
     if (isLoading) {
         return <SkeletonLoader className="w-full h-48 rounded-lg" />;

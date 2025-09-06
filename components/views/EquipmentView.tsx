@@ -4,8 +4,18 @@ import { Card } from '../common/Card';
 import { SetupConfigurator } from './equipment/SetupConfigurator';
 import { Calculators } from './equipment/Calculators';
 import { useTranslations } from '../../hooks/useTranslations';
+import { useSetupManager } from '../../hooks/useSetupManager';
+import { SavedSetupsView } from './equipment/SavedSetupsView';
+import { geminiService } from '../../services/geminiService';
+import { Recommendation } from '../../types';
 
-type ActiveTab = 'configurator' | 'calculators' | 'gear';
+
+type ActiveTab = 'configurator' | 'calculators' | 'gear' | 'setups';
+
+type Step = 1 | 2 | 3 | 4;
+type Area = '60x60' | '80x80' | '100x100' | '120x120';
+type Budget = 'low' | 'medium' | 'high';
+type GrowStyle = 'beginner' | 'yield' | 'stealth';
 
 const GearAndShops: React.FC = () => {
     const { t } = useTranslations();
@@ -68,12 +78,53 @@ const GearAndShops: React.FC = () => {
 }
 
 export const EquipmentView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t, locale } = useTranslations();
     const [activeTab, setActiveTab] = useState<ActiveTab>('configurator');
+    const { savedSetups, addSetup, updateSetup, deleteSetup } = useSetupManager();
     
+    // State lifted from SetupConfigurator for persistence
+    const [step, setStep] = useState<Step>(1);
+    const [area, setArea] = useState<Area>('80x80');
+    const [budget, setBudget] = useState<Budget>('medium');
+    const [growStyle, setGrowStyle] = useState<GrowStyle>('beginner');
+    const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    
+    const handleGenerate = async () => {
+        setIsLoading(true);
+        setError(null);
+        setRecommendation(null);
+        setStep(4);
+        
+        try {
+            const result = await geminiService.getSetupRecommendation(area, t(`equipmentView.configurator.styles.${growStyle}`), t(`equipmentView.configurator.budgets.${budget}`), locale);
+            if (result) {
+                setRecommendation(result as Recommendation);
+            } else {
+                setError(t('equipmentView.configurator.error'));
+            }
+        } catch (e) {
+            console.error(e);
+            setError(t('equipmentView.configurator.errorNetwork'));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+    
+    const startOver = () => {
+        setStep(1);
+        setRecommendation(null);
+        setError(null);
+        setArea('80x80');
+        setBudget('medium');
+        setGrowStyle('beginner');
+    };
+
     const tabs: {id: ActiveTab, label: string, icon: React.ReactNode}[] = [
         { id: 'configurator', label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.Wrench /> },
         { id: 'calculators', label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
+        { id: 'setups', label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Archive /> },
         { id: 'gear', label: t('equipmentView.tabs.gear'), icon: <PhosphorIcons.Storefront /> },
     ];
 
@@ -90,8 +141,26 @@ export const EquipmentView: React.FC = () => {
             </div>
             
             <div>
-                {activeTab === 'configurator' && <SetupConfigurator />}
+                {activeTab === 'configurator' && (
+                    <SetupConfigurator
+                        onSaveSetup={addSetup}
+                        step={step}
+                        setStep={setStep}
+                        area={area}
+                        setArea={setArea}
+                        budget={budget}
+                        setBudget={setBudget}
+                        growStyle={growStyle}
+                        setGrowStyle={setGrowStyle}
+                        recommendation={recommendation}
+                        isLoading={isLoading}
+                        error={error}
+                        handleGenerate={handleGenerate}
+                        startOver={startOver}
+                    />
+                )}
                 {activeTab === 'calculators' && <Calculators />}
+                {activeTab === 'setups' && <SavedSetupsView savedSetups={savedSetups} updateSetup={updateSetup} deleteSetup={deleteSetup} />}
                 {activeTab === 'gear' && <GearAndShops />}
             </div>
         </div>

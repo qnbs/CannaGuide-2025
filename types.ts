@@ -1,3 +1,4 @@
+
 export enum View {
   Strains = 'STRAINS',
   Plants = 'PLANTS',
@@ -116,8 +117,8 @@ export interface JournalEntry {
     ph?: number;
     ec?: number; // mS/cm
     trainingType?: TrainingType;
-    imageUrl?: string; // For old data and preview
-    imageId?: string; // For IndexedDB storage
+    imageUrl?: string; // For optimistic UI preview
+    imageId?: string; // For persistent IndexedDB storage
   }
 }
 
@@ -210,4 +211,28 @@ export interface Command {
   icon: React.ReactNode;
   action: () => void;
   keywords?: string;
+}
+
+// Types for Equipment Setup Recommendations
+export type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'pots' | 'soil' | 'nutrients' | 'extra';
+
+export interface RecommendationItem {
+    name: string;
+    watts?: number;
+    price: number;
+    rationale: string;
+}
+export type Recommendation = Record<RecommendationCategory, RecommendationItem>;
+
+export interface SavedSetup {
+  id: string;
+  name: string;
+  createdAt: number;
+  recommendation: Recommendation;
+  sourceDetails: {
+    area: string;
+    budget: string;
+    growStyle: string;
+  };
+  totalCost: number;
 }

@@ -1,13 +1,16 @@
 import React from 'react';
 import { PlantHistoryEntry } from '../../../types';
+import { useTranslations } from '../../../hooks/useTranslations';
 
 interface HistoryChartProps {
     history: PlantHistoryEntry[];
 }
 
 export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
+    const { t } = useTranslations();
+
     if (!history || history.length < 2) {
-        return <div className="flex items-center justify-center h-full text-slate-500">Nicht genügend Daten für das Diagramm vorhanden.</div>;
+        return <div className="flex items-center justify-center h-full text-slate-500">{t('plantsView.detailedView.historyNoData')}</div>;
     }
 
     const width = 250;
@@ -68,9 +71,9 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
                 <path d={stressPath} fill="none" stroke="#ef4444" strokeWidth="2" />
             </svg>
             <div className="flex justify-center gap-4 text-xs mt-2">
-                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-lime-500 rounded-sm"></div>Feuchtigkeit</span>
-                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-amber-500 rounded-sm"></div>EC-Wert</span>
-                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div>Stresslevel</span>
+                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-lime-500 rounded-sm"></div>{t('plantsView.detailedView.moisture')}</span>
+                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-amber-500 rounded-sm"></div>{t('plantsView.detailedView.ec')}</span>
+                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div>{t('plantsView.detailedView.stress')}</span>
             </div>
         </div>
     );

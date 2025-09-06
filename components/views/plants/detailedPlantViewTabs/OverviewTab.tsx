@@ -1,10 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Plant, AIResponse } from '../../../../types';
+import React from 'react';
+import { Plant } from '../../../../types';
 import { Card } from '../../../common/Card';
 import { PlantVisual } from '../PlantVisual';
-import { PhosphorIcons } from '../../../icons/PhosphorIcons';
-import { geminiService } from '../../../../services/geminiService';
-import { SkeletonLoader } from '../../../common/SkeletonLoader';
 import { PLANT_STAGE_DETAILS } from '../../../../constants';
 import { HistoryChart } from '../HistoryChart';
 import { PlantLifecycleTimeline } from '../PlantLifecycleTimeline';
@@ -35,50 +32,6 @@ const VitalStat: React.FC<{ label: string, value: number, unit: string, idealMin
     );
 };
 
-const ProactiveAITipCard: React.FC<{ plant: Plant }> = ({ plant }) => {
-    const { t, locale } = useTranslations();
-    const [aiTip, setAiTip] = useState<AIResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const fetchTip = useCallback(async () => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const tip = await geminiService.getProactiveTip(
-                plant,
-                t('plantsView.detailedView.aiTip'),
-                t('plantsView.detailedView.aiTipError'),
-                locale
-            );
-            setAiTip(tip);
-        } catch (e) {
-            console.error("Failed to fetch proactive tip:", e);
-            setError(t('plantsView.detailedView.aiTipError'));
-        } finally {
-            setIsLoading(false);
-        }
-    }, [plant, t, locale]);
-
-    useEffect(() => {
-        fetchTip();
-    }, [fetchTip]);
-
-    return (
-        <Card className="bg-amber-500/10 border-l-4 border-amber-400">
-            <h4 className="font-bold text-amber-200 flex justify-between items-center">
-                <span>{t('plantsView.detailedView.aiTip')}</span>
-                <button onClick={fetchTip} disabled={isLoading} className="p-1 rounded-full hover:bg-amber-400/20" aria-label="Refresh tip">
-                    <PhosphorIcons.ArrowClockwise className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                </button>
-            </h4>
-            {isLoading && <SkeletonLoader count={2} className="h-3" />}
-            {error && <p className="text-amber-300 text-sm">{error}</p>}
-            {aiTip && !isLoading && !error && <p className="text-amber-300 text-sm" dangerouslySetInnerHTML={{ __html: aiTip.content }}></p>}
-        </Card>
-    );
-};
-
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslations();
     const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
@@ -100,7 +53,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                        <VitalStat label={t('plantsView.detailedView.stress')} value={plant.stressLevel} unit="%" idealMin={0} idealMax={20} color="bg-red-500" />
                     </div>
                 </Card>
-                <ProactiveAITipCard plant={plant} />
             </div>
             <div className="lg:col-span-2 flex flex-col gap-6">
                 <Card>

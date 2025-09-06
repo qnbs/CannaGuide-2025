@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { ExportFormat, ExportSource } from '../../../types';
+import { useTranslations } from '../../../hooks/useTranslations';
 
 interface ExportModalProps {
     isOpen: boolean;
@@ -42,6 +43,7 @@ const RadioGroup: React.FC<{
 );
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, selectionCount, favoritesCount, filteredCount, totalCount }) => {
+    const { t } = useTranslations();
     const [source, setSource] = useState<ExportSource>('selected');
     const [format, setFormat] = useState<ExportFormat>('json');
 
@@ -59,31 +61,32 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
     };
     
     const sourceOptions = [
-        { value: 'selected', label: 'Ausgewählte', disabled: selectionCount === 0, count: selectionCount },
-        { value: 'favorites', label: 'Favoriten', disabled: favoritesCount === 0, count: favoritesCount },
-        { value: 'filtered', label: 'Gefilterte Ergebnisse', count: filteredCount },
-        { value: 'all', label: 'Alle Sorten', count: totalCount },
+        { value: 'selected', label: t('strainsView.exportModal.sources.selected'), disabled: selectionCount === 0, count: selectionCount },
+        { value: 'favorites', label: t('strainsView.exportModal.sources.favorites'), disabled: favoritesCount === 0, count: favoritesCount },
+        { value: 'filtered', label: t('strainsView.exportModal.sources.filtered'), count: filteredCount },
+        { value: 'all', label: t('strainsView.exportModal.sources.all'), count: totalCount },
     ];
 
     const formatOptions = [
-        { value: 'json', label: 'JSON' },
-        { value: 'csv', label: 'CSV' },
-        { value: 'pdf', label: 'PDF' },
+        { value: 'json', label: t('strainsView.exportModal.formats.json') },
+        { value: 'csv', label: t('strainsView.exportModal.formats.csv') },
+        { value: 'pdf', label: t('strainsView.exportModal.formats.pdf') },
+        { value: 'txt', label: 'TXT' },
     ];
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
             <Card className="w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">Daten exportieren</h2>
+                <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{t('strainsView.exportModal.title')}</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <RadioGroup label="Quelle" options={sourceOptions} selectedValue={source} onChange={v => setSource(v as ExportSource)} />
-                    <RadioGroup label="Format" options={formatOptions} selectedValue={format} onChange={v => setFormat(v as ExportFormat)} />
+                    <RadioGroup label={t('strainsView.exportModal.source')} options={sourceOptions} selectedValue={source} onChange={v => setSource(v as ExportSource)} />
+                    <RadioGroup label={t('strainsView.exportModal.format')} options={formatOptions} selectedValue={format} onChange={v => setFormat(v as ExportFormat)} />
                 </div>
 
                 <div className="flex justify-end gap-4 mt-8">
-                    <Button variant="secondary" onClick={onClose}>Abbrechen</Button>
-                    <Button onClick={handleConfirm}>Exportieren</Button>
+                    <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+                    <Button onClick={handleConfirm}>{t('common.export')}</Button>
                 </div>
             </Card>
         </div>

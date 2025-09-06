@@ -7,7 +7,7 @@ interface SkeletonLoaderProps {
 }
 
 export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
-  className = 'h-4 bg-forest-200 dark:bg-forest-700 rounded',
+  className = 'h-4 bg-slate-200 dark:bg-slate-700 rounded',
   count = 1,
   containerClassName = 'space-y-2'
 }) => {

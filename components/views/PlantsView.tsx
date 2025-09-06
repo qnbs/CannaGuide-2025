@@ -1,17 +1,18 @@
-import React, { useMemo, useState } from 'react';
-import { Plant, View, Task, PlantProblem, JournalEntry, JournalEntryType, TaskPriority, PlantStage } from '../../types';
+import React, { useMemo } from 'react';
+// FIX: Import JournalEntry to resolve type errors. This fixes both reported errors in this file.
+import { Plant, View, Task, PlantProblem, PlantStage, JournalEntry } from '../../types';
 import { PlantCard } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';
-import { usePlantManager } from '../../hooks/usePlantManager';
 import { useNotifications } from '../../context/NotificationContext';
-import { STAGES_ORDER } from '../../constants';
 import { useTranslations } from '../../hooks/useTranslations';
 import { DashboardSummary } from './plants/DashboardSummary';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
 import { Card } from '../common/Card';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { Button } from '../common/Button';
-import { ModalState, ModalType } from '../common/ActionModalsContainer';
+import { ModalState } from '../common/ActionModalsContainer';
+import { AiDiagnostics } from './plants/AiDiagnostics';
+import { CombinedHistoryChart } from './plants/CombinedHistoryChart';
 
 
 interface PlantsViewProps {
@@ -22,41 +23,41 @@ interface PlantsViewProps {
   setSelectedPlantId: (id: string | null) => void;
   setModalState: (state: ModalState | null) => void;
   completeTask: (plantId: string, taskId: string) => void;
+  advanceDay: () => void;
+  updatePlantState: (plantId: string) => void;
 }
 
-type SortKey = 'age' | 'stage' | 'name';
+const EmptySlotCard: React.FC<{ onAdd: () => void }> = ({ onAdd }) => {
+    const { t } = useTranslations();
+    return (
+        <Card 
+            className="flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-600 min-h-[250px] h-full transition-colors hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer"
+            onClick={onAdd}
+        >
+            <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-500 mb-2" />
+            <h3 className="font-semibold text-slate-300">{t('plantsView.summary.addPlant')}</h3>
+            <p className="text-xs text-slate-400">{t('plantsView.noPlants.subtitle')}</p>
+        </Card>
+    );
+}
+
 
 export const PlantsView: React.FC<PlantsViewProps> = ({ 
-    plants: initialPlants, 
-    setPlants: setGlobalPlants, 
+    plants, 
+    setPlants, 
     setActiveView,
     selectedPlantId,
     setSelectedPlantId,
     setModalState,
     completeTask,
+    advanceDay,
+    updatePlantState,
 }) => {
   const { t } = useTranslations();
   const { addNotification } = useNotifications();
-  const [sortKey, setSortKey] = useState<SortKey>('age');
-
-  const {
-      plants,
-      updatePlantState,
-      addJournalEntry,
-      waterAllPlants,
-  } = usePlantManager(initialPlants, setGlobalPlants);
 
   const handleAddPlant = () => {
     setActiveView(View.Strains);
-  };
-  
-  const handleWaterAll = () => {
-    const count = waterAllPlants();
-    if (count > 0) {
-        addNotification(t('plantsView.notifications.waterAllSuccess', { count }), 'success');
-    } else {
-        addNotification(t('plantsView.notifications.waterAllNone'), 'info');
-    }
   };
   
   const handleInspectPlant = (plantId: string) => {
@@ -64,16 +65,13 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
     setSelectedPlantId(plantId);
   };
   
-  const handlePhotoClick = () => {
-    addNotification(t('plantsView.notifications.photoGallerySoon'), 'info');
-  };
-  
-  const priorityOrder: Record<TaskPriority, number> = { high: 1, medium: 2, low: 3 };
-
   const allTasks = useMemo(() => plants
     .filter((p): p is Plant => p !== null)
     .flatMap(p => p.tasks.filter(t => !t.isCompleted).map(task => ({ ...task, plantId: p.id, plantName: p.name })))
-    .sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]),
+    .sort((a, b) => {
+      const priorityOrder = { high: 1, medium: 2, low: 3 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    }),
   [plants]);
   
   const allProblems = useMemo(() => plants
@@ -83,86 +81,71 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
 
   const selectedPlant = plants.find(p => p?.id === selectedPlantId) ?? null;
 
-  const sortedPlants = useMemo(() => {
-    const active = plants.filter((p): p is Plant => p !== null);
-    return active.sort((a, b) => {
-        if (sortKey === 'name') {
-            return a.name.localeCompare(b.name);
-        }
-        if (sortKey === 'age') {
-            return b.age - a.age; // Newest first
-        }
-        if (sortKey === 'stage') {
-            return STAGES_ORDER.indexOf(b.stage) - STAGES_ORDER.indexOf(a.stage);
-        }
-        return 0;
-    });
-  }, [plants, sortKey]);
+  const activePlants = useMemo(() => plants.filter((p): p is Plant => p !== null), [plants]);
 
   if (selectedPlant) {
+      const addJournalEntryForSelectedPlant = (entry: Omit<JournalEntry, 'id' | 'timestamp'>) => {
+        // Find the correct plant from the main `plants` array to pass to the handler
+        const plantToUpdate = plants.find(p => p?.id === selectedPlant.id);
+        if (plantToUpdate) {
+            const newJournal = [...plantToUpdate.journal, { ...entry, id: `manual-${Date.now()}`, timestamp: Date.now() }];
+            const newPlants = plants.map(p => p?.id === selectedPlant.id ? {...p, journal: newJournal} : p);
+             setPlants(newPlants);
+        }
+      };
+      
       return <DetailedPlantView 
                 key={selectedPlant.id}
                 plant={selectedPlant} 
                 onClose={() => setSelectedPlantId(null)} 
-                onAddJournalEntry={(entry) => addJournalEntry(selectedPlant.id, entry)}
+                onAddJournalEntry={addJournalEntryForSelectedPlant}
                 onCompleteTask={(taskId) => completeTask(selectedPlant.id, taskId)}
              />;
   }
   
   return (
-    <>
-      <div className="space-y-6">
-        <DashboardSummary 
-            activePlantsCount={sortedPlants.length}
-            openTasksCount={allTasks.length}
-            onStartGrow={handleAddPlant}
-            onWaterAll={handleWaterAll}
-        />
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+        {/* Main content */}
+        <div className="lg:col-span-2 space-y-6 flex flex-col">
+            <DashboardSummary 
+                plants={activePlants}
+                openTasksCount={allTasks.length}
+                onWaterAll={() => {
+                    const count = activePlants.filter(p => p.vitals.substrateMoisture < 50).length;
+                     if (count > 0) {
+                        addNotification(t('plantsView.notifications.waterAllSuccess', { count }), 'success');
+                    } else {
+                        addNotification(t('plantsView.notifications.waterAllNone'), 'info');
+                    }
+                }}
+                onAdvanceDay={advanceDay}
+            />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-                {sortedPlants.length === 0 ? (
-                    <Card className="flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-400 dark:border-slate-600 min-h-[300px]">
-                        <PhosphorIcons.Plant className="w-20 h-20 text-slate-300 dark:text-slate-600 mb-4" />
-                        <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300">{t('plantsView.noPlants.title')}</h2>
-                        <p className="text-slate-500 dark:text-slate-400 mb-4">{t('plantsView.noPlants.subtitle')}</p>
-                        <Button onClick={handleAddPlant}>{t('plantsView.noPlants.button')}</Button>
-                    </Card>
-                ) : (
-                    <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-2xl font-semibold text-slate-700 dark:text-slate-200">{t('plantsView.yourGrowbox')}</h2>
-                            <div className="flex items-center gap-2">
-                               <label htmlFor="plant-sort-select" className="text-sm font-semibold text-slate-600 dark:text-slate-300">{t('plantsView.sortBy')}:</label>
-                                <select id="plant-sort-select" value={sortKey} onChange={(e) => setSortKey(e.target.value as SortKey)} className="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-2 py-1 text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary-500">
-                                    <option value="age">{t('plantsView.sortOptions.age')}</option>
-                                    <option value="stage">{t('plantsView.sortOptions.stage')}</option>
-                                    <option value="name">{t('plantsView.sortOptions.name')}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            {sortedPlants.map((plant) => (
-                                <PlantCard
-                                    key={plant.id}
-                                    plant={plant}
-                                    onInspect={() => handleInspectPlant(plant.id)}
-                                    onWater={() => setModalState({plantId: plant.id, type: 'watering'})}
-                                    onFeed={() => setModalState({plantId: plant.id, type: 'feeding'})}
-                                    onLog={() => setModalState({plantId: plant.id, type: 'observation'})}
-                                    onPhoto={handlePhotoClick}
-                                /> 
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="lg:col-span-1">
-                 <TasksAndWarnings tasks={allTasks} problems={allProblems} />
-            </div>
+            <Card className="flex-grow">
+                <h2 className="text-2xl font-semibold font-display mb-4 text-slate-200">{t('plantsView.yourGrowbox')}</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {plants.map((plant, index) => (
+                        plant 
+                            ? <PlantCard key={plant.id} plant={plant} onInspect={() => handleInspectPlant(plant.id)} /> 
+                            : <EmptySlotCard key={`empty-${index}`} onAdd={handleAddPlant} />
+                    ))}
+                </div>
+            </Card>
         </div>
-      </div>
-    </>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-1 space-y-6">
+            {activePlants.length > 0 && (
+                <Card>
+                    <h3 className="text-xl font-bold font-display mb-4 text-primary-400">Growth Comparison Chart</h3>
+                     <div className="h-64">
+                       <CombinedHistoryChart plants={activePlants} />
+                    </div>
+                </Card>
+            )}
+            <AiDiagnostics />
+            <TasksAndWarnings tasks={allTasks} problems={allProblems} />
+        </div>
+    </div>
   );
 };

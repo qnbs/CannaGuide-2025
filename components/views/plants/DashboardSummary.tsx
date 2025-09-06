@@ -3,39 +3,45 @@ import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { Plant } from '../../../types';
 
 interface DashboardSummaryProps { 
-    activePlantsCount: number, 
+    plants: Plant[], 
     openTasksCount: number, 
-    onStartGrow: () => void,
-    onWaterAll: () => void
+    onWaterAll: () => void,
+    onAdvanceDay: () => void,
 }
 
-export const DashboardSummary: React.FC<DashboardSummaryProps> = ({ activePlantsCount, openTasksCount, onStartGrow, onWaterAll }) => {
+export const DashboardSummary: React.FC<DashboardSummaryProps> = ({ plants, openTasksCount, onWaterAll, onAdvanceDay }) => {
     const { t } = useTranslations();
+    
+    const activePlantsCount = plants.length;
+    const avgStress = activePlantsCount > 0 ? plants.reduce((sum, p) => sum + p.stressLevel, 0) / activePlantsCount : 0;
+    const gardenHealth = Math.max(0, 100 - avgStress);
+
+    let healthColor = 'text-green-400';
+    if (gardenHealth < 75) healthColor = 'text-yellow-400';
+    if (gardenHealth < 50) healthColor = 'text-red-400';
+
     return (
         <Card>
-            <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">{t('plantsView.title')}</h1>
-            <p className="text-slate-600 dark:text-slate-300 mb-4">{t('plantsView.welcome')}</p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="p-3 bg-white/50 dark:bg-slate-700/50 rounded-lg">
-                    <p className="text-2xl font-bold text-primary-600 dark:text-primary-300">{activePlantsCount}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('plantsView.summary.activeGrows')}</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-3 bg-slate-900 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-primary-400">{activePlantsCount}</p>
+                    <p className="text-sm text-slate-400">{t('plantsView.summary.activeGrows')}</p>
                 </div>
-                <div className="p-3 bg-white/50 dark:bg-slate-700/50 rounded-lg">
-                    <p className="text-2xl font-bold text-primary-600 dark:text-primary-300">{openTasksCount}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('plantsView.summary.openTasks')}</p>
+                <div className="p-3 bg-slate-900 rounded-lg text-center">
+                    <p className="text-3xl font-bold text-primary-400">{openTasksCount}</p>
+                    <p className="text-sm text-slate-400">{t('plantsView.summary.openTasks')}</p>
                 </div>
-                 <div className="p-3 flex items-center justify-center">
-                    <Button onClick={onWaterAll} variant="secondary" disabled={activePlantsCount === 0} className="w-full">
-                        <PhosphorIcons.Drop className="inline w-5 h-5 mr-1.5"/>
-                        {t('plantsView.summary.waterAll')}
-                    </Button>
+                <div className="p-3 bg-slate-900 rounded-lg text-center">
+                    <p className={`text-3xl font-bold ${healthColor}`}>{gardenHealth.toFixed(0)}%</p>
+                    <p className="text-sm text-slate-400">Garden Health</p>
                 </div>
                  <div className="p-3 flex items-center justify-center">
-                    <Button onClick={onStartGrow} disabled={activePlantsCount >= 3} className="w-full">
-                        <PhosphorIcons.PlusCircle className="inline w-5 h-5 mr-1.5"/>
-                        {t('plantsView.summary.addPlant')}
+                    <Button onClick={onAdvanceDay} disabled={activePlantsCount === 0} className="w-full h-full">
+                        <PhosphorIcons.ArrowClockwise className="inline w-5 h-5 mr-1.5"/>
+                        Simulate Next Day
                     </Button>
                 </div>
             </div>

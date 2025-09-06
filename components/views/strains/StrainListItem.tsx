@@ -2,6 +2,7 @@ import React from 'react';
 import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { Button } from '../../common/Button';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -10,7 +11,12 @@ interface StrainListItemProps {
     onSelect: (strain: Strain) => void;
     onToggleSelection: (id: string) => void;
     onToggleFavorite: (id: string) => void;
+    isUserStrain?: boolean;
+    onEdit?: (strain: Strain) => void;
+    onDelete?: (id: string) => void;
 }
+
+const listGridClass = "grid grid-cols-[auto_auto_1fr_repeat(3,_minmax(0,_auto))_minmax(0,_auto)] sm:grid-cols-[auto_auto_minmax(120px,_1.5fr)_minmax(80px,_0.5fr)_minmax(0,_0.5fr)_minmax(0,_0.5fr)_minmax(0,_0.7fr)_minmax(0,_0.6fr)_minmax(0,_0.7fr)] gap-x-2 md:gap-x-4 items-center";
 
 const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
@@ -18,7 +24,10 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     isFavorite,
     onSelect,
     onToggleSelection,
-    onToggleFavorite
+    onToggleFavorite,
+    isUserStrain = false,
+    onEdit,
+    onDelete
 }) => {
     const { t } = useTranslations();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
@@ -27,7 +36,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
         Hard: t('strainsView.difficulty.hard'),
     };
     
-    // Stop propagation for checkbox and favorite button to prevent row selection
     const handleActionClick = (e: React.MouseEvent, action: () => void) => {
         e.stopPropagation();
         action();
@@ -40,7 +48,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
-            className={`grid grid-cols-[auto_auto_1fr_90px] gap-x-3 items-center px-2 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 hover:bg-slate-50 dark:hover:bg-slate-700`}
+            className={`${listGridClass} px-3 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 hover:bg-slate-700 border-b border-slate-800 last:border-b-0`}
         >
             <input
                 type="checkbox"
@@ -48,43 +56,50 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                 checked={isSelected}
                 onChange={() => onToggleSelection(strain.id)}
                 onClick={(e) => e.stopPropagation()}
-                className="h-4 w-4 rounded border-slate-400 dark:border-slate-500 text-primary-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 justify-self-center"
             />
             <button
                 onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                className={`favorite-btn-glow text-slate-400 hover:text-red-400 ${isFavorite ? 'is-favorite' : ''}`}
+                className={`favorite-btn-glow text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''} justify-self-center`}
                 aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                 aria-pressed={isFavorite}
             >
-                <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
+                <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
             </button>
             <div className="min-w-0">
-                <span className="font-semibold text-slate-800 dark:text-slate-100 truncate">{strain.name}</span>
+                <p className="font-semibold text-slate-100 truncate">{strain.name}</p>
+                 <p className="text-xs text-slate-400 sm:hidden">{strain.type}</p>
             </div>
+
+            <div className="hidden sm:flex text-slate-300 font-medium">{strain.type}</div>
+            <div className="hidden sm:flex font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>
+            <div className="hidden sm:flex font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>
+            <div className="hidden md:flex text-slate-200">{strain.floweringTime} {t('strainsView.weeks')}</div>
+            
+            <div className="hidden md:flex text-sm text-slate-300">
+                {strain.agronomic.yieldDetails?.indoor || 'N/A'}
+            </div>
+            
             <div className="flex justify-center" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">
-                    {strain.agronomic.difficulty === 'Easy' && (
-                        <>
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-green-500" />
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
-                        </>
-                    )}
-                    {strain.agronomic.difficulty === 'Medium' && (
-                        <>
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-amber-500" />
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-amber-500" />
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600" />
-                        </>
-                    )}
-                    {strain.agronomic.difficulty === 'Hard' && (
-                        <>
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-red-500" />
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-red-500" />
-                            <PhosphorIcons.Cannabis className="w-3.5 h-3.5 text-red-500" />
-                        </>
-                    )}
+                    <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Easy' ? 'text-green-500' : strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : 'text-red-500'}`} />
+                    <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
+                    <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
                 </div>
+            </div>
+            <div className="flex items-center justify-start">
+                {isUserStrain && onEdit && onDelete && (
+                    <div className="flex gap-1">
+                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onEdit(strain))}>
+                            <PhosphorIcons.PencilSimple className="w-4 h-4" />
+                            <span className="sr-only">{t('common.edit')}</span>
+                        </Button>
+                        <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))}>
+                            <PhosphorIcons.TrashSimple className="w-4 h-4" />
+                            <span className="sr-only">{t('common.delete')}</span>
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );

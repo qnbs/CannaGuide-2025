@@ -1,70 +1,31 @@
 import React, { useState } from 'react';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { Card } from '../common/Card';
-import { geminiService } from '../../services/geminiService';
-import { SkeletonLoader } from '../common/SkeletonLoader';
 import { SetupConfigurator } from './equipment/SetupConfigurator';
 import { Calculators } from './equipment/Calculators';
 import { useTranslations } from '../../hooks/useTranslations';
 
 type ActiveTab = 'configurator' | 'calculators' | 'gear';
 
-interface Shop {
-    name: string;
-    url: string;
-    description: string;
-}
-
-interface Gear {
-    name:string;
-    description: string;
-}
-
 const GearAndShops: React.FC = () => {
-    const { t, locale } = useTranslations();
-    const [shops, setShops] = useState<Shop[]>([]);
-    const [gear, setGear] = useState<Gear[]>([]);
-    const [loading, setLoading] = useState(true);
-
-    const gearIcons: Record<string, React.ReactNode> = {
-        [t('equipmentView.gearAndShops.gearItems.tent')]: <PhosphorIcons.Cube />,
-        [t('equipmentView.gearAndShops.gearItems.led')]: <PhosphorIcons.Lightbulb />,
-        [t('equipmentView.gearAndShops.gearItems.ventilation')]: <PhosphorIcons.Fan />,
-        [t('equipmentView.gearAndShops.gearItems.pots')]: <PhosphorIcons.Plant />,
-        [t('equipmentView.gearAndShops.gearItems.phMeter')]: <PhosphorIcons.Flask />,
-    };
+    const { t } = useTranslations();
     
-    React.useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const data = await geminiService.getEquipmentInfo(locale);
-            setShops(data.shops);
-            setGear(data.gear);
-            setLoading(false);
-        };
-        fetchData();
-    }, [locale]);
-
-    if (loading) {
-        return (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
-                <div>
-                    <SkeletonLoader className="h-8 w-1/2 mb-4" />
-                    <div className="space-y-4">
-                        <SkeletonLoader className="h-24 w-full" />
-                        <SkeletonLoader className="h-24 w-full" />
-                    </div>
-                </div>
-                 <div>
-                    <SkeletonLoader className="h-8 w-1/2 mb-4" />
-                    <div className="space-y-4">
-                        <SkeletonLoader className="h-20 w-full" />
-                        <SkeletonLoader className="h-20 w-full" />
-                    </div>
-                </div>
-            </div>
-        )
-    }
+    const shops = [
+        { name: "Zamnesia", url: "https://www.zamnesia.com", description: t('equipmentView.gearAndShops.shops.zamnesia') },
+        { name: "Royal Queen Seeds", url: "https://www.royalqueenseeds.com", description: t('equipmentView.gearAndShops.shops.rqs') },
+        { name: "Growmart", url: "https://www.growmart.de", description: t('equipmentView.gearAndShops.shops.growmart') },
+    ];
+    
+    const gear = [
+        { name: t('equipmentView.gearAndShops.gearItems.tent.name'), description: t('equipmentView.gearAndShops.gearItems.tent.desc'), icon: <PhosphorIcons.Cube /> },
+        { name: t('equipmentView.gearAndShops.gearItems.led.name'), description: t('equipmentView.gearAndShops.gearItems.led.desc'), icon: <PhosphorIcons.Lightbulb /> },
+        { name: t('equipmentView.gearAndShops.gearItems.ventilation.name'), description: t('equipmentView.gearAndShops.gearItems.ventilation.desc'), icon: <PhosphorIcons.Fan /> },
+        { name: t('equipmentView.gearAndShops.gearItems.circulation.name'), description: t('equipmentView.gearAndShops.gearItems.circulation.desc'), icon: <PhosphorIcons.ArrowClockwise /> },
+        { name: t('equipmentView.gearAndShops.gearItems.pots.name'), description: t('equipmentView.gearAndShops.gearItems.pots.desc'), icon: <PhosphorIcons.Plant /> },
+        { name: t('equipmentView.gearAndShops.gearItems.timers.name'), description: t('equipmentView.gearAndShops.gearItems.timers.desc'), icon: <PhosphorIcons.Gear /> },
+        { name: t('equipmentView.gearAndShops.gearItems.meters.name'), description: t('equipmentView.gearAndShops.gearItems.meters.desc'), icon: <PhosphorIcons.Flask /> },
+        { name: t('equipmentView.gearAndShops.gearItems.harvest.name'), description: t('equipmentView.gearAndShops.gearItems.harvest.desc'), icon: <PhosphorIcons.Scissors /> },
+    ];
 
     return (
          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
@@ -77,7 +38,7 @@ const GearAndShops: React.FC = () => {
                     {shops.map((shop) => (
                         <Card key={shop.name}>
                             <h3 className="text-xl font-bold text-slate-800 dark:text-white">{shop.name}</h3>
-                            <a href={`https://${shop.url}`} target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline break-all">{shop.url}</a>
+                            <a href={shop.url} target="_blank" rel="noopener noreferrer" className="text-primary-500 hover:underline break-all">{shop.url.replace('https://www.','')}</a>
                             <p className="text-slate-600 dark:text-slate-300 mt-2">{shop.description}</p>
                         </Card>
                     ))}
@@ -92,7 +53,7 @@ const GearAndShops: React.FC = () => {
                     {gear.map((item) => (
                         <Card key={item.name} className="flex items-start gap-4">
                             <div className="text-primary-500 dark:text-primary-400 mt-1 w-8 h-8 flex-shrink-0">
-                                {gearIcons[item.name] || <PhosphorIcons.Gear />}
+                                {item.icon}
                             </div>
                             <div>
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-white">{item.name}</h3>
@@ -118,8 +79,6 @@ export const EquipmentView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold text-primary-600 dark:text-primary-400">{t('equipmentView.title')}</h1>
-            
             <div className="border-b border-slate-200 dark:border-slate-700">
                 <nav className="-mb-px flex space-x-6 overflow-x-auto">
                     {tabs.map(tab => (

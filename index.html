@@ -3,28 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cannabis Grow Guide</title>
-    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <title>Cannabis Grow Guide 2025</title>
+    <meta name="description" content="An interactive guide to help you manage your cannabis cultivation journey, from seed to harvest. Track your plants, learn about strains, and get expert tips on equipment and techniques." />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Cannabis Grow Guide 2025" />
+    <meta property="og:description" content="An interactive guide to help you manage your cannabis cultivation journey, from seed to harvest. Track your plants, learn about strains, and get expert tips on equipment and techniques." />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Cannabis Grow Guide 2025" />
+    <meta name="twitter:description" content="An interactive guide to help you manage your cannabis cultivation journey, from seed to harvest. Track your plants, learn about strains, and get expert tips on equipment and techniques." />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Rajdhani:wght@500;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/App.css">
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <style>
+      :root.dark {
+        color-scheme: dark;
+        /* Single Theme: Midnight Blue */
+        --color-bg-primary: 15 23 42; /* slate-900 */
+        --color-bg-component: 30 41 59; /* slate-800 */
+        --color-border: 51 65 85; /* slate-700 */
+        --color-primary-50: 239 246 255; --color-primary-100: 219 234 254; --color-primary-200: 191 219 254; --color-primary-300: 147 197 253; --color-primary-400: 96 165 250; --color-primary-500: 59 130 246; --color-primary-600: 37 99 235; --color-primary-700: 29 78 216; --color-primary-800: 30 64 175; --color-primary-900: 30 58 138; --color-primary-950: 23 37 84;
+        --color-accent-50: 236 254 255; --color-accent-100: 207 250 254; --color-accent-200: 165 243 252; --color-accent-300: 103 232 249; --color-accent-400: 34 211 238; --color-accent-500: 6 182 212; --color-accent-600: 8 145 178; --color-accent-700: 14 116 144; --color-accent-800: 21 94 117; --color-accent-900: 24 78 99; --color-accent-950: 8 46 60;
+        --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 2 6 23;
+        --color-text-on-accent: 23 37 84; /* primary-950 */
+      }
+    </style>
     <script>
       tailwind.config = {
         darkMode: 'class',
         theme: {
           extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
             colors: {
-              slate: { 50: '#f8fafc', 100: '#f1f5f9', 200: '#e2e8f0', 300: '#cbd5e1', 400: '#94a3b8', 500: '#64748b', 600: '#475569', 700: '#334155', 800: '#1e293b', 900: '#0f172a', 950: '#020617' },
-              blue: { 50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', 950: '#172554' },
-              primary: {
-                50: '#eff6ff', 100: '#dbeafe', 200: '#bfdbfe', 300: '#93c5fd', 400: '#60a5fa', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', 800: '#1e40af', 900: '#1e3a8a', 950: '#172554'
-              },
+              primary: { 50: 'rgb(var(--color-primary-50) / <alpha-value>)', 100: 'rgb(var(--color-primary-100) / <alpha-value>)', 200: 'rgb(var(--color-primary-200) / <alpha-value>)', 300: 'rgb(var(--color-primary-300) / <alpha-value>)', 400: 'rgb(var(--color-primary-400) / <alpha-value>)', 500: 'rgb(var(--color-primary-500) / <alpha-value>)', 600: 'rgb(var(--color-primary-600) / <alpha-value>)', 700: 'rgb(var(--color-primary-700) / <alpha-value>)', 800: 'rgb(var(--color-primary-800) / <alpha-value>)', 900: 'rgb(var(--color-primary-900) / <alpha-value>)', 950: 'rgb(var(--color-primary-950) / <alpha-value>)' },
+              accent: { 50: 'rgb(var(--color-accent-50) / <alpha-value>)', 100: 'rgb(var(--color-accent-100) / <alpha-value>)', 200: 'rgb(var(--color-accent-200) / <alpha-value>)', 300: 'rgb(var(--color-accent-300) / <alpha-value>)', 400: 'rgb(var(--color-accent-400) / <alpha-value>)', 500: 'rgb(var(--color-accent-500) / <alpha-value>)', 600: 'rgb(var(--color-accent-600) / <alpha-value>)', 700: 'rgb(var(--color-accent-700) / <alpha-value>)', 800: 'rgb(var(--color-accent-800) / <alpha-value>)', 900: 'rgb(var(--color-accent-900) / <alpha-value>)', 950: 'rgb(var(--color-accent-950) / <alpha-value>)' },
+              slate: { 50: 'rgb(var(--color-neutral-50) / <alpha-value>)', 100: 'rgb(var(--color-neutral-100) / <alpha-value>)', 200: 'rgb(var(--color-neutral-200) / <alpha-value>)', 300: 'rgb(var(--color-neutral-300) / <alpha-value>)', 400: 'rgb(var(--color-neutral-400) / <alpha-value>)', 500: 'rgb(var(--color-neutral-500) / <alpha-value>)', 600: 'rgb(var(--color-neutral-600) / <alpha-value>)', 700: 'rgb(var(--color-neutral-700) / <alpha-value>)', 800: 'rgb(var(--color-neutral-800) / <alpha-value>)', 900: 'rgb(var(--color-neutral-900) / <alpha-value>)', 950: 'rgb(var(--color-neutral-950) / <alpha-value>)' },
+              'on-accent': 'rgb(var(--color-text-on-accent) / <alpha-value>)',
+            },
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+              display: ['Rajdhani', 'sans-serif'],
+              mono: ['IBM Plex Mono', 'monospace'],
             }
           }
         },
       }
+    </script>
+    <script>
+      // Immediately apply dark theme to prevent FOUC.
+      (function() {
+        document.documentElement.className = 'dark';
+        const style = document.createElement('style');
+        // Hardcode the background color of the single theme to prevent flashing.
+        style.textContent = `html.dark { background-color: rgb(15 23 42) !important; }`;
+        document.head.appendChild(style);
+      })();
     </script>
   <script type="importmap">
 {

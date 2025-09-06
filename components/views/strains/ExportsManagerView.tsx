@@ -5,6 +5,7 @@ import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { exportService } from '../../../services/exportService';
 import { useNotifications } from '../../../context/NotificationContext';
+import { useTranslations } from '../../../hooks/useTranslations';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -14,15 +15,16 @@ interface ExportsManagerViewProps {
 
 export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, deleteExport, allStrains }) => {
     const { addNotification } = useNotifications();
+    const { t } = useTranslations();
 
     const handleRedownload = (savedExport: SavedExport) => {
         const strainsToExport = allStrains.filter(s => savedExport.strainIds.includes(s.id));
         if (strainsToExport.length === 0) {
-            addNotification("Die für diesen Export benötigten Sorten konnten nicht gefunden werden.", 'error');
+            addNotification(t('strainsView.exportsManager.strainsNotFound'), 'error');
             return;
         }
 
-        const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf)$/, '');
+        const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt)$/, '');
 
         switch (savedExport.format) {
             case 'json':
@@ -32,16 +34,19 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                 exportService.exportAsCSV(strainsToExport, fileNameWithoutExt);
                 break;
             case 'pdf':
-                exportService.exportAsPDF(strainsToExport, fileNameWithoutExt);
+                exportService.exportAsPDF(strainsToExport, fileNameWithoutExt, t);
+                break;
+            case 'txt':
+                exportService.exportAsTXT(strainsToExport, fileNameWithoutExt);
                 break;
         }
-        addNotification(`Export "${savedExport.name}.${savedExport.format}" wird heruntergeladen.`, 'success');
+        addNotification(t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), 'success');
     };
     
     const handleDelete = (id: string) => {
-        if(window.confirm('Möchtest du diesen Export wirklich aus der Liste entfernen?')) {
+        if(window.confirm(t('strainsView.exportsManager.redownloadConfirm'))) {
             deleteExport(id);
-            addNotification('Export aus der Liste entfernt.', 'info');
+            addNotification(t('strainsView.exportsManager.exportRemoved'), 'info');
         }
     };
 
@@ -49,6 +54,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
         json: <PhosphorIcons.BracketsCurly />,
         csv: <PhosphorIcons.FileCsv />,
         pdf: <PhosphorIcons.FilePdf />,
+        txt: <PhosphorIcons.BookOpenText />,
     };
 
     const sortedExports = [...savedExports].sort((a, b) => b.createdAt - a.createdAt);
@@ -58,8 +64,8 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
             {sortedExports.length === 0 ? (
                 <Card className="text-center py-10 text-slate-500">
                     <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                    <h3 className="font-semibold">Keine gespeicherten Exporte</h3>
-                    <p className="text-sm">Wenn du eine Sortenliste exportierst, erscheint sie hier zur späteren Verwendung.</p>
+                    <h3 className="font-semibold">{t('strainsView.exportsManager.noExports.title')}</h3>
+                    <p className="text-sm">{t('strainsView.exportsManager.noExports.subtitle')}</p>
                 </Card>
             ) : (
                 <div className="space-y-3">
@@ -70,15 +76,15 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                                 <div className="min-w-0">
                                     <p className="font-bold text-slate-800 dark:text-slate-100 truncate">{exp.name}.{exp.format}</p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                                        {new Date(exp.createdAt).toLocaleString()} | {exp.count} Sorten | Quelle: {exp.source}
+                                        {new Date(exp.createdAt).toLocaleString()} | {exp.count} Strains | {t('strainsView.exportsManager.sourceLabel')}: {exp.source}
                                     </p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0">
-                                <Button size="sm" variant="secondary" onClick={() => handleRedownload(exp)} aria-label="Erneut herunterladen">
+                                <Button size="sm" variant="secondary" onClick={() => handleRedownload(exp)} aria-label={t('common.downloadAgain')}>
                                     <PhosphorIcons.DownloadSimple className="w-4 h-4" />
                                 </Button>
-                                <Button size="sm" variant="danger" onClick={() => handleDelete(exp.id)} className="px-2 py-2" aria-label="Löschen">
+                                <Button size="sm" variant="danger" onClick={() => handleDelete(exp.id)} className="px-2 py-2" aria-label={t('common.delete')}>
                                      <PhosphorIcons.TrashSimple className="w-4 h-4" />
                                 </Button>
                             </div>

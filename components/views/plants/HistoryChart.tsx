@@ -63,12 +63,12 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
                     ))}
                 </g>
 
-                <path d={waterPath} fill="none" stroke="#3b82f6" strokeWidth="2" />
+                <path d={waterPath} fill="none" stroke="#84cc16" strokeWidth="2" />
                 <path d={nutrientsPath} fill="none" stroke="#f59e0b" strokeWidth="2" />
                 <path d={stressPath} fill="none" stroke="#ef4444" strokeWidth="2" />
             </svg>
             <div className="flex justify-center gap-4 text-xs mt-2">
-                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div>Feuchtigkeit</span>
+                <span className="flex items-center gap-1"><div className="w-3 h-3 bg-lime-500 rounded-sm"></div>Feuchtigkeit</span>
                 <span className="flex items-center gap-1"><div className="w-3 h-3 bg-amber-500 rounded-sm"></div>EC-Wert</span>
                 <span className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div>Stresslevel</span>
             </div>

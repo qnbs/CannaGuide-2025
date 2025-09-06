@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
@@ -6,6 +5,7 @@ import { JournalEntry, TrainingType } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { dbService } from '../../../services/dbService';
+import { useSettings } from '../../../hooks/useSettings';
 
 interface ModalProps {
     onClose: () => void;
@@ -37,9 +37,10 @@ const InputField: React.FC<{label: string, type: string, value: string, onChange
 
 export const WateringModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { t } = useTranslations();
+    const { settings } = useSettings();
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.5');
-    const [notes, setNotes] = useState('');
+    const [notes, setNotes] = useState(settings.defaultJournalNotes.watering || '');
 
     const handleConfirm = () => {
         const details = {
@@ -68,10 +69,11 @@ export const WateringModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
 
 export const FeedingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { t } = useTranslations();
+    const { settings } = useSettings();
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.2');
     const [ec, setEc] = useState('1.2');
-    const [notes, setNotes] = useState('');
+    const [notes, setNotes] = useState(settings.defaultJournalNotes.feeding || '');
 
     const handleConfirm = () => {
         const details = {

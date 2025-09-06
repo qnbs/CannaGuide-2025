@@ -127,6 +127,14 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
             console.error(e);
         }
     };
+    
+    const normalizeGermanChars = (str: string | null | undefined): string => {
+      if (!str) return '';
+      return str
+        .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
+        .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
+        .replace(/ß/g, 'ss');
+    };
 
     const downloadFile = (content: string, fileName: string, mimeType: string) => {
         const link = document.createElement('a');
@@ -142,23 +150,28 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
         
         const doc = new jsPDF() as any;
         doc.setFontSize(18);
-        doc.text(`Setup: ${setup.name}`, 15, 20);
+        doc.text(normalizeGermanChars(`Setup: ${setup.name}`), 15, 20);
         doc.setFontSize(10);
         doc.setTextColor(100);
-        doc.text(`Created: ${new Date(setup.createdAt).toLocaleString()}`, 15, 26);
-        doc.text(`Source: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} Budget`, 15, 32);
+        doc.text(normalizeGermanChars(`Erstellt am: ${new Date(setup.createdAt).toLocaleString()}`), 15, 26);
+        doc.text(normalizeGermanChars(`Quelle: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} Budget`), 15, 32);
 
         const tableBody: any[] = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => {
             const item = setup.recommendation[key];
             const name = item.watts ? `${item.name} (${item.watts}W)` : item.name;
-            return [t(`equipmentView.configurator.categories.${key}`), name, item.rationale, `${item.price.toFixed(2)} €`];
+            return [
+                normalizeGermanChars(t(`equipmentView.configurator.categories.${key}`)), 
+                normalizeGermanChars(name), 
+                normalizeGermanChars(item.rationale), 
+                `${item.price.toFixed(2)} €`
+            ];
         });
         
-        tableBody.push(['', '', { content: 'Total', styles: { fontStyle: 'bold' } }, { content: `${setup.totalCost.toFixed(2)} €`, styles: { fontStyle: 'bold' } }]);
+        tableBody.push(['', '', { content: normalizeGermanChars('Gesamt'), styles: { fontStyle: 'bold' } }, { content: `${setup.totalCost.toFixed(2)} €`, styles: { fontStyle: 'bold' } }]);
 
         doc.autoTable({
             startY: 40,
-            head: [['Item', 'Product', 'Rationale', 'Price']],
+            head: [[normalizeGermanChars(t('equipmentView.savedSetups.modal.item')), 'Produkt', 'Begründung', 'Preis']],
             body: tableBody,
         });
 
@@ -169,17 +182,23 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
     const exportAsJSON = (setup: SavedSetup) => {
         if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'JSON' }))) return;
         const jsonString = JSON.stringify(setup, null, 2);
-        downloadFile(jsonString, `${setup.name.replace(/ /g,"_")}.json`, 'application/json');
+        downloadFile('\uFEFF' + jsonString, `${setup.name.replace(/ /g,"_")}.json`, 'application/json;charset=utf-8;');
         addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
     }
 
     const exportAsCSV = (setup: SavedSetup) => {
-         if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'CSV' }))) return;
-        const headers = ['Category', 'Item', 'Watts', 'Price', 'Rationale'];
+        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'CSV' }))) return;
+        const escapeCsv = (val: any) => `"${String(val).replace(/"/g, '""')}"`;
+
+        const headers = ['Setup Name', 'Source Area', 'Source Style', 'Source Budget', 'Total Cost', 'Category', 'Item', 'Watts', 'Price', 'Rationale'];
         const rows = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => {
             const item = setup.recommendation[key];
-            const escapeCsv = (val: any) => `"${String(val).replace(/"/g, '""')}"`;
             return [
+                escapeCsv(setup.name),
+                escapeCsv(setup.sourceDetails.area),
+                escapeCsv(setup.sourceDetails.growStyle),
+                escapeCsv(setup.sourceDetails.budget),
+                escapeCsv(setup.totalCost),
                 escapeCsv(t(`equipmentView.configurator.categories.${key}`)),
                 escapeCsv(item.name),
                 escapeCsv(item.watts || ''),
@@ -187,28 +206,29 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
                 escapeCsv(item.rationale)
             ].join(',');
         });
-        const csvContent = [headers.join(','), ...rows].join('\n');
+        const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
         downloadFile(csvContent, `${setup.name.replace(/ /g,"_")}.csv`, 'text/csv;charset=utf-8;');
         addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
     };
     
      const exportAsTXT = (setup: SavedSetup) => {
         if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'TXT' }))) return;
-        let content = `Setup: ${setup.name}\n`;
-        content += `Created: ${new Date(setup.createdAt).toLocaleString()}\n`;
-        content += `Source: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} Budget\n\n`;
+        let content = `SETUP REPORT: ${setup.name}\n`;
+        content += `========================================\n`;
+        content += `Erstellt am: ${new Date(setup.createdAt).toLocaleString()}\n`;
+        content += `Quelle: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} Budget\n\n`;
 
         (Object.keys(setup.recommendation) as RecommendationCategory[]).forEach(key => {
             const item = setup.recommendation[key];
             content += `--- ${t(`equipmentView.configurator.categories.${key}`)} ---\n`;
-            content += `Product: ${item.name}${item.watts ? ` (${item.watts}W)` : ''}\n`;
-            content += `Price: ${item.price.toFixed(2)} €\n`;
-            content += `Rationale: ${item.rationale}\n\n`;
+            content += `Produkt: ${item.name}${item.watts ? ` (${item.watts}W)` : ''}\n`;
+            content += `Preis: ${item.price.toFixed(2)} €\n`;
+            content += `Begründung: ${item.rationale}\n\n`;
         });
 
-        content += `--- TOTAL ---\nTotal Cost: ${setup.totalCost.toFixed(2)} €\n`;
+        content += `--- GESAMT ---\nGesamtkosten: ${setup.totalCost.toFixed(2)} €\n`;
 
-        downloadFile(content, `${setup.name.replace(/ /g,"_")}.txt`, 'text/plain;charset=utf-8;');
+        downloadFile('\uFEFF' + content, `${setup.name.replace(/ /g,"_")}.txt`, 'text/plain;charset=utf-8;');
         addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
     };
     

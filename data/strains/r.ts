@@ -169,8 +169,8 @@ export const strains: Strain[] = [
     {
         id: 'romulan',
         name: 'Romulan',
-        type: 'Indica',
-        typeDetails: 'Indica-dominant',
+        type: 'Hybrid',
+        typeDetails: 'Indica 90% / Sativa 10%',
         genetics: 'Unbekannte Indica-Landrasse',
         thc: 22,
         cbd: 1,

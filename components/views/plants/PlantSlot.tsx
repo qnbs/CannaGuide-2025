@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { Plant, PlantStage } from '../../../types';
 import { Card } from '../../common/Card';
@@ -61,7 +62,6 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
             </div>
             
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
-                 {/* FIX: Replaced non-existent Calendar icon with Sun icon to represent days. */}
                  <Stat icon={<PhosphorIcons.Sun />} label={t('common.days')} value={`${t('plantsView.plantCard.day')} ${plant.age}`} />
                  <Stat icon={<PhosphorIcons.Ruler />} label={t('plantsView.detailedView.height')} value={`${plant.height.toFixed(1)} cm`} />
                  <Stat icon={<PhosphorIcons.Plant />} label={t('plantsView.plantCard.stage')} value={t(`plantStages.${plant.stage}`)} />

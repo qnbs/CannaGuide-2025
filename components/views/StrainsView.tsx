@@ -1,5 +1,4 @@
 
-// FIX: Import useEffect from react to resolve usage errors.
 import React, { useState, useCallback, useEffect } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat } from '../../types';
 import { Card } from '../common/Card';
@@ -20,7 +19,6 @@ import { SkeletonLoader } from '../common/SkeletonLoader';
 import StrainListItem from './strains/StrainListItem';
 import StrainGridItem from './strains/StrainGridItem';
 import { useStrainFilters, SortKey } from '../../hooks/useStrainFilters';
-// FIX: Update import path to point to the correct module index file.
 import { allStrainsData } from '../../data/strains/index';
 
 type StrainViewTab = 'all' | 'user' | 'exports';

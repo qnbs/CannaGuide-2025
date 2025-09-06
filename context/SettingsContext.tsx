@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, Language } from '../types';
+import { AppSettings, Language, ExportFormat, ExportSource, GrowSetup } from '../types';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -21,12 +21,30 @@ const defaultSettings: AppSettings = {
     stageChange: true,
     problemDetected: true,
     harvestReady: true,
+    newTask: true,
   },
   onboardingCompleted: false,
   simulationSettings: {
     speed: '1x',
     difficulty: 'normal',
   },
+  defaultGrowSetup: {
+    lightType: 'LED',
+    potSize: 10,
+    medium: 'Soil',
+    temperature: 24,
+    humidity: 60,
+    lightHours: 18,
+  },
+  defaultJournalNotes: {
+    watering: '',
+    feeding: '',
+  },
+  defaultExportSettings: {
+    source: 'filtered',
+    format: 'pdf',
+  },
+  lastBackupTimestamp: undefined,
 };
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -46,7 +64,20 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
         simulationSettings: {
           ...defaultSettings.simulationSettings,
           ...(parsed.simulationSettings || {}),
-        }
+        },
+        defaultGrowSetup: {
+            ...defaultSettings.defaultGrowSetup,
+            ...(parsed.defaultGrowSetup || {}),
+        },
+        defaultJournalNotes: {
+            ...defaultSettings.defaultJournalNotes,
+            ...(parsed.defaultJournalNotes || {}),
+        },
+        defaultExportSettings: {
+            ...defaultSettings.defaultExportSettings,
+            ...(parsed.defaultExportSettings || {}),
+        },
+        lastBackupTimestamp: parsed.lastBackupTimestamp || undefined,
       };
       return mergedSettings;
 

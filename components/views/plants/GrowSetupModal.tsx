@@ -4,6 +4,7 @@ import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
 import { useNotifications } from '../../../context/NotificationContext';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { useSettings } from '../../../hooks/useSettings';
 
 
 interface GrowSetupModalProps {
@@ -15,14 +16,9 @@ interface GrowSetupModalProps {
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslations();
   const { addNotification } = useNotifications();
-  const [setup, setSetup] = useState<GrowSetup>({
-    lightType: 'LED',
-    potSize: 10,
-    medium: 'Soil',
-    temperature: 24,
-    humidity: 60,
-    lightHours: 18,
-  });
+  const { settings } = useSettings();
+  
+  const [setup, setSetup] = useState<GrowSetup>(settings.defaultGrowSetup);
 
   const handleConfirm = () => {
     if (setup.lightHours < 1 || setup.lightHours > 24) {

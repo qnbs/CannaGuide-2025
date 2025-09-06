@@ -51,7 +51,7 @@ export const usePlantManager = (
         const timeSinceLastUpdate = targetTimestamp - plant.lastUpdated;
         if (timeSinceLastUpdate <= 0) return plant;
         
-        const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5 }[settings.simulationSettings.speed];
+        const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5, '10x': 10, '20x': 20 }[settings.simulationSettings.speed];
         const elapsedMs = timeSinceLastUpdate * speedMultiplier;
         const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
 
@@ -104,6 +104,9 @@ export const usePlantManager = (
         const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
         if(newPlantState.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATERING_TASK_THRESHOLD && !hasTask(wateringTaskTitle)) {
             newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high', isCompleted: false, createdAt: targetTimestamp });
+            if (settings.notificationSettings.newTask) {
+                addNotification(`${plant.name}: ${wateringTaskTitle}`, 'info');
+            }
         }
 
         if (newPlantState.age > (plant.history[plant.history.length-1]?.day || -1)) {
@@ -127,7 +130,7 @@ export const usePlantManager = (
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.stage !== PlantStage.Finished) {
                 const oneDayMs = 24 * 60 * 60 * 1000;
-                const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5 }[settings.simulationSettings.speed];
+                const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5, '10x': 10, '20x': 20 }[settings.simulationSettings.speed];
                 const targetTimestamp = p.lastUpdated + (oneDayMs / speedMultiplier); // We want to simulate one full day in-game
                 return simulatePlant(p, targetTimestamp);
             }
@@ -189,8 +192,10 @@ export const usePlantManager = (
 
     const waterAllPlants = () => {
         const now = Date.now();
+        let wateredCount = 0;
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && p.stage !== PlantStage.Finished) {
+                wateredCount++;
                 let updatedPlant = JSON.parse(JSON.stringify(p));
                 const moistureReplenish = (500 / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
@@ -210,6 +215,12 @@ export const usePlantManager = (
             }
             return p;
         }));
+        
+        if (wateredCount > 0) {
+            addNotification(t('plantsView.notifications.waterAllSuccess', { count: wateredCount }), 'success');
+        } else {
+            addNotification(t('plantsView.notifications.waterAllNone'), 'info');
+        }
     };
 
     return {

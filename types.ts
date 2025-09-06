@@ -15,14 +15,24 @@ export interface NotificationSettings {
   stageChange: boolean;
   problemDetected: boolean;
   harvestReady: boolean;
+  newTask: boolean;
 }
 
-export type SimulationSpeed = '1x' | '2x' | '5x';
+export type SimulationSpeed = '1x' | '2x' | '5x' | '10x' | '20x';
 export type SimulationDifficulty = 'easy' | 'normal' | 'hard';
 
 export interface SimulationSettings {
     speed: SimulationSpeed;
     difficulty: SimulationDifficulty;
+}
+
+export interface GrowSetup {
+  lightType: 'LED' | 'HPS' | 'CFL';
+  potSize: 5 | 10 | 15; // in Liters
+  medium: 'Soil' | 'Coco' | 'Hydro';
+  temperature: number; // °C
+  humidity: number; // %
+  lightHours: number; // hours per day
 }
 
 export interface AppSettings {
@@ -32,6 +42,16 @@ export interface AppSettings {
   notificationSettings: NotificationSettings;
   onboardingCompleted: boolean;
   simulationSettings: SimulationSettings;
+  defaultGrowSetup: GrowSetup;
+  defaultJournalNotes: {
+    watering: string;
+    feeding: string;
+  };
+  defaultExportSettings: {
+    source: ExportSource;
+    format: ExportFormat;
+  };
+  lastBackupTimestamp?: number;
 }
 
 export type NotificationType = 'success' | 'error' | 'info';
@@ -133,15 +153,6 @@ export interface Task {
   completedAt?: number;
 }
 
-
-export interface GrowSetup {
-  lightType: 'LED' | 'HPS' | 'CFL';
-  potSize: 5 | 10 | 15; // in Liters
-  medium: 'Soil' | 'Coco' | 'Hydro';
-  temperature: number; // °C
-  humidity: number; // %
-  lightHours: number; // hours per day
-}
 
 export interface PlantHistoryEntry {
   day: number;

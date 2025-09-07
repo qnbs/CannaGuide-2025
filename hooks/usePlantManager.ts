@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plant, PlantStage, PlantProblem, JournalEntry, Task } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
@@ -13,6 +13,7 @@ export const usePlantManager = (
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
     const [plants, setPlants] = useState(initialPlants);
+    const intervalRef = useRef<number | null>(null);
 
     const problemMessages = useMemo(() => ({
         Overwatering: { message: t('problemMessages.overwatering.message'), solution: t('problemMessages.overwatering.solution') },
@@ -117,15 +118,48 @@ export const usePlantManager = (
         return newPlantState;
     }, [settings.simulationSettings, settings.notificationSettings, addNotification, problemMessages, t]);
 
-    const updatePlantState = useCallback((plantId: string) => {
-        setPlants(currentPlants => currentPlants.map(p => {
-            if (p?.id === plantId) {
-                return simulatePlant(p, Date.now());
-            }
-            return p;
-        }));
+    const runSimulation = useCallback(() => {
+        setPlants(currentPlants =>
+            currentPlants.map(p => {
+                if (p && p.stage !== PlantStage.Finished) {
+                    return simulatePlant(p, Date.now());
+                }
+                return p;
+            })
+        );
     }, [simulatePlant]);
     
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                if (intervalRef.current) {
+                    clearInterval(intervalRef.current);
+                    intervalRef.current = null;
+                }
+            } else {
+                runSimulation();
+                
+                if (intervalRef.current === null) {
+                    intervalRef.current = window.setInterval(runSimulation, 5000);
+                }
+            }
+        };
+
+        if (!document.hidden) {
+            runSimulation(); // Initial run
+            intervalRef.current = window.setInterval(runSimulation, 5000);
+        }
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            if (intervalRef.current) {
+                clearInterval(intervalRef.current);
+            }
+        };
+    }, [runSimulation]);
+
     const advanceDay = useCallback(() => {
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.stage !== PlantStage.Finished) {
@@ -137,14 +171,6 @@ export const usePlantManager = (
             return p;
         }));
     }, [simulatePlant, settings.simulationSettings.speed]);
-
-
-    useEffect(() => {
-        const updateInterval = setInterval(() => {
-            plants.forEach(p => p && updatePlantState(p.id));
-        }, 5000);
-        return () => clearInterval(updateInterval);
-    }, [plants, updatePlantState]);
 
     useEffect(() => {
         setPlants(initialPlants);
@@ -225,7 +251,6 @@ export const usePlantManager = (
 
     return {
         plants,
-        updatePlantState,
         addJournalEntry,
         completeTask,
         waterAllPlants,

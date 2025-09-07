@@ -51,7 +51,6 @@ const AppContent: React.FC = () => {
     completeTask, 
     waterAllPlants,
     advanceDay,
-    updatePlantState,
   } = usePlantManager(plants, setPlants);
   
   const { 
@@ -151,7 +150,6 @@ const AppContent: React.FC = () => {
                   setModalState={setModalState}
                   completeTask={completeTask}
                   advanceDay={advanceDay}
-                  updatePlantState={updatePlantState}
                   onWaterAll={waterAllPlants}
                   advisorArchive={plantAdvisorArchive}
                   addAdvisorResponse={addAdvisorResponse}
@@ -176,7 +174,6 @@ const AppContent: React.FC = () => {
                   setModalState={setModalState}
                   completeTask={completeTask}
                   advanceDay={advanceDay}
-                  updatePlantState={updatePlantState}
                   onWaterAll={waterAllPlants}
                   advisorArchive={plantAdvisorArchive}
                   addAdvisorResponse={addAdvisorResponse}

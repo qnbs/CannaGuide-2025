@@ -44,7 +44,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   ];
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
       <Card className="w-full max-w-md">
         <h2 className="text-2xl font-bold font-display text-primary-400 mb-2">{t('plantsView.setupModal.title', { name: strain.name })}</h2>
         <p className="text-accent-200/90 mb-6">{t('plantsView.setupModal.subtitle')}</p>

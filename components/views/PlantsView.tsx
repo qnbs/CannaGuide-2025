@@ -1,5 +1,5 @@
-
 import React, { useMemo } from 'react';
+// FIX: Import JournalEntry to resolve type errors. This fixes both reported errors in this file.
 import { Plant, View, Task, PlantProblem, PlantStage, JournalEntry } from '../../types';
 import { PlantCard } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';

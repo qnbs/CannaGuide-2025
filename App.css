@@ -35,7 +35,7 @@ body {
 .glass-pane {
   background-color: rgb(var(--color-bg-component));
   border: 1px solid rgb(var(--color-border));
-  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.2);
 }
 
 /* Prose Typography Overrides */

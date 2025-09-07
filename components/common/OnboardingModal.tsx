@@ -46,7 +46,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const step = steps[currentStep];
 
     return (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[999] p-4">
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[999] p-4">
             <Card className="w-full max-w-lg text-center">
                 <div className="flex flex-col items-center">
                     <div className="mb-4">{step.icon}</div>

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, Language, ExportFormat, ExportSource, GrowSetup } from '../types';
+import { AppSettings, Language, ExportFormat, ExportSource, GrowSetup, Theme } from '../types';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -16,6 +16,7 @@ const initialLang: Language = detectedLang === 'de' ? 'de' : 'en';
 const defaultSettings: AppSettings = {
   fontSize: 'base',
   language: initialLang,
+  theme: 'midnight',
   notificationsEnabled: true,
   notificationSettings: {
     stageChange: true,
@@ -89,9 +90,9 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     const root = window.document.documentElement;
     
-    // Ensure dark mode is always applied
-    root.className = 'dark';
-
+    // Apply theme and mode
+    root.className = `dark theme-${settings.theme}`;
+    
     // Font Size
     root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
 
@@ -99,9 +100,7 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     root.lang = settings.language;
 
     try {
-      // Create a new object without the obsolete theme property to save to localStorage
-      const { theme, ...settingsToSave } = settings as any;
-      localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(settingsToSave));
+      localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(settings));
     } catch (e) {
       console.error("Failed to save settings to localStorage", e);
     }

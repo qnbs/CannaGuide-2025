@@ -1,0 +1,140 @@
+export const equipmentView = {
+  title: 'Ausrüstungs-Planer',
+  tabs: {
+    configurator: 'Konfigurator',
+    calculators: 'Rechner',
+    gear: 'Ausrüstung & Shops',
+    setups: 'Meine Setups',
+  },
+  configurator: {
+    title: 'Setup Konfigurator',
+    subtitle: 'Finde die passende Ausrüstung in 3 einfachen Schritten.',
+    step: 'Schritt {current}/{total}',
+    step1Title: 'Wähle deine Anbaufläche',
+    step2Title: 'Wähle deinen Grow-Stil',
+    styles: {
+      beginner: 'Anfängerfreundlich',
+      yield: 'Maximaler Ertrag',
+      stealth: 'Diskret',
+    },
+    styleDescriptions: {
+      beginner: 'Einfach zu bedienende und fehlerverzeihende Komponenten.',
+      yield: 'Fokus auf Leistung und hohe Ernteergebnisse.',
+      stealth: 'Leise und unauffällige Komponenten für einen Stealth-Grow.',
+    },
+    step3Title: 'Wähle dein Budget',
+    budgets: {
+      low: 'Niedrig',
+      medium: 'Mittel',
+      high: 'Hoch',
+    },
+    budgetDescriptions: {
+      low: 'Grundausstattung für den Start.',
+      medium: 'Gute Balance aus Preis und Leistung.',
+      high: 'Premium-Komponenten für optimale Kontrolle.',
+    },
+    generate: 'Setup generieren',
+    resultsTitle: 'Deine persönliche Setup-Empfehlung',
+    resultsSubtitle: 'Für deine {area}cm Fläche, mit einem {budget} Budget und dem Stil "{style}", ist dies eine von der KI generierte Konfiguration.',
+    costBreakdown: 'Kostenaufschlüsselung',
+    total: 'Total',
+    startOver: 'Neu starten',
+    tryAgain: 'Erneut versuchen',
+    saveSetup: 'Setup speichern',
+    setupNamePrompt: 'Wie möchtest du dieses Setup nennen?',
+    setupSaveConfirm: 'Möchtest du das Setup als "{name}" speichern?',
+    setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
+    setupSaveError: 'Fehler beim Speichern des Setups.',
+    error: 'Die KI konnte keine Empfehlung generieren. Bitte versuche es später erneut.',
+    errorNetwork: 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.',
+    categories: {
+      tent: 'Growbox (Zelt)',
+      light: 'Beleuchtung',
+      ventilation: 'Abluftsystem',
+      pots: 'Töpfe',
+      soil: 'Erde & Substrat',
+      nutrients: 'Dünger',
+      extra: 'Zubehör',
+    },
+    rationaleModalTitle: 'Warum {category}?',
+  },
+  calculators: {
+    ventilation: {
+      title: 'Lüfter-Rechner',
+      description: 'Berechne die benötigte Lüfterleistung (m³/h) für deine Growbox.',
+      width: 'Breite',
+      depth: 'Tiefe',
+      height: 'Höhe',
+      result: 'Empfohlene Abluftleistung',
+    },
+    light: {
+      title: 'Licht-Rechner',
+      description: 'Schätze die benötigte LED-Lichtleistung für deine Fläche.',
+      width: 'Breite',
+      depth: 'Tiefe',
+      result: 'Empfohlene LED-Leistung',
+    },
+    nutrients: {
+      title: 'Nährstoff-Rechner',
+      description: 'Berechne die richtige Düngermenge für deine Gießkanne.',
+      waterAmount: 'Wassermenge',
+      dose: 'Dosis',
+      result: 'Benötigter Dünger',
+    },
+    yield: {
+      title: 'Ertrags-Schätzer',
+      description: 'Erhalte eine grobe Schätzung deines potenziellen Ertrags (g).',
+      area: 'Fläche',
+      wattage: 'Lichtleistung',
+      level: 'Erfahrungslevel',
+      levels: {
+          beginner: 'Anfänger',
+          advanced: 'Fortgeschritten',
+          expert: 'Experte'
+      },
+      result: 'Geschätzter Ertrag'
+    },
+    calculate: 'Berechnen',
+  },
+  gearAndShops: {
+    shopsTitle: 'Empfohlene Online-Shops (EU)',
+    gearTitle: 'Essenzielle Ausrüstung',
+    shops: {
+      zamnesia: 'Einer der größten und bekanntesten Head- und Growshops in Europa mit einer riesigen Auswahl an Samen und Zubehör.',
+      rqs: 'Royal Queen Seeds ist ein berühmter Züchter und Shop, der hochwertige Samen und eine komplette Linie an Grow-Zubehör anbietet.',
+      growmart: 'Ein etablierter deutscher Growshop mit einem umfassenden Sortiment, von Komplettsets für Anfänger bis zu Profi-Equipment.'
+    },
+    gearItems: {
+      tent: { name: 'Growbox (Zelt)', desc: 'Schafft eine kontrollierte Umgebung mit reflektierenden Innenwänden, um das Licht optimal zu nutzen.' },
+      led: { name: 'LED-Beleuchtung', desc: 'Moderne Vollspektrum-LEDs sind energieeffizient, erzeugen wenig Wärme und liefern hervorragende Ergebnisse.' },
+      ventilation: { name: 'Abluftset (Lüfter + Aktivkohlefilter)', desc: 'Absolut entscheidend. Entfernt verbrauchte Luft, kontrolliert Temperatur/Feuchtigkeit und neutralisiert Gerüche.' },
+      circulation: { name: 'Umluft-Ventilator(en)', desc: 'Ein oder mehrere kleine Ventilatoren im Zelt simulieren Wind, stärken die Stängel und verhindern Luftstau.' },
+      pots: { name: 'Töpfe (Stoff- oder Air-Pots)', desc: 'Stofftöpfe oder Air-Pots fördern eine gesunde Wurzelentwicklung durch "Air-Pruning" und verhindern Ringwurzelbildung.' },
+      timers: { name: 'Zeitschaltuhr(en)', desc: 'Mindestens eine für den Lichtzyklus (z.B. 18/6 oder 12/12 Stunden). Eine weitere für die Lüftung kann nützlich sein.' },
+      meters: { name: 'Messgeräte (pH/EC, Thermo-Hygrometer)', desc: 'Unerlässlich zur Überwachung. pH- & EC-Messgeräte für die Nährlösung, Thermo-Hygrometer für Temperatur & Luftfeuchtigkeit.' },
+      harvest: { name: 'Ernte-Zubehör', desc: 'Eine scharfe Trim-Schere, eine Taschenlupe (60x) zur Trichom-Kontrolle und luftdichte Gläser für das Curing.' },
+    }
+  },
+   savedSetups: {
+    title: 'Meine gespeicherten Setups',
+    noSetups: {
+      title: 'Keine gespeicherten Setups',
+      subtitle: 'Wenn du eine Empfehlung aus dem Konfigurator speicherst, erscheint sie hier.',
+    },
+    inspect: 'Inspizieren',
+    deleteConfirm: 'Möchtest du das Setup "{name}" wirklich endgültig löschen?',
+    deleteSuccess: 'Setup "{name}" wurde gelöscht.',
+    updateSuccess: 'Setup "{name}" wurde aktualisiert.',
+    updateError: 'Fehler beim Aktualisieren des Setups.',
+    exportConfirm: 'Möchtest du das Setup "{name}" wirklich als {format} exportieren?',
+    exportSuccess: 'Setup "{name}" erfolgreich exportiert.',
+    modal: {
+      title: 'Setup Details',
+      editMode: 'Bearbeitungsmodus',
+      saveChanges: 'Änderungen speichern',
+      item: 'Komponente',
+      price: 'Preis',
+      rationale: 'Begründung',
+    }
+  }
+};

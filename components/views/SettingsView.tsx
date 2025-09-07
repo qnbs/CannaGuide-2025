@@ -1,347 +1,245 @@
-import React, { useRef } from 'react';
-import { Card } from '../common/Card';
-import { Button } from '../common/Button';
-import { Plant, FontSize, Language, SimulationSpeed, SimulationDifficulty, GrowSetup, ExportSource, ExportFormat } from '../../types';
+// FIX: Implemented the SettingsView component to resolve module not found errors.
+// FIX: Corrected a syntax error in the React import statement.
+import React from 'react';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
+import { Card } from '../common/Card';
+import { Button } from '../common/Button';
+import { AppSettings, ExportFormat, ExportSource, GrowSetup, Language, NotificationSettings, Plant, Theme } from '../../types';
 
 interface SettingsViewProps {
-  setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
+    setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
 }
 
-const SettingItem: React.FC<{
-  label: string;
-  description: string;
-  children: React.ReactNode;
-}> = ({ label, description, children }) => (
-  <div className="grid grid-cols-1 gap-4 border-t border-slate-700 py-4 first:border-t-0 first:pt-0 md:grid-cols-3 md:items-start">
-    <div className="md:col-span-2">
-      <h3 className="text-base font-semibold text-slate-100">{label}</h3>
-      <p className="text-sm text-slate-400">{description}</p>
-    </div>
-    <div className="flex flex-wrap items-center justify-start gap-2 md:justify-end">
-      {children}
-    </div>
-  </div>
+const SettingsSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
+    <Card className="!p-6">
+        <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{title}</h3>
+        <div className="space-y-4">{children}</div>
+    </Card>
 );
 
-const DangerZoneItem: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
-    <div className="grid grid-cols-1 gap-4 border-t border-red-500/20 py-4 md:grid-cols-3 md:items-center">
-        <div className="md:col-span-2">
-            <h4 className="font-semibold text-red-400">{title}</h4>
-            <p className="text-sm text-red-400/80">{description}</p>
-        </div>
-        <div className="flex justify-start md:justify-end">
+const SelectRow: React.FC<{ label: string, value: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, children: React.ReactNode }> = ({ label, value, onChange, children }) => (
+    <div className="flex items-center justify-between">
+        <label className="text-slate-200">{label}</label>
+        <select value={value} onChange={onChange} className="bg-slate-700 border border-slate-600 rounded-md px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
             {children}
-        </div>
+        </select>
     </div>
 );
 
+const ToggleRow: React.FC<{ label: string; isEnabled: boolean; onToggle: (enabled: boolean) => void; }> = ({ label, isEnabled, onToggle }) => (
+    <div className="flex items-center justify-between">
+        <label className="text-slate-200">{label}</label>
+        <button
+            type="button"
+            className={`${isEnabled ? 'bg-primary-600' : 'bg-slate-600'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-slate-800`}
+            role="switch"
+            aria-checked={isEnabled}
+            onClick={() => onToggle(!isEnabled)}
+        >
+            <span className={`${isEnabled ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}/>
+        </button>
+    </div>
+);
 
-const ToggleSwitch: React.FC<{ checked: boolean; onChange: () => void; id: string; disabled?: boolean;}> = ({ checked, onChange, id, disabled=false }) => (
-    <label htmlFor={id} className={`relative inline-flex items-center cursor-pointer ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
-        <input type="checkbox" id={id} className="sr-only peer" checked={checked} onChange={onChange} disabled={disabled} />
-        <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-600 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-600"></div>
-    </label>
+const InputRow: React.FC<{ label: string, type: string, value: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, step?: string, min?: number, max?: number, unit?: string }> = ({ label, unit, ...props }) => (
+    <div className="flex items-center justify-between">
+        <label className="text-slate-200">{label}</label>
+        <div className="relative">
+            <input {...props} className="w-32 bg-slate-700 border border-slate-600 rounded-md px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            {unit && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{unit}</span>}
+        </div>
+    </div>
 );
 
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
-  const { settings, setSetting } = useSettings();
-  const { addNotification } = useNotifications();
-  const { t } = useTranslations();
-  const importFileRef = useRef<HTMLInputElement>(null);
+    const { settings, setSetting } = useSettings();
+    const { addNotification } = useNotifications();
+    const { t } = useTranslations();
 
-  const handleFullReset = () => {
-      if (window.confirm(t('settingsView.notifications.fullResetConfirm'))) {
-        localStorage.clear();
-        addNotification(t('settingsView.notifications.fullResetSuccess'), 'success');
-        setTimeout(() => window.location.reload(), 1000);
-    }
-  }
-
-  const handleResetUserStrains = () => {
-    if (window.confirm(t('settingsView.notifications.userStrainsResetConfirm'))) {
-        localStorage.removeItem('user_added_strains');
-        addNotification(t('settingsView.notifications.userStrainsResetSuccess'), 'success');
-        setTimeout(() => window.location.reload(), 1000);
-    }
-  };
-
-  const handleResetExportsHistory = () => {
-    if (window.confirm(t('settingsView.notifications.exportsResetConfirm'))) {
-        localStorage.removeItem('cannabis-grow-guide-exports');
-        addNotification(t('settingsView.notifications.exportsResetSuccess'), 'success');
-        setTimeout(() => window.location.reload(), 1000);
-    }
-  };
-
-
-  const handleExport = () => {
-    if (!window.confirm(t('settingsView.notifications.exportConfirm'))) {
-      return;
-    }
-    try {
-      const plants = localStorage.getItem('cannabis-grow-guide-plants');
-      const settingsData = localStorage.getItem('cannabis-grow-guide-settings');
-      const favorites = localStorage.getItem('cannabis-grow-guide-favorites');
-      const userStrains = localStorage.getItem('user_added_strains');
-      const exportsHistory = localStorage.getItem('cannabis-grow-guide-exports');
-      const savedSetups = localStorage.getItem('cannabis-grow-guide-setups');
-
-      setSetting('lastBackupTimestamp', Date.now());
-      
-      const dataToExport = {
-        plants: plants ? JSON.parse(plants) : [null, null, null],
-        settings: settingsData ? JSON.parse(settingsData) : {},
-        favorites: favorites ? JSON.parse(favorites) : [],
-        userStrains: userStrains ? JSON.parse(userStrains) : [],
-        exportsHistory: exportsHistory ? JSON.parse(exportsHistory) : [],
-        savedSetups: savedSetups ? JSON.parse(savedSetups) : [],
-      };
-       
-      const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-        JSON.stringify(dataToExport, null, 2)
-      )}`;
-      const link = document.createElement("a");
-      link.href = jsonString;
-      link.download = `grow-guide-backup-${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
-      addNotification(t('settingsView.notifications.exportSuccess'), 'success');
-    } catch (error) {
-      console.error("Failed to export data", error);
-      addNotification(t('settingsView.notifications.exportError'), 'error');
-    }
-  };
-
-  const handleImportClick = () => {
-    importFileRef.current?.click();
-  };
-
-  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (!window.confirm(t('settingsView.notifications.importConfirm'))) {
-        if(event.target) event.target.value = '';
-        return;
-      }
-      try {
-        const text = e.target?.result;
-        if (typeof text !== 'string') throw new Error("File is not readable");
-        
-        const data = JSON.parse(text);
-
-        if ('plants' in data && 'settings' in data) {
-          localStorage.setItem('cannabis-grow-guide-plants', JSON.stringify(data.plants));
-          localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(data.settings));
-          
-          if ('favorites' in data) localStorage.setItem('cannabis-grow-guide-favorites', JSON.stringify(data.favorites));
-          if ('userStrains' in data) localStorage.setItem('user_added_strains', JSON.stringify(data.userStrains));
-          if ('exportsHistory' in data) localStorage.setItem('cannabis-grow-guide-exports', JSON.stringify(data.exportsHistory));
-          if ('savedSetups' in data) localStorage.setItem('cannabis-grow-guide-setups', JSON.stringify(data.savedSetups));
-
-          addNotification(t('settingsView.notifications.importSuccess'), 'success');
-          setTimeout(() => window.location.reload(), 1000);
-        } else {
-          throw new Error("Invalid backup file format");
+    const handleResetPlants = () => {
+        if (window.confirm(t('settingsView.data.resetPlantsConfirm'))) {
+            setPlants([null, null, null]);
+            localStorage.removeItem('cannabis-grow-guide-plants');
+            addNotification(t('settingsView.data.resetPlantsSuccess'), 'success');
         }
-      } catch (error) {
-        console.error("Failed to import data", error);
-        addNotification(t('settingsView.notifications.importError'), 'error');
-      } finally {
-        if(event.target) event.target.value = '';
-      }
     };
-    reader.readAsText(file);
-  };
-  
-  return (
-    <div>
-      <div className="space-y-6">
 
-        <Card>
-          <h2 className="text-xl font-semibold font-display mb-4 text-primary-400">{t('settingsView.display')}</h2>
-          <div className="flex flex-col">
-            <SettingItem label={t('settingsView.fontSize')} description={t('settingsView.fontSizeDescription')}>
-                <div className="flex rounded-lg shadow-sm" role="group">
-                 {(['sm', 'base', 'lg'] as FontSize[]).map((size, idx) => (
-                  <button key={size} type="button" onClick={() => setSetting('fontSize', size)} className={`px-4 py-2 text-sm font-medium transition-colors ${settings.fontSize === size ? 'bg-primary-600 text-on-accent' : 'bg-slate-800 text-slate-100 hover:bg-slate-700'} ${idx === 0 ? 'rounded-l-lg' : ''} ${idx === 2 ? 'rounded-r-lg' : ''} border-y border-l border-slate-700 last:border-r`}>
-                      {t(`settingsView.fontSizes.${size}`)}
-                  </button>
-                ))}
-                </div>
-            </SettingItem>
-            
-            <SettingItem label={t('settingsView.language')} description={t('settingsView.languageDescription')}>
-                {(['de', 'en'] as Language[]).map(lang => (
-                  <Button key={lang} variant={settings.language === lang ? 'primary' : 'secondary'} onClick={() => setSetting('language', lang)}>{t(`settingsView.languages.${lang}`)}</Button>
-                ))}
-            </SettingItem>
-          </div>
-        </Card>
+    const handleResetAllData = () => {
+        if (window.confirm(t('settingsView.data.resetAllConfirm'))) {
+            localStorage.clear();
+            addNotification(t('settingsView.data.resetAllSuccess'), 'info');
+            window.location.reload();
+        }
+    };
+    
+    const handleExportAllData = () => {
+        if (!window.confirm(t('settingsView.data.exportConfirm'))) return;
         
-        <Card>
-            <h2 className="text-xl font-semibold font-display mb-2 text-primary-400">{t('settingsView.presetsTitle')}</h2>
-            <p className="text-sm text-slate-400 mb-4">{t('settingsView.presetsDescription')}</p>
-            <div className="flex flex-col">
-                <SettingItem label={t('settingsView.defaultGrowSetup')} description={t('settingsView.defaultGrowSetupDescription')}>
-                    <div className='w-full grid grid-cols-2 md:grid-cols-3 gap-3'>
-                        <div className="col-span-full">
-                           <label className="text-xs font-medium text-slate-400">{t('plantsView.setupModal.lightSource')}</label>
-                           <select value={settings.defaultGrowSetup.lightType} onChange={e => setSetting('defaultGrowSetup', {...settings.defaultGrowSetup, lightType: e.target.value as GrowSetup['lightType']})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm">
-                               <option>LED</option><option>HPS</option><option>CFL</option>
-                           </select>
-                        </div>
-                         <div className="col-span-1">
-                           <label className="text-xs font-medium text-slate-400">{t('plantsView.setupModal.potSize')}</label>
-                           <select value={settings.defaultGrowSetup.potSize} onChange={e => setSetting('defaultGrowSetup', {...settings.defaultGrowSetup, potSize: Number(e.target.value) as GrowSetup['potSize']})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm">
-                               <option value={5}>5L</option><option value={10}>10L</option><option value={15}>15L</option>
-                           </select>
-                        </div>
-                        <div className="col-span-2">
-                           <label className="text-xs font-medium text-slate-400">{t('plantsView.setupModal.medium')}</label>
-                           <select value={settings.defaultGrowSetup.medium} onChange={e => setSetting('defaultGrowSetup', {...settings.defaultGrowSetup, medium: e.target.value as GrowSetup['medium']})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm">
-                               <option value="Soil">{t('plantsView.setupModal.mediums.soil')}</option><option value="Coco">{t('plantsView.setupModal.mediums.coco')}</option><option value="Hydro">{t('plantsView.setupModal.mediums.hydro')}</option>
-                           </select>
-                        </div>
-                        <div>
-                            <label className="text-xs font-medium text-slate-400">{t('plantsView.setupModal.temp')}</label>
-                            <input type="number" value={settings.defaultGrowSetup.temperature} onChange={e => setSetting('defaultGrowSetup', {...settings.defaultGrowSetup, temperature: Number(e.target.value)})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm"/>
-                        </div>
-                         <div>
-                            <label className="text-xs font-medium text-slate-400">{t('plantsView.setupModal.humidity')}</label>
-                            <input type="number" value={settings.defaultGrowSetup.humidity} onChange={e => setSetting('defaultGrowSetup', {...settings.defaultGrowSetup, humidity: Number(e.target.value)})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm"/>
-                        </div>
-                         <div>
-                            <label className="text-xs font-medium text-slate-400">{t('plantsView.setupModal.lightHours')}</label>
-                            <input type="number" value={settings.defaultGrowSetup.lightHours} onChange={e => setSetting('defaultGrowSetup', {...settings.defaultGrowSetup, lightHours: Number(e.target.value)})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm"/>
-                        </div>
-                    </div>
-                </SettingItem>
-                 <SettingItem label={t('settingsView.defaultJournalNotes')} description={t('settingsView.defaultJournalNotesDescription')}>
-                    <div className='w-full space-y-3'>
-                         <div>
-                            <label className="text-xs font-medium text-slate-400">{t('settingsView.defaultWateringNote')}</label>
-                            <input type="text" value={settings.defaultJournalNotes.watering} onChange={e => setSetting('defaultJournalNotes', {...settings.defaultJournalNotes, watering: e.target.value})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm"/>
-                        </div>
-                          <div>
-                            <label className="text-xs font-medium text-slate-400">{t('settingsView.defaultFeedingNote')}</label>
-                            <input type="text" value={settings.defaultJournalNotes.feeding} onChange={e => setSetting('defaultJournalNotes', {...settings.defaultJournalNotes, feeding: e.target.value})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm"/>
-                        </div>
-                    </div>
-                 </SettingItem>
-                  <SettingItem label={t('settingsView.defaultExportSettings')} description={t('settingsView.defaultExportSettingsDescription')}>
-                    <div className='w-full space-y-3'>
-                        <div>
-                           <label className="text-xs font-medium text-slate-400">{t('strainsView.exportModal.source')}</label>
-                           <select value={settings.defaultExportSettings.source} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, source: e.target.value as ExportSource})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm">
-                               <option value="selected">{t('strainsView.exportModal.sources.selected')}</option>
-                               <option value="favorites">{t('strainsView.exportModal.sources.favorites')}</option>
-                               <option value="filtered">{t('strainsView.exportModal.sources.filtered')}</option>
-                               <option value="all">{t('strainsView.exportModal.sources.all')}</option>
-                           </select>
-                        </div>
-                        <div>
-                           <label className="text-xs font-medium text-slate-400">{t('strainsView.exportModal.format')}</label>
-                           <select value={settings.defaultExportSettings.format} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, format: e.target.value as ExportFormat})} className="w-full bg-slate-800 border-slate-700 border rounded-md p-1 text-sm">
-                               <option value="pdf">PDF</option><option value="txt">TXT</option>
-                               <option value="csv">CSV</option><option value="json">JSON</option>
-                           </select>
-                        </div>
-                    </div>
-                </SettingItem>
-            </div>
-        </Card>
+        try {
+            const dataToExport: Record<string, any> = {
+                app_id: 'cannabis-grow-guide-2025',
+                export_date: new Date().toISOString(),
+                version: '2.4.0'
+            };
+            const keysToExport = [
+                'cannabis-grow-guide-settings', 'cannabis-grow-guide-plants', 'cannabis-grow-guide-favorites',
+                'user_added_strains', 'cannabis-grow-guide-exports', 'cannabis-grow-guide-setups',
+                'cannabis-grow-guide-knowledge-archive', 'cannabis-grow-guide-plant-advisor-archive'
+            ];
 
-        <Card>
-            <h2 className="text-xl font-semibold font-display mb-2 text-primary-400">{t('settingsView.simulation')}</h2>
-             <p className="text-sm text-slate-400 mb-4">{t('settingsView.simulationDescription')}</p>
-            <div className="flex flex-col">
-                <SettingItem label={t('settingsView.simulationSpeed')} description={t('settingsView.simulationSpeedDescription')}>
-                    <div className="flex rounded-lg shadow-sm" role="group">
-                    {(['1x', '2x', '5x', '10x', '20x'] as SimulationSpeed[]).map((speed, idx, arr) => (
-                        <button key={speed} type="button" onClick={() => setSetting('simulationSettings', { ...settings.simulationSettings, speed })} className={`px-4 py-2 text-sm font-medium transition-colors ${settings.simulationSettings.speed === speed ? 'bg-primary-600 text-on-accent' : 'bg-slate-800 text-slate-100 hover:bg-slate-700'} ${idx === 0 ? 'rounded-l-lg' : ''} ${idx === arr.length - 1 ? 'rounded-r-lg' : ''} border-y border-l border-slate-700 last:border-r`}>
-                            {speed}
-                        </button>
-                    ))}
+            keysToExport.forEach(key => {
+                const item = localStorage.getItem(key);
+                if (item) {
+                    dataToExport[key] = JSON.parse(item);
+                }
+            });
+
+            const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `canna-guide-backup-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addNotification(t('settingsView.data.exportSuccess'), 'success');
+        } catch(e) {
+            addNotification(t('settingsView.data.exportError'), 'error');
+            console.error("Export failed:", e);
+        }
+    };
+
+    const handleImportAllData = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const text = e.target?.result;
+                if (typeof text !== 'string') throw new Error("Invalid file content");
+                const data = JSON.parse(text);
+
+                if (data.app_id !== 'cannabis-grow-guide-2025') {
+                    throw new Error(t('settingsView.data.importInvalidFile'));
+                }
+                
+                if (!window.confirm(t('settingsView.data.importConfirm'))) {
+                    return;
+                }
+
+                Object.keys(data).forEach(key => {
+                    if (key !== 'app_id' && key !== 'export_date' && key !== 'version') {
+                        localStorage.setItem(key, JSON.stringify(data[key]));
+                    }
+                });
+
+                addNotification(t('settingsView.data.importSuccess'), 'success');
+                setTimeout(() => window.location.reload(), 2000);
+
+            } catch (error) {
+                addNotification(`${t('settingsView.data.importError')}: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+            } finally {
+                if (event.target) event.target.value = '';
+            }
+        };
+        reader.readAsText(file);
+    };
+
+    const handleNotificationSettingChange = (key: keyof NotificationSettings, value: boolean) => {
+        setSetting('notificationSettings', { ...settings.notificationSettings, [key]: value });
+    };
+
+    const handleDefaultGrowSetupChange = (key: keyof GrowSetup, value: any) => {
+        setSetting('defaultGrowSetup', { ...settings.defaultGrowSetup, [key]: value });
+    };
+
+    return (
+        <div className="space-y-6 max-w-3xl mx-auto">
+            <SettingsSection title={t('settingsView.display.title')}>
+                <SelectRow label={t('settingsView.display.language')} value={settings.language} onChange={e => setSetting('language', e.target.value as Language)}>
+                    <option value="en">English</option>
+                    <option value="de">Deutsch</option>
+                </SelectRow>
+                <SelectRow label={t('settingsView.display.theme')} value={settings.theme} onChange={e => setSetting('theme', e.target.value as Theme)}>
+                    <option value="midnight">{t('settingsView.display.themes.midnight')}</option>
+                    <option value="forest">{t('settingsView.display.themes.forest')}</option>
+                    <option value="purple-haze">{t('settingsView.display.themes.purpleHaze')}</option>
+                </SelectRow>
+                <SelectRow label={t('settingsView.display.fontSize')} value={settings.fontSize} onChange={e => setSetting('fontSize', e.target.value as any)}>
+                    <option value="sm">{t('settingsView.display.fontSizes.sm')}</option>
+                    <option value="base">{t('settingsView.display.fontSizes.base')}</option>
+                    <option value="lg">{t('settingsView.display.fontSizes.lg')}</option>
+                </SelectRow>
+            </SettingsSection>
+            
+             <SettingsSection title={t('settingsView.notifications.title')}>
+                <ToggleRow label={t('settingsView.notifications.enableAll')} isEnabled={settings.notificationsEnabled} onToggle={(val) => setSetting('notificationsEnabled', val)} />
+                {settings.notificationsEnabled && (
+                    <div className="pl-4 border-l-2 border-slate-700 space-y-3">
+                        <ToggleRow label={t('settingsView.notifications.stageChange')} isEnabled={settings.notificationSettings.stageChange} onToggle={(val) => handleNotificationSettingChange('stageChange', val)} />
+                        <ToggleRow label={t('settingsView.notifications.problemDetected')} isEnabled={settings.notificationSettings.problemDetected} onToggle={(val) => handleNotificationSettingChange('problemDetected', val)} />
+                        <ToggleRow label={t('settingsView.notifications.harvestReady')} isEnabled={settings.notificationSettings.harvestReady} onToggle={(val) => handleNotificationSettingChange('harvestReady', val)} />
+                        <ToggleRow label={t('settingsView.notifications.newTask')} isEnabled={settings.notificationSettings.newTask} onToggle={(val) => handleNotificationSettingChange('newTask', val)} />
                     </div>
-                </SettingItem>
-                <SettingItem label={t('settingsView.simulationDifficulty')} description={t('settingsView.simulationDifficultyDescription')}>
-                    <div className="flex rounded-lg shadow-sm" role="group">
-                    {(['easy', 'normal', 'hard'] as SimulationDifficulty[]).map((difficulty, idx) => (
-                        <button key={difficulty} type="button" onClick={() => setSetting('simulationSettings', { ...settings.simulationSettings, difficulty })} className={`px-4 py-2 text-sm font-medium transition-colors ${settings.simulationSettings.difficulty === difficulty ? 'bg-primary-600 text-on-accent' : 'bg-slate-800 text-slate-100 hover:bg-slate-700'} ${idx === 0 ? 'rounded-l-lg' : ''} ${idx === 2 ? 'rounded-r-lg' : ''} border-y border-l border-slate-700 last:border-r`}>
-                            {t(`settingsView.difficulties.${difficulty}`)}
-                        </button>
-                    ))}
-                    </div>
-                </SettingItem>
-            </div>
-        </Card>
+                )}
+            </SettingsSection>
 
-        <Card>
-          <h2 className="text-xl font-semibold font-display mb-2 text-primary-400">{t('settingsView.notificationsTitle')}</h2>
-          <p className="text-sm text-slate-400 mb-4">{t('settingsView.notificationsDescription')}</p>
-          <div className="flex flex-col">
-            <SettingItem label={t('settingsView.notificationsEnable')} description={t('settingsView.notificationsEnableDescription')}>
-                <ToggleSwitch id="notifications-toggle" checked={settings.notificationsEnabled} onChange={() => setSetting('notificationsEnabled', !settings.notificationsEnabled)} />
-            </SettingItem>
+            <SettingsSection title={t('settingsView.simulation.title')}>
+                 <SelectRow label={t('settingsView.simulation.speed')} value={settings.simulationSettings.speed} onChange={e => setSetting('simulationSettings', {...settings.simulationSettings, speed: e.target.value as any})}>
+                    <option value="1x">1x</option>
+                    <option value="2x">2x</option>
+                    <option value="5x">5x</option>
+                    <option value="10x">10x</option>
+                    <option value="20x">20x</option>
+                </SelectRow>
+                 <SelectRow label={t('settingsView.simulation.difficulty')} value={settings.simulationSettings.difficulty} onChange={e => setSetting('simulationSettings', {...settings.simulationSettings, difficulty: e.target.value as any})}>
+                    <option value="easy">{t('settingsView.simulation.difficulties.easy')}</option>
+                    <option value="normal">{t('settingsView.simulation.difficulties.normal')}</option>
+                    <option value="hard">{t('settingsView.simulation.difficulties.hard')}</option>
+                </SelectRow>
+            </SettingsSection>
 
-            <fieldset disabled={!settings.notificationsEnabled} className="contents">
-              <SettingItem label={t('settingsView.stageChange')} description={t('settingsView.stageChangeDescription')}>
-                <ToggleSwitch id="notifications-stage-toggle" checked={settings.notificationSettings.stageChange} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, stageChange: !settings.notificationSettings.stageChange })} disabled={!settings.notificationsEnabled} />
-              </SettingItem>
-              <SettingItem label={t('settingsView.problemDetected')} description={t('settingsView.problemDetectedDescription')}>
-                <ToggleSwitch id="notifications-problem-toggle" checked={settings.notificationSettings.problemDetected} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, problemDetected: !settings.notificationSettings.problemDetected })} disabled={!settings.notificationsEnabled}/>
-              </SettingItem>
-              <SettingItem label={t('settingsView.harvestReady')} description={t('settingsView.harvestReadyDescription')}>
-                <ToggleSwitch id="notifications-harvest-toggle" checked={settings.notificationSettings.harvestReady} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, harvestReady: !settings.notificationSettings.harvestReady })} disabled={!settings.notificationsEnabled}/>
-              </SettingItem>
-              <SettingItem label={t('settingsView.newTask')} description={t('settingsView.newTaskDescription')}>
-                <ToggleSwitch id="notifications-task-toggle" checked={settings.notificationSettings.newTask} onChange={() => setSetting('notificationSettings', { ...settings.notificationSettings, newTask: !settings.notificationSettings.newTask })} disabled={!settings.notificationsEnabled}/>
-              </SettingItem>
-            </fieldset>
+            <SettingsSection title={t('settingsView.defaults.title')}>
+                <h4 className="font-semibold text-slate-300">{t('settingsView.defaults.growSetup')}</h4>
+                <div className="pl-4 border-l-2 border-slate-700 space-y-4">
+                    <SelectRow label={t('plantsView.setupModal.lightSource')} value={settings.defaultGrowSetup.lightType} onChange={e => handleDefaultGrowSetupChange('lightType', e.target.value as any)}>
+                        <option value="LED">LED</option><option value="HPS">HPS</option><option value="CFL">CFL</option>
+                    </SelectRow>
+                    <SelectRow label={t('plantsView.setupModal.potSize')} value={String(settings.defaultGrowSetup.potSize)} onChange={e => handleDefaultGrowSetupChange('potSize', Number(e.target.value) as any)}>
+                        <option value="5">5L</option><option value="10">10L</option><option value="15">15L</option>
+                    </SelectRow>
+                    <SelectRow label={t('plantsView.setupModal.medium')} value={settings.defaultGrowSetup.medium} onChange={e => handleDefaultGrowSetupChange('medium', e.target.value as any)}>
+                         <option value="Soil">{t('plantsView.setupModal.mediums.soil')}</option>
+                         <option value="Coco">{t('plantsView.setupModal.mediums.coco')}</option>
+                         <option value="Hydro">{t('plantsView.setupModal.mediums.hydro')}</option>
+                    </SelectRow>
+                    <InputRow label={t('plantsView.setupModal.temp')} type="number" value={settings.defaultGrowSetup.temperature} onChange={e => handleDefaultGrowSetupChange('temperature', Number(e.target.value))} unit="°C" />
+                    <InputRow label={t('plantsView.setupModal.humidity')} type="number" value={settings.defaultGrowSetup.humidity} onChange={e => handleDefaultGrowSetupChange('humidity', Number(e.target.value))} unit="%" />
+                    <InputRow label={t('plantsView.setupModal.lightHours')} type="number" value={settings.defaultGrowSetup.lightHours} onChange={e => handleDefaultGrowSetupChange('lightHours', Number(e.target.value))} unit="h" />
+                </div>
+                 <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.defaults.export')}</h4>
+                 <div className="pl-4 border-l-2 border-slate-700 space-y-4">
+                    <SelectRow label={t('strainsView.exportModal.source')} value={settings.defaultExportSettings.source} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, source: e.target.value as ExportSource})}>
+                        {['selected', 'favorites', 'filtered', 'all'].map(s => <option key={s} value={s}>{t(`strainsView.exportModal.sources.${s}`)}</option>)}
+                    </SelectRow>
+                    <SelectRow label={t('strainsView.exportModal.format')} value={settings.defaultExportSettings.format} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, format: e.target.value as ExportFormat})}>
+                        {['pdf', 'txt', 'csv', 'json'].map(f => <option key={f} value={f}>{t(`strainsView.exportModal.formats.${f}`)}</option>)}
+                    </SelectRow>
+                </div>
+            </SettingsSection>
 
-          </div>
-        </Card>
-
-        <Card>
-          <h2 className="text-xl font-semibold font-display mb-2 text-primary-400">{t('settingsView.dataManagement')}</h2>
-          <p className="text-sm text-slate-400 mb-4">{t('settingsView.dataManagementDescription')}</p>
-           <div className="flex flex-col">
-                <SettingItem label={t('settingsView.lastBackup')} description={settings.lastBackupTimestamp ? new Date(settings.lastBackupTimestamp).toLocaleString() : t('settingsView.noBackup')}>
-                    <div></div>
-                </SettingItem>
-              <SettingItem label={t('settingsView.exportBackup')} description={t('settingsView.exportBackupDescription')}>
-                  <Button variant="secondary" onClick={handleExport}>{t('settingsView.exportButton')}</Button>
-              </SettingItem>
-              <SettingItem label={t('settingsView.importBackup')} description={t('settingsView.importBackupDescription')}>
-                   <input type="file" ref={importFileRef} onChange={handleImport} accept=".json" className="hidden" />
-                  <Button variant="secondary" onClick={handleImportClick}>{t('settingsView.importButton')}</Button>
-              </SettingItem>
-              
-              <div className="mt-4 pt-4 border-t border-slate-700">
-                  <h3 className="text-lg font-semibold text-red-500 flex items-center gap-2">
-                    <PhosphorIcons.WarningCircle className="w-5 h-5" />
-                    {t('settingsView.dangerZone')}
-                  </h3>
-                  <DangerZoneItem title={t('settingsView.resetUserStrainsTitle')} description={t('settingsView.resetUserStrainsDescription')}>
-                      <Button variant="danger" size="sm" onClick={handleResetUserStrains}>{t('settingsView.resetUserStrainsButton')}</Button>
-                  </DangerZoneItem>
-                   <DangerZoneItem title={t('settingsView.resetExportsHistoryTitle')} description={t('settingsView.resetExportsHistoryDescription')}>
-                      <Button variant="danger" size="sm" onClick={handleResetExportsHistory}>{t('settingsView.resetExportsHistoryButton')}</Button>
-                  </DangerZoneItem>
-                   <DangerZoneItem title={t('settingsView.fullResetTitle')} description={t('settingsView.fullResetDescription')}>
-                      <Button variant="danger" onClick={handleFullReset}>{t('settingsView.fullResetButton')}</Button>
-                  </DangerZoneItem>
-              </div>
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
+            <SettingsSection title={t('settingsView.data.title')}>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <Button variant="secondary" onClick={handleExportAllData}>{t('settingsView.data.exportAll')}</Button>
+                     <Button variant="secondary" onClick={() => document.getElementById('import-file-input')?.click()}>{t('settingsView.data.importAll')}</Button>
+                     <input type="file" id="import-file-input" accept=".json" className="hidden" onChange={handleImportAllData} />
+                     <Button variant="danger" onClick={handleResetPlants}>{t('settingsView.data.resetPlants')}</Button>
+                     <Button variant="danger" onClick={handleResetAllData}>{t('settingsView.data.resetAll')}</Button>
+                </div>
+            </SettingsSection>
+        </div>
+    );
 };

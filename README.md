@@ -8,7 +8,7 @@ Track your plants in a realistic simulation, learn all about hundreds of strains
 
 ## ✨ What's New in v2.5.0 (Audit & Performance Update)
 
-*   **Major Performance Boost:** Refactored the strain database loading. Strain data is now fetched on-demand instead of being bundled with the initial app download, resulting in a significantly faster initial load time.
+*   **Enhanced Reliability:** Refactored the strain database to be bundled directly with the application. This guarantees that all strain data is available immediately and reliably in any deployment environment, resolving issues with static file loading.
 *   **Enhanced Loading UI:** The Strains view now features a professional skeleton loading screen, improving the user experience during data fetching.
 *   **Polished Empty States:** Improved the visual design of "no results" and "no user strains" messages for better user guidance.
 *   **Code Quality Audit:** Conducted a full code audit, removing obsolete comments, deleting unused files, and ensuring all AI service calls align with the latest best practices for improved stability and maintainability.
@@ -90,7 +90,7 @@ Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles 
 
 ## ✨ Was ist neu in v2.5.0 (Audit & Performance-Update)
 
-*   **Erhebliche Leistungssteigerung:** Die Ladefunktion der Sortendatenbank wurde überarbeitet. Die Daten werden nun bei Bedarf abgerufen, anstatt sie mit dem initialen App-Download zu bündeln. Dies führt zu einer deutlich schnelleren Ladezeit.
+*   **Verbesserte Zuverlässigkeit:** Die Sortendatenbank wurde überarbeitet und wird nun direkt mit der Anwendung gebündelt. Dies garantiert, dass alle Sortendaten sofort und zuverlässig in jeder Bereitstellungsumgebung verfügbar sind und löst Probleme beim Laden statischer Dateien.
 *   **Verbesserte Lade-UI:** Die Sortenansicht verfügt jetzt über einen professionellen Skeleton-Ladebildschirm, der das Benutzererlebnis während des Datenabrufs verbessert.
 *   **Optimierte Leerzustände:** Das visuelle Design der Meldungen "Keine Ergebnisse" und "Keine eigenen Sorten" wurde für eine bessere Benutzerführung verbessert.
 *   **Code-Qualitäts-Audit:** Es wurde ein vollständiges Code-Audit durchgeführt, bei dem veraltete Kommentare entfernt, ungenutzte Dateien gelöscht und sichergestellt wurde, dass alle KI-Serviceaufrufe den neuesten Best Practices entsprechen, um Stabilität und Wartbarkeit zu verbessern.

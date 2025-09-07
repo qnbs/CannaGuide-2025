@@ -1,6 +1,5 @@
 import React from 'react';
 
-// FIX: Refactor to a polymorphic component to support the `as` prop for rendering different elements like `label`.
 type ButtonOwnProps<E extends React.ElementType> = {
     children: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'danger';

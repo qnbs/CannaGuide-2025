@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -47,23 +45,27 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
         }
     };
 
+    // FIX: Refactored to correctly handle async operations and errors within a single try/catch/finally block.
+    // The previous implementation had an unhandled promise rejection vulnerability inside the FileReader's onloadend callback.
     const handleDiagnose = async () => {
         if (!image) return;
         setIsLoading(true);
         setResponse(null);
         try {
-            const reader = new FileReader();
-            reader.readAsDataURL(image.file);
-            reader.onloadend = async () => {
-                const base64Image = (reader.result as string).split(',')[1];
-                const plantContext = plant ? `The plant is a ${plant.strain.name}, ${plant.age} days old, in the ${plant.stage} stage.` : 'No specific plant context provided.';
-                const res = await geminiService.diagnosePlantProblem(base64Image, image.file.type, plantContext);
-                setResponse(res);
-                setIsLoading(false);
-            };
+            const base64Image = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(image.file);
+                reader.onload = () => resolve((reader.result as string).split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+            
+            const plantContext = plant ? `The plant is a ${plant.strain.name}, ${plant.age} days old, in the ${plant.stage} stage.` : 'No specific plant context provided.';
+            const res = await geminiService.diagnosePlantProblem(base64Image, image.file.type, plantContext);
+            setResponse(res);
         } catch (error) {
             console.error(error);
             addNotification(t('ai.error'), 'error');
+        } finally {
             setIsLoading(false);
         }
     };

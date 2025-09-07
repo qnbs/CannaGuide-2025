@@ -1,4 +1,4 @@
-# Cannabis Grow Guide 2025 (v2.4.0)
+# Cannabis Grow Guide 2025 (v2.5.0)
 
 Welcome to the **Cannabis Grow Guide 2025**, your interactive digital companion for the entire cannabis cultivation cycle. This advanced web application is designed to help both novice and experienced growers master their cultivation journey, from seed selection to successful harvest and curing.
 
@@ -6,12 +6,12 @@ Track your plants in a realistic simulation, learn all about hundreds of strains
 
 ---
 
-## ✨ What's New in v2.4.0
+## ✨ What's New in v2.5.0 (Audit & Performance Update)
 
-*   **Plant-Specific AI Advisor Archive:** You can now save, view, edit, and delete AI-generated advice for each of your plants individually. This creates a complete, plant-specific history of all AI recommendations.
-*   **Full CRUD for AI Mentor:** The AI Mentor's knowledge database now also supports full Create, Read, Update, and Delete (CRUD) functionality, allowing you to edit saved responses.
-*   **Full CRUD for My Setups:** The "My Setups" page in the Equipment view now offers full CRUD functionality. You can inspect, edit the names and components of your saved setups, delete them, and export them in various formats (PDF, TXT, CSV, JSON).
-*   **Complete Documentation Overhaul:** The Help Center and the README file have been fully updated to reflect all the latest features, including detailed explanations of the new archiving and management capabilities.
+*   **Major Performance Boost:** Refactored the strain database loading. Strain data is now fetched on-demand instead of being bundled with the initial app download, resulting in a significantly faster initial load time.
+*   **Enhanced Loading UI:** The Strains view now features a professional skeleton loading screen, improving the user experience during data fetching.
+*   **Polished Empty States:** Improved the visual design of "no results" and "no user strains" messages for better user guidance.
+*   **Code Quality Audit:** Conducted a full code audit, removing obsolete comments, deleting unused files, and ensuring all AI service calls align with the latest best practices for improved stability and maintainability.
 
 ---
 
@@ -80,7 +80,7 @@ All information in this app is for educational and entertainment purposes only. 
 <hr>
 <br>
 
-# Cannabis Grow Guide 2025 (v2.4.0) - Deutsch
+# Cannabis Grow Guide 2025 (v2.5.0) - Deutsch
 
 Willkommen beim **Cannabis Grow Guide 2025**, Ihrem interaktiven digitalen Begleiter für den gesamten Cannabis-Anbauzyklus. Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung.
 
@@ -88,12 +88,12 @@ Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles 
 
 ---
 
-## ✨ Was ist neu in v2.4.0
+## ✨ Was ist neu in v2.5.0 (Audit & Performance-Update)
 
-*   **Pflanzenspezifisches KI-Berater-Archiv:** Du kannst jetzt KI-generierte Ratschläge für jede deiner Pflanzen einzeln speichern, ansehen, bearbeiten und löschen. Dies schafft eine vollständige, pflanzenspezifische Historie aller KI-Empfehlungen.
-*   **Volle CRUD-Funktionalität für KI-Mentor:** Die Wissensdatenbank des KI-Mentors unterstützt nun ebenfalls die volle Funktionalität zum Erstellen, Lesen, Aktualisieren und Löschen (CRUD), sodass du gespeicherte Antworten bearbeiten kannst.
-*   **Volle CRUD-Funktionalität für "Meine Setups":** Die Seite "Meine Setups" in der Ausrüstungsansicht bietet jetzt die volle CRUD-Funktionalität. Du kannst deine gespeicherten Setups inspizieren, ihre Namen und Komponenten bearbeiten, sie löschen und in verschiedenen Formaten (PDF, TXT, CSV, JSON) exportieren.
-*   **Vollständige Überarbeitung der Dokumentation:** Das Hilfecenter und die README-Datei wurden vollständig aktualisiert, um alle neuesten Funktionen widerzuspiegeln, einschließlich detaillierter Erklärungen zu den neuen Archivierungs- und Verwaltungsfunktionen.
+*   **Erhebliche Leistungssteigerung:** Die Ladefunktion der Sortendatenbank wurde überarbeitet. Die Daten werden nun bei Bedarf abgerufen, anstatt sie mit dem initialen App-Download zu bündeln. Dies führt zu einer deutlich schnelleren Ladezeit.
+*   **Verbesserte Lade-UI:** Die Sortenansicht verfügt jetzt über einen professionellen Skeleton-Ladebildschirm, der das Benutzererlebnis während des Datenabrufs verbessert.
+*   **Optimierte Leerzustände:** Das visuelle Design der Meldungen "Keine Ergebnisse" und "Keine eigenen Sorten" wurde für eine bessere Benutzerführung verbessert.
+*   **Code-Qualitäts-Audit:** Es wurde ein vollständiges Code-Audit durchgeführt, bei dem veraltete Kommentare entfernt, ungenutzte Dateien gelöscht und sichergestellt wurde, dass alle KI-Serviceaufrufe den neuesten Best Practices entsprechen, um Stabilität und Wartbarkeit zu verbessern.
 
 ---
 

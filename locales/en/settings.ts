@@ -1,4 +1,3 @@
-// FIX: Implemented English translation module for settings view.
 export const settingsView = {
   title: 'Settings',
   display: {

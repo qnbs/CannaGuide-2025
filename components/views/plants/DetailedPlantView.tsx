@@ -1,4 +1,3 @@
-// FIX: Implemented the DetailedPlantView component to resolve module not found errors.
 import React, { useState } from 'react';
 import { Plant, JournalEntry, ArchivedAdvisorResponse, AIResponse } from '../../../types';
 import { Card } from '../../common/Card';
@@ -52,7 +51,6 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({
             case 'journal': return <JournalTab journal={plant.journal} />;
             case 'tasks': return <TasksTab tasks={plant.tasks} onCompleteTask={onCompleteTask} />;
             case 'photos': return <PhotosTab journal={plant.journal} />;
-            // FIX: Corrected prop name from 'deleteResponse' to 'deleteAdvisorResponse' to match props.
             case 'ai': return <AiTab plant={plant} archive={advisorArchive} addResponse={addAdvisorResponse} updateResponse={updateAdvisorResponse} deleteResponse={deleteAdvisorResponse} />;
             default: return null;
         }
@@ -94,7 +92,6 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({
                 {renderTabContent()}
             </div>
             
-            {/* FIX: Integrated ActionToolbar to provide quick access to logging functions. */}
             <ActionToolbar onAddJournalEntry={onAddJournalEntry} />
         </div>
     );

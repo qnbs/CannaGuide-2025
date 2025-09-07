@@ -1,4 +1,3 @@
-// FIX: Implemented German translation module for plants view.
 export const plantsView = {
   title: 'Meine Pflanzen',
   tabs: {

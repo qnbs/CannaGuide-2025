@@ -30,7 +30,7 @@ export const strainsView = {
       flowering_asc: 'Blütezeit (Kurz-Lang)',
       flowering_desc: 'Blütezeit (Lang-Kurz)',
   },
-  deleteStrainConfirm: 'Möchtest du die Sorte "{name}" wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+  deleteStrainConfirm: 'Mötest du die Sorte "{name}" wirklich endgültig löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
   deleteStrainSuccess: 'Sorte "{name}" wurde gelöscht.',
   deleteStrainError: 'Fehler beim Löschen der Sorte.',
   difficulty: {
@@ -55,6 +55,8 @@ export const strainsView = {
   noStrainsFound: {
     title: 'Keine Sorten gefunden.',
     subtitle: 'Passe deine Filter an.',
+    fetchError: 'Die Sorten-Datenbank konnte nicht geladen werden. Bitte überprüfe deine Verbindung und versuche es erneut.',
+    for: 'für "{term}"'
   },
   noUserStrains: {
     title: 'Du hast noch keine eigenen Sorten hinzugefügt.',

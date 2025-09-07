@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plant, AIResponse, ArchivedAdvisorResponse } from '../../../../types';
 import { Card } from '../../../common/Card';
@@ -24,32 +25,27 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
+    // FIX: Correctly handle the object returned from getDynamicLoadingMessages.
     useEffect(() => {
         if (isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } });
             let messageIndex = 0;
-            const getMessage = () => {
-                const nextMessageKey = messages[messageIndex % messages.length];
-                const [key, paramsStr] = nextMessageKey.split('::');
-                let params: any = {};
-                 if (paramsStr) {
-                    try {
-                        const validJsonString = paramsStr.replace(/(\w+):/g, '"$1":');
-                        const parsed = JSON.parse(validJsonString);
-                        if(parsed.stage) {
-                            parsed.stage = t(`plantStages.${parsed.stage}`);
-                        }
-                        params = parsed;
-                    } catch(e) { console.error('failed to parse params')}
-                }
-                return t(key, params);
-            }
             
-            setLoadingMessage(getMessage());
-            const intervalId = setInterval(() => {
+            const updateLoadingMessage = () => {
+                const { key, params } = messages[messageIndex % messages.length];
+                
+                const translatedParams = {...params};
+                if (translatedParams && translatedParams.stage) {
+                    translatedParams.stage = t(`plantStages.${translatedParams.stage}`);
+                }
+
+                setLoadingMessage(t(key, translatedParams));
                 messageIndex++;
-                setLoadingMessage(getMessage());
-            }, 2000);
+            };
+            
+            updateLoadingMessage(); // Set initial message
+            const intervalId = setInterval(updateLoadingMessage, 2000);
+
             return () => clearInterval(intervalId);
         }
     }, [isLoading, plant, t]);

@@ -12,6 +12,7 @@ import { CombinedHistoryChart } from './plants/CombinedHistoryChart';
 import { AiDiagnostics } from './plants/AiDiagnostics';
 import { ModalState } from '../../common/ActionModalsContainer';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
+import { Tabs } from '../common/Tabs';
 
 interface PlantsViewProps {
   plants: (Plant | null)[];
@@ -95,21 +96,9 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-        <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5 mb-6 flex-shrink-0">
-            {tabs.map(tab => (
-                <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as PlantsViewTab)}
-                    className={`flex-1 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
-                        activeTab === tab.id
-                            ? 'bg-slate-700 text-primary-300 shadow-sm'
-                            : 'text-slate-300 hover:bg-slate-800'
-                    }`}
-                >
-                    {tab.label}
-                </button>
-            ))}
-        </nav>
+        <div className="mb-6 flex-shrink-0">
+            <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as PlantsViewTab)} />
+        </div>
         
         <div className="flex-grow min-h-0 overflow-y-auto">
         {activeTab === 'dashboard' ? (

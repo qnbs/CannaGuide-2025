@@ -25,21 +25,14 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
-    // FIX: Correctly handle the object returned from getDynamicLoadingMessages.
+    // FIX: Correctly handle the string array returned from getDynamicLoadingMessages.
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } });
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } }, t);
             let messageIndex = 0;
             
             const updateLoadingMessage = () => {
-                const { key, params } = messages[messageIndex % messages.length];
-                
-                const translatedParams = {...params};
-                if (translatedParams && translatedParams.stage) {
-                    translatedParams.stage = t(`plantStages.${translatedParams.stage}`);
-                }
-
-                setLoadingMessage(t(key, translatedParams));
+                setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
             

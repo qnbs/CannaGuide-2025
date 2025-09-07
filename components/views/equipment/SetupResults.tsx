@@ -49,20 +49,10 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
 
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { area, budget, growStyle } });
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { area, budget, growStyle } }, t);
             let messageIndex = 0;
             const updateLoadingMessage = () => {
-                const { key, params } = messages[messageIndex % messages.length];
-                
-                const translatedParams = {...params};
-                if (translatedParams.budget) {
-                    translatedParams.budget = t(`equipmentView.configurator.budgets.${translatedParams.budget}`);
-                }
-                if (translatedParams.style) {
-                    translatedParams.style = t(`equipmentView.configurator.styles.${translatedParams.style}`);
-                }
-
-                setLoadingMessage(t(key, translatedParams));
+                setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
             

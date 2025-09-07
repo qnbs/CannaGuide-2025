@@ -7,6 +7,7 @@ import { SavedSetupsView } from './equipment/SavedSetupsView';
 import { useSetupManager } from '../../hooks/useSetupManager';
 import { geminiService } from '../../services/geminiService';
 import { Recommendation, SavedSetup } from '../../types';
+import { Tabs } from '../common/Tabs';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups';
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
@@ -64,21 +65,7 @@ export const EquipmentView: React.FC = () => {
     return (
         <div className="space-y-6">
             <Card>
-                <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5">
-                    {tabs.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id as EquipmentViewTab)}
-                            className={`flex-1 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
-                                activeTab === tab.id
-                                    ? 'bg-slate-700 text-primary-300 shadow-sm'
-                                    : 'text-slate-300 hover:bg-slate-800'
-                            }`}
-                        >
-                            {tab.label}
-                        </button>
-                    ))}
-                </nav>
+                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as EquipmentViewTab)} />
             </Card>
 
             {activeTab === 'configurator' && (

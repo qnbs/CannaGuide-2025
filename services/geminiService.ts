@@ -2,54 +2,58 @@
 
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { Plant, Recommendation } from '../types';
-import { useTranslations } from '../hooks/useTranslations'; // Import hook to use translations
 
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-// This is a helper, but since it uses a hook, it can't be a standalone function.
-// We'll define the messages inside the components or pass 't' function.
-// For this service, we will use placeholders and let the component translate them.
+type TFunction = (key: string, params?: Record<string, any>) => string;
+
 type LoadingMessageContext = {
     useCase: 'equipment' | 'diagnostics' | 'mentor' | 'advisor';
     data?: any;
 };
 
-export const getDynamicLoadingMessages = (context: LoadingMessageContext): { key: string; params?: Record<string, any> }[] => {
+export const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction): string[] => {
     const { useCase, data } = context;
-    switch (useCase) {
-        case 'equipment':
-            return [
-                { key: 'ai.loading.equipment.analyzing' },
-                { key: 'ai.loading.equipment.budget', params: { budget: data.budget } },
-                { key: 'ai.loading.equipment.area', params: { area: data.area } },
-                { key: 'ai.loading.equipment.style', params: { style: data.growStyle } },
-                { key: 'ai.loading.equipment.selecting' },
-                { key: 'ai.loading.equipment.finalizing' },
-            ];
-        case 'diagnostics':
-            return [
-                { key: 'ai.loading.diagnostics.receiving' },
-                { key: 'ai.loading.diagnostics.analyzing' },
-                { key: 'ai.loading.diagnostics.identifying' },
-                { key: 'ai.loading.diagnostics.formulating' },
-            ];
-        case 'mentor':
-             return [
-                { key: 'ai.loading.mentor.processing', params: { query: data.query } },
-                { key: 'ai.loading.mentor.searching' },
-                { key: 'ai.loading.mentor.compiling' },
-             ];
-        case 'advisor':
-            const { plant } = data;
-            return [
-                { key: 'ai.loading.advisor.analyzing', params: { stage: plant.stage } },
-                { key: 'ai.loading.advisor.vitals', params: { ph: plant.vitals.ph.toFixed(1), ec: plant.vitals.ec.toFixed(1) } },
-                { key: 'ai.loading.advisor.problems', params: { count: plant.problems.length } },
-                { key: 'ai.loading.advisor.formulating' },
-            ];
-        default:
-            return [{ key: `ai.generating` }];
-    }
+
+    const getMessageConfigs = (): { key: string; params?: Record<string, any> }[] => {
+        switch (useCase) {
+            case 'equipment':
+                return [
+                    { key: 'ai.loading.equipment.analyzing' },
+                    { key: 'ai.loading.equipment.budget', params: { budget: t(`equipmentView.configurator.budgets.${data.budget}`) } },
+                    { key: 'ai.loading.equipment.area', params: { area: data.area } },
+                    { key: 'ai.loading.equipment.style', params: { style: t(`equipmentView.configurator.styles.${data.growStyle}`) } },
+                    { key: 'ai.loading.equipment.selecting' },
+                    { key: 'ai.loading.equipment.finalizing' },
+                ];
+            case 'diagnostics':
+                return [
+                    { key: 'ai.loading.diagnostics.receiving' },
+                    { key: 'ai.loading.diagnostics.analyzing' },
+                    { key: 'ai.loading.diagnostics.identifying' },
+                    { key: 'ai.loading.diagnostics.formulating' },
+                ];
+            case 'mentor':
+                 return [
+                    { key: 'ai.loading.mentor.processing', params: { query: data.query } },
+                    { key: 'ai.loading.mentor.searching' },
+                    { key: 'ai.loading.mentor.compiling' },
+                 ];
+            case 'advisor':
+                const { plant } = data;
+                return [
+                    { key: 'ai.loading.advisor.analyzing', params: { stage: t(`plantStages.${plant.stage}`) } },
+                    { key: 'ai.loading.advisor.vitals', params: { ph: plant.vitals.ph.toFixed(1), ec: plant.vitals.ec.toFixed(1) } },
+                    { key: 'ai.loading.advisor.problems', params: { count: plant.problems.length } },
+                    { key: 'ai.loading.advisor.formulating' },
+                ];
+            default:
+                return [{ key: `ai.generating` }];
+        }
+    };
+    
+    const messageConfigs = getMessageConfigs();
+    return messageConfigs.map(config => t(config.key, config.params));
 };
 
 

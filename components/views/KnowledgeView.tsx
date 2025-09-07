@@ -8,6 +8,7 @@ import { useKnowledgeArchive } from '../../hooks/useKnowledgeArchive';
 import { geminiService } from '../../services/geminiService';
 import { AIResponse, ArchivedMentorResponse } from '../../types';
 import { EditResponseModal } from '../common/EditResponseModal';
+import { Tabs } from '../common/Tabs';
 
 type KnowledgeViewTab = 'guide' | 'archive';
 
@@ -73,12 +74,11 @@ export const KnowledgeView: React.FC = () => {
     useEffect(() => {
         if (isLoading) {
             const shortQuery = query.length > 20 ? query.substring(0, 20) + '...' : query;
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'mentor', data: { query: shortQuery } });
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'mentor', data: { query: shortQuery } }, t);
             let messageIndex = 0;
             
             const updateLoadingMessage = () => {
-                const { key, params } = messages[messageIndex % messages.length];
-                setLoadingMessage(t(key, params));
+                setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
 
@@ -128,21 +128,7 @@ export const KnowledgeView: React.FC = () => {
                     }}
                 />
             )}
-             <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as KnowledgeViewTab)}
-                        className={`flex-1 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
-                            activeTab === tab.id
-                                ? 'bg-slate-700 text-primary-300 shadow-sm'
-                                : 'text-slate-300 hover:bg-slate-800'
-                        }`}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </nav>
+             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as KnowledgeViewTab)} />
             
             {activeTab === 'guide' ? (
                 <div className="space-y-6">

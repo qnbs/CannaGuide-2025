@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -24,11 +25,10 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
 
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'diagnostics' });
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'diagnostics' }, t);
             let messageIndex = 0;
             const updateLoadingMessage = () => {
-                const { key, params } = messages[messageIndex % messages.length];
-                setLoadingMessage(t(key, params));
+                setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
 

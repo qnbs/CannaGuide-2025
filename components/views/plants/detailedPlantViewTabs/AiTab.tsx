@@ -28,18 +28,11 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } });
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } }, t);
             let messageIndex = 0;
             
             const updateLoadingMessage = () => {
-                const { key, params } = messages[messageIndex % messages.length];
-                
-                const translatedParams = {...params};
-                if (translatedParams && translatedParams.stage) {
-                    translatedParams.stage = t(`plantStages.${translatedParams.stage}`);
-                }
-
-                setLoadingMessage(t(key, translatedParams));
+                setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
             

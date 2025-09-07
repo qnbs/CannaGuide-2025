@@ -1,5 +1,3 @@
-// FIX: Implemented the SettingsView component to resolve module not found errors.
-// FIX: Corrected a syntax error in the React import statement.
 import React from 'react';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';

@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from 'react';
 import { Plant, AIResponse, ArchivedAdvisorResponse } from '../../../../types';
 import { Card } from '../../../common/Card';
@@ -5,6 +7,7 @@ import { Button } from '../../../common/Button';
 import { geminiService } from '../../../../services/geminiService';
 import { useTranslations } from '../../../../hooks/useTranslations';
 import { PhosphorIcons } from '../../../icons/PhosphorIcons';
+import { EditResponseModal } from '../../../common/EditResponseModal';
 
 interface AiTabProps {
     plant: Plant;
@@ -13,36 +16,6 @@ interface AiTabProps {
     updateResponse: (updatedResponse: ArchivedAdvisorResponse) => void;
     deleteResponse: (plantId: string, responseId: string) => void;
 }
-
-const EditAdvisorResponseModal: React.FC<{
-    response: ArchivedAdvisorResponse;
-    onClose: () => void;
-    onSave: (updatedResponse: ArchivedAdvisorResponse) => void;
-}> = ({ response, onClose, onSave }) => {
-    const { t } = useTranslations();
-    const [title, setTitle] = useState(response.title);
-    const [content, setContent] = useState(response.content);
-
-    const handleSave = () => {
-        onSave({ ...response, title, content });
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-lg" onClick={e => e.stopPropagation()}>
-                <h2 className="text-xl font-bold text-primary-400 mb-4">{t('knowledgeView.archive.editTitle')}</h2>
-                <div className="space-y-4">
-                    <input type="text" value={title} onChange={e => setTitle(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2" />
-                    <textarea value={content} onChange={e => setContent(e.target.value)} rows={8} className="w-full bg-slate-700 border border-slate-600 rounded-md p-2" />
-                </div>
-                <div className="flex justify-end gap-2 mt-4">
-                    <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-                    <Button onClick={handleSave}>{t('common.save')}</Button>
-                </div>
-            </Card>
-        </div>
-    );
-};
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
@@ -57,28 +30,22 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
         if (isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } });
             let messageIndex = 0;
-            const getMessage = () => {
-                const nextMessageKey = messages[messageIndex % messages.length];
-                const [key, paramsStr] = nextMessageKey.split('::');
-                let params: any = {};
-                 if (paramsStr) {
-                    try {
-                        const validJsonString = paramsStr.replace(/(\w+):/g, '"$1":');
-                        const parsed = JSON.parse(validJsonString);
-                        if(parsed.stage) {
-                            parsed.stage = t(`plantStages.${parsed.stage}`);
-                        }
-                        params = parsed;
-                    } catch(e) { console.error('failed to parse params')}
-                }
-                return t(key, params);
-            }
             
-            setLoadingMessage(getMessage());
-            const intervalId = setInterval(() => {
+            const updateLoadingMessage = () => {
+                const { key, params } = messages[messageIndex % messages.length];
+                
+                const translatedParams = {...params};
+                if (translatedParams && translatedParams.stage) {
+                    translatedParams.stage = t(`plantStages.${translatedParams.stage}`);
+                }
+
+                setLoadingMessage(t(key, translatedParams));
                 messageIndex++;
-                setLoadingMessage(getMessage());
-            }, 2000);
+            };
+            
+            updateLoadingMessage(); // Set initial message
+            const intervalId = setInterval(updateLoadingMessage, 2000);
+
             return () => clearInterval(intervalId);
         }
     }, [isLoading, plant, t]);
@@ -101,7 +68,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
     return (
         <div className="space-y-6">
              {editingResponse && (
-                <EditAdvisorResponseModal 
+                <EditResponseModal 
                     response={editingResponse} 
                     onClose={() => setEditingResponse(null)} 
                     onSave={(updated) => {

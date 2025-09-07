@@ -1,12 +1,10 @@
-
-
-
 import React from 'react';
 import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { Button } from '../../common/Button';
 import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
+import { LIST_GRID_CLASS } from '../../../constants';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -19,8 +17,6 @@ interface StrainListItemProps {
     onEdit?: (strain: Strain) => void;
     onDelete?: (id: string) => void;
 }
-
-const listGridClass = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
 
 const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
@@ -60,7 +56,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
-            className={`${listGridClass} px-3 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 hover:bg-slate-700 border-b border-slate-800 last:border-b-0`}
+            className={`${LIST_GRID_CLASS} px-3 py-2.5 cursor-pointer transition-colors duration-150 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 hover:bg-slate-700 border-b border-slate-800 last:border-b-0`}
         >
             <input
                 type="checkbox"

@@ -55,6 +55,8 @@ export const strainsView = {
   noStrainsFound: {
     title: 'No strains found.',
     subtitle: 'Try adjusting your filters.',
+    fetchError: 'Could not load strain database. Please check your connection and try again.',
+    for: 'for "{term}"'
   },
   noUserStrains: {
     title: 'You haven\'t added any custom strains yet.',
@@ -86,7 +88,7 @@ export const strainsView = {
   addStrainModal: {
     title: 'Add New Strain',
     editTitle: 'Edit Strain',
-    editSuccess: 'Strain "{name}" successfully updated!',
+    editSuccess: 'Strain "{name}" updated successfully!',
     generalInfo: 'General Information',
     strainName: 'Strain Name',
     typeDetailsPlaceholder: 'e.g. Sativa 60% / Indica 40%',

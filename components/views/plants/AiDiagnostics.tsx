@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -25,11 +26,14 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
         if (isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'diagnostics' });
             let messageIndex = 0;
-            setLoadingMessage(t(messages[0]));
-            const intervalId = setInterval(() => {
+            const updateLoadingMessage = () => {
+                const { key, params } = messages[messageIndex % messages.length];
+                setLoadingMessage(t(key, params));
                 messageIndex++;
-                setLoadingMessage(t(messages[messageIndex % messages.length]));
-            }, 2000);
+            };
+
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
             return () => clearInterval(intervalId);
         }
     }, [isLoading, t]);

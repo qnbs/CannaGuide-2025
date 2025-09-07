@@ -77,18 +77,7 @@ export const KnowledgeView: React.FC = () => {
             let messageIndex = 0;
             
             const updateLoadingMessage = () => {
-                const nextMessageKey = messages[messageIndex % messages.length];
-                const [key, paramsStr] = nextMessageKey.split('::');
-                let params = {};
-                if (paramsStr) {
-                    try {
-                        // FIX: Ensure keys are quoted for valid JSON before parsing
-                        const validJsonString = paramsStr.replace(/(\w+):/g, '"$1":');
-                        params = JSON.parse(validJsonString);
-                    } catch (e) {
-                        console.error('failed to parse params', e, paramsStr);
-                    }
-                }
+                const { key, params } = messages[messageIndex % messages.length];
                 setLoadingMessage(t(key, params));
                 messageIndex++;
             };

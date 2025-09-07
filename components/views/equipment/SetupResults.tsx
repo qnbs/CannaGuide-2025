@@ -51,24 +51,24 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
         if (isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { area, budget, growStyle } });
             let messageIndex = 0;
-            const getMessage = () => {
-                const nextMessageKey = messages[messageIndex % messages.length];
-                const [key, paramsStr] = nextMessageKey.split('::');
-                let params: any = {};
-                 if (paramsStr) {
-                    try {
-                        const validJsonString = paramsStr.replace(/(\w+):/g, '"$1":');
-                        params = JSON.parse(validJsonString);
-                    } catch(e) { console.error('failed to parse params')}
+            const updateLoadingMessage = () => {
+                const { key, params } = messages[messageIndex % messages.length];
+                
+                const translatedParams = {...params};
+                if (translatedParams.budget) {
+                    translatedParams.budget = t(`equipmentView.configurator.budgets.${translatedParams.budget}`);
                 }
-                return t(key, params);
-            }
-            
-            setLoadingMessage(getMessage());
-            const intervalId = setInterval(() => {
+                if (translatedParams.style) {
+                    translatedParams.style = t(`equipmentView.configurator.styles.${translatedParams.style}`);
+                }
+
+                setLoadingMessage(t(key, translatedParams));
                 messageIndex++;
-                setLoadingMessage(getMessage());
-            }, 2000);
+            };
+            
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
+
             return () => clearInterval(intervalId);
         }
     }, [isLoading, area, budget, growStyle, t]);

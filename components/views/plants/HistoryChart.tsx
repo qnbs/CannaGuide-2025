@@ -1,4 +1,3 @@
-// FIX: Implemented the HistoryChart component to resolve module not found errors.
 import React from 'react';
 import { PlantHistoryEntry } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';

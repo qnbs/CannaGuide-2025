@@ -1,4 +1,3 @@
-// FIX: Implemented English translation module for plants view.
 export const plantsView = {
   title: 'My Plants',
   tabs: {

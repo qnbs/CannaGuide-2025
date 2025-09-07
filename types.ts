@@ -1,4 +1,3 @@
-// FIX: Removed incorrect import of `PlantStage` from './constants' to resolve a circular dependency.
 // The `PlantStage` enum is defined and exported within this file.
 
 export enum View {

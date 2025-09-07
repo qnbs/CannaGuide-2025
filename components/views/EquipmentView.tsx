@@ -37,8 +37,8 @@ export const EquipmentView: React.FC = () => {
             const result = await geminiService.getEquipmentRecommendation(area, budget, growStyle);
             setRecommendation(result);
         } catch (err) {
-            console.error(err);
-            setError(t('equipmentView.configurator.errorNetwork'));
+            console.error("Failed to generate setup:", err);
+            setError(err instanceof Error ? err.message : t('equipmentView.configurator.errorNetwork'));
         } finally {
             setIsLoading(false);
         }

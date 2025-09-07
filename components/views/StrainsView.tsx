@@ -1,4 +1,3 @@
-// FIX: Import useEffect from react to resolve usage errors.
 import React, { useState, useCallback, useEffect } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat } from '../../types';
 import { Card } from '../common/Card';
@@ -19,8 +18,8 @@ import { SkeletonLoader } from '../common/SkeletonLoader';
 import StrainListItem from './strains/StrainListItem';
 import StrainGridItem from './strains/StrainGridItem';
 import { useStrainFilters, SortKey } from '../../hooks/useStrainFilters';
-// FIX: Update import path to point to the correct module index file.
-import { allStrainsData } from '../../data/strains/index';
+import { strainService } from '../../services/strainService';
+import { LIST_GRID_CLASS } from '../../constants';
 
 type StrainViewTab = 'all' | 'user' | 'exports';
 type ViewMode = 'list' | 'grid';
@@ -278,6 +277,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { savedExports, addExport, deleteExport } = useExportsManager();
   
+  const [allStrains, setAllStrains] = useState<Strain[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [userStrains, setUserStrains] = useState<Strain[]>(() => {
     try {
         const saved = localStorage.getItem('user_added_strains');
@@ -288,9 +291,26 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     }
   });
 
-  const allStrains = React.useMemo(() => 
-    [...allStrainsData, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
-    [userStrains]
+  useEffect(() => {
+    const fetchStrains = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedStrains = await strainService.getAllStrains();
+        setAllStrains(fetchedStrains);
+        setError(null);
+      } catch (err) {
+        setError(t('strainsView.noStrainsFound.fetchError'));
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchStrains();
+  }, [t]);
+
+  const combinedStrains = React.useMemo(() => 
+    [...allStrains, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
+    [allStrains, userStrains]
   );
   
   const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
@@ -304,8 +324,8 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   const [strainToEdit, setStrainToEdit] = useState<Strain | null>(null);
   
   const strainsToDisplay = React.useMemo(() => 
-    (activeTab === 'all' ? allStrains : userStrains), 
-    [activeTab, allStrains, userStrains]
+    (activeTab === 'all' ? combinedStrains : userStrains), 
+    [activeTab, combinedStrains, userStrains]
   );
 
   const {
@@ -321,8 +341,8 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
       handleApplyAdvancedFilters
   } = useStrainFilters(strainsToDisplay, favoriteIds);
 
-  const allTerpenes = React.useMemo(() => Array.from(new Set(allStrains.flatMap(s => s.dominantTerpenes || []))).sort(), [allStrains]);
-  const allAromas = React.useMemo(() => Array.from(new Set(allStrains.flatMap(s => s.aromas || []))).sort(), [allStrains]);
+  const allTerpenes = React.useMemo(() => Array.from(new Set(combinedStrains.flatMap(s => s.dominantTerpenes || []))).sort(), [combinedStrains]);
+  const allAromas = React.useMemo(() => Array.from(new Set(combinedStrains.flatMap(s => s.aromas || []))).sort(), [combinedStrains]);
 
   const handleStartGrowingRequest = (strain: Strain) => {
     setStrainToGrow(strain);
@@ -418,10 +438,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     let dataToExport: Strain[] = [];
     const filename = `cannabis-strains-${source}-${new Date().toISOString().split('T')[0]}`;
     switch(source) {
-        case 'selected': dataToExport = allStrains.filter(s => selectedIds.has(s.id)); break;
-        case 'favorites': dataToExport = allStrains.filter(s => favoriteIds.has(s.id)); break;
+        case 'selected': dataToExport = combinedStrains.filter(s => selectedIds.has(s.id)); break;
+        case 'favorites': dataToExport = combinedStrains.filter(s => favoriteIds.has(s.id)); break;
         case 'filtered': dataToExport = sortedAndFilteredStrains; break;
-        case 'all': dataToExport = allStrains; break;
+        case 'all': dataToExport = combinedStrains; break;
     }
     if (dataToExport.length === 0) { addNotification(t('common.noDataToExport'), 'error'); return; }
 
@@ -440,8 +460,6 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
     addNotification(t('common.successfullyExported', { count: dataToExport.length, format: format.toUpperCase() }), 'success');
   };
   
-  const listGridClass = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
-
   const tableHeaders: { key: string, label: string }[] = [
       { key: 'name', label: t('strainsView.table.name') },
       { key: 'type', label: t('strainsView.table.type')},
@@ -472,15 +490,27 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   const memoizedToggleFavorite = useCallback(toggleFavorite, [toggleFavorite]);
 
   const renderContent = () => {
+    if (isLoading) {
+        return (
+            <div className="space-y-2 p-1">
+                <SkeletonLoader count={12} className="h-14 w-full" />
+            </div>
+        );
+    }
+
+    if (error) {
+        return <div className="text-center p-8 text-red-400">{error}</div>;
+    }
+
     return (
         <>
             {activeTab === 'exports' ? (
-                <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} allStrains={allStrains} />
+                <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} allStrains={combinedStrains} />
             ) : (
                 <div className="flex flex-col flex-grow min-h-0">
                     <div className="glass-pane rounded-lg flex flex-col flex-grow min-h-0">
                         {viewMode === 'list' && (
-                             <div className={`${listGridClass} sticky top-0 z-10 px-3 py-2 bg-slate-800 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase flex-shrink-0`}>
+                             <div className={`${LIST_GRID_CLASS} sticky top-0 z-10 px-3 py-2 bg-slate-800 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase flex-shrink-0`}>
                                 <input type="checkbox" aria-label="Select all" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 justify-self-center"/>
                                 <div aria-hidden="true" className="justify-self-center"><PhosphorIcons.Heart className="w-5 h-5"/></div>
                                 {tableHeaders.map((header, index) => (
@@ -533,14 +563,16 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                                     </div>
                                 )
                             ) : activeTab === 'user' ? (
-                                <div className="text-center p-8 text-slate-400">
-                                    <h3 className="font-semibold">{t('strainsView.noUserStrains.title')}</h3>
-                                    <p className="text-sm">{t('strainsView.noUserStrains.subtitle')}</p>
+                                <div className="text-center p-8 text-slate-400 flex flex-col items-center">
+                                    <PhosphorIcons.Leafy className="w-16 h-16 text-slate-500 mb-4" />
+                                    <h3 className="font-semibold text-lg">{t('strainsView.noUserStrains.title')}</h3>
+                                    <p className="text-sm max-w-xs">{t('strainsView.noUserStrains.subtitle')}</p>
                                     <Button size="sm" onClick={() => setIsAddStrainModalOpen(true)} className="mt-4">{t('strainsView.noUserStrains.button')}</Button>
                                 </div>
                             ) : (
-                                 <div className="text-center p-8 text-slate-400">
-                                    <h3 className="font-semibold">{t('strainsView.noStrainsFound.title')}</h3>
+                                 <div className="text-center p-8 text-slate-400 flex flex-col items-center">
+                                    <PhosphorIcons.MagnifyingGlass className="w-16 h-16 text-slate-500 mb-4" />
+                                    <h3 className="font-semibold text-lg">{t('strainsView.noStrainsFound.title')}</h3>
                                     <p className="text-sm">{t('strainsView.noStrainsFound.subtitle')}</p>
                                     {filterState.searchTerm && <p className="text-sm mt-1">{t('strainsView.noStrainsFound.for', { term: filterState.searchTerm })}</p>}
                                 </div>
@@ -564,7 +596,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
               onStartGrowing={handleStartGrowingRequest}
               plants={plants}
               onSelectSimilarStrain={setSelectedStrain}
-              allStrains={allStrains}
+              allStrains={combinedStrains}
             />
           )}
           {isSetupModalOpen && strainToGrow && (
@@ -581,7 +613,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
             selectionCount={selectedIds.size}
             favoritesCount={favoriteIds.size}
             filteredCount={sortedAndFilteredStrains.length}
-            totalCount={allStrains.length}
+            totalCount={combinedStrains.length}
           />
           <AddStrainModal
             isOpen={isAddStrainModalOpen}

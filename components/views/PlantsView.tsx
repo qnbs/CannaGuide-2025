@@ -4,7 +4,6 @@ import { PlantCard } from './plants/PlantSlot';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { useTranslations } from '../../hooks/useTranslations';
-// FIX: Corrected import path for DetailedPlantView
 import { DetailedPlantView } from './plants/DetailedPlantView';
 import { DashboardSummary } from './plants/DashboardSummary';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';

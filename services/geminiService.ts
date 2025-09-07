@@ -1,3 +1,5 @@
+
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { Plant, Recommendation } from '../types';
 import { useTranslations } from '../hooks/useTranslations'; // Import hook to use translations
@@ -12,41 +14,41 @@ type LoadingMessageContext = {
     data?: any;
 };
 
-export const getDynamicLoadingMessages = (context: LoadingMessageContext): string[] => {
+export const getDynamicLoadingMessages = (context: LoadingMessageContext): { key: string; params?: Record<string, any> }[] => {
     const { useCase, data } = context;
     switch (useCase) {
         case 'equipment':
             return [
-                `ai.loading.equipment.analyzing`,
-                `ai.loading.equipment.budget::{"budget":"${data.budget}"}`,
-                `ai.loading.equipment.area::{"area":"${data.area}"}`,
-                `ai.loading.equipment.style::{"style":"${data.growStyle}"}`,
-                `ai.loading.equipment.selecting`,
-                `ai.loading.equipment.finalizing`,
+                { key: 'ai.loading.equipment.analyzing' },
+                { key: 'ai.loading.equipment.budget', params: { budget: data.budget } },
+                { key: 'ai.loading.equipment.area', params: { area: data.area } },
+                { key: 'ai.loading.equipment.style', params: { style: data.growStyle } },
+                { key: 'ai.loading.equipment.selecting' },
+                { key: 'ai.loading.equipment.finalizing' },
             ];
         case 'diagnostics':
             return [
-                `ai.loading.diagnostics.receiving`,
-                `ai.loading.diagnostics.analyzing`,
-                `ai.loading.diagnostics.identifying`,
-                `ai.loading.diagnostics.formulating`,
+                { key: 'ai.loading.diagnostics.receiving' },
+                { key: 'ai.loading.diagnostics.analyzing' },
+                { key: 'ai.loading.diagnostics.identifying' },
+                { key: 'ai.loading.diagnostics.formulating' },
             ];
         case 'mentor':
              return [
-                `ai.loading.mentor.processing::{"query":"${data.query}"}`,
-                `ai.loading.mentor.searching`,
-                `ai.loading.mentor.compiling`,
+                { key: 'ai.loading.mentor.processing', params: { query: data.query } },
+                { key: 'ai.loading.mentor.searching' },
+                { key: 'ai.loading.mentor.compiling' },
              ];
         case 'advisor':
             const { plant } = data;
             return [
-                `ai.loading.advisor.analyzing::{"stage":"${plant.stage}"}`,
-                `ai.loading.advisor.vitals::{"ph":"${plant.vitals.ph.toFixed(1)}","ec":"${plant.vitals.ec.toFixed(1)}"}`,
-                `ai.loading.advisor.problems::{"count":${plant.problems.length}}`,
-                `ai.loading.advisor.formulating`,
+                { key: 'ai.loading.advisor.analyzing', params: { stage: plant.stage } },
+                { key: 'ai.loading.advisor.vitals', params: { ph: plant.vitals.ph.toFixed(1), ec: plant.vitals.ec.toFixed(1) } },
+                { key: 'ai.loading.advisor.problems', params: { count: plant.problems.length } },
+                { key: 'ai.loading.advisor.formulating' },
             ];
         default:
-            return [`ai.generating`];
+            return [{ key: `ai.generating` }];
     }
 };
 
@@ -74,8 +76,7 @@ const getEquipmentRecommendation = async (area: string, budget: string, growStyl
         config: { responseMimeType: 'application/json', responseSchema }
     });
 
-    // FIX: Access the .text property directly for the JSON string.
-    return JSON.parse(response.text) as Recommendation;
+    return JSON.parse(response.text.trim()) as Recommendation;
 };
 
 const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string): Promise<{ title: string, content: string }> => {
@@ -88,8 +89,8 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
         contents: { parts: [imagePart, textPart] },
         config: { responseMimeType: "application/json", responseSchema }
     });
-    // FIX: Access the .text property directly for the JSON string.
-    return JSON.parse(response.text);
+    
+    return JSON.parse(response.text.trim());
 };
 
 const getAiMentorResponse = async (query: string): Promise<{ title: string, content: string }> => {
@@ -101,8 +102,8 @@ const getAiMentorResponse = async (query: string): Promise<{ title: string, cont
         contents: query,
         config: { systemInstruction, responseMimeType: "application/json", responseSchema }
     });
-    // FIX: Access the .text property directly for the JSON string.
-    return JSON.parse(response.text);
+
+    return JSON.parse(response.text.trim());
 };
 
 const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string, content: string }> => {
@@ -115,8 +116,8 @@ const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string,
         contents: query,
         config: { responseMimeType: "application/json", responseSchema }
     });
-    // FIX: Access the .text property directly for the JSON string.
-    return JSON.parse(response.text);
+
+    return JSON.parse(response.text.trim());
 };
 
 export const geminiService = {

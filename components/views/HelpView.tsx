@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
 
-type HelpTab = 'start' | 'faq' | 'guides' | 'lexicon';
+type HelpTab = 'start' | 'faq' | 'cultivation';
 
 const AccordionItem: React.FC<{
     title: string;
@@ -98,7 +98,7 @@ const StartTab: React.FC = () => {
 
 const FaqTab: React.FC<{ onToggle: (id: string, group: string) => void, openAccordions: Set<string> }> = ({ onToggle, openAccordions }) => {
     const { t } = useTranslations();
-    const faqItems = useMemo(() => Array.from({ length: 10 }).map((_, i) => ({ id: `q${i + 1}`, q: t(`helpView.sections.faq.items.q${i + 1}.q`), a: t(`helpView.sections.faq.items.q${i + 1}.a`) })), [t]);
+    const faqItems = Array.from({ length: 12 }).map((_, i) => ({ id: `q${i + 1}`, q: t(`helpView.sections.faq.items.q${i + 1}.q`), a: t(`helpView.sections.faq.items.q${i + 1}.a`) }));
     
     return (
         <SectionCard icon={<PhosphorIcons.Question />} title={t('helpView.sections.faq.title')} id="faq">
@@ -113,11 +113,15 @@ const FaqTab: React.FC<{ onToggle: (id: string, group: string) => void, openAcco
     );
 };
 
-const GuidesTab: React.FC<{ onToggle: (id: string, group: string) => void, openAccordions: Set<string> }> = ({ onToggle, openAccordions }) => {
+const CultivationTab: React.FC<{ onToggle: (id: string, group: string) => void, openAccordions: Set<string> }> = ({ onToggle, openAccordions }) => {
     const { t } = useTranslations();
-    const agronomyItems = useMemo(() => Array.from({ length: 4 }).map((_, i) => ({ id: `a${i + 1}`, term: t(`helpView.sections.agronomyBasics.items.a${i + 1}.term`), def: t(`helpView.sections.agronomyBasics.items.a${i + 1}.def`) })), [t]);
-    const plantCareItems = useMemo(() => Array.from({ length: 4 }).map((_, i) => ({ id: `pc${i + 1}`, term: t(`helpView.sections.plantCareABCs.items.pc${i + 1}.term`), def: t(`helpView.sections.plantCareABCs.items.pc${i + 1}.def`) })), [t]);
-    const glossaryItems = useMemo(() => Array.from({ length: 9 }).map((_, i) => ({ id: `g${i + 1}`, term: t(`helpView.sections.glossary.items.g${i + 1}.term`), def: t(`helpView.sections.glossary.items.g${i + 1}.def`) })), [t]);
+    const agronomyItems = Array.from({ length: 4 }).map((_, i) => ({ id: `a${i + 1}`, term: t(`helpView.sections.agronomyBasics.items.a${i + 1}.term`), def: t(`helpView.sections.agronomyBasics.items.a${i + 1}.def`) }));
+    const plantCareItems = Array.from({ length: 4 }).map((_, i) => ({ id: `pc${i + 1}`, term: t(`helpView.sections.plantCareABCs.items.pc${i + 1}.term`), def: t(`helpView.sections.plantCareABCs.items.pc${i + 1}.def`) }));
+    const glossaryItems = Array.from({ length: 9 }).map((_, i) => ({ id: `g${i + 1}`, term: t(`helpView.sections.glossary.items.g${i + 1}.term`), def: t(`helpView.sections.glossary.items.g${i + 1}.def`) }));
+    const cannabinoidItems = Array.from({ length: 8 }).map((_, i) => ({ id: `c${i + 1}`, term: t(`helpView.sections.cannabinoidLexicon.items.c${i + 1}.term`), def: t(`helpView.sections.cannabinoidLexicon.items.c${i + 1}.def`) }));
+    const terpeneItems = Array.from({ length: 10 }).map((_, i) => ({ id: `t${i + 1}`, term: t(`helpView.sections.terpeneLexicon.items.t${i + 1}.term`), def: t(`helpView.sections.terpeneLexicon.items.t${i + 1}.def`) }));
+    const flavonoidItems = Array.from({ length: 5 }).map((_, i) => ({ id: `f${i + 1}`, term: t(`helpView.sections.flavonoidLexicon.items.f${i + 1}.term`), def: t(`helpView.sections.flavonoidLexicon.items.f${i + 1}.def`) }));
+    const resources = t('helpView.sections.furtherReading.resources');
 
     return (
         <div className="space-y-6">
@@ -140,19 +144,7 @@ const GuidesTab: React.FC<{ onToggle: (id: string, group: string) => void, openA
                     ))}
                 </Card>
             </SectionCard>
-        </div>
-    );
-};
-
-const LexiconTab: React.FC<{ onToggle: (id: string, group: string) => void, openAccordions: Set<string> }> = ({ onToggle, openAccordions }) => {
-    const { t } = useTranslations();
-    const cannabinoidItems = useMemo(() => Array.from({ length: 8 }).map((_, i) => ({ id: `c${i + 1}`, term: t(`helpView.sections.cannabinoidLexicon.items.c${i + 1}.term`), def: t(`helpView.sections.cannabinoidLexicon.items.c${i + 1}.def`) })), [t]);
-    const terpeneItems = useMemo(() => Array.from({ length: 10 }).map((_, i) => ({ id: `t${i + 1}`, term: t(`helpView.sections.terpeneLexicon.items.t${i + 1}.term`), def: t(`helpView.sections.terpeneLexicon.items.t${i + 1}.def`) })), [t]);
-    const flavonoidItems = useMemo(() => Array.from({ length: 5 }).map((_, i) => ({ id: `f${i + 1}`, term: t(`helpView.sections.flavonoidLexicon.items.f${i + 1}.term`), def: t(`helpView.sections.flavonoidLexicon.items.f${i + 1}.def`) })), [t]);
-    
-    return (
-        <div className="space-y-6">
-            <SectionCard icon={<PhosphorIcons.Sparkle />} title={t('helpView.sections.cannabinoidLexicon.title')} id="cannabinoids">
+             <SectionCard icon={<PhosphorIcons.Sparkle />} title={t('helpView.sections.cannabinoidLexicon.title')} id="cannabinoids">
                 <Card className="p-0">
                     {cannabinoidItems.map(item => (
                         <AccordionItem key={item.id} title={item.term} isOpen={openAccordions.has(`cannabinoid-${item.id}`)} onToggle={() => onToggle(item.id, 'cannabinoid')}>
@@ -179,9 +171,23 @@ const LexiconTab: React.FC<{ onToggle: (id: string, group: string) => void, open
                     ))}
                 </Card>
             </SectionCard>
+             <SectionCard icon={<PhosphorIcons.Book />} title={t('helpView.sections.furtherReading.title')} id="further-reading">
+                <p className="mb-4 text-sm text-accent-200">{t('helpView.sections.furtherReading.description')}</p>
+                <div className="space-y-3">
+                    {Array.isArray(resources) && resources.map((resource, index) => (
+                        <div key={index} className="bg-slate-800 p-3 rounded-lg">
+                             <a href={resource.url} target="_blank" rel="noopener noreferrer" className="font-semibold text-primary-400 hover:underline">
+                                {resource.title} &rarr;
+                            </a>
+                            <p className="text-xs text-accent-300 mt-1" dangerouslySetInnerHTML={{ __html: resource.description }} />
+                        </div>
+                    ))}
+                </div>
+            </SectionCard>
         </div>
     );
 };
+
 
 export const HelpView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<HelpTab>('start');
@@ -204,16 +210,14 @@ export const HelpView: React.FC = () => {
     const tabs: {id: HelpTab, label: string, icon: React.ReactNode}[] = [
         { id: 'start', label: t('nav.help'), icon: <PhosphorIcons.RocketLaunch /> },
         { id: 'faq', label: t('helpView.sections.faq.title'), icon: <PhosphorIcons.Question /> },
-        { id: 'guides', label: t('helpView.tabs.guides'), icon: <PhosphorIcons.BookOpenText /> },
-        { id: 'lexicon', label: t('helpView.tabs.lexicon'), icon: <PhosphorIcons.GraduationCap /> },
+        { id: 'cultivation', label: t('helpView.tabs.cultivation'), icon: <PhosphorIcons.Plant /> },
     ];
     
     const renderTabContent = () => {
         switch(activeTab) {
             case 'start': return <StartTab />;
             case 'faq': return <FaqTab openAccordions={openAccordions} onToggle={handleToggle} />;
-            case 'guides': return <GuidesTab openAccordions={openAccordions} onToggle={handleToggle} />;
-            case 'lexicon': return <LexiconTab openAccordions={openAccordions} onToggle={handleToggle} />;
+            case 'cultivation': return <CultivationTab openAccordions={openAccordions} onToggle={handleToggle} />;
             default: return null;
         }
     };

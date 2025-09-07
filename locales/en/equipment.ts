@@ -1,0 +1,140 @@
+export const equipmentView = {
+  title: 'Equipment Planner',
+  tabs: {
+    configurator: 'Configurator',
+    calculators: 'Calculators',
+    gear: 'Gear & Shops',
+    setups: 'My Setups',
+  },
+  configurator: {
+    title: 'Setup Configurator',
+    subtitle: 'Find the right equipment in 3 easy steps.',
+    step: 'Step {current}/{total}',
+    step1Title: 'Choose your grow area',
+    step2Title: 'Choose your grow style',
+    styles: {
+      beginner: 'Beginner-Friendly',
+      yield: 'Maximum Yield',
+      stealth: 'Stealth',
+    },
+    styleDescriptions: {
+      beginner: 'Easy-to-use and forgiving components.',
+      yield: 'Focus on performance and high harvest results.',
+      stealth: 'Quiet and inconspicuous components for a stealth grow.',
+    },
+    step3Title: 'Choose your budget',
+    budgets: {
+      low: 'Low',
+      medium: 'Medium',
+      high: 'High',
+    },
+    budgetDescriptions: {
+      low: 'Basic equipment to get started.',
+      medium: 'Good balance of price and performance.',
+      high: 'Premium components for optimal control.',
+    },
+    generate: 'Generate Setup',
+    resultsTitle: 'Your Personal Setup Recommendation',
+    resultsSubtitle: 'For your {area}cm space, with a {budget} budget and "{style}" style, this is an AI-generated configuration.',
+    costBreakdown: 'Cost Breakdown',
+    total: 'Total',
+    startOver: 'Start Over',
+    tryAgain: 'Try Again',
+    saveSetup: 'Save Setup',
+    setupNamePrompt: 'What would you like to name this setup?',
+    setupSaveConfirm: 'Are you sure you want to save the setup as "{name}"?',
+    setupSaveSuccess: 'Setup "{name}" saved successfully!',
+    setupSaveError: 'Error saving setup.',
+    error: 'The AI could not generate a recommendation. Please try again later.',
+    errorNetwork: 'An error occurred. Please try again later.',
+    categories: {
+      tent: 'Grow Tent',
+      light: 'Lighting',
+      ventilation: 'Ventilation System',
+      pots: 'Pots',
+      soil: 'Soil & Substrate',
+      nutrients: 'Nutrients',
+      extra: 'Accessories',
+    },
+    rationaleModalTitle: 'Why {category}?',
+  },
+  calculators: {
+    ventilation: {
+      title: 'Fan Calculator',
+      description: 'Calculate the required fan power (m³/h) for your grow tent.',
+      width: 'Width',
+      depth: 'Depth',
+      height: 'Height',
+      result: 'Recommended exhaust fan power',
+    },
+    light: {
+      title: 'Light Calculator',
+      description: 'Estimate the required LED light power for your area.',
+      width: 'Width',
+      depth: 'Depth',
+      result: 'Recommended LED power',
+    },
+    nutrients: {
+      title: 'Nutrient Calculator',
+      description: 'Calculate the right amount of fertilizer for your watering can.',
+      waterAmount: 'Water Amount',
+      dose: 'Dose',
+      result: 'Required fertilizer',
+    },
+    yield: {
+      title: 'Yield Estimator',
+      description: 'Get a rough estimate of your potential harvest yield (g).',
+      area: 'Area',
+      wattage: 'Light Wattage',
+      level: 'Experience Level',
+      levels: {
+          beginner: 'Beginner',
+          advanced: 'Advanced',
+          expert: 'Expert'
+      },
+      result: 'Estimated Yield'
+    },
+    calculate: 'Calculate',
+  },
+  gearAndShops: {
+    shopsTitle: 'Recommended Online Shops (EU)',
+    gearTitle: 'Essential Equipment',
+    shops: {
+      zamnesia: 'One of the largest and most well-known head and grow shops in Europe with a huge selection of seeds and accessories.',
+      rqs: 'Royal Queen Seeds is a famous breeder and shop that offers high-quality seeds and a complete line of grow accessories.',
+      growmart: 'An established German grow shop with a comprehensive range, from complete kits for beginners to professional equipment.'
+    },
+    gearItems: {
+      tent: { name: 'Grow Tent', desc: 'Creates a controlled environment with reflective interior walls to make optimal use of light.' },
+      led: { name: 'LED Lighting', desc: 'Modern full-spectrum LEDs are energy-efficient, produce little heat, and deliver excellent results.' },
+      ventilation: { name: 'Exhaust Kit (Fan + Carbon Filter)', desc: 'Absolutely crucial. Removes stale air, controls temperature/humidity, and neutralizes odors.' },
+      circulation: { name: 'Circulation Fan(s)', desc: 'One or more small fans inside the tent simulate wind, strengthen stems, and prevent air stagnation.' },
+      pots: { name: 'Pots (Fabric or Air-Pots)', desc: 'Fabric pots or Air-Pots promote healthy root development through "air-pruning" and prevent root circling.' },
+      timers: { name: 'Timer(s)', desc: 'At least one for the light cycle (e.g., 18/6 or 12/12 hours). Another one for ventilation can be useful.' },
+      meters: { name: 'Meters (pH/EC, Thermo-Hygrometer)', desc: 'Essential for monitoring. pH & EC meters for the nutrient solution, thermo-hygrometer for temperature & humidity.' },
+      harvest: { name: 'Harvesting Tools', desc: 'Sharp trimming scissors, a jeweler\'s loupe (60x) for checking trichomes, and airtight jars for curing.' },
+    }
+  },
+  savedSetups: {
+    title: 'My Saved Setups',
+    noSetups: {
+      title: 'No Saved Setups',
+      subtitle: 'When you save a recommendation from the configurator, it will appear here.',
+    },
+    inspect: 'Inspect',
+    deleteConfirm: 'Are you sure you want to permanently delete the setup "{name}"?',
+    deleteSuccess: 'Setup "{name}" has been deleted.',
+    updateSuccess: 'Setup "{name}" has been updated.',
+    updateError: 'Error updating setup.',
+    exportConfirm: 'Are you sure you want to export the setup "{name}" as {format}?',
+    exportSuccess: 'Setup "{name}" exported successfully.',
+    modal: {
+      title: 'Setup Details',
+      editMode: 'Edit Mode',
+      saveChanges: 'Save Changes',
+      item: 'Item',
+      price: 'Price',
+      rationale: 'Rationale',
+    }
+  }
+};

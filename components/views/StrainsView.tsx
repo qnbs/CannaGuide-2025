@@ -1,5 +1,3 @@
-
-
 // FIX: Import useEffect from react to resolve usage errors.
 import React, { useState, useCallback, useEffect } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat } from '../../types';
@@ -544,7 +542,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                                  <div className="text-center p-8 text-slate-400">
                                     <h3 className="font-semibold">{t('strainsView.noStrainsFound.title')}</h3>
                                     <p className="text-sm">{t('strainsView.noStrainsFound.subtitle')}</p>
-                                    {filterState.searchTerm && <p className="text-sm mt-1">für: "{filterState.searchTerm}"</p>}
+                                    {filterState.searchTerm && <p className="text-sm mt-1">{t('strainsView.noStrainsFound.for', { term: filterState.searchTerm })}</p>}
                                 </div>
                             )}
                         </div>

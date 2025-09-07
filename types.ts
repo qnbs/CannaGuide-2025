@@ -1,3 +1,5 @@
+// FIX: Removed incorrect import of `PlantStage` from './constants' to resolve a circular dependency.
+// The `PlantStage` enum is defined and exported within this file.
 
 export enum View {
   Strains = 'STRAINS',
@@ -10,6 +12,7 @@ export enum View {
 
 export type FontSize = 'sm' | 'base' | 'lg';
 export type Language = 'en' | 'de';
+export type Theme = 'midnight' | 'forest' | 'purple-haze';
 
 export interface NotificationSettings {
   stageChange: boolean;
@@ -38,6 +41,7 @@ export interface GrowSetup {
 export interface AppSettings {
   fontSize: FontSize;
   language: Language;
+  theme: Theme;
   notificationsEnabled: boolean;
   notificationSettings: NotificationSettings;
   onboardingCompleted: boolean;
@@ -195,6 +199,13 @@ export interface AIResponse {
     content: string;
 }
 
+export interface ArchivedAIResponse extends AIResponse {
+    id: string;
+    timestamp: number;
+    query: string;
+}
+
+
 export interface AIProTip {
     title: string;
     content: string;
@@ -246,4 +257,18 @@ export interface SavedSetup {
     growStyle: string;
   };
   totalCost: number;
+}
+
+export interface ArchivedMentorResponse extends AIResponse {
+    id: string;
+    createdAt: number;
+    query: string;
+}
+
+export interface ArchivedAdvisorResponse extends AIResponse {
+    id: string;
+    createdAt: number;
+    query: string; // The plant data string used for the query
+    plantId: string;
+    plantStage: PlantStage;
 }

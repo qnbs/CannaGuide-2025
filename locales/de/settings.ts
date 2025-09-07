@@ -1,0 +1,61 @@
+// FIX: Implemented German translation module for settings view.
+export const settingsView = {
+  title: 'Einstellungen',
+  display: {
+    title: 'Anzeige',
+    language: 'Sprache',
+    theme: 'Thema',
+    themes: {
+      midnight: 'Mitternacht',
+      forest: 'Wald',
+      purpleHaze: 'Purpurnebel',
+    },
+    fontSize: 'Schriftgröße',
+    fontSizes: {
+      sm: 'Klein',
+      base: 'Standard',
+      lg: 'Groß',
+    },
+  },
+  notifications: {
+    title: 'Benachrichtigungen',
+    enableAll: 'Alle Benachrichtigungen aktivieren',
+    stageChange: 'Phasenwechsel',
+    problemDetected: 'Problem erkannt',
+    harvestReady: 'Ernte bereit',
+    newTask: 'Neue Aufgabe',
+  },
+  simulation: {
+    title: 'Simulation',
+    speed: 'Simulationsgeschwindigkeit',
+    difficulty: 'Schwierigkeitsgrad',
+    difficulties: {
+      easy: 'Leicht',
+      normal: 'Normal',
+      hard: 'Schwer',
+    },
+  },
+  defaults: {
+      title: 'Standardwerte',
+      growSetup: 'Standard-Grow-Setup',
+      export: 'Standard-Export-Einstellungen',
+  },
+  data: {
+    title: 'Datenverwaltung',
+    resetPlants: 'Pflanzen zurücksetzen',
+    resetPlantsConfirm: 'Möchtest du wirklich alle deine aktuellen Pflanzen löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+    resetPlantsSuccess: 'Alle Pflanzen wurden zurückgesetzt.',
+    resetAll: 'Alle App-Daten zurücksetzen',
+    resetAllConfirm: 'WARNUNG: Dadurch werden alle deine Pflanzen, Einstellungen, Favoriten und eigenen Sorten endgültig gelöscht. Bist du absolut sicher?',
+    resetAllSuccess: 'Alle App-Daten wurden zurückgesetzt. Die App wird neu geladen.',
+    exportAll: 'Alle Daten exportieren',
+    exportConfirm: 'Möchtest du wirklich alle deine App-Daten als Backup exportieren?',
+    exportSuccess: 'Alle Daten erfolgreich exportiert!',
+    exportError: 'Export fehlgeschlagen.',
+    importAll: 'Alle Daten importieren',
+    importConfirm: 'Bist du sicher, dass du diese Daten importieren möchtest? Dies wird alle deine aktuellen Daten überschreiben.',
+    importSuccess: 'Daten erfolgreich importiert! Die App wird neu geladen.',
+    importError: 'Fehler beim Importieren der Daten',
+    importInvalidFile: 'Ungültige Backup-Datei.',
+  },
+};

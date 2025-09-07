@@ -1,381 +1,128 @@
-import { GoogleGenAI, Type } from "@google/genai";
-import { AIResponse, Plant, Language } from '../types';
+import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+import { Plant, Recommendation } from '../types';
+import { useTranslations } from '../hooks/useTranslations'; // Import hook to use translations
 
-// Initialize the Google Gemini AI client
-// The API key is expected to be available as an environment variable
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-const model = 'gemini-2.5-flash';
 
-// Helper to safely parse JSON from AI response
-function safeJsonParse<T>(jsonString: string, fallback: T): T {
-  try {
-    // The Gemini API for JSON mode often returns the JSON string wrapped in markdown backticks.
-    const cleanedString = jsonString.replace(/^```json\n?/, '').replace(/\n?```$/, '');
-    return JSON.parse(cleanedString) as T;
-  } catch (e) {
-    console.error("Failed to parse AI JSON response:", e);
-    return fallback;
-  }
-}
-
-// Define the response schema for AIResponse
-const aiResponseSchema = {
-  type: Type.OBJECT,
-  properties: {
-    title: { type: Type.STRING },
-    content: { type: Type.STRING },
-  },
-  required: ['title', 'content'],
+// This is a helper, but since it uses a hook, it can't be a standalone function.
+// We'll define the messages inside the components or pass 't' function.
+// For this service, we will use placeholders and let the component translate them.
+type LoadingMessageContext = {
+    useCase: 'equipment' | 'diagnostics' | 'mentor' | 'advisor';
+    data?: any;
 };
 
-// Define a generic error response. The UI will provide the translated message.
-const errorResponse: AIResponse = {
-  title: 'Error',
-  content: 'The AI could not generate a response. Please try again later or rephrase your request.',
+export const getDynamicLoadingMessages = (context: LoadingMessageContext): string[] => {
+    const { useCase, data } = context;
+    switch (useCase) {
+        case 'equipment':
+            return [
+                `ai.loading.equipment.analyzing`,
+                `ai.loading.equipment.budget::{"budget":"${data.budget}"}`,
+                `ai.loading.equipment.area::{"area":"${data.area}"}`,
+                `ai.loading.equipment.style::{"style":"${data.growStyle}"}`,
+                `ai.loading.equipment.selecting`,
+                `ai.loading.equipment.finalizing`,
+            ];
+        case 'diagnostics':
+            return [
+                `ai.loading.diagnostics.receiving`,
+                `ai.loading.diagnostics.analyzing`,
+                `ai.loading.diagnostics.identifying`,
+                `ai.loading.diagnostics.formulating`,
+            ];
+        case 'mentor':
+             return [
+                `ai.loading.mentor.processing::{"query":"${data.query}"}`,
+                `ai.loading.mentor.searching`,
+                `ai.loading.mentor.compiling`,
+             ];
+        case 'advisor':
+            const { plant } = data;
+            return [
+                `ai.loading.advisor.analyzing::{"stage":"${plant.stage}"}`,
+                `ai.loading.advisor.vitals::{"ph":"${plant.vitals.ph.toFixed(1)}","ec":"${plant.vitals.ec.toFixed(1)}"}`,
+                `ai.loading.advisor.problems::{"count":${plant.problems.length}}`,
+                `ai.loading.advisor.formulating`,
+            ];
+        default:
+            return [`ai.generating`];
+    }
 };
 
-const recommendationItemSchema = {
-    type: Type.OBJECT,
-    properties: {
-        name: { type: Type.STRING, description: "The name of the recommended product or component." },
-        price: { type: Type.NUMBER, description: "The estimated price in Euros." },
-        rationale: { type: Type.STRING, description: "A short rationale (1-2 sentences) explaining why this item is suitable for the chosen setup." },
-    },
-    required: ['name', 'price', 'rationale'],
-};
 
-const recommendationSchema = {
-    type: Type.OBJECT,
-    properties: {
-        tent: recommendationItemSchema,
-        light: { 
-            ...recommendationItemSchema, 
-            properties: { 
-                ...recommendationItemSchema.properties, 
-                watts: {type: Type.NUMBER, description: "The wattage of the lamp."} 
-            },
-            required: [...recommendationItemSchema.required, 'watts'],
+const getEquipmentRecommendation = async (area: string, budget: string, growStyle: string): Promise<Recommendation> => {
+    const prompt = `Generate a cannabis growing equipment recommendation for a ${area}cm area, with a ${budget} budget, focusing on a ${growStyle} grow style. Provide specific product types (e.g., 'Mars Hydro TS 1000' or 'Fabric Pot 5 Gallon') but avoid brand favoritism unless a specific model is iconic for that category. Prices should be realistic estimates in Euros. The rationale should be concise and explain why the item fits the user's needs. Categories to include are: tent, light, ventilation, pots, soil, nutrients, extra.`;
+    
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            tent: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, watts: { type: Type.NUMBER }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            ventilation: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            pots: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            soil: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            nutrients: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            extra: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
         },
-        ventilation: recommendationItemSchema,
-        pots: recommendationItemSchema,
-        soil: recommendationItemSchema,
-        nutrients: recommendationItemSchema,
-        extra: recommendationItemSchema,
-    },
-    required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra'],
+        required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra']
+    };
+
+    const response: GenerateContentResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: { responseMimeType: 'application/json', responseSchema }
+    });
+
+    // FIX: Access the .text property directly for the JSON string.
+    return JSON.parse(response.text) as Recommendation;
 };
 
-const getLanguageInstruction = (language: Language) => language === 'de' ? 'Antworte auf Deutsch.' : 'Respond in English.';
+const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string): Promise<{ title: string, content: string }> => {
+    const imagePart = { inlineData: { mimeType, data: base64Image } };
+    const textPart = { text: `Analyze this image of a cannabis plant leaf/plant. The user is looking for a potential problem diagnosis. Plant context: ${plantContext}. Provide a concise diagnosis. Identify the most likely problem (e.g., 'Nitrogen Deficiency', 'Light Burn', 'Spider Mites'). Format the response as a JSON object with "title" and "content" keys. The "title" should be the name of the problem. The "content" should be a 2-3 sentence explanation of the problem and a suggested solution.` };
+    const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
+
+    const response: GenerateContentResponse = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: { parts: [imagePart, textPart] },
+        config: { responseMimeType: "application/json", responseSchema }
+    });
+    // FIX: Access the .text property directly for the JSON string.
+    return JSON.parse(response.text);
+};
+
+const getAiMentorResponse = async (query: string): Promise<{ title: string, content: string }> => {
+    const systemInstruction = "You are an expert cannabis cultivation mentor. Your tone is helpful, encouraging, and scientific. Provide detailed, actionable advice. Format your response as a JSON object with 'title' and 'content' keys. The 'title' should be a concise summary of the answer. The 'content' should be the detailed explanation, using markdown for formatting (like lists or bold text).";
+    const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: query,
+        config: { systemInstruction, responseMimeType: "application/json", responseSchema }
+    });
+    // FIX: Access the .text property directly for the JSON string.
+    return JSON.parse(response.text);
+};
+
+const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string, content: string }> => {
+    const plantData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
+    const query = `Based on the following data for a cannabis plant, provide a concise analysis and one key recommendation for the grower. Plant Data: ${plantData}. Format the response as a JSON object with "title" and "content" keys. The "title" should be a very short summary of the advice (e.g., "Slightly high pH, suggest adjustment"). The "content" should be a 2-4 sentence explanation of your observation and a clear, actionable recommendation.`;
+    const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
+    
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: query,
+        config: { responseMimeType: "application/json", responseSchema }
+    });
+    // FIX: Access the .text property directly for the JSON string.
+    return JSON.parse(response.text);
+};
 
 export const geminiService = {
-  getKnowledgeArticle: async (topic: string, language: Language): Promise<AIResponse> => {
-    try {
-      const prompt = `Create a detailed, helpful article on the topic "${topic}" in the context of cannabis cultivation for beginners and advanced growers.
-      The article should be well-structured and contain practical tips.
-      Format the response as a JSON object with the keys "title" and "content".
-      The "title" should be concise and related to the topic.
-      The "content" should be the answer as well-formatted HTML. Use <h3> for subheadings, <ul> and <ol> for lists, and <p> for paragraphs to maximize readability.
-      ${getLanguageInstruction(language)}`;
-
-      const response = await ai.models.generateContent({
-        model,
-        contents: prompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: aiResponseSchema,
-        },
-      });
-
-      return safeJsonParse(response.text, errorResponse);
-    } catch (error) {
-      console.error(`Error fetching knowledge article for ${topic}:`, error);
-      return errorResponse;
-    }
-  },
-
-  askAboutKnowledge: async (prompt: string, language: Language): Promise<AIResponse> => {
-    try {
-      const fullPrompt = `Answer the following question about cannabis cultivation: "${prompt}".
-      Format the response as a JSON object with the keys "title" and "content".
-      The "title" should be a short summary of the question.
-      The "content" should be the answer as well-formatted HTML that answers the question clearly and helpfully.
-      ${getLanguageInstruction(language)}`;
-      
-      const response = await ai.models.generateContent({
-        model,
-        contents: fullPrompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: aiResponseSchema,
-        },
-      });
-
-      return safeJsonParse(response.text, errorResponse);
-    } catch (error) {
-      console.error(`Error asking about knowledge with prompt "${prompt}":`, error);
-      return errorResponse;
-    }
-  },
-
-  diagnosePlantProblem: async (imageBase64Data: string, mimeType: string, language: Language): Promise<AIResponse> => {
-    try {
-        const prompt = `Analyze this image of a plant leaf. Identify any potential diseases, pests, or nutrient deficiencies.
-        
-        INSTRUCTIONS:
-        1. Provide a title for your primary diagnosis (e.g., "Calcium Deficiency" or "Spider Mite Infestation").
-        2. For the content, provide a detailed but easy-to-understand explanation of the issue.
-        3. Include a list of concrete, actionable steps to resolve the problem.
-        4. If the image is unclear or the plant appears healthy, state that clearly.
-        5. Format the response as a JSON object with "title" and "content" keys. The content should be well-formatted HTML using <h3> for subheadings, <ul> and <ol> for lists, and <p> for paragraphs.
-        ${getLanguageInstruction(language)}`;
-
-        const imagePart = {
-            inlineData: {
-                data: imageBase64Data,
-                mimeType: mimeType,
-            },
-        };
-
-        const textPart = { text: prompt };
-
-        const response = await ai.models.generateContent({
-            model,
-            contents: { parts: [imagePart, textPart] },
-            config: {
-                systemInstruction: "You are an expert cannabis cultivator and plant pathologist.",
-                responseMimeType: "application/json",
-                responseSchema: aiResponseSchema,
-            },
-        });
-
-        return safeJsonParse(response.text, errorResponse);
-    } catch (error) {
-        console.error('Error diagnosing plant problem:', error);
-        return errorResponse;
-    }
-  },
-  
-  askAboutEquipment: async (prompt: string, language: Language): Promise<AIResponse> => {
-     try {
-      const fullPrompt = `Answer the following question about equipment for cannabis cultivation: "${prompt}".
-      Format the response as a JSON object with the keys "title" and "content".
-      The "title" should be a short summary of the question (e.g., "AI Equipment Advisor").
-      The "content" should be the answer as well-formatted HTML that answers the question clearly and helpfully.
-      ${getLanguageInstruction(language)}`;
-      
-      const response = await ai.models.generateContent({
-        model,
-        contents: fullPrompt,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: aiResponseSchema,
-        },
-      });
-
-      return safeJsonParse(response.text, errorResponse);
-    } catch (error) {
-      console.error(`Error asking about equipment with prompt "${prompt}":`, error);
-      return errorResponse;
-    }
-  },
-
-  getSetupRecommendation: async (area: string, growStyle: string, budget: string, language: Language): Promise<Record<string, {name: string, price: number, rationale: string, watts?: number}> | null> => {
-    const fallback = null;
-    try {
-        const prompt = `Create a detailed equipment recommendation for an indoor cannabis grow.
-        The configuration should be based on the following user preferences:
-        - Grow area: ${area} cm
-        - Grow style: ${growStyle}
-        - Budget: ${budget}
-
-        For each of the following 7 categories, provide ONE specific product recommendation (e.g., "150W Dimmable LED" instead of just "LED Lamp"):
-        1. tent
-        2. light
-        3. ventilation
-        4. pots
-        5. soil
-        6. nutrients
-        7. extra (Important accessories like timers, meters, etc.)
-
-        For each item, provide:
-        - "name": A specific product name or description.
-        - "price": A realistic, estimated price in Euros (number only).
-        - "rationale": A short, concise reason (1-2 sentences) why this item fits the chosen setup (area, style, budget).
-        - "watts" (only for the "light" category): The wattage of the lamp (number only).
-
-        Format the response exclusively as a JSON object that adheres to the provided schema.
-        ${getLanguageInstruction(language)}`;
-        
-        const response = await ai.models.generateContent({
-            model,
-            contents: prompt,
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: recommendationSchema,
-            },
-        });
-        
-        return safeJsonParse(response.text, fallback);
-    } catch (error) {
-        console.error('Error fetching setup recommendation:', error);
-        return fallback;
-    }
-  },
-  
-  askAboutPlant: async (plant: Plant, prompt: string, titleTemplate: string, language: Language): Promise<AIResponse> => {
-     try {
-        const plantProblems = plant.problems.length > 0
-            ? plant.problems.map(p => p.message).join(', ')
-            : 'None';
-
-        const plantSummary = `
-            - Name: ${plant.name}
-            - Strain: ${plant.strain.name} (${plant.strain.type})
-            - Stage: ${plant.stage}
-            - Age: ${plant.age} days
-            - Height: ${plant.height.toFixed(1)} cm
-            - Vitals: pH ${plant.vitals.ph.toFixed(1)}, EC ${plant.vitals.ec.toFixed(2)}, Substrate Moisture ${plant.vitals.substrateMoisture.toFixed(0)}%
-            - Environment: ${plant.environment.temperature}°C, ${plant.environment.humidity}% humidity
-            - Stress Level: ${plant.stressLevel.toFixed(0)}%
-            - Current Problems: ${plantProblems}
-        `;
-
-        const fullPrompt = `Analyze the following plant data and answer the user's question.
-        
-        PLANT DATA:
-        ${plantSummary}
-
-        USER'S QUESTION:
-        "${prompt}"
-
-        INSTRUCTIONS:
-        1. Provide a concise analysis and specific recommendations for action.
-        2. Directly address the user's question and use the provided data to support your reasoning.
-        3. Format the response as a JSON object with the keys "title" and "content".
-        4. The "title" should be "${titleTemplate}".
-        5. The "content" should be the answer as well-formatted HTML, using <strong> tags to highlight important values and terms.
-        ${getLanguageInstruction(language)}`;
-
-        const response = await ai.models.generateContent({
-            model,
-            contents: fullPrompt,
-            config: {
-                systemInstruction: "You are an experienced AI advisor for cannabis cultivation.",
-                responseMimeType: "application/json",
-                responseSchema: aiResponseSchema,
-            },
-        });
-        
-        return safeJsonParse(response.text, errorResponse);
-    } catch (error) {
-      console.error(`Error asking about plant ${plant.name}:`, error);
-      return errorResponse;
-    }
-  },
-
-  getProactiveTip: async (plant: Plant, title: string, contentFallback: string, language: Language): Promise<AIResponse> => {
-    const specificErrorResponse: AIResponse = {
-      title: title,
-      content: contentFallback,
-    };
-    
-    try {
-        const plantProblems = plant.problems.length > 0
-            ? plant.problems.map(p => p.message).join(', ')
-            : 'None';
-
-        const plantSummary = `
-            - Stage: ${plant.stage}
-            - Age: ${plant.age} days
-            - Vitals: pH ${plant.vitals.ph.toFixed(1)}, EC ${plant.vitals.ec.toFixed(2)}, Substrate Moisture ${plant.vitals.substrateMoisture.toFixed(0)}%
-            - Environment: ${plant.environment.temperature}°C, ${plant.environment.humidity}% humidity
-            - Current Problems: ${plantProblems}
-        `;
-
-        const prompt = `Analyze the following data from a cannabis plant and provide ONE short, proactive care tip (1-2 sentences) tailored exactly to the current situation. The tip should be practical and easy to implement.
-
-        PLANT DATA:
-        ${plantSummary}
-
-        Examples of good tips:
-        - For high humidity in flowering: "Your humidity is a bit high for the flowering stage. Increase exhaust fan speed to prevent mold."
-        - For low EC in vegetation: "The EC value is low. Consider slightly increasing the nutrient dose at the next feeding to promote growth."
-        - If everything is good: "All values look optimal for this stage. Keep it up! Watch for the first signs of pre-flowering in the coming days."
-
-        Format the response as a JSON object with the keys "title" and "content". The "title" should be "${title}". Provide only a concise recommendation for action, not long explanations.
-        ${getLanguageInstruction(language)}`;
-
-        const response = await ai.models.generateContent({
-            model,
-            contents: prompt,
-            config: {
-                systemInstruction: "You are an experienced AI cultivation expert.",
-                responseMimeType: "application/json",
-                responseSchema: aiResponseSchema,
-            },
-        });
-        
-        return safeJsonParse(response.text, specificErrorResponse);
-    } catch (error) {
-      console.error(`Error fetching proactive tip for plant ${plant.name}:`, error);
-      return specificErrorResponse;
-    }
-  },
-
-  getJournalAnalysis: async (plant: Plant, language: Language): Promise<AIResponse> => {
-    try {
-        const journalText = plant.journal.map(entry => {
-            const date = new Date(entry.timestamp).toLocaleString();
-            const details = entry.details ? ` Details: ${JSON.stringify(entry.details)}` : '';
-            return `- [${date}] ${entry.type}: ${entry.notes}.${details}`;
-        }).join('\n');
-
-        const plantProblems = plant.problems.length > 0
-            ? plant.problems.map(p => p.message).join(', ')
-            : 'None';
-
-        const plantSummary = `
-            - Name: ${plant.name}, Strain: ${plant.strain.name} (${plant.strain.type})
-            - Stage: ${plant.stage}, Age: ${plant.age} days, Height: ${plant.height.toFixed(1)} cm
-            - Vitals: pH ${plant.vitals.ph.toFixed(1)}, EC ${plant.vitals.ec.toFixed(2)}, Moisture ${plant.vitals.substrateMoisture.toFixed(0)}%
-            - Environment: ${plant.environment.temperature}°C, ${plant.environment.humidity}% humidity
-            - Stress Level: ${plant.stressLevel.toFixed(0)}%
-            - Current Problems: ${plantProblems}
-        `;
-
-        const fullPrompt = `As an expert cannabis cultivation advisor, analyze the provided plant data and its complete journal. 
-        Provide a comprehensive summary of the grow so far.
-        
-        INSTRUCTIONS:
-        1. Start with a brief overview of the plant's current health and status.
-        2. Identify key positive events or periods of healthy growth from the journal.
-        3. Identify any challenges, problems, or periods of stress. Mention when they occurred and how they were (or were not) addressed based on the journal entries.
-        4. Conclude with 2-3 concrete recommendations or areas for improvement for the remainder of the grow cycle.
-        5. The analysis should be insightful and based directly on the provided data.
-        6. Format the response as a JSON object with "title" and "content" keys. The title should be "Grow Journal Analysis for ${plant.name}". The content should be well-formatted HTML using <h3>, <p>, <ul>, and <strong> tags.
-        ${getLanguageInstruction(language)}
-
-        PLANT DATA:
-        ${plantSummary}
-
-        GROW JOURNAL:
-        ${journalText}
-        `;
-
-        const response = await ai.models.generateContent({
-            model,
-            contents: fullPrompt,
-            config: {
-                systemInstruction: "You are an expert AI advisor for cannabis cultivation.",
-                responseMimeType: "application/json",
-                responseSchema: aiResponseSchema,
-            },
-        });
-        
-        return safeJsonParse(response.text, errorResponse);
-    } catch (error) {
-        console.error(`Error analyzing journal for plant ${plant.name}:`, error);
-        return errorResponse;
-    }
-  },
+    getEquipmentRecommendation,
+    diagnosePlantProblem,
+    getAiMentorResponse,
+    getAiPlantAdvisorResponse,
+    getDynamicLoadingMessages,
 };

@@ -1,229 +1,241 @@
-import React, { useState, useMemo } from 'react';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { useKnowledgeProgress } from '../../hooks/useKnowledgeProgress';
+import React, { useState, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import { geminiService } from '../../services/geminiService';
-import { AIResponse } from '../../types';
-import { SkeletonLoader } from '../common/SkeletonLoader';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
+import { useKnowledgeProgress } from '../../hooks/useKnowledgeProgress';
+import { useKnowledgeArchive } from '../../hooks/useKnowledgeArchive';
+import { geminiService } from '../../services/geminiService';
+import { AIResponse, ArchivedMentorResponse } from '../../types';
+import { EditResponseModal } from '../common/EditResponseModal';
 
-const ChecklistItem: React.FC<{
-    text: string;
-    isChecked: boolean;
-    onToggle: () => void;
-}> = ({ text, isChecked, onToggle }) => {
-    return (
-        <li className="flex items-start gap-3 !my-3">
-            <input 
-                type="checkbox"
-                checked={isChecked}
-                onChange={onToggle}
-                className="h-5 w-5 rounded border-accent-500 bg-transparent text-primary-500 focus:ring-primary-500 mt-0.5 flex-shrink-0"
-            />
-            <span className={`transition-colors ${isChecked ? 'line-through text-accent-400' : 'text-accent-200'}`}>
-                {text}
-            </span>
-        </li>
-    )
-};
+type KnowledgeViewTab = 'guide' | 'archive';
 
-const ProTip: React.FC<{ content: string }> = ({ content }) => {
-    const [isRevealed, setIsRevealed] = useState(false);
+const KnowledgeStep: React.FC<{
+    phase: string;
+    title: string;
+    subtitle: string;
+    p1_title: string;
+    p1_text: string;
+    p2_title: string;
+    p2_text: string;
+    checklist: Record<string, string>;
+    proTip: string;
+    progress: string[];
+    onToggle: (itemId: string) => void;
+}> = ({ phase, title, subtitle, p1_title, p1_text, p2_title, p2_text, checklist, proTip, progress, onToggle }) => {
     const { t } = useTranslations();
-
+    const [isTipVisible, setIsTipVisible] = useState(false);
     return (
-        <div className="mt-6 p-4 rounded-lg bg-amber-500/10 border-l-4 border-amber-400">
-            <h4 className="font-bold text-amber-200">{t('knowledgeView.proTip.title')}</h4>
-            {isRevealed ? (
-                <p className="text-amber-300">{content}</p>
-            ) : (
-                <Button variant="secondary" size="sm" onClick={() => setIsRevealed(true)} className="mt-2">{t('knowledgeView.proTip.button')}</Button>
-            )}
-        </div>
-    );
-};
-
-
-const JourneyStep: React.FC<{
-    section: any;
-    isOpen: boolean;
-    onToggle: () => void;
-}> = ({ section, isOpen, onToggle }) => {
-    const { progress, toggleItem } = useKnowledgeProgress();
-    const isSectionChecked = (itemId: string) => progress[section.id]?.includes(itemId) || false;
-
-    return (
-        <div className="relative flex items-start group">
-            <div className="absolute left-8 top-8 w-px h-full bg-accent-700 journey-step-line"></div>
-            <div className={`relative z-10 w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-accent-900 border-4 border-accent-950 journey-step-icon ${isOpen ? 'is-open border-primary-500/50' : ''}`}>
-                 <div className="text-primary-400">{section.icon}</div>
-            </div>
-            <div className="ml-4 w-full">
-                 <div className="p-4 rounded-lg glass-pane">
-                     <button type="button" className="flex items-center justify-between w-full font-medium text-left" onClick={onToggle} aria-expanded={isOpen}>
-                        <div>
-                            <span className="text-lg font-bold text-accent-100">{section.title}</span>
-                            <p className="text-sm text-accent-300">{section.subtitle}</p>
-                        </div>
-                        <PhosphorIcons.ChevronDown className={`w-6 h-6 shrink-0 transition-transform duration-300 text-accent-300 ${isOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                     <div className={`transition-all duration-500 ease-in-out overflow-hidden ${isOpen ? 'max-h-[3000px] pt-4' : 'max-h-0'}`}>
-                        <div className="prose prose-sm dark:prose-invert max-w-none">
-                            <h4>{section.p1_title}</h4>
-                            <p>{section.p1_text}</p>
-                            <h4>{section.p2_title}</h4>
-                            <p>{section.p2_text}</p>
-
-                            <h4 className="!mt-6">Checkliste</h4>
-                            <ul className="checklist">
-                                {Object.entries(section.checklist).map(([itemKey, itemText]) => (
-                                    <ChecklistItem 
-                                        key={itemKey}
-                                        text={itemText as string}
-                                        isChecked={isSectionChecked(itemKey)}
-                                        onToggle={() => toggleItem(section.id, itemKey)}
-                                    />
-                                ))}
-                            </ul>
-                            <ProTip content={section.proTip} />
-                        </div>
-                    </div>
+        <Card>
+            <h2 className="text-2xl font-bold font-display text-primary-400">{title}</h2>
+            <p className="text-slate-400 mb-4">{subtitle}</p>
+            <div className="space-y-4">
+                <div>
+                    <h3 className="font-semibold text-slate-100">{p1_title}</h3>
+                    <p className="text-sm text-slate-300">{p1_text}</p>
                 </div>
-            </div>
-        </div>
-    );
-};
-
-const AiMentor: React.FC = () => {
-    const [query, setQuery] = useState('');
-    const [response, setResponse] = useState<AIResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const { t, locale } = useTranslations();
-
-    const handleAsk = async () => {
-        if (!query.trim()) return;
-        setIsLoading(true);
-        setResponse(null);
-        const res = await geminiService.askAboutKnowledge(query, locale);
-        setResponse(res);
-        setIsLoading(false);
-        setQuery('');
-    };
-
-    return (
-        <Card className="mb-8">
-            <h3 className="text-xl font-bold font-display mb-4 text-primary-400 flex items-center gap-2">
-                <PhosphorIcons.Sparkle className="w-6 h-6" />
-                {t('knowledgeView.aiMentor.title')}
-            </h3>
-            <p className="text-accent-200 mb-4">
-                {t('knowledgeView.aiMentor.subtitle')}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-                <label htmlFor="ai-mentor-input" className="sr-only">{t('knowledgeView.aiMentor.placeholder')}</label>
-                <input
-                    id="ai-mentor-input"
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleAsk()}
-                    placeholder={t('knowledgeView.aiMentor.placeholder')}
-                    className="w-full bg-accent-900/50 border border-accent-700 rounded-lg px-3 py-2 text-accent-100 placeholder-accent-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-                />
-                <Button onClick={handleAsk} disabled={isLoading || !query.trim()} className="shrink-0">
-                    {isLoading ? t('knowledgeView.aiMentor.loading') : t('knowledgeView.aiMentor.button')}
-                </Button>
-            </div>
-            <div className="mt-4">
-                {isLoading && <SkeletonLoader count={3} />}
-                {response && (
-                    <div className="bg-accent-900/50 p-4 rounded-lg animate-fade-in">
-                        <article className="prose dark:prose-invert max-w-none">
-                            <h4 className="!text-primary-300 !mt-0">{response.title}</h4>
-                            <div dangerouslySetInnerHTML={{ __html: response.content }} />
-                        </article>
-                    </div>
-                )}
+                <div>
+                    <h3 className="font-semibold text-slate-100">{p2_title}</h3>
+                    <p className="text-sm text-slate-300">{p2_text}</p>
+                </div>
+                <div className="space-y-2">
+                    {Object.entries(checklist).map(([key, text]) => (
+                        <label key={key} className="flex items-center gap-3 cursor-pointer">
+                            <input type="checkbox" checked={progress.includes(key)} onChange={() => onToggle(key)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/>
+                            <span className={`text-sm ${progress.includes(key) ? 'text-slate-400 line-through' : 'text-slate-200'}`}>{text}</span>
+                        </label>
+                    ))}
+                </div>
+                <Card className="bg-primary-900/30">
+                    <button onClick={() => setIsTipVisible(!isTipVisible)} className="font-bold text-primary-300 flex items-center gap-2">
+                        <PhosphorIcons.LightbulbFilament className="w-5 h-5"/> {t('knowledgeView.proTip.title')}
+                    </button>
+                    {isTipVisible && <p className="text-sm text-primary-300/90 mt-2 animate-fade-in">{proTip}</p>}
+                </Card>
             </div>
         </Card>
     );
-};
-
+}
 
 export const KnowledgeView: React.FC = () => {
-    const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set(['phase1']));
-    const { progress } = useKnowledgeProgress();
     const { t } = useTranslations();
+    const { progress, toggleItem } = useKnowledgeProgress();
+    const { responses: archivedResponses, addResponse, updateResponse, deleteResponse } = useKnowledgeArchive();
+    
+    const [activeTab, setActiveTab] = useState<KnowledgeViewTab>('guide');
+    const [query, setQuery] = useState('');
+    const [aiResponse, setAiResponse] = useState<AIResponse | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
+    const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null);
 
-    const sectionsConfig = useMemo(() => [
-        { id: 'phase1', icon: <PhosphorIcons.Cube className="w-8 h-8"/> },
-        { id: 'phase2', icon: <PhosphorIcons.Plant className="w-8 h-8"/> },
-        { id: 'phase3', icon: <PhosphorIcons.Sun className="w-8 h-8"/> },
-        { id: 'phase4', icon: <PhosphorIcons.Sparkle className="w-8 h-8"/> },
-        { id: 'phase5', icon: <PhosphorIcons.Scissors className="w-8 h-8"/> },
-    ].map(section => ({
-        ...section,
-        title: t(`knowledgeView.sections.${section.id}.title`),
-        subtitle: t(`knowledgeView.sections.${section.id}.subtitle`),
-        p1_title: t(`knowledgeView.sections.${section.id}.p1_title`),
-        p1_text: t(`knowledgeView.sections.${section.id}.p1_text`),
-        p2_title: t(`knowledgeView.sections.${section.id}.p2_title`),
-        p2_text: t(`knowledgeView.sections.${section.id}.p2_text`),
-        checklist: {
-            'c1': t(`knowledgeView.sections.${section.id}.checklist.c1`),
-            'c2': t(`knowledgeView.sections.${section.id}.checklist.c2`),
-            'c3': t(`knowledgeView.sections.${section.id}.checklist.c3`),
-            'c4': t(`knowledgeView.sections.${section.id}.checklist.c4`),
-        },
-        proTip: t(`knowledgeView.sections.${section.id}.proTip`)
-    })), [t]);
+    useEffect(() => {
+        if (isLoading) {
+            const shortQuery = query.length > 20 ? query.substring(0, 20) + '...' : query;
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'mentor', data: { query: shortQuery } });
+            let messageIndex = 0;
+            
+            const updateLoadingMessage = () => {
+                const nextMessageKey = messages[messageIndex % messages.length];
+                const [key, paramsStr] = nextMessageKey.split('::');
+                let params = {};
+                if (paramsStr) {
+                    try {
+                        // FIX: Ensure keys are quoted for valid JSON before parsing
+                        const validJsonString = paramsStr.replace(/(\w+):/g, '"$1":');
+                        params = JSON.parse(validJsonString);
+                    } catch (e) {
+                        console.error('failed to parse params', e, paramsStr);
+                    }
+                }
+                setLoadingMessage(t(key, params));
+                messageIndex++;
+            };
 
-    const { totalItems, completedItems } = useMemo(() => {
-        const total = sectionsConfig.reduce((acc, section) => acc + Object.keys(section.checklist).filter(key => section.checklist[key as keyof typeof section.checklist]).length, 0);
-        const completed = Object.values(progress).reduce((acc, items) => acc + items.length, 0);
-        return { totalItems: total, completedItems: completed };
-    }, [progress, sectionsConfig]);
+            updateLoadingMessage(); // Set initial message
+            const intervalId = setInterval(updateLoadingMessage, 2000);
 
-    const completionPercentage = totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+            return () => clearInterval(intervalId);
+        }
+    }, [isLoading, query, t]);
 
-    const handleToggle = (id: string) => {
-        setOpenAccordions(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) {
-                newSet.delete(id);
-            } else {
-                newSet.add(id);
-            }
-            return newSet;
-        });
+
+    const handleAskMentor = async () => {
+        if (!query.trim()) return;
+        setIsLoading(true);
+        setAiResponse(null);
+        try {
+            const res = await geminiService.getAiMentorResponse(query);
+            setAiResponse(res);
+        } catch (e) {
+            console.error(e);
+            setAiResponse({ title: t('common.error'), content: t('equipmentView.configurator.errorNetwork')});
+        }
+        setIsLoading(false);
     };
 
-    return (
-        <div>
-            <Card className="mb-8">
-                <h3 className="font-bold text-accent-100">{t('knowledgeView.progress')}</h3>
-                <div className="flex items-center gap-4 mt-2">
-                    <div className="w-full bg-accent-800/70 rounded-full h-4">
-                        <div className="bg-primary-500 h-4 rounded-full transition-all duration-500" style={{ width: `${completionPercentage}%` }}></div>
-                    </div>
-                    <span className="font-bold text-primary-400">{completionPercentage.toFixed(0)}%</span>
-                </div>
-                <p className="text-xs text-accent-300 mt-1 text-right">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: totalItems })}</p>
-            </Card>
+    const phases = Array.from({ length: 5 }, (_, i) => `phase${i + 1}`);
+    const checklistItems = phases.flatMap(p => Object.keys(t(`knowledgeView.sections.${p}.checklist`)));
+    const completedItems = phases.reduce((acc, p) => acc + (progress[p]?.length || 0), 0);
+    const progressPercent = checklistItems.length > 0 ? (completedItems / checklistItems.length) * 100 : 0;
 
-            <AiMentor />
+    const tabs = [
+        { id: 'guide', label: t('knowledgeView.tabs.guide') },
+        { id: 'archive', label: t('knowledgeView.archive.title') },
+    ];
+
+    const sortedArchive = [...archivedResponses].sort((a,b) => b.createdAt - a.createdAt);
+
+    return (
+        <div className="space-y-6">
+            {editingResponse && (
+                <EditResponseModal 
+                    response={editingResponse} 
+                    onClose={() => setEditingResponse(null)} 
+                    onSave={(updated) => {
+                        updateResponse(updated);
+                        setEditingResponse(null);
+                    }}
+                />
+            )}
+             <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5">
+                {tabs.map(tab => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as KnowledgeViewTab)}
+                        className={`flex-1 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+                            activeTab === tab.id
+                                ? 'bg-slate-700 text-primary-300 shadow-sm'
+                                : 'text-slate-300 hover:bg-slate-800'
+                        }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </nav>
             
-            <div className="mt-8">
-                 {sectionsConfig.map(section => (
-                     <JourneyStep
-                        key={section.id}
-                        section={section}
-                        isOpen={openAccordions.has(section.id)}
-                        onToggle={() => handleToggle(section.id)}
-                    />
-                 ))}
-            </div>
+            {activeTab === 'guide' ? (
+                <div className="space-y-6">
+                    <Card>
+                        <h3 className="font-semibold">{t('knowledgeView.progress')}</h3>
+                        <div className="relative h-2 w-full bg-slate-700 rounded-full my-2">
+                            <div className="absolute h-2 bg-primary-500 rounded-full transition-all duration-500" style={{width: `${progressPercent}%`}}></div>
+                        </div>
+                        <p className="text-sm text-slate-400">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: checklistItems.length })}</p>
+                    </Card>
+                    <Card>
+                        <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">
+                            <PhosphorIcons.Brain className="w-6 h-6"/> {t('knowledgeView.aiMentor.title')}
+                        </h3>
+                        <p className="text-sm text-slate-400 mb-4">{t('knowledgeView.aiMentor.subtitle')}</p>
+                        <div className="flex gap-2">
+                            <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('knowledgeView.aiMentor.placeholder')} className="w-full pl-3 pr-3 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                            <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>{t('knowledgeView.aiMentor.button')}</Button>
+                        </div>
+                        {isLoading && (
+                            <div className="text-center p-4">
+                                <p className="text-slate-400 animate-pulse">{loadingMessage}</p>
+                            </div>
+                        )}
+                        {aiResponse && (
+                            <Card className="mt-4 bg-slate-800 animate-fade-in">
+                                <h4 className="font-bold text-primary-300">{aiResponse.title}</h4>
+                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
+                                <div className="text-right mt-2">
+                                    <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>{t('knowledgeView.archive.saveButton')}</Button>
+                                </div>
+                            </Card>
+                        )}
+                    </Card>
+                    
+                    <div className="space-y-6">
+                        {phases.map(p => (
+                            <KnowledgeStep
+                                key={p}
+                                phase={p}
+                                title={t(`knowledgeView.sections.${p}.title`)}
+                                subtitle={t(`knowledgeView.sections.${p}.subtitle`)}
+                                p1_title={t(`knowledgeView.sections.${p}.p1_title`)}
+                                p1_text={t(`knowledgeView.sections.${p}.p1_text`)}
+                                p2_title={t(`knowledgeView.sections.${p}.p2_title`)}
+                                p2_text={t(`knowledgeView.sections.${p}.p2_text`)}
+                                checklist={t(`knowledgeView.sections.${p}.checklist`)}
+                                proTip={t(`knowledgeView.sections.${p}.proTip`)}
+                                progress={progress[p] || []}
+                                onToggle={(itemId) => toggleItem(p, itemId)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <Card>
+                    <div className="space-y-4">
+                    {sortedArchive.length > 0 ? (
+                        sortedArchive.map(res => (
+                            <Card key={res.id} className="bg-slate-800">
+                                <p className="text-xs text-slate-400 italic">{t('knowledgeView.archive.queryLabel')}: "{res.query}"</p>
+                                <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
+                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
+                                <div className="flex justify-end items-center gap-2 mt-2">
+                                    <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)}>
+                                        <PhosphorIcons.PencilSimple className="w-4 h-4"/>
+                                    </Button>
+                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(res.id)}>
+                                        <PhosphorIcons.TrashSimple className="w-4 h-4"/>
+                                    </Button>
+                                </div>
+                            </Card>
+                        ))
+                    ) : (
+                        <div className="text-center py-10 text-slate-500">
+                             <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
+                            <h3 className="font-semibold">{t('knowledgeView.archive.empty')}</h3>
+                        </div>
+                    )}
+                    </div>
+                </Card>
+            )}
         </div>
     );
 };

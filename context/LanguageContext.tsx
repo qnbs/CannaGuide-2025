@@ -4,24 +4,23 @@ import { locales, Locale } from '../locales';
 
 interface LanguageContextType {
   locale: Locale;
-  t: (key: string, replacements?: Record<string, string | number>) => string;
+  t: (key: string, replacements?: Record<string, string | number>) => any;
 }
 
 export const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-// Helper function to get nested values from an object using a string path
-const getNestedValue = (obj: any, path: string): string => {
+const getNestedValue = (obj: any, path: string): any => {
   return path.split('.').reduce((acc, part) => acc && acc[part], obj) || path;
 };
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { settings } = useSettings();
   const locale = settings.language;
-  const translations = locales[locale] || locales.en; // Fallback to English
+  const translations = locales[locale] || locales.en;
 
-  const t = (key: string, replacements?: Record<string, string | number>): string => {
+  const t = (key: string, replacements?: Record<string, string | number>): any => {
     let translation = getNestedValue(translations, key);
-    if (replacements) {
+    if (replacements && typeof translation === 'string') {
       Object.keys(replacements).forEach(placeholder => {
         const regex = new RegExp(`{${placeholder}}`, 'g');
         translation = translation.replace(regex, String(replacements[placeholder]));

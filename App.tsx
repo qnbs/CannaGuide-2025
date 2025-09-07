@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { View, Plant, Command, PlantStage } from './types';
 import { BottomNav } from './components/navigation/BottomNav';
@@ -19,6 +18,7 @@ import { usePlantManager } from './hooks/usePlantManager';
 import { CommandPalette } from './components/common/CommandPalette';
 import { ActionModalsContainer, ModalState } from './components/common/ActionModalsContainer';
 import { dbService } from './services/dbService';
+import { usePlantAdvisorArchive } from './hooks/usePlantAdvisorArchive';
 
 
 const AppContent: React.FC = () => {
@@ -53,6 +53,13 @@ const AppContent: React.FC = () => {
     advanceDay,
     updatePlantState,
   } = usePlantManager(plants, setPlants);
+  
+  const { 
+      archive: plantAdvisorArchive, 
+      addAdvisorResponse, 
+      updateAdvisorResponse, 
+      deleteAdvisorResponse 
+  } = usePlantAdvisorArchive();
 
   const viewTitles: Record<View, string> = useMemo(() => ({
     [View.Strains]: t('strainsView.title'),
@@ -106,25 +113,25 @@ const AppContent: React.FC = () => {
     };
 
     const navCommands: Command[] = [
-        { id: 'nav-strains', title: t('nav.strains'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Leafy />, action: exec(() => setActiveView(View.Strains)), keywords: 'database library sorten datenbank' },
-        { id: 'nav-plants', title: t('nav.plants'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Plant />, action: exec(() => setActiveView(View.Plants)), keywords: 'dashboard growbox pflanzen' },
-        { id: 'nav-equipment', title: t('nav.equipment'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Wrench />, action: exec(() => setActiveView(View.Equipment)), keywords: 'gear tools calculator rechner' },
-        { id: 'nav-knowledge', title: t('nav.knowledge'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.BookOpenText />, action: exec(() => setActiveView(View.Knowledge)), keywords: 'guide learn wissen anleitung' },
-        { id: 'nav-settings', title: t('nav.settings'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Gear />, action: exec(() => setActiveView(View.Settings)), keywords: 'setup options einstellungen' },
-        { id: 'nav-help', title: t('nav.help'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Question />, action: exec(() => setActiveView(View.Help)), keywords: 'faq about hilfe' },
+        { id: 'nav-strains', title: t('nav.strains'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Leafy />, action: exec(() => setActiveView(View.Strains)), keywords: 'database library sorten datenbank bibliothek' },
+        { id: 'nav-plants', title: t('nav.plants'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Plant />, action: exec(() => setActiveView(View.Plants)), keywords: 'dashboard growbox pflanzen anbau' },
+        { id: 'nav-equipment', title: t('nav.equipment'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Wrench />, action: exec(() => setActiveView(View.Equipment)), keywords: 'gear tools calculator rechner ausrüstung werkzeuge' },
+        { id: 'nav-knowledge', title: t('nav.knowledge'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.BookOpenText />, action: exec(() => setActiveView(View.Knowledge)), keywords: 'guide learn wissen anleitung lernen' },
+        { id: 'nav-settings', title: t('nav.settings'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Gear />, action: exec(() => setActiveView(View.Settings)), keywords: 'setup options einstellungen optionen' },
+        { id: 'nav-help', title: t('nav.help'), subtitle: t('commandPalette.navigation'), icon: <PhosphorIcons.Question />, action: exec(() => setActiveView(View.Help)), keywords: 'faq about hilfe über' },
     ];
 
     const actionCommands: Command[] = [
-         { id: 'action-water-all', title: t('plantsView.summary.waterAll'), subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.Drop />, action: exec(() => waterAllPlants()), keywords: 'gießen' },
-         { id: 'action-next-day', title: 'Simulate Next Day', subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.ArrowClockwise />, action: exec(() => advanceDay()), keywords: 'simulate next day vorspulen' },
+         { id: 'action-water-all', title: t('plantsView.summary.waterAll'), subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.Drop />, action: exec(() => waterAllPlants()), keywords: 'gießen alle' },
+         { id: 'action-next-day', title: t('plantsView.summary.simulateNextDay'), subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.ArrowClockwise />, action: exec(() => advanceDay()), keywords: 'simulate next day vorspulen nächster tag simulieren' },
     ];
 
     const plantCommands: Command[] = managedPlants
         .filter((p): p is Plant => p !== null && p.stage !== PlantStage.Finished)
         .flatMap(plant => [
-            { id: `inspect-${plant.id}`, title: `Inspect: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.MagnifyingGlass/>, action: exec(() => { setActiveView(View.Plants); setSelectedPlantId(plant.id); }), keywords: `details ${plant.name}` },
-            { id: `water-${plant.id}`, title: `Water: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.Drop/>, action: exec(() => setModalState({ plantId: plant.id, type: 'watering' })), keywords: `gießen ${plant.name}` },
-            { id: `feed-${plant.id}`, title: `Feed: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.TestTube/>, action: exec(() => setModalState({ plantId: plant.id, type: 'feeding' })), keywords: `düngen ${plant.name}` },
+            { id: `inspect-${plant.id}`, title: `${t('commandPalette.inspect')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.MagnifyingGlass/>, action: exec(() => { setActiveView(View.Plants); setSelectedPlantId(plant.id); }), keywords: `details ${plant.name} ansehen prüfen` },
+            { id: `water-${plant.id}`, title: `${t('commandPalette.water')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.Drop/>, action: exec(() => setModalState({ plantId: plant.id, type: 'watering' })), keywords: `gießen ${plant.name}` },
+            { id: `feed-${plant.id}`, title: `${t('commandPalette.feed')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.TestTube/>, action: exec(() => setModalState({ plantId: plant.id, type: 'feeding' })), keywords: `düngen ${plant.name} füttern` },
         ]);
 
     return [...navCommands, ...actionCommands, ...plantCommands];
@@ -145,6 +152,11 @@ const AppContent: React.FC = () => {
                   completeTask={completeTask}
                   advanceDay={advanceDay}
                   updatePlantState={updatePlantState}
+                  onWaterAll={waterAllPlants}
+                  advisorArchive={plantAdvisorArchive}
+                  addAdvisorResponse={addAdvisorResponse}
+                  updateAdvisorResponse={updateAdvisorResponse}
+                  deleteAdvisorResponse={deleteAdvisorResponse}
                />;
       case View.Equipment:
         return <EquipmentView />;
@@ -165,12 +177,17 @@ const AppContent: React.FC = () => {
                   completeTask={completeTask}
                   advanceDay={advanceDay}
                   updatePlantState={updatePlantState}
+                  onWaterAll={waterAllPlants}
+                  advisorArchive={plantAdvisorArchive}
+                  addAdvisorResponse={addAdvisorResponse}
+                  updateAdvisorResponse={updateAdvisorResponse}
+                  deleteAdvisorResponse={deleteAdvisorResponse}
                />;
     }
   };
 
   return (
-    <div className={`h-screen grid grid-rows-[auto_1fr_auto] font-sans text-slate-200`}>
+    <div className={`h-screen grid grid-rows-[auto_1fr_auto] font-sans`}>
       {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
       
       <header className="glass-pane sticky top-0 z-30">
@@ -195,7 +212,7 @@ const AppContent: React.FC = () => {
                     <button
                       onClick={() => setIsCommandPaletteOpen(true)}
                       className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                      aria-label="Open Command Palette"
+                      aria-label={t('commandPalette.open')}
                     >
                         <PhosphorIcons.CommandLine className="w-6 h-6" />
                     </button>

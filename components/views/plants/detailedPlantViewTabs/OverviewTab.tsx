@@ -13,24 +13,32 @@ interface OverviewTabProps {
 
 const VitalStat: React.FC<{ label: string, value: number, unit: string, idealMin: number, idealMax: number, color: string }> = ({ label, value, unit, idealMin, idealMax, color }) => {
     const isIdeal = value >= idealMin && value <= idealMax;
-    const percentage = Math.min(100, Math.max(0, (value / (idealMax * 1.5)) * 100)); // Simple scale
+    const range = (idealMax * 1.5) - 0;
+    const percentage = Math.min(100, Math.max(0, (value / range) * 100));
     
     return (
         <div>
             <div className="flex justify-between items-baseline mb-1">
                 <span className="font-semibold text-slate-200">{label}</span>
-                <span className={`font-mono text-lg ${isIdeal ? 'text-green-500' : 'text-amber-500'}`}>{value.toFixed(2)}<span className="text-sm ml-1">{unit}</span></span>
+                <span className={`font-mono text-lg ${isIdeal ? 'text-green-400' : 'text-amber-400'}`}>{value.toFixed(1)}<span className="text-sm ml-1">{unit}</span></span>
             </div>
-            <div className="w-full bg-slate-700 rounded-full h-2.5">
+            <div className="w-full bg-slate-700 rounded-full h-2.5 relative">
                 <div className={`h-2.5 rounded-full transition-all duration-300 ${color}`} style={{ width: `${percentage}%` }}></div>
-                <div className="relative h-0">
-                    <div className="absolute top-[-4px] h-4 w-0.5 bg-slate-500" style={{ left: `${(idealMin / (idealMax * 1.5)) * 100}%` }} title={`Min: ${idealMin}`}></div>
-                    <div className="absolute top-[-4px] h-4 w-0.5 bg-slate-500" style={{ left: `${(idealMax / (idealMax * 1.5)) * 100}%` }} title={`Max: ${idealMax}`}></div>
-                </div>
+                <div 
+                    className="absolute top-[-4px] h-4 w-px bg-slate-400" 
+                    style={{ left: `${(idealMin / range) * 100}%` }} 
+                    title={`Ideal Min: ${idealMin}`}
+                ></div>
+                <div 
+                    className="absolute top-[-4px] h-4 w-px bg-slate-400" 
+                    style={{ left: `${(idealMax / range) * 100}%` }} 
+                    title={`Ideal Max: ${idealMax}`}
+                ></div>
             </div>
         </div>
     );
 };
+
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslations();
@@ -49,7 +57,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                     <div className="space-y-4">
                        <VitalStat label={t('plantsView.detailedView.ph')} value={plant.vitals.ph} unit="" idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} color="bg-green-500" />
                        <VitalStat label={t('plantsView.detailedView.ec')} value={plant.vitals.ec} unit=" mS/cm" idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} color="bg-amber-500" />
-                       <VitalStat label={t('plantsView.detailedView.moisture')} value={plant.vitals.substrateMoisture} unit="%" idealMin={30} idealMax={80} color="bg-accent-500" />
+                       <VitalStat label={t('plantsView.detailedView.moisture')} value={plant.vitals.substrateMoisture} unit="%" idealMin={30} idealMax={80} color="bg-blue-500" />
                        <VitalStat label={t('plantsView.detailedView.stress')} value={plant.stressLevel} unit="%" idealMin={0} idealMax={20} color="bg-red-500" />
                     </div>
                 </Card>

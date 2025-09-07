@@ -1,0 +1,61 @@
+// FIX: Implemented English translation module for settings view.
+export const settingsView = {
+  title: 'Settings',
+  display: {
+    title: 'Display',
+    language: 'Language',
+    theme: 'Theme',
+    themes: {
+      midnight: 'Midnight',
+      forest: 'Forest',
+      purpleHaze: 'Purple Haze',
+    },
+    fontSize: 'Font Size',
+    fontSizes: {
+      sm: 'Small',
+      base: 'Normal',
+      lg: 'Large',
+    },
+  },
+  notifications: {
+      title: 'Notifications',
+      enableAll: 'Enable All Notifications',
+      stageChange: 'Stage Change',
+      problemDetected: 'Problem Detected',
+      harvestReady: 'Harvest Ready',
+      newTask: 'New Task',
+  },
+  simulation: {
+    title: 'Simulation',
+    speed: 'Simulation Speed',
+    difficulty: 'Difficulty',
+    difficulties: {
+      easy: 'Easy',
+      normal: 'Normal',
+      hard: 'Hard',
+    },
+  },
+  defaults: {
+      title: 'Defaults',
+      growSetup: 'Default Grow Setup',
+      export: 'Default Export Settings',
+  },
+  data: {
+    title: 'Data Management',
+    resetPlants: 'Reset Plants',
+    resetPlantsConfirm: 'Are you sure you want to delete all your current plants? This action cannot be undone.',
+    resetPlantsSuccess: 'All plants have been reset.',
+    resetAll: 'Reset All App Data',
+    resetAllConfirm: 'WARNING: This will permanently delete all your plants, settings, favorites, and custom strains. Are you absolutely sure?',
+    resetAllSuccess: 'All app data has been reset. The app will now reload.',
+    exportAll: 'Export All Data',
+    exportConfirm: 'Are you sure you want to export all your app data as a backup?',
+    exportSuccess: 'All data exported successfully!',
+    exportError: 'Export failed.',
+    importAll: 'Import All Data',
+    importConfirm: 'Are you sure you want to import this data? This will overwrite all your current data.',
+    importSuccess: 'Data imported successfully! The app will now reload.',
+    importError: 'Error importing data',
+    importInvalidFile: 'Invalid backup file.',
+  },
+};

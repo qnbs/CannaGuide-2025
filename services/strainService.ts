@@ -1,14 +1,14 @@
 import { Strain } from '../types';
-// FIX: Corrected the import path to point to the index file inside the 'strains' directory, as '../data/strains' was resolving to an empty 'strains.ts' file.
-import { allStrainsData } from '../data/strains/index';
 
 let cachedStrains: Strain[] | null = null;
 
+const STRAIN_FILES = 'abcdefghijklmnopqrstuvwxyz'.split('').concat(['numeric']);
+
 /**
  * Provides an efficient way to access the strain data.
- * Previously, this service fetched many individual JSON files, which could fail on
- * some browsers or slow networks. Now, it uses the pre-bundled data from the
- * TypeScript modules, eliminating runtime network requests for strains.
+ * This service fetches strain data from individual JSON files on demand,
+ * preventing the large dataset from being bundled with the initial app download.
+ * This significantly improves the initial load time.
  */
 export const strainService = {
   async getAllStrains(): Promise<Strain[]> {
@@ -17,15 +17,28 @@ export const strainService = {
     }
 
     try {
-      // Data is imported from the JS bundle, no fetching needed.
-      // We sort it here once to ensure consistent order.
-      const sortedStrains = [...allStrainsData].sort((a, b) => a.name.localeCompare(b.name));
+      const fetchPromises = STRAIN_FILES.map(file => 
+        fetch(`/data/strains/${file}.json`).then(res => {
+          if (!res.ok) {
+            // Silently fail for files that might not exist
+            if (res.status === 404) return []; 
+            throw new Error(`Failed to fetch ${file}.json`);
+          }
+          return res.json();
+        })
+      );
+
+      const strainArrays = await Promise.all(fetchPromises);
+      const allStrains: Strain[] = strainArrays.flat();
+      
+      const sortedStrains = [...allStrains].sort((a, b) => a.name.localeCompare(b.name));
       
       cachedStrains = sortedStrains;
       return cachedStrains;
     } catch (error) {
-      console.error("Error processing bundled strain data:", error);
-      throw error;
+      console.error("Error fetching or processing strain data:", error);
+      // Return empty array on failure to prevent app crash
+      return [];
     }
   },
 };

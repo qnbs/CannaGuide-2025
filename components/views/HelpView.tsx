@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
+import { Tabs } from '../common/Tabs';
 
 type HelpTab = 'start' | 'faq' | 'cultivation';
 
@@ -224,15 +225,13 @@ export const HelpView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-             <div className="border-b border-accent-800">
-                <nav className="-mb-px flex space-x-6 overflow-x-auto justify-center">
-                    {tabs.map(tab => (
-                        <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`shrink-0 flex items-center gap-2 px-1 pb-4 text-sm md:text-base font-medium border-b-2 transition-colors ${activeTab === tab.id ? 'border-primary-500 text-primary-400' : 'border-transparent text-accent-300 hover:border-accent-600 hover:text-accent-100'}`}>
-                            <div className="w-5 h-5">{tab.icon}</div> {tab.label}
-                        </button>
-                    ))}
-                </nav>
-            </div>
+             <Tabs 
+                tabs={tabs} 
+                activeTab={activeTab} 
+                setActiveTab={(id) => setActiveTab(id as HelpTab)} 
+                className="bg-transparent" 
+                buttonClassName="py-2" 
+             />
             {renderTabContent()}
         </div>
     );

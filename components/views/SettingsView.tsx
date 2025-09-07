@@ -80,7 +80,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
             const dataToExport: Record<string, any> = {
                 app_id: 'cannabis-grow-guide-2025',
                 export_date: new Date().toISOString(),
-                version: '2.4.0'
+                version: '2.5.0'
             };
             const keysToExport = [
                 'cannabis-grow-guide-settings', 'cannabis-grow-guide-plants', 'cannabis-grow-guide-favorites',
@@ -125,6 +125,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
                 }
                 
                 if (!window.confirm(t('settingsView.data.importConfirm'))) {
+                    if (event.target) event.target.value = '';
                     return;
                 }
 
@@ -232,8 +233,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
             <SettingsSection title={t('settingsView.data.title')}>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <Button variant="secondary" onClick={handleExportAllData}>{t('settingsView.data.exportAll')}</Button>
-                     <Button variant="secondary" onClick={() => document.getElementById('import-file-input')?.click()}>{t('settingsView.data.importAll')}</Button>
-                     <input type="file" id="import-file-input" accept=".json" className="hidden" onChange={handleImportAllData} />
+                     <Button variant="secondary" as="label" className="cursor-pointer text-center flex justify-center items-center">
+                        {t('settingsView.data.importAll')}
+                        <input type="file" id="import-file-input" accept=".json" className="hidden" onChange={handleImportAllData} />
+                    </Button>
                      <Button variant="danger" onClick={handleResetPlants}>{t('settingsView.data.resetPlants')}</Button>
                      <Button variant="danger" onClick={handleResetAllData}>{t('settingsView.data.resetAll')}</Button>
                 </div>

@@ -1,12 +1,28 @@
 import React from 'react';
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+// FIX: Refactor to a polymorphic component to support the `as` prop for rendering different elements like `label`.
+type ButtonOwnProps<E extends React.ElementType> = {
     children: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'danger';
     size?: 'sm' | 'base' | 'lg';
+    as?: E;
+    className?: string;
 }
 
-export const Button: React.FC<ButtonProps> = ({ children, className, variant = 'primary', size = 'base', ...props }) => {
+type ButtonProps<E extends React.ElementType> = ButtonOwnProps<E> & Omit<React.ComponentProps<E>, keyof ButtonOwnProps<E>>;
+
+const defaultElement = 'button';
+
+export const Button = <E extends React.ElementType = typeof defaultElement>({
+    children,
+    className,
+    variant = 'primary',
+    size = 'base',
+    as,
+    ...props
+}: ButtonProps<E>) => {
+    const Component = as || defaultElement;
+
     const baseClasses = "rounded-lg font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:saturate-50";
 
     const variantClasses = {
@@ -22,8 +38,8 @@ export const Button: React.FC<ButtonProps> = ({ children, className, variant = '
     };
 
     return (
-        <button className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`} {...props}>
+        <Component className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`} {...props}>
             {children}
-        </button>
+        </Component>
     );
 };

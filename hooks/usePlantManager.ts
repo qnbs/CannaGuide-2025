@@ -5,6 +5,20 @@ import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
 import { useTranslations } from './useTranslations';
 
+const clonePlant = (plant: Plant): Plant => {
+    return {
+        ...plant,
+        strain: { ...plant.strain },
+        growSetup: { ...plant.growSetup },
+        vitals: { ...plant.vitals },
+        environment: { ...plant.environment },
+        problems: plant.problems.map(p => ({ ...p })),
+        journal: plant.journal.map(j => ({ ...j, details: j.details ? { ...j.details } : undefined })),
+        tasks: plant.tasks.map(t => ({ ...t })),
+        history: plant.history.map(h => ({ ...h, vitals: { ...h.vitals } })),
+    };
+};
+
 export const usePlantManager = (
     initialPlants: (Plant | null)[],
     setGlobalPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>
@@ -56,7 +70,7 @@ export const usePlantManager = (
         const elapsedMs = timeSinceLastUpdate * speedMultiplier;
         const elapsedDays = elapsedMs / (1000 * 60 * 60 * 24);
 
-        let newPlantState = JSON.parse(JSON.stringify(plant));
+        let newPlantState = clonePlant(plant);
         
         const totalElapsedMsFromStart = (newPlantState.lastUpdated - newPlantState.startedAt) + elapsedMs;
         newPlantState.age = Math.floor(totalElapsedMsFromStart / (1000 * 60 * 60 * 24));
@@ -130,6 +144,30 @@ export const usePlantManager = (
     }, [simulatePlant]);
     
     useEffect(() => {
+        const catchUpAndResume = () => {
+            const now = Date.now();
+            let needsMoreCatchUp = false;
+
+            setPlants(currentPlants => currentPlants.map(p => {
+                if (p && p.stage !== PlantStage.Finished && (now - p.lastUpdated) > 60000) { // Catch up if more than a minute behind
+                    needsMoreCatchUp = true;
+                    const timeToSimulateChunk = 1000 * 60 * 60; // Simulate 1 hour at a time
+                    const targetTimestamp = Math.min(p.lastUpdated + timeToSimulateChunk, now);
+                    return simulatePlant(p, targetTimestamp);
+                }
+                return p;
+            }));
+
+            if (needsMoreCatchUp) {
+                setTimeout(catchUpAndResume, 50); // Yield to main thread and continue
+            } else {
+                // All caught up, run a final sync and restart the interval
+                runSimulation(); 
+                if (intervalRef.current) clearInterval(intervalRef.current);
+                intervalRef.current = window.setInterval(runSimulation, 5000);
+            }
+        };
+
         const handleVisibilityChange = () => {
             if (document.hidden) {
                 if (intervalRef.current) {
@@ -137,16 +175,13 @@ export const usePlantManager = (
                     intervalRef.current = null;
                 }
             } else {
-                runSimulation();
-                
-                if (intervalRef.current === null) {
-                    intervalRef.current = window.setInterval(runSimulation, 5000);
-                }
+                if (intervalRef.current) clearInterval(intervalRef.current);
+                catchUpAndResume();
             }
         };
 
         if (!document.hidden) {
-            runSimulation(); // Initial run
+            setTimeout(runSimulation, 100); // Initial deferred simulation
             intervalRef.current = window.setInterval(runSimulation, 5000);
         }
 
@@ -158,14 +193,14 @@ export const usePlantManager = (
                 clearInterval(intervalRef.current);
             }
         };
-    }, [runSimulation]);
+    }, [runSimulation, simulatePlant]);
 
     const advanceDay = useCallback(() => {
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.stage !== PlantStage.Finished) {
                 const oneDayMs = 24 * 60 * 60 * 1000;
                 const speedMultiplier = { '1x': 1, '2x': 2, '5x': 5, '10x': 10, '20x': 20 }[settings.simulationSettings.speed];
-                const targetTimestamp = p.lastUpdated + (oneDayMs / speedMultiplier); // We want to simulate one full day in-game
+                const targetTimestamp = p.lastUpdated + (oneDayMs / speedMultiplier);
                 return simulatePlant(p, targetTimestamp);
             }
             return p;
@@ -184,7 +219,7 @@ export const usePlantManager = (
         setPlants(prev => prev.map(p => {
             if (p?.id !== plantId) return p;
 
-            let updatedPlant = JSON.parse(JSON.stringify(p));
+            let updatedPlant = clonePlant(p);
             updatedPlant.journal.push({ ...entry, id: `manual-${Date.now()}`, timestamp: Date.now() });
 
             if ((entry.type === 'WATERING' || entry.type === 'FEEDING') && entry.details) {
@@ -222,7 +257,7 @@ export const usePlantManager = (
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && p.stage !== PlantStage.Finished) {
                 wateredCount++;
-                let updatedPlant = JSON.parse(JSON.stringify(p));
+                let updatedPlant = clonePlant(p);
                 const moistureReplenish = (500 / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
                 updatedPlant.vitals.ph = SIMULATION_CONSTANTS.PH_DRIFT_TARGET;

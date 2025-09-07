@@ -1,9 +1,15 @@
 import { Strain } from '../types';
+// FIX: Corrected the import path to point to the index file inside the 'strains' directory, as '../data/strains' was resolving to an empty 'strains.ts' file.
+import { allStrainsData } from '../data/strains/index';
 
 let cachedStrains: Strain[] | null = null;
 
-const strainFiles = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'numeric', 'new_strains'];
-
+/**
+ * Provides an efficient way to access the strain data.
+ * Previously, this service fetched many individual JSON files, which could fail on
+ * some browsers or slow networks. Now, it uses the pre-bundled data from the
+ * TypeScript modules, eliminating runtime network requests for strains.
+ */
 export const strainService = {
   async getAllStrains(): Promise<Strain[]> {
     if (cachedStrains) {
@@ -11,28 +17,14 @@ export const strainService = {
     }
 
     try {
-      const allStrainPromises = strainFiles.map(file => 
-        fetch(`/data/strains/${file}.json`).then(res => {
-          if (!res.ok) {
-            console.warn(`Could not load strain file: ${file}.json. It may be empty or missing.`);
-            return [];
-          }
-          return res.json();
-        }).catch(err => {
-            console.warn(`Failed to fetch or parse strain file ${file}.json:`, err);
-            return []; // Return empty array on fetch/parse error to not break the whole app
-        })
-      );
-      
-      const strainArrays: Strain[][] = await Promise.all(allStrainPromises);
-      const allStrainsData = strainArrays.flat();
-
-      const sortedStrains = allStrainsData.sort((a, b) => a.name.localeCompare(b.name));
+      // Data is imported from the JS bundle, no fetching needed.
+      // We sort it here once to ensure consistent order.
+      const sortedStrains = [...allStrainsData].sort((a, b) => a.name.localeCompare(b.name));
       
       cachedStrains = sortedStrains;
       return cachedStrains;
     } catch (error) {
-      console.error("Error fetching or processing strain data:", error);
+      console.error("Error processing bundled strain data:", error);
       throw error;
     }
   },

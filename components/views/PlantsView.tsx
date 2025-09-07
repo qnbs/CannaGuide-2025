@@ -23,7 +23,6 @@ interface PlantsViewProps {
   setModalState: (state: ModalState | null) => void;
   completeTask: (plantId: string, taskId: string) => void;
   advanceDay: () => void;
-  updatePlantState: (plantId: string) => void;
   onWaterAll: () => void;
   advisorArchive: Record<string, ArchivedAdvisorResponse[]>;
   addAdvisorResponse: (plantId: string, response: AIResponse, query: string) => void;

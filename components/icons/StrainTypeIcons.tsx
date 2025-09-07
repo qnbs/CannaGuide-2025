@@ -32,15 +32,3 @@ export const HybridIcon: React.FC<{ className?: string }> = ({ className }) => (
     <path fill="#FFF" d="M13,51L51,13v38H13z" className="dark:fill-gray-800" />
   </IconBase>
 );
-
-export const SativaLeafIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <IconBase className={className} viewBox="0 0 24 24">
-        <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm-1.025 14h-1.05c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5h.525c.552 0 1-.448 1-1s-.448-1-1-1h-.525c-.83 0-1.5-.67-1.5-1.5S8.12 8 9.425 8h1.05c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-.525c-.552 0-1 .448-1 1s.448 1 1 1h.525c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z" />
-    </IconBase>
-);
-
-export const IndicaLeafIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <IconBase className={className} viewBox="0 0 24 24">
-        <path d="M12 2c5.523 0 10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2zm-.5 4a1.5 1.5 0 110 3 1.5 1.5 0 010-3zm.5 3h-1a1 1 0 00-1 1v7a1 1 0 001 1h1a1 1 0 001-1V10a1 1 0 00-1-1z" />
-    </IconBase>
-);

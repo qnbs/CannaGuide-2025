@@ -73,7 +73,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-start justify-center z-50 p-4 pt-[15vh]" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="command-palette-label">
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-start justify-center z-50 p-4 pt-[15vh]" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="command-palette-label">
             <Card className="w-full max-w-2xl" onClick={e => e.stopPropagation()}>
                 <div className="relative">
                      <label htmlFor="command-search" id="command-palette-label" className="sr-only">{t('commandPalette.placeholder')}</label>

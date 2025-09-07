@@ -25,7 +25,7 @@ export const strains: Strain[] = [
         id: 'yeti-og',
         name: 'Yeti OG',
         type: 'Hybrid',
-        typeDetails: 'Indica 70% / Sativa 30%',
+        typeDetails: 'Indica-dominant',
         genetics: 'OG Kush Phänotyp',
         thc: 20,
         cbd: 1,

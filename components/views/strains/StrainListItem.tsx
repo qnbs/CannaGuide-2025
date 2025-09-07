@@ -6,7 +6,7 @@ import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { Button } from '../../common/Button';
-import { SativaLeafIcon, IndicaLeafIcon } from '../../icons/StrainTypeIcons';
+import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -21,46 +21,6 @@ interface StrainListItemProps {
 }
 
 const listGridClass = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
-
-const TypeDisplay: React.FC<{ strain: Strain }> = ({ strain }) => {
-    const { t } = useTranslations();
-    const { type, typeDetails } = strain;
-
-    if (typeDetails?.includes('100%')) {
-        return <>{t(`strainsView.${type.toLowerCase()}`)}</>;
-    }
-
-    if (typeDetails) {
-        const compactString = typeDetails
-            .replace('Sativa', 'S')
-            .replace('Indica', 'I')
-            .replace(/ /g, '');
-
-        const parts = compactString.split('/');
-
-        const renderPart = (part: string) => {
-            if (part.startsWith('S')) {
-                return <span className="flex items-center gap-1"><SativaLeafIcon className="w-4 h-4 text-amber-400" />{part.substring(1)}</span>;
-            }
-            if (part.startsWith('I')) {
-                 return <span className="flex items-center gap-1"><IndicaLeafIcon className="w-4 h-4 text-indigo-400" />{part.substring(1)}</span>;
-            }
-            return part;
-        }
-
-        if (parts.length === 2) {
-             return (
-                <div className="flex items-center gap-1" title={typeDetails}>
-                    {renderPart(parts[0])}
-                    <span className="text-slate-600">/</span>
-                    {renderPart(parts[1])}
-                </div>
-            );
-        }
-        return <>{compactString.replace('/', ' / ')}</>;
-    }
-    return <>{t(`strainsView.${type.toLowerCase()}`)}</>;
-};
 
 const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
@@ -84,6 +44,14 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
         e.stopPropagation();
         action();
     };
+
+    const TypeDisplay = () => {
+        const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
+        const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
+        if (!TypeIcon) return null;
+        return <TypeIcon className={`w-6 h-6 ${typeClasses[strain.type]}`} />;
+    };
+
 
     return (
         <div
@@ -115,8 +83,8 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                  <p className="text-xs text-slate-400 sm:hidden">{strain.type}</p>
             </div>
 
-            <div className="hidden sm:flex text-slate-300 font-medium truncate" title={strain.typeDetails || strain.type}>
-                <TypeDisplay strain={strain} />
+            <div className="hidden sm:flex" title={strain.typeDetails || strain.type}>
+                <TypeDisplay />
             </div>
             <div className="hidden sm:flex font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>
             <div className="hidden sm:flex font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>
@@ -140,10 +108,9 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                             <PhosphorIcons.PencilSimple className="w-4 h-4" />
                             <span className="sr-only">{t('common.edit')}</span>
                         </Button>
-                        {/* FIX: Corrected typo 'Phosph' to 'PhosphorIcons.TrashSimple' and completed the button component. */}
                         <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))}>
                             <PhosphorIcons.TrashSimple className="w-4 h-4" />
-                             <span className="sr-only">{t('common.delete')}</span>
+                            <span className="sr-only">{t('common.delete')}</span>
                         </Button>
                     </div>
                 )}
@@ -152,5 +119,4 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     );
 };
 
-// FIX: Added a default export to the component to resolve import errors.
 export default React.memo(StrainListItem);

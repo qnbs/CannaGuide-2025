@@ -24,7 +24,7 @@ export const strains: Strain[] = [
     {
         id: 'tangie',
         name: 'Tangie',
-        type: 'Sativa',
+        type: 'Hybrid',
         typeDetails: 'Sativa 70% / Indica 30%',
         genetics: 'California Orange x Skunk #1',
         thc: 22,

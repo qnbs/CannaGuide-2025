@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Plant, PlantStage, PlantProblem, JournalEntry, Task } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
@@ -27,7 +27,6 @@ export const usePlantManager = (
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
     const [plants, setPlants] = useState(initialPlants);
-    const intervalRef = useRef<number | null>(null);
 
     const problemMessages = useMemo(() => ({
         Overwatering: { message: t('problemMessages.overwatering.message'), solution: t('problemMessages.overwatering.solution') },
@@ -73,25 +72,41 @@ export const usePlantManager = (
         let newPlantState = clonePlant(plant);
         
         const totalElapsedMsFromStart = (newPlantState.lastUpdated - newPlantState.startedAt) + elapsedMs;
-        newPlantState.age = Math.floor(totalElapsedMsFromStart / (1000 * 60 * 60 * 24));
+        const newAge = Math.floor(totalElapsedMsFromStart / (1000 * 60 * 60 * 24));
+        
+        if (newAge > newPlantState.age) {
+            newPlantState.age = newAge;
+            let cumulativeDuration = 0;
+            let currentStageReached = false;
 
-        let currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
-        const stageProgress = STAGES_ORDER.slice(0, STAGES_ORDER.indexOf(newPlantState.stage)).reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
+            for (const stage of STAGES_ORDER) {
+                const stageDetails = PLANT_STAGE_DETAILS[stage];
+                if (stageDetails.duration === Infinity) break;
 
-        if (currentStageInfo.next && (newPlantState.age - stageProgress) >= currentStageInfo.duration) {
-            newPlantState.stage = currentStageInfo.next;
-            currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
-            const logMessage = t('plantsView.notifications.stageChange', { stage: t(`plantStages.${newPlantState.stage}`) });
-            newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: logMessage });
-            if (settings.notificationSettings.stageChange) addNotification(`${plant.name}: ${logMessage}`, 'info');
-            if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(t('plantsView.notifications.harvestReady', { name: plant.name }), 'info');
-            if(newPlantState.stage === PlantStage.Finished) {
+                const nextStageStartsAt = cumulativeDuration + stageDetails.duration;
+                if (newPlantState.age >= cumulativeDuration && newPlantState.age < nextStageStartsAt) {
+                    if (newPlantState.stage !== stage) {
+                         newPlantState.stage = stage;
+                         const logMessage = t('plantsView.notifications.stageChange', { stage: t(`plantStages.${stage}`) });
+                         newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: logMessage });
+                         if (settings.notificationSettings.stageChange) addNotification(`${plant.name}: ${logMessage}`, 'info');
+                         if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(t('plantsView.notifications.harvestReady', { name: plant.name }), 'info');
+                    }
+                    currentStageReached = true;
+                    break;
+                }
+                cumulativeDuration += stageDetails.duration;
+            }
+
+            if (!currentStageReached && newPlantState.stage !== PlantStage.Finished) {
+                newPlantState.stage = PlantStage.Finished;
                 newPlantState.yield = calculateYield(newPlantState);
                 const yieldMessage = t('plantsView.notifications.finalYield', { yield: newPlantState.yield.toFixed(2) });
                 newPlantState.journal.push({ id: `sys-${Date.now()+1}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: yieldMessage });
             }
         }
         
+        let currentStageInfo = PLANT_STAGE_DETAILS[newPlantState.stage];
         if (![PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(newPlantState.stage)) {
             const isNutrientLockout = newPlantState.vitals.ph < SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_LOW || newPlantState.vitals.ph > SIMULATION_CONSTANTS.NUTRIENT_LOCKOUT_PH_HIGH;
             const nutrientUptakeMultiplier = isNutrientLockout ? 0.2 : 1;
@@ -103,7 +118,7 @@ export const usePlantManager = (
         }
 
         let stressFromProblems = 0;
-        const { vitals, environment } = newPlantState;
+        const { vitals } = newPlantState;
         if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) stressFromProblems += (PROBLEM_THRESHOLDS.moisture.under - vitals.substrateMoisture) * 0.3;
         const stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty];
         stressFromProblems *= stressDifficultyModifier;
@@ -132,69 +147,18 @@ export const usePlantManager = (
         return newPlantState;
     }, [settings.simulationSettings, settings.notificationSettings, addNotification, problemMessages, t]);
 
-    const runSimulation = useCallback(() => {
-        setPlants(currentPlants =>
-            currentPlants.map(p => {
-                if (p && p.stage !== PlantStage.Finished) {
-                    return simulatePlant(p, Date.now());
+    const updatePlantState = useCallback((plantIdToUpdate?: string) => {
+        setPlants(currentPlants => {
+            const now = Date.now();
+            return currentPlants.map(p => {
+                if (p && (plantIdToUpdate === undefined || p.id === plantIdToUpdate) && p.stage !== PlantStage.Finished) {
+                    return simulatePlant(p, now);
                 }
                 return p;
-            })
-        );
+            });
+        });
     }, [simulatePlant]);
     
-    useEffect(() => {
-        const catchUpAndResume = () => {
-            const now = Date.now();
-            let needsMoreCatchUp = false;
-
-            setPlants(currentPlants => currentPlants.map(p => {
-                if (p && p.stage !== PlantStage.Finished && (now - p.lastUpdated) > 60000) { // Catch up if more than a minute behind
-                    needsMoreCatchUp = true;
-                    const timeToSimulateChunk = 1000 * 60 * 60; // Simulate 1 hour at a time
-                    const targetTimestamp = Math.min(p.lastUpdated + timeToSimulateChunk, now);
-                    return simulatePlant(p, targetTimestamp);
-                }
-                return p;
-            }));
-
-            if (needsMoreCatchUp) {
-                setTimeout(catchUpAndResume, 50); // Yield to main thread and continue
-            } else {
-                // All caught up, run a final sync and restart the interval
-                runSimulation(); 
-                if (intervalRef.current) clearInterval(intervalRef.current);
-                intervalRef.current = window.setInterval(runSimulation, 5000);
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                if (intervalRef.current) {
-                    clearInterval(intervalRef.current);
-                    intervalRef.current = null;
-                }
-            } else {
-                if (intervalRef.current) clearInterval(intervalRef.current);
-                catchUpAndResume();
-            }
-        };
-
-        if (!document.hidden) {
-            setTimeout(runSimulation, 100); // Initial deferred simulation
-            intervalRef.current = window.setInterval(runSimulation, 5000);
-        }
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
-        };
-    }, [runSimulation, simulatePlant]);
-
     const advanceDay = useCallback(() => {
         setPlants(currentPlants => currentPlants.map(p => {
             if (p && p.stage !== PlantStage.Finished) {
@@ -216,6 +180,9 @@ export const usePlantManager = (
     }, [plants, setGlobalPlants]);
 
     const addJournalEntry = (plantId: string, entry: Omit<JournalEntry, 'id' | 'timestamp'>) => {
+        // First, bring the specific plant up to the current time
+        updatePlantState(plantId);
+
         setPlants(prev => prev.map(p => {
             if (p?.id !== plantId) return p;
 
@@ -238,7 +205,7 @@ export const usePlantManager = (
                         : task
                 );
             }
-            updatedPlant.lastUpdated = Date.now();
+            updatedPlant.lastUpdated = Date.now(); // Ensure lastUpdated is set to now after action
             return updatedPlant;
         }));
     };
@@ -252,6 +219,7 @@ export const usePlantManager = (
     };
 
     const waterAllPlants = () => {
+        updatePlantState(); // Update all plants to current time before watering
         const now = Date.now();
         let wateredCount = 0;
         setPlants(currentPlants => currentPlants.map(p => {
@@ -286,6 +254,7 @@ export const usePlantManager = (
 
     return {
         plants,
+        updatePlantState,
         addJournalEntry,
         completeTask,
         waterAllPlants,

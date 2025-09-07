@@ -47,6 +47,7 @@ const AppContent: React.FC = () => {
 
   const { 
     plants: managedPlants, 
+    updatePlantState,
     addJournalEntry, 
     completeTask, 
     waterAllPlants,
@@ -73,8 +74,21 @@ const AppContent: React.FC = () => {
   
   useEffect(() => {
     dbService.initDB(); // Initialize IndexedDB when the app loads
-  }, []);
-  
+    
+    // Initial sync on app load
+    updatePlantState();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        updatePlantState();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [updatePlantState]);
+
   useEffect(() => {
       if (mainRef.current) {
           mainRef.current.scrollTo(0, 0);

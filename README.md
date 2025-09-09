@@ -1,3 +1,4 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/Cannabis-Grow-Guide-2025)
 # Cannabis Grow Guide 2025 (v2.5.0)
 
 Welcome to the **Cannabis Grow Guide 2025**, your interactive digital companion for the entire cannabis cultivation cycle. This advanced web application is designed to help both novice and experienced growers master their cultivation journey, from seed selection to successful harvest and curing.

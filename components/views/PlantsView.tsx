@@ -95,9 +95,9 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
 
   return (
     <div className="flex flex-col h-full">
-        <div className="mb-6 flex-shrink-0">
+        <Card className="mb-6 flex-shrink-0">
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as PlantsViewTab)} />
-        </div>
+        </Card>
         
         <div className="flex-grow min-h-0 overflow-y-auto">
         {activeTab === 'dashboard' ? (

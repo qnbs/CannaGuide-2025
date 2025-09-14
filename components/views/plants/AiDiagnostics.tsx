@@ -45,8 +45,6 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
         }
     };
 
-    // FIX: Refactored to correctly handle async operations and errors within a single try/catch/finally block.
-    // The previous implementation had an unhandled promise rejection vulnerability inside the FileReader's onloadend callback.
     const handleDiagnose = async () => {
         if (!image) return;
         setIsLoading(true);

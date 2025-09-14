@@ -1,6 +1,4 @@
 import { Strain } from '../types';
-// FIX: The import path was ambiguous and resolved to an empty, non-module file.
-// Corrected path to explicitly point to the index file within the 'strains' directory.
 import { allStrainsData } from '../data/strains/index';
 
 /**

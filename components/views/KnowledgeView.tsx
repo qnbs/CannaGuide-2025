@@ -128,7 +128,9 @@ export const KnowledgeView: React.FC = () => {
                     }}
                 />
             )}
-             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as KnowledgeViewTab)} />
+             <Card>
+                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as KnowledgeViewTab)} />
+             </Card>
             
             {activeTab === 'guide' ? (
                 <div className="space-y-6">

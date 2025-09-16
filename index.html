@@ -23,9 +23,10 @@
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0F172A" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Cannabis Grow Guide 2025" />
-    <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyNC0wOC0wOFQwODozMjozMyswMDowMCl2pAAAAABJRU5ErkJggg==" />
+    <link rel="apple-touch-icon" href="/icon.svg" />
 
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <style>
@@ -197,7 +198,7 @@
   <body>
     <div id="root"></div>
     <div id="toast-container"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="index.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {

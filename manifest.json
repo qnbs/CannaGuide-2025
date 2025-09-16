@@ -9,14 +9,14 @@
   "description": "An interactive guide to help you manage your cannabis cultivation journey, from seed to harvest. Track your plants, learn about strains, and get expert tips on equipment and techniques.",
   "icons": [
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyNC0wOC0wOFQwODozMjozMyswMDowMCl2pAAAAABJRU5ErkJggg==",
-      "type": "image/png",
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyNC0wOC0wOFQwODozMjozMyswMDowMCl2pAAAAABJRU5ErkJggg==",
-      "type": "image/png",
+      "src": "/icon.svg",
+      "type": "image/svg+xml",
       "sizes": "512x512",
       "purpose": "any maskable"
     }

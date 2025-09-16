@@ -147,29 +147,40 @@ const AppContent: React.FC = () => {
 
         <header className="flex-shrink-0 glass-pane p-2">
             <div className="max-w-7xl mx-auto">
-                <div className="grid grid-cols-3 items-center gap-4">
-                    <button
-                        onClick={() => setActiveView(View.Plants)}
-                        className="flex items-center justify-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-lg p-1 -m-1 transition-opacity hover:opacity-80"
-                        aria-label={t('nav.plants')}
-                    >
-                       <CannabisLeafIcon className="w-8 h-8 mr-2 text-primary-400" />
-                       <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block">
-                           <span className="text-primary-400">Canna</span>Guide
-                           <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
-                       </h1>
-                    </button>
-
-                    <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
-                        {currentTitle}
-                    </h2>
-
-                    <div className="flex items-center gap-2 justify-end">
-                        {isOffline && <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 text-xs flex items-center gap-1"><PhosphorIcons.WarningCircle /> {t('common.offlineWarning')}</div>}
-                        {deferredPrompt && <Button size="sm" onClick={handleInstallClick}>{t('common.installPwa')}</Button>}
-                        <Button size="sm" variant="secondary" onClick={() => setIsCommandPaletteOpen(true)} aria-label={t('commandPalette.open')}><PhosphorIcons.CommandLine className="w-5 h-5"/></Button>
-                        <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Help)} aria-label={t('nav.help')}><PhosphorIcons.Question className="w-5 h-5"/></Button>
-                        <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Settings)} aria-label={t('nav.settings')}><PhosphorIcons.Gear className="w-5 h-5"/></Button>
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 flex justify-start">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setActiveView(View.Plants)}
+                                className="flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-lg p-1 -m-1 transition-opacity hover:opacity-80"
+                                aria-label={t('nav.plants')}
+                            >
+                               <CannabisLeafIcon className="w-8 h-8 text-primary-400" />
+                               <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block ml-2">
+                                   <span className="text-primary-400">Canna</span>Guide
+                                   <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
+                               </h1>
+                            </button>
+                            <h2 className="text-xl font-bold font-display text-primary-400 whitespace-nowrap sm:hidden">
+                                {currentTitle}
+                            </h2>
+                        </div>
+                    </div>
+        
+                    <div className="flex-shrink-0 hidden sm:block">
+                        <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
+                            {currentTitle}
+                        </h2>
+                    </div>
+                    
+                    <div className="flex-1 flex justify-end">
+                        <div className="flex items-center gap-2">
+                            {isOffline && <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 text-xs flex items-center gap-1"><PhosphorIcons.WarningCircle /> {t('common.offlineWarning')}</div>}
+                            {deferredPrompt && <Button size="sm" onClick={handleInstallClick}>{t('common.installPwa')}</Button>}
+                            <Button size="sm" variant="secondary" onClick={() => setIsCommandPaletteOpen(true)} aria-label={t('commandPalette.open')}><PhosphorIcons.CommandLine className="w-5 h-5"/></Button>
+                            <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Help)} aria-label={t('nav.help')}><PhosphorIcons.Question className="w-5 h-5"/></Button>
+                            <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Settings)} aria-label={t('nav.settings')}><PhosphorIcons.Gear className="w-5 h-5"/></Button>
+                        </div>
                     </div>
                 </div>
             </div>

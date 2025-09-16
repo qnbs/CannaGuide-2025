@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { Plant, PlantStage, PlantProblem, JournalEntry, Task, PlantProblemType } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';

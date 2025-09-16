@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
@@ -63,6 +63,7 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
     const { progress, toggleItem } = useKnowledgeProgress();
     const { responses: archivedResponses, addResponse, updateResponse, deleteResponse } = useKnowledgeArchive();
+    const mentorInputId = useId();
     
     const [activeTab, setActiveTab] = useState<KnowledgeViewTab>('guide');
     const [query, setQuery] = useState('');
@@ -147,7 +148,8 @@ export const KnowledgeView: React.FC = () => {
                         </h3>
                         <p className="text-sm text-slate-400 mb-4">{t('knowledgeView.aiMentor.subtitle')}</p>
                         <div className="flex gap-2">
-                            <input type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('knowledgeView.aiMentor.placeholder')} className="w-full pl-3 pr-3 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                            <label htmlFor={mentorInputId} className="sr-only">{t('knowledgeView.aiMentor.placeholder')}</label>
+                            <input id={mentorInputId} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('knowledgeView.aiMentor.placeholder')} className="w-full pl-3 pr-3 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500" />
                             <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>{t('knowledgeView.aiMentor.button')}</Button>
                         </div>
                         {isLoading && (

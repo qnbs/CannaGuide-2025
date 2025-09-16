@@ -6,9 +6,10 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
+  const isInteractive = !!props.onClick;
   return (
     <div
-      className={`glass-pane rounded-xl p-4 ${className}`}
+      className={`glass-pane rounded-xl p-4 ${isInteractive ? 'card-interactive' : ''} ${className}`}
       {...props}
     >
       {children}

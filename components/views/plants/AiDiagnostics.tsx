@@ -68,6 +68,14 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
         }
     };
     
+    const handleReset = () => {
+        setImage(null);
+        setResponse(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     return (
         <Card>
             <h3 className="text-xl font-bold mb-4 text-slate-100 flex items-center gap-2">
@@ -84,7 +92,12 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
             
             {image && (
                 <div className="space-y-4">
-                    <img src={image.preview} alt="Plant preview" className="rounded-lg max-h-60 w-full object-contain" />
+                    <div className="relative">
+                        <img src={image.preview} alt="Plant preview" className="rounded-lg max-h-60 w-full object-contain" />
+                        <Button size="sm" variant="secondary" onClick={handleReset} className="absolute top-2 right-2 !p-1.5" aria-label="Remove image">
+                            <PhosphorIcons.X className="w-4 h-4" />
+                        </Button>
+                    </div>
                     <Button onClick={handleDiagnose} disabled={isLoading} className="w-full">
                         {isLoading ? t('ai.generating') : t('plantsView.aiDiagnostics.diagnoseButton')}
                     </Button>

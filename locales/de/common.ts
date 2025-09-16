@@ -25,6 +25,11 @@ export const common = {
   description: 'Beschreibung',
   actions: 'Aktionen',
   error: 'Fehler',
+  offlineWarning: 'Du bist offline. Einige Funktionen könnten eingeschränkt sein.',
+  installPwa: 'App installieren',
+  installPwaDescription: 'Installiere diese Anwendung auf deinem Gerät für schnellen Zugriff und eine Offline-Erfahrung.',
+  installPwaSuccess: 'App erfolgreich installiert!',
+  installPwaDismissed: 'Installation abgelehnt.',
 };
 
 export const nav = {

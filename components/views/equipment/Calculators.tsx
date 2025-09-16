@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useId } from 'react';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 
@@ -9,23 +9,28 @@ const CalculatorInput: React.FC<{
     value: string,
     onChange: (val: string) => void,
     unit: string
-}> = ({ label, value, onChange, unit }) => (
-    <div className="relative">
-        <label className="block text-sm font-semibold text-slate-200 mb-1">{label}</label>
-        <input
-            type="number"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            min="0"
-            className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
-        />
-        <span className="absolute right-3 top-9 text-xs text-slate-400">{unit}</span>
-    </div>
-);
+}> = ({ label, value, onChange, unit }) => {
+    const id = useId();
+    return (
+        <div className="relative">
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-200 mb-1">{label}</label>
+            <input
+                id={id}
+                type="number"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                min="0"
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
+            />
+            <span className="absolute right-3 top-9 text-xs text-slate-400">{unit}</span>
+        </div>
+    );
+};
 
 export const Calculators: React.FC = () => {
     const { t } = useTranslations();
     const [activeCalculator, setActiveCalculator] = useState<CalculatorType>('ventilation');
+    const selectId = useId();
 
     const [ventilation, setVentilation] = useState({ width: '80', depth: '80', height: '180', result: 0 });
     const [light, setLight] = useState({ width: '80', depth: '80', result: 0 });
@@ -145,8 +150,8 @@ export const Calculators: React.FC = () => {
                                 <CalculatorInput label={t('equipmentView.calculators.yield.area')} value={yieldEst.area} onChange={val => setYieldEst(y => ({...y, area: val}))} unit="m²"/>
                                 <CalculatorInput label={t('equipmentView.calculators.yield.wattage')} value={yieldEst.wattage} onChange={val => setYieldEst(y => ({...y, wattage: val}))} unit="W"/>
                                  <div className="md:col-span-2">
-                                    <label className="block text-sm font-semibold text-slate-200 mb-1">{t('equipmentView.calculators.yield.level')}</label>
-                                    <select value={yieldEst.level} onChange={e => setYieldEst(y => ({...y, level: e.target.value}))} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors">
+                                    <label htmlFor={selectId} className="block text-sm font-semibold text-slate-200 mb-1">{t('equipmentView.calculators.yield.level')}</label>
+                                    <select id={selectId} value={yieldEst.level} onChange={e => setYieldEst(y => ({...y, level: e.target.value}))} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors">
                                         <option value="beginner">{t('equipmentView.calculators.yield.levels.beginner')}</option>
                                         <option value="advanced">{t('equipmentView.calculators.yield.levels.advanced')}</option>
                                         <option value="expert">{t('equipmentView.calculators.yield.levels.expert')}</option>

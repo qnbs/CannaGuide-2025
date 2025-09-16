@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useId } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { JournalEntry, TrainingType } from '../../../types';
@@ -14,25 +14,29 @@ interface ModalProps {
 
 const ModalBase: React.FC<{title: string, onClose: () => void, children: React.ReactNode}> = ({ title, onClose, children }) => (
     <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
-        <Card className="w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+        <Card className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{title}</h2>
             {children}
         </Card>
     </div>
 );
 
-const InputField: React.FC<{label: string, type: string, value: string, onChange: (val: string) => void, step?: string}> = ({label, type, value, onChange, step}) => (
-    <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-        <input
-            type={type}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            step={step}
-            className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
-        />
-    </div>
-);
+const InputField: React.FC<{label: string, type: string, value: string, onChange: (val: string) => void, step?: string}> = ({label, type, value, onChange, step}) => {
+    const id = useId();
+    return (
+        <div>
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+            <input
+                id={id}
+                type={type}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                step={step}
+                className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+            />
+        </div>
+    );
+};
 
 
 export const WateringModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
@@ -105,6 +109,7 @@ export const FeedingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
 export const ObservationModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { t } = useTranslations();
     const [notes, setNotes] = useState('');
+    const id = useId();
 
     const handleConfirm = () => {
         if(!notes.trim()) return;
@@ -115,7 +120,9 @@ export const ObservationModal: React.FC<ModalProps> = ({ onClose, onConfirm }) =
     return (
         <ModalBase title={t('plantsView.actionModals.observationTitle')} onClose={onClose}>
              <div className="space-y-4">
+                <label htmlFor={id} className="sr-only">{t('plantsView.actionModals.observationPlaceholder')}</label>
                 <textarea
+                    id={id}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder={t('plantsView.actionModals.observationPlaceholder')}
@@ -151,7 +158,7 @@ export const TrainingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
         <ModalBase title={t('plantsView.actionModals.trainingTitle')} onClose={onClose}>
              <div className="space-y-4">
                 <div>
-                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('plantsView.actionModals.trainingType')}</label>
+                    <p className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('plantsView.actionModals.trainingType')}</p>
                     <div className="flex gap-2">
                         {(['Topping', 'LST', 'Defoliation'] as TrainingType[]).map(type => (
                             <button key={type} onClick={() => setTrainingType(type)} className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors ${trainingType === type ? 'bg-primary-600 text-white font-bold' : 'bg-slate-200 dark:bg-slate-700'}`}>{trainingLabels[type]}</button>

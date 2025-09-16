@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card } from './Card';
 import { Button } from './Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
+import { useSettings } from '../../hooks/useSettings';
+import { Language } from '../../types';
 
 interface OnboardingModalProps {
     onClose: () => void;
@@ -11,8 +13,9 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const { t } = useTranslations();
+    const { setSetting } = useSettings();
 
-    const steps = [
+    const steps = useMemo(() => [
         {
             icon: <PhosphorIcons.Leafy className="w-16 h-16 text-primary-400" />,
             title: t('onboarding.step1.title'),
@@ -33,37 +36,56 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
             title: t('onboarding.step4.title'),
             text: t('onboarding.step4.text'),
         },
-    ];
+    ], [t]);
+
+    const handleLanguageSelect = (lang: Language) => {
+        setSetting('language', lang);
+        setCurrentStep(1);
+    };
 
     const handleNext = () => {
-        if (currentStep < steps.length - 1) {
+        if (currentStep < steps.length) {
             setCurrentStep(currentStep + 1);
         } else {
             onClose();
         }
     };
     
-    const step = steps[currentStep];
+    const step = currentStep > 0 ? steps[currentStep - 1] : null;
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[999] p-4">
-            <Card className="w-full max-w-lg text-center">
-                <div className="flex flex-col items-center">
-                    <div className="mb-4">{step.icon}</div>
-                    <h2 className="text-2xl font-bold font-display text-primary-300 mb-2">{step.title}</h2>
-                    <p className="text-slate-300 mb-6">{step.text}</p>
-                </div>
-                
-                <div className="flex items-center justify-between mt-4">
-                    <div className="flex gap-2">
-                        {steps.map((_, index) => (
-                            <div key={index} className={`w-3 h-3 rounded-full transition-colors ${index === currentStep ? 'bg-primary-500' : 'bg-slate-700'}`}></div>
-                        ))}
+            <Card className="w-full max-w-lg text-center modal-content-animate">
+                {currentStep === 0 ? (
+                    <div>
+                        <PhosphorIcons.Globe className="w-16 h-16 text-primary-400 mx-auto mb-4" />
+                        <h2 className="text-2xl font-bold font-display text-primary-300 mb-2">Choose your language / Sprache wählen</h2>
+                        <p className="text-slate-300 mb-6">Select your preferred language to continue.</p>
+                        <div className="flex gap-4 justify-center">
+                            <Button size="lg" onClick={() => handleLanguageSelect('de')}>Deutsch</Button>
+                            <Button size="lg" onClick={() => handleLanguageSelect('en')}>English</Button>
+                        </div>
                     </div>
-                    <Button onClick={handleNext}>
-                        {currentStep < steps.length - 1 ? t('common.next') : t('common.start')}
-                    </Button>
-                </div>
+                ) : step ? (
+                    <>
+                        <div className="flex flex-col items-center">
+                            <div className="mb-4">{step.icon}</div>
+                            <h2 className="text-2xl font-bold font-display text-primary-300 mb-2">{step.title}</h2>
+                            <p className="text-slate-300 mb-6">{step.text}</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between mt-4">
+                            <div className="flex gap-2">
+                                {steps.map((_, index) => (
+                                    <div key={index} className={`w-3 h-3 rounded-full transition-colors ${index === currentStep - 1 ? 'bg-primary-500' : 'bg-slate-700'}`}></div>
+                                ))}
+                            </div>
+                            <Button onClick={handleNext}>
+                                {currentStep < steps.length ? t('common.next') : t('common.start')}
+                            </Button>
+                        </div>
+                    </>
+                ) : null}
             </Card>
         </div>
     );

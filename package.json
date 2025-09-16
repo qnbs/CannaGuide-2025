@@ -9,11 +9,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^19.1.1",
+    "jspdf-autotable": "^5.0.2",
+    "jspdf": "^3.0.2",
+    "@google/genai": "^1.19.0",
     "react-dom": "^19.1.1",
-    "jspdf": "2.5.1",
-    "jspdf-autotable": "3.8.2",
-    "@google/genai": "latest"
+    "react": "^19.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

@@ -1,13 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { Card } from '../../common/Card';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { useTranslations } from '../../hooks/useTranslations';
 import { SetupConfigurator } from './equipment/SetupConfigurator';
 import { Calculators } from './equipment/Calculators';
 import { SavedSetupsView } from './equipment/SavedSetupsView';
-import { useSetupManager } from '../../../hooks/useSetupManager';
-import { geminiService } from '../../../services/geminiService';
-import { Recommendation, SavedSetup } from '../../../types';
-import { Tabs } from '../../common/Tabs';
+import { useSetupManager } from '../../hooks/useSetupManager';
+import { geminiService } from '../../services/geminiService';
+import { Recommendation, SavedSetup } from '../../types';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups';
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
@@ -65,7 +64,21 @@ export const EquipmentView: React.FC = () => {
     return (
         <div className="space-y-6">
             <Card>
-                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as EquipmentViewTab)} />
+                <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as EquipmentViewTab)}
+                            className={`flex-1 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors ${
+                                activeTab === tab.id
+                                    ? 'bg-slate-700 text-primary-300 shadow-sm'
+                                    : 'text-slate-300 hover:bg-slate-800'
+                            }`}
+                        >
+                            {tab.label}
+                        </button>
+                    ))}
+                </nav>
             </Card>
 
             {activeTab === 'configurator' && (

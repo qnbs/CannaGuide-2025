@@ -190,17 +190,6 @@ const AppContent: React.FC = () => {
          { id: 'action-water-all', title: t('plantsView.summary.waterAll'), subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.Drop />, action: exec(() => waterAllPlants()), keywords: 'gießen alle' },
          { id: 'action-next-day', title: t('plantsView.summary.simulateNextDay'), subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.ArrowClockwise />, action: exec(() => advanceDay()), keywords: 'simulate next day vorspulen nächster tag simulieren' },
     ];
-    
-     if (deferredPrompt) {
-        actionCommands.push({
-            id: 'action-install-pwa',
-            title: t('common.installPwa'),
-            subtitle: t('commandPalette.actions'),
-            icon: <PhosphorIcons.DownloadSimple />,
-            action: exec(handleInstallClick),
-            keywords: 'pwa install app herunterladen'
-        });
-    }
 
     const plantCommands: Command[] = managedPlants
         .filter((p): p is Plant => p !== null && p.stage !== PlantStage.Finished)
@@ -211,7 +200,7 @@ const AppContent: React.FC = () => {
         ]);
 
     return [...navCommands, ...actionCommands, ...plantCommands];
-  }, [managedPlants, t, setActiveView, waterAllPlants, setSelectedPlantId, setModalState, advanceDay, deferredPrompt]);
+  }, [managedPlants, t, setActiveView, waterAllPlants, setSelectedPlantId, setModalState, advanceDay]);
 
   const renderView = () => {
     switch (activeView) {

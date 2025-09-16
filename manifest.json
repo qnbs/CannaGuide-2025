@@ -1,13 +1,19 @@
 {
-  "name": "Cannabis Grow Guide 2025: Canna Guide 2025",
-  "short_name": "Cannabis Grow Guide 2025",
-  "start_url": ".",
+  "name": "Cannabis Grow Guide 2025",
+  "short_name": "CannaGuide 2025",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#030712",
+  "background_color": "#0F172A",
   "theme_color": "#0F172A",
-  "description": "This app is an interactive guide that supports you on your cannabis cultivation journey. Track your plants, learn about strains, and get expert tips on equipment and techniques.",
+  "description": "An interactive guide to help you manage your cannabis cultivation journey, from seed to harvest. Track your plants, learn about strains, and get expert tips on equipment and techniques.",
   "icons": [
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyNC0wOC0wOFQwODozMjozMyswMDowMCl2pAAAAABJRU5ErkJggg==",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
     {
       "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAABGdBTUEAALGPC/xhBQAAAAFzUkdCAK7OHOkAAAAJcEhZcwAAFiUAABYlAUlSJPAAAAAhdEVYdENyZWF0aW9uIFRpbWUAMjAyNC0wOC0wOFQwODozMjozMyswMDowMCl2pAAAAABJRU5ErkJggg==",
       "type": "image/png",

@@ -28,7 +28,7 @@ export const common = {
   error: 'Fehler',
   offlineWarning: 'Du bist offline. Einige Funktionen könnten eingeschränkt sein.',
   installPwa: 'App installieren',
-  installPwaDescription: 'Installieren Sie diese Anwendung auf Ihrem Gerät für schnellen Zugriff und eine Offline-Erfahrung.',
+  installPwaDescription: 'Installiere diese Anwendung auf deinem Gerät für schnellen Zugriff und eine Offline-Erfahrung.',
   installPwaSuccess: 'App erfolgreich installiert!',
   installPwaDismissed: 'Installation abgelehnt.',
   removeImage: 'Bild entfernen',

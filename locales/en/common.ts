@@ -26,7 +26,7 @@ export const common = {
   description: 'Description',
   actions: 'Actions',
   error: 'Error',
-  offlineWarning: 'You are offline. Some features may be limited.',
+  offlineWarning: 'You are currently offline. Functionality may be limited.',
   installPwa: 'Install App',
   installPwaDescription: 'Install this application on your device for quick access and an offline experience.',
   installPwaSuccess: 'App installed successfully!',

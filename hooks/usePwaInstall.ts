@@ -8,22 +8,21 @@ export const usePwaInstall = () => {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
     useEffect(() => {
-        const handleBeforeInstallPrompt = (e: Event) => {
+        const beforeInstallPromptHandler = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
         };
 
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);
 
-        const handleAppInstalled = () => {
+        const appInstalledHandler = () => {
             setDeferredPrompt(null);
         };
-
-        window.addEventListener('appinstalled', handleAppInstalled);
+        window.addEventListener('appinstalled', appInstalledHandler);
 
         return () => {
-            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-            window.removeEventListener('appinstalled', handleAppInstalled);
+            window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
+            window.removeEventListener('appinstalled', appInstalledHandler);
         };
     }, []);
 

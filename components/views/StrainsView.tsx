@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useId } from 'react';
 import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat } from '../../types';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
@@ -20,6 +20,7 @@ import StrainGridItem from './strains/StrainGridItem';
 import { useStrainFilters, SortKey } from '../../hooks/useStrainFilters';
 import { strainService } from '../../services/strainService';
 import { LIST_GRID_CLASS } from '../../constants';
+import { Tabs } from '../common/Tabs';
 
 type StrainViewTab = 'all' | 'user' | 'exports';
 type ViewMode = 'list' | 'grid';
@@ -79,7 +80,7 @@ const StrainDetailModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
-            <Card className="w-full max-w-3xl h-[90vh] relative flex flex-col" onClick={e => e.stopPropagation()}>
+            <Card className="w-full max-w-3xl h-[90vh] relative flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
                     <PhosphorIcons.X className="w-6 h-6" />
                 </button>
@@ -221,7 +222,7 @@ const AdvancedFilterModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="advanced-filter-modal-title">
-            <Card className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <Card className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start flex-shrink-0">
                     <h2 id="advanced-filter-modal-title" className="text-2xl font-bold font-display text-primary-400 mb-4">{t('strainsView.advancedFilters')}</h2>
                     <span className="text-sm font-medium text-slate-200 bg-slate-700 px-2 py-1 rounded-md">{t('strainsView.matchingStrains', { count })}</span>
@@ -276,6 +277,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   const { addNotification } = useNotifications();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { savedExports, addExport, deleteExport } = useExportsManager();
+  const searchInputId = useId();
   
   const [allStrains, setAllStrains] = useState<Strain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -638,25 +640,12 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
           
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 flex-shrink-0 mb-4">
                 <div className="flex items-center gap-4 flex-shrink-0">
-                     <nav className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5">
-                        {tabs.map(tab => (
-                            <button 
-                                key={tab.id} 
-                                onClick={() => setActiveTab(tab.id)} 
-                                className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${
-                                    activeTab === tab.id 
-                                        ? 'bg-slate-700 text-primary-300 shadow-sm' 
-                                        : 'text-slate-300 hover:bg-slate-800'
-                                }`}
-                            >
-                                {tab.label}
-                            </button>
-                        ))}
-                    </nav>
+                    <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as StrainViewTab)} />
                 </div>
                 <div className="flex items-center gap-2 w-full sm:w-auto sm:flex-grow">
                     <div className="relative flex-grow">
-                        <input type="text" placeholder={t('strainsView.searchPlaceholder')} value={filterState.searchTerm} onChange={(e) => filterControls.setSearchTerm(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300"/>
+                        <label htmlFor={searchInputId} className="sr-only">{t('strainsView.searchPlaceholder')}</label>
+                        <input id={searchInputId} type="text" placeholder={t('strainsView.searchPlaceholder')} value={filterState.searchTerm} onChange={(e) => filterControls.setSearchTerm(e.target.value)} className="w-full pl-9 pr-3 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300"/>
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <PhosphorIcons.MagnifyingGlass className="w-5 h-5 text-slate-400" />
                         </div>

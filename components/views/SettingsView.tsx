@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';
 import { useTranslations } from '../../hooks/useTranslations';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { AppSettings, ExportFormat, ExportSource, GrowSetup, Language, NotificationSettings, Plant, Theme } from '../../types';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 
 interface SettingsViewProps {
     setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
@@ -17,45 +18,56 @@ const SettingsSection: React.FC<{ title: string, children: React.ReactNode }> = 
     </Card>
 );
 
-const SelectRow: React.FC<{ label: string, value: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, children: React.ReactNode }> = ({ label, value, onChange, children }) => (
-    <div className="flex items-center justify-between">
-        <label className="text-slate-200">{label}</label>
-        <select value={value} onChange={onChange} className="bg-slate-700 border border-slate-600 rounded-md px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-            {children}
-        </select>
-    </div>
-);
-
-const ToggleRow: React.FC<{ label: string; isEnabled: boolean; onToggle: (enabled: boolean) => void; }> = ({ label, isEnabled, onToggle }) => (
-    <div className="flex items-center justify-between">
-        <label className="text-slate-200">{label}</label>
-        <button
-            type="button"
-            className={`${isEnabled ? 'bg-primary-600' : 'bg-slate-600'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-slate-800`}
-            role="switch"
-            aria-checked={isEnabled}
-            onClick={() => onToggle(!isEnabled)}
-        >
-            <span className={`${isEnabled ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}/>
-        </button>
-    </div>
-);
-
-const InputRow: React.FC<{ label: string, type: string, value: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, step?: string, min?: number, max?: number, unit?: string }> = ({ label, unit, ...props }) => (
-    <div className="flex items-center justify-between">
-        <label className="text-slate-200">{label}</label>
-        <div className="relative">
-            <input {...props} className="w-32 bg-slate-700 border border-slate-600 rounded-md px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary-500" />
-            {unit && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{unit}</span>}
+const SelectRow: React.FC<{ label: string, value: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, children: React.ReactNode }> = ({ label, value, onChange, children }) => {
+    const id = useId();
+    return (
+        <div className="flex items-center justify-between">
+            <label htmlFor={id} className="text-slate-200">{label}</label>
+            <select id={id} value={value} onChange={onChange} className="bg-slate-700 border border-slate-600 rounded-md px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                {children}
+            </select>
         </div>
-    </div>
-);
+    );
+};
+
+const ToggleRow: React.FC<{ label: string; isEnabled: boolean; onToggle: (enabled: boolean) => void; }> = ({ label, isEnabled, onToggle }) => {
+    const id = useId();
+    return (
+        <div className="flex items-center justify-between">
+            <label htmlFor={id} className="text-slate-200">{label}</label>
+            <button
+                id={id}
+                type="button"
+                className={`${isEnabled ? 'bg-primary-600' : 'bg-slate-600'} relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-slate-800`}
+                role="switch"
+                aria-checked={isEnabled}
+                onClick={() => onToggle(!isEnabled)}
+            >
+                <span className={`${isEnabled ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}/>
+            </button>
+        </div>
+    );
+};
+
+const InputRow: React.FC<{ label: string, type: string, value: string | number, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void, step?: string, min?: number, max?: number, unit?: string }> = ({ label, unit, ...props }) => {
+    const id = useId();
+    return (
+        <div className="flex items-center justify-between">
+            <label htmlFor={id} className="text-slate-200">{label}</label>
+            <div className="relative">
+                <input id={id} {...props} className="w-32 bg-slate-700 border border-slate-600 rounded-md px-3 py-1 text-white focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                {unit && <span className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{unit}</span>}
+            </div>
+        </div>
+    );
+};
 
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
     const { settings, setSetting } = useSettings();
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
+    const importId = useId();
 
     const handleResetPlants = () => {
         if (window.confirm(t('settingsView.data.resetPlantsConfirm'))) {
@@ -229,13 +241,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
                     </SelectRow>
                 </div>
             </SettingsSection>
-
+            
             <SettingsSection title={t('settingsView.data.title')}>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <Button variant="secondary" onClick={handleExportAllData}>{t('settingsView.data.exportAll')}</Button>
-                     <Button variant="secondary" as="label" className="cursor-pointer text-center flex justify-center items-center">
+                     <Button variant="secondary" as="label" htmlFor={importId} className="cursor-pointer text-center flex justify-center items-center">
                         {t('settingsView.data.importAll')}
-                        <input type="file" id="import-file-input" accept=".json" className="hidden" onChange={handleImportAllData} />
+                        <input type="file" id={importId} accept=".json" className="hidden" onChange={handleImportAllData} />
                     </Button>
                      <Button variant="danger" onClick={handleResetPlants}>{t('settingsView.data.resetPlants')}</Button>
                      <Button variant="danger" onClick={handleResetAllData}>{t('settingsView.data.resetAll')}</Button>

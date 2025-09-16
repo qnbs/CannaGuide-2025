@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { Strain } from '../../../types';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -35,28 +35,40 @@ const FormSection: React.FC<{ title: string; children: React.ReactNode }> = ({ t
     </div>
 );
 
-const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-        <input {...props} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
-    </div>
-);
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, id: providedId, ...props }) => {
+    const fallbackId = useId();
+    const id = providedId || fallbackId;
+    return (
+        <div>
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+            <input id={id} {...props} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+        </div>
+    );
+};
 
-const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
-    <div className="sm:col-span-2">
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-        <textarea {...props} rows={3} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
-    </div>
-);
+const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, id: providedId, ...props }) => {
+    const fallbackId = useId();
+    const id = providedId || fallbackId;
+    return (
+        <div className="sm:col-span-2">
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+            <textarea id={id} {...props} rows={3} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+        </div>
+    );
+};
 
-const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; options: { value: string; label: string }[] }> = ({ label, options, ...props }) => (
-     <div>
-        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-        <select {...props} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-            {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-        </select>
-    </div>
-)
+const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; options: { value: string; label: string }[] }> = ({ label, options, id: providedId, ...props }) => {
+    const fallbackId = useId();
+    const id = providedId || fallbackId;
+    return (
+        <div>
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+            <select id={id} {...props} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            </select>
+        </div>
+    )
+}
 
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose, onAddStrain, onUpdateStrain, strainToEdit }) => {
     const { t } = useTranslations();
@@ -159,7 +171,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-2xl" onClick={(e) => e.stopPropagation()}>
+            <Card className="w-full max-w-2xl modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="flex justify-between items-start">
                         <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">

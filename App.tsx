@@ -10,7 +10,7 @@ import { SettingsView } from './components/views/SettingsView';
 import { SettingsProvider } from './context/SettingsContext';
 import { useSettings } from './hooks/useSettings';
 import { PhosphorIcons } from './components/icons/PhosphorIcons';
-import { NotificationProvider } from './context/NotificationContext';
+import { NotificationProvider, useNotifications } from './context/NotificationContext';
 import { OnboardingModal } from './components/common/OnboardingModal';
 import { LanguageProvider } from './context/LanguageContext';
 import { useTranslations } from './hooks/useTranslations';
@@ -19,12 +19,14 @@ import { CommandPalette } from './components/common/CommandPalette';
 import { ActionModalsContainer, ModalState } from './components/common/ActionModalsContainer';
 import { dbService } from './services/dbService';
 import { usePlantAdvisorArchive } from './hooks/usePlantAdvisorArchive';
+import { Button } from './components/common/Button';
 
 
 const AppContent: React.FC = () => {
   const [activeView, setActiveView] = useState<View>(View.Plants);
   const { settings, setSetting } = useSettings();
   const { t } = useTranslations();
+  const { addNotification } = useNotifications();
   const mainRef = useRef<HTMLElement>(null);
   
   const [plants, setPlants] = useState<(Plant | null)[]>(() => {
@@ -44,6 +46,8 @@ const AppContent: React.FC = () => {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [modalState, setModalState] = useState<ModalState | null>(null);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
 
   const { 
     plants: managedPlants, 
@@ -73,6 +77,18 @@ const AppContent: React.FC = () => {
   const currentTitle = viewTitles[activeView];
   
   useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => setIsOffline(false);
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+
+    // Handle PWA shortcuts
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    if (view && Object.values(View).includes(view as View)) {
+        setActiveView(view as View);
+    }
+    
     dbService.initDB(); // Initialize IndexedDB when the app loads
     
     // Initial sync on app load
@@ -84,10 +100,46 @@ const AppContent: React.FC = () => {
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [updatePlantState]);
+
+  useEffect(() => {
+    // PWA install prompt handling
+    const beforeInstallPromptHandler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);
+
+    const appInstalledHandler = () => {
+      setDeferredPrompt(null);
+    };
+    window.addEventListener('appinstalled', appInstalledHandler);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
+      window.removeEventListener('appinstalled', appInstalledHandler);
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            addNotification(t('common.installPwaSuccess'), 'success');
+        } else {
+            addNotification(t('common.installPwaDismissed'), 'info');
+        }
+        setDeferredPrompt(null);
+    }
+  };
+
 
   useEffect(() => {
       if (mainRef.current) {
@@ -198,73 +250,86 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className={`h-screen grid grid-rows-[auto_1fr_auto] font-sans`}>
-      {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
-      
-      <header className="glass-pane sticky top-0 z-30">
-        <div className={`max-w-7xl mx-auto flex items-center justify-between px-3 py-1.5`}>
-            <div className="flex-1 flex justify-start">
-                <div className="flex items-center">
-                    <PhosphorIcons.Cannabis className="w-8 h-8 mr-2 text-primary-400" />
-                    <h1 className="text-2xl font-bold text-slate-100 tracking-wider font-display">
-                    <span className="text-primary-400">Canna</span>Guide <span className="text-xs font-light text-primary-500/80">2025</span>
-                    </h1>
+    <div className={`h-screen flex flex-col font-sans`}>
+      {isOffline && (
+          <div className="offline-banner" role="status">
+              {t('common.offlineWarning')}
+          </div>
+      )}
+      <div className="flex-grow min-h-0 grid grid-rows-[auto_1fr_auto]">
+          {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
+          
+          <header className="glass-pane sticky top-0 z-30">
+            <div className={`max-w-7xl mx-auto flex items-center justify-between px-3 py-1.5`}>
+                <div className="flex-1 flex justify-start">
+                    <div className="flex items-center">
+                        <PhosphorIcons.Cannabis className="w-8 h-8 mr-2 text-primary-400" />
+                        <h1 className="text-2xl font-bold text-slate-100 tracking-wider font-display">
+                        <span className="text-primary-400">Canna</span>Guide <span className="text-xs font-light text-primary-500/80">2025</span>
+                        </h1>
+                    </div>
+                </div>
+                
+                <div className="flex-1 flex justify-center">
+                    <h2 className="text-xl font-semibold text-slate-300 whitespace-nowrap hidden sm:block">
+                        {currentTitle}
+                    </h2>
+                </div>
+                
+                <div className="flex-1 flex justify-end">
+                    <div className="flex items-center gap-1">
+                        {deferredPrompt && (
+                            <Button size="sm" onClick={handleInstallClick} className="animate-fade-in mr-2">
+                                <PhosphorIcons.DownloadSimple className="inline w-5 h-5 mr-1.5" />
+                                {t('common.installPwa')}
+                            </Button>
+                        )}
+                        <button
+                          onClick={() => setIsCommandPaletteOpen(true)}
+                          className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
+                          aria-label={t('commandPalette.open')}
+                        >
+                            <PhosphorIcons.CommandLine className="w-6 h-6" />
+                        </button>
+                        <button 
+                          onClick={() => setActiveView(View.Help)} 
+                          className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
+                          aria-label={t('nav.help')}
+                        >
+                            <PhosphorIcons.Question className="w-6 h-6" />
+                        </button>
+                         <button 
+                          onClick={() => setActiveView(View.Settings)} 
+                          className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
+                          aria-label={t('nav.settings')}
+                         >
+                            <PhosphorIcons.Gear className="w-6 h-6" />
+                        </button>
+                    </div>
                 </div>
             </div>
-            
-            <div className="flex-1 flex justify-center">
-                <h2 className="text-xl font-semibold text-slate-300 whitespace-nowrap hidden sm:block">
-                    {currentTitle}
-                </h2>
-            </div>
-            
-            <div className="flex-1 flex justify-end">
-                <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setIsCommandPaletteOpen(true)}
-                      className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                      aria-label={t('commandPalette.open')}
-                    >
-                        <PhosphorIcons.CommandLine className="w-6 h-6" />
-                    </button>
-                    <button 
-                      onClick={() => setActiveView(View.Help)} 
-                      className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                      aria-label={t('nav.help')}
-                    >
-                        <PhosphorIcons.Question className="w-6 h-6" />
-                    </button>
-                     <button 
-                      onClick={() => setActiveView(View.Settings)} 
-                      className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                      aria-label={t('nav.settings')}
-                     >
-                        <PhosphorIcons.Gear className="w-6 h-6" />
-                    </button>
-                </div>
-            </div>
-        </div>
-      </header>
+          </header>
 
-      <main ref={mainRef} className={`min-h-0 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-auto ${activeView === View.Strains || activeView === View.Plants ? 'flex flex-col' : ''}`}>
-        {renderView()}
-      </main>
+          <main ref={mainRef} className={`min-h-0 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-auto ${activeView === View.Strains || activeView === View.Plants ? 'flex flex-col' : ''}`}>
+            {renderView()}
+          </main>
 
-      <nav>
-        <BottomNav activeView={activeView} setActiveView={setActiveView} />
-      </nav>
+          <nav>
+            <BottomNav activeView={activeView} setActiveView={setActiveView} />
+          </nav>
 
-      <CommandPalette 
-        isOpen={isCommandPaletteOpen}
-        onClose={() => setIsCommandPaletteOpen(false)}
-        commands={commands}
-      />
-      
-      <ActionModalsContainer 
-        modalState={modalState}
-        setModalState={setModalState}
-        onAddJournalEntry={addJournalEntry}
-      />
+          <CommandPalette 
+            isOpen={isCommandPaletteOpen}
+            onClose={() => setIsCommandPaletteOpen(false)}
+            commands={commands}
+          />
+          
+          <ActionModalsContainer 
+            modalState={modalState}
+            setModalState={setModalState}
+            onAddJournalEntry={addJournalEntry}
+          />
+      </div>
     </div>
   );
 }

@@ -54,7 +54,7 @@ const SetupDetailModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-2xl" onClick={e => e.stopPropagation()}>
+            <Card className="w-full max-w-2xl modal-content-animate" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start">
                     <div>
                         <h2 className="text-2xl font-bold text-primary-400">{isEditing ? t('equipmentView.savedSetups.modal.editMode') : t('equipmentView.savedSetups.modal.title')}</h2>

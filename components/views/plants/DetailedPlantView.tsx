@@ -10,6 +10,7 @@ import { TasksTab } from './detailedPlantViewTabs/TasksTab';
 import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
 import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { ActionToolbar } from './ActionToolbar';
+import { Tabs } from '../../common/Tabs';
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -70,22 +71,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({
             </div>
             
             <div className="flex-shrink-0 mb-4">
-                 <div className="flex items-center gap-1 bg-slate-900 rounded-lg p-0.5 overflow-x-auto">
-                    {tabs.map(tab => (
-                        <button 
-                            key={tab.id} 
-                            onClick={() => setActiveTab(tab.id)} 
-                            className={`flex items-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors whitespace-nowrap ${
-                                activeTab === tab.id 
-                                    ? 'bg-slate-700 text-primary-300 shadow-sm' 
-                                    : 'text-slate-300 hover:bg-slate-800'
-                            }`}
-                        >
-                            <div className="w-5 h-5">{tab.icon}</div>
-                            {tab.label}
-                        </button>
-                    ))}
-                </div>
+                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as PlantViewTab)} />
             </div>
 
             <div className="flex-grow min-h-0 overflow-y-auto pr-2">

@@ -1,18 +1,8 @@
-# Cannabis Grow Guide 2025 (v3.9.0)
+# Cannabis Grow Guide 2025
 
 Willkommen beim **Cannabis Grow Guide 2025**, Ihrem interaktiven digitalen Begleiter für den gesamten Cannabis-Anbauzyklus. Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung.
 
 Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles über Hunderte von Sorten, planen Sie Ihre Ausrüstung mit KI-gestützten Empfehlungen und vertiefen Sie Ihr Wissen mit unserer interaktiven Schritt-für-Schritt-Anleitung.
-
----
-
-## ✨ Was ist neu in v3.9.0 (PWA & Performance Overhaul)
-
-Dieses umfassende Update behebt kritische Fehler, steigert die Leistung drastisch und modernisiert die UI/UX für eine robustere und angenehmere Benutzererfahrung.
-
-*   ✅ **PWA-Installationsproblem behoben:** Hartnäckige "Cross-Origin"-Fehler wurden durch eine robustere Service-Worker-Registrierung endgültig behoben, was eine zuverlässige PWA-Installation auf allen Geräten gewährleistet.
-*   ⚡ **Drastische Leistungssteigerung:** Die anfängliche Ladezeit wurde durch das Laden von Sortendaten bei Bedarf aus kleinen JSON-Dateien anstelle eines großen Bundles massiv reduziert. Die Daten werden für sofortigen Offline-Zugriff zwischengespeichert.
-*   🎨 **Modernisierte UI/UX:** Die gesamte App verwendet jetzt eine konsistente `Tabs`-Komponente. Interaktive Karten haben subtile Schwebeeffekte und alle Modals erscheinen mit einer weichen Animation, was die Benutzeroberfläche reaktionsschneller und moderner macht.
 
 ---
 
@@ -46,7 +36,7 @@ Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer i
 
 Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
 
-*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ)
 *   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
 
 ---
@@ -68,7 +58,7 @@ Es ist keine Installation oder Einrichtung erforderlich. Die Anwendung läuft vo
 1.  **Sorten entdecken:** Beginnen Sie in der **Sorten**-Ansicht, um die Datenbank zu durchsuchen. Verwenden Sie die Filter und die Suchleiste, um eine Sorte zu finden, die Sie interessiert, und speichern Sie sie mit dem Herz-Symbol als Favorit.
 2.  **Anbau starten:** Klicken Sie auf der Detailseite einer Sorte auf "Anbau starten", um Ihr initiales Setup zu konfigurieren und die neue Pflanze Ihrem **Pflanzen**-Dashboard hinzuzufügen.
 3.  **Pflanzen verwalten:** Die **Pflanzen**-Ansicht ist Ihr Haupt-Dashboard. Die Simulation schreitet automatisch voran. Klicken Sie auf eine Pflanze, um ihren detaillierten Status zu überprüfen, Aktionen in ihrem Journal zu protokollieren und Aufgaben zu erledigen, um sie gesund und stressfrei zu halten.
-4.  **Lernen und Planen:** Nutzen Sie die Ansichten **Wissen** und **Equipment**, um Ihr Verständnis zu vertiefen und Ihr reales Setup mit dem KI-Konfigurator und den Rechnern zu planen.
+4.  **Lernen und Planen:** Nutzen Sie die Ansichten **Wissen** und **Ausrüstung**, um Ihr Verständnis zu vertiefen und Ihr reales Setup mit dem KI-Konfigurator und den Rechnern zu planen.
 5.  **Befehlspalette nutzen:** Für einen schnellen Zugriff drücken Sie jederzeit `Cmd/Strg + K`, um zwischen den Bereichen zu springen oder Aktionen sofort auszuführen.
 
 ---

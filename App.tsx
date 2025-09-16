@@ -148,13 +148,17 @@ const AppContent: React.FC = () => {
         <header className="flex-shrink-0 glass-pane p-2">
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-3 items-center gap-4">
-                    <div className="flex items-center justify-start">
+                    <button
+                        onClick={() => setActiveView(View.Plants)}
+                        className="flex items-center justify-start focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-lg p-1 -m-1 transition-opacity hover:opacity-80"
+                        aria-label={t('nav.plants')}
+                    >
                        <CannabisLeafIcon className="w-8 h-8 mr-2 text-primary-400" />
                        <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block">
                            <span className="text-primary-400">Canna</span>Guide
                            <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
                        </h1>
-                    </div>
+                    </button>
 
                     <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
                         {currentTitle}

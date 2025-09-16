@@ -36,7 +36,7 @@ Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer i
 
 Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
 
-*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ)
 *   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
 
 ---

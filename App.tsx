@@ -10,53 +10,41 @@ import { SettingsView } from './components/views/SettingsView';
 import { SettingsProvider } from './context/SettingsContext';
 import { useSettings } from './hooks/useSettings';
 import { PhosphorIcons } from './components/icons/PhosphorIcons';
-import { NotificationProvider, useNotifications } from './context/NotificationContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { OnboardingModal } from './components/common/OnboardingModal';
 import { LanguageProvider } from './context/LanguageContext';
 import { useTranslations } from './hooks/useTranslations';
-import { usePlantManager } from './hooks/usePlantManager';
 import { CommandPalette } from './components/common/CommandPalette';
 import { ActionModalsContainer, ModalState } from './components/common/ActionModalsContainer';
 import { dbService } from './services/dbService';
 import { usePlantAdvisorArchive } from './hooks/usePlantAdvisorArchive';
 import { Button } from './components/common/Button';
-
+import { PlantProvider } from './context/PlantContext';
+import { usePlants } from './hooks/usePlants';
+import { usePwaInstall } from './hooks/usePwaInstall';
+import { useOnlineStatus } from './hooks/useOnlineStatus';
+import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
 
 const AppContent: React.FC = () => {
   const [activeView, setActiveView] = useState<View>(View.Plants);
   const { settings, setSetting } = useSettings();
   const { t } = useTranslations();
-  const { addNotification } = useNotifications();
   const mainRef = useRef<HTMLElement>(null);
-  
-  const [plants, setPlants] = useState<(Plant | null)[]>(() => {
-    try {
-      const savedPlants = localStorage.getItem('cannabis-grow-guide-plants');
-      if (savedPlants) {
-        const parsedPlants = JSON.parse(savedPlants);
-        const validPlants = Array.isArray(parsedPlants) ? parsedPlants : [];
-        return Array.from({ length: 3 }, (_, i) => validPlants[i] || null);
-      }
-    } catch (error) {
-      console.error("Failed to parse plants from localStorage", error);
-    }
-    return [null, null, null];
-  });
   
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [modalState, setModalState] = useState<ModalState | null>(null);
   const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  const { deferredPrompt, handleInstallClick } = usePwaInstall();
+  const isOffline = useOnlineStatus();
 
-  const { 
-    plants: managedPlants, 
-    updatePlantState,
-    addJournalEntry, 
-    completeTask, 
+  const {
+    plants: managedPlants,
+    addJournalEntry,
     waterAllPlants,
     advanceDay,
-  } = usePlantManager(plants, setPlants);
+    updatePlantState,
+  } = usePlants();
   
   const { 
       archive: plantAdvisorArchive, 
@@ -77,21 +65,13 @@ const AppContent: React.FC = () => {
   const currentTitle = viewTitles[activeView];
   
   useEffect(() => {
-    const handleOffline = () => setIsOffline(true);
-    const handleOnline = () => setIsOffline(false);
-    window.addEventListener('offline', handleOffline);
-    window.addEventListener('online', handleOnline);
-
-    // Handle PWA shortcuts
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     if (view && Object.values(View).includes(view as View)) {
         setActiveView(view as View);
     }
     
-    dbService.initDB(); // Initialize IndexedDB when the app loads
-    
-    // Initial sync on app load
+    dbService.initDB();
     updatePlantState();
 
     const handleVisibilityChange = () => {
@@ -102,58 +82,15 @@ const AppContent: React.FC = () => {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('online', handleOnline);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [updatePlantState]);
-
-  useEffect(() => {
-    // PWA install prompt handling
-    const beforeInstallPromptHandler = (e: Event) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);
-
-    const appInstalledHandler = () => {
-      setDeferredPrompt(null);
-    };
-    window.addEventListener('appinstalled', appInstalledHandler);
-    
-    return () => {
-      window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
-      window.removeEventListener('appinstalled', appInstalledHandler);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            addNotification(t('common.installPwaSuccess'), 'success');
-        } else {
-            addNotification(t('common.installPwaDismissed'), 'info');
-        }
-        setDeferredPrompt(null);
-    }
-  };
-
 
   useEffect(() => {
       if (mainRef.current) {
           mainRef.current.scrollTo(0, 0);
       }
   }, [activeView]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('cannabis-grow-guide-plants', JSON.stringify(managedPlants));
-    } catch (error) {
-      console.error("Failed to save plants to localStorage", error);
-    }
-  }, [managedPlants]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -196,154 +133,78 @@ const AppContent: React.FC = () => {
         .flatMap(plant => [
             { id: `inspect-${plant.id}`, title: `${t('commandPalette.inspect')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.MagnifyingGlass/>, action: exec(() => { setActiveView(View.Plants); setSelectedPlantId(plant.id); }), keywords: `details ${plant.name} ansehen prüfen` },
             { id: `water-${plant.id}`, title: `${t('commandPalette.water')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.Drop/>, action: exec(() => setModalState({ plantId: plant.id, type: 'watering' })), keywords: `gießen ${plant.name}` },
-            { id: `feed-${plant.id}`, title: `${t('commandPalette.feed')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.TestTube/>, action: exec(() => setModalState({ plantId: plant.id, type: 'feeding' })), keywords: `düngen ${plant.name} füttern` },
+            { id: `feed-${plant.id}`, title: `${t('commandPalette.feed')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.TestTube/>, action: exec(() => setModalState({ plantId: plant.id, type: 'feeding' })), keywords: `düngen ${plant.name}` },
         ]);
-
+    
     return [...navCommands, ...actionCommands, ...plantCommands];
-  }, [managedPlants, t, setActiveView, waterAllPlants, setSelectedPlantId, setModalState, advanceDay]);
-
-  const renderView = () => {
-    switch (activeView) {
-      case View.Strains:
-        return <StrainsView plants={managedPlants} setPlants={setPlants} setActiveView={setActiveView} />;
-      case View.Plants:
-        return <PlantsView
-                  plants={managedPlants} 
-                  setPlants={setPlants} 
-                  setActiveView={setActiveView} 
-                  selectedPlantId={selectedPlantId}
-                  setSelectedPlantId={setSelectedPlantId}
-                  setModalState={setModalState}
-                  completeTask={completeTask}
-                  advanceDay={advanceDay}
-                  onWaterAll={waterAllPlants}
-                  advisorArchive={plantAdvisorArchive}
-                  addAdvisorResponse={addAdvisorResponse}
-                  updateAdvisorResponse={updateAdvisorResponse}
-                  deleteAdvisorResponse={deleteAdvisorResponse}
-               />;
-      case View.Equipment:
-        return <EquipmentView />;
-      case View.Knowledge:
-        return <KnowledgeView />;
-      case View.Help:
-        return <HelpView />;
-      case View.Settings:
-        return <SettingsView setPlants={setPlants} />;
-      default:
-        return <PlantsView
-                  plants={managedPlants} 
-                  setPlants={setPlants} 
-                  setActiveView={setActiveView} 
-                  selectedPlantId={selectedPlantId}
-                  setSelectedPlantId={setSelectedPlantId}
-                  setModalState={setModalState}
-                  completeTask={completeTask}
-                  advanceDay={advanceDay}
-                  onWaterAll={waterAllPlants}
-                  advisorArchive={plantAdvisorArchive}
-                  addAdvisorResponse={addAdvisorResponse}
-                  updateAdvisorResponse={updateAdvisorResponse}
-                  deleteAdvisorResponse={deleteAdvisorResponse}
-               />;
-    }
-  };
-
+  }, [t, managedPlants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState]);
+  
   return (
-    <div className={`h-screen flex flex-col font-sans`}>
-      {isOffline && (
-          <div className="offline-banner" role="status">
-              {t('common.offlineWarning')}
-          </div>
-      )}
-      <div className="flex-grow min-h-0 grid grid-rows-[auto_1fr_auto]">
-          {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
-          
-          <header className="glass-pane sticky top-0 z-30">
-            <div className={`max-w-7xl mx-auto flex items-center justify-between px-3 py-1.5`}>
-                <div className="flex-1 flex justify-start">
-                    <div className="flex items-center">
-                        <PhosphorIcons.Cannabis className="w-8 h-8 mr-2 text-primary-400" />
-                        <h1 className="text-2xl font-bold text-slate-100 tracking-wider font-display">
-                        <span className="text-primary-400">Canna</span>Guide <span className="text-xs font-light text-primary-500/80">2025</span>
-                        </h1>
+    <div className={`app theme-${settings.theme} font-sans bg-slate-900 text-slate-100 flex flex-col h-screen text-${settings.fontSize}`}>
+        <div id="toast-container" className="fixed top-4 right-4 z-[1000] space-y-2 w-full max-w-xs"></div>
+        {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
+        <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} commands={commands} />
+
+        <header className="flex-shrink-0 glass-pane p-2">
+            <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-3 items-center gap-4">
+                    <div className="flex items-center justify-start">
+                       <CannabisLeafIcon className="w-8 h-8 mr-2 text-primary-400" />
+                       <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block">
+                           <span className="text-primary-400">Canna</span>Guide
+                           <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
+                       </h1>
                     </div>
-                </div>
-                
-                <div className="flex-1 flex justify-center">
-                    <h2 className="text-xl font-semibold text-slate-300 whitespace-nowrap hidden sm:block">
+
+                    <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
                         {currentTitle}
                     </h2>
-                </div>
-                
-                <div className="flex-1 flex justify-end">
-                    <div className="flex items-center gap-1">
-                        {deferredPrompt && (
-                            <Button size="sm" onClick={handleInstallClick} className="animate-fade-in mr-2">
-                                <PhosphorIcons.DownloadSimple className="inline w-5 h-5 mr-1.5" />
-                                {t('common.installPwa')}
-                            </Button>
-                        )}
-                        <button
-                          onClick={() => setIsCommandPaletteOpen(true)}
-                          className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                          aria-label={t('commandPalette.open')}
-                        >
-                            <PhosphorIcons.CommandLine className="w-6 h-6" />
-                        </button>
-                        <button 
-                          onClick={() => setActiveView(View.Help)} 
-                          className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                          aria-label={t('nav.help')}
-                        >
-                            <PhosphorIcons.Question className="w-6 h-6" />
-                        </button>
-                         <button 
-                          onClick={() => setActiveView(View.Settings)} 
-                          className="p-2 text-slate-400 hover:bg-slate-700 hover:text-primary-300 rounded-full transition-colors"
-                          aria-label={t('nav.settings')}
-                         >
-                            <PhosphorIcons.Gear className="w-6 h-6" />
-                        </button>
+
+                    <div className="flex items-center gap-2 justify-end">
+                        {isOffline && <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 text-xs flex items-center gap-1"><PhosphorIcons.WarningCircle /> {t('common.offlineWarning')}</div>}
+                        {deferredPrompt && <Button size="sm" onClick={handleInstallClick}>{t('common.installPwa')}</Button>}
+                        <Button size="sm" variant="secondary" onClick={() => setIsCommandPaletteOpen(true)} aria-label={t('commandPalette.open')}><PhosphorIcons.CommandLine className="w-5 h-5"/></Button>
+                        <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Help)} aria-label={t('nav.help')}><PhosphorIcons.Question className="w-5 h-5"/></Button>
+                        <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Settings)} aria-label={t('nav.settings')}><PhosphorIcons.Gear className="w-5 h-5"/></Button>
                     </div>
                 </div>
             </div>
-          </header>
+        </header>
+        
+        <div className="flex-grow min-h-0 flex flex-col">
+            <main ref={mainRef} className="main-content flex-grow min-h-0 overflow-y-auto p-4 sm:p-6">
+                <div className="max-w-7xl mx-auto w-full">
+                    {activeView === View.Strains && <StrainsView setActiveView={setActiveView} />}
+                    {activeView === View.Plants && <PlantsView setActiveView={setActiveView} selectedPlantId={selectedPlantId} setSelectedPlantId={setSelectedPlantId} setModalState={setModalState} advisorArchive={plantAdvisorArchive} addAdvisorResponse={addAdvisorResponse} updateAdvisorResponse={updateAdvisorResponse} deleteAdvisorResponse={deleteAdvisorResponse} />}
+                    {activeView === View.Equipment && <EquipmentView />}
+                    {activeView === View.Knowledge && <KnowledgeView />}
+                    {activeView === View.Help && <HelpView />}
+                    {activeView === View.Settings && <SettingsView />}
+                </div>
+            </main>
+        </div>
 
-          <main ref={mainRef} className={`min-h-0 p-4 md:p-6 w-full max-w-7xl mx-auto overflow-auto ${activeView === View.Strains || activeView === View.Plants ? 'flex flex-col' : ''}`}>
-            {renderView()}
-          </main>
-
-          <nav>
-            <BottomNav activeView={activeView} setActiveView={setActiveView} />
-          </nav>
-
-          <CommandPalette 
-            isOpen={isCommandPaletteOpen}
-            onClose={() => setIsCommandPaletteOpen(false)}
-            commands={commands}
-          />
-          
-          <ActionModalsContainer 
+        <BottomNav activeView={activeView} setActiveView={setActiveView} />
+        
+        <ActionModalsContainer
             modalState={modalState}
             setModalState={setModalState}
             onAddJournalEntry={addJournalEntry}
-          />
-      </div>
+        />
     </div>
   );
-}
+};
 
-const App: React.FC = () => {
-  return (
-    <SettingsProvider>
-      <LanguageProvider>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
-      </LanguageProvider>
-    </SettingsProvider>
-  )
-}
-
-export default App;
+export const App = () => {
+    return (
+        <SettingsProvider>
+            <LanguageProvider>
+                <NotificationProvider>
+                    <PlantProvider>
+                        <AppContent />
+                    </PlantProvider>
+                </NotificationProvider>
+            </LanguageProvider>
+        </SettingsProvider>
+    );
+};

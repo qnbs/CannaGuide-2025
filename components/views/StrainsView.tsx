@@ -1,13 +1,9 @@
 import React, { useState, useCallback, useEffect, useId } from 'react';
-import { Strain, Plant, PlantStage, View, GrowSetup, ExportSource, ExportFormat } from '../../types';
-import { Card } from '../common/Card';
-import { Button } from '../common/Button';
+// FIX: Import the 'Plant' type.
+import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant } from '../../types';
 import { GrowSetupModal } from './plants/GrowSetupModal';
-import { SativaIcon, IndicaIcon, HybridIcon } from '../icons/StrainTypeIcons';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useNotifications } from '../../context/NotificationContext';
 import { useFavorites } from '../../hooks/useFavorites';
-import { RangeSlider } from '../common/RangeSlider';
 import { ExportModal } from './strains/ExportModal';
 import { exportService } from '../../services/exportService';
 import { AddStrainModal } from './strains/AddStrainModal';
@@ -19,279 +15,41 @@ import StrainListItem from './strains/StrainListItem';
 import StrainGridItem from './strains/StrainGridItem';
 import { useStrainFilters, SortKey } from '../../hooks/useStrainFilters';
 import { strainService } from '../../services/strainService';
-import { LIST_GRID_CLASS } from '../../constants';
 import { Tabs } from '../common/Tabs';
+import { usePlants } from '../../hooks/usePlants';
+import { storageService } from '../../services/storageService';
+import StrainDetailModal from './strains/StrainDetailModal';
+import AdvancedFilterModal from './strains/AdvancedFilterModal';
+import { Button } from '../common/Button';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 
 type StrainViewTab = 'all' | 'user' | 'exports';
 type ViewMode = 'list' | 'grid';
 
+const USER_STRAINS_KEY = 'user_added_strains';
+
+const LIST_GRID_CLASS = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
+
+
 interface StrainsViewProps {
-  plants: (Plant | null)[];
-  setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
   setActiveView: (view: View) => void;
 }
 
-const StrainDetailModal: React.FC<{
-  strain: Strain;
-  isFavorite: boolean;
-  onClose: () => void;
-  onToggleFavorite: (id: string) => void;
-  onStartGrowing: (strain: Strain) => void;
-  plants: (Plant | null)[];
-  onSelectSimilarStrain: (strain: Strain) => void;
-  allStrains: Strain[];
-}> = ({ strain, isFavorite, onClose, onToggleFavorite, onStartGrowing, plants, onSelectSimilarStrain, allStrains }) => {
-    const { t } = useTranslations();
-    const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
-        Easy: t('strainsView.difficulty.easy'),
-        Medium: t('strainsView.difficulty.medium'),
-        Hard: t('strainsView.difficulty.hard'),
-    };
-    
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [onClose]);
-    
-    const findSimilarStrains = (baseStrain: Strain): Strain[] => {
-        if (!baseStrain) return [];
-        return allStrains.filter(s =>
-            s.id !== baseStrain.id &&
-            s.type === baseStrain.type &&
-            Math.abs(s.thc - baseStrain.thc) <= 5
-        ).slice(0, 4);
-    };
-
-    const similarStrains = React.useMemo(() => findSimilarStrains(strain), [strain, allStrains]);
-
-    const TypeDisplay: React.FC<{ type: Strain['type'], details?: string }> = ({ type, details }) => {
-        const typeClasses = { Sativa: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300', Indica: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300', Hybrid: 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300',};
-        const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[type];
-        const label = details ? details : type;
-        return (<span className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${typeClasses[type]}`}><TypeIcon className="w-4 h-4 mr-1.5" />{label}</span>);
-    };
-
-    return (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
-            <Card className="w-full max-w-3xl h-[90vh] relative flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
-                    <PhosphorIcons.X className="w-6 h-6" />
-                </button>
-                <div className="overflow-y-auto p-2 sm:p-4 flex-grow">
-                    <div className="flex justify-between items-start mb-2">
-                        <h2 id="strain-detail-modal-title" className="text-3xl font-bold font-display text-primary-400 pr-4">{strain.name}</h2>
-                        <button onClick={() => onToggleFavorite(strain.id)} className={`favorite-btn-glow p-1 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}>
-                            <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-7 h-7" />
-                        </button>
-                    </div>
-
-                    <div className="flex items-center space-x-4 mb-4 text-slate-300 flex-wrap gap-y-2">
-                      <TypeDisplay type={strain.type} details={strain.typeDetails} />
-                      {strain.genetics && <span className="flex items-center text-xs"><PhosphorIcons.Sparkle className="w-4 h-4 mr-1" /> {strain.genetics}</span>}
-                    </div>
-
-                    {strain.description && (
-                      <div className="prose prose-sm dark:prose-invert max-w-none mb-4 flex-shrink-0">
-                        <p dangerouslySetInnerHTML={{ __html: strain.description.replace(/<br>/g, ' ') }}></p>
-                      </div>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-2 mb-4">
-                        <p><strong>{t('strainsView.strainModal.thc')}:</strong> {strain.thcRange || `${strain.thc}%`}</p>
-                        <p><strong>{t('strainsView.strainModal.cbd')}:</strong> {strain.cbdRange || `${strain.cbd}%`}</p>
-                        <p><strong>{t('strainsView.strainModal.difficulty')}:</strong> {difficultyLabels[strain.agronomic.difficulty]}</p>
-                        <p><strong>{t('strainsView.strainModal.floweringTime')}:</strong> {strain.floweringTimeRange || `${strain.floweringTime} ${t('strainsView.weeks')}`}</p>
-                    </div>
-
-                    {strain.aromas && strain.aromas.length > 0 && (
-                        <div className="mb-4">
-                            <h4 className="font-bold font-display text-lg text-primary-500 mb-2">{t('strainsView.strainModal.aromas')}</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {strain.aromas.map(a => <div key={a} className="bg-slate-700 rounded-full px-3 py-1 text-sm text-slate-100">{a}</div>)}
-                            </div>
-                        </div>
-                    )}
-
-                    {strain.dominantTerpenes && strain.dominantTerpenes.length > 0 && (
-                        <div className="mb-4">
-                            <h4 className="font-bold font-display text-lg text-primary-500 mb-2">{t('strainsView.strainModal.dominantTerpenes')}</h4>
-                            <div className="flex flex-wrap gap-2">
-                                {strain.dominantTerpenes.map(t => <div key={t} className="bg-slate-700 rounded-full px-3 py-1 text-sm text-slate-100">{t}</div>)}
-                            </div>
-                        </div>
-                    )}
-
-                    {(strain.agronomic.yieldDetails || strain.agronomic.heightDetails) && (
-                        <div className="mb-4">
-                             <h4 className="font-bold font-display text-lg text-primary-500 mb-2">{t('strainsView.strainModal.agronomicData')}</h4>
-                             <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                                {strain.agronomic.yieldDetails?.indoor && <p><strong>{t('strainsView.strainModal.yieldIndoor')}:</strong> {strain.agronomic.yieldDetails.indoor}</p>}
-                                {strain.agronomic.yieldDetails?.outdoor && <p><strong>{t('strainsView.strainModal.yieldOutdoor')}:</strong> {strain.agronomic.yieldDetails.outdoor}</p>}
-                                {strain.agronomic.heightDetails?.indoor && <p><strong>{t('strainsView.strainModal.heightIndoor')}:</strong> {strain.agronomic.heightDetails.indoor}</p>}
-                                {strain.agronomic.heightDetails?.outdoor && <p><strong>{t('strainsView.strainModal.heightOutdoor')}:</strong> {strain.agronomic.heightDetails.outdoor}</p>}
-                             </div>
-                        </div>
-                    )}
-
-                    {similarStrains.length > 0 && (
-                        <div className="mt-6">
-                            <h4 className="font-bold font-display text-lg text-primary-500 mb-2">{t('strainsView.strainModal.similarStrains')}</h4>
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-                                {similarStrains.map(s => (
-                                    <Card 
-                                        key={s.id} 
-                                        className="p-2 text-center cursor-pointer !shadow-none hover:bg-slate-700 transition-colors"
-                                        onClick={() => onSelectSimilarStrain(s)}
-                                    >
-                                         <p className="font-bold text-sm truncate">{s.name}</p>
-                                         <p className="text-xs text-slate-400">{s.type} - {s.thc}% THC</p>
-                                    </Card>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="mt-auto pt-4">
-                      <Button onClick={() => onStartGrowing(strain)} className="w-full text-lg" disabled={plants.every(p => p !== null)}>
-                        {plants.every(p => p !== null) ? t('strainsView.strainModal.allSlotsFull') : t('strainsView.strainModal.startGrowing')}
-                      </Button>
-                    </div>
-                </div>
-            </Card>
-        </div>
-    );
-};
-
-const AdvancedFilterModal: React.FC<{
-    isOpen: boolean,
-    onClose: () => void,
-    onApply: () => void,
-    tempFilterState: any,
-    setTempFilterState: (updater: (prev: any) => any) => void,
-    allAromas: string[],
-    allTerpenes: string[],
-    count: number,
-}> = ({ isOpen, onClose, onApply, tempFilterState, setTempFilterState, allAromas, allTerpenes, count }) => {
-    const { t } = useTranslations();
-    
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [isOpen, onClose]);
-    
-    if (!isOpen) return null;
-
-    const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
-        Easy: t('strainsView.difficulty.easy'),
-        Medium: t('strainsView.difficulty.medium'),
-        Hard: t('strainsView.difficulty.hard'),
-    };
-    
-    const typeOptions: ('All' | 'Sativa' | 'Indica' | 'Hybrid')[] = ['All', 'Sativa', 'Indica', 'Hybrid'];
-
-    const handleTempToggleDifficulty = (difficulty: Strain['agronomic']['difficulty']) => setTempFilterState(prev => ({...prev, selectedDifficulties: new Set(prev.selectedDifficulties.has(difficulty) ? [...prev.selectedDifficulties].filter(d => d !== difficulty) : [...prev.selectedDifficulties, difficulty])}));
-    const handleTempToggleAroma = (aroma: string) => setTempFilterState(prev => ({...prev, selectedAromas: new Set(prev.selectedAromas.has(aroma) ? [...prev.selectedAromas].filter(a => a !== aroma) : [...prev.selectedAromas, aroma])}));
-    const handleTempToggleTerpene = (terpene: string) => setTempFilterState(prev => ({...prev, selectedTerpenes: new Set(prev.selectedTerpenes.has(terpene) ? [...prev.selectedTerpenes].filter(t => t !== terpene) : [...prev.selectedTerpenes, terpene])}));
-
-    const resetAdvancedFilters = () => {
-        setTempFilterState(prev => ({
-            ...prev,
-            thcRange: [0, 35],
-            floweringRange: [6, 16],
-            selectedDifficulties: new Set(),
-            selectedAromas: new Set(),
-            selectedTerpenes: new Set(),
-            typeFilter: 'All',
-        }));
-    };
-
-    return (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="advanced-filter-modal-title">
-            <Card className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-start flex-shrink-0">
-                    <h2 id="advanced-filter-modal-title" className="text-2xl font-bold font-display text-primary-400 mb-4">{t('strainsView.advancedFilters')}</h2>
-                    <span className="text-sm font-medium text-slate-200 bg-slate-700 px-2 py-1 rounded-md">{t('strainsView.matchingStrains', { count })}</span>
-                </div>
-                <div className="overflow-y-auto pr-2 flex-grow space-y-4">
-                    <RangeSlider label={t('strainsView.thcMax')} min={0} max={35} step={5} value={tempFilterState.thcRange} onChange={val => setTempFilterState(prev => ({...prev, thcRange: val}))} unit=" %" />
-                    <RangeSlider label={t('strainsView.floweringTime')} min={6} max={16} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState(prev => ({...prev, floweringRange: val}))} unit={` ${t('strainsView.weeks')}`} />
-                    <div>
-                        <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('common.type')}</h4>
-                        <div className="flex gap-1 bg-slate-900 rounded-lg p-0.5">
-                            {typeOptions.map(type => (
-                                <button key={type} onClick={() => setTempFilterState(prev => ({...prev, typeFilter: type}))} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${tempFilterState.typeFilter === type ? 'glass-pane text-primary-300 shadow-sm border-0' : 'text-slate-300 hover:bg-slate-700'}`}>
-                                    {t(`strainsView.${type.toLowerCase()}`)}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.level')}</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {(['Easy', 'Medium', 'Hard'] as Strain['agronomic']['difficulty'][]).map(difficulty => (
-                            <button 
-                                key={difficulty} 
-                                onClick={() => handleTempToggleDifficulty(difficulty)} 
-                                className={`px-3 py-1 text-sm rounded-full transition-colors ${tempFilterState.selectedDifficulties.has(difficulty) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
-                            >
-                                {difficultyLabels[difficulty]}
-                            </button>
-                        ))}
-                      </div>
-                    </div>
-                     <div>
-                      <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.terpenes')}</h4>
-                      <div className="flex flex-wrap gap-2">{allTerpenes.map(terpene => (<button key={terpene} onClick={() => handleTempToggleTerpene(terpene)} className={`px-3 py-1 text-sm rounded-full transition-colors ${tempFilterState.selectedTerpenes.has(terpene) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{terpene}</button>))}</div>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.aromas')}</h4>
-                      <div className="flex flex-wrap gap-2">{allAromas.map(aroma => (<button key={aroma} onClick={() => handleTempToggleAroma(aroma)} className={`px-3 py-1 text-sm rounded-full transition-colors ${tempFilterState.selectedAromas.has(aroma) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{aroma}</button>))}</div>
-                    </div>
-                </div>
-                <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-700 flex-shrink-0">
-                    <Button variant="secondary" size="sm" onClick={resetAdvancedFilters}>{t('strainsView.resetFilters')}</Button>
-                    <Button size="base" onClick={onApply}>{t('common.apply')}</Button>
-                </div>
-            </Card>
-        </div>
-    );
-};
-
-export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, setActiveView }) => {
+export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
   const { t } = useTranslations();
   const { addNotification } = useNotifications();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { savedExports, addExport, deleteExport } = useExportsManager();
+  const { plants, setPlants } = usePlants();
   const searchInputId = useId();
   
   const [allStrains, setAllStrains] = useState<Strain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [userStrains, setUserStrains] = useState<Strain[]>(() => {
-    try {
-        const saved = localStorage.getItem('user_added_strains');
-        return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-        console.error("Failed to load user strains from local storage", e);
-        return [];
-    }
-  });
+  const [userStrains, setUserStrains] = useState<Strain[]>(() => 
+    storageService.getItem(USER_STRAINS_KEY, [])
+  );
 
   useEffect(() => {
     const fetchStrains = async () => {
@@ -352,42 +110,30 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
   };
 
   const handleAddStrain = (newStrain: Strain) => {
-    try {
-        const updatedUserStrains = [...userStrains, newStrain];
-        localStorage.setItem('user_added_strains', JSON.stringify(updatedUserStrains));
-        setUserStrains(updatedUserStrains);
-        setIsAddStrainModalOpen(false);
-        addNotification(t('strainsView.addStrainModal.addStrainSuccess', { name: newStrain.name }), 'success');
-        setActiveTab('user');
-    } catch(e) {
-        addNotification(t('strainsView.addStrainModal.addStrainError'), 'error');
-    }
+    const updatedUserStrains = [...userStrains, newStrain];
+    storageService.setItem(USER_STRAINS_KEY, updatedUserStrains);
+    setUserStrains(updatedUserStrains);
+    setIsAddStrainModalOpen(false);
+    addNotification(t('strainsView.addStrainModal.addStrainSuccess', { name: newStrain.name }), 'success');
+    setActiveTab('user');
   };
 
   const handleUpdateStrain = (updatedStrain: Strain) => {
-      try {
-          const updatedUserStrains = userStrains.map(s => s.id === updatedStrain.id ? updatedStrain : s);
-          localStorage.setItem('user_added_strains', JSON.stringify(updatedUserStrains));
-          setUserStrains(updatedUserStrains);
-          setIsAddStrainModalOpen(false);
-          setStrainToEdit(null);
-          addNotification(t('strainsView.addStrainModal.editSuccess', { name: updatedStrain.name }), 'success');
-      } catch(e) {
-          addNotification(t('strainsView.addStrainModal.addStrainError'), 'error');
-      }
+    const updatedUserStrains = userStrains.map(s => s.id === updatedStrain.id ? updatedStrain : s);
+    storageService.setItem(USER_STRAINS_KEY, updatedUserStrains);
+    setUserStrains(updatedUserStrains);
+    setIsAddStrainModalOpen(false);
+    setStrainToEdit(null);
+    addNotification(t('strainsView.addStrainModal.editSuccess', { name: updatedStrain.name }), 'success');
   };
 
   const handleDeleteStrain = (strainId: string) => {
       const strainToDelete = userStrains.find(s => s.id === strainId);
       if (strainToDelete && window.confirm(t('strainsView.deleteStrainConfirm', { name: strainToDelete.name }))) {
-          try {
-              const updatedUserStrains = userStrains.filter(s => s.id !== strainId);
-              localStorage.setItem('user_added_strains', JSON.stringify(updatedUserStrains));
-              setUserStrains(updatedUserStrains);
-              addNotification(t('strainsView.deleteStrainSuccess', { name: strainToDelete.name }), 'success');
-          } catch(e) {
-              addNotification(t('strainsView.deleteStrainError'), 'error');
-          }
+          const updatedUserStrains = userStrains.filter(s => s.id !== strainId);
+          storageService.setItem(USER_STRAINS_KEY, updatedUserStrains);
+          setUserStrains(updatedUserStrains);
+          addNotification(t('strainsView.deleteStrainSuccess', { name: strainToDelete.name }), 'success');
       }
   };
 
@@ -532,7 +278,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ plants, setPlants, set
                         <div className="flex-grow min-h-0 overflow-y-auto">
                             {sortedAndFilteredStrains.length > 0 ? (
                                 viewMode === 'list' ? (
-                                    <div>
+                                    <div className={LIST_GRID_CLASS}>
                                     {sortedAndFilteredStrains.map(strain => (
                                         <StrainListItem
                                             key={strain.id}

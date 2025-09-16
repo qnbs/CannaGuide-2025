@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useId } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
@@ -100,7 +101,7 @@ export const KnowledgeView: React.FC = () => {
             setAiResponse(res);
         } catch (e) {
             console.error(e);
-            setAiResponse({ title: t('common.error'), content: t('equipmentView.configurator.errorNetwork')});
+            setAiResponse({ title: t('common.error'), content: e instanceof Error ? e.message : t('ai.error')});
         }
         setIsLoading(false);
     };
@@ -197,10 +198,10 @@ export const KnowledgeView: React.FC = () => {
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
                                 <div className="flex justify-end items-center gap-2 mt-2">
-                                    <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)}>
+                                    <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                         <PhosphorIcons.PencilSimple className="w-4 h-4"/>
                                     </Button>
-                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(res.id)}>
+                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(res.id)} aria-label={t('common.deleteResponse')}>
                                         <PhosphorIcons.TrashSimple className="w-4 h-4"/>
                                     </Button>
                                 </div>

@@ -1,26 +1,17 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { SavedSetup } from '../types';
+import { storageService } from '../services/storageService';
 
-const STORAGE_KEY = 'cannabis-grow-guide-setups';
+const STORAGE_KEY = 'setups';
 
 export const useSetupManager = () => {
-    const [savedSetups, setSavedSetups] = useState<SavedSetup[]>(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            const parsed = saved ? JSON.parse(saved) : [];
-            return Array.isArray(parsed) ? parsed : [];
-        } catch (error) {
-            console.error("Failed to load saved setups from local storage", error);
-            return [];
-        }
-    });
+    const [savedSetups, setSavedSetups] = useState<SavedSetup[]>(() =>
+        storageService.getItem<SavedSetup[]>(STORAGE_KEY, [])
+    );
 
     useEffect(() => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedSetups));
-        } catch (error) {
-            console.error("Failed to save setups to local storage", error);
-        }
+        storageService.setItem(STORAGE_KEY, savedSetups);
     }, [savedSetups]);
 
     const addSetup = useCallback((setup: Omit<SavedSetup, 'id' | 'createdAt'>) => {

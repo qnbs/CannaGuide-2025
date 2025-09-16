@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { SavedSetup, RecommendationCategory, RecommendationItem } from '../../../types';
 import { Card } from '../../common/Card';
@@ -262,7 +263,7 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
                                         <button onClick={() => exportAsJSON(setup)} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">JSON</button>
                                     </div>
                                 </div>
-                                <Button size="sm" variant="danger" onClick={() => handleDelete(setup)}>
+                                <Button size="sm" variant="danger" onClick={() => handleDelete(setup)} aria-label={t('common.deleteSetup')}>
                                      <PhosphorIcons.TrashSimple className="w-4 h-4" />
                                 </Button>
                             </div>

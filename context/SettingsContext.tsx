@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, Language, ExportFormat, ExportSource, GrowSetup, Theme } from '../types';
+import { AppSettings, Language, GrowSetup, Theme } from '../types';
+import { storageService } from '../services/storageService';
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -8,10 +9,8 @@ interface SettingsContextType {
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
-// Detect initial language
 const detectedLang = navigator.language.split('-')[0];
 const initialLang: Language = detectedLang === 'de' ? 'de' : 'en';
-
 
 const defaultSettings: AppSettings = {
   fontSize: 'base',
@@ -50,60 +49,44 @@ const defaultSettings: AppSettings = {
 
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettingsState] = useState<AppSettings>(() => {
-    try {
-      const savedSettings = localStorage.getItem('cannabis-grow-guide-settings');
-      const parsed = savedSettings ? JSON.parse(savedSettings) : {};
-      
-      // Deep merge with defaults to ensure new settings are applied
-      const mergedSettings = {
-        ...defaultSettings,
-        ...parsed,
-        notificationSettings: {
-          ...defaultSettings.notificationSettings,
-          ...(parsed.notificationSettings || {}),
-        },
-        simulationSettings: {
-          ...defaultSettings.simulationSettings,
-          ...(parsed.simulationSettings || {}),
-        },
-        defaultGrowSetup: {
-            ...defaultSettings.defaultGrowSetup,
-            ...(parsed.defaultGrowSetup || {}),
-        },
-        defaultJournalNotes: {
-            ...defaultSettings.defaultJournalNotes,
-            ...(parsed.defaultJournalNotes || {}),
-        },
-        defaultExportSettings: {
-            ...defaultSettings.defaultExportSettings,
-            ...(parsed.defaultExportSettings || {}),
-        },
-        lastBackupTimestamp: parsed.lastBackupTimestamp || undefined,
-      };
-      return mergedSettings;
-
-    } catch (e) {
-      return defaultSettings;
-    }
+    const parsed = storageService.getItem<Partial<AppSettings>>('settings', {});
+    
+    const mergedSettings = {
+      ...defaultSettings,
+      ...parsed,
+      notificationSettings: {
+        ...defaultSettings.notificationSettings,
+        ...(parsed.notificationSettings || {}),
+      },
+      simulationSettings: {
+        ...defaultSettings.simulationSettings,
+        ...(parsed.simulationSettings || {}),
+      },
+      defaultGrowSetup: {
+          ...defaultSettings.defaultGrowSetup,
+          ...(parsed.defaultGrowSetup || {}),
+      },
+      defaultJournalNotes: {
+          ...defaultSettings.defaultJournalNotes,
+          ...(parsed.defaultJournalNotes || {}),
+      },
+      defaultExportSettings: {
+          ...defaultSettings.defaultExportSettings,
+          ...(parsed.defaultExportSettings || {}),
+      },
+      lastBackupTimestamp: parsed.lastBackupTimestamp || undefined,
+    };
+    return mergedSettings;
   });
 
   useEffect(() => {
     const root = window.document.documentElement;
     
-    // Apply theme and mode
     root.className = `dark theme-${settings.theme}`;
-    
-    // Font Size
     root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
-
-    // Language
     root.lang = settings.language;
 
-    try {
-      localStorage.setItem('cannabis-grow-guide-settings', JSON.stringify(settings));
-    } catch (e) {
-      console.error("Failed to save settings to localStorage", e);
-    }
+    storageService.setItem('settings', settings);
   }, [settings]);
 
   const setSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {

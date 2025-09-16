@@ -1,23 +1,17 @@
-import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'cannabis-grow-guide-favorites';
+import { useState, useEffect, useCallback } from 'react';
+import { storageService } from '../services/storageService';
+
+const STORAGE_KEY = 'favorites';
 
 export const useFavorites = () => {  
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    } catch {
-      return new Set();
-    }
+    const saved = storageService.getItem<string[]>(STORAGE_KEY, []);
+    return new Set(saved);
   });
 
   useEffect(() => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(favoriteIds)));
-    } catch (e) {
-        console.error("Failed to save favorites to localStorage", e);
-    }
+    storageService.setItem(STORAGE_KEY, Array.from(favoriteIds));
   }, [favoriteIds]);
 
   const toggleFavorite = useCallback((strainId: string) => {

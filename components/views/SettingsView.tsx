@@ -1,3 +1,4 @@
+
 import React, { useId } from 'react';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';
@@ -6,9 +7,10 @@ import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { AppSettings, ExportFormat, ExportSource, GrowSetup, Language, NotificationSettings, Plant, Theme } from '../../types';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { usePlants } from '../../hooks/usePlants';
+import { storageService } from '../../services/storageService';
 
 interface SettingsViewProps {
-    setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
 }
 
 const SettingsSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
@@ -63,23 +65,23 @@ const InputRow: React.FC<{ label: string, type: string, value: string | number, 
 };
 
 
-export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
+export const SettingsView: React.FC<SettingsViewProps> = () => {
     const { settings, setSetting } = useSettings();
+    const { resetPlants } = usePlants();
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
     const importId = useId();
 
     const handleResetPlants = () => {
         if (window.confirm(t('settingsView.data.resetPlantsConfirm'))) {
-            setPlants([null, null, null]);
-            localStorage.removeItem('cannabis-grow-guide-plants');
+            resetPlants();
             addNotification(t('settingsView.data.resetPlantsSuccess'), 'success');
         }
     };
 
     const handleResetAllData = () => {
         if (window.confirm(t('settingsView.data.resetAllConfirm'))) {
-            localStorage.clear();
+            storageService.clearAll();
             addNotification(t('settingsView.data.resetAllSuccess'), 'info');
             window.location.reload();
         }
@@ -95,15 +97,15 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
                 version: '2.5.0'
             };
             const keysToExport = [
-                'cannabis-grow-guide-settings', 'cannabis-grow-guide-plants', 'cannabis-grow-guide-favorites',
-                'user_added_strains', 'cannabis-grow-guide-exports', 'cannabis-grow-guide-setups',
-                'cannabis-grow-guide-knowledge-archive', 'cannabis-grow-guide-plant-advisor-archive'
+                'settings', 'plants', 'favorites',
+                'user_added_strains', 'exports', 'setups',
+                'knowledge-archive', 'plant-advisor-archive'
             ];
 
             keysToExport.forEach(key => {
-                const item = localStorage.getItem(key);
+                const item = storageService.getItem(key, null);
                 if (item) {
-                    dataToExport[key] = JSON.parse(item);
+                    dataToExport[`cannabis-grow-guide-${key}`] = item;
                 }
             });
 
@@ -142,8 +144,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ setPlants }) => {
                 }
 
                 Object.keys(data).forEach(key => {
-                    if (key !== 'app_id' && key !== 'export_date' && key !== 'version') {
-                        localStorage.setItem(key, JSON.stringify(data[key]));
+                    if (key.startsWith('cannabis-grow-guide-')) {
+                         storageService.setItem(key.replace('cannabis-grow-guide-', ''), data[key]);
                     }
                 });
 

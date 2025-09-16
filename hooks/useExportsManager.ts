@@ -1,25 +1,17 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { SavedExport } from '../types';
+import { storageService } from '../services/storageService';
 
-const STORAGE_KEY = 'cannabis-grow-guide-exports';
+const STORAGE_KEY = 'exports';
 
 export const useExportsManager = () => {
-    const [savedExports, setSavedExports] = useState<SavedExport[]>(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            const parsed = saved ? JSON.parse(saved) : [];
-            return Array.isArray(parsed) ? parsed : [];
-        } catch {
-            return [];
-        }
-    });
+    const [savedExports, setSavedExports] = useState<SavedExport[]>(() =>
+        storageService.getItem<SavedExport[]>(STORAGE_KEY, [])
+    );
 
     useEffect(() => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedExports));
-        } catch (e) {
-            console.error("Failed to save exports to localStorage", e);
-        }
+        storageService.setItem(STORAGE_KEY, savedExports);
     }, [savedExports]);
 
     const addExport = useCallback((newExport: Omit<SavedExport, 'id' | 'createdAt' | 'count' | 'strainIds'>, strainIds: string[]) => {

@@ -1,3 +1,4 @@
+
 export const common = {
   add: 'Hinzufügen',
   apply: 'Anwenden',
@@ -30,6 +31,9 @@ export const common = {
   installPwaDescription: 'Installiere diese Anwendung auf deinem Gerät für schnellen Zugriff und eine Offline-Erfahrung.',
   installPwaSuccess: 'App erfolgreich installiert!',
   installPwaDismissed: 'Installation abgelehnt.',
+  removeImage: 'Bild entfernen',
+  deleteResponse: 'Antwort löschen',
+  deleteSetup: 'Setup löschen',
 };
 
 export const nav = {

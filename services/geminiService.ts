@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { Plant, Recommendation } from '../types';
 
@@ -74,13 +72,17 @@ const getEquipmentRecommendation = async (area: string, budget: string, growStyl
         required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra']
     };
 
-    const response: GenerateContentResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: { responseMimeType: 'application/json', responseSchema }
-    });
-
-    return JSON.parse(response.text.trim()) as Recommendation;
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: { responseMimeType: 'application/json', responseSchema }
+        });
+        return JSON.parse(response.text.trim()) as Recommendation;
+    } catch (err) {
+        console.error("Gemini API Error in getEquipmentRecommendation:", err);
+        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+    }
 };
 
 const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string): Promise<{ title: string, content: string }> => {
@@ -88,26 +90,34 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
     const textPart = { text: `Analyze this image of a cannabis plant leaf/plant. The user is looking for a potential problem diagnosis. Plant context: ${plantContext}. Provide a concise diagnosis. Identify the most likely problem (e.g., 'Nitrogen Deficiency', 'Light Burn', 'Spider Mites'). Format the response as a JSON object with "title" and "content" keys. The "title" should be the name of the problem. The "content" should be a 2-3 sentence explanation of the problem and a suggested solution.` };
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
 
-    const response: GenerateContentResponse = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: { parts: [imagePart, textPart] },
-        config: { responseMimeType: "application/json", responseSchema }
-    });
-    
-    return JSON.parse(response.text.trim());
+    try {
+        const response: GenerateContentResponse = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [imagePart, textPart] },
+            config: { responseMimeType: "application/json", responseSchema }
+        });
+        return JSON.parse(response.text.trim());
+    } catch (err) {
+        console.error("Gemini API Error in diagnosePlantProblem:", err);
+        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+    }
 };
 
 const getAiMentorResponse = async (query: string): Promise<{ title: string, content: string }> => {
     const systemInstruction = "You are an expert cannabis cultivation mentor. Your tone is helpful, encouraging, and scientific. Provide detailed, actionable advice. Format your response as a JSON object with 'title' and 'content' keys. The 'title' should be a concise summary of the answer. The 'content' should be the detailed explanation, using markdown for formatting (like lists or bold text).";
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: query,
-        config: { systemInstruction, responseMimeType: "application/json", responseSchema }
-    });
-
-    return JSON.parse(response.text.trim());
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: query,
+            config: { systemInstruction, responseMimeType: "application/json", responseSchema }
+        });
+        return JSON.parse(response.text.trim());
+    } catch (err) {
+        console.error("Gemini API Error in getAiMentorResponse:", err);
+        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+    }
 };
 
 const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string, content: string }> => {
@@ -115,14 +125,19 @@ const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string,
     const query = `Based on the following data for a cannabis plant, provide a concise analysis and one key recommendation for the grower. Plant Data: ${plantData}. Format the response as a JSON object with "title" and "content" keys. The "title" should be a very short summary of the advice (e.g., "Slightly high pH, suggest adjustment"). The "content" should be a 2-4 sentence explanation of your observation and a clear, actionable recommendation.`;
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
     
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: query,
-        config: { responseMimeType: "application/json", responseSchema }
-    });
-
-    return JSON.parse(response.text.trim());
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: query,
+            config: { responseMimeType: "application/json", responseSchema }
+        });
+        return JSON.parse(response.text.trim());
+    } catch (err) {
+        console.error("Gemini API Error in getAiPlantAdvisorResponse:", err);
+        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+    }
 };
+
 
 export const geminiService = {
     getEquipmentRecommendation,

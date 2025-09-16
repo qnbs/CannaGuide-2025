@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -62,7 +63,7 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
             setResponse(res);
         } catch (error) {
             console.error(error);
-            addNotification(t('ai.error'), 'error');
+            addNotification(error instanceof Error ? error.message : t('ai.error'), 'error');
         } finally {
             setIsLoading(false);
         }
@@ -94,7 +95,7 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
                 <div className="space-y-4">
                     <div className="relative">
                         <img src={image.preview} alt="Plant preview" className="rounded-lg max-h-60 w-full object-contain" />
-                        <Button size="sm" variant="secondary" onClick={handleReset} className="absolute top-2 right-2 !p-1.5" aria-label="Remove image">
+                        <Button size="sm" variant="secondary" onClick={handleReset} className="absolute top-2 right-2 !p-1.5" aria-label={t('common.removeImage')}>
                             <PhosphorIcons.X className="w-4 h-4" />
                         </Button>
                     </div>

@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { ArchivedAdvisorResponse, AIResponse, Plant } from '../types';
 import { useNotifications } from '../context/NotificationContext';
 import { useTranslations } from './useTranslations';
+import { storageService } from '../services/storageService';
 
-const STORAGE_KEY = 'cannabis-grow-guide-plant-advisor-archive';
+const STORAGE_KEY = 'plant-advisor-archive';
 
 type PlantAdvisorArchive = Record<string, ArchivedAdvisorResponse[]>;
 
@@ -11,21 +13,12 @@ export const usePlantAdvisorArchive = () => {
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
 
-    const [archive, setArchive] = useState<PlantAdvisorArchive>(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : {};
-        } catch {
-            return {};
-        }
-    });
+    const [archive, setArchive] = useState<PlantAdvisorArchive>(() => 
+        storageService.getItem(STORAGE_KEY, {})
+    );
 
     useEffect(() => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(archive));
-        } catch (e) {
-            console.error("Failed to save plant advisor archive to localStorage", e);
-        }
+        storageService.setItem(STORAGE_KEY, archive);
     }, [archive]);
 
     const addAdvisorResponse = useCallback((plantId: string, response: AIResponse, query: string) => {

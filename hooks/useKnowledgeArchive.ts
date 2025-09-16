@@ -1,29 +1,21 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { ArchivedMentorResponse } from '../types';
 import { useNotifications } from '../context/NotificationContext';
 import { useTranslations } from './useTranslations';
+import { storageService } from '../services/storageService';
 
-const STORAGE_KEY = 'cannabis-grow-guide-knowledge-archive';
+const STORAGE_KEY = 'knowledge-archive';
 
 export const useKnowledgeArchive = () => {
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
-    const [responses, setResponses] = useState<ArchivedMentorResponse[]>(() => {
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            const parsed = saved ? JSON.parse(saved) : [];
-            return Array.isArray(parsed) ? parsed : [];
-        } catch {
-            return [];
-        }
-    });
+    const [responses, setResponses] = useState<ArchivedMentorResponse[]>(() =>
+        storageService.getItem<ArchivedMentorResponse[]>(STORAGE_KEY, [])
+    );
 
     useEffect(() => {
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(responses));
-        } catch (e) {
-            console.error("Failed to save knowledge archive to localStorage", e);
-        }
+        storageService.setItem(STORAGE_KEY, responses);
     }, [responses]);
 
     const addResponse = useCallback((response: Omit<ArchivedMentorResponse, 'id' | 'createdAt'>) => {

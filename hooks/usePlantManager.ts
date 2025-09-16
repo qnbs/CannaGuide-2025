@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+
+import { useCallback, useMemo } from 'react';
 import { Plant, PlantStage, PlantProblem, JournalEntry, Task } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
@@ -20,13 +21,12 @@ const clonePlant = (plant: Plant): Plant => {
 };
 
 export const usePlantManager = (
-    initialPlants: (Plant | null)[],
-    setGlobalPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>
+    plants: (Plant | null)[],
+    setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>
 ) => {
     const { settings } = useSettings();
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
-    const [plants, setPlants] = useState(initialPlants);
 
     const problemMessages = useMemo(() => ({
         Overwatering: { message: t('problemMessages.overwatering.message'), solution: t('problemMessages.overwatering.solution') },
@@ -157,7 +157,7 @@ export const usePlantManager = (
                 return p;
             });
         });
-    }, [simulatePlant]);
+    }, [simulatePlant, setPlants]);
     
     const advanceDay = useCallback(() => {
         setPlants(currentPlants => currentPlants.map(p => {
@@ -169,18 +169,9 @@ export const usePlantManager = (
             }
             return p;
         }));
-    }, [simulatePlant, settings.simulationSettings.speed]);
-
-    useEffect(() => {
-        setPlants(initialPlants);
-    }, [initialPlants]);
-
-    useEffect(() => {
-        setGlobalPlants(plants);
-    }, [plants, setGlobalPlants]);
+    }, [simulatePlant, settings.simulationSettings.speed, setPlants]);
 
     const addJournalEntry = (plantId: string, entry: Omit<JournalEntry, 'id' | 'timestamp'>) => {
-        // First, bring the specific plant up to the current time
         updatePlantState(plantId);
 
         setPlants(prev => prev.map(p => {
@@ -205,7 +196,7 @@ export const usePlantManager = (
                         : task
                 );
             }
-            updatedPlant.lastUpdated = Date.now(); // Ensure lastUpdated is set to now after action
+            updatedPlant.lastUpdated = Date.now();
             return updatedPlant;
         }));
     };
@@ -219,7 +210,7 @@ export const usePlantManager = (
     };
 
     const waterAllPlants = () => {
-        updatePlantState(); // Update all plants to current time before watering
+        updatePlantState();
         const now = Date.now();
         let wateredCount = 0;
         setPlants(currentPlants => currentPlants.map(p => {
@@ -253,7 +244,6 @@ export const usePlantManager = (
     };
 
     return {
-        plants,
         updatePlantState,
         addJournalEntry,
         completeTask,

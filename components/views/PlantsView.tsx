@@ -13,17 +13,13 @@ import { AiDiagnostics } from './plants/AiDiagnostics';
 import { ModalState } from '../../common/ActionModalsContainer';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { Tabs } from '../common/Tabs';
+import { usePlants } from '../../hooks/usePlants';
 
 interface PlantsViewProps {
-  plants: (Plant | null)[];
-  setPlants: React.Dispatch<React.SetStateAction<(Plant | null)[]>>;
   setActiveView: (view: View) => void;
   selectedPlantId: string | null;
   setSelectedPlantId: (id: string | null) => void;
   setModalState: (state: ModalState | null) => void;
-  completeTask: (plantId: string, taskId: string) => void;
-  advanceDay: () => void;
-  onWaterAll: () => void;
   advisorArchive: Record<string, ArchivedAdvisorResponse[]>;
   addAdvisorResponse: (plantId: string, response: AIResponse, query: string) => void;
   updateAdvisorResponse: (updatedResponse: ArchivedAdvisorResponse) => void;
@@ -35,29 +31,26 @@ type PlantsViewTab = 'dashboard' | 'archive';
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
   const { t } = useTranslations();
   return (
-    <Card className="h-full flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 transition-colors">
+    <Card className="h-full flex flex-col items-center justify-center text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 transition-colors card-interactive" onClick={onStart}>
       <h3 className="font-semibold text-lg text-slate-300">{t('plantsView.emptySlot.title')}</h3>
       <p className="text-sm text-slate-400 mb-4">{t('plantsView.emptySlot.subtitle')}</p>
-      <Button onClick={onStart}>{t('plantsView.emptySlot.button')}</Button>
+      <Button>{t('plantsView.emptySlot.button')}</Button>
     </Card>
   );
 };
 
 export const PlantsView: React.FC<PlantsViewProps> = ({
-  plants,
   setActiveView,
   selectedPlantId,
   setSelectedPlantId,
   setModalState,
-  completeTask,
-  advanceDay,
-  onWaterAll,
   advisorArchive,
   addAdvisorResponse,
   updateAdvisorResponse,
   deleteAdvisorResponse
 }) => {
   const { t } = useTranslations();
+  const { plants, completeTask, advanceDay, waterAllPlants } = usePlants();
   const [activeTab, setActiveTab] = useState<PlantsViewTab>('dashboard');
   const activePlants = plants.filter((p): p is Plant => p !== null);
   const selectedPlant = activePlants.find(p => p.id === selectedPlantId) || null;
@@ -106,7 +99,7 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
                     plants={activePlants}
                     openTasksCount={allTasks.length}
                     onAdvanceDay={advanceDay}
-                    onWaterAll={onWaterAll}
+                    onWaterAll={waterAllPlants}
                 />
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useId } from 'react';
+import React, { useState, useCallback, useEffect, useId, useMemo } from 'react';
 // FIX: Import the 'Plant' type.
 import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant } from '../../types';
 import { GrowSetupModal } from './plants/GrowSetupModal';
@@ -208,7 +208,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     addNotification(t('common.successfullyExported', { count: dataToExport.length, format: format.toUpperCase() }), 'success');
   };
   
-  const tableHeaders: { key: string, label: string }[] = [
+  const tableHeaders = useMemo(() => [
       { key: 'name', label: t('strainsView.table.name') },
       { key: 'type', label: t('strainsView.table.type')},
       { key: 'thc', label: t('strainsView.table.thc')},
@@ -216,7 +216,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
       { key: 'floweringTime', label: t('strainsView.table.flowering')},
       { key: 'yield', label: t('strainsView.addStrainModal.yield') },
       { key: 'difficulty', label: t('strainsView.table.level')},
-  ];
+  ], [t]);
 
   const headerVisibilityClasses = [
       '', // Name
@@ -228,12 +228,11 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
       'flex', // Difficulty
   ];
 
-
-  const tabs: {id: StrainViewTab, label: string}[] = [
+  const tabs = useMemo(() => [
     { id: 'all', label: t('strainsView.tabs.all') },
     { id: 'user', label: t('strainsView.tabs.user', { count: userStrains.length }) },
     { id: 'exports', label: t('strainsView.tabs.exports', { count: savedExports.length }) },
-  ];
+  ], [t, userStrains.length, savedExports.length]);
 
   const memoizedToggleFavorite = useCallback(toggleFavorite, [toggleFavorite]);
 

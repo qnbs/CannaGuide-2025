@@ -1,5 +1,4 @@
-
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
 import { useSettings } from '../../hooks/useSettings';
 import { useNotifications } from '../../context/NotificationContext';
 import { useTranslations } from '../../hooks/useTranslations';
@@ -10,8 +9,7 @@ import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { usePlants } from '../../hooks/usePlants';
 import { storageService } from '../../services/storageService';
 
-interface SettingsViewProps {
-}
+type SettingsCategory = 'display' | 'notifications' | 'simulation' | 'defaults' | 'data';
 
 const SettingsSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
     <Card className="!p-6">
@@ -65,12 +63,13 @@ const InputRow: React.FC<{ label: string, type: string, value: string | number, 
 };
 
 
-export const SettingsView: React.FC<SettingsViewProps> = () => {
+export const SettingsView: React.FC = () => {
     const { settings, setSetting } = useSettings();
     const { resetPlants } = usePlants();
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
     const importId = useId();
+    const [activeCategory, setActiveCategory] = useState<SettingsCategory>('display');
 
     const handleResetPlants = () => {
         if (window.confirm(t('settingsView.data.resetPlantsConfirm'))) {
@@ -168,93 +167,131 @@ export const SettingsView: React.FC<SettingsViewProps> = () => {
     const handleDefaultGrowSetupChange = (key: keyof GrowSetup, value: any) => {
         setSetting('defaultGrowSetup', { ...settings.defaultGrowSetup, [key]: value });
     };
+    
+    const categories: {id: SettingsCategory, label: string, icon: React.ReactNode}[] = [
+        { id: 'display', label: t('settingsView.display.title'), icon: <PhosphorIcons.PaintBrush/> },
+        { id: 'notifications', label: t('settingsView.notifications.title'), icon: <PhosphorIcons.BellSimple/> },
+        { id: 'simulation', label: t('settingsView.simulation.title'), icon: <PhosphorIcons.GameController/> },
+        { id: 'defaults', label: t('settingsView.defaults.title'), icon: <PhosphorIcons.Gear/> },
+        { id: 'data', label: t('settingsView.data.title'), icon: <PhosphorIcons.ArchiveBox/> },
+    ];
+
+    const activeCategoryLabel = categories.find(c => c.id === activeCategory)?.label || '';
 
     return (
-        <div className="space-y-6 max-w-3xl mx-auto">
-            <SettingsSection title={t('settingsView.display.title')}>
-                <SelectRow label={t('settingsView.display.language')} value={settings.language} onChange={e => setSetting('language', e.target.value as Language)}>
-                    <option value="en">English</option>
-                    <option value="de">Deutsch</option>
-                </SelectRow>
-                <SelectRow label={t('settingsView.display.theme')} value={settings.theme} onChange={e => setSetting('theme', e.target.value as Theme)}>
-                    <option value="midnight">{t('settingsView.display.themes.midnight')}</option>
-                    <option value="forest">{t('settingsView.display.themes.forest')}</option>
-                    <option value="purple-haze">{t('settingsView.display.themes.purpleHaze')}</option>
-                </SelectRow>
-                <SelectRow label={t('settingsView.display.fontSize')} value={settings.fontSize} onChange={e => setSetting('fontSize', e.target.value as any)}>
-                    <option value="sm">{t('settingsView.display.fontSizes.sm')}</option>
-                    <option value="base">{t('settingsView.display.fontSizes.base')}</option>
-                    <option value="lg">{t('settingsView.display.fontSizes.lg')}</option>
-                </SelectRow>
-            </SettingsSection>
-            
-             <SettingsSection title={t('settingsView.notifications.title')}>
-                <ToggleRow label={t('settingsView.notifications.enableAll')} isEnabled={settings.notificationsEnabled} onToggle={(val) => setSetting('notificationsEnabled', val)} />
-                {settings.notificationsEnabled && (
-                    <div className="pl-4 border-l-2 border-slate-700 space-y-3">
-                        <ToggleRow label={t('settingsView.notifications.stageChange')} isEnabled={settings.notificationSettings.stageChange} onToggle={(val) => handleNotificationSettingChange('stageChange', val)} />
-                        <ToggleRow label={t('settingsView.notifications.problemDetected')} isEnabled={settings.notificationSettings.problemDetected} onToggle={(val) => handleNotificationSettingChange('problemDetected', val)} />
-                        <ToggleRow label={t('settingsView.notifications.harvestReady')} isEnabled={settings.notificationSettings.harvestReady} onToggle={(val) => handleNotificationSettingChange('harvestReady', val)} />
-                        <ToggleRow label={t('settingsView.notifications.newTask')} isEnabled={settings.notificationSettings.newTask} onToggle={(val) => handleNotificationSettingChange('newTask', val)} />
-                    </div>
-                )}
-            </SettingsSection>
-
-            <SettingsSection title={t('settingsView.simulation.title')}>
-                 <SelectRow label={t('settingsView.simulation.speed')} value={settings.simulationSettings.speed} onChange={e => setSetting('simulationSettings', {...settings.simulationSettings, speed: e.target.value as any})}>
-                    <option value="1x">1x</option>
-                    <option value="2x">2x</option>
-                    <option value="5x">5x</option>
-                    <option value="10x">10x</option>
-                    <option value="20x">20x</option>
-                </SelectRow>
-                 <SelectRow label={t('settingsView.simulation.difficulty')} value={settings.simulationSettings.difficulty} onChange={e => setSetting('simulationSettings', {...settings.simulationSettings, difficulty: e.target.value as any})}>
-                    <option value="easy">{t('settingsView.simulation.difficulties.easy')}</option>
-                    <option value="normal">{t('settingsView.simulation.difficulties.normal')}</option>
-                    <option value="hard">{t('settingsView.simulation.difficulties.hard')}</option>
-                </SelectRow>
-            </SettingsSection>
-
-            <SettingsSection title={t('settingsView.defaults.title')}>
-                <h4 className="font-semibold text-slate-300">{t('settingsView.defaults.growSetup')}</h4>
-                <div className="pl-4 border-l-2 border-slate-700 space-y-4">
-                    <SelectRow label={t('plantsView.setupModal.lightSource')} value={settings.defaultGrowSetup.lightType} onChange={e => handleDefaultGrowSetupChange('lightType', e.target.value as any)}>
-                        <option value="LED">LED</option><option value="HPS">HPS</option><option value="CFL">CFL</option>
-                    </SelectRow>
-                    <SelectRow label={t('plantsView.setupModal.potSize')} value={String(settings.defaultGrowSetup.potSize)} onChange={e => handleDefaultGrowSetupChange('potSize', Number(e.target.value) as any)}>
-                        <option value="5">5L</option><option value="10">10L</option><option value="15">15L</option>
-                    </SelectRow>
-                    <SelectRow label={t('plantsView.setupModal.medium')} value={settings.defaultGrowSetup.medium} onChange={e => handleDefaultGrowSetupChange('medium', e.target.value as any)}>
-                         <option value="Soil">{t('plantsView.setupModal.mediums.soil')}</option>
-                         <option value="Coco">{t('plantsView.setupModal.mediums.coco')}</option>
-                         <option value="Hydro">{t('plantsView.setupModal.mediums.hydro')}</option>
-                    </SelectRow>
-                    <InputRow label={t('plantsView.setupModal.temp')} type="number" value={settings.defaultGrowSetup.temperature} onChange={e => handleDefaultGrowSetupChange('temperature', Number(e.target.value))} unit="°C" />
-                    <InputRow label={t('plantsView.setupModal.humidity')} type="number" value={settings.defaultGrowSetup.humidity} onChange={e => handleDefaultGrowSetupChange('humidity', Number(e.target.value))} unit="%" />
-                    <InputRow label={t('plantsView.setupModal.lightHours')} type="number" value={settings.defaultGrowSetup.lightHours} onChange={e => handleDefaultGrowSetupChange('lightHours', Number(e.target.value))} unit="h" />
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <nav className="md:col-span-1">
+                <Card className="p-2">
+                    <ul className="space-y-1">
+                        {categories.map(cat => (
+                            <li key={cat.id}>
+                                <button
+                                    onClick={() => setActiveCategory(cat.id)}
+                                    className={`w-full flex items-center gap-3 p-2 rounded-md text-left transition-colors ${activeCategory === cat.id ? 'bg-primary-500/20 text-primary-300' : 'text-slate-300 hover:bg-slate-700'}`}
+                                >
+                                    <div className="w-5 h-5">{cat.icon}</div>
+                                    <span className="font-semibold">{cat.label}</span>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                </Card>
+            </nav>
+            <main className="md:col-span-3">
+                <h2 className="text-2xl font-bold font-display text-primary-300 mb-4">{activeCategoryLabel}</h2>
+                <div className="space-y-6">
+                    {activeCategory === 'display' && (
+                        <SettingsSection title={t('settingsView.display.title')}>
+                            <SelectRow label={t('settingsView.display.language')} value={settings.language} onChange={e => setSetting('language', e.target.value as Language)}>
+                                <option value="en">English</option>
+                                <option value="de">Deutsch</option>
+                            </SelectRow>
+                            <SelectRow label={t('settingsView.display.theme')} value={settings.theme} onChange={e => setSetting('theme', e.target.value as Theme)}>
+                                <option value="midnight">{t('settingsView.display.themes.midnight')}</option>
+                                <option value="forest">{t('settingsView.display.themes.forest')}</option>
+                                <option value="purple-haze">{t('settingsView.display.themes.purpleHaze')}</option>
+                            </SelectRow>
+                            <SelectRow label={t('settingsView.display.fontSize')} value={settings.fontSize} onChange={e => setSetting('fontSize', e.target.value as any)}>
+                                <option value="sm">{t('settingsView.display.fontSizes.sm')}</option>
+                                <option value="base">{t('settingsView.display.fontSizes.base')}</option>
+                                <option value="lg">{t('settingsView.display.fontSizes.lg')}</option>
+                            </SelectRow>
+                        </SettingsSection>
+                    )}
+                    {activeCategory === 'notifications' && (
+                         <SettingsSection title={t('settingsView.notifications.title')}>
+                            <ToggleRow label={t('settingsView.notifications.enableAll')} isEnabled={settings.notificationsEnabled} onToggle={(val) => setSetting('notificationsEnabled', val)} />
+                            {settings.notificationsEnabled && (
+                                <div className="pl-4 border-l-2 border-slate-700 space-y-3">
+                                    <ToggleRow label={t('settingsView.notifications.stageChange')} isEnabled={settings.notificationSettings.stageChange} onToggle={(val) => handleNotificationSettingChange('stageChange', val)} />
+                                    <ToggleRow label={t('settingsView.notifications.problemDetected')} isEnabled={settings.notificationSettings.problemDetected} onToggle={(val) => handleNotificationSettingChange('problemDetected', val)} />
+                                    <ToggleRow label={t('settingsView.notifications.harvestReady')} isEnabled={settings.notificationSettings.harvestReady} onToggle={(val) => handleNotificationSettingChange('harvestReady', val)} />
+                                    <ToggleRow label={t('settingsView.notifications.newTask')} isEnabled={settings.notificationSettings.newTask} onToggle={(val) => handleNotificationSettingChange('newTask', val)} />
+                                </div>
+                            )}
+                        </SettingsSection>
+                    )}
+                    {activeCategory === 'simulation' && (
+                        <SettingsSection title={t('settingsView.simulation.title')}>
+                             <SelectRow label={t('settingsView.simulation.speed')} value={settings.simulationSettings.speed} onChange={e => setSetting('simulationSettings', {...settings.simulationSettings, speed: e.target.value as any})}>
+                                <option value="1x">1x</option>
+                                <option value="2x">2x</option>
+                                <option value="5x">5x</option>
+                                <option value="10x">10x</option>
+                                <option value="20x">20x</option>
+                            </SelectRow>
+                             <SelectRow label={t('settingsView.simulation.difficulty')} value={settings.simulationSettings.difficulty} onChange={e => setSetting('simulationSettings', {...settings.simulationSettings, difficulty: e.target.value as any})}>
+                                <option value="easy">{t('settingsView.simulation.difficulties.easy')}</option>
+                                <option value="normal">{t('settingsView.simulation.difficulties.normal')}</option>
+                                <option value="hard">{t('settingsView.simulation.difficulties.hard')}</option>
+                            </SelectRow>
+                        </SettingsSection>
+                    )}
+                    {activeCategory === 'defaults' && (
+                        <SettingsSection title={t('settingsView.defaults.title')}>
+                            <h4 className="font-semibold text-slate-300">{t('settingsView.defaults.growSetup')}</h4>
+                            <div className="pl-4 border-l-2 border-slate-700 space-y-4">
+                                <SelectRow label={t('plantsView.setupModal.lightSource')} value={settings.defaultGrowSetup.lightType} onChange={e => handleDefaultGrowSetupChange('lightType', e.target.value as any)}>
+                                    <option value="LED">LED</option><option value="HPS">HPS</option><option value="CFL">CFL</option>
+                                </SelectRow>
+                                <SelectRow label={t('plantsView.setupModal.potSize')} value={String(settings.defaultGrowSetup.potSize)} onChange={e => handleDefaultGrowSetupChange('potSize', Number(e.target.value) as any)}>
+                                    <option value="5">5L</option><option value="10">10L</option><option value="15">15L</option>
+                                </SelectRow>
+                                <SelectRow label={t('plantsView.setupModal.medium')} value={settings.defaultGrowSetup.medium} onChange={e => handleDefaultGrowSetupChange('medium', e.target.value as any)}>
+                                     <option value="Soil">{t('plantsView.setupModal.mediums.soil')}</option>
+                                     <option value="Coco">{t('plantsView.setupModal.mediums.coco')}</option>
+                                     <option value="Hydro">{t('plantsView.setupModal.mediums.hydro')}</option>
+                                </SelectRow>
+                                <InputRow label={t('plantsView.setupModal.temp')} type="number" value={settings.defaultGrowSetup.temperature} onChange={e => handleDefaultGrowSetupChange('temperature', Number(e.target.value))} unit="°C" />
+                                <InputRow label={t('plantsView.setupModal.humidity')} type="number" value={settings.defaultGrowSetup.humidity} onChange={e => handleDefaultGrowSetupChange('humidity', Number(e.target.value))} unit="%" />
+                                <InputRow label={t('plantsView.setupModal.lightHours')} type="number" value={settings.defaultGrowSetup.lightHours} onChange={e => handleDefaultGrowSetupChange('lightHours', Number(e.target.value))} unit="h" />
+                            </div>
+                             <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.defaults.export')}</h4>
+                             <div className="pl-4 border-l-2 border-slate-700 space-y-4">
+                                <SelectRow label={t('strainsView.exportModal.source')} value={settings.defaultExportSettings.source} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, source: e.target.value as ExportSource})}>
+                                    {['selected', 'favorites', 'filtered', 'all'].map(s => <option key={s} value={s}>{t(`strainsView.exportModal.sources.${s}`)}</option>)}
+                                </SelectRow>
+                                <SelectRow label={t('strainsView.exportModal.format')} value={settings.defaultExportSettings.format} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, format: e.target.value as ExportFormat})}>
+                                    {['pdf', 'txt', 'csv', 'json'].map(f => <option key={f} value={f}>{t(`strainsView.exportModal.formats.${f}`)}</option>)}
+                                </SelectRow>
+                            </div>
+                        </SettingsSection>
+                    )}
+                    {activeCategory === 'data' && (
+                         <SettingsSection title={t('settingsView.data.title')}>
+                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                 <Button variant="secondary" onClick={handleExportAllData}>{t('settingsView.data.exportAll')}</Button>
+                                 <Button variant="secondary" as="label" htmlFor={importId} className="cursor-pointer text-center flex justify-center items-center">
+                                    {t('settingsView.data.importAll')}
+                                    <input type="file" id={importId} accept=".json" className="hidden" onChange={handleImportAllData} />
+                                </Button>
+                                 <Button variant="danger" onClick={handleResetPlants}>{t('settingsView.data.resetPlants')}</Button>
+                                 <Button variant="danger" onClick={handleResetAllData}>{t('settingsView.data.resetAll')}</Button>
+                            </div>
+                        </SettingsSection>
+                    )}
                 </div>
-                 <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.defaults.export')}</h4>
-                 <div className="pl-4 border-l-2 border-slate-700 space-y-4">
-                    <SelectRow label={t('strainsView.exportModal.source')} value={settings.defaultExportSettings.source} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, source: e.target.value as ExportSource})}>
-                        {['selected', 'favorites', 'filtered', 'all'].map(s => <option key={s} value={s}>{t(`strainsView.exportModal.sources.${s}`)}</option>)}
-                    </SelectRow>
-                    <SelectRow label={t('strainsView.exportModal.format')} value={settings.defaultExportSettings.format} onChange={e => setSetting('defaultExportSettings', {...settings.defaultExportSettings, format: e.target.value as ExportFormat})}>
-                        {['pdf', 'txt', 'csv', 'json'].map(f => <option key={f} value={f}>{t(`strainsView.exportModal.formats.${f}`)}</option>)}
-                    </SelectRow>
-                </div>
-            </SettingsSection>
-            
-            <SettingsSection title={t('settingsView.data.title')}>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <Button variant="secondary" onClick={handleExportAllData}>{t('settingsView.data.exportAll')}</Button>
-                     <Button variant="secondary" as="label" htmlFor={importId} className="cursor-pointer text-center flex justify-center items-center">
-                        {t('settingsView.data.importAll')}
-                        <input type="file" id={importId} accept=".json" className="hidden" onChange={handleImportAllData} />
-                    </Button>
-                     <Button variant="danger" onClick={handleResetPlants}>{t('settingsView.data.resetPlants')}</Button>
-                     <Button variant="danger" onClick={handleResetAllData}>{t('settingsView.data.resetAll')}</Button>
-                </div>
-            </SettingsSection>
+            </main>
         </div>
     );
 };

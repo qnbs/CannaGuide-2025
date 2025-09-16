@@ -1,6 +1,5 @@
-
 import { useCallback, useMemo } from 'react';
-import { Plant, PlantStage, PlantProblem, JournalEntry, Task } from '../types';
+import { Plant, PlantStage, PlantProblem, JournalEntry, Task, PlantProblemType } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
@@ -28,18 +27,13 @@ export const usePlantManager = (
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
 
-    const problemMessages = useMemo(() => ({
-        Overwatering: { message: t('problemMessages.overwatering.message'), solution: t('problemMessages.overwatering.solution') },
-        Underwatering: { message: t('problemMessages.underwatering.message'), solution: t('problemMessages.underwatering.solution') },
-        NutrientBurn: { message: t('problemMessages.nutrientBurn.message'), solution: t('problemMessages.nutrientBurn.solution') },
-        NutrientDeficiency: { message: t('problemMessages.nutrientDeficiency.message'), solution: t('problemMessages.nutrientDeficiency.solution') },
-        PhTooLow: { message: t('problemMessages.phTooLow.message'), solution: t('problemMessages.phTooLow.solution') },
-        PhTooHigh: { message: t('problemMessages.phTooHigh.message'), solution: t('problemMessages.phTooHigh.solution') },
-        TempTooHigh: { message: t('problemMessages.tempTooHigh.message'), solution: t('problemMessages.tempTooHigh.solution') },
-        TempTooLow: { message: t('problemMessages.tempTooLow.message'), solution: t('problemMessages.tempTooLow.solution') },
-        HumidityTooHigh: { message: t('problemMessages.humidityTooHigh.message'), solution: t('problemMessages.humidityTooHigh.solution') },
-        HumidityTooLow: { message: t('problemMessages.humidityTooLow.message'), solution: t('problemMessages.humidityTooLow.solution') },
-    }), [t]);
+    const getProblemDetails = (type: PlantProblemType) => {
+        const key = type.charAt(0).toLowerCase() + type.slice(1);
+        return {
+            message: t(`problemMessages.${key}.message`),
+            solution: t(`problemMessages.${key}.solution`)
+        };
+    };
 
     const calculateYield = (plant: Plant): number => {
         const baseYield = YIELD_FACTORS.base[plant.strain.agronomic.yield] || YIELD_FACTORS.base.Medium;
@@ -127,7 +121,7 @@ export const usePlantManager = (
         newPlantState.stressLevel = Math.min(100, Math.max(0, newPlantState.stressLevel));
 
         const newProblems: PlantProblem[] = [];
-        if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...problemMessages.Underwatering });
+        if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...getProblemDetails('Underwatering') });
         newPlantState.problems = newProblems;
 
         const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
@@ -145,7 +139,7 @@ export const usePlantManager = (
 
         newPlantState.lastUpdated = targetTimestamp;
         return newPlantState;
-    }, [settings.simulationSettings, settings.notificationSettings, addNotification, problemMessages, t]);
+    }, [settings.simulationSettings, settings.notificationSettings, addNotification, t]);
 
     const updatePlantState = useCallback((plantIdToUpdate?: string) => {
         setPlants(currentPlants => {

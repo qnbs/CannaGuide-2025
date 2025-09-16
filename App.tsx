@@ -39,7 +39,7 @@ const AppContent: React.FC = () => {
   const isOffline = useOnlineStatus();
 
   const {
-    plants: managedPlants,
+    plants,
     addJournalEntry,
     waterAllPlants,
     advanceDay,
@@ -128,7 +128,7 @@ const AppContent: React.FC = () => {
          { id: 'action-next-day', title: t('plantsView.summary.simulateNextDay'), subtitle: t('commandPalette.actions'), icon: <PhosphorIcons.ArrowClockwise />, action: exec(() => advanceDay()), keywords: 'simulate next day vorspulen nächster tag simulieren' },
     ];
 
-    const plantCommands: Command[] = managedPlants
+    const plantCommands: Command[] = plants
         .filter((p): p is Plant => p !== null && p.stage !== PlantStage.Finished)
         .flatMap(plant => [
             { id: `inspect-${plant.id}`, title: `${t('commandPalette.inspect')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.MagnifyingGlass/>, action: exec(() => { setActiveView(View.Plants); setSelectedPlantId(plant.id); }), keywords: `details ${plant.name} ansehen prüfen` },
@@ -137,7 +137,7 @@ const AppContent: React.FC = () => {
         ]);
     
     return [...navCommands, ...actionCommands, ...plantCommands];
-  }, [t, managedPlants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState]);
+  }, [t, plants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState]);
   
   return (
     <div className={`app theme-${settings.theme} font-sans bg-slate-900 text-slate-100 flex flex-col h-screen text-${settings.fontSize}`}>

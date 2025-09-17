@@ -44,6 +44,7 @@ const AppContent: React.FC = () => {
     waterAllPlants,
     advanceDay,
     updatePlantState,
+    completeTask,
   } = usePlants();
   
   const { 
@@ -140,68 +141,64 @@ const AppContent: React.FC = () => {
   }, [t, plants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState]);
   
   return (
-    <div className={`app theme-${settings.theme} font-sans bg-slate-900 text-slate-100 flex flex-col h-screen text-${settings.fontSize}`}>
+    <div className={`app theme-${settings.theme} font-sans bg-slate-900 text-slate-100 flex flex-col h-screen text-${settings.fontSize} overflow-hidden`}>
         <div id="toast-container" className="fixed top-4 right-4 z-[1000] space-y-2 w-full max-w-xs"></div>
         {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
         <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} commands={commands} />
-
-        <div className={`flex flex-col flex-1 min-h-0 transition-all duration-300 ease-in-out ${isCommandPaletteOpen ? 'transform scale-[0.98] blur-sm brightness-75 rounded-2xl overflow-hidden pointer-events-none' : ''}`}>
-            <header className="flex-shrink-0 glass-pane p-2">
-                <div className="max-w-7xl mx-auto">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex-1 flex justify-start">
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => setActiveView(View.Plants)}
-                                    className="flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-lg p-1 -m-1 transition-opacity hover:opacity-80"
-                                    aria-label={t('nav.plants')}
-                                >
-                                <CannabisLeafIcon className="w-8 h-8 text-primary-400" />
-                                <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block ml-2">
-                                    <span className="text-primary-400">Canna</span>Guide
-                                    <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
-                                </h1>
-                                </button>
-                                <h2 className="text-xl font-bold font-display text-primary-400 whitespace-nowrap sm:hidden">
-                                    {currentTitle}
-                                </h2>
-                            </div>
-                        </div>
-            
-                        <div className="flex-shrink-0 hidden sm:block">
-                            <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
+        
+        <header className="flex-shrink-0 glass-pane p-2 z-20">
+            <div className="max-w-7xl mx-auto">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1 flex justify-start">
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setActiveView(View.Plants)}
+                                className="flex items-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 rounded-lg p-1 -m-1 transition-opacity hover:opacity-80"
+                                aria-label={t('nav.plants')}
+                            >
+                            <CannabisLeafIcon className="w-8 h-8 text-primary-400" />
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block ml-2">
+                                <span className="text-primary-400">Canna</span>Guide
+                                <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
+                            </h1>
+                            </button>
+                            <h2 className="text-xl font-bold font-display text-primary-400 whitespace-nowrap sm:hidden">
                                 {currentTitle}
                             </h2>
                         </div>
-                        
-                        <div className="flex-1 flex justify-end">
-                            <div className="flex items-center gap-2">
-                                {isOffline && <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 text-xs flex items-center gap-1"><PhosphorIcons.WarningCircle /> {t('common.offlineWarning')}</div>}
-                                {deferredPrompt && <Button size="sm" onClick={handleInstallClick}>{t('common.installPwa')}</Button>}
-                                <Button size="sm" variant="secondary" onClick={() => setIsCommandPaletteOpen(true)} aria-label={t('commandPalette.open')}><PhosphorIcons.CommandLine className="w-5 h-5"/></Button>
-                                <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Help)} aria-label={t('nav.help')}><PhosphorIcons.Question className="w-5 h-5"/></Button>
-                                <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Settings)} aria-label={t('nav.settings')}><PhosphorIcons.Gear className="w-5 h-5"/></Button>
-                            </div>
+                    </div>
+        
+                    <div className="flex-shrink-0 hidden sm:block">
+                        <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
+                            {currentTitle}
+                        </h2>
+                    </div>
+                    
+                    <div className="flex-1 flex justify-end">
+                        <div className="flex items-center gap-2">
+                            {isOffline && <div className="p-2 rounded-lg bg-amber-500/20 text-amber-300 text-xs flex items-center gap-1"><PhosphorIcons.WarningCircle /> {t('common.offlineWarning')}</div>}
+                            {deferredPrompt && <Button size="sm" onClick={handleInstallClick} className="px-1.5 py-0.5 sm:px-2 sm:py-1">{t('common.installPwa')}</Button>}
+                            <Button size="sm" variant="secondary" onClick={() => setIsCommandPaletteOpen(true)} aria-label={t('commandPalette.open')}><PhosphorIcons.CommandLine className="w-5 h-5"/></Button>
+                            <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Help)} aria-label={t('nav.help')}><PhosphorIcons.Question className="w-5 h-5"/></Button>
+                            <Button size="sm" variant="secondary" onClick={() => setActiveView(View.Settings)} aria-label={t('nav.settings')}><PhosphorIcons.Gear className="w-5 h-5"/></Button>
                         </div>
                     </div>
                 </div>
-            </header>
-            
-            <div className="flex-grow min-h-0 flex flex-col">
-                <main ref={mainRef} className="main-content flex-grow min-h-0 overflow-y-auto p-4 sm:p-6">
-                    <div className="max-w-7xl mx-auto w-full">
-                        {activeView === View.Strains && <StrainsView setActiveView={setActiveView} />}
-                        {activeView === View.Plants && <PlantsView setActiveView={setActiveView} selectedPlantId={selectedPlantId} setSelectedPlantId={setSelectedPlantId} setModalState={setModalState} advisorArchive={plantAdvisorArchive} addAdvisorResponse={addAdvisorResponse} updateAdvisorResponse={updateAdvisorResponse} deleteAdvisorResponse={deleteAdvisorResponse} />}
-                        {activeView === View.Equipment && <EquipmentView />}
-                        {activeView === View.Knowledge && <KnowledgeView />}
-                        {activeView === View.Help && <HelpView />}
-                        {activeView === View.Settings && <SettingsView />}
-                    </div>
-                </main>
             </div>
+        </header>
+        
+        <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
+            <div className="max-w-7xl mx-auto w-full">
+                {activeView === View.Strains && <StrainsView setActiveView={setActiveView} />}
+                {activeView === View.Plants && <PlantsView setActiveView={setActiveView} selectedPlantId={selectedPlantId} setSelectedPlantId={setSelectedPlantId} setModalState={setModalState} advisorArchive={plantAdvisorArchive} addAdvisorResponse={addAdvisorResponse} updateAdvisorResponse={updateAdvisorResponse} deleteAdvisorResponse={deleteAdvisorResponse} />}
+                {activeView === View.Equipment && <EquipmentView />}
+                {activeView === View.Knowledge && <KnowledgeView />}
+                {activeView === View.Help && <HelpView />}
+                {activeView === View.Settings && <SettingsView />}
+            </div>
+        </main>
 
-            <BottomNav activeView={activeView} setActiveView={setActiveView} />
-        </div>
+        <BottomNav activeView={activeView} setActiveView={setActiveView} />
         
         <ActionModalsContainer
             modalState={modalState}

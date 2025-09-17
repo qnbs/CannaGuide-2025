@@ -1,5 +1,5 @@
 export const equipmentView = {
-  title: 'Equipment Planner',
+  title: 'Equipment',
   tabs: {
     configurator: 'Configurator',
     calculators: 'Calculators',

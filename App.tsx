@@ -19,8 +19,7 @@ import { ActionModalsContainer, ModalState } from './components/common/ActionMod
 import { dbService } from './services/dbService';
 import { usePlantAdvisorArchive } from './hooks/usePlantAdvisorArchive';
 import { Button } from './components/common/Button';
-import { PlantProvider } from './context/PlantContext';
-import { usePlants } from './hooks/usePlants';
+import { PlantProvider, usePlants } from './context/PlantContext';
 import { usePwaInstall } from './hooks/usePwaInstall';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
@@ -40,6 +39,7 @@ const AppContent: React.FC = () => {
 
   const {
     plants,
+    setPlants,
     addJournalEntry,
     waterAllPlants,
     advanceDay,

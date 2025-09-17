@@ -1,5 +1,4 @@
-
-import React, { createContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import React, { createContext, useState, useEffect, ReactNode, useMemo, useContext } from 'react';
 import { Plant, JournalEntry } from '../types';
 import { usePlantManager } from '../hooks/usePlantManager';
 import { storageService } from '../services/storageService';
@@ -45,4 +44,12 @@ export const PlantProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             {children}
         </PlantContext.Provider>
     );
+};
+
+export const usePlants = () => {
+    const context = useContext(PlantContext);
+    if (context === undefined) {
+        throw new Error('usePlants must be used within a PlantProvider');
+    }
+    return context;
 };

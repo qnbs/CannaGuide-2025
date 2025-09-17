@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useId } from 'react';
 
 interface RangeSliderProps {
     min: number;
@@ -12,7 +12,7 @@ interface RangeSliderProps {
 }
 
 export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value, onChange, label, unit, color = 'primary' }) => {
-    
+    const rangeId = useId();
     // z-index state to determine which thumb is on top and visually active
     const [minZIndex, setMinZIndex] = useState(1);
     const [maxZIndex, setMaxZIndex] = useState(1);
@@ -56,7 +56,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
     return (
         <div>
             <div className="flex justify-between items-center mb-2">
-                <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">{label}</label>
+                <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-600 dark:text-slate-300">{label}</label>
                 <span className="text-sm font-mono bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-md">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
             </div>
             <div className="relative h-4 flex items-center">
@@ -66,6 +66,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
                         style={{ left: `${minPos}%`, right: `${100 - maxPos}%` }}
                     ></div>
                     <input
+                        id={`${rangeId}-min`}
+                        name={`${rangeId}-min`}
                         type="range"
                         min={min}
                         max={max}
@@ -83,6 +85,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
                         aria-label={`${label} minimum`}
                     />
                     <input
+                        id={`${rangeId}-max`}
+                        name={`${rangeId}-max`}
                         type="range"
                         min={min}
                         max={max}

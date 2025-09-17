@@ -1,4 +1,76 @@
-# Cannabis Grow Guide 2025
+# Cannabis Grow Guide 2025 (English)
+
+Welcome to **Cannabis Grow Guide 2025**, your interactive digital companion for the entire cannabis cultivation cycle. This advanced web application is designed to help both novice and experienced growers master their cultivation journey—from seed selection to a successful harvest and cure.
+
+Track your plants in a realistic simulation, learn about hundreds of strains, plan your equipment with AI-powered recommendations, and deepen your knowledge with our interactive step-by-step guide.
+
+---
+
+## 🚀 Key Features in Detail
+
+*   🌿 **Comprehensive Strain Database:** Dive into a library of over 300+ strains, now fully available offline. Utilize advanced filters (THC/CBD content, flowering time, difficulty, aromas, terpenes), search, and sort options to find the perfect strain. Save your favorites, export professional multi-page PDF reports, and even add your own custom strains to the database.
+
+*   🌱 **Dynamic Plant Simulation:** Manage up to three plants simultaneously in a realistic cultivation simulation. The dashboard provides a complete overview of your plants' vitals, growth stages, and any active problems. Log actions like watering, feeding, and training in a detailed journal, and respond to simulation-generated tasks to keep your plants healthy.
+
+*   🧠 **AI-Powered Intelligence (Powered by Google Gemini):**
+    *   **AI Setup Configurator:** Get personalized equipment recommendations based on your grow area, budget, and desired style. Save, view, **edit**, **delete**, and **export** your custom setups with full CRUD functionality.
+    *   **AI Plant Doctor:** Upload a photo of an affected leaf to receive an AI-powered diagnosis of potential diseases, pests, or deficiencies.
+    *   **AI Mentor & Knowledge Base:** Ask specific growing questions in the Knowledge view and receive detailed, helpful answers. **Save, edit, and delete** these answers in your personal, fully manageable knowledge base.
+    *   **AI Plant Advisor & Plant-Specific Archive:** In the detailed plant view, receive proactive care tips tailored to your plant's specific current data. **Save, edit, and delete** this advice in a dedicated archive for each plant, creating a complete history of AI-driven care recommendations.
+
+*   📚 **In-Depth Knowledge & Help Center:** Master the art of cultivation with an interactive step-by-step guide covering the entire lifecycle. Track your learning progress with checklists and consult an extensive, detailed glossary, lexicon (cannabinoids, terpenes, flavonoids), and a fully updated FAQ section.
+
+*   🛠️ **Practical Tools & Utilities:**
+    *   **Calculators:** Optimize your setup with handy calculators for ventilation, lighting, nutrient mixing, and yield estimation.
+    *   **Command Palette:** Press `Cmd/Ctrl + K` anywhere to instantly navigate, perform actions like "Water All," or inspect a specific plant.
+
+*   🌐 **Full Localization & Accessibility:** The entire app is professionally translated and fully functional in both **German** and **English**. It is designed with accessibility in mind, featuring full keyboard navigation and screen reader support.
+
+*   🔒 **Privacy First:** Your privacy is paramount. All your data—including plants, settings, and favorites—is stored exclusively locally in your browser. No data ever leaves your device.
+
+---
+
+## 🤖 Development with AI Studio & Open Source on GitHub
+
+This application was developed entirely with **Google's AI Studio**, an innovative platform that enables the creation and modification of complex, feature-rich web applications through natural language commands. The entire process, from scaffolding the initial project to implementing complex features, was driven by iterative prompts.
+
+This project is also fully open source. You are welcome to review the source code, report issues, or contribute to development on GitHub.
+
+*   **See how it was made or fork the project in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Contribute or view the source code on GitHub:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
+
+---
+
+## 💻 Tech Stack
+
+*   **Frontend:** React, TypeScript
+*   **Styling:** Tailwind CSS
+*   **AI Integration:** Google Gemini API (`@google/genai`)
+*   **Data Persistence:** localStorage, IndexedDB (for images)
+*   **PDF Generation:** jsPDF & jsPDF-AutoTable
+
+---
+
+## 🏁 Getting Started
+
+No installation or setup is required. The application runs entirely in your web browser.
+
+1.  **Discover Strains:** Start in the **Strains** view to browse the database. Use the filters and search bar to find a strain that interests you and save it as a favorite with the heart icon.
+2.  **Start Growing:** From a strain's detail page, click "Start Growing" to configure your initial setup and add the new plant to your **Plants** dashboard.
+3.  **Manage Plants:** The **Plants** view is your main dashboard. The simulation progresses automatically. Click on a plant to check its detailed status, log actions in its journal, and complete tasks to keep it healthy and stress-free.
+4.  **Learn & Plan:** Use the **Knowledge** and **Equipment** views to deepen your understanding and plan your real-world setup with the AI configurator and calculators.
+5.  **Use the Command Palette:** For quick access, press `Cmd/Ctrl + K` at any time to jump between sections or perform actions instantly.
+
+---
+
+## ⚠️ Disclaimer
+
+All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations that vary by country and region. Please inform yourself about the laws in your area and always act responsibly and in accordance with the law.
+
+---
+---
+
+# Cannabis Grow Guide 2025 (Deutsch)
 
 Willkommen beim **Cannabis Grow Guide 2025**, Ihrem interaktiven digitalen Begleiter für den gesamten Cannabis-Anbauzyklus. Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung.
 

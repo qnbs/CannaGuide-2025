@@ -181,6 +181,7 @@ export const PhotoModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputId = useId();
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -223,21 +224,25 @@ export const PhotoModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
                 <InputField label={t('plantsView.actionModals.photoNotes')} type="text" value={notes} onChange={setNotes} />
                 
                 {!imagePreview ? (
-                    <div 
-                        onClick={() => fileInputRef.current?.click()}
-                        className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
-                    >
-                        <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2" />
-                        <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">{t('plantsView.aiDiagnostics.buttonLabel')}</p>
-                        <p className="text-xs text-slate-400">{t('plantsView.aiDiagnostics.prompt')}</p>
+                    <>
+                        <label
+                            htmlFor={fileInputId}
+                            className="block border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        >
+                            <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2" />
+                            <p className="text-sm text-slate-600 dark:text-slate-300 font-semibold">{t('plantsView.aiDiagnostics.buttonLabel')}</p>
+                            <p className="text-xs text-slate-400">{t('plantsView.aiDiagnostics.prompt')}</p>
+                        </label>
                         <input
+                            id={fileInputId}
+                            name="photo-upload"
                             ref={fileInputRef}
                             type="file"
                             accept="image/*"
                             onChange={handleFileChange}
                             className="hidden"
                         />
-                    </div>
+                    </>
                 ) : (
                     <div className="relative">
                         <img src={imagePreview} alt="Preview" className="rounded-lg w-full max-h-60 object-contain" />

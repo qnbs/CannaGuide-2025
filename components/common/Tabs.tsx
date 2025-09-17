@@ -16,12 +16,12 @@ interface TabsProps {
 
 export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, className = '', buttonClassName = '' }) => {
     return (
-        <nav className={`flex items-center gap-1 bg-slate-900 rounded-lg p-0.5 ${className}`} role="tablist">
+        <nav className={`flex flex-wrap items-center gap-1 bg-slate-900 rounded-lg p-0.5 ${className}`} role="tablist">
             {tabs.map(tab => (
                 <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors whitespace-nowrap ${
+                    className={`flex-grow flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors whitespace-nowrap ${
                         activeTab === tab.id
                             ? 'bg-slate-700 text-primary-300 shadow-sm'
                             : 'text-slate-300 hover:bg-slate-800'

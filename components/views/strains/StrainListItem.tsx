@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
@@ -29,6 +29,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     onDelete
 }) => {
     const { t } = useTranslations();
+    const checkboxId = useId();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
         Medium: t('strainsView.difficulty.medium'),
@@ -59,6 +60,8 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
         >
             <div className="flex items-center justify-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150">
                 <input
+                    id={checkboxId}
+                    name={`select-${strain.id}`}
                     type="checkbox"
                     aria-label={`Select ${strain.name}`}
                     checked={isSelected}

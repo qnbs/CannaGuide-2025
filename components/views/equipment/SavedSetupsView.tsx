@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 import { SavedSetup, RecommendationCategory, RecommendationItem } from '../../../types';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
@@ -23,6 +23,7 @@ const SetupDetailModal: React.FC<{
     const { t } = useTranslations();
     const [isEditing, setIsEditing] = useState(false);
     const [editedSetup, setEditedSetup] = useState<SavedSetup>(JSON.parse(JSON.stringify(setup)));
+    const baseId = useId();
 
     const categoryLabels: Record<RecommendationCategory, string> = {
         tent: t('equipmentView.configurator.categories.tent'),
@@ -59,7 +60,7 @@ const SetupDetailModal: React.FC<{
                 <div className="flex justify-between items-start">
                     <div>
                         <h2 className="text-2xl font-bold text-primary-400">{isEditing ? t('equipmentView.savedSetups.modal.editMode') : t('equipmentView.savedSetups.modal.title')}</h2>
-                        <input type="text" value={editedSetup.name} onChange={e => setEditedSetup(p => ({...p, name: e.target.value}))} disabled={!isEditing} className={`text-slate-300 bg-transparent text-lg ${isEditing ? 'border-b border-slate-500' : ''}`} />
+                        <input type="text" value={editedSetup.name} id={`${baseId}-name`} name="setup-name" onChange={e => setEditedSetup(p => ({...p, name: e.target.value}))} disabled={!isEditing} className={`text-slate-300 bg-transparent text-lg ${isEditing ? 'border-b border-slate-500' : ''}`} />
                     </div>
                     <Button size="sm" onClick={() => setIsEditing(!isEditing)}>{isEditing ? t('common.cancel') : t('common.edit')}</Button>
                 </div>
@@ -80,11 +81,11 @@ const SetupDetailModal: React.FC<{
                                     <tr key={key} className="border-b border-slate-800">
                                         <td className="py-2 font-bold text-slate-200">{categoryLabels[key]}</td>
                                         <td className="py-2">
-                                            <input type="text" value={item.name} onChange={e => handleItemChange(key, 'name', e.target.value)} disabled={!isEditing} className={`w-full bg-transparent ${isEditing ? 'bg-slate-800 p-1 rounded' : ''}`} />
+                                            <input type="text" value={item.name} id={`${baseId}-${key}-name`} name={`${key}-name`} onChange={e => handleItemChange(key, 'name', e.target.value)} disabled={!isEditing} className={`w-full bg-transparent ${isEditing ? 'bg-slate-800 p-1 rounded' : ''}`} />
                                             {item.watts && <span className="text-xs text-slate-400">({item.watts}W)</span>}
                                         </td>
                                         <td className="py-2 text-right">
-                                             <input type="number" value={item.price} onChange={e => handleItemChange(key, 'price', Number(e.target.value))} disabled={!isEditing} className={`w-20 bg-transparent text-right ${isEditing ? 'bg-slate-800 p-1 rounded' : ''}`} />
+                                             <input type="number" value={item.price} id={`${baseId}-${key}-price`} name={`${key}-price`} onChange={e => handleItemChange(key, 'price', Number(e.target.value))} disabled={!isEditing} className={`w-20 bg-transparent text-right ${isEditing ? 'bg-slate-800 p-1 rounded' : ''}`} />
                                         </td>
                                     </tr>
                                 );

@@ -42,6 +42,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
   const { savedExports, addExport, deleteExport } = useExportsManager();
   const { plants, setPlants } = usePlants();
   const searchInputId = useId();
+  const selectAllId = useId();
   
   const [allStrains, setAllStrains] = useState<Strain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -258,7 +259,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                     <div className="glass-pane rounded-lg flex flex-col flex-grow min-h-0">
                         {viewMode === 'list' && (
                              <div className={`${LIST_GRID_CLASS} sticky top-0 z-10 px-3 py-2 bg-slate-800 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase flex-shrink-0`}>
-                                <input type="checkbox" aria-label="Select all" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 justify-self-center"/>
+                                <input id={selectAllId} name="select-all" type="checkbox" aria-label="Select all" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 justify-self-center"/>
                                 <div aria-hidden="true" className="justify-self-center"><PhosphorIcons.Heart className="w-5 h-5"/></div>
                                 {tableHeaders.map((header, index) => (
                                     <button

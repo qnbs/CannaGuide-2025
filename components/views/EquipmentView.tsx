@@ -8,6 +8,7 @@ import { useSetupManager } from '../../hooks/useSetupManager';
 import { geminiService } from '../../services/geminiService';
 import { Recommendation, SavedSetup } from '../../types';
 import { Tabs } from '../common/Tabs';
+import { useNotifications } from '../../context/NotificationContext';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups';
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
@@ -16,6 +17,7 @@ type GrowStyle = 'beginner' | 'yield' | 'stealth';
 
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslations();
+    const { addNotification } = useNotifications();
     const { savedSetups, addSetup, updateSetup, deleteSetup } = useSetupManager();
     const [activeTab, setActiveTab] = useState<EquipmentViewTab>('configurator');
 
@@ -39,11 +41,13 @@ export const EquipmentView: React.FC = () => {
             setRecommendation(result);
         } catch (err) {
             console.error("Failed to generate setup:", err);
-            setError(err instanceof Error ? err.message : t('equipmentView.configurator.errorNetwork'));
+            const errorMessage = err instanceof Error ? err.message : t('equipmentView.configurator.errorNetwork');
+            setError(errorMessage);
+            addNotification(errorMessage, 'error');
         } finally {
             setIsLoading(false);
         }
-    }, [area, budget, growStyle, t]);
+    }, [area, budget, growStyle, t, addNotification]);
 
     const startOver = () => {
         setStep(1);

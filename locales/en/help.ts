@@ -8,11 +8,11 @@ export const helpView = {
       title: 'First Steps & Main Features',
       description: 'Welcome to the Grow Guide! This app is your interactive companion for cannabis cultivation. Here is a brief overview:',
       list: {
-        strains: '<strong>Discover Strains:</strong> Browse the <strong>{strainsView}</strong> database, use filters and search to find the perfect strain. Save favorites and start a new grow directly from the detail view.',
+        strains: '<strong>Discover Strains:</strong> Browse the <strong>{strainsView}</strong> database, use filters and search to find the perfect strain. Save favorites, add your own strains, and export data.',
         plants: '<strong>Manage Plants:</strong> Manage up to three plants in the <strong>{plantsView}</strong> section. Observe their development in real-time, log all actions in the journal, and use the AI Advisor, whose advice you can now save and manage per plant.',
         knowledge: '<strong>Acquire Knowledge:</strong> Follow the step-by-step <strong>{knowledgeView}</strong> to learn the basics. Check off the checklist items to track your progress and ask the AI mentor your questions, the answers to which you can now save, edit, and manage.',
         equipment: '<strong>Plan Setup:</strong> Plan your setup with the <strong>{equipmentView}</strong> configurator. You can now fully edit, delete, and export your saved setups.',
-        settings: '<strong>Customize App:</strong> In the <strong>{settingsView}</strong> section, you can customize the font size and language, as well as back up and import your data.',
+        settings: '<strong>Customize App:</strong> In the <strong>{settingsView}</strong> section, you can customize language, theme, and default notes, as well as back up and import your data.',
         commandPalette: '<strong>Command Palette:</strong> Press <strong>Cmd/Ctrl + K</strong> anywhere to quickly navigate, perform actions like "Water All", or inspect a specific plant.'
       }
     },
@@ -162,8 +162,8 @@ export const helpView = {
     },
     about: {
       title: 'About the App',
-      version: 'v2.4.0',
-      appName: 'Cannabis Grow Guide',
+      version: 'v2.5.0',
+      appName: 'Cannabis Grow Guide with Gemini',
       description: 'This app is an interactive guide that supports you on your cannabis cultivation journey. Track your plants, learn about strains, and get expert tips on equipment and techniques.',
       features: '<strong>New Features:</strong> This version now includes plant-specific AI advisor archives and full CRUD functionality for all saved data (setups & mentor responses).',
       devWithAIStudioTitle: 'Developed with AI Studio',

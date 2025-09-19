@@ -59,40 +59,6 @@ const StartTab: React.FC = () => {
                    <li dangerouslySetInnerHTML={{ __html: t('helpView.sections.firstSteps.list.commandPalette') }} />
                 </ul>
             </SectionCard>
-            <SectionCard icon={<PhosphorIcons.Info />} title={t('helpView.sections.about.title')} id="about">
-                 <div className="space-y-4 text-slate-200 prose prose-sm dark:prose-invert max-w-none">
-                    <div>
-                        <div className="flex justify-between items-center">
-                            <h3 className="text-lg font-semibold !text-slate-100 !m-0">{t('helpView.sections.about.appName')}</h3>
-                            <span className="text-sm font-mono bg-slate-800 px-2 py-1 rounded">{t('helpView.sections.about.version')}</span>
-                        </div>
-                        <p>{t('helpView.sections.about.description')}</p>
-                        <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.features')}} />
-                    </div>
-                    <div className="pt-4 border-t border-slate-700">
-                        <h4 className="font-semibold !text-primary-400">{t('helpView.sections.about.devWithAIStudioTitle')}</h4>
-                        <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.devWithAIStudioText')}} />
-                         <a href="https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-primary-400 hover:underline">
-                            {t('helpView.sections.about.getTheAppHere')} &rarr;
-                        </a>
-                    </div>
-                     <div className="pt-4 border-t border-slate-700">
-                        <h4 className="font-semibold !text-primary-400">{t('helpView.sections.about.githubTitle')}</h4>
-                        <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.githubText')}} />
-                         <a href="https://github.com/qnbs/Cannabis-Grow-Guide-2025" target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-primary-400 hover:underline">
-                            {t('helpView.sections.about.githubLinkText')} &rarr;
-                        </a>
-                    </div>
-                    <div className="pt-4 border-t border-slate-700">
-                        <h4 className="font-semibold !text-primary-400">{t('helpView.sections.about.disclaimerTitle')}</h4>
-                        <p>{t('helpView.sections.about.disclaimerText')}</p>
-                    </div>
-                    <div className="pt-4 border-t border-slate-700">
-                        <h4 className="font-semibold !text-primary-400">{t('helpView.sections.about.privacyTitle')}</h4>
-                        <p>{t('helpView.sections.about.privacyText')}</p>
-                    </div>
-                </div>
-            </SectionCard>
         </div>
     );
 };
@@ -209,7 +175,7 @@ export const HelpView: React.FC = () => {
     };
 
     const tabs: {id: HelpTab, label: string, icon: React.ReactNode}[] = [
-        { id: 'start', label: t('nav.help'), icon: <PhosphorIcons.RocketLaunch /> },
+        { id: 'start', label: t('helpView.sections.firstSteps.title'), icon: <PhosphorIcons.RocketLaunch /> },
         { id: 'faq', label: t('helpView.sections.faq.title'), icon: <PhosphorIcons.Question /> },
         { id: 'cultivation', label: t('helpView.tabs.cultivation'), icon: <PhosphorIcons.Plant /> },
     ];
@@ -226,13 +192,12 @@ export const HelpView: React.FC = () => {
     return (
         <div className="space-y-6">
             <Card>
-                 <Tabs 
-                    tabs={tabs} 
-                    activeTab={activeTab} 
-                    setActiveTab={(id) => setActiveTab(id as HelpTab)} 
-                 />
+                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as HelpTab)} />
             </Card>
-            {renderTabContent()}
+
+            <div className="space-y-6">
+                {renderTabContent()}
+            </div>
         </div>
     );
 };

@@ -12,6 +12,7 @@ interface StrainListItemProps {
     onSelect: (strain: Strain) => void;
     onToggleSelection: (id: string) => void;
     onToggleFavorite: (id: string) => void;
+    visibleColumns: Record<string, boolean>;
     isUserStrain?: boolean;
     onEdit?: (strain: Strain) => void;
     onDelete?: (id: string) => void;
@@ -24,6 +25,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     onSelect,
     onToggleSelection,
     onToggleFavorite,
+    visibleColumns,
     isUserStrain = false,
     onEdit,
     onDelete
@@ -84,22 +86,18 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                 <p className="font-semibold text-slate-100 truncate">{strain.name}</p>
                  <p className="text-xs text-slate-400 sm:hidden">{strain.type}</p>
             </div>
-            <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm" title={strain.typeDetails || strain.type}>
-                <TypeDisplay />
-            </div>
-            <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>
-            <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>
-            <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm text-slate-200">{strain.floweringTime} {t('strainsView.weeks')}</div>
-            <div className="hidden md:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm text-slate-300">
-                {strain.agronomic.yieldDetails?.indoor || 'N/A'}
-            </div>
-            <div className="flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
+            {visibleColumns.type && <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm" title={strain.typeDetails || strain.type}><TypeDisplay /></div>}
+            {visibleColumns.thc && <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>}
+            {visibleColumns.cbd && <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>}
+            {visibleColumns.floweringTime && <div className="hidden sm:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm text-slate-200">{strain.floweringTime} {t('strainsView.weeks')}</div>}
+            {visibleColumns.yield && <div className="hidden md:flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150 text-sm text-slate-300">{strain.agronomic.yieldDetails?.indoor || 'N/A'}</div>}
+            {visibleColumns.difficulty && <div className="flex items-center px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Easy' ? 'text-green-500' : strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : 'text-red-500'}`} />
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
                 </div>
-            </div>
+            </div>}
             <div className="flex items-center justify-start px-3 py-2.5 border-b border-slate-800 group-hover:bg-slate-700 transition-colors duration-150">
                 {isUserStrain && onEdit && onDelete && (
                     <div className="flex gap-1">

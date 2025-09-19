@@ -1,4 +1,7 @@
 
+
+
+
 import React, { useState, useEffect, useId } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
@@ -10,6 +13,7 @@ import { geminiService } from '../../services/geminiService';
 import { AIResponse, ArchivedMentorResponse } from '../../types';
 import { EditResponseModal } from '../common/EditResponseModal';
 import { Tabs } from '../common/Tabs';
+import { useNotifications } from '../../context/NotificationContext';
 
 type KnowledgeViewTab = 'guide' | 'archive';
 
@@ -62,6 +66,7 @@ const KnowledgeStep: React.FC<{
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
+    const { addNotification } = useNotifications();
     const { progress, toggleItem } = useKnowledgeProgress();
     const { responses: archivedResponses, addResponse, updateResponse, deleteResponse } = useKnowledgeArchive();
     const mentorInputId = useId();
@@ -94,6 +99,7 @@ export const KnowledgeView: React.FC = () => {
 
     const handleAskMentor = async () => {
         if (!query.trim()) return;
+
         setIsLoading(true);
         setAiResponse(null);
         try {
@@ -101,7 +107,9 @@ export const KnowledgeView: React.FC = () => {
             setAiResponse(res);
         } catch (e) {
             console.error(e);
-            setAiResponse({ title: t('common.error'), content: e instanceof Error ? e.message : t('ai.error')});
+            const errorMessage = e instanceof Error ? e.message : t('ai.error');
+            setAiResponse({ title: t('common.error'), content: errorMessage});
+            addNotification(errorMessage, 'error');
         }
         setIsLoading(false);
     };

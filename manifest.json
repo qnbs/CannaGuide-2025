@@ -1,6 +1,6 @@
 {
-  "name": "Cannabis Grow Guide 2025",
-  "short_name": "Canna Guide 2025",
+  "name": "Cannabis Grow Guide with Gemini",
+  "short_name": "CannaGuide 2025",
   "start_url": ".",
   "scope": "/",
   "display": "standalone",

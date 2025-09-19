@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { View, Plant, Command, PlantStage } from './types';
+import { View, Plant, Command, PlantStage, Theme } from './types';
 import { BottomNav } from './components/navigation/BottomNav';
 import { StrainsView } from './components/views/StrainsView';
 import { PlantsView } from './components/views/PlantsView';
@@ -25,8 +25,8 @@ import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
 
 const AppContent: React.FC = () => {
-  const [activeView, setActiveView] = useState<View>(View.Plants);
   const { settings, setSetting } = useSettings();
+  const [activeView, setActiveView] = useState<View>(settings.defaultView);
   const { t } = useTranslations();
   const mainRef = useRef<HTMLElement>(null);
   
@@ -39,12 +39,10 @@ const AppContent: React.FC = () => {
 
   const {
     plants,
-    setPlants,
     addJournalEntry,
     waterAllPlants,
     advanceDay,
     updatePlantState,
-    completeTask,
   } = usePlants();
   
   const { 
@@ -70,6 +68,8 @@ const AppContent: React.FC = () => {
     const view = params.get('view');
     if (view && Object.values(View).includes(view as View)) {
         setActiveView(view as View);
+    } else {
+        setActiveView(settings.defaultView);
     }
     
     dbService.initDB();
@@ -85,7 +85,18 @@ const AppContent: React.FC = () => {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [updatePlantState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let intervalId: number | undefined;
+    if (settings.simulationSettings.autoAdvance) {
+      intervalId = setInterval(() => {
+        updatePlantState();
+      }, 5 * 60 * 1000); // every 5 minutes
+    }
+    return () => clearInterval(intervalId);
+  }, [settings.simulationSettings.autoAdvance, updatePlantState]);
 
   useEffect(() => {
       if (mainRef.current) {
@@ -137,8 +148,35 @@ const AppContent: React.FC = () => {
             { id: `feed-${plant.id}`, title: `${t('commandPalette.feed')}: ${plant.name}`, subtitle: t('commandPalette.plants'), icon: <PhosphorIcons.TestTube/>, action: exec(() => setModalState({ plantId: plant.id, type: 'feeding' })), keywords: `düngen ${plant.name}` },
         ]);
     
-    return [...navCommands, ...actionCommands, ...plantCommands];
-  }, [t, plants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState]);
+    const settingsCommands: Command[] = [
+        { 
+            id: 'toggle-language', 
+            title: t('commandPalette.toggleLanguage', { lang: settings.language === 'en' ? 'Deutsch' : 'English' }), 
+            subtitle: t('commandPalette.settings'), 
+            icon: <PhosphorIcons.Globe />, 
+            action: exec(() => {
+                const newLang = settings.language === 'en' ? 'de' : 'en';
+                setSetting('language', newLang);
+            }), 
+            keywords: 'sprache language translate übersetzen' 
+        },
+        { 
+            id: 'toggle-theme', 
+            title: t('commandPalette.toggleTheme'), 
+            subtitle: t('commandPalette.settings'), 
+            icon: <PhosphorIcons.PaintBrush />, 
+            action: exec(() => {
+                const themes: Theme[] = ['midnight', 'forest', 'purple-haze'];
+                const currentThemeIndex = themes.indexOf(settings.theme);
+                const nextTheme = themes[(currentThemeIndex + 1) % themes.length];
+                setSetting('theme', nextTheme);
+            }), 
+            keywords: 'design farbe color theme' 
+        },
+    ];
+
+    return [...navCommands, ...actionCommands, ...plantCommands, ...settingsCommands];
+  }, [t, plants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState, settings.language, settings.theme, setSetting]);
   
   return (
     <div className={`app theme-${settings.theme} font-sans bg-slate-900 text-slate-100 flex flex-col h-screen text-${settings.fontSize} overflow-hidden`}>
@@ -159,7 +197,7 @@ const AppContent: React.FC = () => {
                             <CannabisLeafIcon className="w-8 h-8 text-primary-400" />
                             <h1 className="text-xl sm:text-2xl font-bold text-slate-100 tracking-wider font-display hidden sm:block ml-2">
                                 <span className="text-primary-400">Canna</span>Guide
-                                <span className="text-xs font-light text-primary-500/80 align-top ml-1">2025</span>
+                                <span className="text-xs font-light text-slate-400 align-top ml-1.5">2025</span>
                             </h1>
                             </button>
                             <h2 className="text-xl font-bold font-display text-primary-400 whitespace-nowrap sm:hidden">

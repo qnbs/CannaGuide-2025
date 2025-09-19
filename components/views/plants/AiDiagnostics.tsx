@@ -1,4 +1,7 @@
 
+
+
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -48,6 +51,7 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
 
     const handleDiagnose = async () => {
         if (!image) return;
+
         setIsLoading(true);
         setResponse(null);
         try {
@@ -63,7 +67,9 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
             setResponse(res);
         } catch (error) {
             console.error(error);
-            addNotification(error instanceof Error ? error.message : t('ai.error'), 'error');
+            const errorMessage = error instanceof Error ? error.message : t('ai.error');
+            addNotification(errorMessage, 'error');
+            setResponse({ title: t('common.error'), content: errorMessage });
         } finally {
             setIsLoading(false);
         }

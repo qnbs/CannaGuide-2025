@@ -57,13 +57,13 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
             </div>
 
             <div className="flex-grow flex items-center justify-center my-2 min-h-[150px]">
-               <PlantVisual stage={plant.stage} age={plant.age} stress={plant.stressLevel} water={plant.vitals.substrateMoisture}/>
+               <PlantVisual stage={plant.stage} age={plant.age} stress={plant.stressLevel} water={plant.vitals.substrateMoisture} problems={plant.problems} />
             </div>
             
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
                  <Stat icon={<PhosphorIcons.Sun />} label={t('common.days')} value={`${t('plantsView.plantCard.day')} ${plant.age}`} />
                  <Stat icon={<PhosphorIcons.Ruler />} label={t('plantsView.detailedView.height')} value={`${plant.height.toFixed(1)} cm`} />
-                 <Stat icon={<PhosphorIcons.Plant />} label={t('plantsView.plantCard.stage')} value={t(`plantStages.${plant.stage}`)} />
+                 <Stat icon={<PhosphorIcons.Plant />} label={t('plantsView.detailedView.stage')} value={t(`plantStages.${plant.stage}`)} />
                  <Stat icon={<PhosphorIcons.Heart weight="fill"/>} label={t('plantsView.detailedView.stress')} value={`${plant.stressLevel.toFixed(0)}%`} />
             </div>
         </Card>

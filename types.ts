@@ -26,11 +26,34 @@ export type SimulationDifficulty = 'easy' | 'normal' | 'hard';
 export interface SimulationSettings {
     speed: SimulationSpeed;
     difficulty: SimulationDifficulty;
+    autoAdvance: boolean;
+    autoJournaling: {
+      stageChanges: boolean;
+      problems: boolean;
+      tasks: boolean;
+    };
+}
+
+export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime';
+export type SortDirection = 'asc' | 'desc';
+
+export interface StrainsViewSettings {
+  defaultSortKey: SortKey;
+  defaultSortDirection: SortDirection;
+  defaultViewMode: 'list' | 'grid';
+  visibleColumns: {
+    type: boolean;
+    thc: boolean;
+    cbd: boolean;
+    floweringTime: boolean;
+    yield: boolean;
+    difficulty: boolean;
+  };
 }
 
 export interface GrowSetup {
   lightType: 'LED' | 'HPS' | 'CFL';
-  potSize: 5 | 10 | 15; // in Liters
+  potSize: 5 | 10 | 15 | 30; // in Liters
   medium: 'Soil' | 'Coco' | 'Hydro';
   temperature: number; // °C
   humidity: number; // %
@@ -41,6 +64,8 @@ export interface AppSettings {
   fontSize: FontSize;
   language: Language;
   theme: Theme;
+  defaultView: View;
+  strainsViewSettings: StrainsViewSettings;
   notificationsEnabled: boolean;
   notificationSettings: NotificationSettings;
   onboardingCompleted: boolean;

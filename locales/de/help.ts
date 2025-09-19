@@ -8,11 +8,11 @@ export const helpView = {
       title: 'Erste Schritte & Hauptfunktionen',
       description: 'Willkommen beim Grow Guide! Diese App ist dein interaktiver Begleiter für den Cannabis-Anbau. Hier ein kurzer Überblick:',
       list: {
-        strains: '<strong>Sorten entdecken:</strong> Durchstöbere die <strong>{strainsView}</strong>-Datenbank, nutze Filter und Suche, um die perfekte Sorte zu finden. Speichere Favoriten und starte einen neuen Grow direkt aus der Detailansicht.',
+        strains: '<strong>Sorten entdecken:</strong> Durchstöbere die <strong>{strainsView}</strong>-Datenbank, nutze Filter und Suche, um die perfekte Sorte zu finden. Speichere Favoriten, füge eigene Sorten hinzu und exportiere Daten.',
         plants: '<strong>Pflanzen managen:</strong> Verwalte bis zu drei Pflanzen im Bereich <strong>{plantsView}</strong>. Beobachte ihre Entwicklung in Echtzeit, protokolliere alle Maßnahmen im Journal und nutze den KI-Berater, dessen Ratschläge du nun pro Pflanze speichern und verwalten kannst.',
         knowledge: '<strong>Wissen aneignen:</strong> Folge der Schritt-für-Schritt-Anleitung unter <strong>{knowledgeView}</strong>, um die Grundlagen zu lernen. Hake die Checklisten ab, um deinen Wissensfortschritt zu verfolgen, und stelle dem KI-Mentor deine Fragen, deren Antworten du nun speichern, bearbeiten und verwalten kannst.',
         equipment: '<strong>Setup planen:</strong> Plane dein Setup mit dem <strong>{equipmentView}</strong>-Konfigurator. Deine gespeicherten Setups kannst du jetzt vollständig bearbeiten, löschen und exportieren.',
-        settings: '<strong>App anpassen:</strong> Im <strong>{settingsView}</strong>-Bereich kannst du die Schriftgröße und die Sprache anpassen sowie deine Daten sichern und importieren.',
+        settings: '<strong>App anpassen:</strong> Im <strong>{settingsView}</strong>-Bereich kannst du die Sprache, das Thema und Standard-Notizen anpassen sowie deine Daten sichern und importieren.',
         commandPalette: '<strong>Befehlspalette:</strong> Drücke überall <strong>Cmd/Strg + K</strong>, um schnell zu navigieren, Aktionen wie "Alle gießen" auszuführen oder eine bestimmte Pflanze zu inspizieren.'
       }
     },
@@ -162,8 +162,8 @@ export const helpView = {
     },
     about: {
       title: 'Über die App',
-      version: 'v2.4.0',
-      appName: 'Cannabis Grow Guide',
+      version: '2.5.0',
+      appName: 'Cannabis Grow Guide with Gemini',
       description: 'Diese App ist ein interaktiver Leitfaden, der dich auf deiner Reise des Cannabis-Anbaus unterstützt. Verfolge deine Pflanzen, lerne über Sorten und erhalte Expertentipps zu Ausrüstung und Techniken.',
       features: '<strong>Neue Funktionen:</strong> Diese Version enthält jetzt pflanzenspezifische KI-Berater-Archive und volle CRUD-Funktionalität für alle gespeicherten Daten (Setups & Mentor-Antworten).',
       devWithAIStudioTitle: 'Entwickelt mit AI Studio',

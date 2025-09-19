@@ -49,7 +49,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
             <div className="lg:col-span-1 flex flex-col gap-6">
                 <Card>
                      <div className="h-64 flex items-center justify-center">
-                        <PlantVisual stage={plant.stage} age={plant.age} stress={plant.stressLevel} water={plant.vitals.substrateMoisture}/>
+                        <PlantVisual stage={plant.stage} age={plant.age} stress={plant.stressLevel} water={plant.vitals.substrateMoisture} problems={plant.problems}/>
                     </div>
                 </Card>
                  <Card>

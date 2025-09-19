@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlantStage, JournalEntry } from '../../../types';
+import { PlantStage, JournalEntry, PlantProblem } from '../../../types';
 import { PLANT_STAGE_DETAILS } from '../../../constants';
 
 interface PlantVisualProps {
@@ -8,9 +8,10 @@ interface PlantVisualProps {
   stress: number;
   water: number;
   trainingHistory?: JournalEntry[];
+  problems: PlantProblem[];
 }
 
-const Leaf: React.FC<{ fingers: number; color: string; rotation: number; length: number; droop: number }> = ({ fingers, color, rotation, length, droop }) => {
+const Leaf: React.FC<{ fingers: number; color: string; rotation: number; length: number; droop: number; hasNutrientBurn: boolean; }> = ({ fingers, color, rotation, length, droop, hasNutrientBurn }) => {
   const fingerAngle = 18;
   const startAngle = -((fingers - 1) / 2) * fingerAngle;
 
@@ -23,13 +24,20 @@ const Leaf: React.FC<{ fingers: number; color: string; rotation: number; length:
            const angle = startAngle + i * fingerAngle;
            const currentLength = length * (1 - Math.abs(i - (fingers - 1) / 2) * 0.2);
           return (
-             <path
-              key={i}
-              d={fingerPath(currentLength)}
-              fill={color}
-              transform={`rotate(${angle})`}
-              style={{ transition: 'fill 0.5s ease' }}
-            />
+             <g key={i} transform={`rotate(${angle})`}>
+                <path
+                  d={fingerPath(currentLength)}
+                  fill={color}
+                  style={{ transition: 'fill 0.5s ease' }}
+                />
+                {hasNutrientBurn && (
+                  <path
+                    d={`M ${currentLength*0.8} ${-currentLength*0.9} L ${currentLength} ${-currentLength*0.9} L ${currentLength*0.9} ${-currentLength} Z`}
+                    fill="rgba(139, 69, 19, 0.7)"
+                    style={{ transition: 'opacity 0.5s ease', opacity: 1 }}
+                  />
+                )}
+             </g>
           )
         })}
       </g>
@@ -38,7 +46,7 @@ const Leaf: React.FC<{ fingers: number; color: string; rotation: number; length:
 };
 
 
-export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, age, stress, water, trainingHistory = [] }) => {
+export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, age, stress, water, trainingHistory = [], problems = [] }) => {
   const getScale = () => {
     switch (stage) {
       case PlantStage.Seed: return 0.2;
@@ -56,6 +64,7 @@ export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, age, stress, wa
   };
 
   const isTopped = trainingHistory.some(e => e.details?.trainingType === 'Topping');
+  const hasNutrientBurn = problems.some(p => p.type === 'NutrientBurn');
 
   const getLeafSets = () => {
     if (stage === PlantStage.Seed || stage === PlantStage.Germination) return 0;
@@ -77,8 +86,8 @@ export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, age, stress, wa
   const leafSets = getLeafSets();
   
   const colorInterpolator = (t: number) => {
-      const h1 = 120, s1 = 80, l1 = 30;
-      const h2 = 50, s2 = 40, l2 = 40;
+      const h1 = 120, s1 = 80, l1 = 30; // Healthy green
+      const h2 = 50, s2 = 40, l2 = 40; // Stressed yellow/brown
       const h = h1 + t * (h2 - h1);
       const s = s1 + t * (s2 - s1);
       const l = l1 + t * (l2 - l1);
@@ -99,7 +108,7 @@ export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, age, stress, wa
       const droop = isDrooping ? (i % 2 === 0 ? 25 : -25) : 0;
       return (
         <g key={i} transform={`translate(0, ${stemHeight - yPos - 10})`}>
-          <Leaf fingers={fingers} color={leafColor} rotation={rotation} length={20 + i*3} droop={droop} />
+          <Leaf fingers={fingers} color={leafColor} rotation={rotation} length={20 + i*3} droop={droop} hasNutrientBurn={hasNutrientBurn} />
         </g>
       )
   });

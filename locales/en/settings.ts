@@ -1,7 +1,16 @@
 export const settingsView = {
   title: 'Settings',
-  display: {
-    title: 'Display',
+  categories: {
+    general: 'General',
+    strains: 'Strains View',
+    plants: 'Plants & Simulation',
+    notifications: 'Notifications',
+    defaults: 'Defaults',
+    data: 'Data Management',
+    about: 'About',
+  },
+  general: {
+    title: 'General Settings',
     language: 'Language',
     theme: 'Theme',
     themes: {
@@ -15,6 +24,54 @@ export const settingsView = {
       base: 'Normal',
       lg: 'Large',
     },
+    defaultView: 'Default View on Startup',
+  },
+  strains: {
+    title: 'Strains View Settings',
+    defaultSort: 'Default Sort Order',
+    defaultViewMode: 'Default View Mode',
+    viewModes: {
+      list: 'List',
+      grid: 'Grid',
+    },
+    visibleColumns: 'Visible Columns (List View)',
+    columns: {
+        type: 'Type',
+        thc: 'THC',
+        cbd: 'CBD',
+        floweringTime: 'Flowering Time',
+        yield: 'Yield',
+        difficulty: 'Difficulty',
+    },
+    sortKeys: {
+      name: 'Name',
+      thc: 'THC',
+      cbd: 'CBD',
+      floweringTime: 'Flowering Time',
+      difficulty: 'Difficulty',
+      type: 'Type',
+    },
+    sortDirections: {
+      asc: 'Ascending',
+      desc: 'Descending',
+    }
+  },
+  plants: {
+      title: 'Plants & Simulation',
+      autoAdvance: 'Auto-Advance Simulation',
+      autoAdvanceDesc: 'Updates plant state every 5 minutes in the background.',
+      autoJournaling: 'Automatic Journaling',
+      autoJournalingDesc: 'Automatically create system journal entries for certain events.',
+      logStageChanges: 'Log stage changes',
+      logProblems: 'Log detected problems',
+      logTasks: 'Log created tasks',
+      speed: 'Simulation Speed',
+      difficulty: 'Difficulty',
+      difficulties: {
+        easy: 'Easy',
+        normal: 'Normal',
+        hard: 'Hard',
+      },
   },
   notifications: {
       title: 'Notifications',
@@ -24,23 +81,21 @@ export const settingsView = {
       harvestReady: 'Harvest Ready',
       newTask: 'New Task',
   },
-  simulation: {
-    title: 'Simulation',
-    speed: 'Simulation Speed',
-    difficulty: 'Difficulty',
-    difficulties: {
-      easy: 'Easy',
-      normal: 'Normal',
-      hard: 'Hard',
-    },
-  },
   defaults: {
       title: 'Defaults',
       growSetup: 'Default Grow Setup',
       export: 'Default Export Settings',
+      journalNotesTitle: 'Default Journal Notes',
+      wateringNoteLabel: 'Note for Watering',
+      feedingNoteLabel: 'Note for Feeding',
   },
   data: {
     title: 'Data Management',
+    lastBackup: 'Last Backup',
+    noBackup: 'No backup created yet',
+    replayOnboarding: 'Show Tutorial Again',
+    replayOnboardingConfirm: 'This will show the welcome tutorial on the next app start. Continue?',
+    replayOnboardingSuccess: 'Tutorial will be shown on next start.',
     resetPlants: 'Reset Plants',
     resetPlantsConfirm: 'Are you sure you want to delete all your current plants? This action cannot be undone.',
     resetPlantsSuccess: 'All plants have been reset.',
@@ -57,4 +112,15 @@ export const settingsView = {
     importError: 'Error importing data',
     importInvalidFile: 'Invalid backup file.',
   },
+  about: {
+      title: 'About the App',
+      version: 'Version',
+      description: 'Description',
+      devWithAIStudio: 'Developed with AI Studio',
+      github: 'Open Source on GitHub',
+      getTheAppHere: 'View App in AI Studio',
+      githubLinkText: 'View Project on GitHub',
+      disclaimer: 'Disclaimer',
+      privacy: 'Privacy Policy',
+    }
 };

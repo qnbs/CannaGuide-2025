@@ -52,14 +52,8 @@ export const PROBLEM_THRESHOLDS = {
     low: 15,
   },
   humidity: {
-    vegetative: {
-        high: 75,
-        low: 35,
-    },
-    flowering: {
-        high: 55, // Lower threshold in flowering to prevent mold
-        low: 25,
-    }
+    high: 75,
+    low: 25
   },
   light: {
     stress: 98
@@ -84,6 +78,7 @@ export const YIELD_FACTORS = {
             5: 0.8,
             10: 1.0,
             15: 1.2,
+            30: 1.4,
         },
         medium: {
             Soil: 1.0,
@@ -94,21 +89,25 @@ export const YIELD_FACTORS = {
 };
 
 export const SIMULATION_CONSTANTS = {
-  // pH values below/above which nutrient uptake is reduced
   NUTRIENT_LOCKOUT_PH_LOW: 5.8,
   NUTRIENT_LOCKOUT_PH_HIGH: 7.0,
-  // The pH value towards which the substrate naturally drifts
   PH_DRIFT_TARGET: 6.5,
-  // The factor determining how fast pH drifts per day
   PH_DRIFT_FACTOR: 0.05,
-  // A higher value means stress has less impact on growth
+  PH_BUFFER_FACTOR: 0.7, // How much the current substrate pH resists change (0.7 means 70% old value, 30% new)
   STRESS_GROWTH_PENALTY_DIVISOR: 150,
-  // Substrate moisture percentage below which a watering task is generated
   WATERING_TASK_THRESHOLD: 30,
-  // Substrate moisture percentage below which "Water All" becomes effective
   WATER_ALL_THRESHOLD: 50,
-  // A factor determining how much moisture is replenished relative to water amount and pot size
   WATER_REPLENISH_FACTOR: 200,
-  // Milliliters per liter
   ML_PER_LITER: 1000,
+  STRESS_FACTORS: { // stress points added per day for each unit of deviation
+    UNDERWATERING: 0.8,
+    OVERWATERING: 0.6,
+    TEMP_HIGH: 0.5,
+    TEMP_LOW: 0.4,
+    HUMIDITY_HIGH: 0.3,
+    HUMIDITY_LOW: 0.2,
+    PH_OFF: 0.4,
+    NUTRIENT_BURN: 1.2, // Nutrient burn is very stressful
+    NUTRIENT_DEFICIENCY: 0.5,
+  }
 };

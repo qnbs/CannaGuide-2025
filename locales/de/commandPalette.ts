@@ -1,3 +1,4 @@
+
 export const commandPalette = {
   placeholder: 'Befehl eingeben oder suchen...',
   noResults: 'Keine Befehle gefunden.',
@@ -9,4 +10,6 @@ export const commandPalette = {
   inspect: 'Inspizieren',
   water: 'Gießen',
   feed: 'Düngen',
+  toggleLanguage: 'Sprache umschalten auf: {lang}',
+  toggleTheme: 'Thema wechseln',
 };

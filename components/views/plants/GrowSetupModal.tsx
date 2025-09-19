@@ -39,7 +39,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   type SetupOption = 'lightType' | 'potSize' | 'medium';
   const options: { id: SetupOption, label: string, choices: (string|number)[], display?: (s: string|number) => string }[] = [
       { id: 'lightType', label: t('plantsView.setupModal.lightSource'), choices: ['LED', 'HPS', 'CFL'] },
-      { id: 'potSize', label: t('plantsView.setupModal.potSize'), choices: [5, 10, 15], display: s => `${s}L` },
+      { id: 'potSize', label: t('plantsView.setupModal.potSize'), choices: [5, 10, 15, 30], display: s => `${s}L` },
       { id: 'medium', label: t('plantsView.setupModal.medium'), choices: ['Soil', 'Coco', 'Hydro'], display: s => String(t(`plantsView.setupModal.mediums.${String(s).toLowerCase()}`)) },
   ];
 

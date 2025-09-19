@@ -77,7 +77,7 @@ const exportAsTXT = (data: Strain[], fileName: string) => {
     const doubleHr = '═'.repeat(textWidth);
 
     let content = `${doubleHr}\n`;
-    content += `| CANNABIS GROW GUIDE 2025 - STRAIN REPORT`.padEnd(textWidth - 1) + '|\n';
+    content += `| Cannabis Grow Guide with Gemini - Strain Report`.padEnd(textWidth - 1) + '|\n';
     content += `| Generated: ${new Date().toLocaleString()}`.padEnd(textWidth - 1) + '|\n';
     content += `| Total Strains: ${data.length}`.padEnd(textWidth - 1) + '|\n';
     content += `${doubleHr}\n\n`;
@@ -161,7 +161,7 @@ const exportAsPDF = (data: Strain[], fileName: string, t: TFunction) => {
         doc.setFontSize(9);
         doc.setTextColor(100, 116, 139);
         doc.text(normalizeGermanChars(`Seite ${pageNumber}`), pageWidth - margin, pageHeight - 10, { align: 'right' });
-        doc.text(normalizeGermanChars('Cannabis Grow Guide 2025 - Sortenbericht'), margin, pageHeight - 10);
+        doc.text(normalizeGermanChars('Cannabis Grow Guide with Gemini - Sortenbericht'), margin, pageHeight - 10);
     };
 
     const checkPageBreak = (neededHeight: number) => {

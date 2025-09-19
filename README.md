@@ -1,6 +1,6 @@
-# Cannabis Grow Guide 2025 (English)
+# Cannabis Grow Guide with Gemini (English)
 
-Welcome to **Cannabis Grow Guide 2025**, your interactive digital companion for the entire cannabis cultivation cycle. This advanced web application is designed to help both novice and experienced growers master their cultivation journey—from seed selection to a successful harvest and cure.
+Welcome to **Cannabis Grow Guide with Gemini**, your interactive digital companion for the entire cannabis cultivation cycle. This advanced web application is designed to help both novice and experienced growers master their cultivation journey—from seed selection to a successful harvest and cure.
 
 Track your plants in a realistic simulation, learn about hundreds of strains, plan your equipment with AI-powered recommendations, and deepen your knowledge with our interactive step-by-step guide.
 
@@ -8,7 +8,7 @@ Track your plants in a realistic simulation, learn about hundreds of strains, pl
 
 ## 🚀 Key Features in Detail
 
-*   🌿 **Comprehensive Strain Database:** Dive into a library of over 300+ strains, now fully available offline. Utilize advanced filters (THC/CBD content, flowering time, difficulty, aromas, terpenes), search, and sort options to find the perfect strain. Save your favorites, export professional multi-page PDF reports, and even add your own custom strains to the database.
+*   🌿 **Comprehensive Strain Database:** Dive into a library of over 300+ strains, now fully available offline. Utilize advanced filters (THC/CBD content, flowering time, difficulty, aromas, terpenes), search, and sort options to find the perfect strain. Save your favorites, export professional multi-page PDF reports, and even add, **edit, and delete** your own custom strains to the database.
 
 *   🌱 **Dynamic Plant Simulation:** Manage up to three plants simultaneously in a realistic cultivation simulation. The dashboard provides a complete overview of your plants' vitals, growth stages, and any active problems. Log actions like watering, feeding, and training in a detailed journal, and respond to simulation-generated tasks to keep your plants healthy.
 
@@ -22,11 +22,11 @@ Track your plants in a realistic simulation, learn about hundreds of strains, pl
 
 *   🛠️ **Practical Tools & Utilities:**
     *   **Calculators:** Optimize your setup with handy calculators for ventilation, lighting, nutrient mixing, and yield estimation.
-    *   **Command Palette:** Press `Cmd/Ctrl + K` anywhere to instantly navigate, perform actions like "Water All," or inspect a specific plant.
+    *   **Command Palette:** Press `Cmd/Ctrl + K` anywhere to instantly navigate, perform actions like "Water All," toggle the theme/language, or inspect a specific plant.
 
 *   🌐 **Full Localization & Accessibility:** The entire app is professionally translated and fully functional in both **German** and **English**. It is designed with accessibility in mind, featuring full keyboard navigation and screen reader support.
 
-*   🔒 **Privacy First:** Your privacy is paramount. All your data—including plants, settings, and favorites—is stored exclusively locally in your browser. No data ever leaves your device.
+*   🔒 **Privacy First & Offline Capable:** Your privacy is paramount. All your data—including plants, settings, and favorites—is stored exclusively locally in your browser. No data ever leaves your device. Thanks to a robust service worker, the app is fully functional offline after the first visit.
 
 ---
 
@@ -36,7 +36,7 @@ This application was developed entirely with **Google's AI Studio**, an innovati
 
 This project is also fully open source. You are welcome to review the source code, report issues, or contribute to development on GitHub.
 
-*   **See how it was made or fork the project in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **See how it was made or fork the project in AI Studio:** [https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-](https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-)
 *   **Contribute or view the source code on GitHub:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
 
 ---
@@ -70,9 +70,9 @@ All information in this app is for educational and entertainment purposes only. 
 ---
 ---
 
-# Cannabis Grow Guide 2025 (Deutsch)
+# Cannabis Grow Guide with Gemini (Deutsch)
 
-Willkommen beim **Cannabis Grow Guide 2025**, Ihrem interaktiven digitalen Begleiter für den gesamten Cannabis-Anbauzyklus. Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung.
+Willkommen beim **Cannabis Grow Guide with Gemini**, Ihrem interaktiven digitalen Begleiter für den gesamten Cannabis-Anbauzyklus. Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung.
 
 Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles über Hunderte von Sorten, planen Sie Ihre Ausrüstung mit KI-gestützten Empfehlungen und vertiefen Sie Ihr Wissen mit unserer interaktiven Schritt-für-Schritt-Anleitung.
 
@@ -80,7 +80,7 @@ Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles 
 
 ## 🚀 Hauptfunktionen im Detail
 
-*   🌿 **Umfassende Sortendatenbank:** Tauchen Sie ein in eine Bibliothek mit über 300+ Sorten, jetzt vollständig offline verfügbar. Nutzen Sie erweiterte Filter (THC/CBD-Gehalt, Blütezeit, Schwierigkeit, Aromen, Terpene), Such- und Sortieroptionen, um die perfekte Sorte zu finden. Speichern Sie Ihre Favoriten, exportieren Sie professionelle, mehrseitige PDF-Berichte und fügen Sie sogar Ihre eigenen Sorten zur Datenbank hinzu.
+*   🌿 **Umfassende Sortendatenbank:** Tauchen Sie ein in eine Bibliothek mit über 300+ Sorten, jetzt vollständig offline verfügbar. Nutzen Sie erweiterte Filter (THC/CBD-Gehalt, Blütezeit, Schwierigkeit, Aromen, Terpene), Such- und Sortieroptionen, um die perfekte Sorte zu finden. Speichern Sie Ihre Favoriten, exportieren Sie professionelle, mehrseitige PDF-Berichte und fügen Sie sogar Ihre eigenen Sorten hinzu, **bearbeiten und löschen** Sie diese.
 
 *   🌱 **Dynamische Pflanzensimulation:** Verwalten Sie bis zu drei Pflanzen gleichzeitig in einer realistischen Anbausimulation. Das Dashboard bietet einen vollständigen Überblick über die Vitalwerte, Wachstumsphasen und alle aktiven Probleme Ihrer Pflanzen. Protokollieren Sie Aktionen wie Gießen, Düngen und Trainieren in einem detaillierten Journal und reagieren Sie auf von der Simulation generierte Aufgaben, um Ihre Pflanzen gesund zu halten.
 
@@ -94,11 +94,11 @@ Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles 
 
 *   🛠️ **Praktische Werkzeuge & Dienstprogramme:**
     *   **Rechner:** Optimieren Sie Ihr Setup mit praktischen Rechnern für Belüftung, Beleuchtung, Nährstoffmischung und Ertragsschätzung.
-    *   **Befehlspalette:** Drücken Sie überall `Cmd/Strg + K`, um sofort zu navigieren, Aktionen wie "Alle gießen" durchzuführen oder eine bestimmte Pflanze zu inspizieren.
+    *   **Befehlspalette:** Drücken Sie überall `Cmd/Strg + K`, um sofort zu navigieren, Aktionen wie "Alle gießen" durchzuführen, das Thema/die Sprache zu wechseln oder eine bestimmte Pflanze zu inspizieren.
 
 *   🌐 **Vollständige Lokalisierung & Barrierefreiheit:** Die gesamte App ist professionell übersetzt und voll funktionsfähig in **Deutsch** und **Englisch**. Sie wurde mit Blick auf Barrierefreiheit entwickelt und bietet vollständige Tastaturnavigation und Unterstützung für Screenreader.
 
-*   🔒 **Datenschutz an erster Stelle:** Ihre Privatsphäre ist von größter Bedeutung. Alle Ihre Daten – einschließlich Pflanzen, Einstellungen und Favoriten – werden ausschließlich lokal in Ihrem Browser gespeichert. Es verlassen keine Daten Ihr Gerät.
+*   🔒 **Datenschutz an erster Stelle & Offline-Fähigkeit:** Ihre Privatsphäre ist von größter Bedeutung. Alle Ihre Daten – einschließlich Pflanzen, Einstellungen und Favoriten – werden ausschließlich lokal in Ihrem Browser gespeichert. Es verlassen keine Daten Ihr Gerät. Dank eines robusten Service Workers ist die App nach dem ersten Besuch vollständig offline funktionsfähig.
 
 ---
 
@@ -108,7 +108,7 @@ Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer i
 
 Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
 
-*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1xTLNTrer4qHP5EmMXjZmbxGuKVWDvnPQ](https://ai.studio/apps/drive/1xTLN-Trer4qHP5EmMXjZmbxGuKVWDvnPQ)
+*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-](https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-)
 *   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
 
 ---
@@ -137,4 +137,4 @@ Es ist keine Installation oder Einrichtung erforderlich. Die Anwendung läuft vo
 
 ## ⚠️ Haftungsausschluss
 
-Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen, die je nach Land und Region variieren. Bitte informieren Sie sich über die Gesetze in Ihrer Gegend und handeln Sie stets verantwortungsbewusst und gesetzeskonform.
+Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen, die je nach Land und Region variieren. Bitte informieren Sie sich über die Gesetze in Ihrer Gegend und handle stets verantwortungsbewusst und gesetzeskonform.

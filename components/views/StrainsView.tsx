@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect, useId, useMemo } from 'react';
-// FIX: Import the 'Plant' type.
-import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant } from '../../types';
+import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant, SortDirection } from '../../types';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { useNotifications } from '../../context/NotificationContext';
 import { useFavorites } from '../../hooks/useFavorites';
@@ -22,6 +21,7 @@ import StrainDetailModal from './strains/StrainDetailModal';
 import AdvancedFilterModal from './strains/AdvancedFilterModal';
 import { Button } from '../common/Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useSettings } from '../../hooks/useSettings';
 
 type StrainViewTab = 'all' | 'user' | 'exports';
 type ViewMode = 'list' | 'grid';
@@ -37,6 +37,7 @@ interface StrainsViewProps {
 
 export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
   const { t } = useTranslations();
+  const { settings } = useSettings();
   const { addNotification } = useNotifications();
   const { favoriteIds, toggleFavorite } = useFavorites();
   const { savedExports, addExport, deleteExport } = useExportsManager();
@@ -75,7 +76,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
   );
   
   const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [viewMode, setViewMode] = useState<ViewMode>(settings.strainsViewSettings.defaultViewMode);
   const [selectedStrain, setSelectedStrain] = useState<Strain | null>(null);
   const [strainToGrow, setStrainToGrow] = useState<Strain | null>(null);
   const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
@@ -100,7 +101,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
       previewFilteredStrains,
       openAdvancedFilterModal,
       handleApplyAdvancedFilters
-  } = useStrainFilters(strainsToDisplay, favoriteIds);
+  } = useStrainFilters(strainsToDisplay, favoriteIds, {
+      key: settings.strainsViewSettings.defaultSortKey,
+      direction: settings.strainsViewSettings.defaultSortDirection
+  });
 
   const allTerpenes = React.useMemo(() => Array.from(new Set(combinedStrains.flatMap(s => s.dominantTerpenes || []))).sort(), [combinedStrains]);
   const allAromas = React.useMemo(() => Array.from(new Set(combinedStrains.flatMap(s => s.aromas || []))).sort(), [combinedStrains]);
@@ -209,25 +213,16 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     addNotification(t('common.successfullyExported', { count: dataToExport.length, format: format.toUpperCase() }), 'success');
   };
   
-  const tableHeaders = useMemo(() => [
-      { key: 'name', label: t('strainsView.table.name') },
-      { key: 'type', label: t('strainsView.table.type')},
-      { key: 'thc', label: t('strainsView.table.thc')},
-      { key: 'cbd', label: t('strainsView.table.cbd')},
-      { key: 'floweringTime', label: t('strainsView.table.flowering')},
-      { key: 'yield', label: t('strainsView.addStrainModal.yield') },
-      { key: 'difficulty', label: t('strainsView.table.level')},
-  ], [t]);
+  const tableHeaders = useMemo(() => ([
+      { key: 'name', label: t('strainsView.table.name'), visible: true },
+      { key: 'type', label: t('strainsView.table.type'), visible: settings.strainsViewSettings.visibleColumns.type },
+      { key: 'thc', label: t('strainsView.table.thc'), visible: settings.strainsViewSettings.visibleColumns.thc },
+      { key: 'cbd', label: t('strainsView.table.cbd'), visible: settings.strainsViewSettings.visibleColumns.cbd },
+      { key: 'floweringTime', label: t('strainsView.table.flowering'), visible: settings.strainsViewSettings.visibleColumns.floweringTime },
+      { key: 'yield', label: t('strainsView.addStrainModal.yield'), visible: settings.strainsViewSettings.visibleColumns.yield },
+      { key: 'difficulty', label: t('strainsView.table.level'), visible: settings.strainsViewSettings.visibleColumns.difficulty },
+  ].filter(h => h.visible)), [t, settings.strainsViewSettings.visibleColumns]);
 
-  const headerVisibilityClasses = [
-      '', // Name
-      'hidden sm:flex', // Type
-      'hidden sm:flex', // THC
-      'hidden sm:flex', // CBD
-      'hidden sm:flex', // Flowering
-      'hidden md:flex', // Yield
-      'flex', // Difficulty
-  ];
 
   const tabs = useMemo(() => [
     { id: 'all', label: t('strainsView.tabs.all') },
@@ -261,11 +256,11 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                              <div className={`${LIST_GRID_CLASS} sticky top-0 z-10 px-3 py-2 bg-slate-800 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase flex-shrink-0`}>
                                 <input id={selectAllId} name="select-all" type="checkbox" aria-label="Select all" checked={selectedIds.size > 0 && selectedIds.size === sortedAndFilteredStrains.length} onChange={toggleSelectAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 justify-self-center"/>
                                 <div aria-hidden="true" className="justify-self-center"><PhosphorIcons.Heart className="w-5 h-5"/></div>
-                                {tableHeaders.map((header, index) => (
+                                {tableHeaders.map((header) => (
                                     <button
                                         key={header.key}
                                         onClick={() => !['yield'].includes(header.key) && filterControls.handleSort(header.key as SortKey)}
-                                        className={`flex items-center gap-1 justify-start ${['yield'].includes(header.key) ? 'cursor-default' : ''} ${headerVisibilityClasses[index]}`}
+                                        className={`flex items-center gap-1 justify-start ${['yield'].includes(header.key) ? 'cursor-default' : ''}`}
                                     >
                                         {header.label}
                                         {filterState.sort.key === header.key && (filterState.sort.direction === 'asc' ? <PhosphorIcons.ArrowUp className="w-3 h-3"/> : <PhosphorIcons.ArrowDown className="w-3 h-3"/>)}
@@ -288,6 +283,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                                             onSelect={setSelectedStrain}
                                             onToggleSelection={toggleSelection}
                                             onToggleFavorite={memoizedToggleFavorite}
+                                            visibleColumns={settings.strainsViewSettings.visibleColumns}
                                             isUserStrain={activeTab === 'user'}
                                             onEdit={openEditStrainModal}
                                             onDelete={handleDeleteStrain}

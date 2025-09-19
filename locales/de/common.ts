@@ -1,6 +1,7 @@
 
 export const common = {
   add: 'Hinzufügen',
+  all: 'Alle',
   apply: 'Anwenden',
   back: 'Zurück',
   cancel: 'Abbrechen',

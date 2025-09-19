@@ -1,8 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Strain } from '../types';
+import { Strain, SortDirection } from '../types';
 
 export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime';
-type SortDirection = 'asc' | 'desc';
 
 interface SortOption {
     key: SortKey;
@@ -28,10 +27,10 @@ const useDebounce = <T,>(value: T, delay: number): T => {
     return debouncedValue;
 };
 
-export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<string>) => {
+export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<string>, initialSort: SortOption = { key: 'name', direction: 'asc' }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [sort, setSort] = useState<SortOption>({ key: 'name', direction: 'asc' });
+  const [sort, setSort] = useState<SortOption>(initialSort);
   const [showFavorites, setShowFavorites] = useState(false);
   const [isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen] = useState(false);
 

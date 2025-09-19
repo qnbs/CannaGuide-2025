@@ -82,7 +82,9 @@ export const usePlantManager = (
                     if (newPlantState.stage !== stage) {
                          newPlantState.stage = stage;
                          const logMessage = t('plantsView.notifications.stageChange', { stage: t(`plantStages.${stage}`) });
-                         newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: logMessage });
+                         if (settings.simulationSettings.autoJournaling.stageChanges) {
+                           newPlantState.journal.push({ id: `sys-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: logMessage });
+                         }
                          if (settings.notificationSettings.stageChange) addNotification(`${plant.name}: ${logMessage}`, 'info');
                          if (newPlantState.stage === PlantStage.Harvest && settings.notificationSettings.harvestReady) addNotification(t('plantsView.notifications.harvestReady', { name: plant.name }), 'info');
                     }
@@ -122,14 +124,30 @@ export const usePlantManager = (
 
         const newProblems: PlantProblem[] = [];
         if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...getProblemDetails('Underwatering') });
+        const oldProblemTypes = new Set(newPlantState.problems.map(p => p.type));
+        const newProblemTypes = new Set(newProblems.map(p => p.type));
+
+        if (settings.simulationSettings.autoJournaling.problems) {
+            newProblemTypes.forEach(type => {
+                if (!oldProblemTypes.has(type)) {
+                    const problemDetails = getProblemDetails(type);
+                    newPlantState.journal.push({ id: `sys-prob-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: `Problem detected: ${problemDetails.message}` });
+                }
+            });
+        }
         newPlantState.problems = newProblems;
+
 
         const hasTask = (title: string) => newPlantState.tasks.some((t: Task) => t.title === title && !t.isCompleted);
         const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');
         if(newPlantState.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATERING_TASK_THRESHOLD && !hasTask(wateringTaskTitle)) {
-            newPlantState.tasks.push({id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high', isCompleted: false, createdAt: targetTimestamp });
+            const newTask = {id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high' as const, isCompleted: false, createdAt: targetTimestamp };
+            newPlantState.tasks.push(newTask);
+            if (settings.simulationSettings.autoJournaling.tasks) {
+                newPlantState.journal.push({ id: `sys-task-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: `New task: ${newTask.title}` });
+            }
             if (settings.notificationSettings.newTask) {
-                addNotification(`${plant.name}: ${wateringTaskTitle}`, 'info');
+                addNotification(`${plant.name}: ${newTask.title}`, 'info');
             }
         }
 
@@ -139,7 +157,7 @@ export const usePlantManager = (
 
         newPlantState.lastUpdated = targetTimestamp;
         return newPlantState;
-    }, [settings.simulationSettings, settings.notificationSettings, addNotification, t]);
+    }, [settings, addNotification, t]);
 
     const updatePlantState = useCallback((plantIdToUpdate?: string) => {
         setPlants(currentPlants => {

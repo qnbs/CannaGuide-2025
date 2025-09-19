@@ -1,7 +1,15 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { Plant, Recommendation } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const getAiClient = (): GoogleGenAI => {
+    // As per guidelines, the API key must come from environment variables.
+    // The app should not prompt the user for it.
+    if (!process.env.API_KEY) {
+        console.error("API_KEY environment variable not set.");
+        throw new Error("AI service is not configured.");
+    }
+    return new GoogleGenAI({ apiKey: process.env.API_KEY });
+};
 
 type TFunction = (key: string, params?: Record<string, any>) => string;
 
@@ -56,6 +64,7 @@ export const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFu
 
 
 const getEquipmentRecommendation = async (area: string, budget: string, growStyle: string): Promise<Recommendation> => {
+    const ai = getAiClient();
     const prompt = `Generate a cannabis growing equipment recommendation for a ${area}cm area, with a ${budget} budget, focusing on a ${growStyle} grow style. Provide specific product types (e.g., 'Mars Hydro TS 1000' or 'Fabric Pot 5 Gallon') but avoid brand favoritism unless a specific model is iconic for that category. Prices should be realistic estimates in Euros. The rationale should be concise and explain why the item fits the user's needs. Categories to include are: tent, light, ventilation, pots, soil, nutrients, extra.`;
     
     const responseSchema = {
@@ -91,6 +100,7 @@ const getEquipmentRecommendation = async (area: string, budget: string, growStyl
 };
 
 const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string): Promise<{ title: string, content: string }> => {
+    const ai = getAiClient();
     const imagePart = { inlineData: { mimeType, data: base64Image } };
     const textPart = { text: `Analyze this image of a cannabis plant leaf/plant. The user is looking for a potential problem diagnosis. Plant context: ${plantContext}. Provide a concise diagnosis. Identify the most likely problem (e.g., 'Nitrogen Deficiency', 'Light Burn', 'Spider Mites'). Format the response as a JSON object with "title" and "content" keys. The "title" should be the name of the problem. The "content" should be a 2-3 sentence explanation of the problem and a suggested solution.` };
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
@@ -114,6 +124,7 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
 };
 
 const getAiMentorResponse = async (query: string): Promise<{ title: string, content: string }> => {
+    const ai = getAiClient();
     const systemInstruction = "You are an expert cannabis cultivation mentor. Your tone is helpful, encouraging, and scientific. Provide detailed, actionable advice. Format your response as a JSON object with 'title' and 'content' keys. The 'title' should be a concise summary of the answer. The 'content' should be the detailed explanation, using markdown for formatting (like lists or bold text).";
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
 
@@ -136,6 +147,7 @@ const getAiMentorResponse = async (query: string): Promise<{ title: string, cont
 };
 
 const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string, content: string }> => {
+    const ai = getAiClient();
     const plantData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
     const query = `Based on the following data for a cannabis plant, provide a concise analysis and one key recommendation for the grower. Plant Data: ${plantData}. Format the response as a JSON object with "title" and "content" keys. The "title" should be a very short summary of the advice (e.g., "Slightly high pH, suggest adjustment"). The "content" should be a 2-4 sentence explanation of your observation and a clear, actionable recommendation.`;
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };

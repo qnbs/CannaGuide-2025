@@ -1,7 +1,16 @@
 export const settingsView = {
   title: 'Einstellungen',
-  display: {
-    title: 'Anzeige',
+  categories: {
+    general: 'Allgemein',
+    strains: 'Sorten-Ansicht',
+    plants: 'Pflanzen & Simulation',
+    notifications: 'Benachrichtigungen',
+    defaults: 'Standardwerte',
+    data: 'Datenverwaltung',
+    about: 'Über die App',
+  },
+  general: {
+    title: 'Allgemeine Einstellungen',
     language: 'Sprache',
     theme: 'Thema',
     themes: {
@@ -15,6 +24,54 @@ export const settingsView = {
       base: 'Standard',
       lg: 'Groß',
     },
+    defaultView: 'Standard-Startansicht',
+  },
+  strains: {
+    title: 'Einstellungen der Sorten-Ansicht',
+    defaultSort: 'Standard-Sortierung',
+    defaultViewMode: 'Standard-Ansichtsmodus',
+    viewModes: {
+      list: 'Liste',
+      grid: 'Raster',
+    },
+    visibleColumns: 'Sichtbare Spalten (Listenansicht)',
+    columns: {
+        type: 'Typ',
+        thc: 'THC',
+        cbd: 'CBD',
+        floweringTime: 'Blütezeit',
+        yield: 'Ertrag',
+        difficulty: 'Schwierigkeit',
+    },
+    sortKeys: {
+      name: 'Name',
+      thc: 'THC',
+      cbd: 'CBD',
+      floweringTime: 'Blütezeit',
+      difficulty: 'Schwierigkeit',
+      type: 'Typ',
+    },
+    sortDirections: {
+      asc: 'Aufsteigend',
+      desc: 'Absteigend',
+    }
+  },
+  plants: {
+      title: 'Pflanzen & Simulation',
+      autoAdvance: 'Simulation automatisch fortsetzen',
+      autoAdvanceDesc: 'Aktualisiert den Pflanzenstatus alle 5 Minuten im Hintergrund.',
+      autoJournaling: 'Automatisches Journaling',
+      autoJournalingDesc: 'Automatisch System-Einträge im Journal für bestimmte Ereignisse erstellen.',
+      logStageChanges: 'Phasenwechsel protokollieren',
+      logProblems: 'Erkannte Probleme protokollieren',
+      logTasks: 'Erstellte Aufgaben protokollieren',
+      speed: 'Simulationsgeschwindigkeit',
+      difficulty: 'Schwierigkeitsgrad',
+      difficulties: {
+        easy: 'Leicht',
+        normal: 'Normal',
+        hard: 'Schwer',
+      },
   },
   notifications: {
     title: 'Benachrichtigungen',
@@ -24,23 +81,21 @@ export const settingsView = {
     harvestReady: 'Ernte bereit',
     newTask: 'Neue Aufgabe',
   },
-  simulation: {
-    title: 'Simulation',
-    speed: 'Simulationsgeschwindigkeit',
-    difficulty: 'Schwierigkeitsgrad',
-    difficulties: {
-      easy: 'Leicht',
-      normal: 'Normal',
-      hard: 'Schwer',
-    },
-  },
   defaults: {
       title: 'Standardwerte',
       growSetup: 'Standard-Grow-Setup',
       export: 'Standard-Export-Einstellungen',
+      journalNotesTitle: 'Standard-Journalnotizen',
+      wateringNoteLabel: 'Notiz für Gießen',
+      feedingNoteLabel: 'Notiz für Düngen',
   },
   data: {
     title: 'Datenverwaltung',
+    lastBackup: 'Letztes Backup',
+    noBackup: 'Noch kein Backup erstellt',
+    replayOnboarding: 'Einführung erneut anzeigen',
+    replayOnboardingConfirm: 'Dadurch wird die Willkommens-Einführung beim nächsten App-Start angezeigt. Fortfahren?',
+    replayOnboardingSuccess: 'Die Einführung wird beim nächsten Start angezeigt.',
     resetPlants: 'Pflanzen zurücksetzen',
     resetPlantsConfirm: 'Möchtest du wirklich alle deine aktuellen Pflanzen löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
     resetPlantsSuccess: 'Alle Pflanzen wurden zurückgesetzt.',
@@ -57,4 +112,15 @@ export const settingsView = {
     importError: 'Fehler beim Importieren der Daten',
     importInvalidFile: 'Ungültige Backup-Datei.',
   },
+   about: {
+      title: 'Über die App',
+      version: 'Version',
+      description: 'Beschreibung',
+      devWithAIStudio: 'Entwickelt mit AI Studio',
+      github: 'Open Source auf GitHub',
+      getTheAppHere: 'App in AI Studio ansehen',
+      githubLinkText: 'Projekt auf GitHub ansehen',
+      disclaimer: 'Haftungsausschluss',
+      privacy: 'Datenschutz',
+    }
 };

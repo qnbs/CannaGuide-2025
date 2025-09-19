@@ -9,4 +9,6 @@ export const commandPalette = {
   inspect: 'Inspect',
   water: 'Water',
   feed: 'Feed',
+  toggleLanguage: 'Switch language to: {lang}',
+  toggleTheme: 'Toggle Theme',
 };

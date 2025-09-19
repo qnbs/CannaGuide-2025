@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, Language, GrowSetup, Theme } from '../types';
+import { AppSettings, Language, GrowSetup, Theme, View } from '../types';
 import { storageService } from '../services/storageService';
 
 interface SettingsContextType {
@@ -16,6 +16,20 @@ const defaultSettings: AppSettings = {
   fontSize: 'base',
   language: initialLang,
   theme: 'midnight',
+  defaultView: View.Plants,
+  strainsViewSettings: {
+    defaultSortKey: 'name',
+    defaultSortDirection: 'asc',
+    defaultViewMode: 'list',
+    visibleColumns: {
+      type: true,
+      thc: true,
+      cbd: true,
+      floweringTime: true,
+      yield: true,
+      difficulty: true,
+    },
+  },
   notificationsEnabled: true,
   notificationSettings: {
     stageChange: true,
@@ -27,6 +41,12 @@ const defaultSettings: AppSettings = {
   simulationSettings: {
     speed: '1x',
     difficulty: 'normal',
+    autoAdvance: false,
+    autoJournaling: {
+        stageChanges: true,
+        problems: true,
+        tasks: true,
+    },
   },
   defaultGrowSetup: {
     lightType: 'LED',
@@ -37,8 +57,8 @@ const defaultSettings: AppSettings = {
     lightHours: 18,
   },
   defaultJournalNotes: {
-    watering: '',
-    feeding: '',
+    watering: 'Pflanze gegossen.',
+    feeding: 'Pflanze gedüngt.',
   },
   defaultExportSettings: {
     source: 'filtered',
@@ -47,36 +67,35 @@ const defaultSettings: AppSettings = {
   lastBackupTimestamp: undefined,
 };
 
+// A recursive merge function to safely combine default and saved settings
+const mergeSettings = (defaults: any, saved: any): any => {
+    const merged = { ...defaults };
+    for (const key in saved) {
+        if (saved.hasOwnProperty(key)) {
+            if (typeof saved[key] === 'object' && saved[key] !== null && !Array.isArray(saved[key]) && typeof defaults[key] === 'object' && defaults[key] !== null) {
+                merged[key] = mergeSettings(defaults[key], saved[key]);
+            } else if(saved[key] !== undefined) {
+                merged[key] = saved[key];
+            }
+        }
+    }
+     // Ensure nested defaults exist if they are missing from saved data entirely
+    for (const key in defaults) {
+        if (typeof defaults[key] === 'object' && defaults[key] !== null && !Array.isArray(defaults[key])) {
+             if (!merged[key] || typeof merged[key] !== 'object') {
+                 merged[key] = defaults[key];
+             } else {
+                 merged[key] = mergeSettings(defaults[key], merged[key]);
+             }
+        }
+    }
+    return merged;
+};
+
 export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [settings, setSettingsState] = useState<AppSettings>(() => {
-    const parsed = storageService.getItem<Partial<AppSettings>>('settings', {});
-    
-    const mergedSettings = {
-      ...defaultSettings,
-      ...parsed,
-      notificationSettings: {
-        ...defaultSettings.notificationSettings,
-        ...(parsed.notificationSettings || {}),
-      },
-      simulationSettings: {
-        ...defaultSettings.simulationSettings,
-        ...(parsed.simulationSettings || {}),
-      },
-      defaultGrowSetup: {
-          ...defaultSettings.defaultGrowSetup,
-          ...(parsed.defaultGrowSetup || {}),
-      },
-      defaultJournalNotes: {
-          ...defaultSettings.defaultJournalNotes,
-          ...(parsed.defaultJournalNotes || {}),
-      },
-      defaultExportSettings: {
-          ...defaultSettings.defaultExportSettings,
-          ...(parsed.defaultExportSettings || {}),
-      },
-      lastBackupTimestamp: parsed.lastBackupTimestamp || undefined,
-    };
-    return mergedSettings;
+    const saved = storageService.getItem<Partial<AppSettings>>('settings', {});
+    return mergeSettings(defaultSettings, saved);
   });
 
   useEffect(() => {

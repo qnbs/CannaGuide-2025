@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState, useEffect } from 'react';
 import { Plant, AIResponse, ArchivedAdvisorResponse } from '../../../../types';
 import { Card } from '../../../common/Card';
@@ -8,6 +10,7 @@ import { geminiService } from '../../../../services/geminiService';
 import { useTranslations } from '../../../../hooks/useTranslations';
 import { PhosphorIcons } from '../../../icons/PhosphorIcons';
 import { EditResponseModal } from '../../../common/EditResponseModal';
+import { useNotifications } from '../../../../context/NotificationContext';
 
 interface AiTabProps {
     plant: Plant;
@@ -19,6 +22,7 @@ interface AiTabProps {
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
+    const { addNotification } = useNotifications();
     const [isLoading, setIsLoading] = useState(false);
     const [response, setResponse] = useState<AIResponse | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -51,7 +55,9 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             setResponse(res);
         } catch (error) {
             console.error("AI Advisor Error:", error);
-            setResponse({ title: t('common.error'), content: error instanceof Error ? error.message : t('ai.error') });
+            const errorMessage = error instanceof Error ? error.message : t('ai.error');
+            setResponse({ title: t('common.error'), content: errorMessage });
+            addNotification(errorMessage, 'error');
         }
         setIsLoading(false);
     };

@@ -138,32 +138,55 @@ export const SettingsView: React.FC = () => {
         const keys = path.split('.');
         const topKey = keys[0] as keyof AppSettings;
 
-        if (keys.length > 1) {
-            const secondKey = keys[1];
-            switch (topKey) {
-                case 'strainsViewSettings':
-                    setSetting(topKey, { ...settings.strainsViewSettings, [secondKey]: value });
-                    break;
-                case 'notificationSettings':
-                    setSetting(topKey, { ...settings.notificationSettings, [secondKey]: value });
-                    break;
-                case 'simulationSettings':
-                    setSetting(topKey, { ...settings.simulationSettings, [secondKey]: value });
-                    break;
-                case 'defaultGrowSetup':
-                    setSetting(topKey, { ...settings.defaultGrowSetup, [secondKey]: value });
-                    break;
-                case 'defaultJournalNotes':
-                    setSetting(topKey, { ...settings.defaultJournalNotes, [secondKey]: value });
-                    break;
-                case 'defaultExportSettings':
-                    setSetting(topKey, { ...settings.defaultExportSettings, [secondKey]: value });
-                    break;
-                default:
-                    break;
-            }
-        } else {
+        if (keys.length === 1) {
             setSetting(topKey, value);
+            return;
+        }
+
+        const secondKey = keys[1];
+        const thirdKey = keys.length > 2 ? keys[2] : null;
+
+        switch (topKey) {
+            case 'strainsViewSettings':
+                if (thirdKey) {
+                    setSetting(topKey, {
+                        ...settings.strainsViewSettings,
+                        [secondKey]: {
+                            ...(settings.strainsViewSettings[secondKey as keyof typeof settings.strainsViewSettings] as object),
+                            [thirdKey]: value,
+                        },
+                    });
+                } else {
+                    setSetting(topKey, { ...settings.strainsViewSettings, [secondKey]: value });
+                }
+                break;
+            case 'notificationSettings':
+                setSetting(topKey, { ...settings.notificationSettings, [secondKey]: value });
+                break;
+            case 'simulationSettings':
+                 if (thirdKey) {
+                    setSetting(topKey, {
+                        ...settings.simulationSettings,
+                        [secondKey]: {
+                            ...(settings.simulationSettings[secondKey as keyof typeof settings.simulationSettings] as object),
+                            [thirdKey]: value,
+                        },
+                    });
+                } else {
+                    setSetting(topKey, { ...settings.simulationSettings, [secondKey]: value });
+                }
+                break;
+            case 'defaultGrowSetup':
+                setSetting(topKey, { ...settings.defaultGrowSetup, [secondKey]: value });
+                break;
+            case 'defaultJournalNotes':
+                setSetting(topKey, { ...settings.defaultJournalNotes, [secondKey]: value });
+                break;
+            case 'defaultExportSettings':
+                setSetting(topKey, { ...settings.defaultExportSettings, [secondKey]: value });
+                break;
+            default:
+                break;
         }
     };
     
@@ -194,24 +217,24 @@ export const SettingsView: React.FC = () => {
                         <SelectRow label={t('settingsView.general.defaultView')} value={settings.defaultView} onChange={e => setSetting('defaultView', e.target.value as View)}>{Object.values(View).map(v => <option key={v} value={v}>{t(`nav.${v.toLowerCase()}`)}</option>)}</SelectRow>
                     </SettingsSection>)}
                     {activeCategory === 'strains' && (<SettingsSection title={t('settingsView.strains.title')}>
-                        <SelectRow label={t('settingsView.strains.defaultSort')} value={`${settings.strainsViewSettings.defaultSortKey}:${settings.strainsViewSettings.defaultSortDirection}`} onChange={e => { const [key, dir] = e.target.value.split(':'); setSetting('strainsViewSettings', {...settings.strainsViewSettings, defaultSortKey: key as SortKey, defaultSortDirection: dir as SortDirection}) }}>
+                        <SelectRow label={t('settingsView.strains.defaultSort')} value={`${settings.strainsViewSettings.defaultSortKey}:${settings.strainsViewSettings.defaultSortDirection}`} onChange={e => { const [key, dir] = e.target.value.split(':'); handleSettingChange('strainsViewSettings', {...settings.strainsViewSettings, defaultSortKey: key as SortKey, defaultSortDirection: dir as SortDirection}) }}>
                             {Object.keys(t('settingsView.strains.sortKeys')).map(k => (<><option value={`${k}:desc`}>{t(`settingsView.strains.sortKeys.${k}`)} ({t('settingsView.strains.sortDirections.desc')})</option><option value={`${k}:asc`}>{t(`settingsView.strains.sortKeys.${k}`)} ({t('settingsView.strains.sortDirections.asc')})</option></>))}
                         </SelectRow>
                         <SelectRow label={t('settingsView.strains.defaultViewMode')} value={settings.strainsViewSettings.defaultViewMode} onChange={e => handleSettingChange('strainsViewSettings.defaultViewMode', e.target.value)}>{Object.keys(t('settingsView.strains.viewModes')).map(k => <option key={k} value={k}>{t(`settingsView.strains.viewModes.${k}`)}</option>)}</SelectRow>
                         <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.strains.visibleColumns')}</h4>
-                        <div className="pl-4 border-l-2 border-slate-700 space-y-3 grid grid-cols-2 gap-2">{Object.keys(settings.strainsViewSettings.visibleColumns).map(key => <ToggleRow key={key} label={t(`settingsView.strains.columns.${key}`)} isEnabled={settings.strainsViewSettings.visibleColumns[key as keyof typeof settings.strainsViewSettings.visibleColumns]} onToggle={val => setSetting('strainsViewSettings', {...settings.strainsViewSettings, visibleColumns: {...settings.strainsViewSettings.visibleColumns, [key]: val}})} />)}</div>
+                        <div className="pl-4 border-l-2 border-slate-700 space-y-3 grid grid-cols-2 gap-2">{Object.keys(settings.strainsViewSettings.visibleColumns).map(key => <ToggleRow key={key} label={t(`settingsView.strains.columns.${key}`)} isEnabled={settings.strainsViewSettings.visibleColumns[key as keyof typeof settings.strainsViewSettings.visibleColumns]} onToggle={val => handleSettingChange('strainsViewSettings.visibleColumns', {...settings.strainsViewSettings.visibleColumns, [key]: val})} />)}</div>
                     </SettingsSection>)}
                      {activeCategory === 'plants' && (<SettingsSection title={t('settingsView.plants.title')}>
                         <ToggleRow label={t('settingsView.plants.autoAdvance')} description={t('settingsView.plants.autoAdvanceDesc')} isEnabled={settings.simulationSettings.autoAdvance} onToggle={val => handleSettingChange('simulationSettings.autoAdvance', val)} />
                         <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.plants.autoJournaling')}</h4>
                         <p className="text-xs text-slate-400 -mt-3">{t('settingsView.plants.autoJournalingDesc')}</p>
-                        <div className="pl-4 border-l-2 border-slate-700 space-y-3">{Object.keys(settings.simulationSettings.autoJournaling).map(key => <ToggleRow key={key} label={t(`settingsView.plants.log${key.charAt(0).toUpperCase() + key.slice(1)}`)} isEnabled={settings.simulationSettings.autoJournaling[key as keyof typeof settings.simulationSettings.autoJournaling]} onToggle={val => setSetting('simulationSettings', {...settings.simulationSettings, autoJournaling: {...settings.simulationSettings.autoJournaling, [key]: val}})} />)}</div>
+                        <div className="pl-4 border-l-2 border-slate-700 space-y-3">{Object.keys(settings.simulationSettings.autoJournaling).map(key => <ToggleRow key={key} label={t(`settingsView.plants.log${key.charAt(0).toUpperCase() + key.slice(1)}`)} isEnabled={settings.simulationSettings.autoJournaling[key as keyof typeof settings.simulationSettings.autoJournaling]} onToggle={val => handleSettingChange('simulationSettings.autoJournaling', {...settings.simulationSettings.autoJournaling, [key]: val})} />)}</div>
                         <SelectRow label={t('settingsView.plants.speed')} value={settings.simulationSettings.speed} onChange={e => handleSettingChange('simulationSettings.speed', e.target.value as any)}>{['1x', '2x', '5x', '10x', '20x'].map(s => <option key={s} value={s}>{s}</option>)}</SelectRow>
                         <SelectRow label={t('settingsView.plants.difficulty')} value={settings.simulationSettings.difficulty} onChange={e => handleSettingChange('simulationSettings.difficulty', e.target.value as any)}>{Object.keys(t('settingsView.plants.difficulties')).map(k => <option key={k} value={k}>{t(`settingsView.plants.difficulties.${k}`)}</option>)}</SelectRow>
                     </SettingsSection>)}
                     {activeCategory === 'notifications' && (<SettingsSection title={t('settingsView.notifications.title')}>
                         <ToggleRow label={t('settingsView.notifications.enableAll')} isEnabled={settings.notificationsEnabled} onToggle={(val) => setSetting('notificationsEnabled', val)} />
-                        {settings.notificationsEnabled && (<div className="pl-4 border-l-2 border-slate-700 space-y-3">{Object.keys(settings.notificationSettings).map(key => <ToggleRow key={key} label={t(`settingsView.notifications.${key}`)} isEnabled={settings.notificationSettings[key as keyof NotificationSettings]} onToggle={val => setSetting('notificationSettings', { ...settings.notificationSettings, [key]: val })} />)}</div>)}
+                        {settings.notificationsEnabled && (<div className="pl-4 border-l-2 border-slate-700 space-y-3">{Object.keys(settings.notificationSettings).map(key => <ToggleRow key={key} label={t(`settingsView.notifications.${key}`)} isEnabled={settings.notificationSettings[key as keyof NotificationSettings]} onToggle={val => handleSettingChange('notificationSettings', { ...settings.notificationSettings, [key]: val })} />)}</div>)}
                     </SettingsSection>)}
                     {activeCategory === 'defaults' && (<SettingsSection title={t('settingsView.defaults.title')}>
                         <h4 className="font-semibold text-slate-300">{t('settingsView.defaults.growSetup')}</h4>
@@ -237,7 +260,7 @@ export const SettingsView: React.FC = () => {
                                 <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.features') }}></p>
                                 
                                 <h3>{t('helpView.sections.about.devWithAIStudioTitle')}</h3>
-                                <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.devWithAIStudioText') }}></p>
+                                <p dangerouslySetInnerHTML={{ __html: `${t('helpView.sections.about.devWithAIStudioText')} <a href="https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-" target="_blank" rel="noopener noreferrer" class="text-primary-400 hover:underline">${t('settingsView.about.getTheAppHere')}</a>.` }}></p>
                                 
                                 <h3>{t('helpView.sections.about.githubTitle')}</h3>
                                 <p dangerouslySetInnerHTML={{ __html: t('helpView.sections.about.githubText') }}></p>
@@ -245,9 +268,6 @@ export const SettingsView: React.FC = () => {
                                 <div className="not-prose flex flex-wrap gap-4">
                                     <a href="https://github.com/qnbs/Cannabis-Grow-Guide-2025" target="_blank" rel="noopener noreferrer" className="no-underline">
                                         <Button variant="secondary" size="sm">{t('helpView.sections.about.githubLinkText')}</Button>
-                                    </a>
-                                     <a href="https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-" target="_blank" rel="noopener noreferrer" className="no-underline">
-                                        <Button variant="secondary" size="sm">{t('settingsView.about.getTheAppHere')}</Button>
                                     </a>
                                 </div>
 

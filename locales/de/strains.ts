@@ -15,6 +15,15 @@ export const strainsView = {
   terpenes: 'Terpene',
   aromas: 'Aromen',
   resetFilters: 'Filter zurücksetzen',
+  heights: {
+    short: 'Kurz',
+    medium: 'Mittel',
+    tall: 'Hoch',
+  },
+  pdfReport: {
+    page: 'Seite {pageNumber}',
+    title: 'Cannabis Grow Guide mit Gemini - Sortenbericht'
+  },
   view: {
     list: 'Liste',
     grid: 'Raster',
@@ -80,6 +89,7 @@ export const strainsView = {
     yieldOutdoor: 'Ertrag (Outdoor)',
     heightIndoor: 'Höhe (Indoor)',
     heightOutdoor: 'Höhe (Outdoor)',
+    height: 'Höhe',
     similarStrains: 'Ähnliche Sorten',
     startGrowing: 'Anbau starten',
     allSlotsFull: 'Alle Slots voll',

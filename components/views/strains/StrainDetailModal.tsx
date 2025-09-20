@@ -58,7 +58,7 @@ const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, isFavorit
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-40 p-4 modal-overlay-animate" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
             <Card ref={modalRef} className="w-full max-w-3xl h-[90vh] relative flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
                     <PhosphorIcons.X className="w-6 h-6" />

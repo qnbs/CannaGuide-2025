@@ -28,7 +28,7 @@ const RationaleModal: React.FC<{ content: { title: string, content: string }, on
     const { t } = useTranslations();
     const modalRef = useFocusTrap(true);
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
             <Card ref={modalRef} className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
                 <p className="text-slate-600 dark:text-slate-300">{content.content}</p>

@@ -8,7 +8,8 @@ import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem 
 import { geminiService } from '../../../services/geminiService';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
-type Area = '60x60' | '80x80' | '100x100' | '120x120';
+// FIX: Corrected Area type to include all possible values, matching SetupConfigurator.
+type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
 type GrowStyle = 'beginner' | 'yield' | 'stealth';
 

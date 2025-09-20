@@ -22,14 +22,12 @@ import AdvancedFilterModal from './strains/AdvancedFilterModal';
 import { Button } from '../common/Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useSettings } from '../../hooks/useSettings';
+import { LIST_GRID_CLASS } from './strains/constants';
 
 type StrainViewTab = 'all' | 'user' | 'exports';
 type ViewMode = 'list' | 'grid';
 
 const USER_STRAINS_KEY = 'user_added_strains';
-
-const LIST_GRID_CLASS = "grid grid-cols-[auto_auto_1fr_auto_auto] sm:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_100px_auto] md:grid-cols-[auto_auto_minmax(120px,2fr)_minmax(80px,1fr)_70px_70px_100px_120px_100px_auto] gap-x-2 md:gap-x-4 items-center";
-
 
 interface StrainsViewProps {
   setActiveView: (view: View) => void;
@@ -270,10 +268,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                             </div>
                         )}
 
-                        <div className="flex-grow min-h-0 overflow-y-auto">
+                        <div className="flex-grow min-h-0 overflow-y-auto p-1">
                             {sortedAndFilteredStrains.length > 0 ? (
                                 viewMode === 'list' ? (
-                                    <div className={LIST_GRID_CLASS}>
+                                    <div className="space-y-2">
                                     {sortedAndFilteredStrains.map((strain, index) => (
                                         <StrainListItem
                                             key={strain.id}
@@ -393,27 +391,33 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                             <PhosphorIcons.MagnifyingGlass className="w-5 h-5 text-slate-400" />
                         </div>
                     </div>
-                    <Button variant="secondary" size="sm" onClick={() => setIsExportModalOpen(true)}>
-                        {t('common.export')}...
-                    </Button>
-                    <button onClick={() => filterControls.setShowFavorites(prev => !prev)} className={`p-2 rounded-lg transition-colors flex items-center gap-2 ${filterState.showFavorites ? 'bg-primary-900 text-primary-300' : 'bg-slate-800 hover:bg-slate-700'}`}>
-                        <PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} className="w-5 h-5" />
-                        <span className="sr-only">{t('strainsView.footer.showFavorites', {count: favoriteIds.size})}</span>
-                    </button>
-                    <button onClick={openAdvancedFilterModal} className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">
-                        <PhosphorIcons.FunnelSimple className="w-5 h-5" />
-                         <span className="sr-only">{t('strainsView.advancedFilters')}</span>
-                    </button>
-                    <div className="flex bg-slate-900 rounded-lg p-0.5">
-                        <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-slate-700 shadow-sm' : ''}`}><PhosphorIcons.ListChecks className="w-5 h-5" /></button>
-                        <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-slate-700 shadow-sm' : ''}`}><PhosphorIcons.GridFour className="w-5 h-5" /></button>
-                    </div>
                     {activeTab === 'user' && (
                         <Button size="sm" onClick={() => setIsAddStrainModalOpen(true)}>
                             <PhosphorIcons.PlusCircle className="inline w-5 h-5 mr-1.5"/>
                             {t('common.add')}
                         </Button>
                     )}
+                     <details className="relative group">
+                        <summary className="p-2 list-none rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500">
+                            <PhosphorIcons.DotsThreeVertical weight="bold" className="w-5 h-5" />
+                            <span className="sr-only">{t('common.actions')}</span>
+                        </summary>
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-20 p-2 space-y-1 opacity-0 pointer-events-none group-open:opacity-100 group-open:pointer-events-auto transition-opacity">
+                            <Button variant="secondary" size="sm" onClick={() => setIsExportModalOpen(true)} className="w-full !justify-start">{t('common.export')}...</Button>
+                            <button onClick={() => filterControls.setShowFavorites(prev => !prev)} className={`p-2 rounded-lg transition-colors flex items-center gap-2 w-full text-left text-sm ${filterState.showFavorites ? 'bg-primary-900/50 text-primary-300' : 'hover:bg-slate-700 text-slate-200'}`}>
+                                <PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} className="w-5 h-5" />
+                                <span>{t('strainsView.footer.showFavorites', {count: favoriteIds.size})}</span>
+                            </button>
+                            <button onClick={openAdvancedFilterModal} className="p-2 rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-2 w-full text-left text-sm text-slate-200">
+                                <PhosphorIcons.FunnelSimple className="w-5 h-5" />
+                                <span>{t('strainsView.advancedFilters')}</span>
+                            </button>
+                             <div className="flex bg-slate-900 rounded-lg p-0.5 mt-1 border border-slate-700">
+                                <button onClick={() => setViewMode('list')} title={t('strainsView.view.list')} className={`flex-1 p-1.5 rounded-md ${viewMode === 'list' ? 'bg-slate-700 shadow-sm' : ''}`}><PhosphorIcons.ListChecks className="w-5 h-5" /></button>
+                                <button onClick={() => setViewMode('grid')} title={t('strainsView.view.grid')} className={`flex-1 p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-slate-700 shadow-sm' : ''}`}><PhosphorIcons.GridFour className="w-5 h-5" /></button>
+                            </div>
+                        </div>
+                    </details>
                 </div>
             </div>
           

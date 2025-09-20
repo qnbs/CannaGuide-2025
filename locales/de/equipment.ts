@@ -3,35 +3,58 @@ export const equipmentView = {
   tabs: {
     configurator: 'Konfigurator',
     calculators: 'Rechner',
-    gear: 'Ausrüstung & Shops',
     setups: 'Meine Setups',
   },
   configurator: {
     title: 'Setup Konfigurator',
-    subtitle: 'Finde die passende Ausrüstung in 3 einfachen Schritten.',
-    step: 'Schritt {current}/{total}',
-    step1Title: 'Wähle deine Anbaufläche',
-    step2Title: 'Wähle deinen Grow-Stil',
-    styles: {
-      beginner: 'Anfängerfreundlich',
-      yield: 'Maximaler Ertrag',
-      stealth: 'Diskret',
+    subtitleNew: 'Wähle die Anzahl der Pflanzen und deine bevorzugte Konfiguration, um eine maßgeschneiderte Ausrüstungsliste zu erhalten.',
+    step1TitleNew: 'Wie viele Pflanzen möchtest du anbauen?',
+    step2TitleNew: 'Wähle deine Konfiguration',
+    plantCount: '{count} Pflanze(n)',
+    details: {
+      zelt: 'Zelt',
+      beleuchtung: 'Beleuchtung',
+      abluft: 'Abluft',
+      toepfe: 'Töpfe',
+      medium: 'Medium',
     },
-    styleDescriptions: {
-      beginner: 'Einfach zu bedienende und fehlerverzeihende Komponenten.',
-      yield: 'Fokus auf Leistung und hohe Ernteergebnisse.',
-      stealth: 'Leise und unauffällige Komponenten für einen Stealth-Grow.',
-    },
-    step3Title: 'Wähle dein Budget',
-    budgets: {
-      low: 'Niedrig',
-      medium: 'Mittel',
-      high: 'Hoch',
-    },
-    budgetDescriptions: {
-      low: 'Grundausstattung für den Start.',
-      medium: 'Gute Balance aus Preis und Leistung.',
-      high: 'Premium-Komponenten für optimale Kontrolle.',
+    setups: {
+      '1': {
+        standard: {
+          title: 'Standard-Setup (Preis/Leistung)',
+          description: 'Eine ausgewogene Konfiguration für Einsteiger, die gute Ergebnisse ohne hohe Anfangsinvestitionen anstreben.',
+          prompt: 'Erstelle eine anfängerfreundliche Grow-Setup-Empfehlung für 1 Pflanze in einer 60x60x180cm Growbox. Die Beleuchtung sollte eine 100-120W LED sein. Die Abluft sollte ein AC-Lüfter mit ~145-180 m³/h sein. Der Topf sollte ein 15-19L Stofftopf sein. Das Medium ist Light-Mix Erde. Das Budget ist preis-leistungsorientiert.'
+        },
+        premium: {
+          title: 'Premium-Setup (Maximale Kontrolle)',
+          description: 'High-End-Komponenten für Züchter, die volle Kontrolle und maximale Qualität und Ertrag anstreben.',
+          prompt: 'Erstelle eine High-End Grow-Setup-Empfehlung für 1 Pflanze in einer Premium 60x60x180cm Growbox. Die Beleuchtung sollte eine 150W High-End LED sein. Die Abluft sollte ein EC-Lüfter mit Controller und ~180-250 m³/h sein. Der Topf sollte ein 19-25L Stofftopf sein. Das Medium ist ein Coco/Perlite Mix. Das Budget ist hoch.'
+        }
+      },
+      '2': {
+        standard: {
+          title: 'Standard-Setup (Preis/Leistung)',
+          description: 'Eine solide Konfiguration für 2 Pflanzen, optimiert für gute Erträge und einfache Handhabung.',
+          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 2 Pflanzen in einer 80x80 oder 120x60cm Growbox. Die Beleuchtung sollte eine 200-240W LED sein. Die Abluft sollte ein AC-Lüfter mit ~220-280 m³/h sein. Töpfe: 2x 15-19L Stofftöpfe. Medium: All-Mix Erde. Das Budget ist preis-leistungsorientiert.'
+        },
+        premium: {
+          title: 'Premium-Setup (Maximale Kontrolle)',
+          description: 'Fortgeschrittenes Setup für maximale Erträge und volle Kontrolle über die Umgebung von 2 Pflanzen.',
+          prompt: 'Erstelle eine High-End Grow-Setup-Empfehlung für 2 Pflanzen in einer Premium 80x80 oder 120x60cm Growbox. Die Beleuchtung sollte eine 250-300W High-End LED sein. Die Abluft sollte ein EC-Lüfter mit Controller und ~280-360 m³/h sein. Töpfe: 2x 19-25L Stofftöpfe. Medium: Coco/Perlite Mix oder ein Hydro-System. Das Budget ist hoch.'
+        }
+      },
+      '3': {
+        standard: {
+          title: 'Standard-Setup (Preis/Leistung)',
+          description: 'Eine effiziente Konfiguration für den Anbau von 3 Pflanzen mit Fokus auf einen hohen Gesamtertrag.',
+          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 3 Pflanzen in einer 100x100x200cm Growbox. Die Beleuchtung sollte eine 300-320W LED sein. Die Abluft sollte ein AC-Lüfter mit ~360 m³/h sein. Töpfe: 3x 19-25L Stofftöpfe. Medium: All-Mix oder Coco. Das Budget ist preis-leistungsorientiert.'
+        },
+        premium: {
+          title: 'Premium-Setup (Maximale Kontrolle)',
+          description: 'Ein großzügiges High-End-Setup für 3 Pflanzen, das auf maximale Qualität, Ertrag und Automatisierung ausgelegt ist.',
+          prompt: 'Erstelle eine High-End Grow-Setup-Empfehlung für 3 Pflanzen in einer Premium 120x120x220cm Growbox. Die Beleuchtung sollte eine 450-500W Multi-Bar LED sein. Die Abluft sollte ein EC-Lüfter mit Controller, Schalldämpfer und ~400-500 m³/h sein. Töpfe: 3x 30-50L Stofftöpfe. Medium: Living Soil oder Coco. Das Budget ist hoch.'
+        }
+      }
     },
     generate: 'Setup generieren',
     resultsTitle: 'Deine persönliche Setup-Empfehlung',
@@ -96,26 +119,7 @@ export const equipmentView = {
     },
     calculate: 'Berechnen',
   },
-  gearAndShops: {
-    shopsTitle: 'Empfohlene Online-Shops (EU)',
-    gearTitle: 'Essenzielle Ausrüstung',
-    shops: {
-      zamnesia: 'Einer der größten und bekanntesten Head- und Growshops in Europa mit einer riesigen Auswahl an Samen und Zubehör.',
-      rqs: 'Royal Queen Seeds ist ein berühmter Züchter und Shop, der hochwertige Samen und eine komplette Linie an Grow-Zubehör anbietet.',
-      growmart: 'Ein etablierter deutscher Growshop mit einem umfassenden Sortiment, von Komplettsets für Anfänger bis zu Profi-Equipment.'
-    },
-    gearItems: {
-      tent: { name: 'Growbox (Zelt)', desc: 'Schafft eine kontrollierte Umgebung mit reflektierenden Innenwänden, um das Licht optimal zu nutzen.' },
-      led: { name: 'LED-Beleuchtung', desc: 'Moderne Vollspektrum-LEDs sind energieeffizient, erzeugen wenig Wärme und liefern hervorragende Ergebnisse.' },
-      ventilation: { name: 'Abluftset (Lüfter + Aktivkohlefilter)', desc: 'Absolut entscheidend. Entfernt verbrauchte Luft, kontrolliert Temperatur/Feuchtigkeit und neutralisiert Gerüche.' },
-      circulation: { name: 'Umluft-Ventilator(en)', desc: 'Ein oder mehrere kleine Ventilatoren im Zelt simulieren Wind, stärken die Stängel und verhindern Luftstau.' },
-      pots: { name: 'Töpfe (Stoff- oder Air-Pots)', desc: 'Stofftöpfe oder Air-Pots fördern eine gesunde Wurzelentwicklung durch "Air-Pruning" und verhindern Ringwurzelbildung.' },
-      timers: { name: 'Zeitschaltuhr(en)', desc: 'Mindestens eine für den Lichtzyklus (z.B. 18/6 oder 12/12 Stunden). Eine weitere für die Lüftung kann nützlich sein.' },
-      meters: { name: 'Messgeräte (pH/EC, Thermo-Hygrometer)', desc: 'Unerlässlich zur Überwachung. pH- & EC-Messgeräte für die Nährlösung, Thermo-Hygrometer für Temperatur & Luftfeuchtigkeit.' },
-      harvest: { name: 'Ernte-Zubehör', desc: 'Eine scharfe Trim-Schere, eine Taschenlupe (60x) zur Trichom-Kontrolle und luftdichte Gläser für das Curing.' },
-    }
-  },
-   savedSetups: {
+  savedSetups: {
     title: 'Meine gespeicherten Setups',
     noSetups: {
       title: 'Keine gespeicherten Setups',

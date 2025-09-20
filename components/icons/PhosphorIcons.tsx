@@ -144,7 +144,6 @@ export const PhosphorIcons = {
     Info: ({ className }: { className?: string; }) => (
         <IconBase className={className}><path d="M128,24A104,104,0,1,0,232,128,104.2,104.2,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm16-40a8,8,0,0,1-8,8,16,16,0,0,1-16-16V128a8,8,0,0,1,0-16,16,16,0,0,1,16,16v40A8,8,0,0,1,144,176ZM112,88a12,12,0,1,1,12,12A12,12,0,0,1,112,88Z"/></IconBase>
     ),
-    // FIX: Added missing Key icon.
     Key: ({ className }: { className?: string }) => (
         <IconBase className={className}><path d="M224,60a52,52,0,0,0-96-32.6V12a8,8,0,0,0-16,0V27.4A52,52,0,1,0,224,60Zm-44,0a36,36,0,1,1-36,36A36,36,0,0,1,180,60Z"/></IconBase>
     ),
@@ -201,5 +200,12 @@ export const PhosphorIcons = {
     ),
     ArchiveBox: ({ className }: { className?: string; }) => (
       <IconBase className={className}><path d="M224,48H32a8,8,0,0,0-8,8V200a8,8,0,0,0,16,0V152a8,8,0,0,1,8-8H200a8,8,0,0,1,8,8v48a8,8,0,0,0,16,0V56A8,8,0,0,0,224,48ZM104,112h48a8,8,0,0,1,0,16H104a8,8,0,0,1,0-16Zm104-56H48V64H208Z"/></IconBase>
+    ),
+    DotsThreeVertical: ({ className, weight = 'regular' }: { className?: string, weight?: 'regular' | 'bold' }) => (
+      <IconBase className={className}>{weight === 'bold' ? 
+          <path d="M128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,16a8,8,0,1,1,8-8A8,8,0,0,1,128,120Zm0-80a24,24,0,1,0,24,24A24,24,0,0,0,128,40Zm0,16a8,8,0,1,1,8-8A8,8,0,0,1,128,56Zm0,96a24,24,0,1,0,24,24A24,24,0,0,0,128,168Zm0,16a8,8,0,1,1,8-8A8,8,0,0,1,128,184Z"/>
+          :
+          <path d="M128,104a24,24,0,1,0,24,24A24.1,24.1,0,0,0,128,104Zm0,40a16,16,0,1,1,16-16A16,16,0,0,1,128,144ZM128,32a24,24,0,1,0,24,24A24.1,24.1,0,0,0,128,32Zm0,40a16,16,0,1,1,16-16A16,16,0,0,1,128,72Zm0,96a24,24,0,1,0,24,24A24.1,24.1,0,0,0,128,168Zm0,40a16,16,0,1,1,16-16A16,16,0,0,1,128,208Z"/>
+      }</IconBase>
     ),
 };

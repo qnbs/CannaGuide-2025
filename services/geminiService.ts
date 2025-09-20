@@ -26,9 +26,7 @@ export const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFu
             case 'equipment':
                 return [
                     { key: 'ai.loading.equipment.analyzing' },
-                    { key: 'ai.loading.equipment.budget', params: { budget: t(`equipmentView.configurator.budgets.${data.budget}`) } },
-                    { key: 'ai.loading.equipment.area', params: { area: data.area } },
-                    { key: 'ai.loading.equipment.style', params: { style: t(`equipmentView.configurator.styles.${data.growStyle}`) } },
+                    { key: 'ai.loading.equipment.custom', params: { config: data.configName } },
                     { key: 'ai.loading.equipment.selecting' },
                     { key: 'ai.loading.equipment.finalizing' },
                 ];
@@ -63,9 +61,9 @@ export const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFu
 };
 
 
-const getEquipmentRecommendation = async (area: string, budget: string, growStyle: string): Promise<Recommendation> => {
+const getEquipmentRecommendation = async (promptDetails: string): Promise<Recommendation> => {
     const ai = getAiClient();
-    const prompt = `Generate a cannabis growing equipment recommendation for a ${area}cm area, with a ${budget} budget, focusing on a ${growStyle} grow style. Provide specific product types (e.g., 'Mars Hydro TS 1000' or 'Fabric Pot 5 Gallon') but avoid brand favoritism unless a specific model is iconic for that category. Prices should be realistic estimates in Euros. The rationale should be concise and explain why the item fits the user's needs. Categories to include are: tent, light, ventilation, pots, soil, nutrients, extra.`;
+    const prompt = `${promptDetails} Provide specific product types (e.g., 'Mars Hydro TS 1000' or 'Fabric Pot 5 Gallon') but avoid brand favoritism unless a specific model is iconic for that category. Prices should be realistic estimates in Euros. The rationale should be concise and explain why the item fits the user's needs. Categories to include are: tent, light, ventilation, pots, soil, nutrients, extra.`;
     
     const responseSchema = {
         type: Type.OBJECT,

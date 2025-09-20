@@ -4,6 +4,7 @@ import { Button } from '../../common/Button';
 import { ExportFormat, ExportSource } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { useSettings } from '../../../hooks/useSettings';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface ExportModalProps {
     isOpen: boolean;
@@ -48,6 +49,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
     const { settings } = useSettings();
     const [source, setSource] = useState<ExportSource>(settings.defaultExportSettings.source);
     const [format, setFormat] = useState<ExportFormat>(settings.defaultExportSettings.format);
+    const modalRef = useFocusTrap(isOpen);
 
     useEffect(() => {
         if(isOpen) {
@@ -81,7 +83,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-lg modal-content-animate" onClick={(e) => e.stopPropagation()}>
+            <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{t('strainsView.exportModal.title')}</h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

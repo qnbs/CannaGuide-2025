@@ -37,10 +37,25 @@ export const usePlantManager = (
 
     const calculateYield = (plant: Plant): number => {
         const baseYield = YIELD_FACTORS.base[plant.strain.agronomic.yield] || YIELD_FACTORS.base.Medium;
-        const avgStress = plant.history.reduce((acc, cur) => acc + cur.stressLevel, 0) / plant.history.length || 0;
+        
+        // Calculate the day flowering starts
+        const floweringStartDay = STAGES_ORDER.slice(0, STAGES_ORDER.indexOf(PlantStage.Flowering))
+            .reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
+
+        const vegHistory = plant.history.filter(h => h.day < floweringStartDay);
+        const flowerHistory = plant.history.filter(h => h.day >= floweringStartDay);
+
+        const avgVegStress = vegHistory.length > 0 ? vegHistory.reduce((acc, cur) => acc + cur.stressLevel, 0) / vegHistory.length : 0;
+        const avgFlowerStress = flowerHistory.length > 0 ? flowerHistory.reduce((acc, cur) => acc + cur.stressLevel, 0) / flowerHistory.length : 0;
+        
+        // Give more weight to stress during flowering (70%) vs. veg (30%)
+        const weightedAvgStress = (avgVegStress * 0.3) + (avgFlowerStress * 0.7);
+
+        // Fallback to simple average if weighted is 0 (e.g., harvested before flowering)
+        const avgStress = weightedAvgStress > 0 ? weightedAvgStress : (plant.history.reduce((acc, cur) => acc + cur.stressLevel, 0) / plant.history.length || 0);
         
         const stressPenalty = (avgStress / 100) * YIELD_FACTORS.stressModifier;
-        const heightBonus = (plant.height / 100) * YIELD_FACTORS.heightModifier;
+        const heightBonus = (plant.height / 100) * YIELD_FACTORS.heightModifier; // Assume 100cm is a good baseline height for this bonus
         
         const setup = plant.growSetup;
         const lightMod = YIELD_FACTORS.setupModifier.light[setup.lightType];
@@ -114,8 +129,23 @@ export const usePlantManager = (
         }
 
         let stressFromProblems = 0;
-        const { vitals } = newPlantState;
-        if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) stressFromProblems += (PROBLEM_THRESHOLDS.moisture.under - vitals.substrateMoisture) * 0.3;
+        const { vitals, environment } = newPlantState;
+        const { idealEnv, idealVitals } = currentStageInfo;
+        const stressFactors = SIMULATION_CONSTANTS.STRESS_FACTORS;
+
+        if (environment.temperature > idealEnv.temp.max) stressFromProblems += (environment.temperature - idealEnv.temp.max) * stressFactors.TEMP_HIGH;
+        if (environment.temperature < idealEnv.temp.min) stressFromProblems += (idealEnv.temp.min - environment.temperature) * stressFactors.TEMP_LOW;
+        if (environment.humidity > idealEnv.humidity.max) stressFromProblems += (environment.humidity - idealEnv.humidity.max) * stressFactors.HUMIDITY_HIGH;
+        if (environment.humidity < idealEnv.humidity.min) stressFromProblems += (idealEnv.humidity.min - environment.humidity) * stressFactors.HUMIDITY_LOW;
+
+        if (vitals.ph > idealVitals.ph.max) stressFromProblems += (vitals.ph - idealVitals.ph.max) * 10 * stressFactors.PH_OFF;
+        if (vitals.ph < idealVitals.ph.min) stressFromProblems += (idealVitals.ph.min - vitals.ph) * 10 * stressFactors.PH_OFF;
+        if (vitals.ec > idealVitals.ec.max) stressFromProblems += (vitals.ec - idealVitals.ec.max) * 10 * stressFactors.EC_HIGH;
+        if (vitals.ec < idealVitals.ec.min) stressFromProblems += (idealVitals.ec.min - vitals.ec) * 10 * stressFactors.EC_LOW;
+        
+        if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) stressFromProblems += (PROBLEM_THRESHOLDS.moisture.under - vitals.substrateMoisture) * stressFactors.UNDERWATERING;
+        if (vitals.substrateMoisture > PROBLEM_THRESHOLDS.moisture.over) stressFromProblems += (vitals.substrateMoisture - PROBLEM_THRESHOLDS.moisture.over) * stressFactors.OVERWATERING;
+
         const stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty];
         stressFromProblems *= stressDifficultyModifier;
         const stressDecayFactor = Math.pow(0.9, elapsedDays);
@@ -123,7 +153,17 @@ export const usePlantManager = (
         newPlantState.stressLevel = Math.min(100, Math.max(0, newPlantState.stressLevel));
 
         const newProblems: PlantProblem[] = [];
+        if (vitals.substrateMoisture > PROBLEM_THRESHOLDS.moisture.over) newProblems.push({ type: 'Overwatering', ...getProblemDetails('Overwatering') });
         if (vitals.substrateMoisture < PROBLEM_THRESHOLDS.moisture.under) newProblems.push({ type: 'Underwatering', ...getProblemDetails('Underwatering') });
+        if (vitals.ec > idealVitals.ec.max) newProblems.push({ type: 'NutrientBurn', ...getProblemDetails('NutrientBurn') });
+        if (vitals.ec < idealVitals.ec.min && ![PlantStage.Seed, PlantStage.Germination].includes(newPlantState.stage)) newProblems.push({ type: 'NutrientDeficiency', ...getProblemDetails('NutrientDeficiency') });
+        if (vitals.ph > idealVitals.ph.max) newProblems.push({ type: 'PhTooHigh', ...getProblemDetails('PhTooHigh') });
+        if (vitals.ph < idealVitals.ph.min) newProblems.push({ type: 'PhTooLow', ...getProblemDetails('PhTooLow') });
+        if (environment.temperature > idealEnv.temp.max) newProblems.push({ type: 'TempTooHigh', ...getProblemDetails('TempTooHigh') });
+        if (environment.temperature < idealEnv.temp.min) newProblems.push({ type: 'TempTooLow', ...getProblemDetails('TempTooLow') });
+        if (environment.humidity > idealEnv.humidity.max) newProblems.push({ type: 'HumidityTooHigh', ...getProblemDetails('HumidityTooHigh') });
+        if (environment.humidity < idealEnv.humidity.min) newProblems.push({ type: 'HumidityTooLow', ...getProblemDetails('HumidityTooLow') });
+        
         const oldProblemTypes = new Set(newPlantState.problems.map(p => p.type));
         const newProblemTypes = new Set(newProblems.map(p => p.type));
 

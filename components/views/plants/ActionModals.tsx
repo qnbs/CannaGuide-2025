@@ -6,20 +6,24 @@ import { useTranslations } from '../../../hooks/useTranslations';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { dbService } from '../../../services/dbService';
 import { useSettings } from '../../../hooks/useSettings';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface ModalProps {
     onClose: () => void;
     onConfirm: (details: JournalEntry['details'], notes: string) => void;
 }
 
-const ModalBase: React.FC<{title: string, onClose: () => void, children: React.ReactNode}> = ({ title, onClose, children }) => (
-    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
-        <Card className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{title}</h2>
-            {children}
-        </Card>
-    </div>
-);
+const ModalBase: React.FC<{title: string, onClose: () => void, children: React.ReactNode}> = ({ title, onClose, children }) => {
+    const modalRef = useFocusTrap(true);
+    return (
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <Card ref={modalRef} className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{title}</h2>
+                {children}
+            </Card>
+        </div>
+    );
+};
 
 const InputField: React.FC<{label: string, type: string, value: string, onChange: (val: string) => void, step?: string}> = ({label, type, value, onChange, step}) => {
     const id = useId();

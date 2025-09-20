@@ -5,6 +5,7 @@ import { Card } from '../../common/Card';
 import { useNotifications } from '../../../context/NotificationContext';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { useSettings } from '../../../hooks/useSettings';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 
 interface GrowSetupModalProps {
@@ -17,6 +18,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   const { t } = useTranslations();
   const { addNotification } = useNotifications();
   const { settings } = useSettings();
+  const modalRef = useFocusTrap(true);
   
   const [setup, setSetup] = useState<GrowSetup>(settings.defaultGrowSetup);
 
@@ -45,7 +47,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
 
   return (
     <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-md modal-content-animate">
+      <Card ref={modalRef} className="w-full max-w-md modal-content-animate">
         <h2 className="text-2xl font-bold font-display text-primary-400 mb-2">{t('plantsView.setupModal.title', { name: strain.name })}</h2>
         <p className="text-accent-200/90 mb-6">{t('plantsView.setupModal.subtitle')}</p>
         

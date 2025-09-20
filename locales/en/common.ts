@@ -77,7 +77,6 @@ export const ai = {
   diagnostics: 'AI Diagnostics',
   getAdvice: 'Request AI Analysis',
   generating: 'Generating response...',
-  error: 'Error with AI request',
   disclaimer: 'AI-generated content may be inaccurate. Always verify important information.',
   loading: {
     equipment: {
@@ -105,5 +104,13 @@ export const ai = {
       problems: 'Assessing {count} active problems...',
       formulating: 'Formulating a recommendation...'
     }
+  },
+  // FIX: Removed duplicate `error` key. The object below is used for specific error messages.
+  error: {
+    parsing: 'Failed to understand the AI\'s response. It might be malformed.',
+    apiKey: 'The AI service is not configured correctly (Invalid API Key).',
+    api: 'The AI service returned an error. Please try again later.',
+    network: 'Could not connect to the AI service. Please check your network connection.',
+    unknown: 'An unknown error occurred with the AI service.'
   }
 };

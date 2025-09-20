@@ -1,5 +1,6 @@
 
 export const commandPalette = {
+  title: 'Befehlspalette',
   placeholder: 'Befehl eingeben oder suchen...',
   noResults: 'Keine Befehle gefunden.',
   open: 'Befehlspalette öffnen',

@@ -77,7 +77,6 @@ export const ai = {
   diagnostics: 'KI-Diagnose',
   getAdvice: 'KI-Analyse anfordern',
   generating: 'Antwort wird generiert...',
-  error: 'Fehler bei der KI-Anfrage',
   disclaimer: 'KI-generierte Inhalte können ungenau sein. Überprüfe wichtige Informationen immer.',
   loading: {
     equipment: {
@@ -105,5 +104,13 @@ export const ai = {
       problems: 'Bewerte {count} aktive Probleme...',
       formulating: 'Formuliere eine Handlungsempfehlung...'
     }
+  },
+  // FIX: Removed duplicate `error` key. The object below is used for specific error messages.
+  error: {
+    parsing: 'Die Antwort der KI konnte nicht verstanden werden. Sie könnte fehlerhaft sein.',
+    apiKey: 'Der KI-Dienst ist nicht korrekt konfiguriert (Ungültiger API-Schlüssel).',
+    api: 'Der KI-Dienst hat einen Fehler gemeldet. Bitte versuche es später erneut.',
+    network: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte prüfe deine Netzwerkverbindung.',
+    unknown: 'Ein unbekannter Fehler mit dem KI-Dienst ist aufgetreten.'
   }
 };

@@ -41,7 +41,8 @@ export const EquipmentView: React.FC = () => {
             setRecommendation(result);
         } catch (err) {
             console.error("Failed to generate setup:", err);
-            const errorMessage = err instanceof Error ? err.message : t('equipmentView.configurator.errorNetwork');
+            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
+            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
             setError(errorMessage);
             addNotification(errorMessage, 'error');
         } finally {

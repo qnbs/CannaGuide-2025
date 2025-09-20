@@ -9,8 +9,9 @@ import { geminiService } from '../../services/geminiService';
 import { Recommendation, SavedSetup } from '../../types';
 import { Tabs } from '../common/Tabs';
 import { useNotifications } from '../../context/NotificationContext';
+import { GrowShopsView } from './equipment/GrowShopsView';
 
-type EquipmentViewTab = 'configurator' | 'calculators' | 'setups';
+type EquipmentViewTab = 'configurator' | 'calculators' | 'setups' | 'grow-shops';
 
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslations();
@@ -50,6 +51,7 @@ export const EquipmentView: React.FC = () => {
         { id: 'configurator', label: t('equipmentView.tabs.configurator') },
         { id: 'setups', label: t('equipmentView.tabs.setups') },
         { id: 'calculators', label: t('equipmentView.tabs.calculators') },
+        { id: 'grow-shops', label: t('equipmentView.tabs.growShops') },
     ];
     
     return (
@@ -73,6 +75,8 @@ export const EquipmentView: React.FC = () => {
             {activeTab === 'calculators' && <Calculators />}
             
             {activeTab === 'setups' && <SavedSetupsView savedSetups={savedSetups} updateSetup={updateSetup} deleteSetup={deleteSetup} />}
+
+            {activeTab === 'grow-shops' && <GrowShopsView />}
         </div>
     );
 };

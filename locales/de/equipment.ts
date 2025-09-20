@@ -4,6 +4,7 @@ export const equipmentView = {
     configurator: 'Konfigurator',
     calculators: 'Rechner',
     setups: 'Meine Setups',
+    growShops: 'Grow-Shops',
   },
   configurator: {
     title: 'Setup Konfigurator',
@@ -50,7 +51,7 @@ export const equipmentView = {
         premium: {
           title: 'Premium-Setup (Maximale Kontrolle)',
           description: 'Fortgeschrittenes Setup für maximale Erträge und volle Kontrolle über die Umgebung von 2 Pflanzen.',
-          prompt: 'Erstelle eine High-End Grow-Setup-Empfehlung für 2 Pflanzen in einer Premium 80x80 oder 120x60cm Growbox. Die Beleuchtung sollte eine 250-300W High-End LED sein. Die Abluft sollte ein EC-Lüfter mit Controller und ~280-360 m³/h sein. Töpfe: 2x 19-25L Stofftöpfe. Medium: Coco/Perlite Mix oder ein Hydro-System. Das Budget ist hoch.'
+          prompt: 'Erstelle eine High-End Grow-Setup-Empfehlung für 2 Pflanzen in einer Premium 80x80 oder 120x60cm Growbox. Die Beleuchtung sollte eine 250-300W High-End LED sein. Die Abluft sollte ein EC-Lüfter mit Controller und ~280-360 m³/h sein. Töpfe: 2x 19-25L Stofftöpfe. Medium: Coco/Perlite oder ein Hydro-System. Das Budget ist hoch.'
         }
       },
       '3': {
@@ -83,7 +84,6 @@ export const equipmentView = {
     setupSaveConfirm: 'Möchtest du das Setup als "{name}" speichern?',
     setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
     setupSaveError: 'Fehler beim Speichern des Setups.',
-    error: 'Die KI konnte keine Empfehlung generieren. Bitte versuche es später erneut.',
     categories: {
       tent: 'Growbox (Zelt)',
       light: 'Beleuchtung',
@@ -180,6 +180,128 @@ export const equipmentView = {
       rationale: 'Begründung',
       price: 'Preis (€)',
       item: 'Komponente',
+    }
+  },
+  growShops: {
+    title: 'Grow-Shops',
+    intro: 'Auf Basis von Nutzerbewertungen, Forenempfehlungen und dem generellen Ruf in der Grower-Community haben sich über Jahre hinweg bestimmte Online-Shops als besonders seriös, zuverlässig und umfassend im Sortiment erwiesen. Hier ist eine Recherche der besten und naheliegendsten Online-Shops für Grow-Equipment, aufgeteilt nach Europa und den USA.',
+    european: {
+        title: 'Europäische Online-Shops (Fokus auf DACH-Region & EU-Versand)',
+        description: 'Diese Shops sind meist in Deutschland, Österreich oder den Niederlanden ansässig und bekannt für schnellen, diskreten Versand innerhalb der EU. Die Zollabwicklung entfällt somit für Lieferungen innerhalb der Europäischen Union.'
+    },
+    us: {
+        title: 'US-amerikanische Online-Shops (Nordamerika)',
+        description: 'Diese Shops sind die erste Anlaufstelle für Grower in den USA und Kanada. Sie zeichnen sich durch ein riesiges Sortiment aus, das oft auf den kommerziellen Markt ausgerichtet ist, aber auch Heimgrower bedient. Ein Versand nach Europa ist oft möglich, aber aufgrund von hohen Versandkosten, Zollgebühren und unterschiedlichen Netzspannungen (110V) bei Elektronikartikeln meist nicht sinnvoll.'
+    },
+    importantNote: {
+        title: 'Wichtiger Hinweis',
+        content: 'Bevor Sie eine größere Bestellung aufgeben, empfiehlt es sich immer, die Preise zwischen den Top-Shops zu vergleichen und kurz nach aktuellen Erfahrungsberichten oder Bewertungen zu suchen.'
+    },
+    location: 'Standort',
+    strengths: 'Stärken',
+    idealFor: 'Ideal für',
+    shops: {
+        growmart: {
+            name: 'Growmart',
+            url: 'https://www.growmart.de/',
+            location: 'Deutschland (Hamburg)',
+            description: 'Einer der größten und bekanntesten Online-Growshops in Europa. Sie gelten als extrem zuverlässig, haben einen hervorragenden Kundenservice und ein riesiges Sortiment, das von Einsteiger-Sets bis zu professionellem Equipment reicht. Besonders ihre Growbox-Komplettsets sind sehr beliebt und gut konfiguriert.',
+            strengths: [
+                'Sehr große Auswahl an Top-Marken (HOMEbox, SANlight, Lumatek, AC Infinity, BioBizz etc.).',
+                'Schneller und sehr diskreter Versand mit DHL.',
+                'Gute und ehrliche Produktbeschreibungen und oft hilfreiche Blogartikel.',
+                'Sehr gute Erreichbarkeit des Kundenservice.'
+            ],
+            idealFor: 'Anfänger bis Profis, die eine "Alles aus einer Hand"-Lösung suchen.'
+        },
+        growshop24: {
+            name: 'grow-shop24.de / grow-shop24.at',
+            url: 'https://www.grow-shop24.de/',
+            location: 'Deutschland & Österreich',
+            description: 'Ein weiterer sehr etablierter Shop mit einem extrem umfangreichen Sortiment. Sie sind bekannt für konkurrenzfähige Preise und führen oft auch Nischenprodukte, die man anderswo schwerer findet. Mit einer eigenen Domain für Österreich bedienen sie diesen Markt besonders gut.',
+            strengths: [
+                'Umfassendes Sortiment in allen Kategorien (Beleuchtung, Klima, Dünger).',
+                'Führt alle gängigen Marken und oft auch preisgünstigere Alternativen.',
+                'Häufig gute Angebote und Rabattaktionen.',
+                'Zuverlässiger Versand und gute Bewertungen (z.B. bei Trusted Shops).'
+            ],
+            idealFor: 'Preisbewusste Käufer und Grower, die spezifische Produkte suchen.'
+        },
+        growland: {
+            name: 'Growland',
+            url: 'https://www.growland.net/',
+            location: 'Deutschland (Berlin)',
+            description: 'Growland hat sich ebenfalls einen Namen als seriöser und gut sortierter Händler gemacht. Sie überzeugen durch langjährige Erfahrung und einen professionellen Auftritt. Das Sortiment ist sorgfältig ausgewählt und deckt alle Bedürfnisse ab.',
+            strengths: [
+                'Übersichtlicher Online-Shop mit guter Filterfunktion.',
+                'Fokus auf qualitativ hochwertige Marken.',
+                'Bietet ebenfalls sehr gut abgestimmte Komplettsets an.',
+                'Guter Kundensupport und schnelle Lieferung.'
+            ],
+            idealFor: 'Grower, die Wert auf eine kuratierte Auswahl und einen reibungslosen Bestellprozess legen.'
+        },
+        zamnesia: {
+            name: 'Zamnesia',
+            url: 'https://www.zamnesia.com/de/5-grow-shop',
+            location: 'Niederlande',
+            description: 'Zamnesia ist weit mehr als nur ein Seedshop. Ihr "Growshop"-Bereich ist extrem umfassend und bietet alles, was man für den Anbau benötigt. Als einer der größten Player in Europa ist ihre Logistik und Zuverlässigkeit auf einem sehr hohen Niveau.',
+            strengths: [
+                'Gigantische Auswahl, die auch Headshop- und Lifestyle-Produkte umfasst.',
+                'Sehr schnelle Lieferung aus den Niederlanden in die gesamte EU.',
+                'Exzellenter Ruf und eine riesige Community mit vielen Bewertungen.',
+                'Möglichkeit, Samen und Equipment in einer einzigen Bestellung zu kombinieren.'
+            ],
+            idealFor: 'Grower, die auch an einer riesigen Auswahl an Genetik interessiert sind und alles aus einer Quelle beziehen möchten.'
+        },
+        acInfinity: {
+            name: 'AC Infinity',
+            url: 'https://acinfinity.com/',
+            location: 'USA (Kalifornien)',
+            description: 'AC Infinity hat sich von einem Hersteller für Lüftungstechnik zu einem der beliebtesten One-Stop-Shops entwickelt. Sie verkaufen ihr eigenes, perfekt aufeinander abgestimmtes Ökosystem aus Zelten, Lüftern, Lampen und Controllern. Ihre Produkte gelten als extrem innovativ, hochwertig und benutzerfreundlich.',
+            strengths: [
+                'Perfekt integriertes System (Controller steuern Lüfter, Licht, etc.).',
+                'Sehr hohe Produktqualität und durchdachtes Design.',
+                'Hervorragender Kundenservice und eine starke Community.',
+                'Kauf direkt vom Hersteller.'
+            ],
+            idealFor: 'Technikaffine Grower, die ein smartes, automatisiertes und optisch ansprechendes Setup suchen.'
+        },
+        growGen: {
+            name: 'GrowGeneration (GrowGen)',
+            url: 'https://growgeneration.com/',
+            location: 'USA (landesweite Kette)',
+            description: 'GrowGen ist die größte Kette von hydroponischen Fachgeschäften in den USA und betreibt auch einen massiven Online-Shop. Sie sind an der Börse notiert und bedienen sowohl kleine Heimgrower als auch riesige kommerzielle Anlagen. Ihr Sortiment ist dementsprechend gewaltig.',
+            strengths: [
+                'Enorme Produktvielfalt von praktisch jeder erdenklichen Marke.',
+                'Expertise im kommerziellen Anbau, was sich in der Produktauswahl widerspiegelt.',
+                'Regelmäßige Verkäufe und professionelle Beratung.'
+            ],
+            idealFor: 'Grower jeder Größe, die die größte mögliche Auswahl suchen.'
+        },
+        growersHouse: {
+            name: 'GrowersHouse',
+            url: 'https://growershouse.com/',
+            location: 'USA (Arizona)',
+            description: 'Ein weiterer sehr großer und seriöser Online-Händler, der für sein breites Sortiment und seine Expertise bekannt ist. Sie bieten detaillierte Produktvergleiche, Video-Reviews und eine starke Kundenberatung, die auch bei der Planung größerer Projekte hilft.',
+            strengths: [
+                'Große Auswahl an High-End-Marken (z.B. HLG, Gavita).',
+                'Sehr informative Website mit vielen Ressourcen für Grower.',
+                'Guter Ruf für Zuverlässigkeit und Kundenservice.'
+            ],
+            idealFor: 'Grower, die detaillierte Informationen und Vergleiche vor dem Kauf schätzen.'
+        },
+        htgSupply: {
+            name: 'HTG Supply (High Tech Garden Supply)',
+            url: 'https://www.htgsupply.com/',
+            location: 'USA (landesweite Kette)',
+            description: 'HTG Supply ist einer der ältesten und etabliertesten Hydroponik-Shops in den USA. Sie haben sowohl eine starke Online-Präsenz als auch physische Geschäfte. Ihr Slogan "einer der schnellsten Versender der Branche" wird oft von Kunden bestätigt.',
+            strengths: [
+                'Breites Sortiment, das alle Grundlagen abdeckt.',
+                'Bekannt für sehr schnellen Versand.',
+                'Oft wettbewerbsfähige Preise und Eigenmarken.'
+            ],
+            idealFor: 'Grower, die eine schnelle und unkomplizierte Lieferung benötigen.'
+        }
     }
   }
 };

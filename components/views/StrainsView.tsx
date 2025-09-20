@@ -43,7 +43,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
   const searchInputId = useId();
   const selectAllId = useId();
   
-  const [allStrains, setAllStrains] = useState<Strain[]>([]);
+  const [baseStrains, setBaseStrains] = useState<Strain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -56,7 +56,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
       try {
         setIsLoading(true);
         const fetchedStrains = await strainService.getAllStrains();
-        setAllStrains(fetchedStrains);
+        setBaseStrains(fetchedStrains);
         setError(null);
       } catch (err) {
         setError(t('strainsView.noStrainsFound.fetchError'));
@@ -68,9 +68,20 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     fetchStrains();
   }, [t]);
 
+  const translatedBaseStrains = useMemo(() => {
+    return baseStrains.map(strain => ({
+        ...strain,
+        description: t(`strainsData.${strain.id}.description`),
+        typeDetails: t(`strainsData.${strain.id}.typeDetails`),
+        genetics: t(`strainsData.${strain.id}.genetics`),
+        aromas: t(`strainsData.${strain.id}.aromas`),
+        dominantTerpenes: t(`strainsData.${strain.id}.dominantTerpenes`),
+    }));
+  }, [baseStrains, t]);
+
   const combinedStrains = React.useMemo(() => 
-    [...allStrains, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
-    [allStrains, userStrains]
+    [...translatedBaseStrains, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
+    [translatedBaseStrains, userStrains]
   );
   
   const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
@@ -206,7 +217,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
         case 'json': exportService.exportAsJSON(dataToExport, filename); break;
         case 'csv': exportService.exportAsCSV(dataToExport, filename); break;
         case 'pdf': exportService.exportAsPDF(dataToExport, filename, t); break;
-        case 'txt': exportService.exportAsTXT(dataToExport, filename); break;
+        case 'txt': exportService.exportAsTXT(dataToExport, filename, t); break;
     }
     addNotification(t('common.successfullyExported', { count: dataToExport.length, format: format.toUpperCase() }), 'success');
   };
@@ -223,9 +234,9 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
 
 
   const tabs = useMemo(() => [
-    { id: 'all', label: t('strainsView.tabs.all') },
-    { id: 'user', label: t('strainsView.tabs.user', { count: userStrains.length }) },
-    { id: 'exports', label: t('strainsView.tabs.exports', { count: savedExports.length }) },
+    { id: 'all', label: t('strainsView.tabs.all'), icon: <PhosphorIcons.Leafy /> },
+    { id: 'user', label: t('strainsView.tabs.user', { count: userStrains.length }), icon: <PhosphorIcons.Cube /> },
+    { id: 'exports', label: t('strainsView.tabs.exports', { count: savedExports.length }), icon: <PhosphorIcons.DownloadSimple /> },
   ], [t, userStrains.length, savedExports.length]);
 
   const memoizedToggleFavorite = useCallback(toggleFavorite, [toggleFavorite]);

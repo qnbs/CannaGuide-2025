@@ -47,7 +47,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
         setIsLoading(true);
         setResponse(null);
         try {
-            const res = await geminiService.getAiPlantAdvisorResponse(plant);
+            const res = await geminiService.getAiPlantAdvisorResponse(plant, t);
             setResponse(res);
         } catch (error) {
             console.error("AI Advisor Error:", error);
@@ -91,7 +91,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                     {response && (
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{response.title}</h4>
-                            <p className="text-sm text-slate-200">{response.content}</p>
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
                             <div className="text-right mt-2">
                                <Button size="sm" variant="secondary" onClick={() => addResponse(plant.id, response, plantQueryData)}>{t('knowledgeView.archive.saveButton')}</Button>
                             </div>

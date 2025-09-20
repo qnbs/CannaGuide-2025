@@ -2,7 +2,7 @@ import { Strain } from '../types';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
-type TFunction = (key: string, replacements?: Record<string, string | number>) => string;
+type TFunction = (key: string, replacements?: Record<string, string | number>) => any;
 
 // Helper function to normalize German characters for PDF compatibility
 const normalizeGermanChars = (str: string | null | undefined): string => {
@@ -71,15 +71,15 @@ const exportAsCSV = (data: Strain[], fileName: string) => {
     downloadFile(csvContent, `${fileName}.csv`, 'text/csv;charset=utf-8;');
 };
 
-const exportAsTXT = (data: Strain[], fileName: string) => {
+const exportAsTXT = (data: Strain[], fileName: string, t: TFunction) => {
     const textWidth = 80;
     const hr = '─'.repeat(textWidth);
     const doubleHr = '═'.repeat(textWidth);
 
     let content = `${doubleHr}\n`;
-    content += `| Cannabis Grow Guide with Gemini - Strain Report`.padEnd(textWidth - 1) + '|\n';
-    content += `| Generated: ${new Date().toLocaleString()}`.padEnd(textWidth - 1) + '|\n';
-    content += `| Total Strains: ${data.length}`.padEnd(textWidth - 1) + '|\n';
+    content += `| ${t('strainsView.pdfReport.title')}`.padEnd(textWidth - 1) + '|\n';
+    content += `| ${t('strainsView.export.generated', { date: new Date().toLocaleString() })}`.padEnd(textWidth - 1) + '|\n';
+    content += `| ${t('strainsView.export.totalStrains', { count: data.length })}`.padEnd(textWidth - 1) + '|\n';
     content += `${doubleHr}\n\n`;
 
     const formatLine = (label: string, value: any) => {
@@ -113,34 +113,34 @@ const exportAsTXT = (data: Strain[], fileName: string) => {
         content += `| ${strain.name.toUpperCase()} (${strain.type})`.padEnd(textWidth - 1) + '|\n';
         content += `${hr}\n\n`;
 
-        content += `  --- GENERAL ---\n`;
-        content += formatLine('Type Details', strain.typeDetails);
-        content += formatLine('Genetics', strain.genetics);
-        content += formatLine('Flowering Time', `${strain.floweringTimeRange || strain.floweringTime} weeks`);
+        content += `  --- ${t('strainsView.export.sectionGeneral')} ---\n`;
+        content += formatLine(t('common.typeDetails'), strain.typeDetails);
+        content += formatLine(t('common.genetics'), strain.genetics);
+        content += formatLine(t('strainsView.strainModal.floweringTime'), `${strain.floweringTimeRange || strain.floweringTime} ${t('strainsView.weeks')}`);
         content += '\n';
 
-        content += `  --- CANNABINOID PROFILE ---\n`;
-        content += formatLine('THC', `${strain.thc}%${strain.thcRange ? ` (${strain.thcRange})` : ''}`);
-        content += formatLine('CBD', `${strain.cbd}%${strain.cbdRange ? ` (${strain.cbdRange})` : ''}`);
+        content += `  --- ${t('strainsView.export.sectionCannabinoid')} ---\n`;
+        content += formatLine(t('strainsView.strainModal.thc'), `${strain.thc}%${strain.thcRange ? ` (${strain.thcRange})` : ''}`);
+        content += formatLine(t('strainsView.strainModal.cbd'), `${strain.cbd}%${strain.cbdRange ? ` (${strain.cbdRange})` : ''}`);
         content += '\n';
 
-        content += `  --- AROMA & TERPENES ---\n`;
-        content += formatLine('Aromas', (strain.aromas || []).join(', '));
-        content += formatLine('Dominant Terpenes', (strain.dominantTerpenes || []).join(', '));
+        content += `  --- ${t('strainsView.export.sectionAroma')} ---\n`;
+        content += formatLine(t('strainsView.strainModal.aromas'), (strain.aromas || []).join(', '));
+        content += formatLine(t('strainsView.strainModal.dominantTerpenes'), (strain.dominantTerpenes || []).join(', '));
         content += '\n';
         
-        content += `  --- GROW CHARACTERISTICS ---\n`;
-        content += formatLine('Difficulty', strain.agronomic.difficulty);
-        content += formatLine('Yield', strain.agronomic.yield);
-        content += formatLine('Yield (Indoor)', strain.agronomic.yieldDetails?.indoor);
-        content += formatLine('Yield (Outdoor)', strain.agronomic.yieldDetails?.outdoor);
-        content += formatLine('Height', strain.agronomic.height);
-        content += formatLine('Height (Indoor)', strain.agronomic.heightDetails?.indoor);
-        content += formatLine('Height (Outdoor)', strain.agronomic.heightDetails?.outdoor);
+        content += `  --- ${t('strainsView.export.sectionGrow')} ---\n`;
+        content += formatLine(t('strainsView.strainModal.difficulty'), t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`));
+        content += formatLine(t('strainsView.addStrainModal.yield'), t(`strainsView.addStrainModal.yields.${strain.agronomic.yield.toLowerCase()}`));
+        content += formatLine(t('strainsView.strainModal.yieldIndoor'), strain.agronomic.yieldDetails?.indoor);
+        content += formatLine(t('strainsView.strainModal.yieldOutdoor'), strain.agronomic.yieldDetails?.outdoor);
+        content += formatLine(t('strainsView.strainModal.height'), t(`strainsView.heights.${strain.agronomic.height.toLowerCase()}`));
+        content += formatLine(t('strainsView.strainModal.heightIndoor'), strain.agronomic.heightDetails?.indoor);
+        content += formatLine(t('strainsView.strainModal.heightOutdoor'), strain.agronomic.heightDetails?.outdoor);
         content += '\n';
 
         if (strain.description) {
-            content += `  --- DESCRIPTION ---\n`;
+            content += `  --- ${t('common.description').toUpperCase()} ---\n`;
             content += wrapText(strain.description, 2) + '\n';
         }
         content += '\n\n';

@@ -163,7 +163,7 @@ export const PhosphorIcons = {
         <IconBase className={className}><path d="M128,24A104,104,0,1,0,232,128,104.2,104.2,0,0,0,128,24Zm45.7,82.3-56,56a8.1,8.1,0,0,1-11.4,0l-24-24a8.1,8.1,0,0,1,11.4-11.4L112,148.7l50.3-50.4a8.1,8.1,0,0,1,11.4,11.4Z"/></IconBase>
     ),
     Ruler: ({ className }: { className?: string; }) => (
-        <IconBase className={className}><path d="M224,24H72a8,8,0,0,0-8,8v8H56a8,8,0,0,0-8,8v8H40a8,8,0,0,0-8,8v8H24a8,8,0,0,0-8,8v8H8a8,8,0,0,0-8,8v96a8,8,0,0,0,8,8H224a8,8,0,0,0,8-8V32A8,8,0,0,0,224,24Zm-8,176H16V104h8a8,8,0,0,0,8-8V88h8a8,8,0,0,0,8-8V72h8a8,8,0,0,0,8-8V56h8a8,8,0,0,0,8-8V40h8a8,8,0,0,0,8-8V40h56v48h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v48Zm-40-80h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8H80V40h48v88a8,8,0,0,0,8,8h8v-8a8,8,0,0,0-8-8h-8v-8a8,8,0,0,0-8-8h-8v-8a8,8,0,0,0-8-8h-8V80h32a8,8,0,0,0,8-8V64a8,8,0,0,0-8-8h-8V48a8,8,0,0,0-8-8h-8V40h24Z"/></IconBase>
+        <IconBase className={className}><path d="M224,24H72a8,8,0,0,0-8,8v8H56a8,8,0,0,0-8,8v8H40a8,8,0,0,0-8,8v8H24a8,8,0,0,0-8,8v8H8a8,8,0,0,0-8,8v96a8,8,0,0,0,8,8H224a8,8,0,0,0,8-8V32A8,8,0,0,0,224,24Zm-8,176H16V104h8a8,8,0,0,0,8-8V88h8a8,8,0,0,0,8-8V72h8a8,8,0,0,0,8-8V56h8a8,8,0,0,0,8-8V40h8a8,8,0,0,0,8-8V40h56v48h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v48Zm-40-80h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8h-8a8,8,0,0,0-8,8v8H80V40h48v88a8,8,0,0,0,8,8h8v-8a8,8,0,0,0-8-8h-8v-8a8,8,0,0,0-8-8h-8v-8a8,8,0,0,0-8-8h-8V80h32a8,8,0,0,0,8-8V64a8,8,0,0,0-8-8h-8V48a8,8,0,0,0-8-8h-8V40h24Z"/></IconBase>
     ),
     PencilSimple: ({ className }: { className?: string; }) => (
         <IconBase className={className}><path d="M227.3,73.4,182.6,28.7a16,16,0,0,0-22.6,0L36.7,152A15.9,15.9,0,0,0,32,163.3V208a16,16,0,0,0,16,16H92.7A15.9,15.9,0,0,0,104,219.3L227.3,96.6a16,16,0,0,0,0-23.2ZM94.1,208H48V163.9l96-96L188.1,112ZM192,108.1,147.9,64l24.7-24.7,44.1,44.1Z"/></IconBase>
@@ -210,5 +210,15 @@ export const PhosphorIcons = {
     ),
     ArrowSquareOut: ({ className }: { className?: string }) => (
         <IconBase className={className}><path d="M200,64V168a8,8,0,0,1-16,0V83.3L69.7,197.7a8.2,8.2,0,0,1-11.4,0,8.1,8.1,0,0,1,0-11.4L172.7,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></IconBase>
+    ),
+    // FIX: Update icon components to accept a 'weight' prop to resolve TypeScript errors.
+    TextBolder: ({ className, weight = 'regular' }: { className?: string; weight?: 'bold' | 'duotone' | 'fill' | 'light' | 'regular' | 'thin' }) => (
+        <IconBase className={className} weight={weight}><path d="M176,120h-8a16,16,0,0,0-15.8,12.8,40,40,0,1,1-56.5,0A16,16,0,0,0,80,120H72a8,8,0,0,0,0,16h8a16,16,0,0,0,15.8-12.8,40.1,40.1,0,0,1,64.4,0A16,16,0,0,0,176,136h8a8,8,0,0,0,0-16Zm-65.5-4.5A40,40,0,1,1,128,80,40,40,0,0,1,110.5,115.5ZM128,96a24,24,0,1,0-24,24A24.1,24.1,0,0,0,128,96Z"/></IconBase>
+    ),
+    TextItalic: ({ className, weight = 'regular' }: { className?: string; weight?: 'bold' | 'duotone' | 'fill' | 'light' | 'regular' | 'thin' }) => (
+        <IconBase className={className} weight={weight}><path d="M208,48H120a8,8,0,0,0,0,16h22.7l-32,128H88a8,8,0,0,0,0,16h88a8,8,0,0,0,0-16h-22.7l32-128H200A8,8,0,0,0,208,48Z"/></IconBase>
+    ),
+    ListBullets: ({ className, weight = 'regular' }: { className?: string; weight?: 'bold' | 'duotone' | 'fill' | 'light' | 'regular' | 'thin' }) => (
+        <IconBase className={className} weight={weight}><path d="M88,64H216a8,8,0,0,0,0-16H88a8,8,0,0,0,0,16Zm128,56H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16Zm0,64H88a8,8,0,0,0,0,16H216a8,8,0,0,0,0-16ZM40,40a20,20,0,1,0,20,20A20.1,20.1,0,0,0,40,40Zm0,96a20,20,0,1,0,20,20A20.1,20.1,0,0,0,40,136Zm0,96a20,20,0,1,0,20,20A20.1,20.1,0,0,0,40,232Z"/></IconBase>
     ),
 };

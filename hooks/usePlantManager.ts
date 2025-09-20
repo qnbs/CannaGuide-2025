@@ -185,7 +185,7 @@ export const usePlantManager = (
         if (settings.simulationSettings.autoJournaling.problems) {
             newProblems.forEach(problem => {
                 if (!oldProblemTypes.has(problem.type)) {
-                    newPlantState.journal.push({ id: `sys-prob-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: `Problem detected: ${problem.message}` });
+                    newPlantState.journal.push({ id: `sys-prob-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: t('plantsView.journal.problemDetected', { message: problem.message }) });
                 }
             });
         }
@@ -195,7 +195,7 @@ export const usePlantManager = (
             const newTask: Task = {id: `task-${Date.now()}`, title: wateringTaskTitle, description: t('plantsView.tasks.wateringTask.description'), priority: 'high', isCompleted: false, createdAt: targetTimestamp };
             newPlantState.tasks.push(newTask);
             if (settings.simulationSettings.autoJournaling.tasks) {
-                newPlantState.journal.push({ id: `sys-task-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: `New task: ${newTask.title}` });
+                newPlantState.journal.push({ id: `sys-task-${Date.now()}`, timestamp: targetTimestamp, type: 'SYSTEM', notes: t('plantsView.journal.newTask', { title: newTask.title }) });
             }
             if (settings.notificationSettings.newTask) addNotification(`${plant.name}: ${newTask.title}`, 'info');
         }

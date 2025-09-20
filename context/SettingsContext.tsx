@@ -57,8 +57,8 @@ const defaultSettings: AppSettings = {
     lightHours: 18,
   },
   defaultJournalNotes: {
-    watering: 'Pflanze gegossen.',
-    feeding: 'Pflanze gedüngt.',
+    watering: 'plantsView.actionModals.defaultNotes.watering',
+    feeding: 'plantsView.actionModals.defaultNotes.feeding',
   },
   defaultExportSettings: {
     source: 'filtered',

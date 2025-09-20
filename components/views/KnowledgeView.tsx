@@ -30,7 +30,10 @@ const KnowledgeStep: React.FC<{
     const [isTipVisible, setIsTipVisible] = useState(false);
     return (
         <Card>
-            <h2 className="text-2xl font-bold font-display text-primary-400">{title}</h2>
+            <h2 className="text-2xl font-bold font-display text-primary-400 flex items-center gap-2">
+                <PhosphorIcons.BookOpenText className="w-7 h-7"/>
+                {title}
+            </h2>
             <p className="text-slate-400 mb-4">{subtitle}</p>
             <div className="space-y-4">
                 <div>
@@ -99,7 +102,7 @@ export const KnowledgeView: React.FC = () => {
         setIsLoading(true);
         setAiResponse(null);
         try {
-            const res = await geminiService.getAiMentorResponse(query);
+            const res = await geminiService.getAiMentorResponse(query, t);
             setAiResponse(res);
         } catch (e) {
             console.error(e);
@@ -117,8 +120,8 @@ export const KnowledgeView: React.FC = () => {
     const progressPercent = checklistItems.length > 0 ? (completedItems / checklistItems.length) * 100 : 0;
 
     const tabs = [
-        { id: 'guide', label: t('knowledgeView.tabs.guide') },
-        { id: 'archive', label: t('knowledgeView.archive.title') },
+        { id: 'guide', label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.GraduationCap /> },
+        { id: 'archive', label: t('knowledgeView.archive.title'), icon: <PhosphorIcons.Archive /> },
     ];
 
     const sortedArchive = [...archivedResponses].sort((a,b) => b.createdAt - a.createdAt);

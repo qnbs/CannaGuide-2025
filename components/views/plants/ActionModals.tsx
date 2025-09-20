@@ -13,6 +13,8 @@ interface ModalProps {
     onConfirm: (details: JournalEntry['details'], notes: string) => void;
 }
 
+const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModals.defaultNotes.');
+
 const ModalBase: React.FC<{title: string, onClose: () => void, children: React.ReactNode}> = ({ title, onClose, children }) => {
     const modalRef = useFocusTrap(true);
     return (
@@ -48,7 +50,10 @@ export const WateringModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { settings } = useSettings();
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.5');
-    const [notes, setNotes] = useState(settings.defaultJournalNotes.watering || '');
+    const [notes, setNotes] = useState(() => {
+        const defaultNote = settings.defaultJournalNotes.watering;
+        return defaultNote && isDefaultNoteKey(defaultNote) ? t(defaultNote) : (defaultNote || '');
+    });
 
     const handleConfirm = () => {
         const details = {
@@ -81,7 +86,10 @@ export const FeedingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.2');
     const [ec, setEc] = useState('1.2');
-    const [notes, setNotes] = useState(settings.defaultJournalNotes.feeding || '');
+    const [notes, setNotes] = useState(() => {
+        const defaultNote = settings.defaultJournalNotes.feeding;
+        return defaultNote && isDefaultNoteKey(defaultNote) ? t(defaultNote) : (defaultNote || '');
+    });
 
     const handleConfirm = () => {
         const details = {

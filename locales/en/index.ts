@@ -7,6 +7,7 @@ import { onboarding } from './onboarding';
 import { plantsView } from './plants';
 import { settingsView } from './settings';
 import { strainsView } from './strains';
+import { strainsData } from './strainsData';
 
 export const en = {
   common,
@@ -22,5 +23,6 @@ export const en = {
   plantsView,
   settingsView,
   strainsView,
+  strainsData,
   tipOfTheDay,
 };

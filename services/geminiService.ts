@@ -61,9 +61,9 @@ export const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFu
 };
 
 
-const getEquipmentRecommendation = async (promptDetails: string): Promise<Recommendation> => {
+const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): Promise<Recommendation> => {
     const ai = getAiClient();
-    const prompt = `${promptDetails} Provide specific product types (e.g., 'Mars Hydro TS 1000' or 'Fabric Pot 5 Gallon') but avoid brand favoritism unless a specific model is iconic for that category. Prices should be realistic estimates in Euros. The rationale should be concise and explain why the item fits the user's needs. Categories to include are: tent, light, ventilation, pots, soil, nutrients, extra.`;
+    const prompt = `${promptDetails} ${t('ai.gemini.equipmentPromptSuffix')}`;
     
     const responseSchema = {
         type: Type.OBJECT,
@@ -106,10 +106,10 @@ const getEquipmentRecommendation = async (promptDetails: string): Promise<Recomm
     }
 };
 
-const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string): Promise<{ title: string, content: string }> => {
+const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string, t: TFunction): Promise<{ title: string, content: string }> => {
     const ai = getAiClient();
     const imagePart = { inlineData: { mimeType, data: base64Image } };
-    const textPart = { text: `Analyze this image of a cannabis plant leaf/plant. The user is looking for a potential problem diagnosis. Plant context: ${plantContext}. Provide a concise diagnosis. Identify the most likely problem (e.g., 'Nitrogen Deficiency', 'Light Burn', 'Spider Mites'). Format the response as a JSON object with "title" and "content" keys. The "title" should be the name of the problem. The "content" should be a 2-3 sentence explanation of the problem and a suggested solution.` };
+    const textPart = { text: t('ai.gemini.diagnosePrompt', { context: plantContext }) };
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
 
     let responseText = '';
@@ -139,9 +139,9 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
     }
 };
 
-const getAiMentorResponse = async (query: string): Promise<{ title: string, content: string }> => {
+const getAiMentorResponse = async (query: string, t: TFunction): Promise<{ title: string, content: string }> => {
     const ai = getAiClient();
-    const systemInstruction = "You are an expert cannabis cultivation mentor. Your tone is helpful, encouraging, and scientific. Provide detailed, actionable advice. Format your response as a JSON object with 'title' and 'content' keys. The 'title' should be a concise summary of the answer. The 'content' should be the detailed explanation, using markdown for formatting (like lists or bold text).";
+    const systemInstruction = t('ai.gemini.mentorSystemInstruction');
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
 
     let responseText = '';
@@ -171,10 +171,10 @@ const getAiMentorResponse = async (query: string): Promise<{ title: string, cont
     }
 };
 
-const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string, content: string }> => {
+const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<{ title: string, content: string }> => {
     const ai = getAiClient();
     const plantData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
-    const query = `Based on the following data for a cannabis plant, provide a concise analysis and one key recommendation for the grower. Plant Data: ${plantData}. Format the response as a JSON object with "title" and "content" keys. The "title" should be a very short summary of the advice (e.g., "Slightly high pH, suggest adjustment"). The "content" should be a 2-4 sentence explanation of your observation and a clear, actionable recommendation.`;
+    const query = t('ai.gemini.advisorQuery', { data: plantData });
     const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
     
     let responseText = '';

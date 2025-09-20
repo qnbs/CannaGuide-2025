@@ -141,5 +141,9 @@ export const plantsView = {
   quickActions: {
       title: "Quick Actions",
       simulateNextDay: "Simulate Next Day"
+  },
+  journal: {
+    problemDetected: 'Problem detected: {message}',
+    newTask: 'New task: {title}',
   }
 };

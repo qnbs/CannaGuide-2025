@@ -60,15 +60,17 @@ const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, isFavorit
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-40 p-4 modal-overlay-animate" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
             <Card ref={modalRef} className="w-full max-w-3xl h-[90vh] relative flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
-                    <PhosphorIcons.X className="w-6 h-6" />
-                </button>
+                <div className="absolute top-3 right-3 flex items-center gap-4 z-10">
+                    <button onClick={() => onToggleFavorite(strain.id)} className={`favorite-btn-glow p-1 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}>
+                        <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-7 h-7" />
+                    </button>
+                    <button onClick={onClose} className="p-2 rounded-full hover:bg-slate-700 transition-colors" aria-label={t('common.close')}>
+                        <PhosphorIcons.X className="w-6 h-6" />
+                    </button>
+                </div>
                 <div className="overflow-y-auto p-2 sm:p-4 flex-grow">
                     <div className="flex justify-between items-start mb-2">
-                        <h2 id="strain-detail-modal-title" className="text-3xl font-bold font-display text-primary-400 pr-4">{strain.name}</h2>
-                        <button onClick={() => onToggleFavorite(strain.id)} className={`favorite-btn-glow p-1 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`} aria-label={t('strainsView.strainModal.toggleFavorite')}>
-                            <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-7 h-7" />
-                        </button>
+                        <h2 id="strain-detail-modal-title" className="text-3xl font-bold font-display text-primary-400 pr-28">{strain.name}</h2>
                     </div>
 
                     <div className="flex items-center space-x-4 mb-4 text-slate-300 flex-wrap gap-y-2">
@@ -89,7 +91,7 @@ const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, isFavorit
                         <p><strong>{t('strainsView.strainModal.floweringTime')}:</strong> {strain.floweringTimeRange || `${strain.floweringTime} ${t('strainsView.weeks')}`}</p>
                     </div>
 
-                    {strain.aromas && strain.aromas.length > 0 && (
+                    {strain.aromas && Array.isArray(strain.aromas) && strain.aromas.length > 0 && (
                         <div className="mb-4">
                             <h4 className="font-bold font-display text-lg text-primary-500 mb-2">{t('strainsView.strainModal.aromas')}</h4>
                             <div className="flex flex-wrap gap-2">
@@ -98,7 +100,7 @@ const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, isFavorit
                         </div>
                     )}
 
-                    {strain.dominantTerpenes && strain.dominantTerpenes.length > 0 && (
+                    {strain.dominantTerpenes && Array.isArray(strain.dominantTerpenes) && strain.dominantTerpenes.length > 0 && (
                         <div className="mb-4">
                             <h4 className="font-bold font-display text-lg text-primary-500 mb-2">{t('strainsView.strainModal.dominantTerpenes')}</h4>
                             <div className="flex flex-wrap gap-2">

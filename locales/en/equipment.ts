@@ -3,35 +3,58 @@ export const equipmentView = {
   tabs: {
     configurator: 'Configurator',
     calculators: 'Calculators',
-    gear: 'Gear & Shops',
     setups: 'My Setups',
   },
   configurator: {
     title: 'Setup Configurator',
-    subtitle: 'Find the right equipment in 3 easy steps.',
-    step: 'Step {current}/{total}',
-    step1Title: 'Choose your grow area',
-    step2Title: 'Choose your grow style',
-    styles: {
-      beginner: 'Beginner-Friendly',
-      yield: 'Maximum Yield',
-      stealth: 'Stealth',
-    },
-    styleDescriptions: {
-      beginner: 'Easy-to-use and forgiving components.',
-      yield: 'Focus on performance and high harvest results.',
-      stealth: 'Quiet and inconspicuous components for a stealth grow.',
-    },
-    step3Title: 'Choose your budget',
-    budgets: {
-      low: 'Low',
+    subtitleNew: 'Select the number of plants and your preferred configuration to get a tailored equipment list.',
+    step1TitleNew: 'How many plants do you want to grow?',
+    step2TitleNew: 'Choose your configuration',
+    plantCount: '{count} Plant(s)',
+    details: {
+      zelt: 'Tent',
+      beleuchtung: 'Lighting',
+      abluft: 'Exhaust',
+      toepfe: 'Pots',
       medium: 'Medium',
-      high: 'High',
     },
-    budgetDescriptions: {
-      low: 'Basic equipment to get started.',
-      medium: 'Good balance of price and performance.',
-      high: 'Premium components for optimal control.',
+    setups: {
+      '1': {
+        standard: {
+          title: 'Standard Setup (Value for Money)',
+          description: 'A balanced configuration for beginners aiming for good results without high initial investment.',
+          prompt: 'Create a beginner-friendly grow setup recommendation for 1 plant in a 60x60x180cm grow tent. The lighting should be a 100-120W LED. The exhaust should be an AC fan with ~145-180 m³/h. The pot should be a 15-19L fabric pot. The medium is Light-Mix soil. The budget is value-oriented.'
+        },
+        premium: {
+          title: 'Premium Setup (Maximum Control)',
+          description: 'High-end components for growers seeking full control and maximum quality and yield.',
+          prompt: 'Create a high-end grow setup recommendation for 1 plant in a premium 60x60x180cm grow tent. The lighting should be a 150W high-end LED. The exhaust should be an EC fan with a controller and ~180-250 m³/h. The pot should be a 19-25L fabric pot. The medium is a Coco/Perlite mix. The budget is high.'
+        }
+      },
+      '2': {
+        standard: {
+          title: 'Standard Setup (Value for Money)',
+          description: 'A solid configuration for 2 plants, optimized for good yields and ease of use.',
+          prompt: 'Create a grow setup recommendation for 2 plants in an 80x80 or 120x60cm grow tent. The lighting should be a 200-240W LED. The exhaust should be an AC fan with ~220-280 m³/h. Pots: 2x 15-19L fabric pots. Medium: All-Mix soil. The budget is value-oriented.'
+        },
+        premium: {
+          title: 'Premium Setup (Maximum Control)',
+          description: 'Advanced setup for maximum yields and full environmental control for 2 plants.',
+          prompt: 'Create a high-end grow setup recommendation for 2 plants in a premium 80x80 or 120x60cm grow tent. The lighting should be a 250-300W high-end LED. The exhaust should be an EC fan with a controller and ~280-360 m³/h. Pots: 2x 19-25L fabric pots. Medium: Coco/Perlite mix or a hydro system. The budget is high.'
+        }
+      },
+      '3': {
+        standard: {
+          title: 'Standard Setup (Value for Money)',
+          description: 'An efficient configuration for growing 3 plants with a focus on high total yield.',
+          prompt: 'Create a grow setup recommendation for 3 plants in a 100x100x200cm grow tent. The lighting should be a 300-320W LED. The exhaust should be an AC fan with ~360 m³/h. Pots: 3x 19-25L fabric pots. Medium: All-Mix or Coco. The budget is value-oriented.'
+        },
+        premium: {
+          title: 'Premium Setup (Maximum Control)',
+          description: 'A generous high-end setup for 3 plants, designed for maximum quality, yield, and automation.',
+          prompt: 'Create a high-end grow setup recommendation for 3 plants in a premium 120x120x220cm grow tent. The lighting should be a 450-500W multi-bar LED. The exhaust should be an EC fan with a controller, silencer, and ~400-500 m³/h. Pots: 3x 30-50L fabric pots. Medium: Living Soil or Coco. The budget is high.'
+        }
+      }
     },
     generate: 'Generate Setup',
     resultsTitle: 'Your Personal Setup Recommendation',
@@ -95,25 +118,6 @@ export const equipmentView = {
       result: 'Estimated Yield'
     },
     calculate: 'Calculate',
-  },
-  gearAndShops: {
-    shopsTitle: 'Recommended Online Shops (EU)',
-    gearTitle: 'Essential Equipment',
-    shops: {
-      zamnesia: 'One of the largest and most well-known head and grow shops in Europe with a huge selection of seeds and accessories.',
-      rqs: 'Royal Queen Seeds is a famous breeder and shop that offers high-quality seeds and a complete line of grow accessories.',
-      growmart: 'An established German grow shop with a comprehensive range, from complete kits for beginners to professional equipment.'
-    },
-    gearItems: {
-      tent: { name: 'Grow Tent', desc: 'Creates a controlled environment with reflective interior walls to make optimal use of light.' },
-      led: { name: 'LED Lighting', desc: 'Modern full-spectrum LEDs are energy-efficient, produce little heat, and deliver excellent results.' },
-      ventilation: { name: 'Exhaust Kit (Fan + Carbon Filter)', desc: 'Absolutely crucial. Removes stale air, controls temperature/humidity, and neutralizes odors.' },
-      circulation: { name: 'Circulation Fan(s)', desc: 'One or more small fans inside the tent simulate wind, strengthen stems, and prevent air stagnation.' },
-      pots: { name: 'Pots (Fabric or Air-Pots)', desc: 'Fabric pots or Air-Pots promote healthy root development through "air-pruning" and prevent root circling.' },
-      timers: { name: 'Timer(s)', desc: 'At least one for the light cycle (e.g., 18/6 or 12/12 hours). Another one for ventilation can be useful.' },
-      meters: { name: 'Meters (pH/EC, Thermo-Hygrometer)', desc: 'Essential for monitoring. pH & EC meters for the nutrient solution, thermo-hygrometer for temperature & humidity.' },
-      harvest: { name: 'Harvesting Tools', desc: 'Sharp trimming scissors, a jeweler\'s loupe (60x) for checking trichomes, and airtight jars for curing.' },
-    }
   },
   savedSetups: {
     title: 'My Saved Setups',

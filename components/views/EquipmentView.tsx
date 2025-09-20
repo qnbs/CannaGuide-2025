@@ -11,33 +11,23 @@ import { Tabs } from '../common/Tabs';
 import { useNotifications } from '../../context/NotificationContext';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups';
-type Area = '60x60' | '80x80' | '100x100' | '120x120';
-type Budget = 'low' | 'medium' | 'high';
-type GrowStyle = 'beginner' | 'yield' | 'stealth';
 
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
     const { savedSetups, addSetup, updateSetup, deleteSetup } = useSetupManager();
     const [activeTab, setActiveTab] = useState<EquipmentViewTab>('configurator');
-
-    // Configurator state
-    const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-    const [area, setArea] = useState<Area>('80x80');
-    const [budget, setBudget] = useState<Budget>('medium');
-    const [growStyle, setGrowStyle] = useState<GrowStyle>('beginner');
+    
     const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleGenerate = useCallback(async () => {
-        setStep(4);
+    const handleGenerate = useCallback(async (promptDetails: string) => {
         setIsLoading(true);
         setError(null);
         setRecommendation(null);
-
         try {
-            const result = await geminiService.getEquipmentRecommendation(area, budget, growStyle);
+            const result = await geminiService.getEquipmentRecommendation(promptDetails);
             setRecommendation(result);
         } catch (err) {
             console.error("Failed to generate setup:", err);
@@ -48,16 +38,11 @@ export const EquipmentView: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [area, budget, growStyle, t, addNotification]);
-
-    const startOver = () => {
-        setStep(1);
-        setRecommendation(null);
-        setError(null);
-    };
+    }, [t, addNotification]);
 
     const handleSaveSetup = (setupToSave: Omit<SavedSetup, 'id' | 'createdAt'>) => {
         addSetup(setupToSave);
+        addNotification(t('equipmentView.configurator.setupSaveSuccess', { name: setupToSave.name }), 'success');
         setActiveTab('setups');
     };
 
@@ -75,20 +60,13 @@ export const EquipmentView: React.FC = () => {
 
             {activeTab === 'configurator' && (
                 <SetupConfigurator
+                    onGenerate={handleGenerate}
                     onSaveSetup={handleSaveSetup}
-                    step={step}
-                    setStep={setStep}
-                    area={area}
-                    setArea={setArea}
-                    budget={budget}
-                    setBudget={setBudget}
-                    growStyle={growStyle}
-                    setGrowStyle={setGrowStyle}
                     recommendation={recommendation}
+                    setRecommendation={setRecommendation}
                     isLoading={isLoading}
                     error={error}
-                    handleGenerate={handleGenerate}
-                    startOver={startOver}
+                    setError={setError}
                 />
             )}
             

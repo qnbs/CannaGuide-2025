@@ -44,6 +44,8 @@ const AppContent: React.FC = () => {
     advanceDay,
     updatePlantState,
   } = usePlants();
+
+  const selectedPlant = useMemo(() => plants.find(p => p?.id === selectedPlantId), [plants, selectedPlantId]);
   
   const { 
       archive: plantAdvisorArchive, 
@@ -63,6 +65,15 @@ const AppContent: React.FC = () => {
 
   const currentTitle = viewTitles[activeView];
   
+  useEffect(() => {
+    const baseTitle = 'CannaGuide 2025';
+    if (selectedPlant) {
+      document.title = `${selectedPlant.name} - ${baseTitle}`;
+    } else {
+      document.title = `${currentTitle} - ${baseTitle}`;
+    }
+  }, [currentTitle, selectedPlant]);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
@@ -91,8 +102,6 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     let intervalId: number | undefined;
     if (settings.simulationSettings.autoAdvance) {
-      // FIX: Type 'Timeout' is not assignable to type 'number'. Explicitly use the browser's window object
-      // to avoid conflicting with NodeJS types which may be present in the development environment.
       intervalId = window.setInterval(() => {
         updatePlantState();
       }, 5 * 60 * 1000); // every 5 minutes
@@ -203,14 +212,14 @@ const AppContent: React.FC = () => {
                             </h1>
                             </button>
                             <h2 className="text-xl font-bold font-display text-primary-400 whitespace-nowrap sm:hidden">
-                                {currentTitle}
+                                {selectedPlant ? selectedPlant.name : currentTitle}
                             </h2>
                         </div>
                     </div>
         
                     <div className="flex-shrink-0 hidden sm:block">
                         <h2 className="text-2xl font-bold font-display text-primary-400 text-center whitespace-nowrap">
-                            {currentTitle}
+                            {selectedPlant ? selectedPlant.name : currentTitle}
                         </h2>
                     </div>
                     

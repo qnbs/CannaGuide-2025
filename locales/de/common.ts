@@ -81,9 +81,7 @@ export const ai = {
   loading: {
     equipment: {
       analyzing: 'Analysiere Anforderungen...',
-      budget: 'Berücksichtige {budget} Budget...',
-      area: 'Optimiere für {area}cm Fläche...',
-      style: 'Wähle Komponenten für den Stil "{style}"...',
+      custom: 'Konfiguriere für Setup: {config}',
       selecting: 'Wähle passende Komponenten aus...',
       finalizing: 'Stelle Empfehlung fertig...'
     },
@@ -105,7 +103,6 @@ export const ai = {
       formulating: 'Formuliere eine Handlungsempfehlung...'
     }
   },
-  // FIX: Removed duplicate `error` key. The object below is used for specific error messages.
   error: {
     parsing: 'Die Antwort der KI konnte nicht verstanden werden. Sie könnte fehlerhaft sein.',
     apiKey: 'Der KI-Dienst ist nicht korrekt konfiguriert (Ungültiger API-Schlüssel).',

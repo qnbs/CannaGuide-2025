@@ -8,10 +8,9 @@ import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem 
 import { geminiService } from '../../../services/geminiService';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
-// FIX: Corrected Area type to include all possible values, matching SetupConfigurator.
 type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
-type GrowStyle = 'beginner' | 'yield' | 'stealth';
+type GrowStyle = 'beginner' | 'balanced' | 'yield' | 'stealth';
 
 interface SetupResultsProps {
     recommendation: Recommendation | null;
@@ -29,9 +28,9 @@ const RationaleModal: React.FC<{ content: { title: string, content: string }, on
     const { t } = useTranslations();
     const modalRef = useFocusTrap(true);
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="rationale-modal-title">
             <Card ref={modalRef} className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
-                <h3 className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
+                <h3 id="rationale-modal-title" className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
                 <p className="text-slate-600 dark:text-slate-300">{content.content}</p>
                 <div className="text-right mt-6">
                     <Button onClick={onClose}>{t('common.close')}</Button>
@@ -52,7 +51,8 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
 
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { area, budget, growStyle } }, t);
+            const configName = `${t(`equipmentView.configurator.styles.${growStyle}`)} / ${t(`equipmentView.configurator.budgets.${budget}`)}`;
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { configName } }, t);
             let messageIndex = 0;
             const updateLoadingMessage = () => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
@@ -68,7 +68,7 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
 
      useEffect(() => {
         if (recommendation) {
-            const defaultName = `${area} ${t(`equipmentView.configurator.styles.${growStyle}`)} ${t(`equipmentView.configurator.budgets.${budget}`)}`;
+            const defaultName = `${area} ${t(`equipmentView.configurator.styles.${growStyle}`)} ${t(`equipmentView.configurator.setupNameBudgets.${budget}`)}`;
             setSetupName(defaultName);
         }
     }, [recommendation, area, growStyle, budget, t]);
@@ -94,13 +94,12 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
                         recommendation,
                         sourceDetails: {
                             area,
-                            budget: t(`equipmentView.configurator.budgets.${budget}`),
+                            budget: t(`equipmentView.configurator.setupNameBudgets.${budget}`),
                             growStyle: t(`equipmentView.configurator.styles.${growStyle}`),
                         },
                         totalCost: costBreakdown.total,
                     };
                     onSaveSetup(newSetup);
-                    addNotification(t('equipmentView.configurator.setupSaveSuccess', { name }), 'success');
                 } catch (e) {
                     addNotification(t('equipmentView.configurator.setupSaveError'), 'error');
                     console.error(e);
@@ -125,9 +124,9 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
     };
 
     return (
-        <div className="mt-8 pt-6 border-t border-slate-700 space-y-6">
+        <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h3 className="text-2xl font-bold text-center">{t('equipmentView.configurator.resultsTitle')}</h3>
+                <h3 className="text-2xl font-bold font-display">{t('equipmentView.configurator.resultsTitle')}</h3>
                 <Button onClick={startOver} variant="secondary" size="sm"><PhosphorIcons.ArrowClockwise className="inline w-4 h-4 mr-1.5"/>{t('equipmentView.configurator.startOver')}</Button>
             </div>
             {isLoading ? (

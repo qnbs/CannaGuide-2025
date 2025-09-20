@@ -18,11 +18,11 @@ interface SetupConfiguratorProps {
 }
 
 type PlantCount = 1 | 2 | 3;
-type ConfigType = 'standard' | 'premium';
+type ConfigType = 'standard' | 'medium' | 'premium';
 
 type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
-type GrowStyle = 'beginner' | 'yield' | 'stealth';
+type GrowStyle = 'beginner' | 'balanced' | 'yield';
 
 interface ConfigCardProps {
     config: any;
@@ -83,8 +83,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
     const selectedConfigData = (plantCount && selectedConfigKey) ? configurations[plantCount][selectedConfigKey] : null;
 
     const sourceDetails = useMemo(() => {
-        if (!selectedConfigKey || !selectedConfigData) {
-            // Provide default values that match the expected types.
+        if (!plantCount || !selectedConfigKey || !selectedConfigData) {
             return {
                 area: '60x60' as Area,
                 budget: 'low' as Budget,
@@ -93,15 +92,25 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
         }
 
         const areaString = selectedConfigData.details.zelt.split(' ')[0].split('x').slice(0, 2).join('x');
-        const growStyle: GrowStyle = selectedConfigKey === 'premium' ? 'yield' : 'beginner';
-        const budget: Budget = selectedConfigKey === 'premium' ? 'high' : 'medium';
+        
+        const budgetMap: Record<ConfigType, Budget> = {
+            standard: 'low',
+            medium: 'medium',
+            premium: 'high',
+        };
+        
+        const growStyleMap: Record<ConfigType, GrowStyle> = {
+            standard: 'beginner',
+            medium: 'balanced',
+            premium: 'yield',
+        };
         
         return {
             area: areaString as Area,
-            growStyle,
-            budget
+            growStyle: growStyleMap[selectedConfigKey],
+            budget: budgetMap[selectedConfigKey]
         };
-    }, [selectedConfigData, selectedConfigKey]);
+    }, [plantCount, selectedConfigData, selectedConfigKey]);
 
     return (
         <Card>
@@ -130,8 +139,9 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
                         {currentConfigs && (
                             <div className="animate-fade-in">
                                 <h3 className="text-xl font-semibold text-slate-200 mb-3">2. {t('equipmentView.configurator.step2TitleNew')}</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                    <ConfigCard config={currentConfigs.standard} isSelected={selectedConfigKey === 'standard'} onSelect={() => setSelectedConfigKey('standard')} />
+                                   <ConfigCard config={currentConfigs.medium} isSelected={selectedConfigKey === 'medium'} onSelect={() => setSelectedConfigKey('medium')} />
                                    <ConfigCard config={currentConfigs.premium} isSelected={selectedConfigKey === 'premium'} onSelect={() => setSelectedConfigKey('premium')} />
                                 </div>
                             </div>

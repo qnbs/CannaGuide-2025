@@ -23,7 +23,12 @@ export const equipmentView = {
         standard: {
           title: 'Standard-Setup (Preis/Leistung)',
           description: 'Eine ausgewogene Konfiguration für Einsteiger, die gute Ergebnisse ohne hohe Anfangsinvestitionen anstreben.',
-          prompt: 'Erstelle eine anfängerfreundliche Grow-Setup-Empfehlung für 1 Pflanze in einer 60x60x180cm Growbox. Die Beleuchtung sollte eine 100-120W LED sein. Die Abluft sollte ein AC-Lüfter mit ~145-180 m³/h sein. Der Topf sollte ein 15-19L Stofftopf sein. Das Medium ist Light-Mix Erde. Das Budget ist preis-leistungsorientiert.'
+          prompt: 'Erstelle eine anfängerfreundliche Grow-Setup-Empfehlung für 1 Pflanze in einer 60x60x180cm Growbox. Die Beleuchtung sollte eine 100-120W LED sein. Die Abluft sollte ein AC-Lüfter mit ~145-180 m³/h sein. Der Topf sollte ein 15-19L Stofftopf sein. Das Medium ist Light-Mix Erde. Das Budget ist niedrig und preis-leistungsorientiert.'
+        },
+        medium: {
+          title: 'Medium-Setup (Ausgewogen)',
+          description: 'Ein Upgrade zum Standard-Setup mit besserer Beleuchtung und mehr Platz für höhere Qualität und Ertrag.',
+          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 1 Pflanze in einer 80x80x180cm Growbox. Die Beleuchtung sollte eine 150W LED sein. Die Abluft sollte ein AC-Lüfter mit ~220 m³/h sein. Der Topf sollte ein 19L Stofftopf sein. Das Medium ist All-Mix Erde. Das Budget ist mittel, mit Fokus auf ein gutes Gleichgewicht zwischen Kosten und Qualität.'
         },
         premium: {
           title: 'Premium-Setup (Maximale Kontrolle)',
@@ -35,7 +40,12 @@ export const equipmentView = {
         standard: {
           title: 'Standard-Setup (Preis/Leistung)',
           description: 'Eine solide Konfiguration für 2 Pflanzen, optimiert für gute Erträge und einfache Handhabung.',
-          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 2 Pflanzen in einer 80x80 oder 120x60cm Growbox. Die Beleuchtung sollte eine 200-240W LED sein. Die Abluft sollte ein AC-Lüfter mit ~220-280 m³/h sein. Töpfe: 2x 15-19L Stofftöpfe. Medium: All-Mix Erde. Das Budget ist preis-leistungsorientiert.'
+          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 2 Pflanzen in einer 80x80 oder 120x60cm Growbox. Die Beleuchtung sollte eine 200-240W LED sein. Die Abluft sollte ein AC-Lüfter mit ~220-280 m³/h sein. Töpfe: 2x 15-19L Stofftöpfe. Medium: All-Mix Erde. Das Budget ist niedrig und preis-leistungsorientiert.'
+        },
+        medium: {
+            title: 'Medium-Setup (Ausgewogen)',
+            description: 'Mehr Platz und eine stärkere Lampe für zwei Pflanzen, um das Ertragspotenzial deutlich zu steigern.',
+            prompt: 'Erstelle eine Grow-Setup-Empfehlung für 2 Pflanzen in einer 100x100x200cm Growbox. Die Beleuchtung sollte eine 280-300W LED sein. Die Abluft sollte ein AC-Lüfter mit ~360 m³/h sein. Töpfe: 2x 25L Stofftöpfe. Das Medium ist Coco/Perlite Mix. Das Budget ist mittel, mit Fokus auf hohen Ertrag.'
         },
         premium: {
           title: 'Premium-Setup (Maximale Kontrolle)',
@@ -47,7 +57,12 @@ export const equipmentView = {
         standard: {
           title: 'Standard-Setup (Preis/Leistung)',
           description: 'Eine effiziente Konfiguration für den Anbau von 3 Pflanzen mit Fokus auf einen hohen Gesamtertrag.',
-          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 3 Pflanzen in einer 100x100x200cm Growbox. Die Beleuchtung sollte eine 300-320W LED sein. Die Abluft sollte ein AC-Lüfter mit ~360 m³/h sein. Töpfe: 3x 19-25L Stofftöpfe. Medium: All-Mix oder Coco. Das Budget ist preis-leistungsorientiert.'
+          prompt: 'Erstelle eine Grow-Setup-Empfehlung für 3 Pflanzen in einer 100x100x200cm Growbox. Die Beleuchtung sollte eine 300-320W LED sein. Die Abluft sollte ein AC-Lüfter mit ~360 m³/h sein. Töpfe: 3x 19-25L Stofftöpfe. Medium: All-Mix oder Coco. Das Budget ist niedrig und preis-leistungsorientiert.'
+        },
+        medium: {
+            title: 'Medium-Setup (Ausgewogen)',
+            description: 'Ein größeres Zelt und eine stärkere Beleuchtung, um das volle Potenzial von drei Pflanzen auszuschöpfen.',
+            prompt: 'Erstelle eine Grow-Setup-Empfehlung für 3 Pflanzen in einer 120x120x200cm Growbox. Die Beleuchtung sollte eine 400W LED sein. Die Abluft sollte ein EC-Lüfter mit ~400 m³/h sein. Töpfe: 3x 25L Stofftöpfe. Medium: Coco/Perlite. Das Budget ist mittel und auf Qualität und Kontrolle ausgerichtet.'
         },
         premium: {
           title: 'Premium-Setup (Maximale Kontrolle)',
@@ -60,7 +75,7 @@ export const equipmentView = {
     resultsTitle: 'Deine persönliche Setup-Empfehlung',
     resultsSubtitle: 'Für deine {area}cm Fläche, mit einem {budget} Budget und dem Stil "{style}", ist dies eine von der KI generierte Konfiguration.',
     costBreakdown: 'Kostenaufschlüsselung',
-    total: 'Total',
+    total: 'Gesamt',
     startOver: 'Neu starten',
     tryAgain: 'Erneut versuchen',
     saveSetup: 'Setup speichern',
@@ -69,7 +84,6 @@ export const equipmentView = {
     setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
     setupSaveError: 'Fehler beim Speichern des Setups.',
     error: 'Die KI konnte keine Empfehlung generieren. Bitte versuche es später erneut.',
-    errorNetwork: 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.',
     categories: {
       tent: 'Growbox (Zelt)',
       light: 'Beleuchtung',
@@ -80,6 +94,22 @@ export const equipmentView = {
       extra: 'Zubehör',
     },
     rationaleModalTitle: 'Warum {category}?',
+    budgets: {
+      low: 'niedrigen',
+      medium: 'mittleren',
+      high: 'hohen',
+    },
+    styles: {
+      beginner: 'Anfänger',
+      balanced: 'Ausgewogen',
+      yield: 'Ertrag',
+      stealth: 'Tarnung',
+    },
+    setupNameBudgets: {
+      low: 'Niedrig',
+      medium: 'Mittel',
+      high: 'Hoch',
+    },
   },
   calculators: {
     ventilation: {

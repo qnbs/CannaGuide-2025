@@ -12,6 +12,18 @@ export const configurations = {
             },
             promptKey: 'equipmentView.configurator.setups.1.standard.prompt',
         },
+        medium: {
+            titleKey: 'equipmentView.configurator.setups.1.medium.title',
+            descriptionKey: 'equipmentView.configurator.setups.1.medium.description',
+            details: {
+                zelt: '80x80x180cm',
+                beleuchtung: '150W LED',
+                abluft: 'AC, ~220 m³/h',
+                toepfe: '1x 19L Stofftopf',
+                medium: 'All-Mix Erde',
+            },
+            promptKey: 'equipmentView.configurator.setups.1.medium.prompt',
+        },
         premium: {
             titleKey: 'equipmentView.configurator.setups.1.premium.title',
             descriptionKey: 'equipmentView.configurator.setups.1.premium.description',
@@ -38,6 +50,18 @@ export const configurations = {
             },
             promptKey: 'equipmentView.configurator.setups.2.standard.prompt',
         },
+        medium: {
+            titleKey: 'equipmentView.configurator.setups.2.medium.title',
+            descriptionKey: 'equipmentView.configurator.setups.2.medium.description',
+            details: {
+                zelt: '100x100x200cm',
+                beleuchtung: '280-300W LED',
+                abluft: 'AC, ~360 m³/h',
+                toepfe: '2x 25L Stofftöpfe',
+                medium: 'Coco/Perlite Mix',
+            },
+            promptKey: 'equipmentView.configurator.setups.2.medium.prompt',
+        },
         premium: {
             titleKey: 'equipmentView.configurator.setups.2.premium.title',
             descriptionKey: 'equipmentView.configurator.setups.2.premium.description',
@@ -63,6 +87,18 @@ export const configurations = {
                 medium: 'All-Mix oder Coco',
             },
             promptKey: 'equipmentView.configurator.setups.3.standard.prompt',
+        },
+        medium: {
+            titleKey: 'equipmentView.configurator.setups.3.medium.title',
+            descriptionKey: 'equipmentView.configurator.setups.3.medium.description',
+            details: {
+                zelt: '120x120x200cm',
+                beleuchtung: '400W LED',
+                abluft: 'EC-Lüfter, ~400 m³/h',
+                toepfe: '3x 25L Stofftöpfe',
+                medium: 'Coco/Perlite',
+            },
+            promptKey: 'equipmentView.configurator.setups.3.medium.prompt',
         },
         premium: {
             titleKey: 'equipmentView.configurator.setups.3.premium.title',

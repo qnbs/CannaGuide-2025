@@ -274,10 +274,11 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                             {sortedAndFilteredStrains.length > 0 ? (
                                 viewMode === 'list' ? (
                                     <div className={LIST_GRID_CLASS}>
-                                    {sortedAndFilteredStrains.map(strain => (
+                                    {sortedAndFilteredStrains.map((strain, index) => (
                                         <StrainListItem
                                             key={strain.id}
                                             strain={strain}
+                                            index={index}
                                             isSelected={selectedIds.has(strain.id)}
                                             isFavorite={favoriteIds.has(strain.id)}
                                             onSelect={setSelectedStrain}

@@ -15,6 +15,15 @@ export const strainsView = {
   terpenes: 'Terpenes',
   aromas: 'Aromas',
   resetFilters: 'Reset Filters',
+  heights: {
+    short: 'Short',
+    medium: 'Medium',
+    tall: 'Tall',
+  },
+  pdfReport: {
+    page: 'Page {pageNumber}',
+    title: 'Cannabis Grow Guide with Gemini - Strain Report'
+  },
   view: {
     list: 'List',
     grid: 'Grid',
@@ -80,6 +89,7 @@ export const strainsView = {
     yieldOutdoor: 'Yield (Outdoor)',
     heightIndoor: 'Height (Indoor)',
     heightOutdoor: 'Height (Outdoor)',
+    height: 'Height',
     similarStrains: 'Similar Strains',
     startGrowing: 'Start Growing',
     allSlotsFull: 'All slots full',

@@ -56,7 +56,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const step = currentStep > 0 ? steps[currentStep - 1] : null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[999] p-4">
+        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[999] p-4 modal-overlay-animate">
             <Card ref={modalRef} className="w-full max-w-lg text-center modal-content-animate">
                 {currentStep === 0 ? (
                     <div>

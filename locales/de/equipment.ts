@@ -135,6 +135,17 @@ export const equipmentView = {
       item: 'Komponente',
       price: 'Preis',
       rationale: 'Begründung',
+    },
+    pdfReport: {
+      setup: 'Setup-Bericht',
+      createdAt: 'Erstellt am',
+      source: 'Quelle',
+      budget: 'Budget',
+      total: 'Gesamt',
+      product: 'Produkt',
+      rationale: 'Begründung',
+      price: 'Preis (€)',
+      item: 'Komponente',
     }
   }
 };

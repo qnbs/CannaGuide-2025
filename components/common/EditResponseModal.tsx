@@ -27,7 +27,7 @@ export const EditResponseModal = <T extends EditableResponse>({ response, onClos
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
             <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={e => e.stopPropagation()}>
                 <h2 className="text-xl font-bold text-primary-400 mb-4">{t('knowledgeView.archive.editTitle')}</h2>
                 <div className="space-y-4">

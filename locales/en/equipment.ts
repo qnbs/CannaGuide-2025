@@ -132,9 +132,20 @@ export const equipmentView = {
       title: 'Setup Details',
       editMode: 'Edit Mode',
       saveChanges: 'Save Changes',
-      item: 'Item',
+      item: 'Component',
       price: 'Price',
       rationale: 'Rationale',
+    },
+    pdfReport: {
+      setup: 'Setup Report',
+      createdAt: 'Created at',
+      source: 'Source',
+      budget: 'Budget',
+      total: 'Total',
+      product: 'Product',
+      rationale: 'Rationale',
+      price: 'Price (€)',
+      item: 'Component',
     }
   }
 };

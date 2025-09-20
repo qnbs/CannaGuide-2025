@@ -56,7 +56,7 @@ const SetupDetailModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
             <Card ref={modalRef} className="w-full max-w-2xl modal-content-animate" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start">
                     <div>
@@ -153,11 +153,11 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
         
         const doc = new jsPDF() as any;
         doc.setFontSize(18);
-        doc.text(normalizeGermanChars(`Setup: ${setup.name}`), 15, 20);
+        doc.text(normalizeGermanChars(`${t('equipmentView.savedSetups.pdfReport.setup')}: ${setup.name}`), 15, 20);
         doc.setFontSize(10);
         doc.setTextColor(100);
-        doc.text(normalizeGermanChars(`Erstellt am: ${new Date(setup.createdAt).toLocaleString()}`), 15, 26);
-        doc.text(normalizeGermanChars(`Quelle: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} Budget`), 15, 32);
+        doc.text(normalizeGermanChars(`${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}`), 15, 26);
+        doc.text(normalizeGermanChars(`${t('equipmentView.savedSetups.pdfReport.source')}: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} ${t('equipmentView.savedSetups.pdfReport.budget')}`), 15, 32);
 
         const tableBody: any[] = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => {
             const item = setup.recommendation[key];
@@ -170,11 +170,16 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
             ];
         });
         
-        tableBody.push(['', '', { content: normalizeGermanChars('Gesamt'), styles: { fontStyle: 'bold' } }, { content: `${setup.totalCost.toFixed(2)} €`, styles: { fontStyle: 'bold' } }]);
+        tableBody.push(['', '', { content: normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.total')), styles: { fontStyle: 'bold' } }, { content: `${setup.totalCost.toFixed(2)} €`, styles: { fontStyle: 'bold' } }]);
 
         doc.autoTable({
             startY: 40,
-            head: [[normalizeGermanChars(t('equipmentView.savedSetups.modal.item')), 'Produkt', 'Begründung', 'Preis']],
+            head: [[
+                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.item')), 
+                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.product')), 
+                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.rationale')), 
+                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.price'))
+            ]],
             body: tableBody,
         });
 
@@ -216,20 +221,20 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
     
      const exportAsTXT = (setup: SavedSetup) => {
         if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'TXT' }))) return;
-        let content = `SETUP REPORT: ${setup.name}\n`;
+        let content = `${t('equipmentView.savedSetups.pdfReport.setup').toUpperCase()}: ${setup.name}\n`;
         content += `========================================\n`;
-        content += `Erstellt am: ${new Date(setup.createdAt).toLocaleString()}\n`;
-        content += `Quelle: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} Budget\n\n`;
+        content += `${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}\n`;
+        content += `${t('equipmentView.savedSetups.pdfReport.source')}: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} ${t('equipmentView.savedSetups.pdfReport.budget')}\n\n`;
 
         (Object.keys(setup.recommendation) as RecommendationCategory[]).forEach(key => {
             const item = setup.recommendation[key];
             content += `--- ${t(`equipmentView.configurator.categories.${key}`)} ---\n`;
-            content += `Produkt: ${item.name}${item.watts ? ` (${item.watts}W)` : ''}\n`;
-            content += `Preis: ${item.price.toFixed(2)} €\n`;
-            content += `Begründung: ${item.rationale}\n\n`;
+            content += `${t('equipmentView.savedSetups.pdfReport.product')}: ${item.name}${item.watts ? ` (${item.watts}W)` : ''}\n`;
+            content += `${t('equipmentView.savedSetups.pdfReport.price').replace(' (€)', '')}: ${item.price.toFixed(2)} €\n`;
+            content += `${t('equipmentView.savedSetups.pdfReport.rationale')}: ${item.rationale}\n\n`;
         });
 
-        content += `--- GESAMT ---\nGesamtkosten: ${setup.totalCost.toFixed(2)} €\n`;
+        content += `--- ${t('equipmentView.savedSetups.pdfReport.total').toUpperCase()} ---\n${t('equipmentView.savedSetups.pdfReport.total')}: ${setup.totalCost.toFixed(2)} €\n`;
 
         downloadFile('\uFEFF' + content, `${setup.name.replace(/ /g,"_")}.txt`, 'text/plain;charset=utf-8;');
         addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');

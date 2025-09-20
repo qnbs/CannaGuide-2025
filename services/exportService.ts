@@ -160,8 +160,8 @@ const exportAsPDF = (data: Strain[], fileName: string, t: TFunction) => {
     const addHeaderFooter = () => {
         doc.setFontSize(9);
         doc.setTextColor(100, 116, 139);
-        doc.text(normalizeGermanChars(`Seite ${pageNumber}`), pageWidth - margin, pageHeight - 10, { align: 'right' });
-        doc.text(normalizeGermanChars('Cannabis Grow Guide with Gemini - Sortenbericht'), margin, pageHeight - 10);
+        doc.text(normalizeGermanChars(t('strainsView.pdfReport.page', { pageNumber })), pageWidth - margin, pageHeight - 10, { align: 'right' });
+        doc.text(normalizeGermanChars(t('strainsView.pdfReport.title')), margin, pageHeight - 10);
     };
 
     const checkPageBreak = (neededHeight: number) => {
@@ -199,6 +199,7 @@ const exportAsPDF = (data: Strain[], fileName: string, t: TFunction) => {
 
     data.forEach((strain, index) => {
         if (index > 0) {
+            addHeaderFooter();
             doc.addPage();
             y = margin;
             pageNumber++;
@@ -242,7 +243,7 @@ const exportAsPDF = (data: Strain[], fileName: string, t: TFunction) => {
         drawKeyValuePair(normalizeGermanChars(t('strainsView.addStrainModal.yield')), t(`strainsView.addStrainModal.yields.${strain.agronomic.yield.toLowerCase()}`));
         drawKeyValuePair(normalizeGermanChars(t('strainsView.strainModal.yieldIndoor')), strain.agronomic.yieldDetails?.indoor);
         drawKeyValuePair(normalizeGermanChars(t('strainsView.strainModal.yieldOutdoor')), strain.agronomic.yieldDetails?.outdoor);
-        drawKeyValuePair(normalizeGermanChars(t('strainsView.detailedView.height')), strain.agronomic.height);
+        drawKeyValuePair(normalizeGermanChars(t('strainsView.strainModal.height')), t(`strainsView.heights.${strain.agronomic.height.toLowerCase()}`));
         drawKeyValuePair(normalizeGermanChars(t('strainsView.strainModal.heightIndoor')), strain.agronomic.heightDetails?.indoor);
         drawKeyValuePair(normalizeGermanChars(t('strainsView.strainModal.heightOutdoor')), strain.agronomic.heightDetails?.outdoor);
         

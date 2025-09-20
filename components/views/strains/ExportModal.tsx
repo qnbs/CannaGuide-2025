@@ -82,7 +82,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
     ];
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
             <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{t('strainsView.exportModal.title')}</h2>
                 

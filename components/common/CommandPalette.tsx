@@ -56,10 +56,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose,
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/75 flex items-start justify-center z-50 p-4 pt-[15vh]" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="command-palette-label">
+        <div className="fixed inset-0 bg-slate-900/75 flex items-start justify-center z-50 p-4 pt-[15vh] modal-overlay-animate" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="command-palette-label">
             <Card ref={modalRef} className="w-full max-w-2xl" onClick={e => e.stopPropagation()}>
                  <h2 id="command-palette-label" className="sr-only">{t('commandPalette.title')}</h2>
-                <ul ref={scrollRef} className="max-h-[50vh] overflow-y-auto" role="listbox" aria-labelledby="command-palette-label">
+                <ul ref={scrollRef} className="max-h-[65vh] overflow-y-auto" role="listbox" aria-labelledby="command-palette-label">
                     {commands.length > 0 ? (
                         commands.map((cmd, index) => (
                              <li key={cmd.id} role="presentation">

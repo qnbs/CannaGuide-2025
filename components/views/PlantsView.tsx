@@ -14,6 +14,7 @@ import { ModalState } from '../../common/ActionModalsContainer';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { Tabs } from '../common/Tabs';
 import { usePlants } from '../../hooks/usePlants';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 
 interface PlantsViewProps {
   setActiveView: (view: View) => void;
@@ -67,8 +68,8 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
   );
 
   const tabs = [
-      { id: 'dashboard', label: t('plantsView.tabs.dashboard') },
-      { id: 'archive', label: t('plantsView.tabs.archive') },
+      { id: 'dashboard', label: t('plantsView.tabs.dashboard'), icon: <PhosphorIcons.ChartPieSlice /> },
+      { id: 'archive', label: t('plantsView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
   ];
 
   if (selectedPlant) {
@@ -121,7 +122,10 @@ export const PlantsView: React.FC<PlantsViewProps> = ({
                     </div>
                     <div className="lg:col-span-2 flex flex-col gap-6">
                     <Card>
-                        <h3 className="text-xl font-bold font-display mb-4 text-primary-400">{t('plantsView.summary.heightChart')}</h3>
+                        <h3 className="text-xl font-bold font-display mb-4 text-primary-400 flex items-center gap-2">
+                            <PhosphorIcons.Ruler className="w-6 h-6"/>
+                            {t('plantsView.summary.heightChart')}
+                        </h3>
                         <div className="h-64">
                             <CombinedHistoryChart plants={activePlants} />
                         </div>

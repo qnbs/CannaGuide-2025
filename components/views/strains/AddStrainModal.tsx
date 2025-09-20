@@ -27,13 +27,16 @@ const defaultStrainData: Partial<Strain> = {
     },
 };
 
-const FormSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-    <div>
-        <h3 className="text-lg font-semibold text-primary-600 dark:text-primary-400 border-b border-primary-200 dark:border-primary-800 pb-1 mb-3">{title}</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+const FormSection: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, defaultOpen = false }) => (
+    <details open={defaultOpen}>
+        <summary className="text-lg font-semibold text-primary-400 cursor-pointer mb-3 list-none flex items-center gap-2">
+            <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 open:rotate-180" />
+            {title}
+        </summary>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-4 border-l-2 border-slate-700 pl-5">
             {children}
         </div>
-    </div>
+    </details>
 );
 
 const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, id: providedId, ...props }) => {
@@ -41,8 +44,8 @@ const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: str
     const id = providedId || fallbackId;
     return (
         <div>
-            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-            <input id={id} {...props} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+            <input id={id} {...props} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
         </div>
     );
 };
@@ -52,8 +55,8 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { l
     const id = providedId || fallbackId;
     return (
         <div className="sm:col-span-2">
-            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-            <textarea id={id} {...props} rows={3} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+            <textarea id={id} {...props} rows={3} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
         </div>
     );
 };
@@ -63,8 +66,8 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: 
     const id = providedId || fallbackId;
     return (
         <div>
-            <label htmlFor={id} className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">{label}</label>
-            <select id={id} {...props} className="w-full bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md px-3 py-2 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+            <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+            <select id={id} {...props} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
                 {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
             </select>
         </div>
@@ -176,17 +179,17 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
             <Card ref={modalRef} className="w-full max-w-2xl modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="flex justify-between items-start">
-                        <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">
+                        <h2 className="text-2xl font-bold text-primary-400 mb-4">
                             {isEditMode ? t('strainsView.addStrainModal.editTitle') : t('strainsView.addStrainModal.title')}
                         </h2>
-                        <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" aria-label={t('common.close')}>
+                        <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-slate-700" aria-label={t('common.close')}>
                             <PhosphorIcons.X className="w-6 h-6" />
                         </button>
                     </div>
                     
                     <div className="overflow-y-auto pr-2 flex-grow" style={{maxHeight: '70vh'}}>
                         <div className="space-y-6">
-                           <FormSection title={t('strainsView.addStrainModal.generalInfo')}>
+                           <FormSection title={t('strainsView.addStrainModal.generalInfo')} defaultOpen={true}>
                                 <Input label={`${t('strainsView.addStrainModal.strainName')} *`} value={strainData.name || ''} onChange={(e) => handleChange('name', e.target.value)} required />
                                 <Select label={t('common.type')} value={strainData.type} onChange={(e) => handleChange('type', e.target.value)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
                                 <Input label={t('common.typeDetails')} value={strainData.typeDetails || ''} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
@@ -219,7 +222,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
                         </div>
                     </div>
 
-                    <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+                    <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
                         <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
                         <Button type="submit">{t('common.save')}</Button>
                     </div>

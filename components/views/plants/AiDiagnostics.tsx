@@ -59,7 +59,7 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
             });
             
             const plantContext = plant ? `The plant is a ${plant.strain.name}, ${plant.age} days old, in the ${plant.stage} stage.` : 'No specific plant context provided.';
-            const res = await geminiService.diagnosePlantProblem(base64Image, image.file.type, plantContext);
+            const res = await geminiService.diagnosePlantProblem(base64Image, image.file.type, plantContext, t);
             setResponse(res);
         } catch (error) {
             console.error(error);

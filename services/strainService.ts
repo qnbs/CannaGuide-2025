@@ -1,6 +1,4 @@
 import { Strain } from '../types';
-// FIX: Corrected import path to point to the module in the `strains` directory,
-// as `../data/strains` was incorrectly resolving to an empty `data/strains.ts` file.
 import { allStrainsData } from '../data/strains/index';
 
 /**

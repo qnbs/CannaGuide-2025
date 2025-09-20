@@ -10,6 +10,7 @@ import { Recommendation, SavedSetup } from '../../types';
 import { Tabs } from '../common/Tabs';
 import { useNotifications } from '../../context/NotificationContext';
 import { GrowShopsView } from './equipment/GrowShopsView';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups' | 'grow-shops';
 
@@ -28,7 +29,7 @@ export const EquipmentView: React.FC = () => {
         setError(null);
         setRecommendation(null);
         try {
-            const result = await geminiService.getEquipmentRecommendation(promptDetails);
+            const result = await geminiService.getEquipmentRecommendation(promptDetails, t);
             setRecommendation(result);
         } catch (err) {
             console.error("Failed to generate setup:", err);
@@ -48,10 +49,10 @@ export const EquipmentView: React.FC = () => {
     };
 
     const tabs = [
-        { id: 'configurator', label: t('equipmentView.tabs.configurator') },
-        { id: 'setups', label: t('equipmentView.tabs.setups') },
-        { id: 'calculators', label: t('equipmentView.tabs.calculators') },
-        { id: 'grow-shops', label: t('equipmentView.tabs.growShops') },
+        { id: 'configurator', label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.MagicWand /> },
+        { id: 'setups', label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Cube /> },
+        { id: 'calculators', label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
+        { id: 'grow-shops', label: t('equipmentView.tabs.growShops'), icon: <PhosphorIcons.Storefront /> },
     ];
     
     return (

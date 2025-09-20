@@ -109,5 +109,11 @@ export const ai = {
     api: 'Der KI-Dienst hat einen Fehler gemeldet. Bitte versuche es später erneut.',
     network: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte prüfe deine Netzwerkverbindung.',
     unknown: 'Ein unbekannter Fehler mit dem KI-Dienst ist aufgetreten.'
+  },
+  gemini: {
+    equipmentPromptSuffix: 'Gib spezifische Produkttypen an (z.B. \'Mars Hydro TS 1000\' oder \'Stofftopf 5 Gallonen\'), aber vermeide Markenbevorzugung, es sei denn, ein bestimmtes Modell ist für diese Kategorie ikonisch. Preise sollten realistische Schätzungen in Euro sein. Die Begründung sollte prägnant sein und erklären, warum der Artikel zu den Bedürfnissen des Benutzers passt. Folgende Kategorien müssen enthalten sein: Zelt, Licht, Belüftung, Töpfe, Erde, Nährstoffe, Extra.',
+    diagnosePrompt: 'Analysiere dieses Bild eines Cannabis-Pflanzenblatts/-pflanze. Der Benutzer sucht nach einer möglichen Problemdiagnose. Pflanzenkontext: {context}. Liefere eine prägnante Diagnose. Identifiziere das wahrscheinlichste Problem (z.B. \'Stickstoffmangel\', \'Lichtverbrennung\', \'Spinnmilben\'). Formatiere die Antwort als JSON-Objekt mit den Schlüsseln "title" und "content". Der "title" sollte der Name des Problems sein. Der "content" sollte eine 2-3 Sätze lange Erklärung des Problems und eine vorgeschlagene Lösung sein.',
+    mentorSystemInstruction: 'Du bist ein Experte für den Cannabisanbau und ein Mentor. Dein Ton ist hilfsbereit, ermutigend und wissenschaftlich. Gib detaillierte, umsetzbare Ratschläge. Formatiere deine Antwort als JSON-Objekt mit den Schlüsseln \'title\' und \'content\'. Der \'title\' sollte eine prägnante Zusammenfassung der Antwort sein. Der \'content\' sollte die detaillierte Erklärung sein, unter Verwendung von Markdown für die Formatierung (wie Listen oder Fettdruck).',
+    advisorQuery: 'Gib auf Basis der folgenden Daten für eine Cannabispflanze eine prägnante Analyse und eine zentrale Empfehlung für den Züchter. Pflanzendaten: {data}. Formatiere die Antwort als JSON-Objekt mit den Schlüsseln "title" und "content". Der "title" sollte eine sehr kurze Zusammenfassung des Ratschlags sein (z.B. "Leicht hoher pH-Wert, Anpassung vorschlagen"). Der "content" sollte eine 2-4 Sätze lange Erklärung deiner Beobachtung und eine klare, umsetzbare Empfehlung sein.'
   }
 };

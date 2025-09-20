@@ -65,6 +65,8 @@ const InputRow: React.FC<{ label: string, type: string, value: string | number, 
     );
 };
 
+const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModals.defaultNotes.');
+
 export const SettingsView: React.FC = () => {
     const { settings, setSetting } = useSettings();
     const { resetPlants } = usePlants();
@@ -200,7 +202,15 @@ export const SettingsView: React.FC = () => {
         { id: 'about', label: t('settingsView.categories.about'), icon: <PhosphorIcons.Info/> },
     ];
 
-    const activeCategoryLabel = categories.find(c => c.id === activeCategory)?.label || '';
+    const activeCategoryData = categories.find(c => c.id === activeCategory);
+
+    const wateringNoteValue = settings.defaultJournalNotes.watering && isDefaultNoteKey(settings.defaultJournalNotes.watering)
+        ? t(settings.defaultJournalNotes.watering)
+        : settings.defaultJournalNotes.watering;
+
+    const feedingNoteValue = settings.defaultJournalNotes.feeding && isDefaultNoteKey(settings.defaultJournalNotes.feeding)
+        ? t(settings.defaultJournalNotes.feeding)
+        : settings.defaultJournalNotes.feeding;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -208,7 +218,10 @@ export const SettingsView: React.FC = () => {
                 <Card className="p-2"><ul className="space-y-1">{categories.map(cat => (<li key={cat.id}><button onClick={() => setActiveCategory(cat.id)} className={`w-full flex items-center gap-3 p-2 rounded-md text-left transition-colors ${activeCategory === cat.id ? 'bg-primary-500/20 text-primary-300' : 'text-slate-300 hover:bg-slate-700'}`}><div className="w-5 h-5">{cat.icon}</div><span className="font-semibold">{cat.label}</span></button></li>))}</ul></Card>
             </nav>
             <main className="md:col-span-3">
-                <h2 className="text-2xl font-bold font-display text-primary-300 mb-4">{activeCategoryLabel}</h2>
+                <h2 className="text-2xl font-bold font-display text-primary-300 mb-4 flex items-center gap-3">
+                    {activeCategoryData?.icon && <div className="w-7 h-7">{activeCategoryData.icon}</div>}
+                    {activeCategoryData?.label || ''}
+                </h2>
                 <div className="space-y-6">
                     {activeCategory === 'general' && (<SettingsSection title={t('settingsView.general.title')}>
                         <SelectRow label={t('settingsView.general.language')} value={settings.language} onChange={e => setSetting('language', e.target.value as Language)}><option value="en">English</option><option value="de">Deutsch</option></SelectRow>
@@ -240,7 +253,10 @@ export const SettingsView: React.FC = () => {
                         <h4 className="font-semibold text-slate-300">{t('settingsView.defaults.growSetup')}</h4>
                         <div className="pl-4 border-l-2 border-slate-700 space-y-4"><SelectRow label={t('plantsView.setupModal.lightSource')} value={settings.defaultGrowSetup.lightType} onChange={e => handleSettingChange('defaultGrowSetup.lightType', e.target.value as any)}>{['LED', 'HPS', 'CFL'].map(s=><option key={s} value={s}>{s}</option>)}</SelectRow><SelectRow label={t('plantsView.setupModal.potSize')} value={String(settings.defaultGrowSetup.potSize)} onChange={e => handleSettingChange('defaultGrowSetup.potSize', Number(e.target.value) as any)}>{[5,10,15,30].map(s=><option key={s} value={s}>{s}L</option>)}</SelectRow><SelectRow label={t('plantsView.setupModal.medium')} value={settings.defaultGrowSetup.medium} onChange={e => handleSettingChange('defaultGrowSetup.medium', e.target.value as any)}>{['Soil','Coco','Hydro'].map(s=><option key={s} value={s}>{t(`plantsView.setupModal.mediums.${s.toLowerCase()}`)}</option>)}</SelectRow><InputRow label={t('plantsView.setupModal.temp')} type="number" value={settings.defaultGrowSetup.temperature} onChange={e => handleSettingChange('defaultGrowSetup.temperature', Number(e.target.value))} unit="°C" /><InputRow label={t('plantsView.setupModal.humidity')} type="number" value={settings.defaultGrowSetup.humidity} onChange={e => handleSettingChange('defaultGrowSetup.humidity', Number(e.target.value))} unit="%" /><InputRow label={t('plantsView.setupModal.lightHours')} type="number" value={settings.defaultGrowSetup.lightHours} onChange={e => handleSettingChange('defaultGrowSetup.lightHours', Number(e.target.value))} unit="h" /></div>
                         <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.defaults.journalNotesTitle')}</h4>
-                        <div className="pl-4 border-l-2 border-slate-700 space-y-4"><InputRow label={t('settingsView.defaults.wateringNoteLabel')} type="text" value={settings.defaultJournalNotes.watering} onChange={e => handleSettingChange('defaultJournalNotes.watering', e.target.value)} /><InputRow label={t('settingsView.defaults.feedingNoteLabel')} type="text" value={settings.defaultJournalNotes.feeding} onChange={e => handleSettingChange('defaultJournalNotes.feeding', e.target.value)} /></div>
+                        <div className="pl-4 border-l-2 border-slate-700 space-y-4">
+                            <InputRow label={t('settingsView.defaults.wateringNoteLabel')} type="text" value={wateringNoteValue} onChange={e => handleSettingChange('defaultJournalNotes.watering', e.target.value)} />
+                            <InputRow label={t('settingsView.defaults.feedingNoteLabel')} type="text" value={feedingNoteValue} onChange={e => handleSettingChange('defaultJournalNotes.feeding', e.target.value)} />
+                        </div>
                         <h4 className="font-semibold text-slate-300 pt-4">{t('settingsView.defaults.export')}</h4>
                         <div className="pl-4 border-l-2 border-slate-700 space-y-4"><SelectRow label={t('strainsView.exportModal.source')} value={settings.defaultExportSettings.source} onChange={e => handleSettingChange('defaultExportSettings.source', e.target.value as ExportSource)}>{['selected', 'favorites', 'filtered', 'all'].map(s => <option key={s} value={s}>{t(`strainsView.exportModal.sources.${s}`)}</option>)}</SelectRow><SelectRow label={t('strainsView.exportModal.format')} value={settings.defaultExportSettings.format} onChange={e => handleSettingChange('defaultExportSettings.format', e.target.value as ExportFormat)}>{['pdf', 'txt', 'csv', 'json'].map(f => <option key={f} value={f}>{t(`strainsView.exportModal.formats.${f}`)}</option>)}</SelectRow></div>
                     </SettingsSection>)}

@@ -81,9 +81,7 @@ export const ai = {
   loading: {
     equipment: {
       analyzing: 'Analyzing requirements...',
-      budget: 'Considering {budget} budget...',
-      area: 'Optimizing for {area}cm area...',
-      style: 'Selecting components for "{style}" style...',
+      custom: 'Configuring for setup: {config}',
       selecting: 'Selecting suitable components...',
       finalizing: 'Finalizing recommendation...'
     },
@@ -105,7 +103,6 @@ export const ai = {
       formulating: 'Formulating a recommendation...'
     }
   },
-  // FIX: Removed duplicate `error` key. The object below is used for specific error messages.
   error: {
     parsing: 'Failed to understand the AI\'s response. It might be malformed.',
     apiKey: 'The AI service is not configured correctly (Invalid API Key).',

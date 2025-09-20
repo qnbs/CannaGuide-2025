@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
@@ -7,6 +6,7 @@ import { useTranslations } from '../../../hooks/useTranslations';
 import { useNotifications } from '../../../context/NotificationContext';
 import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '../../../types';
 import { geminiService } from '../../../services/geminiService';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 type Area = '60x60' | '80x80' | '100x100' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
@@ -26,9 +26,10 @@ interface SetupResultsProps {
 
 const RationaleModal: React.FC<{ content: { title: string, content: string }, onClose: () => void }> = ({ content, onClose }) => {
     const { t } = useTranslations();
+    const modalRef = useFocusTrap(true);
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
+            <Card ref={modalRef} className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
                 <p className="text-slate-600 dark:text-slate-300">{content.content}</p>
                 <div className="text-right mt-6">

@@ -1,4 +1,3 @@
-
 import React, { useState, useId } from 'react';
 import { SavedSetup, RecommendationCategory, RecommendationItem } from '../../../types';
 import { Card } from '../../common/Card';
@@ -8,6 +7,7 @@ import { useTranslations } from '../../../hooks/useTranslations';
 import { useNotifications } from '../../../context/NotificationContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
@@ -24,6 +24,7 @@ const SetupDetailModal: React.FC<{
     const [isEditing, setIsEditing] = useState(false);
     const [editedSetup, setEditedSetup] = useState<SavedSetup>(JSON.parse(JSON.stringify(setup)));
     const baseId = useId();
+    const modalRef = useFocusTrap(true);
 
     const categoryLabels: Record<RecommendationCategory, string> = {
         tent: t('equipmentView.configurator.categories.tent'),
@@ -56,7 +57,7 @@ const SetupDetailModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-2xl modal-content-animate" onClick={e => e.stopPropagation()}>
+            <Card ref={modalRef} className="w-full max-w-2xl modal-content-animate" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start">
                     <div>
                         <h2 className="text-2xl font-bold text-primary-400">{isEditing ? t('equipmentView.savedSetups.modal.editMode') : t('equipmentView.savedSetups.modal.title')}</h2>

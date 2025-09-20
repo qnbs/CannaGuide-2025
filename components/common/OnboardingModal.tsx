@@ -5,6 +5,7 @@ import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
 import { useSettings } from '../../hooks/useSettings';
 import { Language } from '../../types';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface OnboardingModalProps {
     onClose: () => void;
@@ -14,6 +15,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const [currentStep, setCurrentStep] = useState(0);
     const { t } = useTranslations();
     const { setSetting } = useSettings();
+    const modalRef = useFocusTrap(true);
 
     const steps = useMemo(() => [
         {
@@ -55,7 +57,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[999] p-4">
-            <Card className="w-full max-w-lg text-center modal-content-animate">
+            <Card ref={modalRef} className="w-full max-w-lg text-center modal-content-animate">
                 {currentStep === 0 ? (
                     <div>
                         <PhosphorIcons.Globe className="w-16 h-16 text-primary-400 mx-auto mb-4" />

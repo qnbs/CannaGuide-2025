@@ -5,6 +5,7 @@ import { Card } from '../../common/Card';
 import { useNotifications } from '../../../context/NotificationContext';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface AddStrainModalProps {
     isOpen: boolean;
@@ -74,6 +75,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
     const [strainData, setStrainData] = useState<any>({});
+    const modalRef = useFocusTrap(isOpen);
     
     const isEditMode = !!strainToEdit;
 
@@ -171,7 +173,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-2xl modal-content-animate" onClick={(e) => e.stopPropagation()}>
+            <Card ref={modalRef} className="w-full max-w-2xl modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="flex justify-between items-start">
                         <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-4">

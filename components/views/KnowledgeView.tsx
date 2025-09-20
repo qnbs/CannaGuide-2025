@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect, useId } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
@@ -107,7 +103,8 @@ export const KnowledgeView: React.FC = () => {
             setAiResponse(res);
         } catch (e) {
             console.error(e);
-            const errorMessage = e instanceof Error ? e.message : t('ai.error');
+            const errorMessageKey = e instanceof Error ? e.message : 'ai.error.unknown';
+            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
             setAiResponse({ title: t('common.error'), content: errorMessage});
             addNotification(errorMessage, 'error');
         }

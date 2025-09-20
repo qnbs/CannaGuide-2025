@@ -91,11 +91,20 @@ const getEquipmentRecommendation = async (area: string, budget: string, growStyl
         responseText = response.text.trim();
         return JSON.parse(responseText) as Recommendation;
     } catch (err) {
-        console.error("Gemini API Error in getEquipmentRecommendation:", err);
+        console.error("Gemini API Error:", err);
         if (err instanceof SyntaxError) {
-             throw new Error(`Failed to parse AI response. Raw text: ${responseText}`);
+            console.error("Gemini parsing error. Raw response:", responseText);
+            throw new Error('ai.error.parsing');
         }
-        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+        if (err instanceof Error) {
+            if (err.message.includes('API key not valid')) {
+                throw new Error('ai.error.apiKey');
+            }
+            if (err.message.includes('[GoogleGenerativeAI Error]')) {
+                 throw new Error('ai.error.api');
+            }
+        }
+        throw new Error('ai.error.network');
     }
 };
 
@@ -115,11 +124,20 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
         responseText = response.text.trim();
         return JSON.parse(responseText);
     } catch (err) {
-        console.error("Gemini API Error in diagnosePlantProblem:", err);
+        console.error("Gemini API Error:", err);
         if (err instanceof SyntaxError) {
-            throw new Error(`Failed to parse AI response. Raw text: ${responseText}`);
+            console.error("Gemini parsing error. Raw response:", responseText);
+            throw new Error('ai.error.parsing');
         }
-        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+        if (err instanceof Error) {
+            if (err.message.includes('API key not valid')) {
+                throw new Error('ai.error.apiKey');
+            }
+            if (err.message.includes('[GoogleGenerativeAI Error]')) {
+                 throw new Error('ai.error.api');
+            }
+        }
+        throw new Error('ai.error.network');
     }
 };
 
@@ -138,11 +156,20 @@ const getAiMentorResponse = async (query: string): Promise<{ title: string, cont
         responseText = response.text.trim();
         return JSON.parse(responseText);
     } catch (err) {
-        console.error("Gemini API Error in getAiMentorResponse:", err);
+        console.error("Gemini API Error:", err);
          if (err instanceof SyntaxError) {
-            throw new Error(`Failed to parse AI response. Raw text: ${responseText}`);
+            console.error("Gemini parsing error. Raw response:", responseText);
+            throw new Error('ai.error.parsing');
         }
-        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+        if (err instanceof Error) {
+            if (err.message.includes('API key not valid')) {
+                throw new Error('ai.error.apiKey');
+            }
+            if (err.message.includes('[GoogleGenerativeAI Error]')) {
+                 throw new Error('ai.error.api');
+            }
+        }
+        throw new Error('ai.error.network');
     }
 };
 
@@ -162,11 +189,20 @@ const getAiPlantAdvisorResponse = async (plant: Plant): Promise<{ title: string,
         responseText = response.text.trim();
         return JSON.parse(responseText);
     } catch (err) {
-        console.error("Gemini API Error in getAiPlantAdvisorResponse:", err);
+        console.error("Gemini API Error:", err);
         if (err instanceof SyntaxError) {
-            throw new Error(`Failed to parse AI response. Raw text: ${responseText}`);
+            console.error("Gemini parsing error. Raw response:", responseText);
+            throw new Error('ai.error.parsing');
         }
-        throw new Error(err instanceof Error ? err.message : "An unknown error occurred with the AI service.");
+        if (err instanceof Error) {
+            if (err.message.includes('API key not valid')) {
+                throw new Error('ai.error.apiKey');
+            }
+            if (err.message.includes('[GoogleGenerativeAI Error]')) {
+                 throw new Error('ai.error.api');
+            }
+        }
+        throw new Error('ai.error.network');
     }
 };
 

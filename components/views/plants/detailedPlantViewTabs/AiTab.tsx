@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import { Plant, AIResponse, ArchivedAdvisorResponse } from '../../../../types';
 import { Card } from '../../../common/Card';
@@ -55,7 +51,8 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             setResponse(res);
         } catch (error) {
             console.error("AI Advisor Error:", error);
-            const errorMessage = error instanceof Error ? error.message : t('ai.error');
+            const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
+            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
             setResponse({ title: t('common.error'), content: errorMessage });
             addNotification(errorMessage, 'error');
         }

@@ -5,6 +5,7 @@ import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface StrainDetailModalProps {
   strain: Strain;
@@ -19,6 +20,7 @@ interface StrainDetailModalProps {
 
 const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, isFavorite, onClose, onToggleFavorite, onStartGrowing, plants, onSelectSimilarStrain, allStrains }) => {
     const { t } = useTranslations();
+    const modalRef = useFocusTrap(true);
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
         Medium: t('strainsView.difficulty.medium'),
@@ -57,7 +59,7 @@ const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, isFavorit
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-40 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="strain-detail-modal-title">
-            <Card className="w-full max-w-3xl h-[90vh] relative flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
+            <Card ref={modalRef} className="w-full max-w-3xl h-[90vh] relative flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-3 right-3 p-2 rounded-full hover:bg-slate-700 z-10 transition-colors" aria-label={t('common.close')}>
                     <PhosphorIcons.X className="w-6 h-6" />
                 </button>

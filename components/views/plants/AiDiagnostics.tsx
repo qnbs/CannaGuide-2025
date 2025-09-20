@@ -1,7 +1,3 @@
-
-
-
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -67,7 +63,8 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
             setResponse(res);
         } catch (error) {
             console.error(error);
-            const errorMessage = error instanceof Error ? error.message : t('ai.error');
+            const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
+            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
             addNotification(errorMessage, 'error');
             setResponse({ title: t('common.error'), content: errorMessage });
         } finally {

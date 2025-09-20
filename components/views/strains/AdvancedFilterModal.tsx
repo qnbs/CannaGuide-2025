@@ -4,6 +4,7 @@ import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { RangeSlider } from '../../common/RangeSlider';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface AdvancedFilterModalProps {
     isOpen: boolean;
@@ -18,6 +19,7 @@ interface AdvancedFilterModalProps {
 
 const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({ isOpen, onClose, onApply, tempFilterState, setTempFilterState, allAromas, allTerpenes, count }) => {
     const { t } = useTranslations();
+    const modalRef = useFocusTrap(isOpen);
     
     useEffect(() => {
         if (!isOpen) return;
@@ -60,7 +62,7 @@ const AdvancedFilterModal: React.FC<AdvancedFilterModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-fade-in" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="advanced-filter-modal-title">
-            <Card className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
+            <Card ref={modalRef} className="w-full max-w-xl h-auto max-h-[80vh] flex flex-col modal-content-animate" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start flex-shrink-0">
                     <h2 id="advanced-filter-modal-title" className="text-2xl font-bold font-display text-primary-400 mb-4">{t('strainsView.advancedFilters')}</h2>
                     <span className="text-sm font-medium text-slate-200 bg-slate-700 px-2 py-1 rounded-md">{t('strainsView.matchingStrains', { count })}</span>

@@ -91,11 +91,13 @@ const AppContent: React.FC = () => {
   useEffect(() => {
     let intervalId: number | undefined;
     if (settings.simulationSettings.autoAdvance) {
-      intervalId = setInterval(() => {
+      // FIX: Type 'Timeout' is not assignable to type 'number'. Explicitly use the browser's window object
+      // to avoid conflicting with NodeJS types which may be present in the development environment.
+      intervalId = window.setInterval(() => {
         updatePlantState();
       }, 5 * 60 * 1000); // every 5 minutes
     }
-    return () => clearInterval(intervalId);
+    return () => window.clearInterval(intervalId);
   }, [settings.simulationSettings.autoAdvance, updatePlantState]);
 
   useEffect(() => {

@@ -39,14 +39,6 @@ export const PROBLEM_THRESHOLDS = {
     over: 95,
     under: 25
   },
-  ec: {
-    over: 2.5,
-    under: 0.4
-  },
-  ph: {
-      high: 7.2,
-      low: 5.5,
-  },
   temp: {
     high: 32,
     low: 15,
@@ -55,9 +47,6 @@ export const PROBLEM_THRESHOLDS = {
     high: 75,
     low: 25
   },
-  light: {
-    stress: 98
-  }
 };
 
 export const YIELD_FACTORS = {
@@ -99,15 +88,15 @@ export const SIMULATION_CONSTANTS = {
   WATER_ALL_THRESHOLD: 50,
   WATER_REPLENISH_FACTOR: 200,
   ML_PER_LITER: 1000,
-  STRESS_FACTORS: { // stress points added per day for each unit of deviation
-    UNDERWATERING: 0.8,
-    OVERWATERING: 0.6,
-    TEMP_HIGH: 0.5,
-    TEMP_LOW: 0.4,
-    HUMIDITY_HIGH: 0.3,
-    HUMIDITY_LOW: 0.2,
-    PH_OFF: 0.4,
-    NUTRIENT_BURN: 1.2, // Nutrient burn is very stressful
-    NUTRIENT_DEFICIENCY: 0.5,
+  STRESS_FACTORS: { // stress points added per day for each point of deviation
+    UNDERWATERING: 0.9,       // Per % point below threshold
+    OVERWATERING: 0.7,        // Per % point above threshold
+    TEMP_HIGH: 0.6,           // Per degree C above ideal max
+    TEMP_LOW: 0.5,            // Per degree C below ideal min
+    HUMIDITY_HIGH: 0.4,       // Per % point above ideal max
+    HUMIDITY_LOW: 0.3,        // Per % point below ideal min
+    PH_OFF: 1.0,              // Per 0.1 pH point outside ideal range
+    EC_HIGH: 1.5,             // Per 0.1 mS/cm point above ideal max
+    EC_LOW: 0.8,              // Per 0.1 mS/cm point below ideal min
   }
 };

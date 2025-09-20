@@ -1,4 +1,5 @@
 export const commandPalette = {
+  title: 'Command Palette',
   placeholder: 'Type a command or search...',
   noResults: 'No commands found.',
   open: 'Open Command Palette',

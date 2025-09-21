@@ -46,7 +46,7 @@ export const equipmentView = {
         medium: {
             title: 'Medium-Setup (Ausgewogen)',
             description: 'Mehr Platz und eine stärkere Lampe für zwei Pflanzen, um das Ertragspotenzial deutlich zu steigern.',
-            prompt: 'Erstelle eine Grow-Setup-Empfehlung für 2 Pflanzen in einer 100x100x200cm Growbox. Die Beleuchtung sollte eine 280-300W LED sein. Die Abluft sollte ein AC-Lüfter mit ~360 m³/h sein. Töpfe: 2x 25L Stofftöpfe. Das Medium ist Coco/Perlite Mix. Das Budget ist mittel, mit Fokus auf hohen Ertrag.'
+            prompt: 'Erstelle eine Grow-Setup-Empfehlung für 2 Pflanzen in einer 100x100x200cm Growbox. Die Beleuchtung sollte eine 280-300W LED sein. Die Abluft sollte ein AC-Lüfter mit ~360 m³/h sein. Töpfe: 2x 25L Stofftöpfe. Medium: Coco/Perlite Mix. Das Budget ist mittel, mit Fokus auf hohen Ertrag.'
         },
         premium: {
           title: 'Premium-Setup (Maximale Kontrolle)',
@@ -84,6 +84,7 @@ export const equipmentView = {
     setupSaveConfirm: 'Möchtest du das Setup als "{name}" speichern?',
     setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
     setupSaveError: 'Fehler beim Speichern des Setups.',
+    error: 'Die KI konnte keine Empfehlung erstellen. Bitte versuche es später erneut.',
     categories: {
       tent: 'Growbox (Zelt)',
       light: 'Beleuchtung',
@@ -118,6 +119,10 @@ export const equipmentView = {
       depth: 'Tiefe',
       height: 'Höhe',
       result: 'Empfohlene Abluftleistung',
+      lightWattage: 'Lichtleistung',
+      lightWattageTooltip: 'Leistungsstarke Lampen erzeugen mehr Wärme und erfordern eine stärkere Belüftung.',
+      carbonFilter: 'Aktivkohlefilter?',
+      carbonFilterTooltip: 'Ein Aktivkohlefilter erhöht den Luftwiderstand und erfordert einen stärkeren Lüfter.',
     },
     light: {
       title: 'Licht-Rechner',
@@ -125,6 +130,24 @@ export const equipmentView = {
       width: 'Breite',
       depth: 'Tiefe',
       result: 'Empfohlene LED-Leistung',
+      stage: 'Wachstumsphase',
+      ppfdTooltip: 'PPFD (Photosynthetische Photonenflussdichte) misst die Menge an nutzbarem Licht, die deine Pflanzen erreicht. Verschiedene Phasen haben unterschiedliche optimale Werte.',
+      dliTooltip: 'DLI (Tägliches Lichtintegral) ist die Gesamtmenge an nutzbarem Licht, die eine Pflanze über einen 24-Stunden-Zeitraum erhält.',
+    },
+    cost: {
+      title: 'Stromkosten-Rechner',
+      description: 'Schätze die Stromkosten deines Grow-Setups über verschiedene Zeiträume.',
+      lightPower: 'Lichtleistung',
+      lightHours: 'Lichtstunden',
+      fanPower: 'Lüfterleistung',
+      fanHours: 'Lüfterstunden',
+      otherPower: 'Sonstige Leistung',
+      price: 'Strompreis',
+      daily: 'Täglich',
+      weekly: 'Wöchentlich',
+      monthly: 'Monatlich',
+      cycle: 'Pro Zyklus',
+      cycleSub: '(~90 Tage)',
     },
     nutrients: {
       title: 'Nährstoff-Mixer',
@@ -132,11 +155,18 @@ export const equipmentView = {
       waterAmount: 'Wassermenge',
       dose: 'Dosis',
       result: 'Benötigter Dünger',
+      reservoir: 'Reservoir-Größe',
+      component: 'Komponente',
+      totalFor: 'Gesamt für Komp.',
+    },
+    converter: {
+      title: 'PPM / EC Umrechner',
+      description: 'Konvertiere zwischen EC (Elektrische Leitfähigkeit) und PPM (Teile pro Million) Skalen.',
+      resultInfo: 'Werte werden automatisch umgerechnet, wenn du ein Feld änderst.',
     },
     yield: {
       title: 'Ertrags-Schätzer',
       description: 'Erhalte eine genauere Schätzung deines potenziellen Ertrags (g) basierend auf mehreren Faktoren.',
-      area: 'Fläche',
       wattage: 'Lichtleistung',
       level: 'Erfahrungslevel',
       levels: {
@@ -144,9 +174,18 @@ export const equipmentView = {
           advanced: 'Fortgeschritten',
           expert: 'Experte'
       },
-      result: 'Geschätzter Ertrag'
+      result: 'Geschätzter Ertrag',
+      training: 'Trainingstechnik',
+      trainings: {
+        none: 'Keine',
+        lst: 'LST',
+        scrog: 'Topping/SCROG',
+      },
+      efficiency: 'Effizienz'
     },
     calculate: 'Berechnen',
+    yes: 'Ja',
+    no: 'Nein',
   },
   savedSetups: {
     title: 'Meine gespeicherten Setups',
@@ -162,7 +201,7 @@ export const equipmentView = {
     exportConfirm: 'Möchtest du das Setup "{name}" wirklich als {format} exportieren?',
     exportSuccess: 'Setup "{name}" erfolgreich exportiert.',
     modal: {
-      title: 'Setup Details',
+      title: 'Setup-Details',
       editMode: 'Bearbeitungsmodus',
       saveChanges: 'Änderungen speichern',
       item: 'Komponente',
@@ -186,11 +225,13 @@ export const equipmentView = {
     intro: 'Auf Basis von Nutzerbewertungen, Forenempfehlungen und dem generellen Ruf in der Grower-Community haben sich über Jahre hinweg bestimmte Online-Shops als besonders seriös, zuverlässig und umfassend im Sortiment erwiesen. Hier ist eine Recherche der besten und naheliegendsten Online-Shops für Grow-Equipment, aufgeteilt nach Europa und den USA.',
     european: {
         title: 'Europäische Online-Shops (Fokus auf DACH-Region & EU-Versand)',
-        description: 'Diese Shops sind meist in Deutschland, Österreich oder den Niederlanden ansässig und bekannt für schnellen, diskreten Versand innerhalb der EU. Die Zollabwicklung entfällt somit für Lieferungen innerhalb der Europäischen Union.'
+        description: 'Diese Shops sind meist in Deutschland, Österreich oder den Niederlanden ansässig und bekannt für schnellen, diskreten Versand innerhalb der EU. Die Zollabwicklung entfällt somit für Lieferungen innerhalb der Europäischen Union.',
+        shopKeys: ['growmart', 'growshop24', 'growland', 'zamnesia'],
     },
     us: {
         title: 'US-amerikanische Online-Shops (Nordamerika)',
-        description: 'Diese Shops sind die erste Anlaufstelle für Grower in den USA und Kanada. Sie zeichnen sich durch ein riesiges Sortiment aus, das oft auf den kommerziellen Markt ausgerichtet ist, aber auch Heimgrower bedient. Ein Versand nach Europa ist oft möglich, aber aufgrund von hohen Versandkosten, Zollgebühren und unterschiedlichen Netzspannungen (110V) bei Elektronikartikeln meist nicht sinnvoll.'
+        description: 'Diese Shops sind die erste Anlaufstelle für Grower in den USA und Kanada. Sie zeichnen sich durch ein riesiges Sortiment aus, das oft auf den kommerziellen Markt ausgerichtet ist, aber auch Heimgrower bedient. Ein Versand nach Europa ist oft möglich, aber aufgrund von hohen Versandkosten, Zollgebühren und unterschiedlichen Netzspannungen (110V) bei Elektronikartikeln meist nicht sinnvoll.',
+        shopKeys: ['acInfinity', 'growGen', 'growersHouse', 'htgSupply'],
     },
     importantNote: {
         title: 'Wichtiger Hinweis',
@@ -199,6 +240,15 @@ export const equipmentView = {
     location: 'Standort',
     strengths: 'Stärken',
     idealFor: 'Ideal für',
+    shipping: 'Versand',
+    paymentMethods: 'Zahlungsmethoden',
+    sortByName: 'Nach Name sortieren',
+    sortByRating: 'Nach Bewertung sortieren',
+    noResults: 'Keine Shops für die aktuelle Auswahl gefunden.',
+    region: {
+      europe: 'Europa',
+      usa: 'USA'
+    },
     shops: {
         growmart: {
             name: 'Growmart',
@@ -211,10 +261,14 @@ export const equipmentView = {
                 'Gute und ehrliche Produktbeschreibungen und oft hilfreiche Blogartikel.',
                 'Sehr gute Erreichbarkeit des Kundenservice.'
             ],
-            idealFor: 'Anfänger bis Profis, die eine "Alles aus einer Hand"-Lösung suchen.'
+            idealFor: 'Anfänger bis Profis, die eine "Alles aus einer Hand"-Lösung suchen.',
+            rating: 4.9,
+            shipping: 'Versendet EU-weit, sehr diskrete Verpackung',
+            paymentMethods: ['credit_card', 'bank_transfer', 'crypto'],
+            logo: 'growmart'
         },
         growshop24: {
-            name: 'grow-shop24.de / grow-shop24.at',
+            name: 'grow-shop24.de',
             url: 'https://www.grow-shop24.de/',
             location: 'Deutschland & Österreich',
             description: 'Ein weiterer sehr etablierter Shop mit einem extrem umfangreichen Sortiment. Sie sind bekannt für konkurrenzfähige Preise und führen oft auch Nischenprodukte, die man anderswo schwerer findet. Mit einer eigenen Domain für Österreich bedienen sie diesen Markt besonders gut.',
@@ -224,7 +278,11 @@ export const equipmentView = {
                 'Häufig gute Angebote und Rabattaktionen.',
                 'Zuverlässiger Versand und gute Bewertungen (z.B. bei Trusted Shops).'
             ],
-            idealFor: 'Preisbewusste Käufer und Grower, die spezifische Produkte suchen.'
+            idealFor: 'Preisbewusste Käufer und Grower, die spezifische Produkte suchen.',
+            rating: 4.7,
+            shipping: 'Versendet EU-weit',
+            paymentMethods: ['credit_card', 'bank_transfer'],
+            logo: 'growshop24'
         },
         growland: {
             name: 'Growland',
@@ -237,7 +295,11 @@ export const equipmentView = {
                 'Bietet ebenfalls sehr gut abgestimmte Komplettsets an.',
                 'Guter Kundensupport und schnelle Lieferung.'
             ],
-            idealFor: 'Grower, die Wert auf eine kuratierte Auswahl und einen reibungslosen Bestellprozess legen.'
+            idealFor: 'Grower, die Wert auf eine kuratierte Auswahl und einen reibungslosen Bestellprozess legen.',
+            rating: 4.8,
+            shipping: 'Versendet EU-weit',
+            paymentMethods: ['credit_card', 'bank_transfer', 'crypto'],
+            logo: 'growland'
         },
         zamnesia: {
             name: 'Zamnesia',
@@ -250,7 +312,11 @@ export const equipmentView = {
                 'Exzellenter Ruf und eine riesige Community mit vielen Bewertungen.',
                 'Möglichkeit, Samen und Equipment in einer einzigen Bestellung zu kombinieren.'
             ],
-            idealFor: 'Grower, die auch an einer riesigen Auswahl an Genetik interessiert sind und alles aus einer Quelle beziehen möchten.'
+            idealFor: 'Grower, die auch an einer riesigen Auswahl an Genetik interessiert sind und alles aus einer Quelle beziehen möchten.',
+            rating: 4.9,
+            shipping: 'Versendet weltweit, sehr schnell innerhalb der EU',
+            paymentMethods: ['credit_card', 'bank_transfer', 'crypto'],
+            logo: 'zamnesia'
         },
         acInfinity: {
             name: 'AC Infinity',
@@ -263,7 +329,11 @@ export const equipmentView = {
                 'Hervorragender Kundenservice und eine starke Community.',
                 'Kauf direkt vom Hersteller.'
             ],
-            idealFor: 'Technikaffine Grower, die ein smartes, automatisiertes und optisch ansprechendes Setup suchen.'
+            idealFor: 'Technikaffine Grower, die ein smartes, automatisiertes und optisch ansprechendes Setup suchen.',
+            rating: 4.9,
+            shipping: 'Versendet hauptsächlich innerhalb Nordamerikas',
+            paymentMethods: ['credit_card', 'paypal'],
+            logo: 'acInfinity'
         },
         growGen: {
             name: 'GrowGeneration (GrowGen)',
@@ -275,7 +345,11 @@ export const equipmentView = {
                 'Expertise im kommerziellen Anbau, was sich in der Produktauswahl widerspiegelt.',
                 'Regelmäßige Verkäufe und professionelle Beratung.'
             ],
-            idealFor: 'Grower jeder Größe, die die größte mögliche Auswahl suchen.'
+            idealFor: 'Grower jeder Größe, die die größte mögliche Auswahl suchen.',
+            rating: 4.6,
+            shipping: 'Versendet innerhalb der USA',
+            paymentMethods: ['credit_card', 'paypal'],
+            logo: 'growGen'
         },
         growersHouse: {
             name: 'GrowersHouse',
@@ -287,10 +361,14 @@ export const equipmentView = {
                 'Sehr informative Website mit vielen Ressourcen für Grower.',
                 'Guter Ruf für Zuverlässigkeit und Kundenservice.'
             ],
-            idealFor: 'Grower, die detaillierte Informationen und Vergleiche vor dem Kauf schätzen.'
+            idealFor: 'Grower, die detaillierte Informationen und Vergleiche vor dem Kauf schätzen.',
+            rating: 4.7,
+            shipping: 'Versendet weltweit',
+            paymentMethods: ['credit_card', 'crypto'],
+            logo: 'growersHouse'
         },
         htgSupply: {
-            name: 'HTG Supply (High Tech Garden Supply)',
+            name: 'HTG Supply',
             url: 'https://www.htgsupply.com/',
             location: 'USA (landesweite Kette)',
             description: 'HTG Supply ist einer der ältesten und etabliertesten Hydroponik-Shops in den USA. Sie haben sowohl eine starke Online-Präsenz als auch physische Geschäfte. Ihr Slogan "einer der schnellsten Versender der Branche" wird oft von Kunden bestätigt.',
@@ -299,57 +377,12 @@ export const equipmentView = {
                 'Bekannt für sehr schnellen Versand.',
                 'Oft wettbewerbsfähige Preise und Eigenmarken.'
             ],
-            idealFor: 'Grower, die eine schnelle und unkomplizierte Lieferung benötigen.'
+            idealFor: 'Grower, die eine schnelle und unkomplizierte Lieferung benötigen.',
+            rating: 4.5,
+            shipping: 'Versendet innerhalb der USA',
+            paymentMethods: ['credit_card', 'paypal'],
+            logo: 'htgSupply'
         }
     }
   },
-  calculator: {
-    yes: 'Ja',
-    no: 'Nein',
-    ventilation: {
-      lightWattage: 'Lichtleistung',
-      lightWattageTooltip: 'Leistungsstarke Lampen erzeugen mehr Wärme und erfordern eine stärkere Belüftung.',
-      carbonFilter: 'Aktivkohlefilter?',
-      carbonFilterTooltip: 'Ein Aktivkohlefilter erhöht den Luftwiderstand und erfordert einen stärkeren Lüfter.',
-    },
-    light: {
-      stage: 'Wachstumsphase',
-      ppfdTooltip: 'PPFD (Photosynthetische Photonenflussdichte) misst die Menge an nutzbarem Licht, die deine Pflanzen erreicht. Verschiedene Phasen haben unterschiedliche optimale Werte.',
-      dliTooltip: 'DLI (Tägliches Lichtintegral) ist die Gesamtmenge an nutzbarem Licht, die eine Pflanze über einen 24-Stunden-Zeitraum erhält.',
-    },
-    cost: {
-      title: 'Stromkosten-Rechner',
-      description: 'Schätze die Stromkosten deines Grow-Setups über verschiedene Zeiträume.',
-      lightPower: 'Lichtleistung',
-      lightHours: 'Lichtstunden',
-      fanPower: 'Lüfterleistung',
-      fanHours: 'Lüfterstunden',
-      otherPower: 'Sonstige Leistung',
-      price: 'Strompreis',
-      daily: 'Täglich',
-      weekly: 'Wöchentlich',
-      monthly: 'Monatlich',
-      cycle: 'Pro Zyklus',
-      cycleSub: '(~90 Tage)'
-    },
-    nutrients: {
-        reservoir: 'Reservoir-Größe',
-        component: 'Komponente',
-        totalFor: 'Gesamt für Komp.'
-    },
-    converter: {
-      title: 'PPM / EC Umrechner',
-      description: 'Konvertiere zwischen EC (Elektrische Leitfähigkeit) und PPM (Teile pro Million) Skalen.',
-      resultInfo: 'Werte werden automatisch umgerechnet, wenn du ein Feld änderst.',
-    },
-    yield: {
-      training: 'Trainingstechnik',
-      trainings: {
-        none: 'Keine',
-        lst: 'LST',
-        scrog: 'Topping/SCROG',
-      },
-      efficiency: 'Effizienz'
-    }
-  }
 };

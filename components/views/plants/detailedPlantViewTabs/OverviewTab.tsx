@@ -6,43 +6,16 @@ import { PLANT_STAGE_DETAILS } from '../../../../constants';
 import { HistoryChart } from '../HistoryChart';
 import { PlantLifecycleTimeline } from '../PlantLifecycleTimeline';
 import { useTranslations } from '../../../../hooks/useTranslations';
+import { VitalBar } from '../VitalBar';
 
 interface OverviewTabProps {
     plant: Plant;
 }
 
-const VitalStat: React.FC<{ label: string, value: number, unit: string, idealMin: number, idealMax: number, color: string }> = ({ label, value, unit, idealMin, idealMax, color }) => {
-    const isIdeal = value >= idealMin && value <= idealMax;
-    const range = (idealMax * 1.5) - 0;
-    const percentage = Math.min(100, Math.max(0, (value / range) * 100));
-    
-    return (
-        <div>
-            <div className="flex justify-between items-baseline mb-1">
-                <span className="font-semibold text-slate-200">{label}</span>
-                <span className={`font-mono text-lg ${isIdeal ? 'text-green-400' : 'text-amber-400'}`}>{value.toFixed(1)}<span className="text-sm ml-1">{unit}</span></span>
-            </div>
-            <div className="w-full bg-slate-700 rounded-full h-2.5 relative">
-                <div className={`h-2.5 rounded-full transition-all duration-300 ${color}`} style={{ width: `${percentage}%` }}></div>
-                <div 
-                    className="absolute top-[-4px] h-4 w-px bg-slate-400" 
-                    style={{ left: `${(idealMin / range) * 100}%` }} 
-                    title={`Ideal Min: ${idealMin}`}
-                ></div>
-                <div 
-                    className="absolute top-[-4px] h-4 w-px bg-slate-400" 
-                    style={{ left: `${(idealMax / range) * 100}%` }} 
-                    title={`Ideal Max: ${idealMax}`}
-                ></div>
-            </div>
-        </div>
-    );
-};
-
-
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslations();
     const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
+    const idealEnv = PLANT_STAGE_DETAILS[plant.stage].idealEnv;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -53,12 +26,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                     </div>
                 </Card>
                  <Card>
-                    <h3 className="text-lg font-bold mb-3">{t('plantsView.detailedView.vitals')}</h3>
+                    <h3 className="text-lg font-bold font-display text-primary-400 mb-3">{t('plantsView.detailedView.vitals')}</h3>
                     <div className="space-y-4">
-                       <VitalStat label={t('plantsView.detailedView.ph')} value={plant.vitals.ph} unit="" idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} color="bg-green-500" />
-                       <VitalStat label={t('plantsView.detailedView.ec')} value={plant.vitals.ec} unit=" mS/cm" idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} color="bg-amber-500" />
-                       <VitalStat label={t('plantsView.detailedView.moisture')} value={plant.vitals.substrateMoisture} unit="%" idealMin={30} idealMax={80} color="bg-blue-500" />
-                       <VitalStat label={t('plantsView.detailedView.stress')} value={plant.stressLevel} unit="%" idealMin={0} idealMax={20} color="bg-red-500" />
+                       <VitalBar label={t('plantsView.vitals.ph')} value={plant.vitals.ph} min={4} max={8} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} unit="" colorClass="bg-green-500" />
+                       <VitalBar label={t('plantsView.vitals.ec')} value={plant.vitals.ec} min={0} max={3} idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} unit=" mS/cm" colorClass="bg-amber-500" />
+                       <VitalBar label={t('plantsView.vitals.moisture')} value={plant.vitals.substrateMoisture} min={0} max={100} idealMin={30} idealMax={80} unit="%" colorClass="bg-blue-500" />
+                       <VitalBar label={t('plantsView.detailedView.stress')} value={plant.stressLevel} min={0} max={100} idealMin={0} idealMax={20} unit="%" colorClass="bg-red-500" />
                     </div>
                 </Card>
             </div>
@@ -67,7 +40,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                     <PlantLifecycleTimeline currentStage={plant.stage} currentAge={plant.age} />
                 </Card>
                 <Card>
-                    <h3 className="text-lg font-bold mb-3">{t('plantsView.detailedView.history')}</h3>
+                    <h3 className="text-lg font-bold font-display text-primary-400 mb-3">{t('plantsView.detailedView.history')}</h3>
                     <div className="h-64">
                         <HistoryChart history={plant.history} />
                     </div>

@@ -66,7 +66,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({
                 </Button>
                 <div>
                     <h2 className="text-2xl font-bold font-display text-primary-400">{plant.name}</h2>
-                    <p className="text-slate-400 text-sm">{plant.strain.name} - {t('plantStages.' + plant.stage)}</p>
+                    <p className="text-slate-400 text-sm">{plant.strain.name} - {t(`plantStages.${plant.stage}`)}</p>
                 </div>
             </div>
             

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { JournalEntry } from '../../../../types';
 import { Card } from '../../../common/Card';

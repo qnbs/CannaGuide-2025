@@ -3,6 +3,7 @@ import { Card } from '../../../common/Card';
 import { Button } from '../../../common/Button';
 import { Task } from '../../../../types';
 import { useTranslations } from '../../../../hooks/useTranslations';
+import { PhosphorIcons } from '../../../icons/PhosphorIcons';
 
 interface TasksTabProps {
     tasks: Task[];
@@ -11,26 +12,48 @@ interface TasksTabProps {
 
 export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => {
     const { t } = useTranslations();
+    
+    const openTasks = tasks.filter(t => !t.isCompleted).sort((a, b) => a.createdAt - b.createdAt);
+    const completedTasks = tasks.filter(t => t.isCompleted).sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
 
     return (
-        <Card>
-            <ul className="space-y-3">
-                {tasks.length > 0 ? (
-                    [...tasks].sort((a,b) => (a.isCompleted ? 1 : -1) - (b.isCompleted ? 1 : -1) || a.createdAt - b.createdAt).map(task => (
-                       <li key={task.id} className={`flex items-center gap-4 p-3 rounded-lg ${task.isCompleted ? 'bg-slate-800 opacity-60' : 'bg-slate-800'}`}>
-                           <div className="flex-grow">
-                               <p className={`font-semibold ${task.isCompleted ? 'line-through text-slate-400' : 'text-slate-100'}`}>{task.title}</p>
-                               <p className="text-sm text-slate-300">{task.description}</p>
-                           </div>
-                           {!task.isCompleted && (
+        <div className="space-y-6">
+            <Card>
+                 <h3 className="text-lg font-bold font-display text-primary-400 mb-3">{t('plantsView.summary.openTasks')} ({openTasks.length})</h3>
+                <ul className="space-y-3">
+                    {openTasks.length > 0 ? (
+                        openTasks.map(task => (
+                           <li key={task.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-800">
+                               <div className="flex-grow">
+                                   <p className="font-semibold text-slate-100">{t(task.title) || task.title}</p>
+                                   <p className="text-sm text-slate-300">{t(task.description) || task.description}</p>
+                               </div>
                                <Button size="sm" onClick={() => onCompleteTask(task.id)}>{t('plantsView.detailedView.tasksComplete')}</Button>
-                           )}
-                       </li>
-                    ))
-                ) : (
-                    <p className="text-center text-slate-400 py-8">{t('plantsView.detailedView.tasksNoEntries')}</p>
-                )}
-            </ul>
-        </Card>
+                           </li>
+                        ))
+                    ) : (
+                        <p className="text-center text-slate-400 py-4">{t('plantsView.tasks.none')}</p>
+                    )}
+                </ul>
+            </Card>
+             <Card>
+                 <h3 className="text-lg font-bold font-display text-slate-400 mb-3">{t('plantsView.detailedView.tabs.tasks')} ({completedTasks.length})</h3>
+                <ul className="space-y-3">
+                    {completedTasks.length > 0 ? (
+                        completedTasks.map(task => (
+                           <li key={task.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-800 opacity-60">
+                               <PhosphorIcons.CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                               <div className="flex-grow">
+                                   <p className="font-semibold line-through text-slate-400">{t(task.title) || task.title}</p>
+                                   <p className="text-xs text-slate-500">Completed: {new Date(task.completedAt!).toLocaleString()}</p>
+                               </div>
+                           </li>
+                        ))
+                    ) : (
+                        <p className="text-center text-slate-500 py-4">{t('plantsView.detailedView.tasksNoEntries')}</p>
+                    )}
+                </ul>
+            </Card>
+        </div>
     );
 };

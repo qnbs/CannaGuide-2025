@@ -119,6 +119,10 @@ export const equipmentView = {
       depth: 'Depth',
       height: 'Height',
       result: 'Recommended exhaust fan power',
+      lightWattage: 'Light Wattage',
+      lightWattageTooltip: 'High-power lights generate more heat and require stronger ventilation.',
+      carbonFilter: 'Carbon Filter?',
+      carbonFilterTooltip: 'A carbon filter adds air resistance and requires a more powerful fan.',
     },
     light: {
       title: 'Light Calculator',
@@ -126,6 +130,24 @@ export const equipmentView = {
       width: 'Width',
       depth: 'Depth',
       result: 'Recommended LED power',
+      stage: 'Growth Stage',
+      ppfdTooltip: 'PPFD (Photosynthetic Photon Flux Density) measures the amount of usable light your plants receive. Different stages have different optimal values.',
+      dliTooltip: 'DLI (Daily Light Integral) is the total amount of usable light a plant receives over a 24-hour period.',
+    },
+    cost: {
+      title: 'Electrical Cost Calculator',
+      description: 'Estimate the electricity costs of your grow setup over various periods.',
+      lightPower: 'Light Power',
+      lightHours: 'Light Hours',
+      fanPower: 'Fan Power',
+      fanHours: 'Fan Hours',
+      otherPower: 'Other Power',
+      price: 'Price per kWh',
+      daily: 'Daily',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+      cycle: 'Per Cycle',
+      cycleSub: '(~90 days)'
     },
     nutrients: {
       title: 'Nutrient Mixer',
@@ -133,6 +155,9 @@ export const equipmentView = {
       waterAmount: 'Water Amount',
       dose: 'Dose',
       result: 'Required fertilizer',
+      reservoir: 'Reservoir Size',
+      component: 'Component',
+      totalFor: 'Total for Comp.',
     },
     yield: {
       title: 'Yield Estimator',
@@ -145,9 +170,23 @@ export const equipmentView = {
           advanced: 'Advanced',
           expert: 'Expert'
       },
-      result: 'Estimated Yield'
+      result: 'Estimated Yield',
+      training: 'Training Technique',
+      trainings: {
+        none: 'None',
+        lst: 'LST',
+        scrog: 'Topping/SCROG',
+      },
+      efficiency: 'Efficiency'
+    },
+    converter: {
+      title: 'PPM / EC Converter',
+      description: 'Convert between EC (Electrical Conductivity) and PPM (Parts Per Million) scales.',
+      resultInfo: 'Values are converted automatically as you type in any field.',
     },
     calculate: 'Calculate',
+    yes: 'Yes',
+    no: 'No',
   },
   savedSetups: {
     title: 'My Saved Setups',
@@ -187,11 +226,13 @@ export const equipmentView = {
     intro: 'Based on user reviews, forum recommendations, and the general reputation within the grower community, certain online shops have proven to be particularly reputable, reliable, and comprehensive in their product range over the years. Here is a research of the best and most convenient online shops for grow equipment, divided by Europe and the USA.',
     european: {
         title: 'European Online Shops (Focus on DACH Region & EU Shipping)',
-        description: 'These shops are mostly based in Germany, Austria, or the Netherlands and are known for fast, discreet shipping within the EU. This means no customs clearance is required for deliveries within the European Union.'
+        description: 'These shops are mostly based in Germany, Austria, or the Netherlands and are known for fast, discreet shipping within the EU. This means no customs clearance is required for deliveries within the European Union.',
+        shopKeys: ['growmart', 'growshop24', 'growland', 'zamnesia'],
     },
     us: {
         title: 'US Online Shops (North America)',
-        description: 'These shops are the first port of call for growers in the US and Canada. They are characterized by a huge product range, often geared towards the commercial market, but also serving home growers. Shipping to Europe is often possible but usually not practical due to high shipping costs, customs fees, and different mains voltages (110V) for electronic items.'
+        description: 'These shops are the first port of call for growers in the US and Canada. They are characterized by a huge product range, often geared towards the commercial market, but also serving home growers. Shipping to Europe is often possible but usually not practical due to high shipping costs, customs fees, and different mains voltages (110V) for electronic items.',
+        shopKeys: ['acInfinity', 'growGen', 'growersHouse', 'htgSupply'],
     },
     importantNote: {
         title: 'Important Note',
@@ -200,6 +241,15 @@ export const equipmentView = {
     location: 'Location',
     strengths: 'Strengths',
     idealFor: 'Ideal for',
+    shipping: 'Shipping',
+    paymentMethods: 'Payment Methods',
+    sortByName: 'Sort by Name',
+    sortByRating: 'Sort by Rating',
+    noResults: 'No shops found for the current selection.',
+    region: {
+      europe: 'Europe',
+      usa: 'USA'
+    },
     shops: {
         growmart: {
             name: 'Growmart',
@@ -212,10 +262,14 @@ export const equipmentView = {
                 'Good and honest product descriptions and often helpful blog articles.',
                 'Very good customer service accessibility.'
             ],
-            idealFor: 'Beginners to professionals looking for an "all-in-one" solution.'
+            idealFor: 'Beginners to professionals looking for an "all-in-one" solution.',
+            rating: 4.9,
+            shipping: 'Ships EU-wide, very discreet packaging',
+            paymentMethods: ['credit_card', 'bank_transfer', 'crypto'],
+            logo: 'growmart'
         },
         growshop24: {
-            name: 'grow-shop24.de / grow-shop24.at',
+            name: 'grow-shop24.de',
             url: 'https://www.grow-shop24.de/',
             location: 'Germany & Austria',
             description: 'Another very established shop with an extremely comprehensive range. They are known for competitive prices and often carry niche products that are harder to find elsewhere. With a separate domain for Austria, they serve this market particularly well.',
@@ -225,7 +279,11 @@ export const equipmentView = {
                 'Frequent good offers and discount campaigns.',
                 'Reliable shipping and good reviews (e.g., on Trusted Shops).'
             ],
-            idealFor: 'Price-conscious buyers and growers looking for specific products.'
+            idealFor: 'Price-conscious buyers and growers looking for specific products.',
+            rating: 4.7,
+            shipping: 'Ships EU-wide',
+            paymentMethods: ['credit_card', 'bank_transfer'],
+            logo: 'growshop24'
         },
         growland: {
             name: 'Growland',
@@ -238,7 +296,11 @@ export const equipmentView = {
                 'Also offers very well-coordinated complete sets.',
                 'Good customer support and fast delivery.'
             ],
-            idealFor: 'Growers who value a curated selection and a smooth ordering process.'
+            idealFor: 'Growers who value a curated selection and a smooth ordering process.',
+            rating: 4.8,
+            shipping: 'Ships EU-wide',
+            paymentMethods: ['credit_card', 'bank_transfer', 'crypto'],
+            logo: 'growland'
         },
         zamnesia: {
             name: 'Zamnesia',
@@ -251,7 +313,11 @@ export const equipmentView = {
                 'Excellent reputation and a huge community with many reviews.',
                 'Ability to combine seeds and equipment in a single order.'
             ],
-            idealFor: 'Growers who are also interested in a huge selection of genetics and want to source everything from one place.'
+            idealFor: 'Growers who are also interested in a huge selection of genetics and want to source everything from one place.',
+            rating: 4.9,
+            shipping: 'Ships worldwide, very fast within the EU',
+            paymentMethods: ['credit_card', 'bank_transfer', 'crypto'],
+            logo: 'zamnesia'
         },
         acInfinity: {
             name: 'AC Infinity',
@@ -264,7 +330,11 @@ export const equipmentView = {
                 'Excellent customer service and a strong community.',
                 'Purchase directly from the manufacturer.'
             ],
-            idealFor: 'Tech-savvy growers looking for a smart, automated, and visually appealing setup.'
+            idealFor: 'Tech-savvy growers looking for a smart, automated, and visually appealing setup.',
+            rating: 4.9,
+            shipping: 'Ships mainly within North America',
+            paymentMethods: ['credit_card', 'paypal'],
+            logo: 'acInfinity'
         },
         growGen: {
             name: 'GrowGeneration (GrowGen)',
@@ -276,7 +346,11 @@ export const equipmentView = {
                 'Expertise in commercial cultivation, which is reflected in the product selection.',
                 'Regular sales and professional advice.'
             ],
-            idealFor: 'Growers of all sizes looking for the widest possible selection.'
+            idealFor: 'Growers of all sizes looking for the widest possible selection.',
+            rating: 4.6,
+            shipping: 'Ships within the USA',
+            paymentMethods: ['credit_card', 'paypal'],
+            logo: 'growGen'
         },
         growersHouse: {
             name: 'GrowersHouse',
@@ -288,10 +362,14 @@ export const equipmentView = {
                 'Very informative website with many resources for growers.',
                 'Good reputation for reliability and customer service.'
             ],
-            idealFor: 'Growers who appreciate detailed information and comparisons before buying.'
+            idealFor: 'Growers who appreciate detailed information and comparisons before buying.',
+            rating: 4.7,
+            shipping: 'Ships worldwide',
+            paymentMethods: ['credit_card', 'crypto'],
+            logo: 'growersHouse'
         },
         htgSupply: {
-            name: 'HTG Supply (High Tech Garden Supply)',
+            name: 'HTG Supply',
             url: 'https://www.htgsupply.com/',
             location: 'USA (nationwide chain)',
             description: 'HTG Supply is one of the oldest and most established hydroponics shops in the US. They have both a strong online presence and physical stores. Their slogan "one of the fastest shippers in the industry" is often confirmed by customers.',
@@ -300,57 +378,12 @@ export const equipmentView = {
                 'Known for very fast shipping.',
                 'Often competitive prices and private labels.'
             ],
-            idealFor: 'Growers who need fast and straightforward delivery.'
+            idealFor: 'Growers who need fast and straightforward delivery.',
+            rating: 4.5,
+            shipping: 'Ships within the USA',
+            paymentMethods: ['credit_card', 'paypal'],
+            logo: 'htgSupply'
         }
     }
   },
-  calculator: {
-    yes: 'Yes',
-    no: 'No',
-    ventilation: {
-      lightWattage: 'Light Wattage',
-      lightWattageTooltip: 'High-power lights generate more heat and require stronger ventilation.',
-      carbonFilter: 'Carbon Filter?',
-      carbonFilterTooltip: 'A carbon filter adds air resistance and requires a more powerful fan.',
-    },
-    light: {
-      stage: 'Growth Stage',
-      ppfdTooltip: 'PPFD (Photosynthetic Photon Flux Density) measures the amount of usable light your plants receive. Different stages have different optimal values.',
-      dliTooltip: 'DLI (Daily Light Integral) is the total amount of usable light a plant receives over a 24-hour period.',
-    },
-    cost: {
-      title: 'Electrical Cost Calculator',
-      description: 'Estimate the electricity costs of your grow setup over various periods.',
-      lightPower: 'Light Power',
-      lightHours: 'Light Hours',
-      fanPower: 'Fan Power',
-      fanHours: 'Fan Hours',
-      otherPower: 'Other Power',
-      price: 'Price per kWh',
-      daily: 'Daily',
-      weekly: 'Weekly',
-      monthly: 'Monthly',
-      cycle: 'Per Cycle',
-      cycleSub: '(~90 days)'
-    },
-    nutrients: {
-        reservoir: 'Reservoir Size',
-        component: 'Component',
-        totalFor: 'Total for Comp.'
-    },
-    converter: {
-      title: 'PPM / EC Converter',
-      description: 'Convert between EC (Electrical Conductivity) and PPM (Parts Per Million) scales.',
-      resultInfo: 'Values are converted automatically as you type in any field.',
-    },
-    yield: {
-      training: 'Training Technique',
-      trainings: {
-        none: 'None',
-        lst: 'LST',
-        scrog: 'Topping/SCROG',
-      },
-      efficiency: 'Efficiency'
-    }
-  }
 };

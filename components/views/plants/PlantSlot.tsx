@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+// FIX: Correct import path for types.
 import { Plant, PlantStage } from '../../../types';
 import { Card } from '../../common/Card';
 import { PlantVisual } from './PlantVisual';

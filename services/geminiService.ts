@@ -1,6 +1,9 @@
 
 
+
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
+// FIX: Correct import path for types.
 import { Plant, Recommendation, AIResponse } from '../types';
 
 const getAiClient = (): GoogleGenAI => {

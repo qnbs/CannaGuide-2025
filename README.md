@@ -1,3 +1,4 @@
+
 # 🌿 Cannabis Grow Guide with Gemini
 
 **Your AI-powered digital companion for the entire cannabis cultivation cycle.**
@@ -9,11 +10,11 @@ This advanced web application is designed to help both novice and experienced gr
 ## Table of Contents
 
 - [🚀 Key Features](#-key-features)
-  - [1. The Strain Database (`Strains` View)](#-1-the-strain-database-strains-view)
-  - [2. The Grow Room (`Plants` View)](#-2-the-grow-room-plants-view)
-  - [3. The Workshop (`Equipment` View)](#-3-the-workshop-equipment-view)
-  - [4. The Library (`Knowledge` & `Help` Views)](#-4-the-library-knowledge--help-views)
-  - [5. The Control Panel (`Settings` View)](#-5-the-control-panel-settings-view)
+  - [1. The Strain Database (`Strains` View)](#1-the-strain-database-strains-view)
+  - [2. The Grow Room (`Plants` View)](#2-the-grow-room-plants-view)
+  - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view)
+  - [4. The Library (`Knowledge` & `Help` Views)](#4-the-library-knowledge--help-views)
+  - [5. The Control Panel (`Settings` View)](#5-the-control-panel-settings-view)
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
 - [💻 Tech Stack](#-tech-stack)
 - [🏁 Getting Started](#-getting-started)
@@ -26,7 +27,7 @@ This advanced web application is designed to help both novice and experienced gr
 
 This application is structured into several main views, each packed with powerful features to guide your cultivation journey.
 
-### 🌿 1. The Strain Database (`Strains` View)
+### 1. The Strain Database (`Strains` View)
 
 Your central library for cannabis knowledge, fully available offline and designed for deep exploration.
 
@@ -50,7 +51,7 @@ Your central library for cannabis knowledge, fully available offline and designe
     *   **Re-download**: Download any previous export again with a single click.
     *   **Manage**: Clean up your export history by deleting old entries.
 
-### 🌱 2. The Grow Room (`Plants` View)
+### 2. The Grow Room (`Plants` View)
 
 Your command center for managing and simulating up to three simultaneous grows.
 
@@ -69,7 +70,7 @@ Your command center for managing and simulating up to three simultaneous grows.
     *   **Plant-Specific Archive**: You have full **CRUD** control over the AI's advice for each plant. **Save**, **view**, **edit**, and **delete** recommendations to build a unique history of AI-guided care.
 *   **Global Advisor Archive**: A dedicated tab on the main dashboard that aggregates all saved AI advisor responses from all your past and present plants, creating a powerful, searchable knowledge base of your AI interactions.
 
-### 🛠️ 3. The Workshop (`Equipment` View)
+### 3. The Workshop (`Equipment` View)
 
 Plan and optimize your real-world grow setup with powerful tools.
 
@@ -88,7 +89,7 @@ Plan and optimize your real-world grow setup with powerful tools.
     *   **Yield Estimator**: Get a rough forecast of your potential harvest.
 *   **Curated Grow Shops**: A helpful guide listing reputable online grow shops in Europe and the USA, complete with descriptions and strengths to help you source your gear.
 
-### 📚 4. The Library (`Knowledge` & `Help` Views)
+### 4. The Library (`Knowledge` & `Help` Views)
 
 Your complete resource for learning and problem-solving.
 
@@ -103,11 +104,13 @@ Your complete resource for learning and problem-solving.
     *   **In-Depth Lexicons**: Detailed, accordion-style glossaries covering **Cannabinoids**, **Terpenes**, and **Flavonoids** to deepen your scientific understanding.
     *   **Cultivation Guides**: Sections on agronomic basics, plant care, and advanced training techniques.
 
-### ⚙️ 5. The Control Panel (`Settings` View)
+### 5. The Control Panel (`Settings` View)
 
 Customize the app to your exact preferences and manage your data with confidence.
 
 *   **Personalization**: Adjust the app's **language** (English/German), **theme**, and **font size**. Set your preferred default view on startup.
+*   **Advanced Accessibility**: Enable **High Contrast Mode**, a **Dyslexia-Friendly Font**, or **Reduced Motion** for a tailored viewing experience.
+*   **UI Density**: Switch between a spacious `Comfortable` layout or a data-rich `Compact` view.
 *   **View Customization**: Configure the Strains View by setting a default sort order, view mode, and choosing which data columns are visible.
 *   **Simulation Control**: Fine-tune the plant simulation with settings for speed, difficulty, and toggles for automatic background progression and journaling.
 *   **Data Management**:
@@ -167,11 +170,11 @@ Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als a
 ## Inhaltsverzeichnis
 
 - [🚀 Hauptfunktionen](#-hauptfunktionen-1)
-  - [1. Die Sortendatenbank (Ansicht `Sorten`)](#-1-die-sortendatenbank-ansicht-sorten)
-  - [2. Der Grow Room (Ansicht `Pflanzen`)](#-2-der-grow-room-ansicht-pflanzen)
-  - [3. Die Werkstatt (Ansicht `Ausrüstung`)](#-3-die-werkstatt-ansicht-ausrüstung)
-  - [4. Die Bibliothek (Ansichten `Wissen` & `Hilfe`)](#-4-die-bibliothek-ansichten-wissen--hilfe)
-  - [5. Das Kontrollzentrum (Ansicht `Einstellungen`)](#-5-das-kontrollzentrum-ansicht-einstellungen)
+  - [1. Die Sortendatenbank (Ansicht `Sorten`)](#1-die-sortendatenbank-ansicht-sorten)
+  - [2. Der Grow Room (Ansicht `Pflanzen`)](#2-der-grow-room-ansicht-pflanzen)
+  - [3. Die Werkstatt (Ansicht `Ausrüstung`)](#3-die-werkstatt-ansicht-ausrüstung)
+  - [4. Die Bibliothek (Ansichten `Wissen` & `Hilfe`)](#4-die-bibliothek-ansichten-wissen--hilfe)
+  - [5. Das Kontrollzentrum (Ansicht `Einstellungen`)](#5-das-kontrollzentrum-ansicht-einstellungen)
 - [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
 - [💻 Technologiestapel](#-technologiestapel-1)
 - [🏁 Erste Schritte](#-erste-schritte-1)
@@ -183,7 +186,7 @@ Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als a
 
 Diese Anwendung ist in mehrere Hauptansichten gegliedert, die jeweils mit leistungsstarken Funktionen ausgestattet sind, um Sie auf Ihrer Anbaureise zu begleiten.
 
-### 🌿 1. Die Sortendatenbank (Ansicht `Sorten`)
+### 1. Die Sortendatenbank (Ansicht `Sorten`)
 
 Ihre zentrale Bibliothek für Cannabis-Wissen, vollständig offline verfügbar und für tiefgehende Erkundungen konzipiert.
 
@@ -207,7 +210,7 @@ Ihre zentrale Bibliothek für Cannabis-Wissen, vollständig offline verfügbar u
     *   **Erneut herunterladen**: Laden Sie jeden früheren Export mit einem einzigen Klick erneut herunter.
     *   **Verwalten**: Bereinigen Sie Ihren Exportverlauf, indem Sie alte Einträge löschen.
 
-### 🌱 2. Der Grow Room (Ansicht `Pflanzen`)
+### 2. Der Grow Room (Ansicht `Pflanzen`)
 
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Grows.
 
@@ -226,7 +229,7 @@ Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitig
     *   **Pflanzenspezifisches Archiv**: Sie haben die volle **CRUD**-Kontrolle über die Ratschläge der KI für jede Pflanze. **Speichern**, **ansehen**, **bearbeiten** und **löschen** Sie Empfehlungen, um eine einzigartige Historie der KI-geführten Pflege aufzubauen.
 *   **Globales Berater-Archiv**: Ein dedizierter Tab auf dem Haupt-Dashboard, der alle gespeicherten KI-Berater-Antworten von all Ihren vergangenen und gegenwärtigen Pflanzen zusammenfasst und so eine leistungsstarke, durchsuchbare Wissensdatenbank Ihrer KI-Interaktionen erstellt.
 
-### 🛠️ 3. Die Werkstatt (Ansicht `Ausrüstung`)
+### 3. Die Werkstatt (Ansicht `Ausrüstung`)
 
 Planen und optimieren Sie Ihr reales Grow-Setup mit leistungsstarken Werkzeugen.
 
@@ -245,7 +248,7 @@ Planen und optimieren Sie Ihr reales Grow-Setup mit leistungsstarken Werkzeugen.
     *   **Ertragsschätzer**: Erhalten Sie eine grobe Prognose Ihres potenziellen Ernteertrags.
 *   **Kuratierte Grow-Shops**: Ein hilfreicher Leitfaden, der seriöse Online-Grow-Shops in Europa und den USA auflistet, komplett mit Beschreibungen und Stärken, um Ihnen bei der Beschaffung Ihrer Ausrüstung zu helfen.
 
-### 📚 4. Die Bibliothek (Ansichten `Wissen` & `Hilfe`)
+### 4. Die Bibliothek (Ansichten `Wissen` & `Hilfe`)
 
 Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
@@ -260,11 +263,13 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
     *   **Tiefgehende Lexika**: Detaillierte Glossare im Akkordeon-Stil zu **Cannabinoiden**, **Terpenen** und **Flavonoiden**, um Ihr wissenschaftliches Verständnis zu vertiefen.
     *   **Anbauleitfäden**: Abschnitte zu agronomischen Grundlagen, Pflanzenpflege und fortgeschrittenen Trainingstechniken.
 
-### ⚙️ 5. Das Kontrollzentrum (Ansicht `Einstellungen`)
+### 5. Das Kontrollzentrum (Ansicht `Einstellungen`)
 
 Passen Sie die App genau an Ihre Vorlieben an und verwalten Sie Ihre Daten mit Zuversicht.
 
 *   **Personalisierung**: Passen Sie die **Sprache** (Englisch/Deutsch), das **Thema** und die **Schriftgröße** der App an. Legen Sie Ihre bevorzugte Standardansicht beim Start fest.
+*   **Erweiterte Barrierefreiheit**: Aktivieren Sie einen **Hochkontrastmodus**, eine **Legastheniker-freundliche Schriftart** oder **Reduzierte Bewegung** für ein maßgeschneidertes Seherlebnis.
+*   **UI-Dichte**: Wechseln Sie zwischen einem geräumigen `Komfortablen` Layout oder einer datenreichen `Kompakten` Ansicht.
 *   **Ansichtsanpassung**: Konfigurieren Sie die Sortenansicht, indem Sie eine Standard-Sortierreihenfolge, einen Ansichtsmodus und die sichtbaren Datenspalten festlegen.
 *   **Simulationssteuerung**: Feinabstimmung der Pflanzensimulation mit Einstellungen für Geschwindigkeit, Schwierigkeit und Schaltern für den automatischen Hintergrundfortschritt und das Journaling.
 *   **Datenverwaltung**:

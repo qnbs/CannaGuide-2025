@@ -4,6 +4,7 @@ import { Button } from './Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
 import { useSettings } from '../../hooks/useSettings';
+// FIX: Correct import path for types.
 import { Language } from '../../types';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 

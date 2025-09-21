@@ -1,75 +1,77 @@
 import React, { useMemo, useState } from 'react';
-import { ArchivedAdvisorResponse, Plant } from '../../../types';
+import { usePlantAdvisorArchive } from '../../../hooks/usePlantAdvisorArchive';
+import { usePlants } from '../../../hooks/usePlants';
 import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
-import { EditResponseModal } from '../../common/EditResponseModal';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { ArchivedAdvisorResponse } from '../../../types';
 
-interface GlobalAdvisorArchiveViewProps {
-    archive: Record<string, ArchivedAdvisorResponse[]>;
-    plants: Plant[];
-    updateResponse: (updatedResponse: ArchivedAdvisorResponse) => void;
-    deleteResponse: (plantId: string, responseId: string) => void;
-}
-
-export const GlobalAdvisorArchiveView: React.FC<GlobalAdvisorArchiveViewProps> = ({ archive, plants, updateResponse, deleteResponse }) => {
+export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslations();
-    const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
+    const { archive } = usePlantAdvisorArchive();
+    const { plants } = usePlants();
+    const [searchTerm, setSearchTerm] = useState('');
 
-    const allResponses = useMemo(() => {
+    const allAdvice = useMemo(() => {
+        const plantMap = new Map(plants.filter(p => p).map(p => [p!.id, p!.name]));
+        
         return Object.values(archive)
             .flat()
+            .map(advice => ({
+                ...advice,
+                plantName: plantMap.get(advice.plantId) || 'Archived Plant'
+            }))
             .sort((a, b) => b.createdAt - a.createdAt);
-    }, [archive]);
-    
-    const getPlantName = (plantId: string) => {
-        const plant = plants.find(p => p.id === plantId);
-        return plant ? plant.name : t('plantsView.aiAdvisor.unknownPlant');
-    };
+    }, [archive, plants]);
+
+    const filteredAdvice = useMemo(() => {
+        if (!searchTerm) return allAdvice;
+        const lowerCaseSearch = searchTerm.toLowerCase();
+        return allAdvice.filter(advice => 
+            advice.title.toLowerCase().includes(lowerCaseSearch) ||
+            advice.content.toLowerCase().includes(lowerCaseSearch) ||
+            advice.plantName.toLowerCase().includes(lowerCaseSearch)
+        );
+    }, [allAdvice, searchTerm]);
 
     return (
-        <div className="space-y-4">
-             {editingResponse && (
-                <EditResponseModal 
-                    response={editingResponse} 
-                    onClose={() => setEditingResponse(null)} 
-                    onSave={(updated) => {
-                        updateResponse(updated);
-                        setEditingResponse(null);
-                    }}
+        <Card>
+            <h3 className="text-xl font-bold font-display text-primary-400 mb-4 flex items-center gap-2">
+                <PhosphorIcons.Archive className="w-6 h-6"/>
+                {t('knowledgeView.archive.title')}
+            </h3>
+            
+            <div className="relative mb-4">
+                <input
+                    type="text"
+                    placeholder={t('strainsView.searchPlaceholder')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
-            )}
-            {allResponses.length > 0 ? (
-                allResponses.map(res => (
-                     <Card key={res.id} className="bg-slate-800">
-                        <div className="flex justify-between items-start">
-                             <div>
-                                <h4 className="font-bold text-lg text-primary-300">{res.title}</h4>
-                                <p className="text-sm font-semibold text-slate-300 mb-1">{getPlantName(res.plantId)}</p>
-                                <p className="text-xs text-slate-400">{new Date(res.createdAt).toLocaleString()} - {t(`plantStages.${res.plantStage}`)}</p>
-                             </div>
-                             <div className="flex items-center gap-2">
-                                {/* FIX: Add aria-label for accessibility. */}
-                                <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
-                                    <PhosphorIcons.PencilSimple className="w-4 h-4"/>
-                                </Button>
-                                {/* FIX: Add aria-label for accessibility. */}
-                                <Button size="sm" variant="danger" onClick={() => deleteResponse(res.plantId, res.id)} aria-label={t('common.deleteResponse')}>
-                                    <PhosphorIcons.TrashSimple className="w-4 h-4"/>
-                                </Button>
+                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+            </div>
+
+            <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {filteredAdvice.length > 0 ? (
+                    filteredAdvice.map((res: ArchivedAdvisorResponse & { plantName: string }) => (
+                        <Card key={res.id} className="bg-slate-800">
+                            <div className="flex justify-between items-start">
+                                <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
+                                <div className="text-xs text-slate-400 text-right">
+                                    <p>{res.plantName}</p>
+                                    <p>{new Date(res.createdAt).toLocaleDateString()}</p>
+                                </div>
                             </div>
-                        </div>
-                        <div className="prose prose-sm dark:prose-invert max-w-none mt-3" dangerouslySetInnerHTML={{ __html: res.content }}></div>
-                    </Card>
-                ))
-            ) : (
-                 <Card className="text-center py-10 text-slate-500">
-                    <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                    <h3 className="font-semibold">{t('plantsView.aiAdvisor.archiveEmptyGlobal.title')}</h3>
-                    <p className="text-sm">{t('plantsView.aiAdvisor.archiveEmptyGlobal.subtitle')}</p>
-                </Card>
-            )}
-        </div>
+                            <div className="prose prose-sm dark:prose-invert max-w-none mt-2" dangerouslySetInnerHTML={{ __html: res.content }}></div>
+                        </Card>
+                    ))
+                ) : (
+                    <div className="text-center py-10 text-slate-500">
+                        <h3 className="font-semibold">{t('knowledgeView.archive.empty')}</h3>
+                    </div>
+                )}
+            </div>
+        </Card>
     );
 };

@@ -1,4 +1,5 @@
 import React from 'react';
+// FIX: Import SavedExport type.
 import { Strain, SavedExport, ExportFormat } from '../../../types';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';

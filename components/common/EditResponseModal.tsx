@@ -54,9 +54,12 @@ export const EditResponseModal = <T extends EditableResponse>({ response, onClos
                     
                     <div className="bg-slate-800 border border-slate-600 rounded-md">
                         <div className="flex items-center gap-2 p-1 border-b border-slate-600">
-                            <button type="button" onClick={() => applyFormat('bold')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.TextBolder weight="bold" className="w-5 h-5" /></button>
-                            <button type="button" onClick={() => applyFormat('italic')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.TextItalic weight="bold" className="w-5 h-5" /></button>
-                            <button type="button" onClick={() => applyFormat('insertUnorderedList')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.ListBullets weight="bold" className="w-5 h-5" /></button>
+                            {/* FIX: Removed invalid 'weight' prop */}
+                            <button type="button" onClick={() => applyFormat('bold')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.TextBolder className="w-5 h-5" /></button>
+                            {/* FIX: Removed invalid 'weight' prop */}
+                            <button type="button" onClick={() => applyFormat('italic')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.TextItalic className="w-5 h-5" /></button>
+                            {/* FIX: Removed invalid 'weight' prop */}
+                            <button type="button" onClick={() => applyFormat('insertUnorderedList')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.ListBullets className="w-5 h-5" /></button>
                         </div>
                         <div
                             ref={contentRef}

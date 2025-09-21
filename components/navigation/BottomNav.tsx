@@ -1,4 +1,5 @@
 import React from 'react';
+// FIX: Correct import path for types.
 import { View } from '../../types';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';

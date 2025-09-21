@@ -1,4 +1,6 @@
-import React, { useState, useRef, useId } from 'react';
+
+
+import React, { useState, useRef, useId, useEffect } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { JournalEntry, TrainingType } from '../../../types';
@@ -50,11 +52,12 @@ export const WateringModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { settings } = useSettings();
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.5');
-    // FIX: Correctly handle translation keys for default notes.
+    // FIX: Initialize state with a function to avoid re-running translation on every render.
     const [notes, setNotes] = useState(() => {
-        const defaultNote = settings.defaultJournalNotes.watering;
-        return defaultNote && isDefaultNoteKey(defaultNote) ? t(defaultNote) : (defaultNote || '');
+        const defaultNoteKey = settings.defaultJournalNotes.watering;
+        return defaultNoteKey && isDefaultNoteKey(defaultNoteKey) ? t(defaultNoteKey) : (defaultNoteKey || '');
     });
+
 
     const handleConfirm = () => {
         const details = {
@@ -87,11 +90,12 @@ export const FeedingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.2');
     const [ec, setEc] = useState('1.2');
-    // FIX: Correctly handle translation keys for default notes.
+    // FIX: Initialize state with a function to avoid re-running translation on every render.
     const [notes, setNotes] = useState(() => {
-        const defaultNote = settings.defaultJournalNotes.feeding;
-        return defaultNote && isDefaultNoteKey(defaultNote) ? t(defaultNote) : (defaultNote || '');
+        const defaultNoteKey = settings.defaultJournalNotes.feeding;
+        return defaultNoteKey && isDefaultNoteKey(defaultNoteKey) ? t(defaultNoteKey) : (defaultNoteKey || '');
     });
+
 
     const handleConfirm = () => {
         const details = {

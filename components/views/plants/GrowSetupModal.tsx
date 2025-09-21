@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+// FIX: Correct import path for types.
 import { GrowSetup, Strain } from '../../../types';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';

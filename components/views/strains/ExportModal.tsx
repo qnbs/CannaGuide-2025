@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ExportSource, ExportFormat } from '../../../types';
 import { Card } from '../../common/Card';
@@ -45,8 +46,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <Card ref={modalRef} className="w-full max-w-lg" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
+      <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={e => e.stopPropagation()}>
         <h2 className="text-2xl font-bold font-display text-primary-400 mb-4">{t('strainsView.exportModal.title')}</h2>
         
         <div className="space-y-6">

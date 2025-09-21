@@ -1,5 +1,6 @@
-import React, { useState, useCallback, useEffect, useId, useMemo, useRef } from 'react';
-import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant, SortDirection } from '../../types';
+
+import React, { useState, useCallback, useEffect, useId, useMemo } from 'react';
+import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant } from '../../types';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { useNotifications } from '../../context/NotificationContext';
 import { useFavorites } from '../../hooks/useFavorites';

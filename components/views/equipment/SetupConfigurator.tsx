@@ -129,7 +129,11 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
                                         onClick={() => { setPlantCount(count); setSelectedConfigKey(null); }}
                                         className={`p-4 text-center rounded-lg border-2 transition-colors ${plantCount === count ? 'bg-primary-900/50 border-primary-500' : 'bg-slate-800 border-transparent hover:border-slate-500'}`}
                                     >
-                                        <PhosphorIcons.Plant className="w-8 h-8 mx-auto mb-1 text-primary-500"/>
+                                        <div className="flex justify-center items-center h-8 mb-1">
+                                            {Array.from({ length: count }).map((_, i) => (
+                                                <PhosphorIcons.Plant key={i} className="w-8 h-8 text-primary-500"/>
+                                            ))}
+                                        </div>
                                         <span className="font-bold">{t('equipmentView.configurator.plantCount', { count })}</span>
                                     </button>
                                 )}
@@ -162,7 +166,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
                     error={error}
                     onSaveSetup={onSaveSetup}
                     startOver={startOver}
-                    handleGenerate={handleGenerate}
+                    handleGenerate={() => handleGenerate()}
                     area={sourceDetails.area}
                     budget={sourceDetails.budget}
                     growStyle={sourceDetails.growStyle}

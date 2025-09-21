@@ -201,6 +201,7 @@ export const equipmentView = {
     updateError: 'Error updating setup.',
     exportConfirm: 'Are you sure you want to export the setup "{name}" as {format}?',
     exportSuccess: 'Setup "{name}" exported successfully.',
+    exportError: 'Error exporting setup.',
     modal: {
       title: 'Setup Details',
       editMode: 'Edit Mode',

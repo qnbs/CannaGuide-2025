@@ -7,7 +7,6 @@ import { ExportModal } from './strains/ExportModal';
 import { exportService } from '../../services/exportService';
 import { AddStrainModal } from './strains/AddStrainModal';
 import { useExportsManager } from '../../hooks/useExportsManager';
-import { ExportsManagerView } from './strains/ExportsManagerView';
 import { useTranslations } from '../../hooks/useTranslations';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import StrainListItem from './strains/StrainListItem';
@@ -23,6 +22,7 @@ import { Button } from '../common/Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useSettings } from '../../hooks/useSettings';
 import { LIST_GRID_CLASS } from './strains/constants';
+import { ExportsManagerView } from './strains/ExportsManagerView';
 
 type StrainViewTab = 'all' | 'user' | 'exports';
 type ViewMode = 'list' | 'grid';
@@ -267,18 +267,23 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
         return;
     }
     
-    const exportName = `CannaGuide Export - ${sourceKey} - ${new Date().toLocaleDateString()}`;
-    
-    const savedExport = addExport({ name: exportName, source, format }, strainsToExport.map(s => s.id));
+    try {
+        const exportName = `${t('strainsView.exportModal.filenamePrefix')} - ${t(`strainsView.exportModal.sources.${sourceKey}`)} - ${new Date().toLocaleDateString()}`;
+        
+        const savedExport = addExport({ name: exportName, source, format }, strainsToExport.map(s => s.id));
 
-    const fileName = savedExport.name.replace(/\s/g, '_');
-    switch (format) {
-      case 'json': exportService.exportAsJSON(strainsToExport, fileName); break;
-      case 'csv': exportService.exportAsCSV(strainsToExport, fileName); break;
-      case 'pdf': exportService.exportAsPDF(strainsToExport, fileName, t); break;
-      case 'txt': exportService.exportAsTXT(strainsToExport, fileName, t); break;
+        const fileName = savedExport.name.replace(/\s/g, '_');
+        switch (format) {
+        case 'json': exportService.exportAsJSON(strainsToExport, fileName); break;
+        case 'csv': exportService.exportAsCSV(strainsToExport, fileName, t); break;
+        case 'pdf': exportService.exportAsPDF(strainsToExport, fileName, t); break;
+        case 'txt': exportService.exportAsTXT(strainsToExport, fileName, t); break;
+        }
+        addNotification(t('common.successfullyExported', { count: strainsToExport.length, format: format.toUpperCase() }), 'success');
+    } catch (error) {
+        console.error("Export failed:", error);
+        addNotification(t('common.exportError'), 'error');
     }
-    addNotification(t('common.successfullyExported', { count: strainsToExport.length, format: format.toUpperCase() }), 'success');
   };
 
   return (

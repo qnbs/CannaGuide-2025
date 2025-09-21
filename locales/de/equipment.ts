@@ -199,6 +199,7 @@ export const equipmentView = {
     updateError: 'Fehler beim Aktualisieren des Setups.',
     exportConfirm: 'Möchtest du das Setup "{name}" wirklich als {format} exportieren?',
     exportSuccess: 'Setup "{name}" erfolgreich exportiert.',
+    exportError: 'Fehler beim Exportieren des Setups.',
     modal: {
       title: 'Setup-Details',
       editMode: 'Bearbeitungsmodus',

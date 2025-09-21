@@ -31,7 +31,8 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                 exportService.exportAsJSON(strainsToExport, fileNameWithoutExt);
                 break;
             case 'csv':
-                exportService.exportAsCSV(strainsToExport, fileNameWithoutExt);
+                // FIX: Pass the translation function 't' as the third argument.
+                exportService.exportAsCSV(strainsToExport, fileNameWithoutExt, t);
                 break;
             case 'pdf':
                 exportService.exportAsPDF(strainsToExport, fileNameWithoutExt, t);

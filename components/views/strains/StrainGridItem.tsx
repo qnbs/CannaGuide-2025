@@ -14,6 +14,7 @@ interface StrainGridItemProps {
     isUserStrain?: boolean;
     onEdit?: (strain: Strain) => void;
     onDelete?: (id: string) => void;
+    index: number;
 }
 
 const StrainGridItem: React.FC<StrainGridItemProps> = ({
@@ -23,7 +24,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
     onToggleFavorite,
     isUserStrain = false,
     onEdit,
-    onDelete
+    onDelete,
+    index,
 }) => {
     const { t } = useTranslations();
     
@@ -37,7 +39,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
 
     return (
         <Card 
-            className="flex flex-col h-full cursor-pointer group relative hover:border-primary-500/50 transition-all p-3"
+            className="flex flex-col h-full cursor-pointer group relative hover:border-primary-500/50 transition-all p-3 animate-fade-in-stagger"
+            style={{ animationDelay: `${index * 30}ms` }}
             onClick={() => onSelect(strain)}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(strain); } }}
             role="button"

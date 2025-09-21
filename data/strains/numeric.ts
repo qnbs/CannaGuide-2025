@@ -15,8 +15,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
-      yieldDetails: { indoor: '~600 g/m²', outdoor: '600-800 g/Pflanze' },
-      heightDetails: { indoor: 'Hoch', outdoor: 'bis 3.5 m' },
     },
   },
   {
@@ -33,8 +31,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-      yieldDetails: { indoor: '450-550 g/m²', outdoor: 'Mittel-Hoch' },
-      heightDetails: { indoor: 'Mittel', outdoor: 'Hoch (bis 2 m), benötigt Training' },
     },
   },
   {
@@ -51,8 +47,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Low',
       height: 'Short',
-      yieldDetails: { indoor: '~300 g/m²', outdoor: '~350 g/Pflanze' },
-      heightDetails: { indoor: 'Kurz bis Mittel', outdoor: 'Kurz bis Mittel' },
     },
   },
   {
@@ -69,8 +63,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-      yieldDetails: { indoor: '350-900 g/m²', outdoor: '~400 g/Pflanze' },
-      heightDetails: { indoor: 'Kurz (~75 cm)', outdoor: 'Hoch (~200 cm)' },
     },
   },
   {
@@ -87,8 +79,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
-      yieldDetails: { indoor: '500-600 g/m²', outdoor: '900-4000 g/Pflanze' },
-      heightDetails: { indoor: 'Hoch', outdoor: 'Hoch' },
     },
   },
   {
@@ -105,8 +95,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
-      yieldDetails: { indoor: '450-550 g/m²', outdoor: 'bis 600 g/Pflanze' },
-      heightDetails: { indoor: 'Kurz (80-110 cm)', outdoor: 'Kurz' },
     },
   },
   {
@@ -123,8 +111,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'High',
       height: 'Medium',
-      yieldDetails: { indoor: 'Hoch', outdoor: 'Hoch' },
-      heightDetails: { indoor: 'Mittel', outdoor: 'Mittel' },
     },
   }
 ];

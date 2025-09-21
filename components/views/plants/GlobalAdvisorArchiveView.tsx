@@ -50,9 +50,11 @@ export const GlobalAdvisorArchiveView: React.FC<GlobalAdvisorArchiveViewProps> =
                                 <p className="text-xs text-slate-400">{new Date(res.createdAt).toLocaleString()} - {t(`plantStages.${res.plantStage}`)}</p>
                              </div>
                              <div className="flex items-center gap-2">
+                                {/* FIX: Add aria-label for accessibility. */}
                                 <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                     <PhosphorIcons.PencilSimple className="w-4 h-4"/>
                                 </Button>
+                                {/* FIX: Add aria-label for accessibility. */}
                                 <Button size="sm" variant="danger" onClick={() => deleteResponse(res.plantId, res.id)} aria-label={t('common.deleteResponse')}>
                                     <PhosphorIcons.TrashSimple className="w-4 h-4"/>
                                 </Button>

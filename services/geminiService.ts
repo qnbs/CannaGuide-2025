@@ -1,4 +1,5 @@
 
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { Plant, Recommendation, AIResponse } from '../types';
 
@@ -91,11 +92,13 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
     });
 
     try {
+        // FIX: Use response.text per Gemini API guidelines.
         const jsonStr = response.text.trim();
         const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
         const result = JSON.parse(cleanJsonStr);
         return result as Recommendation;
     } catch (e) {
+        // FIX: Use response.text for error logging.
         console.error("Failed to parse AI response for equipment:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -123,11 +126,13 @@ const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIRespo
     });
     
     try {
+        // FIX: Use response.text per Gemini API guidelines.
         const jsonStr = response.text.trim();
         const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
         const result = JSON.parse(cleanJsonStr);
         return result as AIResponse;
     } catch (e) {
+        // FIX: Use response.text for error logging.
         console.error("Failed to parse AI response for mentor:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -164,11 +169,13 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
     });
 
     try {
+        // FIX: Use response.text per Gemini API guidelines.
         const jsonStr = response.text.trim();
         const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
         const result = JSON.parse(cleanJsonStr);
         return result as AIResponse;
     } catch (e) {
+        // FIX: Use response.text for error logging.
         console.error("Failed to parse AI response for diagnostics:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -205,11 +212,13 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
     });
 
     try {
+        // FIX: Use response.text per Gemini API guidelines.
         const jsonStr = response.text.trim();
         const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
         const result = JSON.parse(cleanJsonStr);
         return result as AIResponse;
     } catch (e) {
+        // FIX: Use response.text for error logging.
         console.error("Failed to parse AI response for advisor:", e, response.text);
         throw new Error("ai.error.parsing");
     }

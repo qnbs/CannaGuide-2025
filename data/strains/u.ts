@@ -15,8 +15,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'High',
             height: 'Tall',
-            yieldDetails: { indoor: '500-600 g/m²', outdoor: 'bis 1000 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Hoch (bis 2.5m)' },
         },
     },
     {
@@ -30,8 +28,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '450-550 g/m²', outdoor: '~600 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     }
 ];

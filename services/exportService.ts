@@ -2,11 +2,6 @@ import { Strain, SavedSetup, RecommendationCategory } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-// This is a workaround for jspdf-autotable's TS support.
-interface jsPDFWithAutoTable extends jsPDF {
-  autoTable: (options: any) => jsPDF;
-}
-
 type TFunction = (key: string, params?: Record<string, any>) => any;
 
 const strainToCSVRow = (strain: Strain): Record<string, any> => ({
@@ -69,7 +64,8 @@ const exportAsTXT = (strains: Strain[], filename: string, t: TFunction) => {
 };
 
 const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+    // FIX: Removed problematic custom interface for jspdf-autotable.
+    const doc = new jsPDF();
     doc.text('Cannabis Strain Report', 14, 16);
     doc.setFontSize(10);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
@@ -84,7 +80,8 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
         s.agronomic.difficulty
     ]);
 
-    doc.autoTable({
+    // FIX: Use type assertion to call autoTable, resolving TS errors.
+    (doc as any).autoTable({
         head: [tableColumn],
         body: tableRows,
         startY: 30,
@@ -121,7 +118,8 @@ const exportSetupAsTXT = (setup: SavedSetup, t: TFunction) => {
 };
 
 const exportSetupAsPDF = (setup: SavedSetup, t: TFunction) => {
-    const doc = new jsPDF() as jsPDFWithAutoTable;
+    // FIX: Removed problematic custom interface for jspdf-autotable.
+    const doc = new jsPDF();
     doc.text(`${t('equipmentView.savedSetups.pdfReport.setup')}: ${setup.name}`, 14, 16);
     doc.setFontSize(10);
     doc.text(`${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}`, 14, 22);
@@ -139,7 +137,8 @@ const exportSetupAsPDF = (setup: SavedSetup, t: TFunction) => {
 
     tableRows.push(['', '', t('equipmentView.configurator.total'), `${setup.totalCost.toFixed(2)} €`]);
 
-    doc.autoTable({
+    // FIX: Use type assertion to call autoTable, resolving TS errors.
+    (doc as any).autoTable({
         head: [tableColumn],
         body: tableRows,
         startY: 30,

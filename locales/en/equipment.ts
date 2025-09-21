@@ -104,7 +104,6 @@ export const equipmentView = {
       beginner: 'Beginner',
       balanced: 'Balanced',
       yield: 'Yield',
-      stealth: 'Stealth',
     },
     setupNameBudgets: {
       low: 'Low',

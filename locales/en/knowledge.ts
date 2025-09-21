@@ -3,7 +3,7 @@ export const knowledgeView = {
   subtitle: 'Your guide from preparation to harvest.',
   tabs: {
     guide: 'Guide',
-    database: 'Knowledge Database'
+    archive: 'Knowledge Database'
   },
   progress: 'Your Progress',
   stepsCompleted: '{completed} of {total} steps completed',

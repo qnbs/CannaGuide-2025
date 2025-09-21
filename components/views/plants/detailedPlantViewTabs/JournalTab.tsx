@@ -16,6 +16,15 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
         if (journalFilter === 'ALL') return journal;
         return journal.filter(entry => entry.type === journalFilter);
     }, [journal, journalFilter]);
+    
+    const journalTypeIcons: Record<JournalEntryType, React.ReactNode> = {
+        WATERING: <PhosphorIcons.Drop />,
+        FEEDING: <PhosphorIcons.TestTube />,
+        TRAINING: <PhosphorIcons.Scissors />,
+        OBSERVATION: <PhosphorIcons.MagnifyingGlass />,
+        SYSTEM: <PhosphorIcons.Gear />,
+        PHOTO: <PhosphorIcons.Camera />,
+    };
 
     const journalFilterOptions: { label: string, value: JournalEntryType | 'ALL', icon: React.ReactNode }[] = [
         { label: t('common.all'), value: 'ALL', icon: <PhosphorIcons.ListChecks /> },
@@ -40,9 +49,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
                 {filteredJournal.length > 0 ? (
                     [...filteredJournal].reverse().map(entry => (
                         <li key={entry.id} className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg">
-                            <div className="flex-shrink-0 text-center">
-                                <p className="font-bold text-primary-400">{new Date(entry.timestamp).toLocaleDateString()}</p>
-                                <p className="text-xs text-slate-400">{new Date(entry.timestamp).toLocaleTimeString()}</p>
+                             <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-700 rounded-full text-primary-400">
+                                {journalTypeIcons[entry.type]}
                             </div>
                             <div className="flex-grow">
                                 <p className="font-semibold text-slate-100">{entry.notes}</p>
@@ -51,6 +59,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
                                         {Object.entries(entry.details).map(([key, value]) => value && !['imageUrl', 'imageId'].includes(key) && `${key}: ${value}`).filter(Boolean).join(' | ')}
                                     </p>
                                 )}
+                                 <p className="text-xs text-slate-500 mt-1">{new Date(entry.timestamp).toLocaleString()}</p>
                             </div>
                         </li>
                     ))

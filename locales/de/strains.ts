@@ -100,13 +100,14 @@ export const strainsView = {
   deleteStrainSuccess: 'Sorte "{name}" wurde gelöscht.',
   exportModal: {
     title: 'Sorten exportieren',
+    filenamePrefix: 'CannaGuide_Sorten',
     source: 'Was exportieren?',
     format: 'In welchem Format?',
     exportConfirm: 'Möchtest du wirklich {count} Sorten als {format} exportieren?',
     sources: {
       selected: 'Ausgewählte',
       favorites: 'Favoriten',
-      filtered: 'Aktueller Filter',
+      filtered: 'Gefilterte',
       all: 'Alle',
     },
     formats: {
@@ -146,5 +147,21 @@ export const strainsView = {
   view: {
       list: 'Listenansicht',
       grid: 'Rasteransicht'
+  },
+  csvHeaders: {
+    name: 'Name',
+    type: 'Typ',
+    thc: 'THC (%)',
+    cbd: 'CBD (%)',
+    floweringTime: 'Blütezeit (Wochen)',
+    difficulty: 'Schwierigkeit',
+    yield: 'Ertrag',
+    height: 'Höhe',
+    genetics: 'Genetik',
+    aromas: 'Aromen',
+    terpenes: 'Terpene',
+    yieldIndoor: 'Ertrag (Indoor)',
+    yieldOutdoor: 'Ertrag (Outdoor)',
+    description: 'Beschreibung',
   }
 };

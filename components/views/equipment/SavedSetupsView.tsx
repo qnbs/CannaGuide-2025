@@ -148,7 +148,7 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
             }
             addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
         } catch(e) {
-            addNotification(t('equipmentView.savedSetups.updateError'), 'error');
+            addNotification(t('equipmentView.savedSetups.exportError'), 'error');
             console.error("Export error:", e);
         }
     };

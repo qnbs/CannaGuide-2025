@@ -1,20 +1,28 @@
 import { Strain, SavedSetup, RecommendationCategory } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+// Import a font that supports UTF-8 characters, like Roboto.
+// jsPDF has issues with special characters in its built-in fonts.
+// Note: In a real-world scenario, you would bundle this font file.
+// For this environment, we rely on modern jsPDF's improved handling.
 
 type TFunction = (key: string, params?: Record<string, any>) => any;
 
-const strainToCSVRow = (strain: Strain): Record<string, any> => ({
-  Name: strain.name,
-  Type: strain.type,
-  THC: strain.thc,
-  CBD: strain.cbd,
-  FloweringTime: strain.floweringTime,
-  Difficulty: strain.agronomic.difficulty,
-  Yield: strain.agronomic.yield,
-  Height: strain.agronomic.height,
-  Genetics: strain.genetics || '',
-  Description: (strain.description || '').replace(/"/g, '""'),
+const strainToCSVRow = (strain: Strain, t: TFunction): Record<string, any> => ({
+    [t('strainsView.csvHeaders.name')]: strain.name,
+    [t('strainsView.csvHeaders.type')]: strain.type,
+    [t('strainsView.csvHeaders.thc')]: strain.thc,
+    [t('strainsView.csvHeaders.cbd')]: strain.cbd,
+    [t('strainsView.csvHeaders.floweringTime')]: strain.floweringTime,
+    [t('strainsView.csvHeaders.difficulty')]: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
+    [t('strainsView.csvHeaders.yield')]: t(`strainsView.addStrainModal.yields.${strain.agronomic.yield.toLowerCase()}`),
+    [t('strainsView.csvHeaders.height')]: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
+    [t('strainsView.csvHeaders.genetics')]: strain.genetics || '',
+    [t('strainsView.csvHeaders.aromas')]: (strain.aromas || []).join('; '),
+    [t('strainsView.csvHeaders.terpenes')]: (strain.dominantTerpenes || []).join('; '),
+    [t('strainsView.csvHeaders.yieldIndoor')]: strain.agronomic.yieldDetails?.indoor || '',
+    [t('strainsView.csvHeaders.yieldOutdoor')]: strain.agronomic.yieldDetails?.outdoor || '',
+    [t('strainsView.csvHeaders.description')]: (strain.description || '').replace(/"/g, '""').replace(/\n/g, ' '),
 });
 
 const arrayToCSV = (data: Record<string, any>[]): string => {
@@ -38,71 +46,182 @@ const downloadFile = (content: string, fileName: string, mimeType: string) => {
 
 const exportAsJSON = (strains: Strain[], filename: string) => {
   const jsonString = JSON.stringify(strains, null, 2);
-  downloadFile(jsonString, `${filename}.json`, 'application/json');
+  downloadFile(jsonString, `${filename}.json`, 'application/json;charset=utf-8;');
 };
 
-const exportAsCSV = (strains: Strain[], filename: string) => {
-  const csvData = strains.map(strainToCSVRow);
+const exportAsCSV = (strains: Strain[], filename: string, t: TFunction) => {
+  const csvData = strains.map(strain => strainToCSVRow(strain, t));
   const csvString = arrayToCSV(csvData);
-  downloadFile(csvString, `${filename}.csv`, 'text/csv;charset=utf-8;');
+  // Prepend UTF-8 BOM for Excel compatibility with special characters
+  const bomCsvString = "\uFEFF" + csvString;
+  downloadFile(bomCsvString, `${filename}.csv`, 'text/csv;charset=utf-8;');
 };
 
 const exportAsTXT = (strains: Strain[], filename: string, t: TFunction) => {
-    let txtString = `Strain Export - ${new Date().toLocaleString()}\n\n`;
+    let txtString = `${t('strainsView.exportModal.title')} - ${new Date().toLocaleString()}\n\n`;
     strains.forEach(s => {
+        txtString += `========================================\n`;
+        txtString += `** ${s.name} **\n`;
         txtString += `----------------------------------------\n`;
-        txtString += `Name: ${s.name}\n`;
-        txtString += `Type: ${s.type}\n`;
-        txtString += `THC: ${s.thc}% | CBD: ${s.cbd}%\n`;
-        txtString += `Flowering Time: ${s.floweringTime} weeks\n`;
-        txtString += `Difficulty: ${s.agronomic.difficulty}\n`;
-        txtString += `Yield: ${s.agronomic.yield} | Height: ${s.agronomic.height}\n`;
-        if (s.description) txtString += `\nDescription:\n${s.description}\n`;
-        txtString += `----------------------------------------\n\n`;
+        txtString += `${t('common.type')}: ${s.type} ${s.typeDetails ? `(${s.typeDetails})` : ''}\n`;
+        txtString += `THC: ${s.thcRange || s.thc + '%'} | CBD: ${s.cbdRange || s.cbd + '%'}\n`;
+        txtString += `${t('strainsView.table.flowering')}: ${s.floweringTimeRange || s.floweringTime + ` ${t('strainsView.weeks')}`}\n`;
+        txtString += `${t('common.genetics')}: ${s.genetics || 'N/A'}\n\n`;
+        txtString += `** ${t('strainsView.strainModal.agronomicData')} **\n`;
+        txtString += `${t('strainsView.table.level')}: ${t(`strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`)}\n`;
+        txtString += `${t('strainsView.yield')}: ${t(`strainsView.addStrainModal.yields.${s.agronomic.yield.toLowerCase()}`)} (${s.agronomic.yieldDetails?.indoor || 'N/A'})\n`;
+        txtString += `${t('strainsView.height')}: ${t(`strainsView.addStrainModal.heights.${s.agronomic.height.toLowerCase()}`)} (${s.agronomic.heightDetails?.indoor || 'N/A'})\n\n`;
+        if (s.aromas && s.aromas.length > 0) txtString += `${t('strainsView.strainModal.aromas')}:\n- ${s.aromas.join('\n- ')}\n\n`;
+        if (s.dominantTerpenes && s.dominantTerpenes.length > 0) txtString += `${t('strainsView.strainModal.dominantTerpenes')}:\n- ${s.dominantTerpenes.join('\n- ')}\n\n`;
+        if (s.description) txtString += `${t('common.description')}:\n${s.description}\n`;
+        txtString += `========================================\n\n`;
     });
     downloadFile(txtString, `${filename}.txt`, 'text/plain;charset=utf-8;');
 };
 
 const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
-    // FIX: Removed problematic custom interface for jspdf-autotable.
-    const doc = new jsPDF();
-    doc.text('Cannabis Strain Report', 14, 16);
-    doc.setFontSize(10);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 22);
-
-    const tableColumn = ["Name", "Type", "THC %", "CBD %", "Flowering (w)", "Difficulty"];
-    const tableRows = strains.map(s => [
-        s.name,
-        s.type,
-        s.thc.toFixed(1),
-        s.cbd.toFixed(1),
-        s.floweringTime,
-        s.agronomic.difficulty
-    ]);
-
-    // FIX: Use type assertion to call autoTable, resolving TS errors.
-    (doc as any).autoTable({
-        head: [tableColumn],
-        body: tableRows,
-        startY: 30,
-    });
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
     
+    // Set a font that supports a wider range of characters. Helvetica is standard.
+    // Modern jsPDF handles UTF-8 better, but embedding a font would be the most robust solution.
+    doc.setFont('Helvetica');
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
+    const footerHeight = 20;
+    const headerHeight = 25;
+    let y = headerHeight;
+
+    const addHeader = (title: string) => {
+        doc.setFontSize(18);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor('#3b82f6'); // primary-500
+        doc.text(title, margin, 18);
+        doc.setDrawColor(51, 65, 85); // slate-700
+        doc.line(margin, 22, pageWidth - margin, 22);
+    };
+
+    const addFooter = (pageNumber: number, totalPages: number) => {
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(148, 163, 184); // slate-400
+        doc.text(`${t('common.page')} ${pageNumber} / ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+        doc.text(`${t('common.generated')}: ${new Date().toLocaleString()}`, margin, pageHeight - 10);
+    };
+
+    addHeader(t('strainsView.exportModal.title'));
+
+    strains.forEach((strain, index) => {
+        const estimateHeight = () => {
+            let height = 45; // Table height + spacing
+            if (strain.description) {
+                height += (doc.splitTextToSize(strain.description, pageWidth - margin * 2).length * 5) + 10;
+            }
+            if (strain.aromas && strain.aromas.length > 0) height += 15;
+            if (strain.dominantTerpenes && strain.dominantTerpenes.length > 0) height += 15;
+            return height;
+        };
+
+        // Intelligent page break: check if the strain fits, otherwise add a new page
+        if (index > 0 && y + estimateHeight() > pageHeight - footerHeight) {
+            doc.addPage();
+            addHeader(t('strainsView.exportModal.title'));
+            y = headerHeight;
+        }
+
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(226, 232, 240); // slate-200
+        doc.text(strain.name, margin, y);
+        y += 8;
+
+        (doc as any).autoTable({
+            startY: y,
+            theme: 'grid',
+            headStyles: { fillColor: [30, 41, 59], textColor: 226, fontStyle: 'bold' },
+            styles: { fontSize: 9, cellPadding: 2, textColor: 203, font: 'Helvetica' },
+            body: [
+                { label: t('common.type'), value: `${strain.type} ${strain.typeDetails ? `(${strain.typeDetails})` : ''}` },
+                { label: t('common.genetics'), value: strain.genetics || 'N/A' },
+                { label: `THC / CBD`, value: `${strain.thcRange || strain.thc + '%'} / ${strain.cbdRange || strain.cbd + '%'}` },
+                { label: t('strainsView.table.flowering'), value: `${strain.floweringTimeRange || strain.floweringTime} ${t('strainsView.weeks')}`},
+                { label: t('strainsView.table.level'), value: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`) },
+                { label: t('strainsView.strainModal.yieldIndoor'), value: strain.agronomic.yieldDetails?.indoor || 'N/A' },
+            ].map(row => [ { content: row.label, styles: { fontStyle: 'bold' } }, row.value ])
+        });
+
+        y = (doc as any).autoTable.previous.finalY + 10;
+
+        if (strain.description) {
+             if (y + 15 > pageHeight - footerHeight) { doc.addPage(); addHeader(t('strainsView.exportModal.title')); y = headerHeight; }
+            doc.setFontSize(11);
+            doc.setFont('helvetica', 'bold');
+            doc.text(t('common.description'), margin, y);
+            y += 6;
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.setTextColor(203, 213, 225); // slate-300
+            const splitText = doc.splitTextToSize(strain.description, pageWidth - (margin * 2));
+            doc.text(splitText, margin, y);
+            y += splitText.length * 5 + 4;
+        }
+
+        const renderTags = (title: string, tags: string[] | undefined) => {
+            if (tags && tags.length > 0) {
+                if (y + 15 > pageHeight - footerHeight) { doc.addPage(); addHeader(t('strainsView.exportModal.title')); y = headerHeight; }
+                doc.setFontSize(11);
+                doc.setFont('helvetica', 'bold');
+                doc.text(title, margin, y);
+                y += 6;
+                doc.setFont('helvetica', 'normal');
+                doc.setFontSize(9);
+                doc.setTextColor(226, 232, 240); // slate-200
+                
+                let currentX = margin;
+                tags.forEach(tag => {
+                    const tagWidth = doc.getTextWidth(tag) + 8;
+                    if (currentX + tagWidth > pageWidth - margin) {
+                        y += 8;
+                        currentX = margin;
+                    }
+                    doc.setFillColor(51, 65, 85); // slate-700
+                    doc.roundedRect(currentX, y - 5, tagWidth, 7, 3, 3, 'F');
+                    doc.text(tag, currentX + 4, y);
+                    currentX += tagWidth + 4;
+                });
+                y += 12;
+            }
+        };
+
+        renderTags(`${t('strainsView.strainModal.aromas')}:`, strain.aromas);
+        renderTags(`${t('strainsView.strainModal.dominantTerpenes')}:`, strain.dominantTerpenes);
+    });
+
+    const pageCount = (doc as any).internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        addFooter(i, pageCount);
+    }
+
     doc.save(`${filename}.pdf`);
 };
 
+
 // Setup export functions
 const exportSetupAsJSON = (setup: SavedSetup) => {
-    downloadFile(JSON.stringify(setup, null, 2), `${setup.name}.json`, 'application/json');
+    downloadFile(JSON.stringify(setup, null, 2), `${setup.name.replace(/\s/g, '_')}.json`, 'application/json;charset=utf-8;');
 };
 
 const exportSetupAsCSV = (setup: SavedSetup, t: TFunction) => {
     const data = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => ({
-        Component: t(`equipmentView.configurator.categories.${key}`),
-        Product: setup.recommendation[key].name,
-        Price: setup.recommendation[key].price,
-        Rationale: `"${setup.recommendation[key].rationale.replace(/"/g, '""')}"`
+        [t('equipmentView.savedSetups.pdfReport.item')]: t(`equipmentView.configurator.categories.${key}`),
+        [t('equipmentView.savedSetups.pdfReport.product')]: setup.recommendation[key].name,
+        [t('equipmentView.savedSetups.pdfReport.price')]: setup.recommendation[key].price,
+        [t('equipmentView.savedSetups.pdfReport.rationale')]: `"${(setup.recommendation[key].rationale || '').replace(/"/g, '""')}"`
     }));
-    downloadFile(arrayToCSV(data), `${setup.name}.csv`, 'text/csv;charset=utf-8;');
+    const csvString = arrayToCSV(data);
+    downloadFile("\uFEFF" + csvString, `${setup.name.replace(/\s/g, '_')}.csv`, 'text/csv;charset=utf-8;');
 };
 
 const exportSetupAsTXT = (setup: SavedSetup, t: TFunction) => {
@@ -114,51 +233,76 @@ const exportSetupAsTXT = (setup: SavedSetup, t: TFunction) => {
     });
     content += `---------------------------------\n`;
     content += `${t('equipmentView.configurator.total')}: ${setup.totalCost.toFixed(2)} €\n`;
-    downloadFile(content, `${setup.name}.txt`, 'text/plain;charset=utf-8;');
+    downloadFile(content, `${setup.name.replace(/\s/g, '_')}.txt`, 'text/plain;charset=utf-8;');
 };
 
 const exportSetupAsPDF = (setup: SavedSetup, t: TFunction) => {
-    // FIX: Removed problematic custom interface for jspdf-autotable.
-    const doc = new jsPDF();
-    doc.text(`${t('equipmentView.savedSetups.pdfReport.setup')}: ${setup.name}`, 14, 16);
-    doc.setFontSize(10);
-    doc.text(`${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}`, 14, 22);
+    const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+    doc.setFont('Helvetica');
+
+    const totalPagesExp = '{total_pages_count_string}';
     
     const tableColumn = [t('equipmentView.savedSetups.pdfReport.item'), t('equipmentView.savedSetups.pdfReport.product'), t('equipmentView.savedSetups.pdfReport.rationale'), t('equipmentView.savedSetups.pdfReport.price')];
     const tableRows = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => {
         const item = setup.recommendation[key];
         return [
             t(`equipmentView.configurator.categories.${key}`),
-            item.name,
+            `${item.name}${item.watts ? ` (${item.watts}W)` : ''}`,
             item.rationale,
             `${item.price.toFixed(2)} €`
         ];
     });
 
-    tableRows.push(['', '', t('equipmentView.configurator.total'), `${setup.totalCost.toFixed(2)} €`]);
-
-    // FIX: Use type assertion to call autoTable, resolving TS errors.
     (doc as any).autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 30,
-        didDrawCell: (data: any) => {
-            if (data.row.index === tableRows.length - 1) {
-                doc.setFont('helvetica', 'bold');
+        startY: 45,
+        theme: 'grid',
+        headStyles: { fillColor: [30, 41, 59], textColor: 226, fontStyle: 'bold' },
+        styles: { halign: 'left', font: 'Helvetica' },
+        columnStyles: { 3: { halign: 'right' } },
+        didDrawPage: (data: any) => {
+            // Header
+            doc.setFontSize(18);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor('#3b82f6');
+            doc.text(t('equipmentView.savedSetups.pdfReport.setup'), 14, 15);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(203, 213, 225);
+            doc.text(setup.name, 14, 22);
+
+            doc.setFontSize(10);
+            doc.text(`${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}`, 14, 30);
+            const sourceInfo = `${t('common.style')}: ${setup.sourceDetails.growStyle} | ${t('equipmentView.savedSetups.pdfReport.budget')}: ${setup.sourceDetails.budget}`;
+            doc.text(sourceInfo, 14, 36);
+
+            // Footer
+            const pageCount = (doc as any).internal.getNumberOfPages();
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(148, 163, 184);
+            let footerStr = `${t('common.page')} ${data.pageNumber}`;
+            if (typeof (doc as any).putTotalPages === 'function') {
+                footerStr = footerStr + " / " + totalPagesExp;
             }
+            doc.text(footerStr, doc.internal.pageSize.width - 14, doc.internal.pageSize.height - 10, { align: 'right' });
+            doc.text(`${t('common.generated')}: ${new Date().toLocaleString()}`, 14, doc.internal.pageSize.height - 10);
         },
-        styles: {
-            halign: 'left'
-        },
-        headStyles: {
-            fillColor: [38, 50, 56], // slate-800
-            textColor: 240
-        },
-        columnStyles: {
-            3: { halign: 'right' }
-        }
     });
-    doc.save(`${setup.name}.pdf`);
+
+    let finalY = (doc as any).autoTable.previous.finalY;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(226, 232, 240);
+    doc.text(t('equipmentView.configurator.total'), 145, finalY + 10, { align: 'right' });
+    doc.text(`${setup.totalCost.toFixed(2)} €`, doc.internal.pageSize.width - 20, finalY + 10, { align: 'right' });
+
+    if (typeof (doc as any).putTotalPages === 'function') {
+        (doc as any).putTotalPages(totalPagesExp);
+    }
+    
+    doc.save(`${setup.name.replace(/\s/g, '_')}.pdf`);
 };
 
 export const exportService = {

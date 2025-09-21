@@ -12,6 +12,7 @@ export const common = {
   downloadAgain: 'Erneut herunterladen',
   edit: 'Bearbeiten',
   export: 'Exportieren',
+  exportError: 'Export fehlgeschlagen. Bitte versuche es erneut.',
   genetics: 'Genetik',
   name: 'Name',
   next: 'Weiter',
@@ -19,6 +20,7 @@ export const common = {
   notes: 'Notizen',
   save: 'Speichern',
   start: 'Starten',
+  style: 'Stil',
   successfullyExported: '{count} Einträge erfolgreich als {format} exportiert.',
   type: 'Typ',
   typeDetails: 'Typ-Details',
@@ -35,6 +37,8 @@ export const common = {
   removeImage: 'Bild entfernen',
   deleteResponse: 'Antwort löschen',
   deleteSetup: 'Setup löschen',
+  page: 'Seite',
+  generated: 'Erstellt',
 };
 
 export const nav = {

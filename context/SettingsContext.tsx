@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { AppSettings, Language, GrowSetup, Theme, View } from '../types';
+import { AppSettings, Language, GrowSetup, Theme, View, UiDensity } from '../types';
 import { storageService } from '../services/storageService';
 
 interface SettingsContextType {
@@ -47,6 +47,11 @@ const defaultSettings: AppSettings = {
         problems: true,
         tasks: true,
     },
+    customDifficultyModifiers: {
+      pestPressure: 1.0,
+      nutrientSensitivity: 1.0,
+      environmentalStability: 1.0,
+    },
   },
   defaultGrowSetup: {
     lightType: 'LED',
@@ -65,6 +70,17 @@ const defaultSettings: AppSettings = {
     format: 'pdf',
   },
   lastBackupTimestamp: undefined,
+  accessibility: {
+    highContrast: false,
+    reducedMotion: false,
+    dyslexiaFont: false,
+  },
+  uiDensity: 'comfortable',
+  quietHours: {
+    enabled: false,
+    start: '22:00',
+    end: '08:00',
+  },
 };
 
 // A recursive merge function to safely combine default and saved settings
@@ -101,7 +117,24 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
   useEffect(() => {
     const root = window.document.documentElement;
     
-    root.className = `dark theme-${settings.theme}`;
+    // Clear old classes to avoid conflicts
+    root.className = ''; 
+
+    root.classList.add('dark', `theme-${settings.theme}`);
+    if (settings.accessibility.highContrast) {
+        root.classList.add('high-contrast');
+    }
+    if (settings.accessibility.dyslexiaFont) {
+        root.classList.add('dyslexia-font');
+    }
+    if (settings.accessibility.reducedMotion) {
+        root.classList.add('reduced-motion');
+    }
+    if (settings.uiDensity === 'compact') {
+        root.classList.add('ui-density-compact');
+    }
+
+
     root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
     root.lang = settings.language;
 

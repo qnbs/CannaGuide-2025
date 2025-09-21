@@ -177,7 +177,7 @@ const AppContent: React.FC = () => {
             subtitle: t('commandPalette.settings'), 
             icon: <PhosphorIcons.PaintBrush />, 
             action: exec(() => {
-                const themes: Theme[] = ['midnight', 'forest', 'purple-haze'];
+                const themes: Theme[] = ['midnight', 'forest', 'purple-haze', 'desert-sky', 'rose-quartz'];
                 const currentThemeIndex = themes.indexOf(settings.theme);
                 const nextTheme = themes[(currentThemeIndex + 1) % themes.length];
                 setSetting('theme', nextTheme);
@@ -190,7 +190,7 @@ const AppContent: React.FC = () => {
   }, [t, plants, waterAllPlants, advanceDay, setActiveView, setSelectedPlantId, setModalState, settings.language, settings.theme, setSetting]);
   
   return (
-    <div className={`app theme-${settings.theme} font-sans bg-slate-900 text-slate-100 flex flex-col h-screen text-${settings.fontSize} overflow-hidden`}>
+    <div className="app font-sans bg-slate-900 text-slate-100 flex flex-col h-screen overflow-hidden">
         <div id="toast-container" className="fixed top-4 right-4 z-[1000] space-y-2 w-full max-w-xs"></div>
         {!settings.onboardingCompleted && <OnboardingModal onClose={handleOnboardingComplete} />}
         <CommandPalette isOpen={isCommandPaletteOpen} onClose={() => setIsCommandPaletteOpen(false)} commands={commands} />

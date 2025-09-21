@@ -6,14 +6,14 @@ export const helpView = {
   sections: {
     firstSteps: {
       title: 'First Steps & Main Features',
-      description: 'Welcome to the Grow Guide! This app is your interactive companion for cannabis cultivation. Here is a brief overview:',
+      description: 'Welcome to the CannaGuide! This app is your interactive companion for cannabis cultivation. Here is a brief overview of its powerful features:',
       list: {
-        strains: '<strong>Discover Strains:</strong> Browse the <strong>{strainsView}</strong> database, use filters and search to find the perfect strain. Save favorites, add your own strains, and export data.',
-        plants: '<strong>Manage Plants:</strong> Manage up to three plants in the <strong>{plantsView}</strong> section. Observe their development in real-time, log all actions in the journal, and use the AI Advisor, whose advice you can now save and manage per plant.',
-        knowledge: '<strong>Acquire Knowledge:</strong> Follow the step-by-step <strong>{knowledgeView}</strong> to learn the basics. Check off the checklist items to track your progress and ask the AI mentor your questions, the answers to which you can now save, edit, and manage.',
-        equipment: '<strong>Plan Setup:</strong> Plan your setup with the <strong>{equipmentView}</strong> configurator. You can now fully edit, delete, and export your saved setups.',
-        settings: '<strong>Customize App:</strong> In the <strong>{settingsView}</strong> section, you can customize language, theme, and default notes, as well as back up and import your data.',
-        commandPalette: '<strong>Command Palette:</strong> Press <strong>Cmd/Ctrl + K</strong> anywhere to quickly navigate, perform actions like "Water All", or inspect a specific plant.'
+        strains: '<strong>1. The Strain Database ({strainsView}):</strong> Your central library for cannabis knowledge. Access data on 300+ strains, use powerful search and advanced filters (THC/CBD, flowering time, terpenes), switch between List and Grid views, and manage your own custom strains with full Create, Read, Update & Delete (CRUD) capabilities. Export any selection to professional PDF, CSV, TXT, or JSON formats.',
+        plants: '<strong>2. The Grow Room ({plantsView}):</strong> Your command center for up to three simultaneous grows. The dashboard gives an at-a-glance overview of each plant\'s health, stage, and vitals. Dive deep into any plant to view its lifecycle timeline, historical growth charts, a complete journal, a photo gallery, and get personalized advice from the AI Advisor. You have full CRUD control over the AI\'s advice, building a unique archive for each plant.',
+        knowledge: '<strong>3. The Library ({knowledgeView}):</strong> Follow the interactive step-by-step guide to master the basics. Check off checklist items to track your learning progress. Ask the AI Mentor your questions and manage the answers in your personal knowledge archive with full CRUD functionality.',
+        equipment: '<strong>4. The Workshop ({equipmentView}):</strong> Plan your setup with the AI Configurator that generates tailored recommendations. Save, edit (CRUD), and export your setups. Use the essential calculators for ventilation, lighting, and more.',
+        settings: '<strong>5. The Control Panel ({settingsView}):</strong> Customize the app with languages and themes. Manage your data with the robust full-app backup and restore feature.',
+        commandPalette: '<strong>Command Palette:</strong> Press <strong>Cmd/Ctrl + K</strong> anywhere for quick access. Instantly navigate, perform actions like "Water All", or inspect a plant without clicking.'
       }
     },
     faq: {
@@ -33,7 +33,7 @@ export const helpView = {
         },
         q4: {
           q: 'In which languages is the app available?',
-          a: 'The app is fully available in <strong>German</strong> and <strong>English</strong>. You can change the language at any time in the <strong>Settings</strong> section under "Display" -> "Language". Your selection is saved automatically.'
+          a: 'The app is fully available in <strong>German</strong> and <strong>English</strong>. You can change the language at any time in the <strong>Settings</strong> section under "General" -> "Language". Your selection is saved automatically.'
         },
         q5: {
           q: 'Is the app accessible?',

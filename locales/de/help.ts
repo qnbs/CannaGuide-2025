@@ -1,19 +1,19 @@
 export const helpView = {
   title: 'Hilfecenter',
   tabs: {
-    cultivation: 'Anbau',
+    cultivation: 'Anbau-Wissen',
   },
   sections: {
     firstSteps: {
       title: 'Erste Schritte & Hauptfunktionen',
-      description: 'Willkommen beim Grow Guide! Diese App ist dein interaktiver Begleiter für den Cannabis-Anbau. Hier ein kurzer Überblick:',
+      description: 'Willkommen beim CannaGuide! Diese App ist dein interaktiver Begleiter für den Cannabis-Anbau. Hier ein kurzer Überblick über die leistungsstarken Funktionen:',
       list: {
-        strains: '<strong>Sorten entdecken:</strong> Durchstöbere die <strong>{strainsView}</strong>-Datenbank, nutze Filter und Suche, um die perfekte Sorte zu finden. Speichere Favoriten, füge eigene Sorten hinzu und exportiere Daten.',
-        plants: '<strong>Pflanzen managen:</strong> Verwalte bis zu drei Pflanzen im Bereich <strong>{plantsView}</strong>. Beobachte ihre Entwicklung in Echtzeit, protokolliere alle Maßnahmen im Journal und nutze den KI-Berater, dessen Ratschläge du nun pro Pflanze speichern und verwalten kannst.',
-        knowledge: '<strong>Wissen aneignen:</strong> Folge der Schritt-für-Schritt-Anleitung unter <strong>{knowledgeView}</strong>, um die Grundlagen zu lernen. Hake die Checklisten ab, um deinen Wissensfortschritt zu verfolgen, und stelle dem KI-Mentor deine Fragen, deren Antworten du nun speichern, bearbeiten und verwalten kannst.',
-        equipment: '<strong>Setup planen:</strong> Plane dein Setup mit dem <strong>{equipmentView}</strong>-Konfigurator. Deine gespeicherten Setups kannst du jetzt vollständig bearbeiten, löschen und exportieren.',
-        settings: '<strong>App anpassen:</strong> Im <strong>{settingsView}</strong>-Bereich kannst du die Sprache, das Thema und Standard-Notizen anpassen sowie deine Daten sichern und importieren.',
-        commandPalette: '<strong>Befehlspalette:</strong> Drücke überall <strong>Cmd/Strg + K</strong>, um schnell zu navigieren, Aktionen wie "Alle gießen" auszuführen oder eine bestimmte Pflanze zu inspizieren.'
+        strains: '<strong>1. Die Sorten-Datenbank ({strainsView}):</strong> Deine zentrale Bibliothek für Cannabis-Wissen. Greife auf Daten von über 300 Sorten zu, nutze die erweiterte Suche und Filter (THC/CBD, Blütezeit, Terpene), wechsle zwischen Listen- und Rasteransicht und verwalte deine eigenen Sorten mit voller Erstellen-, Lese-, Aktualisierungs- & Lösch-Funktionalität (CRUD). Exportiere jede Auswahl als professionelles PDF, CSV, TXT oder JSON.',
+        plants: '<strong>2. Der Grow Room ({plantsView}):</strong> Deine Kommandozentrale für bis zu drei gleichzeitige Grows. Das Dashboard gibt einen schnellen Überblick über Gesundheit, Phase und Vitalwerte jeder Pflanze. Tauche tief in eine Pflanze ein, um ihre Lebenszyklus-Zeitleiste, historische Wachstums-Charts, ein komplettes Journal, eine Fotogalerie und personalisierte Ratschläge vom KI-Berater zu sehen. Du hast die volle CRUD-Kontrolle über die KI-Ratschläge und baust so ein einzigartiges Archiv für jede Pflanze auf.',
+        knowledge: '<strong>3. Die Bibliothek ({knowledgeView}):</strong> Folge der interaktiven Schritt-für-Schritt-Anleitung, um die Grundlagen zu meistern. Hake Checklisten ab, um deinen Lernfortschritt zu verfolgen. Stelle dem KI-Mentor deine Fragen und verwalte die Antworten in deinem persönlichen Wissensarchiv mit voller CRUD-Funktionalität.',
+        equipment: '<strong>4. Die Werkstatt ({equipmentView}):</strong> Plane dein Setup mit dem KI-Konfigurator, der maßgeschneiderte Empfehlungen generiert. Speichere, bearbeite (CRUD) und exportiere deine Setups. Nutze die essentiellen Rechner für Belüftung, Beleuchtung und mehr.',
+        settings: '<strong>5. Das Kontrollzentrum ({settingsView}):</strong> Passe die App mit Sprachen und Themen an. Verwalte deine Daten mit der robusten Backup- & Wiederherstellungsfunktion für die gesamte App.',
+        commandPalette: '<strong>Befehlspalette:</strong> Drücke überall <strong>Cmd/Strg + K</strong> für den Schnellzugriff. Navigiere sofort, führe Aktionen wie "Alle gießen" aus oder inspiziere eine Pflanze, ohne zu klicken.'
       }
     },
     faq: {
@@ -29,11 +29,11 @@ export const helpView = {
         },
         q3: {
           q: 'Kann ich meine Daten sichern oder übertragen?',
-          a: 'Ja! Gehe zum <strong>Einstellungen</strong>-Bereich unter "Datenverwaltung". Dort kannst du alle deine Daten (Pflanzen, Einstellungen, eigene Sorten, Favoriten) in eine einzige Backup-Datei exportieren. Diese Datei kannst du später auf demselben oder einem anderen Gerät wieder importieren.'
+          a: 'Ja! Gehe zum <strong>Einstellungen</strong>-Bereich unter "Datenverwaltung". Dort kannst du alle deine App-Daten (Pflanzen, Einstellungen, eigene Sorten, Favoriten) in eine einzige Backup-Datei exportieren. Diese Datei kannst du später auf demselben oder einem anderen Gerät wieder importieren.'
         },
         q4: {
           q: 'In welchen Sprachen ist die App verfügbar?',
-          a: 'Die App ist vollständig in <strong>Deutsch</strong> und <strong>Englisch</strong> verfügbar. Du kannst die Sprache jederzeit im <strong>Einstellungen</strong>-Bereich unter "Anzeige" -> "Sprache" ändern. Deine Auswahl wird automatisch gespeichert.'
+          a: 'Die App ist vollständig in <strong>Deutsch</strong> und <strong>Englisch</strong> verfügbar. Du kannst die Sprache jederzeit im <strong>Einstellungen</strong>-Bereich unter "Allgemein" -> "Sprache" ändern. Deine Auswahl wird automatisch gespeichert.'
         },
         q5: {
           q: 'Ist die App barrierefrei?',
@@ -168,7 +168,7 @@ export const helpView = {
       features: '<strong>Neue Funktionen:</strong> Diese Version enthält jetzt pflanzenspezifische KI-Berater-Archive und volle CRUD-Funktionalität für alle gespeicherten Daten (Setups & Mentor-Antworten).',
       devWithAIStudioTitle: 'Entwickelt mit AI Studio',
       devWithAIStudioText: 'Diese App wurde mit <strong>AI Studio</strong> von Google entwickelt, einer innovativen Plattform, die die Erstellung und Änderung komplexer Webanwendungen durch Befehle in natürlicher Sprache ermöglicht. Die Benutzeroberfläche wurde entworfen, Funktionalitäten implementiert und die Gemini-KI für intelligente Funktionen integriert – alles durch iterative Prompts. AI Studio beschleunigt den Entwicklungsprozess erheblich und eröffnet neue Möglichkeiten in der App-Erstellung.',
-      getTheAppHere: 'Hol dir die App hier',
+      getTheAppHere: 'App in AI Studio ansehen',
       githubTitle: 'Open Source auf GitHub',
       githubText: 'Diese Anwendung ist vollständig Open Source und der Code ist auf GitHub verfügbar. Du bist herzlich eingeladen, den Quellcode einzusehen, Probleme zu melden oder zur Entwicklung des Projekts beizutragen. Deine Zusammenarbeit hilft, den Grow Guide noch besser zu machen!',
       githubLinkText: 'Projekt auf GitHub ansehen',

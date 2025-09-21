@@ -84,7 +84,6 @@ export const equipmentView = {
     setupSaveConfirm: 'Möchtest du das Setup als "{name}" speichern?',
     setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
     setupSaveError: 'Fehler beim Speichern des Setups.',
-    error: 'Die KI konnte keine Empfehlung erstellen. Bitte versuche es später erneut.',
     categories: {
       tent: 'Growbox (Zelt)',
       light: 'Beleuchtung',

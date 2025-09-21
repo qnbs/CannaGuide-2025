@@ -33,16 +33,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView 
         <nav className="glass-pane border-t-0 flex-shrink-0 z-20">
             <div className="flex justify-around max-w-5xl mx-auto">
                 {mainNavViews.map((viewValue) => {
+                    const isActive = activeView === viewValue;
                     return (
                         <button
                             key={viewValue}
                             onClick={() => setActiveView(viewValue)}
-                            className={`flex flex-col items-center justify-center w-full py-1 transition-colors duration-200 ${
-                                activeView === viewValue ? 'text-primary-400' : 'text-slate-400 hover:text-primary-300'
+                            className={`relative flex flex-col items-center justify-center w-full py-1 transition-colors duration-200 ${
+                                isActive ? 'text-primary-400' : 'text-slate-400 hover:text-primary-300'
                             }`}
                         >
                             <div className="w-6 h-6">{navIcons[viewValue]}</div>
-                            <span className="text-xs font-semibold">{navLabels[viewValue]}</span>
+                            <span className="text-xs font-semibold relative">
+                                {navLabels[viewValue]}
+                                <span className={`absolute -bottom-1 left-1/2 -translate-x-1/2 h-1 w-1 rounded-full bg-primary-400 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}></span>
+                            </span>
                         </button>
                     );
                 })}

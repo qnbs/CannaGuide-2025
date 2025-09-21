@@ -174,7 +174,6 @@ export const Calculators: React.FC = () => {
         return { range: `${Math.round(final * 0.8)}-${Math.round(final * 1.2)}`, gpw: (final / watts).toFixed(2) };
     }, [yieldEst]);
     
-    // FIX: Corrected translation keys from 'calculator' to 'calculators' to match locale file structure.
     const calculators: { id: CalculatorType; icon: React.ReactNode; title: string; description: string }[] = [
         { id: 'ventilation', icon: <PhosphorIcons.Fan />, title: t('equipmentView.calculators.ventilation.title'), description: t('equipmentView.calculators.ventilation.description') },
         { id: 'light', icon: <PhosphorIcons.Sun />, title: t('equipmentView.calculators.light.title'), description: t('equipmentView.calculators.light.description') },

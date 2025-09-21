@@ -1,94 +1,190 @@
-import React, { useState, useMemo, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useMemo } from 'react';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { Card } from '../../common/Card';
 
-type CalculatorType = 'ventilation' | 'light' | 'nutrients' | 'yield';
+type CalculatorType = 'ventilation' | 'light' | 'cost' | 'nutrients' | 'converter' | 'yield';
 
 const CalculatorInput: React.FC<{
-    label: string,
-    value: string,
-    onChange: (val: string) => void,
-    unit: string
-}> = ({ label, value, onChange, unit }) => {
+    label: string;
+    value: string;
+    onChange: (val: string) => void;
+    unit?: string;
+    tooltip?: string;
+    step?: string;
+}> = ({ label, value, onChange, unit, tooltip, step }) => {
     const id = useId();
     return (
         <div className="relative">
-            <label htmlFor={id} className="block text-sm font-semibold text-slate-200 mb-1">{label}</label>
+            <label htmlFor={id} className="flex items-center gap-1.5 text-sm font-semibold text-slate-200 mb-1">
+                {label}
+                {tooltip && (
+                    <span className="group relative cursor-help">
+                        <PhosphorIcons.Question className="w-4 h-4 text-slate-400" />
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                            {tooltip}
+                        </span>
+                    </span>
+                )}
+            </label>
             <input
                 id={id}
                 type="number"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 min="0"
-                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
+                step={step || "any"}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg pl-3 pr-10 py-2 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
             />
-            <span className="absolute right-3 top-9 text-xs text-slate-400">{unit}</span>
+            {unit && <span className="absolute right-3 top-9 text-xs text-slate-400">{unit}</span>}
         </div>
     );
 };
 
+const CalculatorSelect: React.FC<{
+    label: string;
+    value: string;
+    onChange: (val: string) => void;
+    options: { value: string; label: string }[];
+    tooltip?: string;
+}> = ({ label, value, onChange, options, tooltip }) => {
+    const id = useId();
+    return (
+        <div>
+            <label htmlFor={id} className="flex items-center gap-1.5 text-sm font-semibold text-slate-200 mb-1">
+                {label}
+                {tooltip && (
+                    <span className="group relative cursor-help">
+                        <PhosphorIcons.Question className="w-4 h-4 text-slate-400" />
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                            {tooltip}
+                        </span>
+                    </span>
+                )}
+            </label>
+            <select
+                id={id}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors"
+            >
+                {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+            </select>
+        </div>
+    );
+};
+
+const ResultCard: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <div className="md:col-span-2 mt-4 p-4 bg-primary-900/50 rounded-lg text-center transition-all animate-fade-in">
+        {children}
+    </div>
+);
+
+const ResultDisplay: React.FC<{ label: string, value: string | number, unit?: string, sub?: string, tooltip?: string }> = ({ label, value, unit, sub, tooltip }) => (
+    <div>
+        <p className="text-sm font-semibold text-primary-200 flex items-center justify-center gap-1">
+            {label}
+            {tooltip && (
+                 <span className="group relative cursor-help">
+                    <PhosphorIcons.Question className="w-4 h-4 text-primary-300/70" />
+                    <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        {tooltip}
+                    </span>
+                </span>
+            )}
+        </p>
+        <p className="text-4xl font-bold text-primary-300 tracking-tight">
+            {value}
+            {unit && <span className="text-xl ml-2">{unit}</span>}
+        </p>
+        {sub && <p className="text-xs text-primary-400 -mt-1">{sub}</p>}
+    </div>
+);
+
 export const Calculators: React.FC = () => {
     const { t } = useTranslations();
     const [activeCalculator, setActiveCalculator] = useState<CalculatorType>('ventilation');
-    const selectId = useId();
 
-    const [ventilation, setVentilation] = useState({ width: '80', depth: '80', height: '180', result: 0 });
-    const [light, setLight] = useState({ width: '80', depth: '80', result: 0 });
-    const [nutrients, setNutrients] = useState({ water: '5', dose: '2', result: 0 });
-    const [yieldEst, setYieldEst] = useState({ area: '0.64', wattage: '250', level: 'advanced', result: 0 });
+    // State for all calculators
+    const [ventilation, setVentilation] = useState({ w: '100', d: '100', h: '200', watts: '300', filter: 'yes' });
+    const [light, setLight] = useState({ w: '100', d: '100', stage: 'flowering' });
+    const [cost, setCost] = useState({ lightW: '300', lightH: '12', fanW: '40', fanH: '24', otherW: '20', otherH: '24', cost: '0.30' });
+    const [nutrients, setNutrients] = useState({ size: '10', parts: [{ dose: '2' }, { dose: '1' }, { dose: '1.5' }]});
+    const [converter, setConverter] = useState({ ec: '1.2', ppm500: '600', ppm700: '840' });
+    const [yieldEst, setYieldEst] = useState({ watts: '300', skill: 'advanced', training: 'lst', genetics: 'medium' });
 
-    useEffect(() => {
-        const w = parseFloat(ventilation.width) / 100;
-        const d = parseFloat(ventilation.depth) / 100;
-        const h = parseFloat(ventilation.height) / 100;
-        if (w > 0 && d > 0 && h > 0) {
-            const volume = w * d * h;
-            const airflow = volume * 60; // 60 air exchanges per hour
-            setVentilation(v => ({ ...v, result: Math.round(airflow) }));
-        }
-    }, [ventilation.width, ventilation.depth, ventilation.height]);
+    // --- Calculation Logic ---
+    const ventilationResult = useMemo(() => {
+        const w = parseFloat(ventilation.w) / 100;
+        const d = parseFloat(ventilation.d) / 100;
+        const h = parseFloat(ventilation.h) / 100;
+        const watts = parseFloat(ventilation.watts);
+        if (!(w > 0 && d > 0 && h > 0 && watts >= 0)) return 0;
+        const volume = w * d * h;
+        const baseAirflow = volume * 60; // 60 exchanges/hr
+        const heatAdjustment = 1 + (watts / 1000) * 0.2; // 20% increase per 1kW for heat
+        const filterAdjustment = ventilation.filter === 'yes' ? 1.25 : 1; // 25% increase for filter
+        return Math.round(baseAirflow * heatAdjustment * filterAdjustment);
+    }, [ventilation]);
+
+    const lightResult = useMemo(() => {
+        const w = parseFloat(light.w) / 100;
+        const d = parseFloat(light.d) / 100;
+        if (!(w > 0 && d > 0)) return { wattage: '--', ppfd: '--', dli: '--' };
+        const area = w * d;
+        const ppfdTargets = { seedling: [200, 400], vegetative: [400, 600], flowering: [600, 1000] };
+        const target = ppfdTargets[light.stage as keyof typeof ppfdTargets];
+        const ledEfficiency = 2.5; // µmol/J
+        const requiredWatts = [Math.round((target[0] * area) / ledEfficiency), Math.round((target[1] * area) / ledEfficiency)];
+        const lightHours = light.stage === 'flowering' ? 12 : 18;
+        const avgPPFD = (target[0] + target[1]) / 2;
+        const dli = (avgPPFD * lightHours * 3600) / 1000000;
+        return { wattage: `${requiredWatts[0]}-${requiredWatts[1]}`, ppfd: `${target[0]}-${target[1]}`, dli: dli.toFixed(1) };
+    }, [light]);
+
+    const costResult = useMemo(() => {
+        const p = (str: string) => parseFloat(str) || 0;
+        const dailyKwh = (p(cost.lightW) * p(cost.lightH) + p(cost.fanW) * p(cost.fanH) + p(cost.otherW) * p(cost.otherH)) / 1000;
+        const daily = dailyKwh * p(cost.cost);
+        return { daily: daily.toFixed(2), weekly: (daily * 7).toFixed(2), monthly: (daily * 30.4).toFixed(2), cycle: (daily * 90).toFixed(2) };
+    }, [cost]);
     
-     useEffect(() => {
-        const w = parseFloat(light.width) / 100;
-        const d = parseFloat(light.depth) / 100;
-        if (w > 0 && d > 0) {
-            const area = w * d;
-            const wattage = area * 400; // 400W/m²
-            setLight(l => ({...l, result: Math.round(wattage)}));
-        }
-    }, [light.width, light.depth]);
-
-     useEffect(() => {
-        const water = parseFloat(nutrients.water);
-        const dose = parseFloat(nutrients.dose);
-        if (water > 0 && dose >= 0) {
-            const result = water * dose;
-            setNutrients(n => ({...n, result}));
-        }
-    }, [nutrients.water, nutrients.dose]);
+    const nutrientResults = useMemo(() => {
+        const size = parseFloat(nutrients.size) || 0;
+        return nutrients.parts.map(part => (size * (parseFloat(part.dose) || 0)).toFixed(1));
+    }, [nutrients]);
 
     useEffect(() => {
-        const area = parseFloat(yieldEst.area);
-        const wattage = parseFloat(yieldEst.wattage);
-        const levelModifiers = { beginner: 0.7, advanced: 1.0, expert: 1.2 };
-        if (area > 0 && wattage > 0) {
-            const baseYield = (area * wattage) / 2; // More realistic base
-            const modifiedYield = baseYield * levelModifiers[yieldEst.level as keyof typeof levelModifiers];
-            setYieldEst(y => ({...y, result: Math.round(modifiedYield)}));
+        const ec = parseFloat(converter.ec);
+        if (!isNaN(ec)) {
+            setConverter(c => ({...c, ppm500: (ec * 500).toFixed(0), ppm700: (ec * 700).toFixed(0)}));
         }
-    }, [yieldEst.area, yieldEst.wattage, yieldEst.level]);
+    }, [converter.ec]);
+
+    const yieldResult = useMemo(() => {
+        const watts = parseFloat(yieldEst.watts);
+        if (!(watts > 0)) return { range: '--', gpw: '--'};
+        const skillMod = { beginner: 0.7, advanced: 1.0, expert: 1.3 };
+        const trainingMod = { none: 1.0, lst: 1.15, scrog: 1.25 };
+        const geneticsMod = { low: 0.8, medium: 1.0, high: 1.2 };
+        const base = watts * 0.8;
+        const final = base * skillMod[yieldEst.skill as keyof typeof skillMod] * trainingMod[yieldEst.training as keyof typeof trainingMod] * geneticsMod[yieldEst.genetics as keyof typeof geneticsMod];
+        return { range: `${Math.round(final * 0.8)}-${Math.round(final * 1.2)}`, gpw: (final / watts).toFixed(2) };
+    }, [yieldEst]);
 
     const calculators: { id: CalculatorType; icon: React.ReactNode; title: string; description: string }[] = [
         { id: 'ventilation', icon: <PhosphorIcons.Fan />, title: t('equipmentView.calculators.ventilation.title'), description: t('equipmentView.calculators.ventilation.description') },
         { id: 'light', icon: <PhosphorIcons.Sun />, title: t('equipmentView.calculators.light.title'), description: t('equipmentView.calculators.light.description') },
+        { id: 'cost', icon: <PhosphorIcons.Calculator />, title: t('equipmentView.calculator.cost.title'), description: t('equipmentView.calculator.cost.description') },
         { id: 'nutrients', icon: <PhosphorIcons.Flask />, title: t('equipmentView.calculators.nutrients.title'), description: t('equipmentView.calculators.nutrients.description') },
+        { id: 'converter', icon: <PhosphorIcons.ArrowClockwise />, title: t('equipmentView.calculator.converter.title'), description: t('equipmentView.calculator.converter.description') },
         { id: 'yield', icon: <PhosphorIcons.Plant />, title: t('equipmentView.calculators.yield.title'), description: t('equipmentView.calculators.yield.description') }
     ];
 
     const activeCalcData = calculators.find(c => c.id === activeCalculator);
     
     return (
-        <div className="glass-pane rounded-xl shadow-lg p-4 sm:p-6">
+        <Card className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row gap-4">
                 <nav className="flex sm:flex-col gap-2 flex-shrink-0">
                     {calculators.map(calc => (
@@ -109,63 +205,114 @@ export const Calculators: React.FC = () => {
                     
                     {activeCalculator === 'ventilation' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                            <div className="md:col-span-2 grid grid-cols-3 gap-2">
-                                <CalculatorInput label={t('equipmentView.calculators.ventilation.width')} value={ventilation.width} onChange={val => setVentilation(v => ({...v, width: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculators.ventilation.depth')} value={ventilation.depth} onChange={val => setVentilation(v => ({...v, depth: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculators.ventilation.height')} value={ventilation.height} onChange={val => setVentilation(v => ({...v, height: val}))} unit="cm"/>
+                             <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.width')} value={ventilation.w} onChange={val => setVentilation(v => ({...v, w: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.depth')} value={ventilation.d} onChange={val => setVentilation(v => ({...v, d: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.height')} value={ventilation.h} onChange={val => setVentilation(v => ({...v, h: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculator.ventilation.lightWattage')} value={ventilation.watts} onChange={val => setVentilation(v => ({...v, watts: val}))} unit="W" tooltip={t('equipmentView.calculator.ventilation.lightWattageTooltip')} />
+                                <CalculatorSelect label={t('equipmentView.calculator.ventilation.carbonFilter')} value={ventilation.filter} onChange={val => setVentilation(v => ({...v, filter: val}))} options={[{value: 'yes', label: t('equipmentView.calculator.yes')}, {value: 'no', label: t('equipmentView.calculator.no')}]} tooltip={t('equipmentView.calculator.ventilation.carbonFilterTooltip')} />
                             </div>
-                            <div className="md:col-span-2 mt-4 p-4 bg-primary-500/10 rounded-lg text-center transition-all animate-fade-in">
-                                <p className="text-sm font-semibold text-primary-200">{t('equipmentView.calculators.ventilation.result')}</p>
-                                <p className="text-4xl font-bold text-primary-300 tracking-tight">{ventilation.result > 0 ? ventilation.result : '--'}<span className="text-xl ml-2">m³/h</span></p>
-                            </div>
+                            <ResultCard><ResultDisplay label={t('equipmentView.calculators.ventilation.result')} value={ventilationResult || '--'} unit="m³/h"/></ResultCard>
                         </div>
                     )}
+
                     {activeCalculator === 'light' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                            <div className="md:col-span-2 grid grid-cols-2 gap-2">
-                                <CalculatorInput label={t('equipmentView.calculators.light.width')} value={light.width} onChange={val => setLight(l => ({...l, width: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculators.light.depth')} value={light.depth} onChange={val => setLight(l => ({...l, depth: val}))} unit="cm"/>
+                            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <CalculatorInput label={t('equipmentView.calculators.light.width')} value={light.w} onChange={val => setLight(l => ({...l, w: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.light.depth')} value={light.d} onChange={val => setLight(l => ({...l, d: val}))} unit="cm"/>
+                                <CalculatorSelect label={t('equipmentView.calculator.light.stage')} value={light.stage} onChange={val => setLight(l => ({...l, stage: val}))} options={[{value: 'seedling', label: t('plantStages.SEEDLING')}, {value: 'vegetative', label: t('plantStages.VEGETATIVE')}, {value: 'flowering', label: t('plantStages.FLOWERING')}]} />
                             </div>
-                            <div className="md:col-span-2 mt-4 p-4 bg-primary-500/10 rounded-lg text-center transition-all animate-fade-in">
-                                <p className="text-sm font-semibold text-primary-200">{t('equipmentView.calculators.light.result')}</p>
-                                <p className="text-4xl font-bold text-primary-300 tracking-tight">{light.result > 0 ? light.result : '--'}<span className="text-xl ml-2">Watt</span></p>
-                            </div>
+                            <ResultCard>
+                                <div className="grid grid-cols-3 gap-2 divide-x divide-primary-500/30">
+                                    <ResultDisplay label={t('equipmentView.calculators.light.result')} value={lightResult.wattage} unit="W"/>
+                                    <ResultDisplay label="PPFD" value={lightResult.ppfd} unit="µmol/m²/s" tooltip={t('equipmentView.calculator.light.ppfdTooltip')} />
+                                    <ResultDisplay label="DLI" value={lightResult.dli} unit="mol/m²/day" tooltip={t('equipmentView.calculator.light.dliTooltip')} />
+                                </div>
+                            </ResultCard>
                         </div>
                     )}
+                    
+                    {activeCalculator === 'cost' && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <CalculatorInput label={t('equipmentView.calculator.cost.lightPower')} value={cost.lightW} onChange={val => setCost(c=>({...c, lightW: val}))} unit="W"/>
+                                <CalculatorInput label={t('equipmentView.calculator.cost.lightHours')} value={cost.lightH} onChange={val => setCost(c=>({...c, lightH: val}))} unit="h/day"/>
+                                <CalculatorInput label={t('equipmentView.calculator.cost.fanPower')} value={cost.fanW} onChange={val => setCost(c=>({...c, fanW: val}))} unit="W"/>
+                                <CalculatorInput label={t('equipmentView.calculator.cost.fanHours')} value={cost.fanH} onChange={val => setCost(c=>({...c, fanH: val}))} unit="h/day"/>
+                                <CalculatorInput label={t('equipmentView.calculator.cost.otherPower')} value={cost.otherW} onChange={val => setCost(c=>({...c, otherW: val}))} unit="W"/>
+                                <CalculatorInput label={t('equipmentView.calculator.cost.price')} value={cost.cost} onChange={val => setCost(c=>({...c, cost: val}))} unit="€/kWh" step="0.01" />
+                            </div>
+                             <ResultCard>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 divide-x divide-primary-500/30">
+                                    <ResultDisplay label={t('equipmentView.calculator.cost.daily')} value={costResult.daily} unit="€" />
+                                    <ResultDisplay label={t('equipmentView.calculator.cost.weekly')} value={costResult.weekly} unit="€" />
+                                    <ResultDisplay label={t('equipmentView.calculator.cost.monthly')} value={costResult.monthly} unit="€" />
+                                    <ResultDisplay label={t('equipmentView.calculator.cost.cycle')} value={costResult.cycle} unit="€" sub={t('equipmentView.calculator.cost.cycleSub')} />
+                                </div>
+                             </ResultCard>
+                        </div>
+                    )}
+
                     {activeCalculator === 'nutrients' && (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                             <div className="md:col-span-2 grid grid-cols-2 gap-2">
-                                <CalculatorInput label={t('equipmentView.calculators.nutrients.waterAmount')} value={nutrients.water} onChange={val => setNutrients(n => ({...n, water: val}))} unit="L"/>
-                                <CalculatorInput label={t('equipmentView.calculators.nutrients.dose')} value={nutrients.dose} onChange={val => setNutrients(n => ({...n, dose: val}))} unit="ml/L"/>
-                             </div>
-                             <div className="md:col-span-2 mt-4 p-4 bg-primary-500/10 rounded-lg text-center transition-all animate-fade-in">
-                                <p className="text-sm font-semibold text-primary-200">{t('equipmentView.calculators.nutrients.result')}</p>
-                                <p className="text-4xl font-bold text-primary-300 tracking-tight">{nutrients.result >= 0 ? nutrients.result.toFixed(1) : '--'}<span className="text-xl ml-2">ml</span></p>
+                            <div className="space-y-4">
+                               <CalculatorInput label={t('equipmentView.calculator.nutrients.reservoir')} value={nutrients.size} onChange={val => setNutrients(n => ({...n, size: val}))} unit="L"/>
+                               {nutrients.parts.map((part, index) => (
+                                   <CalculatorInput 
+                                       key={index}
+                                       label={`${t('equipmentView.calculator.nutrients.component')} ${index + 1}`} 
+                                       value={part.dose}
+                                       onChange={val => {
+                                           const newParts = [...nutrients.parts];
+                                           newParts[index].dose = val;
+                                           setNutrients(n => ({...n, parts: newParts}));
+                                       }}
+                                       unit="ml/L"
+                                   />
+                               ))}
                             </div>
+                            <ResultCard>
+                                <div className="space-y-2">
+                                    {nutrientResults.map((res, index) => (
+                                        <ResultDisplay key={index} label={`${t('equipmentView.calculator.nutrients.totalFor')} ${index + 1}`} value={res} unit="ml"/>
+                                    ))}
+                                </div>
+                            </ResultCard>
                         </div>
                     )}
+                    
+                    {activeCalculator === 'converter' && (
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
+                             <div className="space-y-4">
+                                <CalculatorInput label="EC" value={converter.ec} onChange={val => setConverter(c => ({...c, ec: val}))} unit="mS/cm" step="0.1" />
+                                <CalculatorInput label="PPM (500 scale)" value={converter.ppm500} onChange={val => setConverter({ec: (parseFloat(val)/500).toFixed(2), ppm500: val, ppm700: ((parseFloat(val)/500)*700).toFixed(0)})} unit="ppm" />
+                                <CalculatorInput label="PPM (700 scale)" value={converter.ppm700} onChange={val => setConverter({ec: (parseFloat(val)/700).toFixed(2), ppm500: ((parseFloat(val)/700)*500).toFixed(0), ppm700: val})} unit="ppm" />
+                            </div>
+                            <ResultCard>
+                                <p className="text-sm text-primary-200">{t('equipmentView.calculator.converter.resultInfo')}</p>
+                            </ResultCard>
+                        </div>
+                    )}
+
                     {activeCalculator === 'yield' && (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
-                             <div className="md:col-span-2 grid grid-cols-2 gap-2">
-                                <CalculatorInput label={t('equipmentView.calculators.yield.area')} value={yieldEst.area} onChange={val => setYieldEst(y => ({...y, area: val}))} unit="m²"/>
-                                <CalculatorInput label={t('equipmentView.calculators.yield.wattage')} value={yieldEst.wattage} onChange={val => setYieldEst(y => ({...y, wattage: val}))} unit="W"/>
-                                 <div className="md:col-span-2">
-                                    <label htmlFor={selectId} className="block text-sm font-semibold text-slate-200 mb-1">{t('equipmentView.calculators.yield.level')}</label>
-                                    <select id={selectId} value={yieldEst.level} onChange={e => setYieldEst(y => ({...y, level: e.target.value}))} className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-400 transition-colors">
-                                        <option value="beginner">{t('equipmentView.calculators.yield.levels.beginner')}</option>
-                                        <option value="advanced">{t('equipmentView.calculators.yield.levels.advanced')}</option>
-                                        <option value="expert">{t('equipmentView.calculators.yield.levels.expert')}</option>
-                                    </select>
-                                </div>
-                             </div>
-                             <div className="md:col-span-2 mt-4 p-4 bg-primary-500/10 rounded-lg text-center transition-all animate-fade-in">
-                                <p className="text-sm font-semibold text-primary-200">{t('equipmentView.calculators.yield.result')}</p>
-                                <p className="text-4xl font-bold text-primary-300 tracking-tight">{yieldEst.result > 0 ? `~${yieldEst.result}` : '--'}<span className="text-xl ml-2">g</span></p>
+                            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
+                                <CalculatorInput label={t('equipmentView.calculators.yield.wattage')} value={yieldEst.watts} onChange={val => setYieldEst(y => ({...y, watts: val}))} unit="W"/>
+                                <CalculatorSelect label={t('equipmentView.calculators.yield.level')} value={yieldEst.skill} onChange={val => setYieldEst(y => ({...y, skill: val}))} options={[{value: 'beginner', label: t('equipmentView.calculators.yield.levels.beginner')}, {value: 'advanced', label: t('equipmentView.calculators.yield.levels.advanced')}, {value: 'expert', label: t('equipmentView.calculators.yield.levels.expert')}]} />
+                                <CalculatorSelect label={t('equipmentView.calculator.yield.training')} value={yieldEst.training} onChange={val => setYieldEst(y => ({...y, training: val}))} options={[{value: 'none', label: t('equipmentView.calculator.yield.trainings.none')}, {value: 'lst', label: t('equipmentView.calculator.yield.trainings.lst')}, {value: 'scrog', label: t('equipmentView.calculator.yield.trainings.scrog')}]} />
+                                <CalculatorSelect label={t('common.genetics')} value={yieldEst.genetics} onChange={val => setYieldEst(y => ({...y, genetics: val}))} options={[{value: 'low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'high', label: t('strainsView.addStrainModal.yields.high')}]} />
                             </div>
+                            <ResultCard>
+                                <div className="grid grid-cols-2 gap-2 divide-x divide-primary-500/30">
+                                    <ResultDisplay label={t('equipmentView.calculators.yield.result')} value={yieldResult.range} unit="g" />
+                                    <ResultDisplay label={t('equipmentView.calculator.yield.efficiency')} value={yieldResult.gpw} unit="g/W" />
+                                </div>
+                            </ResultCard>
                         </div>
                     )}
                 </div>
             </div>
-        </div>
+        </Card>
     );
 };

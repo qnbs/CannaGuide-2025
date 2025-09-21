@@ -115,7 +115,7 @@ export const equipmentView = {
   calculators: {
     ventilation: {
       title: 'Fan Calculator',
-      description: 'Calculate the required fan power (m³/h) for your grow tent.',
+      description: 'Calculate the required fan power (m³/h) for your grow tent, accounting for light heat and filters.',
       width: 'Width',
       depth: 'Depth',
       height: 'Height',
@@ -123,21 +123,21 @@ export const equipmentView = {
     },
     light: {
       title: 'Light Calculator',
-      description: 'Estimate the required LED light power for your area.',
+      description: 'Get a wattage recommendation based on PPFD and DLI values for the specific growth stage.',
       width: 'Width',
       depth: 'Depth',
       result: 'Recommended LED power',
     },
     nutrients: {
-      title: 'Nutrient Calculator',
-      description: 'Calculate the right amount of fertilizer for your watering can.',
+      title: 'Nutrient Mixer',
+      description: 'Calculate the right amount of fertilizer for your watering can for multiple components.',
       waterAmount: 'Water Amount',
       dose: 'Dose',
       result: 'Required fertilizer',
     },
     yield: {
       title: 'Yield Estimator',
-      description: 'Get a rough estimate of your potential harvest yield (g).',
+      description: 'Get a more accurate estimate of your potential harvest yield (g) based on multiple factors.',
       area: 'Area',
       wattage: 'Light Wattage',
       level: 'Experience Level',
@@ -303,6 +303,55 @@ export const equipmentView = {
             ],
             idealFor: 'Growers who need fast and straightforward delivery.'
         }
+    }
+  },
+  calculator: {
+    yes: 'Yes',
+    no: 'No',
+    ventilation: {
+      lightWattage: 'Light Wattage',
+      lightWattageTooltip: 'High-power lights generate more heat and require stronger ventilation.',
+      carbonFilter: 'Carbon Filter?',
+      carbonFilterTooltip: 'A carbon filter adds air resistance and requires a more powerful fan.',
+    },
+    light: {
+      stage: 'Growth Stage',
+      ppfdTooltip: 'PPFD (Photosynthetic Photon Flux Density) measures the amount of usable light your plants receive. Different stages have different optimal values.',
+      dliTooltip: 'DLI (Daily Light Integral) is the total amount of usable light a plant receives over a 24-hour period.',
+    },
+    cost: {
+      title: 'Electrical Cost Calculator',
+      description: 'Estimate the electricity costs of your grow setup over various periods.',
+      lightPower: 'Light Power',
+      lightHours: 'Light Hours',
+      fanPower: 'Fan Power',
+      fanHours: 'Fan Hours',
+      otherPower: 'Other Power',
+      price: 'Price per kWh',
+      daily: 'Daily',
+      weekly: 'Weekly',
+      monthly: 'Monthly',
+      cycle: 'Per Cycle',
+      cycleSub: '(~90 days)'
+    },
+    nutrients: {
+        reservoir: 'Reservoir Size',
+        component: 'Component',
+        totalFor: 'Total for Comp.'
+    },
+    converter: {
+      title: 'PPM / EC Converter',
+      description: 'Convert between EC (Electrical Conductivity) and PPM (Parts Per Million) scales.',
+      resultInfo: 'Values are converted automatically as you type in any field.',
+    },
+    yield: {
+      training: 'Training Technique',
+      trainings: {
+        none: 'None',
+        lst: 'LST',
+        scrog: 'Topping/SCROG',
+      },
+      efficiency: 'Efficiency'
     }
   }
 };

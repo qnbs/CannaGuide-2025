@@ -114,7 +114,7 @@ export const equipmentView = {
   calculators: {
     ventilation: {
       title: 'Lüfter-Rechner',
-      description: 'Berechne die benötigte Lüfterleistung (m³/h) für deine Growbox.',
+      description: 'Berechne die benötigte Lüfterleistung (m³/h) für deine Growbox unter Berücksichtigung von Lichtwärme und Filtern.',
       width: 'Breite',
       depth: 'Tiefe',
       height: 'Höhe',
@@ -122,21 +122,21 @@ export const equipmentView = {
     },
     light: {
       title: 'Licht-Rechner',
-      description: 'Schätze die benötigte LED-Lichtleistung für deine Fläche.',
+      description: 'Erhalte eine Watt-Empfehlung basierend auf PPFD- und DLI-Werten für das jeweilige Wachstumsstadium.',
       width: 'Breite',
       depth: 'Tiefe',
       result: 'Empfohlene LED-Leistung',
     },
     nutrients: {
-      title: 'Nährstoff-Rechner',
-      description: 'Berechne die richtige Düngermenge für deine Gießkanne.',
+      title: 'Nährstoff-Mixer',
+      description: 'Berechne die richtige Düngermenge für deine Gießkanne für mehrere Komponenten.',
       waterAmount: 'Wassermenge',
       dose: 'Dosis',
       result: 'Benötigter Dünger',
     },
     yield: {
       title: 'Ertrags-Schätzer',
-      description: 'Erhalte eine grobe Schätzung deines potenziellen Ertrags (g).',
+      description: 'Erhalte eine genauere Schätzung deines potenziellen Ertrags (g) basierend auf mehreren Faktoren.',
       area: 'Fläche',
       wattage: 'Lichtleistung',
       level: 'Erfahrungslevel',
@@ -302,6 +302,55 @@ export const equipmentView = {
             ],
             idealFor: 'Grower, die eine schnelle und unkomplizierte Lieferung benötigen.'
         }
+    }
+  },
+  calculator: {
+    yes: 'Ja',
+    no: 'Nein',
+    ventilation: {
+      lightWattage: 'Lichtleistung',
+      lightWattageTooltip: 'Leistungsstarke Lampen erzeugen mehr Wärme und erfordern eine stärkere Belüftung.',
+      carbonFilter: 'Aktivkohlefilter?',
+      carbonFilterTooltip: 'Ein Aktivkohlefilter erhöht den Luftwiderstand und erfordert einen stärkeren Lüfter.',
+    },
+    light: {
+      stage: 'Wachstumsphase',
+      ppfdTooltip: 'PPFD (Photosynthetische Photonenflussdichte) misst die Menge an nutzbarem Licht, die deine Pflanzen erreicht. Verschiedene Phasen haben unterschiedliche optimale Werte.',
+      dliTooltip: 'DLI (Tägliches Lichtintegral) ist die Gesamtmenge an nutzbarem Licht, die eine Pflanze über einen 24-Stunden-Zeitraum erhält.',
+    },
+    cost: {
+      title: 'Stromkosten-Rechner',
+      description: 'Schätze die Stromkosten deines Grow-Setups über verschiedene Zeiträume.',
+      lightPower: 'Lichtleistung',
+      lightHours: 'Lichtstunden',
+      fanPower: 'Lüfterleistung',
+      fanHours: 'Lüfterstunden',
+      otherPower: 'Sonstige Leistung',
+      price: 'Strompreis',
+      daily: 'Täglich',
+      weekly: 'Wöchentlich',
+      monthly: 'Monatlich',
+      cycle: 'Pro Zyklus',
+      cycleSub: '(~90 Tage)'
+    },
+    nutrients: {
+        reservoir: 'Reservoir-Größe',
+        component: 'Komponente',
+        totalFor: 'Gesamt für Komp.'
+    },
+    converter: {
+      title: 'PPM / EC Umrechner',
+      description: 'Konvertiere zwischen EC (Elektrische Leitfähigkeit) und PPM (Teile pro Million) Skalen.',
+      resultInfo: 'Werte werden automatisch umgerechnet, wenn du ein Feld änderst.',
+    },
+    yield: {
+      training: 'Trainingstechnik',
+      trainings: {
+        none: 'Keine',
+        lst: 'LST',
+        scrog: 'Topping/SCROG',
+      },
+      efficiency: 'Effizienz'
     }
   }
 };

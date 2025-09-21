@@ -41,7 +41,7 @@ const SetupDetailModal: React.FC<{
             (newRec[category] as any)[field] = value;
 
             if (field === 'price') {
-                 const newTotal = Object.values(newRec).reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+                 const newTotal = Object.values(newRec).reduce((sum, item: RecommendationItem) => sum + (Number(item.price) || 0), 0);
                  return { ...prev, recommendation: newRec, totalCost: newTotal };
             }
             

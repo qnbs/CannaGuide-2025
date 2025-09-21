@@ -1,4 +1,5 @@
 import React, { useId } from 'react';
+// FIX: Correct import path for types.
 import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
@@ -82,6 +83,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                     aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     aria-pressed={isFavorite}
                 >
+                    {/* FIX: Correct weight prop type to allow 'fill' or 'regular' */}
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>

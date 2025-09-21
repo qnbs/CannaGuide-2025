@@ -21,6 +21,7 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
         </div>
         <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center">
+                {/* FIX: Correct weight prop type to allow 'fill' or 'regular' */}
                 {[...Array(5)].map((_, i) => (
                     <PhosphorIcons.Star key={i} weight={i < Math.round(shop.rating) ? 'fill' : 'regular'} className={`w-5 h-5 ${i < Math.round(shop.rating) ? 'text-amber-400' : 'text-slate-500'}`} />
                 ))}

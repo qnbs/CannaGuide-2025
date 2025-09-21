@@ -1,17 +1,23 @@
-import { useState, useMemo, useEffect } from 'react';
-import { Strain, SortDirection } from '../types';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Strain, SortDirection, YieldLevel, DifficultyLevel, HeightLevel, StrainType } from '../types';
 
-export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime';
+export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'yield';
 
 interface SortOption {
     key: SortKey;
     direction: SortDirection;
 }
 
-const difficultyValues: Record<Strain['agronomic']['difficulty'], number> = {
+const difficultyValues: Record<DifficultyLevel, number> = {
     Easy: 1,
     Medium: 2,
     Hard: 3,
+};
+
+const yieldValues: Record<YieldLevel, number> = {
+    Low: 1,
+    Medium: 2,
+    High: 3,
 };
 
 const useDebounce = <T,>(value: T, delay: number): T => {
@@ -27,125 +33,160 @@ const useDebounce = <T,>(value: T, delay: number): T => {
     return debouncedValue;
 };
 
-export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<string>, initialSort: SortOption = { key: 'name', direction: 'asc' }) => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-  const [sort, setSort] = useState<SortOption>(initialSort);
-  const [showFavorites, setShowFavorites] = useState(false);
-  const [isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen] = useState(false);
+// Advanced filter state shape
+interface AdvancedFilterState {
+    typeFilter: 'All' | StrainType;
+    thcRange: [number, number];
+    cbdRange: [number, number];
+    floweringRange: [number, number];
+    selectedDifficulties: Set<DifficultyLevel>;
+    selectedYields: Set<YieldLevel>;
+    selectedHeights: Set<HeightLevel>;
+    selectedAromas: Set<string>;
+    selectedTerpenes: Set<string>;
+}
 
-  const [advancedFilters, setAdvancedFilters] = useState({
-      thcRange: [0, 35] as [number, number],
-      cbdRange: [0, 20] as [number, number],
-      floweringRange: [6, 16] as [number, number],
-      selectedDifficulties: new Set<Strain['agronomic']['difficulty']>(),
-      selectedYields: new Set<Strain['agronomic']['yield']>(),
-      selectedHeights: new Set<Strain['agronomic']['height']>(),
-      selectedAromas: new Set<string>(),
-      selectedTerpenes: new Set<string>(),
-      typeFilter: 'All' as 'All' | 'Sativa' | 'Indica' | 'Hybrid',
-  });
+// Full filter state shape
+interface FilterState extends AdvancedFilterState {
+    searchTerm: string;
+    showFavorites: boolean;
+    sort: SortOption;
+}
 
-  const [tempFilterState, setTempFilterState] = useState(advancedFilters);
+const defaultAdvancedFilters: AdvancedFilterState = {
+    typeFilter: 'All',
+    thcRange: [0, 35],
+    cbdRange: [0, 20],
+    floweringRange: [6, 16],
+    selectedDifficulties: new Set(),
+    selectedYields: new Set(),
+    selectedHeights: new Set(),
+    selectedAromas: new Set(),
+    selectedTerpenes: new Set(),
+};
 
-  const baseFilteredStrains = useMemo(() => {
-    return strainsToDisplay.filter(strain => {
-      if (showFavorites && !favoriteIds.has(strain.id)) return false;
-      if (debouncedSearchTerm && !strain.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) return false;
-      return true;
+
+export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<string>, defaultSort: SortOption) => {
+    const [filterState, setFilterState] = useState<FilterState>({
+        searchTerm: '',
+        showFavorites: false,
+        sort: defaultSort,
+        ...defaultAdvancedFilters,
     });
-  }, [strainsToDisplay, debouncedSearchTerm, showFavorites, favoriteIds]);
+    
+    const [isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen] = useState(false);
+    const [tempFilterState, setTempFilterState] = useState<AdvancedFilterState>(defaultAdvancedFilters);
 
-  const advancedFilteredStrains = useMemo(() => {
-    return baseFilteredStrains.filter(strain => {
-      if (advancedFilters.typeFilter !== 'All' && strain.type !== advancedFilters.typeFilter) return false;
-      if (strain.thc < advancedFilters.thcRange[0] || strain.thc > advancedFilters.thcRange[1]) return false;
-      if (strain.cbd < advancedFilters.cbdRange[0] || strain.cbd > advancedFilters.cbdRange[1]) return false;
-      if (advancedFilters.selectedDifficulties.size > 0 && !advancedFilters.selectedDifficulties.has(strain.agronomic.difficulty)) return false;
-      if (advancedFilters.selectedYields.size > 0 && !advancedFilters.selectedYields.has(strain.agronomic.yield)) return false;
-      if (advancedFilters.selectedHeights.size > 0 && !advancedFilters.selectedHeights.has(strain.agronomic.height)) return false;
-      if (strain.floweringTime < advancedFilters.floweringRange[0] || strain.floweringTime > advancedFilters.floweringRange[1]) return false;
-      if (advancedFilters.selectedTerpenes.size > 0 && !(strain.dominantTerpenes && [...advancedFilters.selectedTerpenes].every(t => strain.dominantTerpenes!.includes(t)))) return false;
-      if (advancedFilters.selectedAromas.size > 0 && !(strain.aromas && [...advancedFilters.selectedAromas].every(sa => strain.aromas!.map(a => a.toLowerCase()).includes(sa.toLowerCase())))) return false;
-      return true;
-    });
-  }, [baseFilteredStrains, advancedFilters]);
-  
-  const sortedAndFilteredStrains = useMemo(() => {
-      return [...advancedFilteredStrains].sort((a, b) => {
-          let aVal: string | number, bVal: string | number;
+    const debouncedSearchTerm = useDebounce(filterState.searchTerm, 300);
 
-          switch (sort.key) {
-              case 'difficulty': aVal = difficultyValues[a.agronomic.difficulty]; bVal = difficultyValues[b.agronomic.difficulty]; break;
-              case 'thc': case 'cbd': case 'floweringTime': aVal = a[sort.key]; bVal = b[sort.key]; break;
-              default: aVal = a[sort.key] as string; bVal = b[sort.key] as string;
-          }
+    const applyFilters = (strains: Strain[], filters: Partial<FilterState> & AdvancedFilterState) => {
+        return strains.filter(strain => {
+            // Basic filters
+            if (filters.showFavorites && !favoriteIds.has(strain.id)) return false;
+            
+            const searchTerm = filters.searchTerm || debouncedSearchTerm;
+            if (searchTerm && !strain.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+            
+            // Advanced filters
+            if (filters.typeFilter !== 'All' && strain.type !== filters.typeFilter) return false;
+            if (strain.thc < filters.thcRange[0] || strain.thc > filters.thcRange[1]) return false;
+            if (strain.cbd < filters.cbdRange[0] || strain.cbd > filters.cbdRange[1]) return false;
+            if (strain.floweringTime < filters.floweringRange[0] || strain.floweringTime > filters.floweringRange[1]) return false;
+            if (filters.selectedDifficulties.size > 0 && !filters.selectedDifficulties.has(strain.agronomic.difficulty)) return false;
+            if (filters.selectedYields.size > 0 && !filters.selectedYields.has(strain.agronomic.yield)) return false;
+            if (filters.selectedHeights.size > 0 && !filters.selectedHeights.has(strain.agronomic.height)) return false;
+            if (filters.selectedAromas.size > 0 && !(strain.aromas || []).some(a => filters.selectedAromas.has(a))) return false;
+            if (filters.selectedTerpenes.size > 0 && !(strain.dominantTerpenes || []).some(t => filters.selectedTerpenes.has(t))) return false;
 
-          if (typeof aVal === 'string' && typeof bVal === 'string') {
-              return sort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-          }
-          if (typeof aVal === 'number' && typeof bVal === 'number') {
-              return sort.direction === 'asc' ? aVal - bVal : bVal - aVal;
-          }
-          return 0;
-      });
-  }, [advancedFilteredStrains, sort]);
+            return true;
+        });
+    };
+    
+    const sortedAndFilteredStrains = useMemo(() => {
+        let filtered = applyFilters(strainsToDisplay, filterState);
 
-  const previewFilteredStrains = useMemo(() => {
-    if (!isAdvancedFilterModalOpen) return [];
-    return baseFilteredStrains.filter(strain => {
-      if (tempFilterState.typeFilter !== 'All' && strain.type !== tempFilterState.typeFilter) return false;
-      if (strain.thc < tempFilterState.thcRange[0] || strain.thc > tempFilterState.thcRange[1]) return false;
-      if (strain.cbd < tempFilterState.cbdRange[0] || strain.cbd > tempFilterState.cbdRange[1]) return false;
-      if (tempFilterState.selectedDifficulties.size > 0 && !tempFilterState.selectedDifficulties.has(strain.agronomic.difficulty)) return false;
-      if (tempFilterState.selectedYields.size > 0 && !tempFilterState.selectedYields.has(strain.agronomic.yield)) return false;
-      if (tempFilterState.selectedHeights.size > 0 && !tempFilterState.selectedHeights.has(strain.agronomic.height)) return false;
-      if (strain.floweringTime < tempFilterState.floweringRange[0] || strain.floweringTime > tempFilterState.floweringRange[1]) return false;
-      if (tempFilterState.selectedTerpenes.size > 0 && !(strain.dominantTerpenes && [...tempFilterState.selectedTerpenes].every(t => strain.dominantTerpenes!.includes(t)))) return false;
-      if (tempFilterState.selectedAromas.size > 0 && !(strain.aromas && [...tempFilterState.selectedAromas].every(sa => strain.aromas!.map(a => a.toLowerCase()).includes(sa.toLowerCase())))) return false;
-      return true;
-    });
-  }, [isAdvancedFilterModalOpen, baseFilteredStrains, tempFilterState]);
-
-  const handleSort = (key: SortKey) => {
-    setSort(prev => {
-        if (prev.key === key) {
-            return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+        const { key, direction } = filterState.sort;
+        const sorted = [...filtered].sort((a, b) => {
+            let valA: string | number, valB: string | number;
+            switch (key) {
+                case 'name':
+                case 'type':
+                    valA = a[key];
+                    valB = b[key];
+                    return valA.localeCompare(valB as string);
+                case 'difficulty':
+                    valA = difficultyValues[a.agronomic.difficulty];
+                    valB = difficultyValues[b.agronomic.difficulty];
+                    break;
+                case 'yield':
+                    valA = yieldValues[a.agronomic.yield];
+                    valB = yieldValues[b.agronomic.yield];
+                    break;
+                default:
+                    valA = a[key as 'thc' | 'cbd' | 'floweringTime'];
+                    valB = b[key as 'thc' | 'cbd' | 'floweringTime'];
+            }
+             if (valA < valB) return -1;
+             if (valA > valB) return 1;
+             return 0;
+        });
+        
+        if (direction === 'desc') {
+            sorted.reverse();
         }
-        return { key, direction: key === 'name' || key === 'type' ? 'asc' : 'desc' };
-    });
-  };
 
-  const openAdvancedFilterModal = () => {
-    setTempFilterState(advancedFilters);
-    setIsAdvancedFilterModalOpen(true);
-  };
+        return sorted;
+    }, [strainsToDisplay, debouncedSearchTerm, filterState, favoriteIds]);
+    
+    const previewFilteredStrains = useMemo(() => {
+        // Preview uses the temp state for advanced filters but the current state for search/favorites
+        return applyFilters(strainsToDisplay, { ...filterState, ...tempFilterState, searchTerm: filterState.searchTerm });
+    }, [strainsToDisplay, filterState.searchTerm, filterState.showFavorites, tempFilterState, favoriteIds]);
 
-  const handleApplyAdvancedFilters = () => {
-    setAdvancedFilters(tempFilterState);
-    setIsAdvancedFilterModalOpen(false);
-  };
 
-  return {
-    sortedAndFilteredStrains,
-    filterControls: {
-        setSearchTerm,
-        setShowFavorites,
+    const handleSort = useCallback((key: SortKey) => {
+        setFilterState(prev => {
+            const newDirection = prev.sort.key === key && prev.sort.direction === 'asc' ? 'desc' : 'asc';
+            return { ...prev, sort: { key, direction: newDirection } };
+        });
+    }, []);
+
+    const filterControls = useMemo(() => ({
+        setSearchTerm: (term: string) => setFilterState(prev => ({...prev, searchTerm: term })),
+        setShowFavorites: (show: boolean) => setFilterState(prev => ({...prev, showFavorites: show })),
         handleSort,
-    },
-    filterState: {
-        searchTerm,
-        showFavorites,
-        sort,
-    },
-    advancedFilters,
-    setAdvancedFilters,
-    isAdvancedFilterModalOpen,
-    setIsAdvancedFilterModalOpen,
-    tempFilterState,
-    setTempFilterState,
-    previewFilteredStrains,
-    openAdvancedFilterModal,
-    handleApplyAdvancedFilters
-  };
+    }), [handleSort]);
+    
+    const openAdvancedFilterModal = () => {
+        setTempFilterState({
+            typeFilter: filterState.typeFilter,
+            thcRange: filterState.thcRange,
+            cbdRange: filterState.cbdRange,
+            floweringRange: filterState.floweringRange,
+            selectedDifficulties: new Set(filterState.selectedDifficulties),
+            selectedYields: new Set(filterState.selectedYields),
+            selectedHeights: new Set(filterState.selectedHeights),
+            selectedAromas: new Set(filterState.selectedAromas),
+            selectedTerpenes: new Set(filterState.selectedTerpenes),
+        });
+        setIsAdvancedFilterModalOpen(true);
+    };
+
+    const handleApplyAdvancedFilters = () => {
+        setFilterState(prev => ({ ...prev, ...tempFilterState }));
+        setIsAdvancedFilterModalOpen(false);
+    };
+
+    return {
+        sortedAndFilteredStrains,
+        filterControls,
+        filterState,
+        isAdvancedFilterModalOpen,
+        setIsAdvancedFilterModalOpen,
+        tempFilterState,
+        setTempFilterState,
+        previewFilteredStrains,
+        openAdvancedFilterModal,
+        handleApplyAdvancedFilters,
+    };
 };

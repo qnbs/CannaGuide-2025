@@ -1,8 +1,9 @@
 
 
-import React, { useState, useRef, useId } from 'react';
+import React, { useState, useRef, useId, useEffect } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
+// FIX: Correct import path for types.
 import { JournalEntry, TrainingType } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
@@ -15,7 +16,6 @@ interface ModalProps {
     onConfirm: (details: JournalEntry['details'], notes: string) => void;
 }
 
-// FIX: Added helper function to check for default translation keys.
 const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModals.defaultNotes.');
 
 const ModalBase: React.FC<{title: string, onClose: () => void, children: React.ReactNode}> = ({ title, onClose, children }) => {
@@ -53,11 +53,12 @@ export const WateringModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const { settings } = useSettings();
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.5');
-    // FIX: Correctly handle translation keys for default notes.
+    // FIX: Initialize state with a function to avoid re-running translation on every render.
     const [notes, setNotes] = useState(() => {
-        const defaultNote = settings.defaultJournalNotes.watering;
-        return defaultNote && isDefaultNoteKey(defaultNote) ? t(defaultNote) : (defaultNote || '');
+        const defaultNoteKey = settings.defaultJournalNotes.watering;
+        return defaultNoteKey && isDefaultNoteKey(defaultNoteKey) ? t(defaultNoteKey) : (defaultNoteKey || '');
     });
+
 
     const handleConfirm = () => {
         const details = {
@@ -90,11 +91,12 @@ export const FeedingModal: React.FC<ModalProps> = ({ onClose, onConfirm }) => {
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.2');
     const [ec, setEc] = useState('1.2');
-    // FIX: Correctly handle translation keys for default notes.
+    // FIX: Initialize state with a function to avoid re-running translation on every render.
     const [notes, setNotes] = useState(() => {
-        const defaultNote = settings.defaultJournalNotes.feeding;
-        return defaultNote && isDefaultNoteKey(defaultNote) ? t(defaultNote) : (defaultNote || '');
+        const defaultNoteKey = settings.defaultJournalNotes.feeding;
+        return defaultNoteKey && isDefaultNoteKey(defaultNoteKey) ? t(defaultNoteKey) : (defaultNoteKey || '');
     });
+
 
     const handleConfirm = () => {
         const details = {

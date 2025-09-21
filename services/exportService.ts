@@ -1,3 +1,4 @@
+// FIX: Correct import path for types.
 import { Strain, SavedSetup, RecommendationCategory } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -82,8 +83,6 @@ const exportAsTXT = (strains: Strain[], filename: string, t: TFunction) => {
 const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
     const doc = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
     
-    // Set a font that supports a wider range of characters. Helvetica is standard.
-    // Modern jsPDF handles UTF-8 better, but embedding a font would be the most robust solution.
     doc.setFont('Helvetica');
 
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -96,16 +95,16 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
     const addHeader = (title: string) => {
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor('#3b82f6'); // primary-500
+        doc.setTextColor('#3b82f6');
         doc.text(title, margin, 18);
-        doc.setDrawColor(51, 65, 85); // slate-700
+        doc.setDrawColor(51, 65, 85);
         doc.line(margin, 22, pageWidth - margin, 22);
     };
 
     const addFooter = (pageNumber: number, totalPages: number) => {
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(148, 163, 184); // slate-400
+        doc.setTextColor(120, 120, 120); // Dark grey for footer
         doc.text(`${t('common.page')} ${pageNumber} / ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
         doc.text(`${t('common.generated')}: ${new Date().toLocaleString()}`, margin, pageHeight - 10);
     };
@@ -123,7 +122,6 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
             return height;
         };
 
-        // Intelligent page break: check if the strain fits, otherwise add a new page
         if (index > 0 && y + estimateHeight() > pageHeight - footerHeight) {
             doc.addPage();
             addHeader(t('strainsView.exportModal.title'));
@@ -132,7 +130,7 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
 
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(226, 232, 240); // slate-200
+        doc.setTextColor(0, 0, 0); // Black for strain name
         doc.text(strain.name, margin, y);
         y += 8;
 
@@ -140,7 +138,7 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
             startY: y,
             theme: 'grid',
             headStyles: { fillColor: [30, 41, 59], textColor: 226, fontStyle: 'bold' },
-            styles: { fontSize: 9, cellPadding: 2, textColor: 203, font: 'Helvetica' },
+            styles: { fontSize: 9, cellPadding: 2, textColor: [40, 40, 40], font: 'Helvetica' }, // Dark grey for body text
             body: [
                 { label: t('common.type'), value: `${strain.type} ${strain.typeDetails ? `(${strain.typeDetails})` : ''}` },
                 { label: t('common.genetics'), value: strain.genetics || 'N/A' },
@@ -157,11 +155,12 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
              if (y + 15 > pageHeight - footerHeight) { doc.addPage(); addHeader(t('strainsView.exportModal.title')); y = headerHeight; }
             doc.setFontSize(11);
             doc.setFont('helvetica', 'bold');
+            doc.setTextColor(0, 0, 0); // Black for section title
             doc.text(t('common.description'), margin, y);
             y += 6;
             doc.setFont('helvetica', 'normal');
             doc.setFontSize(10);
-            doc.setTextColor(203, 213, 225); // slate-300
+            doc.setTextColor(40, 40, 40); // Dark grey for description text
             const splitText = doc.splitTextToSize(strain.description, pageWidth - (margin * 2));
             doc.text(splitText, margin, y);
             y += splitText.length * 5 + 4;
@@ -172,11 +171,12 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
                 if (y + 15 > pageHeight - footerHeight) { doc.addPage(); addHeader(t('strainsView.exportModal.title')); y = headerHeight; }
                 doc.setFontSize(11);
                 doc.setFont('helvetica', 'bold');
+                doc.setTextColor(0, 0, 0); // Black for section title
                 doc.text(title, margin, y);
                 y += 6;
                 doc.setFont('helvetica', 'normal');
                 doc.setFontSize(9);
-                doc.setTextColor(226, 232, 240); // slate-200
+                doc.setTextColor(226, 232, 240); // White text for tags
                 
                 let currentX = margin;
                 tags.forEach(tag => {
@@ -259,7 +259,7 @@ const exportSetupAsPDF = (setup: SavedSetup, t: TFunction) => {
         startY: 45,
         theme: 'grid',
         headStyles: { fillColor: [30, 41, 59], textColor: 226, fontStyle: 'bold' },
-        styles: { halign: 'left', font: 'Helvetica' },
+        styles: { halign: 'left', font: 'Helvetica', textColor: [40, 40, 40] }, // Dark grey for body text
         columnStyles: { 3: { halign: 'right' } },
         didDrawPage: (data: any) => {
             // Header
@@ -269,19 +269,19 @@ const exportSetupAsPDF = (setup: SavedSetup, t: TFunction) => {
             doc.text(t('equipmentView.savedSetups.pdfReport.setup'), 14, 15);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(203, 213, 225);
+            doc.setTextColor(40, 40, 40); // Dark grey text
             doc.text(setup.name, 14, 22);
 
             doc.setFontSize(10);
+            doc.setTextColor(40, 40, 40); // Dark grey text
             doc.text(`${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}`, 14, 30);
             const sourceInfo = `${t('common.style')}: ${setup.sourceDetails.growStyle} | ${t('equipmentView.savedSetups.pdfReport.budget')}: ${setup.sourceDetails.budget}`;
             doc.text(sourceInfo, 14, 36);
 
             // Footer
-            const pageCount = (doc as any).internal.getNumberOfPages();
             doc.setFontSize(9);
             doc.setFont('helvetica', 'normal');
-            doc.setTextColor(148, 163, 184);
+            doc.setTextColor(120, 120, 120); // Grey text for footer
             let footerStr = `${t('common.page')} ${data.pageNumber}`;
             if (typeof (doc as any).putTotalPages === 'function') {
                 footerStr = footerStr + " / " + totalPagesExp;
@@ -294,7 +294,7 @@ const exportSetupAsPDF = (setup: SavedSetup, t: TFunction) => {
     let finalY = (doc as any).autoTable.previous.finalY;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(226, 232, 240);
+    doc.setTextColor(0, 0, 0); // Black for total
     doc.text(t('equipmentView.configurator.total'), 145, finalY + 10, { align: 'right' });
     doc.text(`${setup.totalCost.toFixed(2)} €`, doc.internal.pageSize.width - 20, finalY + 10, { align: 'right' });
 

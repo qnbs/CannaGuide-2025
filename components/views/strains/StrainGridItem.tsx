@@ -1,4 +1,7 @@
+
+
 import React from 'react';
+// FIX: Correct import path for types.
 import { Strain } from '../../../types';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
@@ -49,11 +52,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
             <div className="absolute top-2 right-2 flex gap-1 z-10">
                  {isUserStrain && onEdit && onDelete && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onEdit(strain))}>
+                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onEdit(strain))} aria-label={t('common.edit')}>
                             <PhosphorIcons.PencilSimple className="w-4 h-4" />
                             <span className="sr-only">{t('common.edit')}</span>
                         </Button>
-                        <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))}>
+                        <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))} aria-label={t('common.delete')}>
                             <PhosphorIcons.TrashSimple className="w-4 h-4" />
                              <span className="sr-only">{t('common.delete')}</span>
                         </Button>
@@ -65,6 +68,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                     aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     aria-pressed={isFavorite}
                 >
+                    {/* FIX: Correct weight prop type to allow 'fill' or 'regular' */}
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>

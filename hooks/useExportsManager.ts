@@ -1,6 +1,8 @@
 
+
 import { useState, useEffect, useCallback } from 'react';
-import { SavedExport } from '../types';
+// FIX: Import SavedExport type from the correct location.
+import { SavedExport, ExportSource, ExportFormat } from '../types';
 import { storageService } from '../services/storageService';
 
 const STORAGE_KEY = 'exports';

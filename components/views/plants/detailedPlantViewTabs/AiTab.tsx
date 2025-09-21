@@ -79,7 +79,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                 </h3>
                 <p className="text-sm text-slate-400 mb-4">{t('plantsView.aiAdvisor.description')}</p>
                 <Button onClick={handleGetAdvice} disabled={isLoading} className="w-full">
-                    {isLoading ? t('ai.generating') : t('ai.getAdvice')}
+                    {isLoading ? loadingMessage : t('ai.getAdvice')}
                 </Button>
 
                 <div className="mt-4">
@@ -88,9 +88,10 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                             <p className="text-slate-400 animate-pulse">{loadingMessage}</p>
                         </div>
                     )}
-                    {response && (
+                    {response && !isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{response.title}</h4>
+                            {/* FIX: Render AI content with dangerouslySetInnerHTML to support markdown formatting, consistent with archived responses. */}
                             <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
                             <div className="text-right mt-2">
                                <Button size="sm" variant="secondary" onClick={() => addResponse(plant.id, response, plantQueryData)}>{t('knowledgeView.archive.saveButton')}</Button>
@@ -113,9 +114,11 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
                                  <div className="flex justify-end items-center gap-2 mt-2">
+                                    {/* FIX: Add aria-label for accessibility. */}
                                     <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                         <PhosphorIcons.PencilSimple className="w-4 h-4"/>
                                     </Button>
+                                    {/* FIX: Add aria-label for accessibility. */}
                                     <Button size="sm" variant="danger" onClick={() => deleteResponse(plant.id, res.id)} aria-label={t('common.deleteResponse')}>
                                         <PhosphorIcons.TrashSimple className="w-4 h-4"/>
                                     </Button>

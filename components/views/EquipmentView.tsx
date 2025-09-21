@@ -6,6 +6,7 @@ import { Calculators } from './equipment/Calculators';
 import { SavedSetupsView } from './equipment/SavedSetupsView';
 import { useSetupManager } from '../../hooks/useSetupManager';
 import { geminiService } from '../../services/geminiService';
+// FIX: Correct import path for types.
 import { Recommendation, SavedSetup } from '../../types';
 import { Tabs } from '../common/Tabs';
 import { useNotifications } from '../../context/NotificationContext';

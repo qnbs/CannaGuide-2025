@@ -57,6 +57,7 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
                     <p className="text-slate-300 text-sm">{t('plantsView.warnings.none')}</p>
                 )}
             </Card>
+            <AiDiagnostics />
         </div>
     );
 }

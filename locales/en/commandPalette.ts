@@ -1,3 +1,4 @@
+
 export const commandPalette = {
   title: 'Command Palette',
   placeholder: 'Type a command or search...',

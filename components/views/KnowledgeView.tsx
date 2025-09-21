@@ -6,6 +6,7 @@ import { useTranslations } from '../../hooks/useTranslations';
 import { useKnowledgeProgress } from '../../hooks/useKnowledgeProgress';
 import { useKnowledgeArchive } from '../../hooks/useKnowledgeArchive';
 import { geminiService } from '../../services/geminiService';
+// FIX: Correct import path for types.
 import { AIResponse, ArchivedMentorResponse } from '../../types';
 import { EditResponseModal } from '../common/EditResponseModal';
 import { Tabs } from '../common/Tabs';

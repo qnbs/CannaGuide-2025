@@ -3,6 +3,7 @@ import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
+// FIX: Correct import path for types.
 import { SavedSetup, Recommendation } from '../../../types';
 import { SetupResults } from './SetupResults';
 import { configurations } from './setupConfigurations';

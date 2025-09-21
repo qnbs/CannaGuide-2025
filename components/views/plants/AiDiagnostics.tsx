@@ -1,27 +1,26 @@
-
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
+import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useNotifications } from '../../../context/NotificationContext';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { useNotifications } from '../../../context/NotificationContext';
 import { geminiService } from '../../../services/geminiService';
-import { SkeletonLoader } from '../../common/SkeletonLoader';
-import { AIResponse, Plant } from '../../../types';
+import { AIResponse } from '../../../types';
+import { CameraModal } from '../../common/CameraModal';
+import { usePlants } from '../../../hooks/usePlants';
 
-interface AiDiagnosticsProps {
-    plant: Plant | null;
-}
-
-export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
+export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
+    const { plants } = usePlants();
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [image, setImage] = useState<{file: File, preview: string} | null>(null);
+    
     const [isLoading, setIsLoading] = useState(false);
     const [response, setResponse] = useState<AIResponse | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageMimeType, setImageMimeType] = useState<string | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
 
     useEffect(() => {
         if (isLoading) {
@@ -31,9 +30,10 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
-
+            
             updateLoadingMessage();
             const intervalId = setInterval(updateLoadingMessage, 2000);
+
             return () => clearInterval(intervalId);
         }
     }, [isLoading, t]);
@@ -41,41 +41,55 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const preview = URL.createObjectURL(file);
-            setImage({ file, preview });
-            setResponse(null);
+            handleFile(file);
         }
     };
+    
+    const handleFile = (file: File) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setImagePreview(reader.result as string);
+            setImageMimeType(file.type);
+            setResponse(null);
+        };
+        reader.readAsDataURL(file);
+    };
 
+    const handleCameraCapture = (dataUrl: string) => {
+        setImagePreview(dataUrl);
+        // dataUrl for jpegs captured from canvas is 'image/jpeg'
+        setImageMimeType('image/jpeg');
+        setResponse(null);
+        setIsCameraOpen(false);
+    };
+    
     const handleDiagnose = async () => {
-        if (!image) return;
+        if (!imagePreview || !imageMimeType) return;
 
         setIsLoading(true);
         setResponse(null);
         try {
-            const base64Image = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(image.file);
-                reader.onload = () => resolve((reader.result as string).split(',')[1]);
-                reader.onerror = error => reject(error);
-            });
-            
-            const plantContext = plant ? `The plant is a ${plant.strain.name}, ${plant.age} days old, in the ${plant.stage} stage.` : 'No specific plant context provided.';
-            const res = await geminiService.diagnosePlantProblem(base64Image, image.file.type, plantContext, t);
+            const base64Data = imagePreview.split(',')[1];
+            const activePlants = plants.filter(p => p !== null);
+            const plantContext = activePlants.length > 0
+              ? `Active plants are in these stages: ${activePlants.map(p => p!.stage).join(', ')}.`
+              : 'No active plants are being grown.';
+
+            const res = await geminiService.diagnosePlantProblem(base64Data, imageMimeType, plantContext, t);
             setResponse(res);
         } catch (error) {
-            console.error(error);
+            console.error("Diagnosis Error:", error);
             const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
             const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
-            addNotification(errorMessage, 'error');
             setResponse({ title: t('common.error'), content: errorMessage });
-        } finally {
-            setIsLoading(false);
+            addNotification(errorMessage, 'error');
         }
+        setIsLoading(false);
     };
-    
+
     const handleReset = () => {
-        setImage(null);
+        setImagePreview(null);
+        setImageMimeType(null);
         setResponse(null);
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -83,46 +97,43 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
     };
 
     return (
-        <Card>
-            <h3 className="text-xl font-bold mb-4 text-slate-100 flex items-center gap-2">
-                <PhosphorIcons.MagicWand className="w-6 h-6 text-primary-400" /> {t('plantsView.aiDiagnostics.title')}
-            </h3>
-            {!image && (
-                <div onClick={() => fileInputRef.current?.click()} className="border-2 border-dashed border-slate-600 rounded-lg p-6 text-center cursor-pointer hover:bg-slate-800/50">
-                    <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2" />
-                    <p className="text-sm text-slate-300 font-semibold">{t('plantsView.aiDiagnostics.buttonLabel')}</p>
-                    <p className="text-xs text-slate-400">{t('plantsView.aiDiagnostics.prompt')}</p>
-                </div>
-            )}
-            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-            
-            {image && (
-                <div className="space-y-4">
-                    <div className="relative">
-                        <img src={image.preview} alt="Plant preview" className="rounded-lg max-h-60 w-full object-contain" />
-                        <Button size="sm" variant="secondary" onClick={handleReset} className="absolute top-2 right-2 !p-1.5" aria-label={t('common.removeImage')}>
-                            <PhosphorIcons.X className="w-4 h-4" />
+        <>
+            <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleCameraCapture} />
+            <Card>
+                <h3 className="text-xl font-bold mb-2 text-primary-400 flex items-center gap-2">
+                    <PhosphorIcons.Sparkle className="w-6 h-6" /> {t('plantsView.aiDiagnostics.title')}
+                </h3>
+                <p className="text-sm text-slate-300 mb-4">{t('plantsView.aiDiagnostics.description')}</p>
+
+                {!imagePreview && (
+                    <div className="flex gap-2">
+                         <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="diagnostics-upload"/>
+                        <Button as="label" htmlFor="diagnostics-upload" className="flex-1 cursor-pointer"><PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />{t('plantsView.aiDiagnostics.buttonLabel')}</Button>
+                        <Button onClick={() => setIsCameraOpen(true)} variant="secondary" aria-label={t('plantsView.aiDiagnostics.capture')}><PhosphorIcons.Camera className="w-5 h-5"/></Button>
+                    </div>
+                )}
+                
+                {imagePreview && (
+                    <div className="space-y-4">
+                        <div className="relative">
+                            <img src={imagePreview} alt="Plant for diagnosis" className="rounded-lg w-full max-h-60 object-contain"/>
+                            <button onClick={handleReset} className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-black/70" aria-label={t('common.removeImage')}>
+                                <PhosphorIcons.X className="w-4 h-4" />
+                            </button>
+                        </div>
+                        <Button onClick={handleDiagnose} disabled={isLoading} className="w-full">
+                           {isLoading ? loadingMessage : t('ai.getAdvice')}
                         </Button>
                     </div>
-                    <Button onClick={handleDiagnose} disabled={isLoading} className="w-full">
-                        {isLoading ? t('ai.generating') : t('plantsView.aiDiagnostics.diagnoseButton')}
-                    </Button>
-                </div>
-            )}
+                )}
 
-            {isLoading && (
-                 <div className="text-center p-4">
-                    <p className="text-slate-400 animate-pulse">{loadingMessage}</p>
-                </div>
-            )}
-            {response && (
-                 <Card className="mt-4 bg-slate-800 animate-fade-in">
-                    <h4 className="font-bold text-primary-300">{response.title}</h4>
-                    {/* FIX: Render AI content with dangerouslySetInnerHTML to support markdown formatting from Gemini. */}
-                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
-                 </Card>
-            )}
-            <p className="text-xs text-slate-500 mt-2 text-center">{t('ai.disclaimer')}</p>
-        </Card>
+                {response && !isLoading && (
+                    <Card className="mt-4 bg-slate-800 animate-fade-in">
+                        <h4 className="font-bold text-primary-300">{response.title}</h4>
+                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }} />
+                    </Card>
+                )}
+            </Card>
+        </>
     );
 };

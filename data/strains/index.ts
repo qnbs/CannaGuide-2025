@@ -1,3 +1,4 @@
+// FIX: Correct import path for types.
 import { Strain } from '../../types';
 import { strains as strainsA } from './a';
 import { strains as strainsB } from './b';

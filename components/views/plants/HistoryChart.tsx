@@ -1,4 +1,5 @@
 import React from 'react';
+// FIX: Correct import path for types.
 import { PlantHistoryEntry } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
 

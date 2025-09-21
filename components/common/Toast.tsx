@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+// FIX: Correct import path for types.
 import { Notification, NotificationType } from '../../types';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 

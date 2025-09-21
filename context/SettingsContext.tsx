@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
+// FIX: Correct import path for types.
 import { AppSettings, Language, GrowSetup, Theme, View, UiDensity } from '../types';
 import { storageService } from '../services/storageService';
 

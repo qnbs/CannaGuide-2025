@@ -1,101 +1,92 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { ExportSource, ExportFormat } from '../../../types';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
-import { ExportFormat, ExportSource } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { useSettings } from '../../../hooks/useSettings';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
 
 interface ExportModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onExport: (source: ExportSource, format: ExportFormat) => void;
-    selectionCount: number;
-    favoritesCount: number;
-    filteredCount: number;
-    totalCount: number;
+  isOpen: boolean;
+  onClose: () => void;
+  onExport: (source: ExportSource, format: ExportFormat) => void;
+  selectionCount: number;
+  favoritesCount: number;
+  filteredCount: number;
+  totalCount: number;
 }
 
-const RadioGroup: React.FC<{
-    label: string,
-    options: { value: string, label: string, disabled?: boolean, count?: number }[],
-    selectedValue: string,
-    onChange: (value: string) => void
-}> = ({ label, options, selectedValue, onChange }) => (
-    <div>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">{label}</h3>
-        <div className="space-y-2">
-            {options.map(opt => (
-                <label key={opt.value} className={`flex items-center p-3 rounded-lg border-2 transition-colors ${selectedValue === opt.value ? 'border-primary-500 bg-primary-500/10' : 'border-slate-300 dark:border-slate-600'} ${opt.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-                    <input
-                        type="radio"
-                        name={label}
-                        value={opt.value}
-                        checked={selectedValue === opt.value}
-                        onChange={() => !opt.disabled && onChange(opt.value)}
-                        disabled={opt.disabled}
-                        className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 dark:border-slate-600"
-                    />
-                    <span className="ml-3 text-sm font-medium text-slate-800 dark:text-slate-200">{opt.label}</span>
-                    {opt.count !== undefined && <span className="ml-auto text-xs font-mono bg-slate-200 dark:bg-slate-600 px-1.5 py-0.5 rounded">{opt.count}</span>}
-                </label>
-            ))}
-        </div>
-    </div>
-);
-
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, selectionCount, favoritesCount, filteredCount, totalCount }) => {
-    const { t } = useTranslations();
-    const { settings } = useSettings();
-    const [source, setSource] = useState<ExportSource>(settings.defaultExportSettings.source);
-    const [format, setFormat] = useState<ExportFormat>(settings.defaultExportSettings.format);
-    const modalRef = useFocusTrap(isOpen);
+  const { t } = useTranslations();
+  const { settings } = useSettings();
+  const [source, setSource] = useState<ExportSource>(settings.defaultExportSettings.source);
+  const [format, setFormat] = useState<ExportFormat>(settings.defaultExportSettings.format);
+  const modalRef = useFocusTrap(isOpen);
 
-    useEffect(() => {
-        if(isOpen) {
-             const defaultSource = selectionCount > 0 ? 'selected' : settings.defaultExportSettings.source;
-             setSource(defaultSource);
-             setFormat(settings.defaultExportSettings.format);
-        }
-    }, [isOpen, selectionCount, settings.defaultExportSettings]);
+  if (!isOpen) return null;
 
+  const sources: { id: ExportSource; label: string; count: number; disabled: boolean }[] = [
+    { id: 'selected', label: t('strainsView.exportModal.sources.selected'), count: selectionCount, disabled: selectionCount === 0 },
+    { id: 'favorites', label: t('strainsView.exportModal.sources.favorites'), count: favoritesCount, disabled: favoritesCount === 0 },
+    { id: 'filtered', label: t('strainsView.exportModal.sources.filtered'), count: filteredCount, disabled: filteredCount === 0 },
+    { id: 'all', label: t('strainsView.exportModal.sources.all'), count: totalCount, disabled: totalCount === 0 },
+  ];
 
-    if (!isOpen) return null;
+  const formats: { id: ExportFormat; label: string }[] = [
+    { id: 'pdf', label: t('strainsView.exportModal.formats.pdf') },
+    { id: 'txt', label: t('strainsView.exportModal.formats.txt') },
+    { id: 'csv', label: t('strainsView.exportModal.formats.csv') },
+    { id: 'json', label: t('strainsView.exportModal.formats.json') },
+  ];
+  
+  const handleExportClick = () => {
+    onExport(source, format);
+    onClose();
+  };
 
-    const handleConfirm = () => {
-        onExport(source, format);
-        onClose();
-    };
-    
-    const sourceOptions = [
-        { value: 'selected', label: t('strainsView.exportModal.sources.selected'), disabled: selectionCount === 0, count: selectionCount },
-        { value: 'favorites', label: t('strainsView.exportModal.sources.favorites'), disabled: favoritesCount === 0, count: favoritesCount },
-        { value: 'filtered', label: t('strainsView.exportModal.sources.filtered'), count: filteredCount },
-        { value: 'all', label: t('strainsView.exportModal.sources.all'), count: totalCount },
-    ];
-
-    const formatOptions = [
-        { value: 'pdf', label: t('strainsView.exportModal.formats.pdf') },
-        { value: 'txt', label: 'TXT' },
-        { value: 'csv', label: t('strainsView.exportModal.formats.csv') },
-        { value: 'json', label: t('strainsView.exportModal.formats.json') },
-    ];
-
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
-            <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold text-primary-500 dark:text-primary-400 mb-6">{t('strainsView.exportModal.title')}</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <RadioGroup label={t('strainsView.exportModal.source')} options={sourceOptions} selectedValue={source} onChange={v => setSource(v as ExportSource)} />
-                    <RadioGroup label={t('strainsView.exportModal.format')} options={formatOptions} selectedValue={format} onChange={v => setFormat(v as ExportFormat)} />
-                </div>
-
-                <div className="flex justify-end gap-4 mt-8">
-                    <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-                    <Button onClick={handleConfirm}>{t('common.export')}</Button>
-                </div>
-            </Card>
+  return (
+    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <Card ref={modalRef} className="w-full max-w-lg" onClick={e => e.stopPropagation()}>
+        <h2 className="text-2xl font-bold font-display text-primary-400 mb-4">{t('strainsView.exportModal.title')}</h2>
+        
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">{t('strainsView.exportModal.source')}</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {sources.map(s => (
+                <button
+                  key={s.id}
+                  onClick={() => !s.disabled && setSource(s.id)}
+                  disabled={s.disabled}
+                  className={`p-3 text-left rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${source === s.id ? 'bg-primary-600 text-white font-bold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+                >
+                  <span className="block">{s.label}</span>
+                  <span className="text-xs">{t('strainsView.exportModal.count', { count: s.count })}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-slate-200 mb-2">{t('strainsView.exportModal.format')}</h3>
+            <div className="flex gap-2">
+              {formats.map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFormat(f.id)}
+                  className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors ${format === f.id ? 'bg-primary-600 text-white font-bold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-    );
+
+        <div className="flex justify-end gap-4 mt-8">
+          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+          <Button onClick={handleExportClick}>{t('common.export')}</Button>
+        </div>
+      </Card>
+    </div>
+  );
 };

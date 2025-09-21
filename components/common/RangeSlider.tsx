@@ -46,9 +46,9 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
     const maxIsActive = maxZIndex > minZIndex;
 
     const colorMap = {
-        primary: { active: '#2563eb', inactive: '#3b82f6', bg: 'bg-primary-500' },
-        green: { active: '#16a34a', inactive: '#22c55e', bg: 'bg-green-500' },
-        blue: { active: '#2563eb', inactive: '#3b82f6', bg: 'bg-blue-500' },
+        primary: { active: 'rgb(var(--color-primary-600))', inactive: 'rgb(var(--color-primary-500))', bg: 'bg-primary-500' },
+        green: { active: 'rgb(22, 163, 74)', inactive: 'rgb(34, 197, 94)', bg: 'bg-green-500' },
+        blue: { active: 'rgb(37, 99, 235)', inactive: 'rgb(59, 130, 246)', bg: 'bg-blue-500' },
     };
     
     const { active, inactive, bg } = colorMap[color] || colorMap.primary;
@@ -56,11 +56,11 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
     return (
         <div>
             <div className="flex justify-between items-center mb-2">
-                <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-600 dark:text-slate-300">{label}</label>
-                <span className="text-sm font-mono bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-md">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
+                <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-300">{label}</label>
+                <span className="text-sm font-mono bg-slate-700 px-2 py-0.5 rounded-md">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
             </div>
             <div className="relative h-4 flex items-center">
-                <div className="relative w-full h-1 bg-slate-200 dark:bg-slate-600 rounded-full">
+                <div className="relative w-full h-1 bg-slate-600 rounded-full">
                     <div 
                         className={`absolute h-1 ${bg} rounded-full`}
                         style={{ left: `${minPos}%`, right: `${100 - maxPos}%` }}

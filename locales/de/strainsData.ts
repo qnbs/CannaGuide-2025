@@ -816,7 +816,7 @@ export const strainsData = {
     ]
   },
   "black-dahlia": {
-    "description": "Eine indica-dominante Hybride mit schönen dunkelvioletten Blüten. Das Aroma ist süß und blumig mit erdigen Untertönen. Sie bietet ein entspannendes und euphorisches High, das perfekt zum Entspannen ohne starke Sedierung ist.",
+    "description": "Eine indica-dominante Hybride mit schönen dunklen violetten Knospen. Das Aroma ist süß und blumig mit erdigen Untertönen. Sie bietet ein entspannendes und euphorisches High, das perfekt zum Entspannen ohne starke Sedierung ist.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Black Cherry Soda x Querkle",
     "aromas": [
@@ -832,7 +832,7 @@ export const strainsData = {
     ]
   },
   "black-domina": {
-    "description": "Eine potente, schnell blühende indica-dominante Hybride. Sie produziert dunkle, dichte und harzige Blüten. Die Wirkung ist stark sedierend und narkotisch, was sie zu einem Favoriten für den nächtlichen Gebrauch zur Bekämpfung von Schmerzen und Schlaflosigkeit macht. Das Aroma ist pfeffrig und erdig.",
+    "description": "Eine potente, schnell blühende indica-dominante Hybride. Sie produziert dunkle, dichte und harzige Knospen. Die Wirkung ist stark sedierend und narkotisch, was sie zu einem Favoriten für den nächtlichen Gebrauch zur Bekämpfung von Schmerzen und Schlaflosigkeit macht. Das Aroma ist pfeffrig und erdig.",
     "typeDetails": "Indica 95% / Sativa 5%",
     "genetics": "Afghani x Ortega x Northern Lights x Hash Plant",
     "aromas": [
@@ -848,7 +848,7 @@ export const strainsData = {
     ]
   },
   "black-jack": {
-    "description": "Eine Hybridsorte, die die erhebende Wirkung von Jack Herer mit der starken Harzproduktion von Black Domina kombiniert. Sie bietet ein langanhaltendes, glückseliges und kreatives High, das sowohl zerebral stimulierend als auch körperlich entspannend ist.",
+    "description": "Eine Hybridsorte, die die erhebenden Effekte von Jack Herer mit der starken Harzproduktion von Black Domina kombiniert. Sie bietet ein langanhaltendes, glückseliges und kreatives High, das sowohl zerebral stimulierend als auch körperlich entspannend ist.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Black Domina x Jack Herer",
     "aromas": [
@@ -864,7 +864,7 @@ export const strainsData = {
     ]
   },
   "black-runtz": {
-    "description": "Ein Phänotyp der berühmten Runtz-Sorte, der sich durch seine außergewöhnlich dunklen, fast schwarzen Blüten auszeichnet. Er teilt das gleiche süße, bonbonartige Geschmacksprofil und bietet ein euphorisches, langanhaltendes High, das den Körper entspannt und den Geist erhebt.",
+    "description": "Ein Phänotyp der berühmten Runtz-Sorte, der sich durch seine außergewöhnlich dunklen, fast schwarzen Knospen auszeichnet. Er teilt das gleiche süße, bonbonartige Geschmacksprofil und bietet ein euphorisches, langanhaltendes High, das den Körper entspannt und den Geist erhebt.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Zkittlez x Gelato",
     "aromas": [
@@ -880,7 +880,7 @@ export const strainsData = {
     ]
   },
   "black-tuna": {
-    "description": "Eine potente indica-dominante Hybride, die von kanadischen Züchtern erschaffen wurde. Sie ist bekannt für ihr extrem scharfes, fischiges und skunkiges Aroma. Das High ist stark und sedierend, führt oft zu einem 'Couch-Lock' und ist ideal bei starken Schmerzen und Schlaflosigkeit.",
+    "description": "Eine potente indica-dominante Hybride, die von kanadischen Züchtern geschaffen wurde. Sie ist bekannt für ihr extrem scharfes, fischiges und skunkiges Aroma. Das High ist stark und sedierend, führt oft zum Couch-Lock und ist ideal bei starken Schmerzen und Schlaflosigkeit.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Herijuana x Lamb's Bread",
     "aromas": [
@@ -911,7 +911,7 @@ export const strainsData = {
     ]
   },
   "blackberry-kush": {
-    "description": "Eine starke indica-dominante Sorte mit einem süßen Brombeeraroma, gemischt mit dem klassischen Kraftstoffgeruch von Kush. Sie bietet ein potentes, entspannendes Körper-High, das sich hervorragend zur Schmerzlinderung, Stressreduktion und zum Schlafen eignet.",
+    "description": "Eine starke indica-dominante Sorte mit einem süßen Brombeeraroma, gemischt mit dem klassischen Kraftstoffgeruch von Kush. Sie bietet ein potentes, entspannendes Körper-High, das sich hervorragend zur Schmerzlinderung, zum Stressabbau und zum Schlafen eignet.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Afghani x Blackberry",
     "aromas": [
@@ -927,7 +927,7 @@ export const strainsData = {
     ]
   },
   "blackwater": {
-    "description": "Eine Indica-Sorte mit tiefvioletten Blüten und einem süßen Traubenaroma. Sie beginnt mit einem euphorischen Kopfrausch, der in einen beruhigenden, Ganzkörper-Buzz übergeht. Sie ist sehr wirksam bei Schmerzen, Appetitanregung und Schlaf.",
+    "description": "Eine Indica-Sorte mit tiefvioletten Knospen und einem süßen Traubenaroma. Es beginnt mit einem euphorischen Kopfeffekt, der in ein beruhigendes, Ganzkörper-Buzz übergeht. Sie ist sehr wirksam bei Schmerzen, Appetitanregung und Schlaf.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Mendo Purps x San Fernando Valley OG Kush",
     "aromas": [
@@ -959,7 +959,7 @@ export const strainsData = {
     ]
   },
   "blue-cookies": {
-    "description": "Eine potente indica-dominante Hybride, die eine erdrückende Welle der Euphorie gefolgt von tiefer Körperentspannung liefert. Sie hat einen süßen Beeren- und Kirschgeschmack mit erdigen Untertönen. Hervorragend zur Schmerzlinderung und Entspannung.",
+    "description": "Eine potente indica-dominante Hybride, die eine erdrückende Welle der Euphorie liefert, gefolgt von tiefer Körperentspannung. Sie hat einen süßen Beeren- und Kirschgeschmack mit erdigen Untertönen. Hervorragend zur Schmerzlinderung und Entspannung.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Girl Scout Cookies x Blueberry",
     "aromas": [
@@ -991,7 +991,7 @@ export const strainsData = {
     ]
   },
   "blue-dream": {
-    "description": "Eine legendäre sativa-dominante Hybride aus Kalifornien. Sie bietet ein ausgewogenes High mit sanfter zerebraler Stimulation und Ganzkörperentspannung. Ihr süßes Beerenaroma macht sie zu einem Favoriten für Anfänger und erfahrene Konsumenten. Ideal für die Schmerzlinderung am Tag.",
+    "description": "Eine legendäre sativa-dominante Hybride aus Kalifornien. Sie bietet ein ausgewogenes High mit sanfter zerebraler Stimulation und Ganzkörperentspannung. Ihr süßes Beerenaroma macht sie zu einem Favoriten für Anfänger und erfahrene Konsumenten. Ideal für die Schmerzlinderung tagsüber.",
     "typeDetails": "Sativa 60% / Indica 40%",
     "genetics": "Blueberry x Haze",
     "aromas": [
@@ -1007,7 +1007,7 @@ export const strainsData = {
     ]
   },
   "blue-dream-cbd": {
-    "description": "Eine CBD-reiche Version der klassischen Blue Dream. Sie bietet das gleiche süße Beerenaroma und sanfte Erhebung, aber mit deutlich reduzierter Psychoaktivität aufgrund des ausgewogenen 1:1 THC:CBD-Verhältnisses. Ideal für therapeutische Anwender, die Linderung ohne ein starkes High suchen.",
+    "description": "Eine CBD-reiche Version des klassischen Blue Dream. Sie bietet das gleiche süße Beerenaroma und den sanften Auftrieb, aber mit deutlich reduzierter Psychoaktivität aufgrund des ausgewogenen 1:1 THC:CBD-Verhältnisses. Ideal für therapeutische Anwender, die Linderung ohne ein starkes High suchen.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Blue Dream x California Orange CBD",
     "aromas": [
@@ -1023,7 +1023,7 @@ export const strainsData = {
     ]
   },
   "blue-dream-matic": {
-    "description": "Eine autoflowering Version von Blue Dream, die die gleichen beliebten Effekte und Geschmäcker in einem schnelleren, einfacher anzubauenden Paket bietet. Das High ist euphorisch und erhebend, perfekt für kreative Tätigkeiten und den Tagesgebrauch.",
+    "description": "Eine autoflowering Version von Blue Dream, die die gleichen beliebten Effekte und Geschmäcker bietet, aber in einem schnelleren, einfacher anzubauenden Paket. Das High ist euphorisch und erhebend, perfekt für kreative Beschäftigungen und den Tagesgebrauch.",
     "typeDetails": "Sativa-dominante Hybride (Autoflower)",
     "genetics": "Blue Dream x Ruderalis",
     "aromas": [
@@ -1055,7 +1055,7 @@ export const strainsData = {
     ]
   },
   "blue-hawaiian": {
-    "description": "Eine sativa-dominante Hybride mit einem tropischen, fruchtigen Geschmack, der an Ananas und Beeren erinnert. Sie bietet ein fröhliches, euphorisches High, das perfekt für soziale Situationen und kreative Unternehmungen ist. Das High ist ausgewogen mit einer leichten Körperentspannung.",
+    "description": "Eine sativa-dominante Hybride mit einem tropischen, fruchtigen Geschmack, der an Ananas und Beeren erinnert. Sie bietet ein glückliches, euphorisches High, das perfekt für soziale Situationen und kreative Unternehmungen ist. Das High ist ausgewogen mit einer leichten Körperentspannung.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Blueberry x Hawaiian Sativa",
     "aromas": [
@@ -1071,7 +1071,7 @@ export const strainsData = {
     ]
   },
   "blue-magoo": {
-    "description": "Eine indica-dominante Hybride, bekannt für ihr komplexes Geschmacksprofil aus Beeren-, Frucht- und Blumennoten. Sie liefert ein entspannendes und euphorisches High, das funktional genug für den Tagesgebrauch ist, aber in größeren Dosen sedierend wirken kann.",
+    "description": "Eine indica-dominante Hybride, bekannt für ihr komplexes Geschmacksprofil aus Beeren, Früchten und blumigen Noten. Sie liefert ein entspannendes und euphorisches High, das funktional genug für den Tagesgebrauch ist, aber in größeren Dosen sedierend sein kann.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "DJ Short Blueberry x Major League Bud (Williams Wonder)",
     "aromas": [
@@ -1087,7 +1087,7 @@ export const strainsData = {
     ]
   },
   "blue-power": {
-    "description": "Eine potente indica-dominante Hybride, die dichte, trichom-bedeckte Blüten produziert. Das Aroma ist eine süß-saure Mischung aus Beeren und Zitrone. Das High ist stark, beginnt mit einer euphorischen Erhebung und endet in tiefer Entspannung.",
+    "description": "Eine potente indica-dominante Hybride, die dichte, trichom-bedeckte Knospen produziert. Das Aroma ist eine süß-saure Mischung aus Beere und Zitrone. Das High ist stark, beginnt mit einem euphorischen Auftrieb und endet in tiefer Entspannung.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "The Power x Master Kush x Blue Moonshine x Sour Double",
     "aromas": [
@@ -1135,7 +1135,7 @@ export const strainsData = {
     ]
   },
   "blueberry": {
-    "description": "Eine klassische indica-dominante Sorte, die 2000 den High Times Cannabis Cup gewonnen hat. Sie ist berühmt für ihr unverkennbares frisches Blaubeeraroma und ihren Geschmack. Das High ist langanhaltend, euphorisch und tief entspannend.",
+    "description": "Eine klassische indica-dominante Sorte, die 2000 den High Times Cannabis Cup gewann. Sie ist berühmt für ihr unverkennbares Aroma und ihren Geschmack nach frischen Blaubeeren. Das High ist langanhaltend, euphorisch und tief entspannend.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Purple Thai x Afghani",
     "aromas": [
@@ -1167,7 +1167,7 @@ export const strainsData = {
     ]
   },
   "blueberry-og": {
-    "description": "Eine indica-dominante Hybride, die die süßen Beerenaromen von Blueberry mit dem klassischen erdigen Kiefer von OG Kush verbindet. Sie bietet ein ausgewogenes High, das sowohl zerebral erhebend als auch körperlich entspannend ist, wirksam bei Stress und Schmerzen.",
+    "description": "Eine indica-dominante Hybride, die die süßen Beerenaromen von Blueberry mit dem klassischen erdigen Kiefer von OG Kush verbindet. Sie bietet ein ausgewogenes High, das sowohl zerebral erhebend als auch körperlich entspannend ist und bei Stress und Schmerzen wirksam ist.",
     "typeDetails": "Indica 70% / Sativa 30%",
     "genetics": "Blueberry x OG Kush",
     "aromas": [
@@ -1183,7 +1183,7 @@ export const strainsData = {
     ]
   },
   "booger": {
-    "description": "Eine sehr potente indica-dominante Hybride mit einem funkigen, scharfen Aroma von Skunk und Diesel. Das High ist schwer und sedierend, führt oft zu einem 'Couch-Lock' und einem starken Heißhunger. Am besten für erfahrene Konsumenten und den nächtlichen Gebrauch.",
+    "description": "Eine sehr potente indica-dominante Hybride mit einem funky, scharfen Aroma von Skunk und Diesel. Das High ist schwer und sedierend, führt oft zum Couch-Lock und einem starken Heißhunger. Am besten für erfahrene Konsumenten und den nächtlichen Gebrauch geeignet.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Bubba Kush x Strawberry Cough",
     "aromas": [
@@ -1198,7 +1198,7 @@ export const strainsData = {
     ]
   },
   "bruce-banger": {
-    "description": "Eine potente sativa-dominante Hybride, die die Kraft von Bruce Banner mit dem klassischen Geschmack von OG Kush kombiniert. Das High ist schnell wirkend, euphorisch und energetisch und regt Kreativität und Konzentration an. Der Geschmack ist eine Mischung aus Diesel und süßer Zitrone.",
+    "description": "Eine potente sativa-dominante Hybride, die die Kraft von Bruce Banner mit dem klassischen Geschmack von OG Kush kombiniert. Das High ist schnell wirkend, euphorisch und energetisch und regt Kreativität und Konzentration an. Der Geschmack ist eine Mischung aus Diesel und süßer Zitrusfrucht.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Bruce Banner x OG Kush",
     "aromas": [
@@ -1214,7 +1214,7 @@ export const strainsData = {
     ]
   },
   "bruce-banner": {
-    "description": "Benannt nach dem Alter Ego des Hulk, ist dies eine kraftvolle sativa-dominante Hybride. Sie ist bekannt für ihren unglaublich hohen THC-Gehalt und ein schnell wirkendes, euphorisches und kreatives High, das sich schließlich in einen Zustand der Entspannung einpendelt. Das Aroma ist eine starke Mischung aus Diesel und süßer Beere.",
+    "description": "Benannt nach dem Alter Ego des Hulk, ist dies eine kraftvolle sativa-dominante Hybride. Sie ist bekannt für ihren unglaublich hohen THC-Gehalt und ein schnell wirkendes, euphorisches und kreatives High, das schließlich in einen Zustand der Entspannung übergeht. Das Aroma ist eine starke Mischung aus Diesel und süßer Beere.",
     "typeDetails": "Sativa 60% / Indica 40%",
     "genetics": "OG Kush x Strawberry Diesel",
     "aromas": [
@@ -1230,7 +1230,7 @@ export const strainsData = {
     ]
   },
   "bubba-fett": {
-    "description": "Eine potente indica-dominante Hybride, benannt nach dem Star Wars Kopfgeldjäger. Sie bietet ein schweres, entspannendes Körper-High, das dich in einer 'Karbonit-ähnlichen' Entspannung gefangen halten kann. Das Aroma ist erdig und scharf mit süßen Untertönen.",
+    "description": "Eine potente indica-dominante Hybride, benannt nach dem Star Wars-Kopfgeldjäger. Sie bietet ein schweres, entspannendes Körper-High, das dich in einer 'karbonitartigen' Entspannung 'gefangen' nehmen kann. Das Aroma ist erdig und scharf mit süßen Untertönen.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Stardawg x Pre-98 Bubba Kush",
     "aromas": [
@@ -1246,7 +1246,7 @@ export const strainsData = {
     ]
   },
   "bubba-kush": {
-    "description": "Eine klassische Indica-Sorte, die für ihre stark beruhigende Wirkung bekannt ist. Sie hat einen süßen, haschartigen Geschmack mit Noten von Schokolade und Kaffee. Das High ist tief entspannend und führt oft zu Schläfrigkeit. Ein Favorit zur Schmerz- und Schlaflosigkeitslinderung.",
+    "description": "Eine klassische Indica-Sorte, bekannt für ihre schweren, beruhigenden Effekte. Sie hat einen süßen, haschähnlichen Geschmack mit Noten von Schokolade und Kaffee. Das High ist tief entspannend und führt oft zu Schläfrigkeit. Ein Favorit zur Linderung von Schmerzen und Schlaflosigkeit.",
     "typeDetails": "Indica 90% / Sativa 10%",
     "genetics": "Möglicherweise OG Kush x Northern Lights",
     "aromas": [
@@ -1262,7 +1262,7 @@ export const strainsData = {
     ]
   },
   "bubble-gum": {
-    "description": "Eine preisgekrönte Hybride, berühmt für ihren ausgeprägten süßen Geruch und Geschmack, genau wie klassisches Kaugummi. Sie bietet ein ausgewogenes High, das euphorisch und erhebend ist, gefolgt von einer sanften Körperentspannung. Ideal für kreative Aufgaben und Stressabbau.",
+    "description": "Eine preisgekrönte Hybride, berühmt für ihren ausgeprägten süßen Geruch und Geschmack, genau wie klassischer Kaugummi. Sie bietet ein ausgewogenes High, das euphorisch und erhebend ist, gefolgt von einer sanften Körperentspannung. Ideal für kreative Aufgaben und Stressabbau.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Indiana Bubblegum",
     "aromas": [
@@ -1278,7 +1278,7 @@ export const strainsData = {
     ]
   },
   "cactus-breath": {
-    "description": "Eine potente indica-dominante Hybride mit einem einzigartigen scharfen Aroma, das Diesel, Gewürze und Erde kombiniert. Das High ist stark entspannend und euphorisch, was oft zu einem schweren Körpergefühl und tiefer Ruhe führt. Am besten für erfahrene Konsumenten.",
+    "description": "Eine potente indica-dominante Hybride mit einem einzigartigen scharfen Aroma, das Diesel, Gewürze und Erde kombiniert. Das High ist stark entspannend und euphorisch, führt oft zu einem schweren Körpergefühl und tiefer Ruhe. Am besten für erfahrene Konsumenten.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Cactus x Mendo Breath",
     "aromas": [
@@ -1308,7 +1308,7 @@ export const strainsData = {
     ]
   },
   "cake-bomb": {
-    "description": "Eine indica-dominante Hybride, die dichte, frostige Blüten mit einem süßen, kuchenartigen Aroma produziert. Das High ist tief entspannend und beruhigend, was sie zu einer ausgezeichneten Wahl für den abendlichen Gebrauch zur Linderung von Stress und Schmerzen macht.",
+    "description": "Eine indica-dominante Hybride, die dichte, frostige Knospen mit einem süßen, kuchenartigen Aroma produziert. Das High ist tief entspannend und beruhigend, was sie zu einer ausgezeichneten Wahl für den Abendgebrauch zur Linderung von Stress und Schmerzen macht.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Do-Si-Dos x PCS1",
     "aromas": [
@@ -1324,7 +1324,7 @@ export const strainsData = {
     ]
   },
   "cali-o": {
-    "description": "Eine klassische 50/50-Hybride, auch bekannt als California Orange. Sie ist berühmt für ihr starkes, süßes Orangenaroma. Das High ist klar-köpfig, erhebend und fröhlich, was sie zu einer großartigen Sorte für soziale Anlässe und kreative Arbeit macht.",
+    "description": "Eine klassische 50/50 Hybride, auch bekannt als California Orange. Sie ist berühmt für ihr starkes, süßes Orangenaroma. Das High ist klar-köpfig, erhebend und glücklich, was sie zu einer großartigen Sorte für soziale Anlässe und kreative Arbeit macht.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Kalifornische Landrasse",
     "aromas": [
@@ -1340,7 +1340,7 @@ export const strainsData = {
     ]
   },
   "candy-jack": {
-    "description": "Eine sativa-dominante Hybride, die das Beste aus zwei legendären Sorten vereint. Sie hat ein süßes, zitrusartiges Aroma und bietet ein starkes, erhebendes zerebrales High, das energetisch und kreativ ist. Ideal zur Bekämpfung von Müdigkeit und Depressionen.",
+    "description": "Eine sativa-dominante Hybride, die das Beste aus zwei legendären Sorten kombiniert. Sie hat ein süßes, zitrusartiges Aroma und bietet ein starkes, erhebendes zerebrales High, das energetisch und kreativ ist. Ideal zur Bekämpfung von Müdigkeit und Depressionen.",
     "typeDetails": "Sativa 80% / Indica 20%",
     "genetics": "Jack Herer x Skunk #1",
     "aromas": [
@@ -1356,7 +1356,7 @@ export const strainsData = {
     ]
   },
   "candyland": {
-    "description": "Eine sativa-dominante Hybride mit einem süßen Bonbongeschmack und erdigen Untertönen. Das High ist erhebend und anregend, perfekt für soziale Zusammenkünfte und kreative Aktivitäten. Sie kann auch eine wirksame Schmerzlinderung ohne starke Sedierung bieten.",
+    "description": "Eine sativa-dominante Hybride mit einem süßen Bonbongeschmack und erdigen Untertönen. Das High ist erhebend und anregend, perfekt für soziale Zusammenkünfte und kreative Aktivitäten. Sie kann auch wirksame Schmerzlinderung ohne starke Sedierung bieten.",
     "typeDetails": "Sativa 70% / Indica 30%",
     "genetics": "Granddaddy Purple x Bay Platinum Cookies",
     "aromas": [
@@ -1372,7 +1372,7 @@ export const strainsData = {
     ]
   },
   "cannatonic": {
-    "description": "Eine berühmte CBD-reiche Hybridsorte, oft mit einem nahezu 1:1 THC-zu-CBD-Verhältnis. Sie bietet ein sanftes, entspannendes High, das kurzlebig und hauptsächlich körperlich ist, was sie hervorragend zur Behandlung von Schmerzen, Angst und Muskelkrämpfen ohne intensive Psychoaktivität macht.",
+    "description": "Eine berühmte CBD-reiche Hybridsorte, oft mit einem fast 1:1 THC- zu CBD-Verhältnis. Sie bietet ein mildes, entspannendes High, das kurzlebig und hauptsächlich körperlich ist, was sie hervorragend zur Behandlung von Schmerzen, Angst und Muskelkrämpfen ohne intensive Psychoaktivität macht.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "MK Ultra x G13 Haze",
     "aromas": [
@@ -1388,7 +1388,7 @@ export const strainsData = {
     ]
   },
   "cap-junky": {
-    "description": "Eine hochpotente Hybride, bekannt für ihr intensives, scharfes Aroma von sauren Früchten und Benzin. Das High ist stark und langanhaltend und liefert eine Welle der Euphorie und Kreativität, die sich schließlich in einen Zustand tiefer Entspannung einpendelt. Für erfahrene Konsumenten.",
+    "description": "Eine hochpotente Hybride, bekannt für ihr intensives, scharfes Aroma von sauren Früchten und Benzin. Das High ist stark und langanhaltend, liefert eine Welle der Euphorie und Kreativität, die schließlich in einen Zustand tiefer Entspannung übergeht. Für erfahrene Konsumenten.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Alien Cookies x Kush Mints #11",
     "aromas": [
@@ -1404,7 +1404,7 @@ export const strainsData = {
     ]
   },
   "captains-cake": {
-    "description": "Eine sativa-dominante Hybride mit einem süßen, fruchtigen und leicht säuerlichen Aroma. Das High ist erhebend und energetisch und sorgt für einen Kreativitäts- und Konzentrationsschub, was sie zu einer großartigen Wahl für den Tagesgebrauch macht.",
+    "description": "Eine sativa-dominante Hybride mit einem süßen, fruchtigen und leicht sauren Aroma. Das High ist erhebend und energetisch und bietet einen Schub an Kreativität und Konzentration, was sie zu einer großartigen Wahl für den Tagesgebrauch macht.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Girl Scout Cookies x White Fire Alien OG",
     "aromas": [
@@ -1420,7 +1420,7 @@ export const strainsData = {
     ]
   },
   "carbon-fiber": {
-    "description": "Eine potente und seltene indica-dominante Hybride. Sie hat ein komplexes Aromaprofil, das Noten von Trauben, Zitrusfrüchten und Diesel kombiniert. Das High ist tief entspannend und sedierend und führt oft zu einem glückseligen 'Couch-Lock'.",
+    "description": "Eine potente und seltene indica-dominante Hybride. Sie hat ein komplexes Aromaprofil, das Noten von Traube, Zitrus und Diesel kombiniert. Das High ist tief entspannend und sedierend und führt oft zu einem glückseligen Couch-Lock.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Grape Pie x Biscotti x Cookies and Cream",
     "aromas": [
@@ -1436,7 +1436,7 @@ export const strainsData = {
     ]
   },
   "casey-jones": {
-    "description": "Eine sativa-dominante Hybride, benannt nach dem berühmten Lokführer. Sie ist bekannt für ihr schnell wirkendes, erhebendes und kreatives High. Das Aroma ist erdig und süß mit Noten von Zitrusfrüchten. Eine großartige Sorte für Produktivität und Tagesgenuss.",
+    "description": "Eine sativa-dominante Hybride, benannt nach dem berühmten Lokführer. Sie ist bekannt für ihr schnell wirkendes, erhebendes und kreatives High. Das Aroma ist erdig und süß mit Noten von Zitrus. Eine großartige Sorte für Produktivität und Tagesgenuss.",
     "typeDetails": "Sativa 80% / Indica 20%",
     "genetics": "Trainwreck x Sour Diesel x Thai",
     "aromas": [
@@ -1452,7 +1452,7 @@ export const strainsData = {
     ]
   },
   "cat-piss": {
-    "description": "Trotz ihres unglücklichen Namens ist dies eine klassische sativa-dominante Sorte mit einem scharfen, skunkigen und ammoniakartigen Aroma. Das High ist energetisch, euphorisch und sehr zerebral, was sie zu einem Favoriten unter Sativa-Liebhabern für ihre klar-köpfigen Effekte macht.",
+    "description": "Trotz ihres unglücklichen Namens ist dies eine klassische sativa-dominante Sorte mit einem scharfen, skunkigen und ammoniakähnlichen Aroma. Das High ist energetisch, euphorisch und sehr zerebral, was sie bei Sativa-Liebhabern für ihre klar-köpfigen Effekte beliebt macht.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Super Silver Haze Phänotyp",
     "aromas": [
@@ -1467,7 +1467,7 @@ export const strainsData = {
     ]
   },
   "cataract-kush": {
-    "description": "Eine potente indica-dominante Hybride, bekannt für ihre schwere, sedierende Wirkung. Das High ist ein 'Creeper', der sich langsam zu einer starken Ganzkörperentspannung aufbaut, die für Anfänger überwältigend sein kann. Sie hat ein scharfes, fruchtiges und skunkiges Aroma.",
+    "description": "Eine potente indica-dominante Hybride, bekannt für ihre schweren, sedierenden Effekte. Das High ist ein 'Creeper', der sich langsam zu einer starken Ganzkörperentspannung aufbaut, die für Anfänger überwältigend sein kann. Sie hat ein scharfes, fruchtiges und skunkiges Aroma.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "LA Confidential x OG Kush",
     "aromas": [
@@ -1483,7 +1483,7 @@ export const strainsData = {
     ]
   },
   "cbd-critical-cure": {
-    "description": "Eine CBD-reiche indica-dominante Sorte, die für den therapeutischen Gebrauch gezüchtet wurde. Sie hat einen süßen, erdigen Geschmack und bietet eine sanfte, beruhigende Wirkung mit minimaler Psychoaktivität. Sie ist sehr wirksam bei der Behandlung von Schmerzen, Entzündungen und Angstzuständen.",
+    "description": "Eine CBD-reiche indica-dominante Sorte, die für den therapeutischen Gebrauch gezüchtet wurde. Sie hat einen süßen, erdigen Geschmack und bietet eine sanfte, beruhigende Wirkung mit minimaler Psychoaktivität. Sie ist sehr wirksam bei der Behandlung von Schmerzen, Entzündungen und Angst.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Critical Kush x Shanti Babas CBD-angereicherte Sorte",
     "aromas": [
@@ -1542,7 +1542,7 @@ export const strainsData = {
     ]
   },
   "charlottes-web": {
-    "description": "Eine weltberühmte Sorte mit hohem CBD- und niedrigem THC-Gehalt. Sie wurde bekannt durch ihre Wirksamkeit bei der Behandlung schwerer Epilepsie. Sie erzeugt kein psychoaktives High, was sie zu einer rein medizinischen Sorte für eine Vielzahl von Erkrankungen macht.",
+    "description": "Eine weltberühmte Sorte mit hohem CBD- und niedrigem THC-Gehalt. Sie erlangte Berühmtheit durch ihre Wirksamkeit bei der Behandlung schwerer Epilepsie. Sie erzeugt kein psychoaktives High, was sie zu einer rein medizinischen Sorte für eine Vielzahl von Erkrankungen macht.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Hanf x Unbekannte Sorte",
     "aromas": [
@@ -1557,7 +1557,7 @@ export const strainsData = {
     ]
   },
   "cheese": {
-    "description": "Eine legendäre indica-dominante Hybride, die ihren Ursprung in Großbritannien hat. Sie ist berühmt für ihr scharfes, käsiges und skunkiges Aroma. Das High ist stark und vermittelt ein fröhliches, entspannendes Gefühl, das auch sehr euphorisch und erhebend sein kann.",
+    "description": "Eine legendäre indica-dominante Hybride, die in Großbritannien entstanden ist. Sie ist berühmt für ihr scharfes, käsiges und skunkiges Aroma. Das High ist stark und vermittelt ein glückliches, entspannendes Gefühl, das auch sehr euphorisch und erhebend sein kann.",
     "typeDetails": "Indica 60% / Sativa 40%",
     "genetics": "Skunk #1 Phänotyp",
     "aromas": [
@@ -1589,7 +1589,7 @@ export const strainsData = {
     ]
   },
   "cheetah-piss": {
-    "description": "Eine potente Hybride mit einem sehr scharfen, ammoniakähnlichen Aroma, ähnlich wie Cat Piss, aber mit zusätzlichen Zitrus- und Dieselnoten. Das High ist schnell wirkend und kichernd und sorgt für eine Welle der Euphorie und Kreativität, die sich hervorragend für soziale Anlässe eignet.",
+    "description": "Eine potente Hybride mit einem sehr scharfen, ammoniakähnlichen Aroma, ähnlich wie Cat Piss, aber mit zusätzlichen Zitrus- und Dieselnoten. Das High ist schnell wirkend und kichernd und bietet eine Welle der Euphorie und Kreativität, die sich hervorragend für soziale Anlässe eignet.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Lemonnade x Gelato 42 x London Poundcake 97",
     "aromas": [
@@ -1620,7 +1620,7 @@ export const strainsData = {
     ]
   },
   "chemdawg": {
-    "description": "Eine legendäre Sorte unbekannter Herkunft, Chemdawg ist die Mutter vieler berühmter Sorten wie OG Kush und Sour Diesel. Sie ist bekannt für ihr ausgeprägtes, scharfes Dieselaroma und ein sehr potentes, zerebrales High, das kreativ und erhebend ist.",
+    "description": "Eine legendäre Sorte mit mysteriösem Ursprung, Chemdawg ist die Mutter vieler berühmter Sorten wie OG Kush und Sour Diesel. Sie ist bekannt für ihr ausgeprägtes, scharfes Dieselaroma und ein sehr potentes, zerebrales High, das kreativ und erhebend ist.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Unbekannt",
     "aromas": [
@@ -1636,7 +1636,7 @@ export const strainsData = {
     ]
   },
   "chemdog-millionaire": {
-    "description": "Eine potente indica-dominante Hybride mit einem komplexen Aroma von Erde, Kraftstoff und Zitrusfrüchten. Sie liefert ein starkes, langanhaltendes High, das sowohl zerebral euphorisch als auch tief körperlich entspannend ist. Ideal zur Schmerz- und Stresslinderung.",
+    "description": "Eine potente indica-dominante Hybride mit einem komplexen Aroma von Erde, Kraftstoff und Zitrus. Sie liefert ein starkes, langanhaltendes High, das sowohl zerebral euphorisch als auch tief körperlich entspannend ist. Ideal zur Linderung von Schmerzen und Stress.",
     "typeDetails": "Indica-dominante Hybride",
     "genetics": "Chemdawg x Gupta Kush",
     "aromas": [
@@ -1652,7 +1652,7 @@ export const strainsData = {
     ]
   },
   "cherry-ak-47": {
-    "description": "Ein Phänotyp der klassischen AK-47, ausgewählt wegen seines ausgeprägten Kirscharomas. Er behält das ausgewogene, erhebende High des Originals bei, fügt aber eine süße, fruchtige Note hinzu. Die Wirkung ist kreativ, fröhlich und entspannend.",
+    "description": "Ein Phänotyp des klassischen AK-47, der für sein ausgeprägtes Kirscharoma ausgewählt wurde. Er behält das ausgewogene, erhebende High des Originals bei, fügt aber eine süße, fruchtige Note hinzu. Die Wirkung ist kreativ, glücklich und entspannend.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "AK-47 Phänotyp",
     "aromas": [
@@ -1684,7 +1684,7 @@ export const strainsData = {
     ]
   },
   "chiquita-banana": {
-    "description": "Eine potente Hybride, bekannt für ihren unglaublich hohen THC-Gehalt und einen starken Bananengeschmack. Das High ist stark und euphorisch, beginnt mit einem zerebralen Rausch, der einer tiefen körperlichen Entspannung weicht. Am besten für erfahrene Konsumenten.",
+    "description": "Eine potente Hybride, bekannt für ihren unglaublich hohen THC-Gehalt und einen starken Bananengeschmack. Das High ist stark und euphorisch, beginnt mit einem zerebralen Rausch, der in tiefe körperliche Entspannung übergeht. Am besten für erfahrene Konsumenten.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "OG Kush x Banana",
     "aromas": [
@@ -1700,7 +1700,7 @@ export const strainsData = {
     ]
   },
   "cinderella-99": {
-    "description": "Auch bekannt als Cindy 99. Eine sativa-dominante Hybride, berühmt für ihre schnelle Blütezeit und ein verträumtes, euphorisches und erhebendes High. Sie hat einen süßen, fruchtigen Geschmack mit tropischen Noten. Eine ausgezeichnete Tagessorte zur Steigerung von Kreativität und Stimmung.",
+    "description": "Auch bekannt als Cindy 99. Eine sativa-dominante Hybride, berühmt für ihre schnelle Blütezeit und ein verträumtes, euphorisches und erhebendes High. Sie hat einen süßen, fruchtigen Geschmack mit tropischen Noten. Eine ausgezeichnete Tagessorte für Kreativität und Stimmungsaufhellung.",
     "typeDetails": "Sativa 85% / Indica 15%",
     "genetics": "Jack Herer x Shiva Skunk",
     "aromas": [
@@ -1716,7 +1716,7 @@ export const strainsData = {
     ]
   },
   "citradelic-sunset": {
-    "description": "Eine sativa-dominante Hybride mit einem lebhaften Zitrus- und sauren Aroma. Sie liefert ein starkes, erhebendes und energetisches High, das perfekt für den Tagesgebrauch ist. Sie ist dafür bekannt, die Kreativität zu fördern und ein langanhaltendes euphorisches Erlebnis zu bieten.",
+    "description": "Eine sativa-dominante Hybride mit einem lebhaften Zitrus- und sauren Aroma. Sie liefert ein starkes, erhebendes und energetisches High, das perfekt für den Tagesgebrauch ist. Sie ist bekannt dafür, Kreativität zu entfachen und ein langanhaltendes euphorisches Erlebnis zu bieten.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Ghost Train Haze x Mandarin Sunset",
     "aromas": [
@@ -1731,7 +1731,7 @@ export const strainsData = {
     ]
   },
   "colt-45": {
-    "description": "Eine potente sativa-dominante Hybride mit einem komplexen Aroma, das gasige, erdige und blumige Noten kombiniert. Das High ist stark und zerebral und sorgt für einen Energie- und Euphorieschub, der sich hervorragend für kreative Projekte und soziale Anlässe eignet.",
+    "description": "Eine potente sativa-dominante Hybride mit einem komplexen Aroma, das gasige, erdige und blumige Noten kombiniert. Das High ist stark und zerebral und bietet einen Energieschub und Euphorie, die sich hervorragend für kreative Projekte und soziale Anlässe eignen.",
     "typeDetails": "Sativa-dominante Hybride",
     "genetics": "Gelato 45 x Slurricane",
     "aromas": [
@@ -1746,7 +1746,7 @@ export const strainsData = {
     ]
   },
   "congo": {
-    "description": "Eine reine Sativa-Landrassensorte, die für ihr klares, energetisches und langanhaltendes High bekannt ist. Sie bietet einen anregenden und kreativen Rausch ohne die Angst, die manchmal mit starken Sativas verbunden ist. Das Aroma ist eine süße und fruchtige Mischung.",
+    "description": "Eine reine Sativa-Landrassensorte, bekannt für ihr klares, energetisches und langanhaltendes High. Sie bietet einen anregenden und kreativen Buzz ohne die Angst, die manchmal mit starken Sativas verbunden ist. Das Aroma ist eine süße und fruchtige Mischung.",
     "typeDetails": "Sativa 100%",
     "genetics": "Kongo Landrasse",
     "aromas": [
@@ -1761,9 +1761,9 @@ export const strainsData = {
     ]
   },
   "cookies-and-cream": {
-    "description": "Eine gut ausbalancierte Hybride, die die Hybrid-Kategorie des Denver Cannabis Cup 2014 gewonnen hat. Sie hat einen süßen Vanille- und Nussgeschmack. Das High ist fröhlich und entspannend und bietet langanhaltende Linderung bei Stress und Schmerzen.",
+    "description": "Eine gut ausbalancierte Hybride, die 2014 den Hybrid-Pokal beim Denver Cannabis Cup gewann. Sie hat einen süßen Vanille- und Nussgeschmack. Das High ist glücklich und entspannend und bietet langanhaltende Linderung von Stress und Schmerzen.",
     "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Starfighter x ein unbekannter GSC Phänotyp",
+    "genetics": "Starfighter x ein unbekannter GSC-Phänotyp",
     "aromas": [
       "Süß",
       "Vanille",
@@ -1776,15 +1776,15 @@ export const strainsData = {
       "Myrcen"
     ]
   },
-  "1024": {
-    "description": "Eine sehr potente und ertragreiche Sativa von Medical Seeds mit einem komplexen süß-sauren, fruchtigen Aroma. Die Wirkung ist stark zerebral, fast psychedelisch und sehr langanhaltend. Fördert Kreativität und Euphorie.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "Geheime Genetik",
+  "dance-world": {
+    "description": "Eine CBD-reiche Sorte von Royal Queen Seeds mit einem nahezu perfekten 1:1-Verhältnis von THC zu CBD. Die Wirkung ist erhebend, kreativ und funktional, ohne starke psychoaktive Effekte. Ideal für den therapeutischen Gebrauch während des Tages. Das Aroma ist eine komplexe Mischung aus würzigen, erdigen und fruchtigen Noten.",
+    "typeDetails": "Sativa 75% / Indica 25%",
+    "genetics": "Dancehall 20 x Juanita la Lagrimosa",
     "aromas": [
-      "Süß",
-      "Fruchtig",
       "Würzig",
-      "Weihrauch"
+      "Erdig",
+      "Fruchtig",
+      "Kiefer"
     ],
     "dominantTerpenes": [
       "Myrcen",
@@ -1792,30 +1792,143 @@ export const strainsData = {
       "Caryophyllen"
     ]
   },
-  "24k-gold": {
-    "description": "Auch bekannt als Kosher Tangie. Eine indica-dominante Hybride, die den süßen Zitrusgeschmack von Tangie mit der entspannenden Kraft von Kosher Kush kombiniert. Wirkt fröhlich und entspannend, ideal bei Stress und Schmerzen. Die Pflanzen entwickeln oft schöne goldene Farbtöne.",
-    "typeDetails": "Indica 60% / Sativa 40%",
-    "genetics": "Kosher Kush x Tangie",
+  "darth-vader-og": {
+    "description": "Eine potente Indica-Sorte mit tief entspannenden, fast sedierenden Effekten. Ideal zur Linderung von Schmerzen und Schlaflosigkeit. Das Aroma ist erdig und süß mit Noten von Traube und Kiefer.",
+    "typeDetails": "Indica 100%",
+    "genetics": "SFV OG x Larry OG",
     "aromas": [
-      "Zitrus",
-      "Orange",
-      "Skunk",
-      "Süß"
+      "Traube",
+      "Erdig",
+      "Süß",
+      "Kiefer"
     ],
     "dominantTerpenes": [
       "Myrcen",
-      "Limonen",
-      "Caryophyllen"
+      "Caryophyllen",
+      "Limonen"
     ]
   },
-  "303-og": {
-    "description": "Als Favorit aus Colorado liefert 303 OG ein klassisches OG-Erlebnis mit einem potenten, sauren Diesel-Aroma. Die Wirkung ist ausgewogen, beginnt mit einem starken zerebralen Rausch, der in eine sanfte, entspannende Körperwirkung übergeht. Ideal zum Entspannen am Nachmittag oder Abend ohne vollständige Sedierung.",
+  "deadhead-og": {
+    "description": "Eine potente, sativa-dominante Hybride mit einem komplexen, scharfen Aroma von Kiefer, Diesel und Erde. Die Wirkung ist stark zerebral, euphorisch und energetisierend, ideal für erfahrene Konsumenten, die ein starkes Kopf-High suchen.",
+    "typeDetails": "Sativa 60% / Indica 40%",
+    "genetics": "Chemdawg 91 x SFV OG Kush",
+    "aromas": [
+      "Kiefer",
+      "Scharf",
+      "Erdig",
+      "Diesel",
+      "Zitrus"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen",
+      "Limonen"
+    ]
+  },
+  "death-bubba": {
+    "description": "Ein Nachkomme des beliebten Bubba Kush. Diese potente Indica ist bekannt für ihre starken sedierenden Effekte, die zu einem tiefen, fast komatösen Schlaf führen können. Ideal bei chronischen Schmerzen und Schlaflosigkeit. Das Aroma ist erdig, skunkig und süß.",
     "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "Pre-98 Bubba Kush x Chemdawg",
+    "genetics": "Bubba Kush",
+    "aromas": [
+      "Erdig",
+      "Skunk",
+      "Süß",
+      "Kiefer"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen",
+      "Limonen"
+    ]
+  },
+  "death-star": {
+    "description": "Eine potente indica-dominante Hybride, die eine ausgewogene Mischung aus zerebraler Euphorie und tiefer Körperentspannung bietet. Das Aroma ist eine scharfe Mischung aus Skunk, Diesel und süßer Erde. Die Effekte sind schleichend und können zu starker Sedierung führen.",
+    "typeDetails": "Indica 75% / Sativa 25%",
+    "genetics": "Sensi Star x Sour Diesel",
     "aromas": [
       "Diesel",
-      "Sauer",
+      "Skunk",
       "Erdig",
+      "Scharf"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen",
+      "Limonen"
+    ]
+  },
+  "diablo-og": {
+    "description": "Eine sativa-dominante Hybride mit einem süßen, würzigen und zitrusartigen Aroma. Die Wirkung ist erhebend und energetisierend, fördert Kreativität und Geselligkeit und bietet gleichzeitig eine sanfte körperliche Entspannung. Ideal für den Tagesgebrauch.",
+    "typeDetails": "Sativa 60% / Indica 40%",
+    "genetics": "Diablo x OG Kush",
+    "aromas": [
+      "Würzig",
+      "Zitrus",
+      "Süß",
+      "Grapefruit"
+    ],
+    "dominantTerpenes": [
+      "Terpinolen",
+      "Myrcen",
+      "Pinen"
+    ]
+  },
+  "diamond-og": {
+    "description": "Eine Indica-Sorte, bekannt für ihre potenten, langanhaltenden und entspannenden Effekte. Sie hat ein klassisches OG-Aroma mit Noten von Zitrus, Diesel und Kiefer. Die Wirkung beginnt mit einem zerebralen Rausch, der schnell in tiefe körperliche Ruhe übergeht.",
+    "typeDetails": "Indica 100%",
+    "genetics": "OG Kush Phänotyp",
+    "aromas": [
+      "Zitrus",
+      "Kiefer",
+      "Diesel",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen",
+      "Limonen"
+    ]
+  },
+  "divine-gelato": {
+    "description": "Eine indica-dominante Hybride, die das Beste der Gelato-Linie mit OG Kush kombiniert. Das Aroma ist eine köstliche Mischung aus fruchtigen, cremigen und gasigen Noten. Die Wirkung ist stark entspannend und euphorisch, ideal zum Entspannen am Abend.",
+    "typeDetails": "Indica 60% / Sativa 40%",
+    "genetics": "Gelato #33 x OG Kush",
+    "aromas": [
+      "Fruchtig",
+      "Cremig",
+      "Gasig",
+      "Süß"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Limonen",
+      "Myrcen"
+    ]
+  },
+  "do-si-dos": {
+    "description": "Eine potente indica-dominante Hybride mit einem süßen, erdigen und blumigen Aroma. Die Wirkung ist stark, beginnt mit einem warmen Körpergefühl, das sich im ganzen Körper ausbreitet und in einen tief entspannten, fast meditativen Zustand übergeht. Ideal für den Abend.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "OGKB (ein GSC-Phänotyp) x Face Off OG",
+    "aromas": [
+      "Süß",
+      "Erdig",
+      "Blumig",
+      "Scharf"
+    ],
+    "dominantTerpenes": [
+      "Limonen",
+      "Caryophyllen",
+      "Linalool"
+    ]
+  },
+  "do-si-woah": {
+    "description": "Eine extrem potente indica-dominante Sorte, die für ihre starken, sedierenden Effekte bekannt ist. Sie hat ein komplexes Aroma von Erde, Gas und süßem Gebäck. Die Wirkung ist schwer und körperlich, ideal zur Linderung von starken Schmerzen und Schlaflosigkeit.",
+    "typeDetails": "Indica 80% / Sativa 20%",
+    "genetics": "Do-Si-Dos x RBx4",
+    "aromas": [
+      "Erdig",
+      "Gasig",
+      "Süß",
       "Scharf"
     ],
     "dominantTerpenes": [
@@ -1824,32 +1937,45 @@ export const strainsData = {
       "Limonen"
     ]
   },
-  "501st-og": {
-    "description": "Eine potente Indica-Hybride mit einem erdigen, kiefernartigen Aroma und Noten von Traube. Die Wirkung ist stark körperlich und zerebral entspannend, fast sedierend. Ideal zur Linderung von Schmerzen, Stress und Schlaflosigkeit.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "Skywalker OG x Rare Dankness #1",
+  "dogwalker-og": {
+    "description": "Eine ausgewogene Hybride mit einem einzigartigen, scharfen Aroma von 'nassem Hund', Skunk und Erde. Die Wirkung ist stark zerebral und konzentriert, während sie den Körper entspannt, was sie überraschend funktional für erfahrene Konsumenten macht.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Albert Walker OG x Chemdawg 91",
     "aromas": [
-      "Traube",
+      "Scharf",
       "Erdig",
-      "Kiefer",
-      "Süß"
+      "Skunk",
+      "Holzig"
     ],
     "dominantTerpenes": [
       "Myrcen",
-      "Pinen",
       "Caryophyllen"
     ]
   },
-  "707-headband": {
-    "description": "Eine populäre kalifornische Hybride mit einem sauren, zitronigen Aroma und erdigen Untertönen. Die Wirkung ist schnell einsetzend, zerebral und euphorisch, oft begleitet von einem merklichen Druck um den Kopf, daher der Name 'Headband'. Sehr wirksam bei Schmerzen und Stress.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "Sour Diesel x OG Kush x Master Kush",
+  "donkey-butter": {
+    "description": "Eine potente indica-dominante Sorte mit einem extrem scharfen Aroma von Diesel und erdigem Skunk. Die Wirkung ist tief sedierend und entspannend, führt oft zum Couch-Lock und ist am besten für den Abendgebrauch bei Schmerzen und Schlaflosigkeit geeignet.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Grease Monkey x Triple OG",
     "aromas": [
-      "Zitrone",
       "Diesel",
+      "Scharf",
       "Erdig",
-      "Sauer",
-      "Kiefer"
+      "Skunk"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Caryophyllen"
+    ]
+  },
+  "donny-burger": {
+    "description": "Eine potente indica-dominante Hybride mit einem einzigartigen, herzhaften Aroma von Käse, Zwiebeln und einem Hauch Zitrone. Die Wirkung ist anfangs erhebend und euphorisch und geht dann in eine tief entspannende und beruhigende Körperwirkung über.",
+    "typeDetails": "Indica 60% / Sativa 40%",
+    "genetics": "GMO Cookies x Han-Solo Burger",
+    "aromas": [
+      "Käse",
+      "Zwiebel",
+      "Zitrus",
+      "Scharf"
     ],
     "dominantTerpenes": [
       "Caryophyllen",
@@ -1857,31 +1983,454 @@ export const strainsData = {
       "Myrcen"
     ]
   },
-  "8-ball-kush": {
-    "description": "Eine reine Indica aus dem Hindukusch-Gebirge, gezüchtet von Barney's Farm. Sie bietet eine tief entspannende, fast narkotische Wirkung. Das Aroma ist erdig und würzig. Ideal für den Abendgebrauch und zur Schmerzlinderung.",
-    "typeDetails": "Indica 100%",
-    "genetics": "Afghanische Landrasse",
+  "dosi-cake": {
+    "description": "Eine indica-dominante Hybride, die den süßen, erdigen Geschmack von Do-Si-Dos mit der cremigen Süße von Wedding Cake kombiniert. Die Wirkung ist stark entspannend und beruhigend, ideal zum Stressabbau und zur Linderung von Schmerzen am Abend.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Do-Si-Dos x Wedding Cake",
     "aromas": [
+      "Süß",
+      "Erdig",
+      "Vanille",
+      "Blumig"
+    ],
+    "dominantTerpenes": [
+      "Limonen",
+      "Caryophyllen"
+    ]
+  },
+  "double-dream": {
+    "description": "Eine sativa-dominante Hybride, die für ihre verträumte, sanfte und funktionale Wirkung bekannt ist. Sie bietet Schmerzlinderung und Entspannung ohne starke Sedierung, was sie zu einer guten Wahl für den Tagesgebrauch macht. Das Aroma ist süß und blumig.",
+    "typeDetails": "Sativa 70% / Indica 30%",
+    "genetics": "Blue Dream x Dream Star",
+    "aromas": [
+      "Süß",
+      "Blumig",
+      "Beere",
+      "Würzig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Pinen",
+      "Caryophyllen"
+    ]
+  },
+  "dr-grinspoon": {
+    "description": "Eine reine Sativa-Erbstücksorte, benannt nach dem Cannabis-Forscher Dr. Lester Grinspoon. Sie hat eine einzigartige, perlenartige Knospenstruktur. Die Wirkung ist rein zerebral, langanhaltend, energetisch und fördert die Konzentration. Eine Sorte für Kenner.",
+    "typeDetails": "Sativa 100%",
+    "genetics": "Unbekannte Erbstück-Sativa",
+    "aromas": [
+      "Zitrone",
+      "Kiefer",
+      "Würzig",
+      "Tropisch"
+    ],
+    "dominantTerpenes": [
+      "Terpinolen",
+      "Limonen"
+    ]
+  },
+  "dream-star": {
+    "description": "Eine ausgewogene Hybride mit einem süßen Beeren- und Skunk-Aroma. Sie bietet eine entspannende und dennoch erhebende Wirkung, die ideal ist, um Stress abzubauen, während man geistig klar und funktionsfähig bleibt. Gut für den Nachmittags- oder Abendgebrauch.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Blue Dream x Stardawg",
+    "aromas": [
+      "Beere",
+      "Süß",
+      "Skunk",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Caryophyllen"
+    ]
+  },
+  "ducksfoot": {
+    "description": "Eine einzigartige Sativa, benannt nach ihren ungewöhnlichen Blättern, die Schwimmhäuten ähneln und sie unauffällig machen. Die Wirkung ist erhebend und zerebral, aber nicht übermäßig stark. Das Aroma ist eine ungewöhnliche Mischung aus Pfeffer und Weihrauch.",
+    "typeDetails": "Sativa 100%",
+    "genetics": "Australische Sativa-Landrasse",
+    "aromas": [
+      "Pfeffer",
+      "Weihrauch",
+      "Erdig",
+      "Würzig"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen"
+    ]
+  },
+  "durban-poison": {
+    "description": "Eine berühmte reine Sativa-Landrasse aus Südafrika. Sie ist bekannt für ihre extrem energetisierende, erhebende und konzentrationsfördernde Wirkung, was sie zu einer der beliebtesten Tagessorten macht. Das Aroma ist süß und würzig mit Noten von Anis.",
+    "typeDetails": "Sativa 100%",
+    "genetics": "Südafrikanische Landrasse",
+    "aromas": [
+      "Süß",
+      "Würzig",
+      "Anis",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Terpinolen",
+      "Myrcen",
+      "Ocimen"
+    ]
+  },
+  "early-maroc": {
+    "description": "Eine sehr schnell blühende Sativa, die speziell für den Outdoor-Anbau in kühleren Klimazonen gezüchtet wurde. Sie bietet eine klare, erhebende Wirkung und ein süßes, erdiges Aroma. Ideal für Züchter, die eine frühe Ernte anstreben.",
+    "typeDetails": "Sativa 100%",
+    "genetics": "Marokkanische Landrasse",
+    "aromas": [
+      "Süß",
       "Erdig",
       "Würzig",
-      "Kräuterartig",
-      "Holzig"
+      "Blumig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Caryophyllen"
+    ]
+  },
+  "early-pearl": {
+    "description": "Eine klassische Outdoor-Sativa von Sensi Seeds, die für ihre Widerstandsfähigkeit gegen Schimmel und kühles Klima bekannt ist. Sie bietet ein erhebendes, klares Kopf-High mit einem Hauch von Körperentspannung. Das Aroma ist süß und skunkig.",
+    "typeDetails": "Sativa 75% / Indica 25%",
+    "genetics": "Early Girl x Pollyanna",
+    "aromas": [
+      "Süß",
+      "Skunk",
+      "Kiefer",
+      "Würzig"
+    ],
+    "dominantTerpenes": [
+      "Terpinolen",
+      "Myrcen"
+    ]
+  },
+  "early-skunk": {
+    "description": "Eine robuste und zuverlässige Sorte, die die schnelle Blüte und Widerstandsfähigkeit von Early Pearl mit der Potenz und dem Ertrag von Skunk #1 kombiniert. Ideal für Outdoor-Anbauer in kürzeren Sommern. Die Wirkung ist entspannend und glücklich.",
+    "typeDetails": "Indica 65% / Sativa 35%",
+    "genetics": "Skunk #1 x Early Pearl",
+    "aromas": [
+      "Skunk",
+      "Süß",
+      "Erdig",
+      "Würzig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Pinene"
+    ]
+  },
+  "ed-rosenthal-super-bud": {
+    "description": "Benannt nach dem legendären Cannabis-Anbauautor. Diese Hybride ist bekannt für ihre extrem dichten, harzigen Knospen und einen hohen Ertrag. Die Wirkung ist eine ausgewogene Mischung aus zerebraler Euphorie und entspannender Körperwirkung.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Unbekannte Afghani/Kush x (Haze x Sativa)",
+    "aromas": [
+      "Süß",
+      "Fruchtig",
+      "Ananas",
+      "Skunk"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Terpinolene"
+    ]
+  },
+  "el-chapo-og": {
+    "description": "Eine potente indica-dominante Sorte, die für ihre starken, sedierenden Effekte bekannt ist. Sie hat ein scharfes Aroma von Kiefer, Diesel und Zitrone. Die Wirkung ist stark körperlich und ideal zur Linderung von Schmerzen und Schlaflosigkeit.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Face Off OG x SFV OG x OG Kush",
+    "aromas": [
+      "Kiefer",
+      "Diesel",
+      "Zitrone",
+      "Scharf"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonene",
+      "Caryophyllen"
+    ]
+  },
+  "electric-lemon-g": {
+    "description": "Eine energetisierende sativa-dominante Sorte mit einem intensiven, scharfen Zitronenaroma. Die Wirkung ist stark zerebral, kreativ und erhebend, was sie zu einer ausgezeichneten Wahl für den Tagesgebrauch und soziale Aktivitäten macht.",
+    "typeDetails": "Sativa 80% / Indica 20%",
+    "genetics": "G13 x Northern Lights #5",
+    "aromas": [
+      "Zitrone",
+      "Zitrus",
+      "Scharf",
+      "Sauer"
+    ],
+    "dominantTerpenes": [
+      "Terpinolene",
+      "Myrcen"
+    ]
+  },
+  "eleven-roses": {
+    "description": "Eine reine Indica von Delicious Seeds, bekannt für ihre schnelle Blütezeit und ihre beeindruckende Harzproduktion. Die Wirkung ist extrem stark, narkotisch und sedierend. Das Aroma ist eine komplexe Mischung aus süßen Früchten und feuchter Erde.",
+    "typeDetails": "Indica 100%",
+    "genetics": "Appalachian Kush x Sugar Black Rose",
+    "aromas": [
+      "Süß",
+      "Fruchtig",
+      "Metallisch",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonene",
+      "Caryophyllen"
+    ]
+  },
+  "elmers-glue": {
+    "description": "Eine extrem klebrige und potente Hybride, benannt nach dem berühmten Klebstoff. Sie bietet ein starkes, euphorisches Kopf-High, das in eine schwere, entspannende Körperwirkung übergeht. Das Aroma ist scharf, mit Noten von Kiefer, Diesel und Schokolade.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Gorilla Glue #4 x White Widow",
+    "aromas": [
+      "Kiefer",
+      "Diesel",
+      "Schokolade",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen",
+      "Limonene"
+    ]
+  },
+  "emergen-c": {
+    "description": "Eine sativa-dominante Sorte mit einem intensiven, süßen Orangen- und Zitrusaroma. Die Wirkung ist erhebend, energetisch und konzentrationsfördernd, was sie zu einer perfekten Wahl für den Morgen oder einen kreativen Schub am Nachmittag macht.",
+    "typeDetails": "Sativa 70% / Indica 30%",
+    "genetics": "Orange Push Pop x Sunset Sherbet",
+    "aromas": [
+      "Orange",
+      "Zitrus",
+      "Süß",
+      "Diesel"
+    ],
+    "dominantTerpenes": [
+      "Limonene",
+      "Myrcen",
+      "Caryophyllen"
+    ]
+  },
+  "emperor-cookies": {
+    "description": "Eine potente indica-dominante Sorte, die für ihre extrem frostigen Knospen und ihre starke, entspannende Wirkung bekannt ist. Sie hat ein süßes, erdiges Keksaroma. Die Wirkung ist stark körperlich und ideal zur Linderung von Schmerzen und Stress.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Emperor OG x Girl Scout Cookies",
+    "aromas": [
+      "Süß",
+      "Erdig",
+      "Keks",
+      "Kiefer"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Caryophyllen"
+    ]
+  },
+  "ewok": {
+    "description": "Eine indica-dominante Sorte, benannt nach den Star Wars-Charakteren. Sie produziert dichte, harzige Knospen mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist stark entspannend und beruhigend, ideal für den Abendgebrauch.",
+    "typeDetails": "Indica 80% / Sativa 20%",
+    "genetics": "Albert Walker x Tahoe Alien",
+    "aromas": [
+      "Süß",
+      "Fruchtig",
+      "Erdig",
+      "Kiefer"
     ],
     "dominantTerpenes": [
       "Myrcen",
       "Caryophyllen",
-      "Pinen"
+      "Limonen"
     ]
   },
-  "9-pound-hammer": {
-    "description": "Eine schwere Indica-Hybride mit einem fruchtigen, limettenartigen Geschmack. Die Wirkung ist sehr potent und langanhaltend, führt zu tiefer körperlicher Entspannung und oft zu Schläfrigkeit. Gut geeignet bei Schmerzen und Schlaflosigkeit.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "Gooberry x Hells OG x Jack the Ripper",
+  "exodus-cheese": {
+    "description": "Der ursprüngliche Klon, der in den 90er Jahren in Großbritannien berühmt wurde. Bekannt für sein extrem scharfes, einzigartiges Käsearoma. Die Wirkung ist stark, euphorisch und gesellig, mit einer angenehmen Körperentspannung. Eine soziale Sorte.",
+    "typeDetails": "Hybrid 60% / Indica 40%",
+    "genetics": "Skunk #1 Phänotyp",
     "aromas": [
-      "Traube",
-      "Limette",
-      "Süß",
+      "Käse",
+      "Scharf",
+      "Skunk",
       "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Myrcen",
+      "Limonen"
+    ]
+  },
+  "face-off-og": {
+    "description": "Eine extrem potente Indica, deren Name von der intensiven Wirkung herrührt, die sich anfühlt, als würde sie einem das Gesicht 'abnehmen'. Bietet eine stark sedierende und entspannende Wirkung, ideal für medizinische Anwender. Das Aroma ist erdig und kiefernartig.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "OG Kush Phänotyp",
+    "aromas": [
+      "Erdig",
+      "Kiefer",
+      "Scharf",
+      "Holzig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonen",
+      "Caryophyllen"
+    ]
+  },
+  "fat-banana": {
+    "description": "Eine schnell blühende, indica-dominante Sorte von Royal Queen Seeds mit einem süßen, intensiven Bananenaroma. Die Wirkung ist stark, körperlich entspannend und kann bei höherer Dosierung zu einem starken Couch-Lock führen. Ideal für den Abend.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "OG Kush x Chiquita Banana",
+    "aromas": [
+      "Banane",
+      "Süß",
+      "Tropisch",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonen",
+      "Caryophyllen"
+    ]
+  },
+  "fire-og": {
+    "description": "Gilt als eine der stärksten OG Kush-Hybriden. Der Name kommt von den roten Haaren, die die Knospen bedecken. Die Wirkung ist stark, langanhaltend und beginnt mit einem erhebenden, euphorischen Gefühl, das in eine starke Indica-Entspannung übergeht.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "OG Kush x SFV OG Kush",
+    "aromas": [
+      "Zitrone",
+      "Kiefer",
+      "Scharf",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonen",
+      "Caryophyllen"
+    ]
+  },
+  "forbidden-fruit": {
+    "description": "Eine indica-dominante Sorte mit einem unglaublich verlockenden Aroma von tropischen Früchten, Kirschen und Zitrus. Die Wirkung ist tief entspannend und beruhigend für Körper und Geist, ohne völlig zu sedieren. Ideal für den Abend.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Cherry Pie x Tangie",
+    "aromas": [
+      "Fruchtig",
+      "Kirsche",
+      "Zitrus",
+      "Tropisch",
+      "Süß"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonen",
+      "Caryophyllen"
+    ]
+  },
+  "freakshow": {
+    "description": "Eine einzigartige Sativa-Sorte, die für ihre ungewöhnliche farnartige Blattstruktur bekannt ist, die sie unauffällig macht. Die Wirkung ist erhebend, zerebral und kreativ. Das Aroma ist eine komplexe Mischung aus Kiefer, Gewürzen und Diesel.",
+    "typeDetails": "Sativa 90% / Indica 10%",
+    "genetics": "Unbekannte Sativa-Mutation",
+    "aromas": [
+      "Kiefer",
+      "Würzig",
+      "Diesel",
+      "Holzig"
+    ],
+    "dominantTerpenes": [
+      "Pinen",
+      "Myrcen",
+      "Caryophyllen"
+    ]
+  },
+  "french-toast": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, butterartigen und sirupartigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für einen gemütlichen Morgen oder Abend. Sie hilft, Stress abzubauen und die Stimmung zu heben.",
+    "typeDetails": "Indica 60% / Sativa 40%",
+    "genetics": "Paris OG x Face Off OG",
+    "aromas": [
+      "Süß",
+      "Butter",
+      "Sirup",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Myrcen",
+      "Limonen",
+      "Caryophyllen"
+    ]
+  },
+  "frisian-dew": {
+    "description": "Eine preisgekrönte Outdoor-Sorte von Dutch Passion, bekannt für ihre hohe Schimmelresistenz und ihre schönen violetten Farben. Die Wirkung ist ausgewogen, mit einem erhebenden Sativa-High und einer sanften Indica-Entspannung. Ideal für kühlere Klimazonen.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Super Skunk x Purple Star",
+    "aromas": [
+      "Erdig",
+      "Kiefer",
+      "Zitrus",
+      "Fruchtig"
+    ],
+    "dominantTerpenes": [
+      "Pinen",
+      "Myrcen",
+      "Limonen"
+    ]
+  },
+  "frisian-duck": {
+    "description": "Eine weitere 'Stealth'-Sorte, die die einzigartige Entenfuß-Blattform mit der Robustheit von Frisian Dew kombiniert. Sie ist sehr unauffällig und ideal für den Guerilla-Anbau. Die Wirkung ist ausgewogen und das Aroma würzig und kiefernartig.",
+    "typeDetails": "Sativa 50% / Indica 50%",
+    "genetics": "DucksFoot x Frisian Dew",
+    "aromas": [
+      "Kiefer",
+      "Würzig",
+      "Zitrus",
+      "Erdig"
+    ],
+    "dominantTerpenes": [
+      "Pinen",
+      "Terpinolen",
+      "Ocimen"
+    ]
+  },
+  "frosted-guava": {
+    "description": "Eine potente, indica-dominante Hybride mit einem süßen, tropischen und fruchtigen Geschmacksprofil. Die Wirkung ist stark entspannend und euphorisch, ideal zum Stressabbau und zur Förderung der Kreativität, bevor eine tiefe Entspannung einsetzt.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Guava x Frosted Skywalker",
+    "aromas": [
+      "Guave",
+      "Tropisch",
+      "Fruchtig",
+      "Süß"
+    ],
+    "dominantTerpenes": [
+      "Caryophyllen",
+      "Limonen",
+      "Myrcen"
+    ]
+  },
+  "fruity-pebbles-og": {
+    "description": "Eine limitierte Hybride, bekannt für ihren extrem süßen und fruchtigen Geschmack, der an die gleichnamigen Frühstücksflocken erinnert. Die Wirkung ist stark, euphorisch und entspannend, oft kichernd und glücklich machend. Ideal für den Abend.",
+    "typeDetails": "Indica 55% / Sativa 45%",
+    "genetics": "Green Ribbon x Granddaddy Purple x Tahoe Alien",
+    "aromas": [
+      "Fruchtig",
+      "Süß",
+      "Beere",
+      "Tropisch"
+    ],
+    "dominantTerpenes": [
+      "Limonen",
+      "Caryophyllen",
+      "Myrcen"
+    ]
+  },
+  "future": {
+    "description": "Eine extrem potente Sorte von Anesia Seeds, die für ihren außergewöhnlich hohen THC-Gehalt bekannt ist. Die Wirkung ist intensiv, psychedelisch und langanhaltend, mit einem starken zerebralen Rausch und einer tiefen Körperentspannung. Nur für erfahrene Konsumenten.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Gorilla Glue #4 x Starfighter F2",
+    "aromas": [
+      "Ananas",
+      "Mango",
+      "Zitrus",
+      "Süß"
     ],
     "dominantTerpenes": [
       "Myrcen",

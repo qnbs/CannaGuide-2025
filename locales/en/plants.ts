@@ -2,7 +2,7 @@ export const plantsView = {
   title: 'My Plants',
   tabs: {
     dashboard: 'Dashboard',
-    archive: 'Advisor Archive',
+    archive: 'AI Advisor Archive',
   },
   emptySlot: {
     title: 'Empty Slot',
@@ -12,6 +12,22 @@ export const plantsView = {
   plantCard: {
     day: 'Day',
     stage: 'Stage',
+  },
+  actionCenter: {
+    title: 'Action Center',
+    tasks: 'Tasks & Warnings',
+    diagnostics: 'AI Diagnostics',
+    tip: 'Tip of the Day',
+  },
+  gardenVitals: {
+    title: 'Garden Vitals',
+    avgTemp: 'Avg. Temp.',
+    avgHumidity: 'Avg. Humidity',
+  },
+  vitals: {
+    moisture: 'Moisture',
+    ph: 'pH Level',
+    ec: 'EC Level',
   },
   summary: {
     activeGrows: 'Active Grows',
@@ -130,13 +146,13 @@ export const plantsView = {
   },
   aiAdvisor: {
     description: 'Get a data-driven analysis and action recommendations for your plant from the AI.',
-    archiveTitle: 'Advisor Archive',
-    archiveEmpty: 'No saved analyses for this plant.',
+    archiveTitle: 'AI Advisor Archive',
+    archiveEmpty: 'No AI analyses have been archived for this plant yet. Request an analysis and save it to build a history here.',
     archiveEmptyGlobal: {
-        title: 'The Advisor Archive is Empty',
-        subtitle: 'Saved recommendations from the AI Advisor for any plant will appear here.'
+        title: 'Global Advisor Archive is Empty',
+        subtitle: 'All saved recommendations from the AI Advisor across all your plants will be collected here. Request analyses for your plants to build your personal knowledge base.'
     },
-    unknownPlant: 'Unknown Plant',
+    unknownPlant: 'Unknown/Deleted Plant',
   },
   quickActions: {
       title: "Quick Actions",

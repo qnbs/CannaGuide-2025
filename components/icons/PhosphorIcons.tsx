@@ -211,7 +211,6 @@ export const PhosphorIcons = {
     ArrowSquareOut: ({ className }: { className?: string }) => (
         <IconBase className={className}><path d="M200,64V168a8,8,0,0,1-16,0V83.3L69.7,197.7a8.2,8.2,0,0,1-11.4,0,8.1,8.1,0,0,1,0-11.4L172.7,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></IconBase>
     ),
-    // FIX: Update icon components to accept a 'weight' prop to resolve TypeScript errors.
     TextBolder: ({ className, weight = 'regular' }: { className?: string; weight?: 'bold' | 'duotone' | 'fill' | 'light' | 'regular' | 'thin' }) => (
         <IconBase className={className} weight={weight}><path d="M176,120h-8a16,16,0,0,0-15.8,12.8,40,40,0,1,1-56.5,0A16,16,0,0,0,80,120H72a8,8,0,0,0,0,16h8a16,16,0,0,0,15.8-12.8,40.1,40.1,0,0,1,64.4,0A16,16,0,0,0,176,136h8a8,8,0,0,0,0-16Zm-65.5-4.5A40,40,0,1,1,128,80,40,40,0,0,1,110.5,115.5ZM128,96a24,24,0,1,0-24,24A24.1,24.1,0,0,0,128,96Z"/></IconBase>
     ),

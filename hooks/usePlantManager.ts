@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Plant, PlantStage, PlantProblem, JournalEntry, Task, PlantProblemType, SimulationDifficulty } from '../types';
+import { Plant, PlantStage, PlantProblem, JournalEntry, Task, PlantProblemType, AppSettings } from '../types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '../constants';
 import { useSettings } from './useSettings';
 import { useNotifications } from '../context/NotificationContext';
@@ -172,7 +172,13 @@ export const usePlantManager = (
         newPlantState = _updateVitalsAndGrowth(newPlantState, elapsedDays);
 
         const stressFromProblems = _calculateStressFromDeviations(newPlantState);
-        const stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty];
+        
+        let stressDifficultyModifier = { easy: 0.7, normal: 1.0, hard: 1.3 }[settings.simulationSettings.difficulty] || 1.0;
+        if (settings.simulationSettings.difficulty === 'custom') {
+            const { pestPressure, nutrientSensitivity, environmentalStability } = settings.simulationSettings.customDifficultyModifiers;
+            stressDifficultyModifier = (pestPressure + nutrientSensitivity + environmentalStability) / 3;
+        }
+
         const stressToAdd = stressFromProblems * stressDifficultyModifier * elapsedDays;
         const stressDecayFactor = Math.pow(0.9, elapsedDays);
         newPlantState.stressLevel = newPlantState.stressLevel * stressDecayFactor + stressToAdd;
@@ -206,7 +212,7 @@ export const usePlantManager = (
 
         newPlantState.lastUpdated = targetTimestamp;
         return newPlantState;
-    }, [settings, addNotification, t, getProblemDetails]);
+    }, [settings, addNotification, t, getProblemDetails, calculateYield]);
 
     const updatePlantState = useCallback((plantIdToUpdate?: string) => {
         setPlants(currentPlants => {
@@ -244,10 +250,14 @@ export const usePlantManager = (
             if ((entry.type === 'WATERING' || entry.type === 'FEEDING') && entry.details) {
                 const moistureReplenish = (entry.details.waterAmount / (p.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR;
                 updatedPlant.vitals.substrateMoisture = Math.min(100, p.vitals.substrateMoisture + moistureReplenish);
-                updatedPlant.vitals.ph = entry.details.ph || p.vitals.ph;
                 
-                if (entry.type === 'FEEDING') {
-                   updatedPlant.vitals.ec = entry.details.ec || p.vitals.ec;
+                if (entry.details.ph) {
+                    const newPh = entry.details.ph;
+                    updatedPlant.vitals.ph = (updatedPlant.vitals.ph * SIMULATION_CONSTANTS.PH_BUFFER_FACTOR) + (newPh * (1 - SIMULATION_CONSTANTS.PH_BUFFER_FACTOR));
+                }
+                
+                if (entry.type === 'FEEDING' && entry.details.ec) {
+                   updatedPlant.vitals.ec = entry.details.ec;
                 }
 
                 const wateringTaskTitle = t('plantsView.tasks.wateringTask.title');

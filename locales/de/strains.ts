@@ -13,6 +13,7 @@ export const strainsView = {
     cbd: 'CBD',
     flowering: 'Blütezeit',
     level: 'Schwierigkeit',
+    yield: 'Ertrag',
   },
   tabs: {
     all: 'Alle Sorten',

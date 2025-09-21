@@ -1,11 +1,25 @@
 import React from "react";
 
 export type Language = 'en' | 'de';
-export type Theme = 'midnight' | 'forest' | 'purple-haze';
+export type Theme = 'midnight' | 'forest' | 'purple-haze' | 'desert-sky' | 'rose-quartz';
 export type FontSize = 'sm' | 'base' | 'lg';
 export type SortDirection = 'asc' | 'desc';
 export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime';
 export type ViewMode = 'list' | 'grid';
+export type UiDensity = 'comfortable' | 'compact';
+
+export interface AccessibilitySettings {
+    highContrast: boolean;
+    reducedMotion: boolean;
+    dyslexiaFont: boolean;
+}
+
+export interface QuietHours {
+    enabled: boolean;
+    start: string; // "HH:mm" format
+    end: string;   // "HH:mm" format
+}
+
 
 export enum View {
     Strains = 'strains',
@@ -194,7 +208,12 @@ export interface AppSettings {
             stageChanges: boolean,
             problems: boolean,
             tasks: boolean,
-        }
+        };
+        customDifficultyModifiers: {
+            pestPressure: number; // 0.5 to 1.5
+            nutrientSensitivity: number; // 0.5 to 1.5
+            environmentalStability: number; // 0.5 to 1.5
+        };
     };
     defaultGrowSetup: GrowSetup;
     defaultJournalNotes: {
@@ -206,6 +225,9 @@ export interface AppSettings {
         format: ExportFormat;
     };
     lastBackupTimestamp?: number;
+    accessibility: AccessibilitySettings;
+    uiDensity: UiDensity;
+    quietHours: QuietHours;
 }
 
 export interface NotificationSettings {
@@ -215,7 +237,7 @@ export interface NotificationSettings {
     newTask: boolean;
 }
 
-export type SimulationDifficulty = 'easy' | 'normal' | 'hard';
+export type SimulationDifficulty = 'easy' | 'normal' | 'hard' | 'custom';
 export type ExportSource = 'selected' | 'favorites' | 'filtered' | 'all';
 export type ExportFormat = 'json' | 'csv' | 'pdf' | 'txt';
 

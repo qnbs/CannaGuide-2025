@@ -60,7 +60,6 @@ export const PhosphorIcons = {
     ArrowDown: ({ className }: { className?: string; }) => (
         <IconBase className={className}><path d="M213.7,133.7l-80,80a8.1,8.1,0,0,1-11.4,0l-80-80a8.1,8.1,0,0,1,11.4-11.4L120,198.6V48a8,8,0,0,1,16,0V198.6l66.3-66.3a8.1,8.1,0,0,1,11.4,11.4Z"/></IconBase>
     ),
-    // FIX: Add missing ArrowSquareOut icon
     ArrowSquareOut: ({ className }: { className?: string }) => (
         <IconBase className={className}><path d="M208,28H48A20.1,20.1,0,0,0,28,48V208a20.1,20.1,0,0,0,20,20H208a20.1,20.1,0,0,0,20-20V48A20.1,20.1,0,0,0,208,28Zm-8,172H56V56H200V200Zm-40-96a8,8,0,0,1,0-16h40a8,8,0,0,1,8,8v40a8,8,0,0,1-16,0V125.3l-50.3,50.4a8.1,8.1,0,0,1-11.4-11.4L188.7,112Z"/></IconBase>
     ),
@@ -83,7 +82,6 @@ export const PhosphorIcons = {
     TestTube: ({ className }: { className?: string }) => (
         <IconBase className={className}><path d="M223.7,196.5l-48-83.1a24.1,24.1,0,0,0-20.9-12.1H140V56h12a8,8,0,0,0,0-16H88a8,8,0,0,0,0,16h12v45.3H84.8a24.1,24.1,0,0,0-20.9,12.1l-48,83.1A23.9,23.9,0,0,0,43,224H181a23.9,23.9,0,0,0,20.9-27.5ZM181,208H43a8.1,8.1,0,0,1-7-12.5l48-83.1A8.2,8.2,0,0,1,91.4,104H164.6a8.2,8.2,0,0,1,7.4,8.4L124,195.5V112a8,8,0,0,0-8-8H108V56h40v48h-8a8,8,0,0,0,0,16h19.1l-40-69.2,25.4-44,48,83.1A8.1,8.1,0,0,1,181,208Z"/></IconBase>
     ),
-    // FIX: Add missing TextBolder icon
     TextBolder: ({ className, weight = 'regular' }: { className?: string, weight?: 'regular' | 'bold' }) => (
         <IconBase className={className}>{weight === 'bold' ?
             <path d="M192,60H96a36,36,0,0,0,0,72h56a36,36,0,0,1,0,72H104a12,12,0,0,1,0-24h48a12,12,0,0,0,0-24H96a12,12,0,0,1,0-24h88a12,12,0,0,0,0-24Z"/>
@@ -91,7 +89,6 @@ export const PhosphorIcons = {
             <path d="M200,56H96a40,40,0,0,0,0,80h64a40,40,0,0,1,0,80H104a8,8,0,0,1,0-16h56a24,24,0,0,0,0-48H96a24,24,0,0,1,0-48h96a8,8,0,0,0,0-16Z"/>
         }</IconBase>
     ),
-    // FIX: Add missing TextItalic icon
     TextItalic: ({ className, weight = 'regular' }: { className?: string, weight?: 'bold' | 'regular' }) => (
         <IconBase className={className}>{weight === 'bold' ?
             <path d="M220,52a12,12,0,0,0-12,12v4h-54.3l-26-52H98.3a12,12,0,0,0-10.6,18.3L115.7,96H80a12,12,0,0,0,0,24h27.7l-28,56H60a12,12,0,0,0,0,24H204a12,12,0,0,0,0-24H165.7l28-56h22.1V64A12,12,0,0,0,220,52Zm-41.7,112H134l28-56h44.3Z"/>
@@ -117,7 +114,6 @@ export const PhosphorIcons = {
     ListChecks: ({ className }: { className?: string; }) => (
         <IconBase className={className}><path d="M88,104H40a8,8,0,0,1,0-16H88a8,8,0,0,1,0,16Zm0,48H40a8,8,0,0,1,0-16H88a8,8,0,0,1,0,16Zm0,48H40a8,8,0,0,1,0-16H88a8,8,0,0,1,0,16Zm133.7-93.7-40,40a8.1,8.1,0,0,1-11.4,0l-16-16a8.1,8.1,0,0,1,11.4-11.4l9.7,9.8,33.7-33.8a8.1,8.1,0,0,1,11.4,11.4ZM213.7,85.7l-40,40a8.1,8.1,0,0,1-11.4,0l-16-16A8.1,8.1,0,1,1,158,98.3l9.7,9.8,33.7-33.8a8.1,8.1,0,0,1,11.4,11.4Zm0,96-40,40a8.1,8.1,0,0,1-11.4,0l-16-16a8.1,8.1,0,0,1,11.4-11.4l9.7,9.8,33.7-33.8a8.1,8.1,0,0,1,11.4,11.4Z"/></IconBase>
     ),
-    // FIX: Add missing ListBullets icon
     ListBullets: ({ className, weight = 'regular' }: { className?: string, weight?: 'regular' | 'bold' }) => (
         <IconBase className={className}>{weight === 'bold' ?
             <path d="M92,68H216a12,12,0,0,0,0-24H92a12,12,0,0,0,0,24Zm124,48H92a12,12,0,0,0,0,24H216a12,12,0,0,0,0-24Zm0,72H92a12,12,0,0,0,0,24H216a12,12,0,0,0,0-24ZM44,40a16,16,0,1,0,16,16A16,16,0,0,0,44,40Zm0,72a16,16,0,1,0,16,16A16,16,0,0,0,44,112Zm0,72a16,16,0,1,0,16,16A16,16,0,0,0,44,184Z"/>
@@ -242,5 +238,8 @@ export const PhosphorIcons = {
           :
           <path d="M128,104a24,24,0,1,0,24,24A24.1,24.1,0,0,0,128,104Zm0,40a16,16,0,1,1,16-16A16,16,0,0,1,128,144ZM128,32a24,24,0,1,0,24,24A24.1,24.1,0,0,0,128,32Zm0,40a16,16,0,1,1,16-16A16,16,0,0,1,128,72Zm0,96a24,24,0,1,0,24,24A24.1,24.1,0,0,0,128,168Zm0,40a16,16,0,1,1,16-16A16,16,0,0,1,128,208Z"/>
       }</IconBase>
+    ),
+    PersonSimpleWalk: ({ className }: { className?: string; }) => (
+        <IconBase className={className}><path d="M152,24a28,28,0,1,0,28,28A28,28,0,0,0,152,24Zm0,40a12,12,0,1,1,12-12A12,12,0,0,1,152,64ZM232,136a8,8,0,0,0-14.9-5.2l-33.2,33.1-.7-31.5a8,8,0,0,0-8-7.9,7.9,7.9,0,0,0-7.9,8l1.8,79.5a8,8,0,0,0,7.9,7.9,7.8,7.8,0,0,0,7.9-7.2l6.1-55.1,19.8-19.8,11,11a8.1,8.1,0,0,0,11.4,0A8,8,0,0,0,232,136ZM128.2,129.2a8,8,0,0,0-15.6,4.6l12,60a8,8,0,0,0,15.6-3.1Z"/></IconBase>
     ),
 };

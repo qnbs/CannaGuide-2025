@@ -17,6 +17,8 @@ export const settingsView = {
       midnight: 'Mitternacht',
       forest: 'Wald',
       purpleHaze: 'Purpurnebel',
+      'desert-sky': 'Wüstenhimmel',
+      'rose-quartz': 'Rosenquarz',
     },
     fontSize: 'Schriftgröße',
     fontSizes: {

@@ -26,7 +26,6 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
-    // FIX: Correctly handle the string array returned from getDynamicLoadingMessages.
     useEffect(() => {
         if (isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } }, t);
@@ -48,12 +47,10 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
         setIsLoading(true);
         setResponse(null);
         try {
-            // FIX: Pass the translation function `t` as the second argument.
             const res = await geminiService.getAiPlantAdvisorResponse(plant, t);
             setResponse(res);
         } catch (error) {
             console.error("AI Advisor Error:", error);
-            // FIX: Improved error handling to provide more specific feedback to the user.
             const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
             const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
             setResponse({ title: t('common.error'), content: errorMessage });
@@ -94,7 +91,8 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                     {response && (
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{response.title}</h4>
-                            <p className="text-sm text-slate-200">{response.content}</p>
+                            {/* FIX: Render AI content with dangerouslySetInnerHTML to support markdown formatting, consistent with archived responses. */}
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
                             <div className="text-right mt-2">
                                <Button size="sm" variant="secondary" onClick={() => addResponse(plant.id, response, plantQueryData)}>{t('knowledgeView.archive.saveButton')}</Button>
                             </div>
@@ -116,10 +114,12 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
                                  <div className="flex justify-end items-center gap-2 mt-2">
-                                    <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)}>
+                                    {/* FIX: Add aria-label for accessibility. */}
+                                    <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                         <PhosphorIcons.PencilSimple className="w-4 h-4"/>
                                     </Button>
-                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(plant.id, res.id)}>
+                                    {/* FIX: Add aria-label for accessibility. */}
+                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(plant.id, res.id)} aria-label={t('common.deleteResponse')}>
                                         <PhosphorIcons.TrashSimple className="w-4 h-4"/>
                                     </Button>
                                 </div>

@@ -5,9 +5,8 @@ import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { useNotifications } from '../../../context/NotificationContext';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { exportService } from '../../../services/exportService';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
@@ -67,7 +66,7 @@ const SetupDetailModal: React.FC<{
                 <div className="flex justify-between items-start">
                     <div>
                         <h2 className="text-2xl font-bold text-primary-400">{isEditing ? t('equipmentView.savedSetups.modal.editMode') : t('equipmentView.savedSetups.modal.title')}</h2>
-                        <input type="text" value={editedSetup.name} id={`${baseId}-name`} name="setup-name" onChange={e => setEditedSetup(p => ({...p, name: e.target.value}))} disabled={!isEditing} className={`text-slate-100 text-lg font-semibold ${isEditing ? 'bg-slate-800 border-b border-slate-500 rounded-t p-1 -m-1' : 'bg-transparent'}`} />
+                        <input type="text" value={editedSetup.name} id={`${baseId}-name`} name="setup-name" onChange={e => setEditedSetup(p => ({...p, name: e.target.value}))} disabled={!isEditing} className={`text-slate-100 text-lg font-semibold w-full ${isEditing ? 'bg-slate-800 border-b border-slate-500 rounded-t p-1 -m-1' : 'bg-transparent'}`} />
                     </div>
                     <Button size="sm" onClick={() => setIsEditing(!isEditing)}>{isEditing ? t('common.cancel') : t('common.edit')}</Button>
                 </div>
@@ -136,114 +135,22 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
             console.error(e);
         }
     };
-    
-    const normalizeGermanChars = (str: string | null | undefined): string => {
-      if (!str) return '';
-      return str
-        .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue')
-        .replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue')
-        .replace(/ß/g, 'ss');
-    };
 
-    const downloadFile = (content: string, fileName: string, mimeType: string) => {
-        const link = document.createElement('a');
-        const file = new Blob([content], { type: mimeType });
-        link.href = URL.createObjectURL(file);
-        link.download = fileName;
-        link.click();
-        URL.revokeObjectURL(link.href);
-    };
-    
-    const exportAsPDF = (setup: SavedSetup) => {
-        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'PDF' }))) return;
-        
-        const doc = new jsPDF() as any;
-        doc.setFontSize(18);
-        doc.text(normalizeGermanChars(`${t('equipmentView.savedSetups.pdfReport.setup')}: ${setup.name}`), 15, 20);
-        doc.setFontSize(10);
-        doc.setTextColor(100);
-        doc.text(normalizeGermanChars(`${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}`), 15, 26);
-        doc.text(normalizeGermanChars(`${t('equipmentView.savedSetups.pdfReport.source')}: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} ${t('equipmentView.savedSetups.pdfReport.budget')}`), 15, 32);
+    const handleExport = (setup: SavedSetup, format: 'pdf' | 'json' | 'csv' | 'txt') => {
+        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: format.toUpperCase() }))) return;
 
-        const tableBody: any[] = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => {
-            const item = setup.recommendation[key];
-            const name = item.watts ? `${item.name} (${item.watts}W)` : item.name;
-            return [
-                normalizeGermanChars(t(`equipmentView.configurator.categories.${key}`)), 
-                normalizeGermanChars(name), 
-                normalizeGermanChars(item.rationale), 
-                `${item.price.toFixed(2)} €`
-            ];
-        });
-        
-        tableBody.push(['', '', { content: normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.total')), styles: { fontStyle: 'bold' } }, { content: `${setup.totalCost.toFixed(2)} €`, styles: { fontStyle: 'bold' } }]);
-
-        doc.autoTable({
-            startY: 40,
-            head: [[
-                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.item')), 
-                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.product')), 
-                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.rationale')), 
-                normalizeGermanChars(t('equipmentView.savedSetups.pdfReport.price'))
-            ]],
-            body: tableBody,
-        });
-
-        doc.save(`${setup.name.replace(/ /g,"_")}.pdf`);
-        addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
-    };
-    
-    const exportAsJSON = (setup: SavedSetup) => {
-        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'JSON' }))) return;
-        const jsonString = JSON.stringify(setup, null, 2);
-        downloadFile('\uFEFF' + jsonString, `${setup.name.replace(/ /g,"_")}.json`, 'application/json;charset=utf-8;');
-        addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
-    }
-
-    const exportAsCSV = (setup: SavedSetup) => {
-        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'CSV' }))) return;
-        const escapeCsv = (val: any) => `"${String(val).replace(/"/g, '""')}"`;
-
-        const headers = ['Setup Name', 'Source Area', 'Source Style', 'Source Budget', 'Total Cost', 'Category', 'Item', 'Watts', 'Price', 'Rationale'];
-        const rows = (Object.keys(setup.recommendation) as RecommendationCategory[]).map(key => {
-            const item = setup.recommendation[key];
-            return [
-                escapeCsv(setup.name),
-                escapeCsv(setup.sourceDetails.area),
-                escapeCsv(setup.sourceDetails.growStyle),
-                escapeCsv(setup.sourceDetails.budget),
-                escapeCsv(setup.totalCost),
-                escapeCsv(t(`equipmentView.configurator.categories.${key}`)),
-                escapeCsv(item.name),
-                escapeCsv(item.watts || ''),
-                escapeCsv(item.price),
-                escapeCsv(item.rationale)
-            ].join(',');
-        });
-        const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
-        downloadFile(csvContent, `${setup.name.replace(/ /g,"_")}.csv`, 'text/csv;charset=utf-8;');
-        addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
-    };
-    
-     const exportAsTXT = (setup: SavedSetup) => {
-        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: 'TXT' }))) return;
-        let content = `${t('equipmentView.savedSetups.pdfReport.setup').toUpperCase()}: ${setup.name}\n`;
-        content += `========================================\n`;
-        content += `${t('equipmentView.savedSetups.pdfReport.createdAt')}: ${new Date(setup.createdAt).toLocaleString()}\n`;
-        content += `${t('equipmentView.savedSetups.pdfReport.source')}: ${setup.sourceDetails.area}cm, ${setup.sourceDetails.growStyle}, ${setup.sourceDetails.budget} ${t('equipmentView.savedSetups.pdfReport.budget')}\n\n`;
-
-        (Object.keys(setup.recommendation) as RecommendationCategory[]).forEach(key => {
-            const item = setup.recommendation[key];
-            content += `--- ${t(`equipmentView.configurator.categories.${key}`)} ---\n`;
-            content += `${t('equipmentView.savedSetups.pdfReport.product')}: ${item.name}${item.watts ? ` (${item.watts}W)` : ''}\n`;
-            content += `${t('equipmentView.savedSetups.pdfReport.price').replace(' (€)', '')}: ${item.price.toFixed(2)} €\n`;
-            content += `${t('equipmentView.savedSetups.pdfReport.rationale')}: ${item.rationale}\n\n`;
-        });
-
-        content += `--- ${t('equipmentView.savedSetups.pdfReport.total').toUpperCase()} ---\n${t('equipmentView.savedSetups.pdfReport.total')}: ${setup.totalCost.toFixed(2)} €\n`;
-
-        downloadFile('\uFEFF' + content, `${setup.name.replace(/ /g,"_")}.txt`, 'text/plain;charset=utf-8;');
-        addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
+        try {
+            switch(format) {
+                case 'pdf': exportService.exportSetupAsPDF(setup, t); break;
+                case 'json': exportService.exportSetupAsJSON(setup); break;
+                case 'csv': exportService.exportSetupAsCSV(setup, t); break;
+                case 'txt': exportService.exportSetupAsTXT(setup, t); break;
+            }
+            addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
+        } catch(e) {
+            addNotification(t('equipmentView.savedSetups.updateError'), 'error');
+            console.error("Export error:", e);
+        }
     };
     
     const sortedSetups = [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
@@ -263,19 +170,25 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
                         <Card key={setup.id} className="flex flex-col">
                             <h3 className="font-bold text-lg text-primary-400 truncate">{setup.name}</h3>
                             <p className="text-xs text-slate-400 mb-2">{new Date(setup.createdAt).toLocaleString()}</p>
-                            <p className="text-sm text-slate-300 flex-grow">{setup.sourceDetails.area}cm | {setup.sourceDetails.growStyle} | {setup.sourceDetails.budget}</p>
+                            <div className="text-sm text-slate-300 flex-grow flex items-center gap-3 my-2">
+                               <span className="flex items-center gap-1" title="Area"><PhosphorIcons.Cube/> {setup.sourceDetails.area}cm</span>
+                               <span className="flex items-center gap-1" title="Style"><PhosphorIcons.Leafy/> {setup.sourceDetails.growStyle}</span>
+                               <span className="flex items-center gap-1" title="Budget"><PhosphorIcons.Drop/> {setup.sourceDetails.budget}</span>
+                            </div>
                             <p className="text-2xl font-bold text-right my-3">{setup.totalCost.toFixed(2)} €</p>
                             <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-slate-700">
                                 <Button size="sm" onClick={() => setSelectedSetup(setup)} className="flex-1">{t('equipmentView.savedSetups.inspect')}</Button>
-                                <div className="relative group">
-                                    <Button size="sm" variant="secondary" className="flex-1">{t('common.export')}...</Button>
-                                    <div className="absolute bottom-full mb-2 w-32 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-lg p-1 shadow-lg opacity-0 pointer-events-none group-focus-within:opacity-100 group-hover:opacity-100 group-focus-within:pointer-events-auto group-hover:pointer-events-auto transition-opacity z-10">
-                                        <button onClick={() => exportAsPDF(setup)} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">PDF</button>
-                                        <button onClick={() => exportAsTXT(setup)} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">TXT</button>
-                                        <button onClick={() => exportAsCSV(setup)} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">CSV</button>
-                                        <button onClick={() => exportAsJSON(setup)} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">JSON</button>
+                                <details className="relative group">
+                                    <summary className="list-none">
+                                        <Button as="div" size="sm" variant="secondary" className="cursor-pointer">{t('common.export')}...</Button>
+                                    </summary>
+                                    <div className="absolute bottom-full mb-2 w-32 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-lg p-1 shadow-lg opacity-0 pointer-events-none group-open:opacity-100 group-open:pointer-events-auto transition-opacity z-10">
+                                        <button onClick={() => handleExport(setup, 'pdf')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">PDF</button>
+                                        <button onClick={() => handleExport(setup, 'txt')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">TXT</button>
+                                        <button onClick={() => handleExport(setup, 'csv')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">CSV</button>
+                                        <button onClick={() => handleExport(setup, 'json')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">JSON</button>
                                     </div>
-                                </div>
+                                </details>
                                 <Button size="sm" variant="danger" onClick={() => handleDelete(setup)} aria-label={t('common.deleteSetup')}>
                                      <PhosphorIcons.TrashSimple className="w-4 h-4" />
                                 </Button>

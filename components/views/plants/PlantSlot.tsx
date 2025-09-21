@@ -4,6 +4,8 @@ import { Card } from '../../common/Card';
 import { PlantVisual } from './PlantVisual';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
+import { VitalBar } from './VitalBar';
+import { PLANT_STAGE_DETAILS } from '../../../constants';
 
 interface PlantCardProps {
   plant: Plant;
@@ -20,6 +22,7 @@ const Stat: React.FC<{ icon: React.ReactNode; label: string; value: string | num
 
 export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
     const { t } = useTranslations();
+    const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
     
     const { healthStatus, healthTitle } = useMemo(() => {
         const hasProblems = plant.problems.length > 0;
@@ -65,6 +68,33 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
                  <Stat icon={<PhosphorIcons.Ruler />} label={t('plantsView.detailedView.height')} value={`${plant.height.toFixed(1)} cm`} />
                  <Stat icon={<PhosphorIcons.Plant />} label={t('plantsView.detailedView.stage')} value={t(`plantStages.${plant.stage}`)} />
                  <Stat icon={<PhosphorIcons.Heart weight="fill"/>} label={t('plantsView.detailedView.stress')} value={`${plant.stressLevel.toFixed(0)}%`} />
+            </div>
+
+            <div className="mt-4 space-y-3 pt-3 border-t border-slate-700/50">
+                <VitalBar
+                    label={t('plantsView.vitals.moisture')}
+                    value={plant.vitals.substrateMoisture}
+                    min={0} max={100}
+                    idealMin={30} idealMax={80}
+                    unit="%"
+                    colorClass="bg-blue-500"
+                />
+                <VitalBar
+                    label={t('plantsView.vitals.ph')}
+                    value={plant.vitals.ph}
+                    min={4} max={8}
+                    idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max}
+                    unit=""
+                    colorClass="bg-green-500"
+                />
+                <VitalBar
+                    label={t('plantsView.vitals.ec')}
+                    value={plant.vitals.ec}
+                    min={0} max={3}
+                    idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max}
+                    unit=" mS/cm"
+                    colorClass="bg-orange-500"
+                />
             </div>
         </Card>
     );

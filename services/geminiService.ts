@@ -1,12 +1,14 @@
+
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import { Plant, Recommendation } from '../types';
+import { Plant, Recommendation, AIResponse } from '../types';
 
 const getAiClient = (): GoogleGenAI => {
     // As per guidelines, the API key must come from environment variables.
     // The app should not prompt the user for it.
     if (!process.env.API_KEY) {
         console.error("API_KEY environment variable not set.");
-        throw new Error("AI service is not configured.");
+        // FIX: Throw error with key that can be translated
+        throw new Error("ai.error.apiKey");
     }
     return new GoogleGenAI({ apiKey: process.env.API_KEY });
 };
@@ -18,7 +20,7 @@ type LoadingMessageContext = {
     data?: any;
 };
 
-export const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction): string[] => {
+const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction): string[] => {
     const { useCase, data } = context;
 
     const getMessageConfigs = (): { key: string; params?: Record<string, any> }[] => {
@@ -69,7 +71,7 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
         type: Type.OBJECT,
         properties: {
             tent: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-            light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, watts: { type: Type.NUMBER }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING }, watts: { type: Type.NUMBER } }, required: ['name', 'price', 'rationale'] },
             ventilation: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
             pots: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
             soil: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
@@ -78,137 +80,145 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
         },
         required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra']
     };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: responseSchema,
+        },
+    });
+
+    try {
+        const jsonStr = response.text.trim();
+        const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
+        const result = JSON.parse(cleanJsonStr);
+        return result as Recommendation;
+    } catch (e) {
+        console.error("Failed to parse AI response for equipment:", e, response.text);
+        throw new Error("ai.error.parsing");
+    }
+};
+
+const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIResponse> => {
+    const ai = getAiClient();
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING },
+            content: { type: Type.STRING },
+        },
+        required: ['title', 'content']
+    };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: query,
+        config: {
+            systemInstruction: t('ai.gemini.mentorSystemInstruction'),
+            responseMimeType: "application/json",
+            responseSchema: responseSchema
+        }
+    });
     
-    let responseText = '';
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: prompt,
-            config: { responseMimeType: 'application/json', responseSchema }
-        });
-        responseText = response.text.trim();
-        return JSON.parse(responseText) as Recommendation;
-    } catch (err) {
-        console.error("Gemini API Error:", err);
-        if (err instanceof SyntaxError) {
-            console.error("Gemini parsing error. Raw response:", responseText);
-            throw new Error('ai.error.parsing');
-        }
-        if (err instanceof Error) {
-            if (err.message.includes('API key not valid')) {
-                throw new Error('ai.error.apiKey');
-            }
-            if (err.message.includes('[GoogleGenerativeAI Error]')) {
-                 throw new Error('ai.error.api');
-            }
-        }
-        throw new Error('ai.error.network');
+        const jsonStr = response.text.trim();
+        const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
+        const result = JSON.parse(cleanJsonStr);
+        return result as AIResponse;
+    } catch (e) {
+        console.error("Failed to parse AI response for mentor:", e, response.text);
+        throw new Error("ai.error.parsing");
     }
 };
 
-const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string, t: TFunction): Promise<{ title: string, content: string }> => {
+const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string, t: TFunction): Promise<AIResponse> => {
     const ai = getAiClient();
-    const imagePart = { inlineData: { mimeType, data: base64Image } };
-    const textPart = { text: t('ai.gemini.diagnosePrompt', { context: plantContext }) };
-    const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
+    const imagePart = {
+        inlineData: {
+            data: base64Image,
+            mimeType: mimeType,
+        },
+    };
+    const textPart = {
+        text: t('ai.gemini.diagnosePrompt', { context: plantContext }),
+    };
 
-    let responseText = '';
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING },
+            content: { type: Type.STRING },
+        },
+        required: ['title', 'content']
+    };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: { parts: [imagePart, textPart] },
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: responseSchema
+        }
+    });
+
     try {
-        const response: GenerateContentResponse = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: { parts: [imagePart, textPart] },
-            config: { responseMimeType: "application/json", responseSchema }
-        });
-        responseText = response.text.trim();
-        return JSON.parse(responseText);
-    } catch (err) {
-        console.error("Gemini API Error:", err);
-        if (err instanceof SyntaxError) {
-            console.error("Gemini parsing error. Raw response:", responseText);
-            throw new Error('ai.error.parsing');
-        }
-        if (err instanceof Error) {
-            if (err.message.includes('API key not valid')) {
-                throw new Error('ai.error.apiKey');
-            }
-            if (err.message.includes('[GoogleGenerativeAI Error]')) {
-                 throw new Error('ai.error.api');
-            }
-        }
-        throw new Error('ai.error.network');
+        const jsonStr = response.text.trim();
+        const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
+        const result = JSON.parse(cleanJsonStr);
+        return result as AIResponse;
+    } catch (e) {
+        console.error("Failed to parse AI response for diagnostics:", e, response.text);
+        throw new Error("ai.error.parsing");
     }
 };
 
-const getAiMentorResponse = async (query: string, t: TFunction): Promise<{ title: string, content: string }> => {
+const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AIResponse> => {
     const ai = getAiClient();
-    const systemInstruction = t('ai.gemini.mentorSystemInstruction');
-    const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
-
-    let responseText = '';
-    try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: query,
-            config: { systemInstruction, responseMimeType: "application/json", responseSchema }
-        });
-        responseText = response.text.trim();
-        return JSON.parse(responseText);
-    } catch (err) {
-        console.error("Gemini API Error:", err);
-         if (err instanceof SyntaxError) {
-            console.error("Gemini parsing error. Raw response:", responseText);
-            throw new Error('ai.error.parsing');
-        }
-        if (err instanceof Error) {
-            if (err.message.includes('API key not valid')) {
-                throw new Error('ai.error.apiKey');
-            }
-            if (err.message.includes('[GoogleGenerativeAI Error]')) {
-                 throw new Error('ai.error.api');
-            }
-        }
-        throw new Error('ai.error.network');
-    }
-};
-
-const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<{ title: string, content: string }> => {
-    const ai = getAiClient();
-    const plantData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
-    const query = t('ai.gemini.advisorQuery', { data: plantData });
-    const responseSchema = { type: Type.OBJECT, properties: { title: { type: Type.STRING }, content: { type: Type.STRING } }, required: ['title', 'content'] };
+    const plantData = JSON.stringify({
+        age: plant.age,
+        stage: plant.stage,
+        vitals: plant.vitals,
+        environment: plant.environment,
+        problems: plant.problems,
+        journal: plant.journal.slice(-5) // last 5 entries
+    });
+    const prompt = t('ai.gemini.advisorQuery', { data: plantData });
     
-    let responseText = '';
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING },
+            content: { type: Type.STRING },
+        },
+        required: ['title', 'content']
+    };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: responseSchema
+        }
+    });
+
     try {
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: query,
-            config: { responseMimeType: "application/json", responseSchema }
-        });
-        responseText = response.text.trim();
-        return JSON.parse(responseText);
-    } catch (err) {
-        console.error("Gemini API Error:", err);
-        if (err instanceof SyntaxError) {
-            console.error("Gemini parsing error. Raw response:", responseText);
-            throw new Error('ai.error.parsing');
-        }
-        if (err instanceof Error) {
-            if (err.message.includes('API key not valid')) {
-                throw new Error('ai.error.apiKey');
-            }
-            if (err.message.includes('[GoogleGenerativeAI Error]')) {
-                 throw new Error('ai.error.api');
-            }
-        }
-        throw new Error('ai.error.network');
+        const jsonStr = response.text.trim();
+        const cleanJsonStr = jsonStr.replace(/^```json\s*|```\s*$/g, '');
+        const result = JSON.parse(cleanJsonStr);
+        return result as AIResponse;
+    } catch (e) {
+        console.error("Failed to parse AI response for advisor:", e, response.text);
+        throw new Error("ai.error.parsing");
     }
 };
-
 
 export const geminiService = {
-    getEquipmentRecommendation,
-    diagnosePlantProblem,
-    getAiMentorResponse,
-    getAiPlantAdvisorResponse,
     getDynamicLoadingMessages,
+    getEquipmentRecommendation,
+    getAiMentorResponse,
+    diagnosePlantProblem,
+    getAiPlantAdvisorResponse,
 };

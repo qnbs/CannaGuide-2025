@@ -36,8 +36,11 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
 
   const [advancedFilters, setAdvancedFilters] = useState({
       thcRange: [0, 35] as [number, number],
+      cbdRange: [0, 20] as [number, number],
       floweringRange: [6, 16] as [number, number],
       selectedDifficulties: new Set<Strain['agronomic']['difficulty']>(),
+      selectedYields: new Set<Strain['agronomic']['yield']>(),
+      selectedHeights: new Set<Strain['agronomic']['height']>(),
       selectedAromas: new Set<string>(),
       selectedTerpenes: new Set<string>(),
       typeFilter: 'All' as 'All' | 'Sativa' | 'Indica' | 'Hybrid',
@@ -57,7 +60,10 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
     return baseFilteredStrains.filter(strain => {
       if (advancedFilters.typeFilter !== 'All' && strain.type !== advancedFilters.typeFilter) return false;
       if (strain.thc < advancedFilters.thcRange[0] || strain.thc > advancedFilters.thcRange[1]) return false;
+      if (strain.cbd < advancedFilters.cbdRange[0] || strain.cbd > advancedFilters.cbdRange[1]) return false;
       if (advancedFilters.selectedDifficulties.size > 0 && !advancedFilters.selectedDifficulties.has(strain.agronomic.difficulty)) return false;
+      if (advancedFilters.selectedYields.size > 0 && !advancedFilters.selectedYields.has(strain.agronomic.yield)) return false;
+      if (advancedFilters.selectedHeights.size > 0 && !advancedFilters.selectedHeights.has(strain.agronomic.height)) return false;
       if (strain.floweringTime < advancedFilters.floweringRange[0] || strain.floweringTime > advancedFilters.floweringRange[1]) return false;
       if (advancedFilters.selectedTerpenes.size > 0 && !(strain.dominantTerpenes && [...advancedFilters.selectedTerpenes].every(t => strain.dominantTerpenes!.includes(t)))) return false;
       if (advancedFilters.selectedAromas.size > 0 && !(strain.aromas && [...advancedFilters.selectedAromas].every(sa => strain.aromas!.map(a => a.toLowerCase()).includes(sa.toLowerCase())))) return false;
@@ -90,7 +96,10 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
     return baseFilteredStrains.filter(strain => {
       if (tempFilterState.typeFilter !== 'All' && strain.type !== tempFilterState.typeFilter) return false;
       if (strain.thc < tempFilterState.thcRange[0] || strain.thc > tempFilterState.thcRange[1]) return false;
+      if (strain.cbd < tempFilterState.cbdRange[0] || strain.cbd > tempFilterState.cbdRange[1]) return false;
       if (tempFilterState.selectedDifficulties.size > 0 && !tempFilterState.selectedDifficulties.has(strain.agronomic.difficulty)) return false;
+      if (tempFilterState.selectedYields.size > 0 && !tempFilterState.selectedYields.has(strain.agronomic.yield)) return false;
+      if (tempFilterState.selectedHeights.size > 0 && !tempFilterState.selectedHeights.has(strain.agronomic.height)) return false;
       if (strain.floweringTime < tempFilterState.floweringRange[0] || strain.floweringTime > tempFilterState.floweringRange[1]) return false;
       if (tempFilterState.selectedTerpenes.size > 0 && !(strain.dominantTerpenes && [...tempFilterState.selectedTerpenes].every(t => strain.dominantTerpenes!.includes(t)))) return false;
       if (tempFilterState.selectedAromas.size > 0 && !(strain.aromas && [...tempFilterState.selectedAromas].every(sa => strain.aromas!.map(a => a.toLowerCase()).includes(sa.toLowerCase())))) return false;
@@ -129,6 +138,8 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
         showFavorites,
         sort,
     },
+    advancedFilters,
+    setAdvancedFilters,
     isAdvancedFilterModalOpen,
     setIsAdvancedFilterModalOpen,
     tempFilterState,

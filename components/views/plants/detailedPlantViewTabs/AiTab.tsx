@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Plant, AIResponse, ArchivedAdvisorResponse } from '../../../../types';
 import { Card } from '../../../common/Card';
@@ -113,9 +114,11 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
                                  <div className="flex justify-end items-center gap-2 mt-2">
+                                    {/* FIX: Add aria-label for accessibility. */}
                                     <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                         <PhosphorIcons.PencilSimple className="w-4 h-4"/>
                                     </Button>
+                                    {/* FIX: Add aria-label for accessibility. */}
                                     <Button size="sm" variant="danger" onClick={() => deleteResponse(plant.id, res.id)} aria-label={t('common.deleteResponse')}>
                                         <PhosphorIcons.TrashSimple className="w-4 h-4"/>
                                     </Button>

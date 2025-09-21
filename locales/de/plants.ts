@@ -2,7 +2,7 @@ export const plantsView = {
   title: 'Meine Pflanzen',
   tabs: {
     dashboard: 'Dashboard',
-    archive: 'Berater-Archiv',
+    archive: 'KI-Berater Archiv',
   },
   emptySlot: {
     title: 'Leerer Slot',
@@ -12,6 +12,22 @@ export const plantsView = {
   plantCard: {
     day: 'Tag',
     stage: 'Phase',
+  },
+  actionCenter: {
+    title: 'Aktionszentrum',
+    tasks: 'Aufgaben & Warnungen',
+    diagnostics: 'KI-Diagnose',
+    tip: 'Tipp des Tages',
+  },
+  gardenVitals: {
+    title: 'Garten-Vitalwerte',
+    avgTemp: 'Ø Temp.',
+    avgHumidity: 'Ø Feuchte',
+  },
+  vitals: {
+    moisture: 'Feuchtigkeit',
+    ph: 'pH-Wert',
+    ec: 'EC-Wert',
   },
   summary: {
     activeGrows: 'Aktive Grows',
@@ -130,13 +146,13 @@ export const plantsView = {
   },
    aiAdvisor: {
     description: 'Erhalte eine datengestützte Analyse und Handlungsempfehlungen für deine Pflanze von der KI.',
-    archiveTitle: 'Berater-Archiv',
-    archiveEmpty: 'Keine gespeicherten Analysen für diese Pflanze.',
+    archiveTitle: 'KI-Berater Archiv',
+    archiveEmpty: 'Für diese Pflanze wurden noch keine KI-Analysen archiviert. Fordere eine Analyse an und speichere sie, um hier eine Historie aufzubauen.',
     archiveEmptyGlobal: {
-        title: 'Das Berater-Archiv ist leer',
-        subtitle: 'Gespeicherte Empfehlungen des KI-Beraters für alle Pflanzen werden hier angezeigt.'
+        title: 'Globales Berater-Archiv ist leer',
+        subtitle: 'Hier werden alle gespeicherten Empfehlungen des KI-Beraters von all deinen Pflanzen gesammelt. Fordere Analysen für deine Pflanzen an, um deine persönliche Wissensdatenbank aufzubauen.'
     },
-    unknownPlant: 'Unbekannte Pflanze',
+    unknownPlant: 'Unbekannte/Gelöschte Pflanze',
   },
   quickActions: {
       title: "Schnellaktionen",

@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '../../common/Button';
 import { Card } from '../../common/Card';
@@ -116,7 +117,8 @@ export const AiDiagnostics: React.FC<AiDiagnosticsProps> = ({ plant }) => {
             {response && (
                  <Card className="mt-4 bg-slate-800 animate-fade-in">
                     <h4 className="font-bold text-primary-300">{response.title}</h4>
-                    <p className="text-sm text-slate-200">{response.content}</p>
+                    {/* FIX: Render AI content with dangerouslySetInnerHTML to support markdown formatting from Gemini. */}
+                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
                  </Card>
             )}
             <p className="text-xs text-slate-500 mt-2 text-center">{t('ai.disclaimer')}</p>

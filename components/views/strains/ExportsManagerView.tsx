@@ -37,7 +37,6 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                 exportService.exportAsPDF(strainsToExport, fileNameWithoutExt, t);
                 break;
             case 'txt':
-                // FIX: Added the missing `t` function argument to the `exportAsTXT` call.
                 exportService.exportAsTXT(strainsToExport, fileNameWithoutExt, t);
                 break;
         }

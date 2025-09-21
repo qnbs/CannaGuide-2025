@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useId } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
@@ -14,6 +15,7 @@ interface ModalProps {
     onConfirm: (details: JournalEntry['details'], notes: string) => void;
 }
 
+// FIX: Added helper function to check for default translation keys.
 const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModals.defaultNotes.');
 
 const ModalBase: React.FC<{title: string, onClose: () => void, children: React.ReactNode}> = ({ title, onClose, children }) => {

@@ -15,8 +15,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Medium',
-            yieldDetails: { indoor: '475-525 g/m²', outdoor: '400-450 g/Pflanze' },
-            heightDetails: { indoor: '60-100 cm', outdoor: '80-120 cm' },
         },
     },
     {
@@ -33,8 +31,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Short',
-            yieldDetails: { indoor: '~400 g/m²', outdoor: '~450 g/Pflanze' },
-            heightDetails: { indoor: 'Kurz-Mittel', outdoor: 'Kurz bis Mittel (bis 1.5 m)' },
         },
     },
     {
@@ -51,8 +47,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Tall',
-            yieldDetails: { indoor: '~600 g/m²', outdoor: '~700 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel-Hoch', outdoor: 'Hoch (bis 2.5 m)' },
         },
     },
     {
@@ -69,8 +63,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '~450 g/m²', outdoor: '~550 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     },
     {
@@ -87,8 +79,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '~400 g/m²', outdoor: '~500 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     },
     {
@@ -105,8 +95,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'High',
             height: 'Medium',
-            yieldDetails: { indoor: '~500 g/m²', outdoor: '~600 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.6 m)' },
         },
     },
     {
@@ -123,8 +111,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '~450 g/m²', outdoor: '~550 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.5 m)' },
         },
     },
     {
@@ -141,8 +127,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Medium',
-            yieldDetails: { indoor: '~500 g/m²', outdoor: '~600 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     },
     {
@@ -159,8 +143,6 @@ export const strains: Strain[] = [
             difficulty: 'Hard',
             yield: 'Low',
             height: 'Medium',
-            yieldDetails: { indoor: '~350 g/m²', outdoor: '~450 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.6 m)' },
         },
     },
     {
@@ -177,8 +159,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '~400 g/m²', outdoor: '~500 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     },
     {
@@ -195,8 +175,6 @@ export const strains: Strain[] = [
             difficulty: 'Hard',
             yield: 'Low',
             height: 'Medium',
-            yieldDetails: { indoor: '~300 g/m²', outdoor: '~400 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.5 m)' },
         },
     },
     {
@@ -213,8 +191,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '~450 g/m²', outdoor: '~550 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     },
     {
@@ -231,8 +207,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Medium',
-            yieldDetails: { indoor: '~600 g/m²', outdoor: '~700 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 2 m)' },
         },
     },
     {
@@ -249,8 +223,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '~450 g/m²', outdoor: '~550 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8 m)' },
         },
     },
     {
@@ -267,8 +239,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'High',
             height: 'Medium',
-            yieldDetails: { indoor: 'bis 750 g/m²', outdoor: 'bis 800 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 2 m)' },
         },
     },
     {
@@ -285,8 +255,6 @@ export const strains: Strain[] = [
             difficulty: 'Hard',
             yield: 'Low',
             height: 'Tall',
-            yieldDetails: { indoor: '~200 g/m²', outdoor: '~250 g/Pflanze' },
-            heightDetails: { indoor: 'Hoch', outdoor: 'Hoch (bis 2.5 m)' },
         },
     },
     {
@@ -302,8 +270,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Medium',
-            yieldDetails: { indoor: '500-600 g/m²', outdoor: '~650 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel bis Hoch (bis 2m)' },
         },
     },
     {
@@ -320,8 +286,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'Medium',
             height: 'Medium',
-            yieldDetails: { indoor: '400-500 g/m²', outdoor: '~500 g/Pflanze' },
-            heightDetails: { indoor: 'Mittel', outdoor: 'Mittel (bis 1.8m)' },
         },
     },
     {
@@ -338,8 +302,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'High',
             height: 'Tall',
-            yieldDetails: { indoor: 'bis 500 g/m²', outdoor: 'bis 600 g/Pflanze' },
-            heightDetails: { indoor: 'Hoch', outdoor: 'Hoch (bis 3 m)' },
         },
     }
 ];

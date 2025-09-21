@@ -3,7 +3,7 @@ export const knowledgeView = {
   subtitle: 'Dein Wegweiser von der Vorbereitung bis zur Ernte.',
   tabs: {
     guide: 'Anleitung',
-    database: 'Wissens-Datenbank'
+    archive: 'Wissens-Datenbank'
   },
   progress: 'Dein Fortschritt',
   stepsCompleted: '{completed} von {total} Schritten erledigt',

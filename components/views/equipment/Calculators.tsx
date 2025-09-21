@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useId, useMemo } from 'react';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
@@ -173,14 +174,14 @@ export const Calculators: React.FC = () => {
         return { range: `${Math.round(final * 0.8)}-${Math.round(final * 1.2)}`, gpw: (final / watts).toFixed(2) };
     }, [yieldEst]);
     
-    // FIX: Corrected translation keys from 'calculators' to 'calculator' to match locale file structure.
+    // FIX: Corrected translation keys from 'calculator' to 'calculators' to match locale file structure.
     const calculators: { id: CalculatorType; icon: React.ReactNode; title: string; description: string }[] = [
-        { id: 'ventilation', icon: <PhosphorIcons.Fan />, title: t('equipmentView.calculator.ventilation.title'), description: t('equipmentView.calculator.ventilation.description') },
-        { id: 'light', icon: <PhosphorIcons.Sun />, title: t('equipmentView.calculator.light.title'), description: t('equipmentView.calculator.light.description') },
-        { id: 'cost', icon: <PhosphorIcons.Calculator />, title: t('equipmentView.calculator.cost.title'), description: t('equipmentView.calculator.cost.description') },
-        { id: 'nutrients', icon: <PhosphorIcons.Flask />, title: t('equipmentView.calculator.nutrients.title'), description: t('equipmentView.calculator.nutrients.description') },
-        { id: 'converter', icon: <PhosphorIcons.ArrowClockwise />, title: t('equipmentView.calculator.converter.title'), description: t('equipmentView.calculator.converter.description') },
-        { id: 'yield', icon: <PhosphorIcons.Plant />, title: t('equipmentView.calculator.yield.title'), description: t('equipmentView.calculator.yield.description') }
+        { id: 'ventilation', icon: <PhosphorIcons.Fan />, title: t('equipmentView.calculators.ventilation.title'), description: t('equipmentView.calculators.ventilation.description') },
+        { id: 'light', icon: <PhosphorIcons.Sun />, title: t('equipmentView.calculators.light.title'), description: t('equipmentView.calculators.light.description') },
+        { id: 'cost', icon: <PhosphorIcons.Calculator />, title: t('equipmentView.calculators.cost.title'), description: t('equipmentView.calculators.cost.description') },
+        { id: 'nutrients', icon: <PhosphorIcons.Flask />, title: t('equipmentView.calculators.nutrients.title'), description: t('equipmentView.calculators.nutrients.description') },
+        { id: 'converter', icon: <PhosphorIcons.ArrowClockwise />, title: t('equipmentView.calculators.converter.title'), description: t('equipmentView.calculators.converter.description') },
+        { id: 'yield', icon: <PhosphorIcons.Plant />, title: t('equipmentView.calculators.yield.title'), description: t('equipmentView.calculators.yield.description') }
     ];
 
     const activeCalcData = calculators.find(c => c.id === activeCalculator);
@@ -208,28 +209,28 @@ export const Calculators: React.FC = () => {
                     {activeCalculator === 'ventilation' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                              <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <CalculatorInput label={t('equipmentView.calculator.ventilation.width')} value={ventilation.w} onChange={val => setVentilation(v => ({...v, w: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculator.ventilation.depth')} value={ventilation.d} onChange={val => setVentilation(v => ({...v, d: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculator.ventilation.height')} value={ventilation.h} onChange={val => setVentilation(v => ({...v, h: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculator.ventilation.lightWattage')} value={ventilation.watts} onChange={val => setVentilation(v => ({...v, watts: val}))} unit="W" tooltip={t('equipmentView.calculator.ventilation.lightWattageTooltip')} />
-                                <CalculatorSelect label={t('equipmentView.calculator.ventilation.carbonFilter')} value={ventilation.filter} onChange={val => setVentilation(v => ({...v, filter: val}))} options={[{value: 'yes', label: t('equipmentView.calculator.yes')}, {value: 'no', label: t('equipmentView.calculator.no')}]} tooltip={t('equipmentView.calculator.ventilation.carbonFilterTooltip')} />
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.width')} value={ventilation.w} onChange={val => setVentilation(v => ({...v, w: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.depth')} value={ventilation.d} onChange={val => setVentilation(v => ({...v, d: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.height')} value={ventilation.h} onChange={val => setVentilation(v => ({...v, h: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.ventilation.lightWattage')} value={ventilation.watts} onChange={val => setVentilation(v => ({...v, watts: val}))} unit="W" tooltip={t('equipmentView.calculators.ventilation.lightWattageTooltip')} />
+                                <CalculatorSelect label={t('equipmentView.calculators.ventilation.carbonFilter')} value={ventilation.filter} onChange={val => setVentilation(v => ({...v, filter: val}))} options={[{value: 'yes', label: t('equipmentView.calculators.yes')}, {value: 'no', label: t('equipmentView.calculators.no')}]} tooltip={t('equipmentView.calculators.ventilation.carbonFilterTooltip')} />
                             </div>
-                            <ResultCard><ResultDisplay label={t('equipmentView.calculator.ventilation.result')} value={ventilationResult || '--'} unit="m³/h"/></ResultCard>
+                            <ResultCard><ResultDisplay label={t('equipmentView.calculators.ventilation.result')} value={ventilationResult || '--'} unit="m³/h"/></ResultCard>
                         </div>
                     )}
 
                     {activeCalculator === 'light' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <CalculatorInput label={t('equipmentView.calculator.light.width')} value={light.w} onChange={val => setLight(l => ({...l, w: val}))} unit="cm"/>
-                                <CalculatorInput label={t('equipmentView.calculator.light.depth')} value={light.d} onChange={val => setLight(l => ({...l, d: val}))} unit="cm"/>
-                                <CalculatorSelect label={t('equipmentView.calculator.light.stage')} value={light.stage} onChange={val => setLight(l => ({...l, stage: val}))} options={[{value: 'seedling', label: t('plantStages.SEEDLING')}, {value: 'vegetative', label: t('plantStages.VEGETATIVE')}, {value: 'flowering', label: t('plantStages.FLOWERING')}]} />
+                                <CalculatorInput label={t('equipmentView.calculators.light.width')} value={light.w} onChange={val => setLight(l => ({...l, w: val}))} unit="cm"/>
+                                <CalculatorInput label={t('equipmentView.calculators.light.depth')} value={light.d} onChange={val => setLight(l => ({...l, d: val}))} unit="cm"/>
+                                <CalculatorSelect label={t('equipmentView.calculators.light.stage')} value={light.stage} onChange={val => setLight(l => ({...l, stage: val}))} options={[{value: 'seedling', label: t('plantStages.SEEDLING')}, {value: 'vegetative', label: t('plantStages.VEGETATIVE')}, {value: 'flowering', label: t('plantStages.FLOWERING')}]} />
                             </div>
                             <ResultCard>
                                 <div className="grid grid-cols-3 gap-2 divide-x divide-primary-500/30">
-                                    <ResultDisplay label={t('equipmentView.calculator.light.result')} value={lightResult.wattage} unit="W"/>
-                                    <ResultDisplay label="PPFD" value={lightResult.ppfd} unit="µmol/m²/s" tooltip={t('equipmentView.calculator.light.ppfdTooltip')} />
-                                    <ResultDisplay label="DLI" value={lightResult.dli} unit="mol/m²/day" tooltip={t('equipmentView.calculator.light.dliTooltip')} />
+                                    <ResultDisplay label={t('equipmentView.calculators.light.result')} value={lightResult.wattage} unit="W"/>
+                                    <ResultDisplay label="PPFD" value={lightResult.ppfd} unit="µmol/m²/s" tooltip={t('equipmentView.calculators.light.ppfdTooltip')} />
+                                    <ResultDisplay label="DLI" value={lightResult.dli} unit="mol/m²/day" tooltip={t('equipmentView.calculators.light.dliTooltip')} />
                                 </div>
                             </ResultCard>
                         </div>
@@ -238,19 +239,19 @@ export const Calculators: React.FC = () => {
                     {activeCalculator === 'cost' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-3 gap-4">
-                                <CalculatorInput label={t('equipmentView.calculator.cost.lightPower')} value={cost.lightW} onChange={val => setCost(c=>({...c, lightW: val}))} unit="W"/>
-                                <CalculatorInput label={t('equipmentView.calculator.cost.lightHours')} value={cost.lightH} onChange={val => setCost(c=>({...c, lightH: val}))} unit="h/day"/>
-                                <CalculatorInput label={t('equipmentView.calculator.cost.fanPower')} value={cost.fanW} onChange={val => setCost(c=>({...c, fanW: val}))} unit="W"/>
-                                <CalculatorInput label={t('equipmentView.calculator.cost.fanHours')} value={cost.fanH} onChange={val => setCost(c=>({...c, fanH: val}))} unit="h/day"/>
-                                <CalculatorInput label={t('equipmentView.calculator.cost.otherPower')} value={cost.otherW} onChange={val => setCost(c=>({...c, otherW: val}))} unit="W"/>
-                                <CalculatorInput label={t('equipmentView.calculator.cost.price')} value={cost.cost} onChange={val => setCost(c=>({...c, cost: val}))} unit="€/kWh" step="0.01" />
+                                <CalculatorInput label={t('equipmentView.calculators.cost.lightPower')} value={cost.lightW} onChange={val => setCost(c=>({...c, lightW: val}))} unit="W"/>
+                                <CalculatorInput label={t('equipmentView.calculators.cost.lightHours')} value={cost.lightH} onChange={val => setCost(c=>({...c, lightH: val}))} unit="h/day"/>
+                                <CalculatorInput label={t('equipmentView.calculators.cost.fanPower')} value={cost.fanW} onChange={val => setCost(c=>({...c, fanW: val}))} unit="W"/>
+                                <CalculatorInput label={t('equipmentView.calculators.cost.fanHours')} value={cost.fanH} onChange={val => setCost(c=>({...c, fanH: val}))} unit="h/day"/>
+                                <CalculatorInput label={t('equipmentView.calculators.cost.otherPower')} value={cost.otherW} onChange={val => setCost(c=>({...c, otherW: val}))} unit="W"/>
+                                <CalculatorInput label={t('equipmentView.calculators.cost.price')} value={cost.cost} onChange={val => setCost(c=>({...c, cost: val}))} unit="€/kWh" step="0.01" />
                             </div>
                              <ResultCard>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 divide-x divide-primary-500/30">
-                                    <ResultDisplay label={t('equipmentView.calculator.cost.daily')} value={costResult.daily} unit="€" />
-                                    <ResultDisplay label={t('equipmentView.calculator.cost.weekly')} value={costResult.weekly} unit="€" />
-                                    <ResultDisplay label={t('equipmentView.calculator.cost.monthly')} value={costResult.monthly} unit="€" />
-                                    <ResultDisplay label={t('equipmentView.calculator.cost.cycle')} value={costResult.cycle} unit="€" sub={t('equipmentView.calculator.cost.cycleSub')} />
+                                    <ResultDisplay label={t('equipmentView.calculators.cost.daily')} value={costResult.daily} unit="€" />
+                                    <ResultDisplay label={t('equipmentView.calculators.cost.weekly')} value={costResult.weekly} unit="€" />
+                                    <ResultDisplay label={t('equipmentView.calculators.cost.monthly')} value={costResult.monthly} unit="€" />
+                                    <ResultDisplay label={t('equipmentView.calculators.cost.cycle')} value={costResult.cycle} unit="€" sub={t('equipmentView.calculators.cost.cycleSub')} />
                                 </div>
                              </ResultCard>
                         </div>
@@ -259,11 +260,11 @@ export const Calculators: React.FC = () => {
                     {activeCalculator === 'nutrients' && (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div className="space-y-4">
-                               <CalculatorInput label={t('equipmentView.calculator.nutrients.reservoir')} value={nutrients.size} onChange={val => setNutrients(n => ({...n, size: val}))} unit="L"/>
+                               <CalculatorInput label={t('equipmentView.calculators.nutrients.reservoir')} value={nutrients.size} onChange={val => setNutrients(n => ({...n, size: val}))} unit="L"/>
                                {nutrients.parts.map((part, index) => (
                                    <CalculatorInput 
                                        key={index}
-                                       label={`${t('equipmentView.calculator.nutrients.component')} ${index + 1}`} 
+                                       label={`${t('equipmentView.calculators.nutrients.component')} ${index + 1}`} 
                                        value={part.dose}
                                        onChange={val => {
                                            const newParts = [...nutrients.parts];
@@ -277,7 +278,7 @@ export const Calculators: React.FC = () => {
                             <ResultCard>
                                 <div className="space-y-2">
                                     {nutrientResults.map((res, index) => (
-                                        <ResultDisplay key={index} label={`${t('equipmentView.calculator.nutrients.totalFor')} ${index + 1}`} value={res} unit="ml"/>
+                                        <ResultDisplay key={index} label={`${t('equipmentView.calculators.nutrients.totalFor')} ${index + 1}`} value={res} unit="ml"/>
                                     ))}
                                 </div>
                             </ResultCard>
@@ -292,7 +293,7 @@ export const Calculators: React.FC = () => {
                                 <CalculatorInput label="PPM (700 scale)" value={converter.ppm700} onChange={val => setConverter({ec: (parseFloat(val)/700).toFixed(2), ppm500: ((parseFloat(val)/700)*500).toFixed(0), ppm700: val})} unit="ppm" />
                             </div>
                             <ResultCard>
-                                <p className="text-sm text-primary-200">{t('equipmentView.calculator.converter.resultInfo')}</p>
+                                <p className="text-sm text-primary-200">{t('equipmentView.calculators.converter.resultInfo')}</p>
                             </ResultCard>
                         </div>
                     )}
@@ -300,15 +301,15 @@ export const Calculators: React.FC = () => {
                     {activeCalculator === 'yield' && (
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end">
                             <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-2 gap-4">
-                                <CalculatorInput label={t('equipmentView.calculator.yield.wattage')} value={yieldEst.watts} onChange={val => setYieldEst(y => ({...y, watts: val}))} unit="W"/>
-                                <CalculatorSelect label={t('equipmentView.calculator.yield.level')} value={yieldEst.skill} onChange={val => setYieldEst(y => ({...y, skill: val}))} options={[{value: 'beginner', label: t('equipmentView.calculator.yield.levels.beginner')}, {value: 'advanced', label: t('equipmentView.calculator.yield.levels.advanced')}, {value: 'expert', label: t('equipmentView.calculator.yield.levels.expert')}]} />
-                                <CalculatorSelect label={t('equipmentView.calculator.yield.training')} value={yieldEst.training} onChange={val => setYieldEst(y => ({...y, training: val}))} options={[{value: 'none', label: t('equipmentView.calculator.yield.trainings.none')}, {value: 'lst', label: t('equipmentView.calculator.yield.trainings.lst')}, {value: 'scrog', label: t('equipmentView.calculator.yield.trainings.scrog')}]} />
+                                <CalculatorInput label={t('equipmentView.calculators.yield.wattage')} value={yieldEst.watts} onChange={val => setYieldEst(y => ({...y, watts: val}))} unit="W"/>
+                                <CalculatorSelect label={t('equipmentView.calculators.yield.level')} value={yieldEst.skill} onChange={val => setYieldEst(y => ({...y, skill: val}))} options={[{value: 'beginner', label: t('equipmentView.calculators.yield.levels.beginner')}, {value: 'advanced', label: t('equipmentView.calculators.yield.levels.advanced')}, {value: 'expert', label: t('equipmentView.calculators.yield.levels.expert')}]} />
+                                <CalculatorSelect label={t('equipmentView.calculators.yield.training')} value={yieldEst.training} onChange={val => setYieldEst(y => ({...y, training: val}))} options={[{value: 'none', label: t('equipmentView.calculators.yield.trainings.none')}, {value: 'lst', label: t('equipmentView.calculators.yield.trainings.lst')}, {value: 'scrog', label: t('equipmentView.calculators.yield.trainings.scrog')}]} />
                                 <CalculatorSelect label={t('common.genetics')} value={yieldEst.genetics} onChange={val => setYieldEst(y => ({...y, genetics: val}))} options={[{value: 'low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'high', label: t('strainsView.addStrainModal.yields.high')}]} />
                             </div>
                             <ResultCard>
                                 <div className="grid grid-cols-2 gap-2 divide-x divide-primary-500/30">
-                                    <ResultDisplay label={t('equipmentView.calculator.yield.result')} value={yieldResult.range} unit="g" />
-                                    <ResultDisplay label={t('equipmentView.calculator.yield.efficiency')} value={yieldResult.gpw} unit="g/W" />
+                                    <ResultDisplay label={t('equipmentView.calculators.yield.result')} value={yieldResult.range} unit="g" />
+                                    <ResultDisplay label={t('equipmentView.calculators.yield.efficiency')} value={yieldResult.gpw} unit="g/W" />
                                 </div>
                             </ResultCard>
                         </div>

@@ -1,1 +1,0 @@
-full contents of StrainsView.tsx

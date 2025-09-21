@@ -60,7 +60,8 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
-            className={`${LIST_GRID_CLASS} glass-pane rounded-lg transition-all duration-200 cursor-pointer hover:!border-primary-500/80 hover:bg-slate-700/50`}
+            className={`${LIST_GRID_CLASS} glass-pane rounded-lg transition-all duration-200 cursor-pointer hover:!border-primary-500/80 hover:bg-slate-700/50 animate-fade-in-stagger`}
+            style={{ animationDelay: `${index * 30}ms` }}
         >
             <div className="flex items-center justify-center px-3 py-3">
                 <input

@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback, useEffect, useId, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { Strain, PlantStage, View, GrowSetup, ExportSource, ExportFormat, Plant, SortDirection } from '../../types';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { useNotifications } from '../../context/NotificationContext';
@@ -30,6 +29,36 @@ type ViewMode = 'list' | 'grid';
 
 const USER_STRAINS_KEY = 'user_added_strains';
 
+// A small, reusable component to display a consistent "not found" message.
+const NoStrainsFoundMessage: React.FC = () => {
+    const { t } = useTranslations();
+    return (
+        <div className="col-span-full text-center py-16 text-slate-500">
+            <h3 className="font-semibold text-lg">{t('strainsView.noStrainsFound.title')}</h3>
+            <p>{t('strainsView.noStrainsFound.subtitle')}</p>
+        </div>
+    );
+};
+
+const SkeletonList: React.FC = () => (
+    <div className="space-y-2 mt-2">
+        {Array.from({ length: 10 }).map((_, i) => (
+             <div key={i} className={`${LIST_GRID_CLASS} glass-pane rounded-lg h-14`}>
+                 <div className="flex items-center justify-center px-3 py-3"><SkeletonLoader className="h-4 w-4 rounded" /></div>
+                 <div className="flex items-center justify-center px-3 py-3"><SkeletonLoader className="h-5 w-5 rounded-full" /></div>
+                 <div className="px-3 py-3 space-y-1.5"><SkeletonLoader className="h-4 w-3/4 rounded" /><SkeletonLoader className="h-3 w-1/2 rounded sm:hidden" /></div>
+                 <div className="hidden sm:flex items-center px-3 py-3"><SkeletonLoader className="h-6 w-6 rounded-full" /></div>
+                 <div className="hidden sm:flex items-center px-3 py-3"><SkeletonLoader className="h-4 w-10 rounded" /></div>
+                 <div className="hidden sm:flex items-center px-3 py-3"><SkeletonLoader className="h-4 w-10 rounded" /></div>
+                 <div className="hidden sm:flex items-center px-3 py-3"><SkeletonLoader className="h-4 w-20 rounded" /></div>
+                 <div className="hidden md:flex items-center px-3 py-3"><SkeletonLoader className="h-4 w-24 rounded" /></div>
+                 <div className="flex items-center px-3 py-3"><SkeletonLoader className="h-5 w-12 rounded" /></div>
+             </div>
+        ))}
+    </div>
+);
+
+
 interface StrainsViewProps {
   setActiveView: (view: View) => void;
 }
@@ -44,20 +73,23 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
   const searchInputId = useId();
   const selectAllId = useId();
   
-  const [baseStrains, setBaseStrains] = useState<Strain[]>([]);
+  const [allStrains, setAllStrains] = useState<Strain[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [userStrains, setUserStrains] = useState<Strain[]>(() => 
     storageService.getItem(USER_STRAINS_KEY, [])
   );
-
+  
+  // Initialize the strain service and fetch all translated data on mount.
   useEffect(() => {
-    const fetchStrains = async () => {
+    const initializeAndFetch = async () => {
       try {
         setIsLoading(true);
-        const fetchedStrains = await strainService.getAllStrains();
-        setBaseStrains(fetchedStrains);
+        // init() centralizes translation and indexing for performance.
+        await strainService.init(t);
+        const strains = await strainService.getAllStrains();
+        setAllStrains(strains);
         setError(null);
       } catch (err) {
         setError(t('strainsView.noStrainsFound.fetchError'));
@@ -66,30 +98,17 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
         setIsLoading(false);
       }
     };
-    fetchStrains();
+    initializeAndFetch();
   }, [t]);
 
-  const translatedBaseStrains = useMemo(() => {
-    const getTranslatedArray = (key: string): string[] | undefined => {
-        const result = t(key);
-        // Ensure we return an array, or undefined if it's not an array (e.g., a missing key string)
-        return Array.isArray(result) ? result : undefined;
-    };
-
-    return baseStrains.map(strain => ({
-        ...strain,
-        description: t(`strainsData.${strain.id}.description`),
-        typeDetails: t(`strainsData.${strain.id}.typeDetails`),
-        genetics: t(`strainsData.${strain.id}.genetics`),
-        aromas: getTranslatedArray(`strainsData.${strain.id}.aromas`),
-        dominantTerpenes: getTranslatedArray(`strainsData.${strain.id}.dominantTerpenes`),
-    }));
-  }, [baseStrains, t]);
-
-  const combinedStrains = React.useMemo(() => 
-    [...translatedBaseStrains, ...userStrains].sort((a, b) => a.name.localeCompare(b.name)),
-    [translatedBaseStrains, userStrains]
-  );
+  // The final, combined list of strains for display and filtering.
+  const combinedStrains = useMemo(() => {
+     // Create a Set of user strain IDs for efficient lookup
+    const userStrainIds = new Set(userStrains.map(s => s.id));
+    // Filter out base strains that have been overridden by user-added strains with the same ID
+    const uniqueBaseStrains = allStrains.filter(s => !userStrainIds.has(s.id));
+    return [...uniqueBaseStrains, ...userStrains];
+  }, [allStrains, userStrains]);
   
   const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
   const [viewMode, setViewMode] = useState<ViewMode>(settings.strainsViewSettings.defaultViewMode);
@@ -361,7 +380,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
           
           {/* List/Grid */}
           {isLoading ? (
-            <SkeletonLoader count={10} className="h-12 rounded-lg bg-slate-800" />
+            <SkeletonList />
           ) : error ? (
             <div className="text-center py-10 text-slate-400">{error}</div>
           ) : (
@@ -400,17 +419,14 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                                 index={index}
                             />
                         )) : (
-                          <div className="text-center py-16 text-slate-500">
-                            <h3 className="font-semibold text-lg">{t('strainsView.noStrainsFound.title')}</h3>
-                            <p>{t('strainsView.noStrainsFound.subtitle')}</p>
-                          </div>
+                          <NoStrainsFoundMessage />
                         )}
                     </div>
                 </div>
               )}
               {viewMode === 'grid' && (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                    {sortedAndFilteredStrains.length > 0 ? sortedAndFilteredStrains.map(strain => (
+                    {sortedAndFilteredStrains.length > 0 ? sortedAndFilteredStrains.map((strain, index) => (
                         <StrainGridItem
                             key={strain.id}
                             strain={strain}
@@ -420,12 +436,10 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                             isUserStrain={userStrains.some(s => s.id === strain.id)}
                             onEdit={(s) => { setStrainToEdit(s); setIsAddStrainModalOpen(true); }}
                             onDelete={handleDeleteStrain}
+                            index={index}
                         />
                     )) : (
-                      <div className="col-span-full text-center py-16 text-slate-500">
-                        <h3 className="font-semibold text-lg">{t('strainsView.noStrainsFound.title')}</h3>
-                        <p>{t('strainsView.noStrainsFound.subtitle')}</p>
-                      </div>
+                      <NoStrainsFoundMessage />
                     )}
                 </div>
               )}
@@ -434,7 +448,6 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
           
           <div className="sticky bottom-0 bg-slate-900/80 backdrop-blur-sm py-2 px-4 rounded-lg flex justify-between items-center text-sm">
             <label className="flex items-center gap-2 cursor-pointer">
-              {/* FIX: `showFavorites` was not defined. It should be `filterState.showFavorites`. */}
               <input type="checkbox" checked={filterState.showFavorites} onChange={(e) => filterControls.setShowFavorites(e.target.checked)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/>
               {t('strainsView.footer.showFavorites', { count: favoriteIds.size })}
             </label>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { View } from '../../types';
 import { useTranslations } from '../../hooks/useTranslations';
@@ -10,11 +9,12 @@ interface HeaderProps {
     activeView: View;
     setActiveView: (view: View) => void;
     onCommandPaletteOpen: () => void;
-    showInstallPrompt: boolean;
+    deferredPrompt: any;
+    isInstalled: boolean;
     onInstallClick: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView, onCommandPaletteOpen, showInstallPrompt, onInstallClick }) => {
+export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView, onCommandPaletteOpen, deferredPrompt, isInstalled, onInstallClick }) => {
     const { t } = useTranslations();
 
     const viewTitles: Record<View, string> = {
@@ -27,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView, onCom
     };
 
     const currentTitle = viewTitles[activeView];
+    const showInstallButton = !!deferredPrompt || isInstalled;
     
     return (
         <header className="glass-pane sticky top-0 z-30 flex-shrink-0">
@@ -43,10 +44,20 @@ export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView, onCom
                         </div>
                     </button>
                     <div className="flex items-center gap-2">
-                        {showInstallPrompt && (
-                            <Button onClick={onInstallClick} size="sm" className="hidden sm:flex items-center gap-1.5">
-                                <PhosphorIcons.DownloadSimple className="w-4 h-4"/>
-                                {t('common.installPwa')}
+                        {showInstallButton && (
+                             <Button 
+                                onClick={onInstallClick} 
+                                size="sm" 
+                                className="flex items-center gap-1.5"
+                                disabled={isInstalled}
+                                variant={isInstalled ? 'secondary' : 'primary'}
+                                title={isInstalled ? t('common.installPwaSuccess') : t('common.installPwa')}
+                            >
+                                {isInstalled ? 
+                                    <PhosphorIcons.CheckCircle weight="fill" className="w-4 h-4"/> : 
+                                    <PhosphorIcons.DownloadSimple className="w-4 h-4"/>
+                                }
+                                <span className="hidden sm:inline">{isInstalled ? t('common.installed') : t('common.installPwa')}</span>
                             </Button>
                         )}
                          <button onClick={onCommandPaletteOpen} aria-label={t('commandPalette.open')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300 flex items-center gap-2 border border-slate-700">

@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Strain, View, SortDirection, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useFavorites } from '@/hooks/useFavorites';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
 import { useUserStrains } from '@/hooks/useUserStrains';
 import { useExportsManager } from '@/hooks/useExportsManager';
@@ -39,7 +38,7 @@ const StrainsViewContent: React.FC = () => {
     const { savedTips, addTip, updateTip, deleteTip } = useStrainTips();
     
     const { state, actions } = useStrainView();
-    const { selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen } = state;
+    const { selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen, favoriteIds } = state;
     
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
@@ -78,15 +77,15 @@ const StrainsViewContent: React.FC = () => {
         switch (activeTab) {
             case 'all': return uniqueStrains;
             case 'my-strains': return userStrains;
-            case 'favorites': return uniqueStrains.filter(s => state.favoriteIds.has(s.id));
+            case 'favorites': return uniqueStrains.filter(s => favoriteIds.has(s.id));
             default: return uniqueStrains;
         }
-    }, [activeTab, allStrains, userStrains, state.favoriteIds]);
+    }, [activeTab, allStrains, userStrains, favoriteIds]);
 
     const {
         sortedAndFilteredStrains, filterControls, filterState, isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen,
         tempFilterState, setTempFilterState, previewFilteredStrains, openAdvancedFilterModal, handleApplyAdvancedFilters,
-    } = useStrainFilters(strainsToDisplay, state.favoriteIds, {
+    } = useStrainFilters(strainsToDisplay, favoriteIds, {
         key: settings.strainsViewSettings.defaultSortKey as any, direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
     });
     
@@ -98,7 +97,7 @@ const StrainsViewContent: React.FC = () => {
         const sourceStrains = [...allStrains, ...userStrains];
         switch(source) {
             case 'selected': strainsToExport = sourceStrains.filter(s => selectedIds.has(s.id)); break;
-            case 'favorites': strainsToExport = sourceStrains.filter(s => state.favoriteIds.has(s.id)); break;
+            case 'favorites': strainsToExport = sourceStrains.filter(s => favoriteIds.has(s.id)); break;
             case 'filtered': strainsToExport = sortedAndFilteredStrains; break;
             case 'all': strainsToExport = strainsToDisplay; break;
         }
@@ -132,7 +131,7 @@ const StrainsViewContent: React.FC = () => {
         <div className="space-y-4">
             {selectedStrain && <StrainDetailModal strain={selectedStrain} onSaveTip={handleSaveTip} />}
             {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={actions.closeAddModal} onAddStrain={(s) => { addUserStrain(s); actions.closeAddModal(); }} onUpdateStrain={(s) => { updateUserStrain(s); actions.closeAddModal(); }} strainToEdit={strainToEdit} />}
-            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={state.favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
+            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
             {isAdvancedFilterModalOpen && <AdvancedFilterModal isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}
             {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => actions.confirmGrow(setup, strainForSetup)} />}
 
@@ -162,6 +161,7 @@ const StrainsViewContent: React.FC = () => {
                 </Card>
             )}
            
+            {/* FIX: Pass onOpenExportModal prop to ExportsManagerView */}
             {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={strainsToDisplay} onOpenExportModal={actions.openExportModal} />}
             {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} allStrains={strainsToDisplay} />}
 

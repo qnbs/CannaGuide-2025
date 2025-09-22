@@ -87,7 +87,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             </div>
             <div className="min-w-0 px-3 py-3 text-sm">
                 <p className="font-semibold text-slate-100 truncate flex items-center gap-1.5">
-                     {/* FIX: The `title` prop is not valid on the `PhosphorIcons.Star` component. Moved it to a wrapping `span` element to provide a tooltip for accessibility. */}
                      {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
                     {strain.name}
                 </p>

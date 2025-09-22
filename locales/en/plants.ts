@@ -6,6 +6,11 @@ export const plantsView = {
   emptySlot: {
     title: 'Empty Plant Slot',
     subtitle: 'Start a new grow from the Strains section.',
+    subtitleInline: 'or click here to choose.'
+  },
+  inlineSelector: {
+    title: 'Select a Strain',
+    subtitle: 'Search and choose a strain to start growing.'
   },
   archivedPlant: 'Archived Plant',
   vitals: {
@@ -21,6 +26,11 @@ export const plantsView = {
     finalYield: 'Final yield calculated: {yield}g',
     waterAllSuccess: 'Successfully watered {count} plants.',
     waterAllNone: 'No plants needed watering.',
+  },
+  journal: {
+    startGrowing: 'Started growing {name}',
+    problemDetected: 'Problem detected: {message}',
+    newTask: 'New task created: {title}',
   },
   setupModal: {
     title: 'Setup for {name}',

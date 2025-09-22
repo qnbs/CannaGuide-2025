@@ -41,7 +41,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     const { userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain } = useUserStrains();
     const { savedExports, addExport, deleteExport, updateExport } = useExportsManager();
     const { savedTips, addTip, updateTip, deleteTip } = useStrainTips();
-    const { plants, setPlants } = usePlants();
+    const { startNewPlant } = usePlants();
 
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
@@ -146,47 +146,15 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     };
     
     const handleStartGrow = (setup: GrowSetup, strain: Strain) => {
-        const emptySlotIndex = plants.findIndex(p => p === null);
-
-        if (emptySlotIndex === -1) {
-            addNotification(t('plantsView.notifications.allSlotsFull'), 'error');
+        const success = startNewPlant(strain, setup);
+        if (success) {
+            // Directly navigate and then clean up state. This is more robust.
+            setActiveView(View.Plants);
             setSelectedStrain(null);
-            return;
+        } else {
+            // Notification is handled inside startNewPlant hook
+            setSelectedStrain(null);
         }
-
-        const now = Date.now();
-        const newPlant: Plant = {
-            id: `${strain.id}-${now}`,
-            name: strain.name,
-            strain,
-            stage: PlantStage.Seed,
-            age: 0,
-            height: 0,
-            startedAt: now,
-            lastUpdated: now,
-            growSetup: setup,
-            vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 },
-            environment: { temperature: setup.temperature, humidity: setup.humidity, light: 100 },
-            stressLevel: 0,
-            problems: [],
-            journal: [{ id: `start-${now}`, timestamp: now, type: 'SYSTEM', notes: `Started growing ${strain.name}` }],
-            tasks: [],
-            history: [{ day: 0, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 }, stressLevel: 0, height: 0 }],
-        };
-
-        setPlants(prevPlants => {
-            const newPlants = [...prevPlants];
-            // Re-find index inside updater for safety against concurrent updates
-            const firstEmptyIndex = newPlants.findIndex(p => p === null);
-            if (firstEmptyIndex !== -1) {
-                 newPlants[firstEmptyIndex] = newPlant;
-            }
-            return newPlants;
-        });
-        
-        addNotification(t('plantsView.notifications.startSuccess', { name: newPlant.name }), 'success');
-        setActiveView(View.Plants);
-        setSelectedStrain(null);
     };
 
     const handleSaveTip = (strain: Strain, tip: AIResponse) => {
@@ -206,7 +174,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     
     return (
         <div className="space-y-4">
-            {selectedStrain && <StrainDetailModal strain={selectedStrain} onClose={() => setSelectedStrain(null)} isFavorite={favoriteIds.has(selectedStrain.id)} onToggleFavorite={toggleFavorite} onStartGrow={(setup) => handleStartGrow(setup, selectedStrain)} onSaveTip={handleSaveTip} />}
+            {selectedStrain && <StrainDetailModal strain={selectedStrain} onClose={() => setSelectedStrain(null)} isFavorite={favoriteIds.has(selectedStrain.id)} onToggleFavorite={toggleFavorite} onStartGrow={(setup) => handleStartGrow(setup, selectedStrain)} onSaveTip={handleSaveTip} onSelectSimilar={(strain) => setSelectedStrain(strain)} />}
             {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(false); setStrainToEdit(null); }} onAddStrain={(s) => { addUserStrain(s); setIsAddModalOpen(false); }} onUpdateStrain={(s) => { updateUserStrain(s); setIsAddModalOpen(false); setStrainToEdit(null); }} strainToEdit={strainToEdit} />}
             {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
             {isAdvancedFilterModalOpen && <AdvancedFilterModal isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}

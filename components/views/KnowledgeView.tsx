@@ -10,8 +10,9 @@ import { AIResponse, ArchivedMentorResponse } from '@/types';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { Tabs } from '@/components/common/Tabs';
 import { useNotifications } from '@/context/NotificationContext';
+import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
 
-type KnowledgeViewTab = 'guide' | 'archive';
+type KnowledgeViewTab = 'guide' | 'diagnostics' | 'archive';
 
 const KnowledgeStep: React.FC<{
     phase: string;
@@ -121,6 +122,7 @@ export const KnowledgeView: React.FC = () => {
 
     const tabs = [
         { id: 'guide', label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.GraduationCap /> },
+        { id: 'diagnostics', label: t('ai.diagnostics'), icon: <PhosphorIcons.Sparkle /> },
         { id: 'archive', label: t('knowledgeView.archive.title'), icon: <PhosphorIcons.Archive /> },
     ];
 
@@ -142,7 +144,7 @@ export const KnowledgeView: React.FC = () => {
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as KnowledgeViewTab)} />
              </Card>
             
-            {activeTab === 'guide' ? (
+            {activeTab === 'guide' && (
                 <div className="space-y-6">
                     <Card>
                         <h3 className="font-semibold">{t('knowledgeView.progress')}</h3>
@@ -232,7 +234,11 @@ export const KnowledgeView: React.FC = () => {
                         ))}
                     </div>
                 </div>
-            ) : (
+            )}
+            
+            {activeTab === 'diagnostics' && <AiDiagnostics />}
+
+            {activeTab === 'archive' && (
                 <Card>
                     <div className="space-y-4">
                     {sortedArchive.length > 0 ? (

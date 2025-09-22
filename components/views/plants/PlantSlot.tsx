@@ -48,6 +48,10 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
         <Card 
             className="flex flex-col h-full border-2 border-transparent transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-primary-500/50"
             onClick={onInspect}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInspect(); } }}
+            role="button"
+            tabIndex={0}
+            aria-label={`${t('commandPalette.inspect')} ${plant.name}`}
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="min-w-0">

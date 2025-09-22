@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import { Plant, Recommendation, AIResponse, Strain } from '@/types';
+import { Plant, Recommendation, AIResponse, Strain, PlantDiagnosisResponse } from '@/types';
 
 const getAiClient = (): GoogleGenAI => {
     // As per guidelines, the API key must come from environment variables.
@@ -135,7 +135,7 @@ const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIRespo
     }
 };
 
-const diagnosePlantProblem = async (base64Image: string, mimeType: string, plantContext: string, t: TFunction): Promise<AIResponse> => {
+const diagnosePlantProblem = async (base64Image: string, mimeType: string, context: { plant?: Plant, userNotes?: string }, t: TFunction): Promise<PlantDiagnosisResponse> => {
     const ai = getAiClient();
     const imagePart = {
         inlineData: {
@@ -143,17 +143,38 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
             mimeType: mimeType,
         },
     };
+
+    let plantContext = t('ai.gemini.diagnosePrompt.noPlantContext');
+    if (context.plant) {
+        const relevantData = {
+            strain: context.plant.strain.name,
+            age: context.plant.age,
+            stage: context.plant.stage,
+            vitals: context.plant.vitals,
+            environment: context.plant.environment,
+            lastJournalEntries: context.plant.journal.slice(-3).map(e => `${e.type}: ${e.notes}`),
+        };
+        plantContext = `${t('ai.gemini.diagnosePrompt.plantContextPrefix')}: ${JSON.stringify(relevantData)}`;
+    }
+    if (context.userNotes) {
+        plantContext += `\n${t('ai.gemini.diagnosePrompt.userNotesPrefix')}: "${context.userNotes}"`;
+    }
+
     const textPart = {
-        text: t('ai.gemini.diagnosePrompt', { context: plantContext }),
+        text: `${t('ai.gemini.diagnosePrompt.base')} ${plantContext}`,
     };
 
     const responseSchema = {
         type: Type.OBJECT,
         properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
+            problemName: { type: Type.STRING, description: 'The specific name of the diagnosed plant problem.' },
+            confidence: { type: Type.NUMBER, description: 'A confidence score from 0 to 100 for the diagnosis.'},
+            diagnosis: { type: Type.STRING, description: 'Detailed diagnosis in Markdown format.' },
+            immediateActions: { type: Type.STRING, description: 'Bulleted list of immediate actions in Markdown.' },
+            longTermSolution: { type: Type.STRING, description: 'Long-term solutions in Markdown.' },
+            prevention: { type: Type.STRING, description: 'Prevention tips in Markdown.' },
         },
-        required: ['title', 'content']
+        required: ['problemName', 'confidence', 'diagnosis', 'immediateActions', 'longTermSolution', 'prevention']
     };
 
     const response = await ai.models.generateContent({
@@ -168,7 +189,7 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, plant
     try {
         const jsonStr = response.text.trim();
         const result = JSON.parse(jsonStr);
-        return result as AIResponse;
+        return result as PlantDiagnosisResponse;
     } catch (e) {
         console.error("Failed to parse AI response for diagnostics:", e, response.text);
         throw new Error("ai.error.parsing");

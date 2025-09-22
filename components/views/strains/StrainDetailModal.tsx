@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Strain, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -11,6 +11,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
 import { strainService } from '@/services/strainService';
+import { usePlants } from '@/hooks/usePlants';
 
 interface StrainDetailModalProps {
     strain: Strain;
@@ -19,6 +20,7 @@ interface StrainDetailModalProps {
     onToggleFavorite: (id: string) => void;
     onStartGrow: (setup: GrowSetup, strain: Strain) => void;
     onSaveTip: (strain: Strain, tip: AIResponse) => void;
+    onSelectSimilar: (strain: Strain) => void;
 }
 
 const DetailSection: React.FC<{ title: string, children: React.ReactNode, icon: React.ReactNode }> = ({ title, children, icon }) => (
@@ -38,11 +40,12 @@ const DetailItem: React.FC<{ label: string, value?: string | number | string[] }
 );
 
 
-export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onClose, isFavorite, onToggleFavorite, onStartGrow, onSaveTip }) => {
+export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onClose, isFavorite, onToggleFavorite, onStartGrow, onSaveTip, onSelectSimilar }) => {
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
     const modalRef = useFocusTrap(true);
     const { getNoteForStrain, updateNoteForStrain } = useStrainNotes();
+    const { plants } = usePlants();
     
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
     const [noteContent, setNoteContent] = useState('');
@@ -52,6 +55,8 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
     const [isTipLoading, setIsTipLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isTipSaved, setIsTipSaved] = useState(false);
+
+    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
 
     useEffect(() => {
         setNoteContent(getNoteForStrain(strain.id));
@@ -111,7 +116,9 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                             <Button variant="secondary" onClick={() => onToggleFavorite(strain.id)} aria-pressed={isFavorite} className="favorite-btn-glow p-2">
                                 <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className={`w-5 h-5 ${isFavorite ? 'is-favorite' : ''}`} />
                             </Button>
-                            <Button onClick={() => setIsSetupModalOpen(true)} className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
+                                <Button onClick={() => setIsSetupModalOpen(true)} disabled={!hasAvailableSlots} className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            </div>
                             <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-slate-700" aria-label={t('common.close')}><PhosphorIcons.X className="w-6 h-6" /></button>
                         </div>
                     </div>
@@ -195,13 +202,17 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                         {similarStrains.length > 0 && (
                              <DetailSection title={t('strainsView.strainModal.similarStrains')} icon={<PhosphorIcons.Leafy />}>
                                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                     {similarStrains.map(s => <Card key={s.id} className="text-center p-2"><p className="text-sm font-semibold">{s.name}</p></Card>)}
+                                     {similarStrains.map(s => 
+                                        <Card key={s.id} onClick={() => onSelectSimilar(s)} className="text-center p-2 card-interactive">
+                                            <p className="text-sm font-semibold">{s.name}</p>
+                                        </Card>
+                                    )}
                                 </div>
                            </DetailSection>
                         )}
                     </div>
-                     <div className="mt-4 pt-4 border-t border-slate-700 flex-shrink-0 sm:hidden">
-                        <Button onClick={() => setIsSetupModalOpen(true)} className="w-full">{t('strainsView.startGrowing')}</Button>
+                     <div className="mt-4 pt-4 border-t border-slate-700 flex-shrink-0 sm:hidden" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
+                        <Button onClick={() => setIsSetupModalOpen(true)} className="w-full" disabled={!hasAvailableSlots}>{t('strainsView.startGrowing')}</Button>
                     </div>
                 </Card>
             </div>

@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-import { Plant, Recommendation, AIResponse, Strain, PlantDiagnosisResponse } from '@/types';
+import { Plant, Recommendation, AIResponse, Strain, PlantDiagnosisResponse, StructuredGrowTips } from '@/types';
 
 const getAiClient = (): GoogleGenAI => {
     // As per guidelines, the API key must come from environment variables.
@@ -53,9 +53,10 @@ const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction)
                 ];
              case 'growTips':
                 return [
-                    { key: 'ai.loading.growTips.analyzing' },
+                    { key: 'ai.loading.growTips.analyzing', params: { name: data.strainName } },
+                    { key: 'ai.loading.growTips.focusing', params: { focus: data.focus } },
                     { key: 'ai.loading.growTips.consulting' },
-                    { key: 'ai.loading.growTips.formulating' },
+                    { key: 'ai.loading.growTips.formulating', params: { stage: data.stage } },
                 ];
             default:
                 return [{ key: `ai.generating` }];
@@ -244,23 +245,32 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
     }
 };
 
-const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIResponse> => {
+const getStrainGrowTips = async (
+    strain: Strain, 
+    context: { focus: string; stage: string; experience: string },
+    t: TFunction
+): Promise<StructuredGrowTips> => {
     const ai = getAiClient();
-    const prompt = t('ai.gemini.strainTipsCombinedPrompt', {
+    const prompt = t('ai.gemini.strainTipsPrompt', {
         name: strain.name,
         difficulty: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
         height: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
         flowering: strain.floweringTime,
-        type: strain.type
+        type: strain.type,
+        focus: context.focus,
+        stage: context.stage,
+        experience: context.experience,
     });
     
     const responseSchema = {
         type: Type.OBJECT,
         properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
+            nutrientTip: { type: Type.STRING, description: "A specific tip related to nutrients, feeding, or soil." },
+            trainingTip: { type: Type.STRING, description: "A specific tip related to plant training, pruning, or canopy management." },
+            environmentalTip: { type: Type.STRING, description: "A specific tip related to climate control like temperature, humidity, or VPD." },
+            proTip: { type: Type.STRING, description: "An advanced, unique tip combining multiple factors for expert growers." },
         },
-        required: ['title', 'content']
+        required: ['nutrientTip', 'trainingTip', 'environmentalTip', 'proTip']
     };
 
     const response = await ai.models.generateContent({
@@ -273,16 +283,14 @@ const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIRespon
     });
     
     try {
-        // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for grow tips:", response);
              throw new Error("ai.error.parsing");
         }
         const result = JSON.parse(jsonStr);
-        return result as AIResponse;
+        return result as StructuredGrowTips;
     } catch (e) {
-        // @google/genai-sdk: Per guidelines, access text output via the .text property directly.
         console.error("Failed to parse AI response for grow tips:", e, response.text);
         throw new Error("ai.error.parsing");
     }

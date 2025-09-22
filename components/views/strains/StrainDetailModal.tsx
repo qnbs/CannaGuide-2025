@@ -60,15 +60,15 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 
 interface StrainDetailModalProps {
     strain: Strain;
-    onClose: () => void;
-    isFavorite: boolean;
-    onToggleFavorite: (id: string) => void;
     onSaveTip: (strain: Strain, tip: AIResponse) => void;
 }
 
-export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onClose, isFavorite, onToggleFavorite, onSaveTip }) => {
+export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
-    const { actions } = useStrainView();
+    const { state, actions } = useStrainView();
+    // FIX: Destructure toggleFavorite from actions and rename closeDetailModal to onClose for consistency.
+    const { isFavorite } = state;
+    const { toggleFavorite, closeDetailModal: onClose } = actions;
     const { addNotification } = useNotifications();
     const modalRef = useFocusTrap(true);
     const { getNoteForStrain, updateNoteForStrain } = useStrainNotes();
@@ -103,6 +103,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
 
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
+    const isFav = isFavorite(strain.id);
 
     const handleGetAiTips = async () => {
         setIsTipLoading(true);
@@ -140,8 +141,8 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                              <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
                                 <Button onClick={() => actions.initiateGrow(strain)} disabled={!hasAvailableSlots} className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                             </div>
-                            <Button variant="secondary" onClick={() => onToggleFavorite(strain.id)} aria-pressed={isFavorite} className="favorite-btn-glow p-2">
-                                <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className={`w-5 h-5 ${isFavorite ? 'is-favorite' : ''}`} />
+                            <Button variant="secondary" onClick={() => toggleFavorite(strain.id)} aria-pressed={isFav} className="favorite-btn-glow p-2">
+                                <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className={`w-5 h-5 ${isFav ? 'is-favorite' : ''}`} />
                             </Button>
                             <button type="button" onClick={onClose} className="p-2 rounded-full hover:bg-slate-700" aria-label={t('common.close')}><PhosphorIcons.X className="w-6 h-6" /></button>
                         </div>

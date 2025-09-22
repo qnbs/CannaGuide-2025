@@ -34,7 +34,6 @@ const StrainsViewContent: React.FC = () => {
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
     const { settings } = useSettings();
-    const { favoriteIds, toggleFavorite } = useFavorites();
     const { userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain } = useUserStrains();
     const { savedExports, addExport, deleteExport, updateExport } = useExportsManager();
     const { savedTips, addTip, updateTip, deleteTip } = useStrainTips();
@@ -79,15 +78,15 @@ const StrainsViewContent: React.FC = () => {
         switch (activeTab) {
             case 'all': return uniqueStrains;
             case 'my-strains': return userStrains;
-            case 'favorites': return uniqueStrains.filter(s => favoriteIds.has(s.id));
+            case 'favorites': return uniqueStrains.filter(s => state.favoriteIds.has(s.id));
             default: return uniqueStrains;
         }
-    }, [activeTab, allStrains, userStrains, favoriteIds]);
+    }, [activeTab, allStrains, userStrains, state.favoriteIds]);
 
     const {
         sortedAndFilteredStrains, filterControls, filterState, isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen,
         tempFilterState, setTempFilterState, previewFilteredStrains, openAdvancedFilterModal, handleApplyAdvancedFilters,
-    } = useStrainFilters(strainsToDisplay, favoriteIds, {
+    } = useStrainFilters(strainsToDisplay, state.favoriteIds, {
         key: settings.strainsViewSettings.defaultSortKey as any, direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
     });
     
@@ -99,7 +98,7 @@ const StrainsViewContent: React.FC = () => {
         const sourceStrains = [...allStrains, ...userStrains];
         switch(source) {
             case 'selected': strainsToExport = sourceStrains.filter(s => selectedIds.has(s.id)); break;
-            case 'favorites': strainsToExport = sourceStrains.filter(s => favoriteIds.has(s.id)); break;
+            case 'favorites': strainsToExport = sourceStrains.filter(s => state.favoriteIds.has(s.id)); break;
             case 'filtered': strainsToExport = sortedAndFilteredStrains; break;
             case 'all': strainsToExport = strainsToDisplay; break;
         }
@@ -116,10 +115,6 @@ const StrainsViewContent: React.FC = () => {
         addNotification(t('common.successfullyExported', { count: strainsToExport.length, format: format.toUpperCase() }), 'success');
     };
     
-    const handleStartGrow = (setup: GrowSetup, strain: Strain) => {
-        actions.confirmGrow(setup, strain);
-    };
-
     const handleSaveTip = (strain: Strain, tip: AIResponse) => addTip(strain, tip);
 
     const allAromas = useMemo(() => Array.from(new Set(strainsToDisplay.flatMap(s => s.aromas || []))).sort(), [strainsToDisplay]);
@@ -135,11 +130,11 @@ const StrainsViewContent: React.FC = () => {
     
     return (
         <div className="space-y-4">
-            {selectedStrain && <StrainDetailModal strain={selectedStrain} onClose={actions.closeDetailModal} isFavorite={favoriteIds.has(selectedStrain.id)} onToggleFavorite={toggleFavorite} onSaveTip={handleSaveTip} />}
+            {selectedStrain && <StrainDetailModal strain={selectedStrain} onSaveTip={handleSaveTip} />}
             {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={actions.closeAddModal} onAddStrain={(s) => { addUserStrain(s); actions.closeAddModal(); }} onUpdateStrain={(s) => { updateUserStrain(s); actions.closeAddModal(); }} strainToEdit={strainToEdit} />}
-            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
+            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={state.favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
             {isAdvancedFilterModalOpen && <AdvancedFilterModal isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}
-            {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => handleStartGrow(setup, strainForSetup)} />}
+            {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => actions.confirmGrow(setup, strainForSetup)} />}
 
             <Card><Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => setActiveTab(id as StrainViewTab)} /></Card>
 
@@ -187,11 +182,11 @@ const StrainsViewContent: React.FC = () => {
                             {settings.strainsViewSettings.visibleColumns.yield && <button className="hidden md:inline" onClick={() => filterControls.handleSort('yield')}>{t('strainsView.table.yield')}</button>}
                             <button onClick={() => filterControls.handleSort('difficulty')}>{t('strainsView.table.level')}</button><div>{t('common.actions')}</div>
                         </div>
-                        {sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} isFavorite={favoriteIds.has(strain.id)} onToggleSelection={handleToggleSelection} onToggleFavorite={toggleFavorite} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
+                        {sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} onToggleSelection={handleToggleSelection} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                      </div>
                  ) : (
                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isFavorite={favoriteIds.has(strain.id)} onToggleFavorite={toggleFavorite} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
+                        {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                      </div>
                  )
             )}

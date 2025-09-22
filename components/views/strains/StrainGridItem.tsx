@@ -10,8 +10,6 @@ import { usePlants } from '@/hooks/usePlants';
 
 interface StrainGridItemProps {
     strain: Strain;
-    isFavorite: boolean;
-    onToggleFavorite: (id: string) => void;
     isUserStrain?: boolean;
     onDelete?: (id: string) => void;
     index: number;
@@ -19,15 +17,16 @@ interface StrainGridItemProps {
 
 const StrainGridItem: React.FC<StrainGridItemProps> = ({
     strain,
-    isFavorite,
-    onToggleFavorite,
     isUserStrain = false,
     onDelete,
     index,
 }) => {
     const { t } = useTranslations();
-    const { actions } = useStrainView();
+    const { state, actions } = useStrainView();
     const { hasAvailableSlots } = usePlants();
+    // FIX: Destructure toggleFavorite from actions instead of state.
+    const { isFavorite } = state;
+    const { toggleFavorite } = actions;
     
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-500', Indica: 'text-indigo-500', Hybrid: 'text-blue-500' };
@@ -36,6 +35,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
         e.stopPropagation();
         action();
     };
+    
+    const isFav = isFavorite(strain.id);
 
     return (
         <Card 
@@ -68,12 +69,12 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                     </button>
                 </div>
                 <button
-                    onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                    className={`favorite-btn-glow p-1.5 rounded-full bg-slate-800/80 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`}
-                    aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
-                    aria-pressed={isFavorite}
+                    onClick={(e) => handleActionClick(e, () => toggleFavorite(strain.id))}
+                    className={`favorite-btn-glow p-1.5 rounded-full bg-slate-800/80 text-slate-400 hover:text-primary-400 ${isFav ? 'is-favorite' : ''}`}
+                    aria-label={isFav ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
+                    aria-pressed={isFav}
                 >
-                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
+                    <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>
             

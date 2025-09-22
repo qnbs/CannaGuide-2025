@@ -11,9 +11,7 @@ import { usePlants } from '@/hooks/usePlants';
 interface StrainListItemProps {
     strain: Strain;
     isSelected: boolean;
-    isFavorite: boolean;
     onToggleSelection: (id: string) => void;
-    onToggleFavorite: (id: string) => void;
     visibleColumns: Record<string, boolean>;
     isUserStrain?: boolean;
     onDelete?: (id: string) => void;
@@ -23,17 +21,18 @@ interface StrainListItemProps {
 const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
     isSelected,
-    isFavorite,
     onToggleSelection,
-    onToggleFavorite,
     visibleColumns,
     isUserStrain = false,
     onDelete,
     index,
 }) => {
     const { t } = useTranslations();
-    const { actions } = useStrainView();
+    const { state, actions } = useStrainView();
     const { hasAvailableSlots } = usePlants();
+    // FIX: Destructure toggleFavorite from actions instead of state.
+    const { isFavorite } = state;
+    const { toggleFavorite } = actions;
     const checkboxId = useId();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
@@ -52,6 +51,8 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
         if (!TypeIcon) return null;
         return <TypeIcon className={`w-6 h-6 ${typeClasses[strain.type]}`} />;
     };
+
+    const isFav = isFavorite(strain.id);
 
     return (
         <div
@@ -77,12 +78,12 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             </div>
             <div className="flex items-center justify-center px-3 py-3">
                 <button
-                    onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                    className={`favorite-btn-glow text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`}
-                    aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
-                    aria-pressed={isFavorite}
+                    onClick={(e) => handleActionClick(e, () => toggleFavorite(strain.id))}
+                    className={`favorite-btn-glow text-slate-400 hover:text-primary-400 ${isFav ? 'is-favorite' : ''}`}
+                    aria-label={isFav ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
+                    aria-pressed={isFav}
                 >
-                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
+                    <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>
             <div className="min-w-0 px-3 py-3 text-sm">

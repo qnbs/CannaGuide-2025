@@ -1,8 +1,9 @@
-import React, { createContext, useState, useContext, ReactNode, useMemo } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useMemo, useCallback } from 'react';
 import { Strain, GrowSetup, View } from '@/types';
 import { usePlants } from '@/hooks/usePlants';
 import { useNotifications } from '@/context/NotificationContext';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface StrainViewContextType {
     state: {
@@ -12,6 +13,8 @@ interface StrainViewContextType {
         isAddModalOpen: boolean;
         isExportModalOpen: boolean;
         isSetupModalOpen: boolean;
+        favoriteIds: Set<string>;
+        isFavorite: (id: string) => boolean;
     };
     actions: {
         selectStrain: (strain: Strain) => void;
@@ -23,6 +26,7 @@ interface StrainViewContextType {
         initiateGrow: (strain: Strain) => void;
         confirmGrow: (setup: GrowSetup, strain: Strain) => void;
         closeGrowModal: () => void;
+        toggleFavorite: (id: string) => void;
     };
 }
 
@@ -32,6 +36,7 @@ export const StrainViewProvider: React.FC<{ children: ReactNode, setActiveView: 
     const { hasAvailableSlots, startNewPlant } = usePlants();
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
+    const { favoriteIds, toggleFavorite } = useFavorites();
 
     const [selectedStrain, setSelectedStrain] = useState<Strain | null>(null);
     const [strainToEdit, setStrainToEdit] = useState<Strain | null>(null);
@@ -75,8 +80,11 @@ export const StrainViewProvider: React.FC<{ children: ReactNode, setActiveView: 
         closeGrowModal: () => {
             setStrainForSetup(null);
             setIsSetupModalOpen(false);
-        }
-    }), [hasAvailableSlots, addNotification, t, startNewPlant, setActiveView]);
+        },
+        toggleFavorite,
+    }), [hasAvailableSlots, addNotification, t, startNewPlant, setActiveView, toggleFavorite]);
+
+    const isFavorite = useCallback((id: string) => favoriteIds.has(id), [favoriteIds]);
 
     const value = {
         state: {
@@ -86,6 +94,8 @@ export const StrainViewProvider: React.FC<{ children: ReactNode, setActiveView: 
             isAddModalOpen,
             isExportModalOpen,
             isSetupModalOpen,
+            favoriteIds,
+            isFavorite,
         },
         actions,
     };

@@ -71,7 +71,7 @@ const defaultSettings: AppSettings = {
   },
   lastBackupTimestamp: undefined,
   accessibility: {
-    highContrast: false,
+    highContrast: true,
     reducedMotion: false,
     dyslexiaFont: false,
   },

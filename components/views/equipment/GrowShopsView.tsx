@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { Card } from '../../common/Card';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { Button } from '../../common/Button';
-import { PaymentIcons } from '../../icons/PaymentIcons';
+import { Card } from '@/components/common/Card';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Button } from '@/components/common/Button';
+import { PaymentIcons } from '@/components/icons/PaymentIcons';
 
 type ShopRegion = 'europe' | 'us';
 type SortKey = 'name' | 'rating';
@@ -21,7 +21,6 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
         </div>
         <div className="flex items-center gap-2 mb-4">
             <div className="flex items-center">
-                {/* FIX: Correct weight prop type to allow 'fill' or 'regular' */}
                 {[...Array(5)].map((_, i) => (
                     <PhosphorIcons.Star key={i} weight={i < Math.round(shop.rating) ? 'fill' : 'regular'} className={`w-5 h-5 ${i < Math.round(shop.rating) ? 'text-amber-400' : 'text-slate-500'}`} />
                 ))}

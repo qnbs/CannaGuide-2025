@@ -2,6 +2,7 @@ export const settingsView = {
   title: 'Einstellungen',
   categories: {
     general: 'Allgemein',
+    accessibility: 'Barrierefreiheit',
     strains: 'Sorten-Ansicht',
     plants: 'Pflanzen & Simulation',
     notifications: 'Benachrichtigungen',
@@ -17,8 +18,8 @@ export const settingsView = {
       midnight: 'Mitternacht',
       forest: 'Wald',
       purpleHaze: 'Purpurnebel',
-      'desert-sky': 'Wüstenhimmel',
-      'rose-quartz': 'Rosenquarz',
+      desertSky: 'Wüstenhimmel',
+      roseQuartz: 'Rosenquarz',
     },
     fontSize: 'Schriftgröße',
     fontSizes: {
@@ -27,6 +28,20 @@ export const settingsView = {
       lg: 'Groß',
     },
     defaultView: 'Standard-Startansicht',
+  },
+  accessibility: {
+    title: 'Barrierefreiheit',
+    highContrast: 'Hoher Kontrast',
+    highContrastDesc: 'Erhöht den Textkontrast für bessere Lesbarkeit.',
+    dyslexiaFont: 'Legastheniker-Schriftart',
+    dyslexiaFontDesc: 'Verwendet eine Schriftart, die für Menschen mit Legasthenie leichter zu lesen ist.',
+    reducedMotion: 'Bewegung reduzieren',
+    reducedMotionDesc: 'Deaktiviert die meisten Animationen in der App.',
+    uiDensity: 'UI-Dichte',
+    uiDensities: {
+      comfortable: 'Komfortabel',
+      compact: 'Kompakt',
+    }
   },
   strains: {
     title: 'Einstellungen der Sorten-Ansicht',
@@ -73,7 +88,12 @@ export const settingsView = {
         easy: 'Leicht',
         normal: 'Normal',
         hard: 'Schwer',
+        custom: 'Benutzerdefiniert',
       },
+      customDifficulty: 'Benutzerdefinierte Schwierigkeit',
+      pestPressure: 'Schädlingsdruck',
+      nutrientSensitivity: 'Nährstoffempfindlichkeit',
+      environmentalStability: 'Umweltstabilität',
   },
   notifications: {
     title: 'Benachrichtigungen',
@@ -82,6 +102,9 @@ export const settingsView = {
     problemDetected: 'Problem erkannt',
     harvestReady: 'Ernte bereit',
     newTask: 'Neue Aufgabe',
+    quietHours: 'Ruhezeiten',
+    enableQuietHours: 'Ruhezeiten aktivieren',
+    quietHoursDesc: 'Benachrichtigungen werden während dieser Zeit stummgeschaltet.',
   },
   defaults: {
       title: 'Standardwerte',

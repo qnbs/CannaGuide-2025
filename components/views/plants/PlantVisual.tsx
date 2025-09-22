@@ -1,7 +1,6 @@
 import React from 'react';
-// FIX: Correct import path for types.
-import { PlantStage, JournalEntry, PlantProblem } from '../../../types';
-import { PLANT_STAGE_DETAILS } from '../../../constants';
+import { PlantStage, JournalEntry, PlantProblem } from '@/types';
+import { PLANT_STAGE_DETAILS } from '@/constants';
 
 interface PlantVisualProps {
   stage: PlantStage;

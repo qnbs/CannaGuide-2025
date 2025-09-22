@@ -1,4 +1,4 @@
-import { Strain } from '../../types';
+import { Strain } from '@/types';
 
 export const strains: Strain[] = [
     {
@@ -112,10 +112,8 @@ export const strains: Strain[] = [
         id: 'whitewalker-og',
         name: 'Whitewalker OG',
         type: 'Hybrid',
-        thc: 26,
+        thc: 27,
         cbd: 1,
-        thcRange: '22-30%',
-        cbdRange: '<1%',
         floweringTime: 9,
         agronomic: {
             difficulty: 'Medium',
@@ -127,12 +125,13 @@ export const strains: Strain[] = [
         id: 'wifi-og',
         name: 'WiFi OG',
         type: 'Hybrid',
-        thc: 28,
+        thc: 25,
         cbd: 1,
-        floweringTime: 10,
+        floweringTime: 9.5,
+        floweringTimeRange: '9-10',
         agronomic: {
             difficulty: 'Medium',
-            yield: 'Medium',
+            yield: 'High',
             height: 'Tall',
         },
     },
@@ -143,6 +142,7 @@ export const strains: Strain[] = [
         thc: 20,
         cbd: 1,
         floweringTime: 9,
+        floweringTimeRange: '8-10',
         agronomic: {
             difficulty: 'Easy',
             yield: 'High',
@@ -151,15 +151,13 @@ export const strains: Strain[] = [
     },
     {
         id: 'wu-5',
-        name: 'Wu-5',
+        name: 'WU-5',
         type: 'Hybrid',
-        thc: 1,
-        cbd: 14,
-        thcRange: '<1%',
-        cbdRange: '12-16%',
+        thc: 12,
+        cbd: 12,
         floweringTime: 9,
         agronomic: {
-            difficulty: 'Medium',
+            difficulty: 'Easy',
             yield: 'Medium',
             height: 'Medium',
         },

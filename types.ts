@@ -53,9 +53,9 @@ export interface PlantEnvironment {
     light: number;
 }
 
-export type TrainingType = 'LST' | 'Topping' | 'Defoliation';
+export type TrainingType = 'LST' | 'Topping' | 'Defoliation' | 'FIMing' | 'SCROG' | 'SuperCropping';
 
-export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'SYSTEM' | 'PHOTO';
+export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'PHOTO' | 'SYSTEM';
 
 export interface JournalEntry {
     id: string;
@@ -63,14 +63,25 @@ export interface JournalEntry {
     type: JournalEntryType;
     notes: string;
     details?: {
+        // Watering & Feeding
         waterAmount?: number;
         ph?: number;
         ec?: number;
+        runoffPh?: number;
+        runoffEc?: number;
+        nutrientDetails?: string;
+        // Training
         trainingType?: TrainingType;
+        // Photo
         imageId?: string;
         imageUrl?: string; // for immediate preview
+        photoCategory?: 'Full Plant' | 'Bud' | 'Leaf' | 'Problem' | 'Trichomes';
+        // Observation
+        healthStatus?: 'Excellent' | 'Good' | 'Showing Issues';
+        observationTags?: string[];
     };
 }
+
 
 export type TaskPriority = 'low' | 'medium' | 'high';
 
@@ -181,7 +192,8 @@ export interface SavedSetup {
     };
 }
 
-// FIX: Add SavedExport interface for use in useExportsManager and related components.
+export type ExportSource = 'selected' | 'favorites' | 'filtered' | 'all';
+export type ExportFormat = 'pdf' | 'txt' | 'csv' | 'json';
 export interface SavedExport {
     id: string;
     createdAt: number;
@@ -190,12 +202,20 @@ export interface SavedExport {
     format: ExportFormat;
     count: number;
     strainIds: string[];
+    notes?: string;
 }
 
 // AI & Response types
 export interface AIResponse {
     title: string;
     content: string;
+}
+
+export interface SavedStrainTip extends AIResponse {
+  id: string;
+  createdAt: number;
+  strainId: string;
+  strainName: string;
 }
 
 export interface ArchivedMentorResponse extends AIResponse {
@@ -224,7 +244,7 @@ export interface Notification {
 }
 
 export type Language = 'en' | 'de';
-export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desert-sky' | 'rose-quartz';
+export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz';
 export type UiDensity = 'comfortable' | 'compact';
 
 export interface NotificationSettings {
@@ -233,9 +253,6 @@ export interface NotificationSettings {
     harvestReady: boolean;
     newTask: boolean;
 }
-
-export type ExportSource = 'selected' | 'favorites' | 'filtered' | 'all';
-export type ExportFormat = 'pdf' | 'txt' | 'csv' | 'json';
 
 export interface AppSettings {
     language: Language;

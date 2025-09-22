@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
-import { Strain, SortDirection, YieldLevel, DifficultyLevel, HeightLevel, StrainType } from '../types';
+import { Strain, SortDirection, YieldLevel, DifficultyLevel, HeightLevel, StrainType } from '@/types';
 
 export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'yield';
 

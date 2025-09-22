@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Card } from '../../../common/Card';
-import { PhosphorIcons } from '../../../icons/PhosphorIcons';
-import { JournalEntry, JournalEntryType } from '../../../../types';
-import { useTranslations } from '../../../../hooks/useTranslations';
+import { Card } from '@/components/common/Card';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { JournalEntry, JournalEntryType } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface JournalTabProps {
     journal: JournalEntry[];

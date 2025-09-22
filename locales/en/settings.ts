@@ -2,6 +2,7 @@ export const settingsView = {
   title: 'Settings',
   categories: {
     general: 'General',
+    accessibility: 'Accessibility',
     strains: 'Strains View',
     plants: 'Plants & Simulation',
     notifications: 'Notifications',
@@ -17,8 +18,8 @@ export const settingsView = {
       midnight: 'Midnight',
       forest: 'Forest',
       purpleHaze: 'Purple Haze',
-      'desert-sky': 'Desert Sky',
-      'rose-quartz': 'Rose Quartz',
+      desertSky: 'Desert Sky',
+      roseQuartz: 'Rose Quartz',
     },
     fontSize: 'Font Size',
     fontSizes: {
@@ -27,6 +28,20 @@ export const settingsView = {
       lg: 'Large',
     },
     defaultView: 'Default View on Startup',
+  },
+  accessibility: {
+    title: 'Accessibility',
+    highContrast: 'High Contrast',
+    highContrastDesc: 'Increases text contrast for better readability.',
+    dyslexiaFont: 'Dyslexia-Friendly Font',
+    dyslexiaFontDesc: 'Uses a font designed to be easier to read for people with dyslexia.',
+    reducedMotion: 'Reduce Motion',
+    reducedMotionDesc: 'Disables most animations in the app.',
+    uiDensity: 'UI Density',
+    uiDensities: {
+      comfortable: 'Comfortable',
+      compact: 'Compact',
+    }
   },
   strains: {
     title: 'Strains View Settings',
@@ -73,7 +88,12 @@ export const settingsView = {
         easy: 'Easy',
         normal: 'Normal',
         hard: 'Hard',
+        custom: 'Custom',
       },
+      customDifficulty: 'Custom Difficulty',
+      pestPressure: 'Pest Pressure',
+      nutrientSensitivity: 'Nutrient Sensitivity',
+      environmentalStability: 'Environmental Stability',
   },
   notifications: {
       title: 'Notifications',
@@ -82,6 +102,9 @@ export const settingsView = {
       problemDetected: 'Problem Detected',
       harvestReady: 'Harvest Ready',
       newTask: 'New Task',
+      quietHours: 'Quiet Hours',
+      enableQuietHours: 'Enable Quiet Hours',
+      quietHoursDesc: 'Notifications will be silenced during this time.',
   },
   defaults: {
       title: 'Defaults',

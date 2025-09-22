@@ -1,5 +1,4 @@
-// FIX: Correct import path for types.
-import { Strain } from '../../types';
+import { Strain } from '@/types';
 
 export const strains: Strain[] = [
   {

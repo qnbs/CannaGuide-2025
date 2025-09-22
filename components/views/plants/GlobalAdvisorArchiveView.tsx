@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { usePlantAdvisorArchive } from '../../../hooks/usePlantAdvisorArchive';
-import { usePlants } from '../../../hooks/usePlants';
-import { Card } from '../../common/Card';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { ArchivedAdvisorResponse } from '../../../types';
+import { usePlantAdvisorArchive } from '@/hooks/usePlantAdvisorArchive';
+import { usePlants } from '@/hooks/usePlants';
+import { Card } from '@/components/common/Card';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { ArchivedAdvisorResponse, Plant } from '@/types';
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslations();
@@ -13,16 +13,16 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const allAdvice = useMemo(() => {
-        const plantMap = new Map(plants.filter(p => p).map(p => [p!.id, p!.name]));
+        const plantMap = new Map(plants.filter((p): p is Plant => p !== null).map(p => [p.id, p.name]));
         
         return Object.values(archive)
             .flat()
             .map(advice => ({
                 ...advice,
-                plantName: plantMap.get(advice.plantId) || 'Archived Plant'
+                plantName: plantMap.get(advice.plantId) || t('plantsView.archivedPlant')
             }))
             .sort((a, b) => b.createdAt - a.createdAt);
-    }, [archive, plants]);
+    }, [archive, plants, t]);
 
     const filteredAdvice = useMemo(() => {
         if (!searchTerm) return allAdvice;
@@ -37,8 +37,8 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-400 mb-4 flex items-center gap-2">
-                <PhosphorIcons.Archive className="w-6 h-6"/>
-                {t('knowledgeView.archive.title')}
+                <PhosphorIcons.ArchiveBox className="w-6 h-6"/>
+                {t('plantsView.aiAdvisor.archiveTitle')}
             </h3>
             
             <div className="relative mb-4">

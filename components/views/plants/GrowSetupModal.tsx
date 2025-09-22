@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-// FIX: Correct import path for types.
-import { GrowSetup, Strain } from '../../../types';
-import { Button } from '../../common/Button';
-import { Card } from '../../common/Card';
-import { useNotifications } from '../../../context/NotificationContext';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useSettings } from '../../../hooks/useSettings';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { GrowSetup, Strain } from '@/types';
+import { Button } from '@/components/common/Button';
+import { Card } from '@/components/common/Card';
+import { useNotifications } from '@/context/NotificationContext';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useSettings } from '@/hooks/useSettings';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 
 interface GrowSetupModalProps {

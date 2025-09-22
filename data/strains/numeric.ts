@@ -1,4 +1,4 @@
-import { Strain } from '../../types';
+import { Strain } from '@/types';
 
 export const strains: Strain[] = [
   {

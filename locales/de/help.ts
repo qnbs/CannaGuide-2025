@@ -1,19 +1,44 @@
 export const helpView = {
   title: 'Hilfecenter',
   tabs: {
-    cultivation: 'Anbau-Wissen',
+    start: 'Erste Schritte',
+    faq: 'FAQ',
+    cultivation: 'Anbau-Anleitung',
+    lexicons: 'Lexika',
+    about: 'Über'
   },
+  searchPlaceholder: 'In der Hilfe suchen...',
+  expandAll: 'Alle ausklappen',
+  collapseAll: 'Alle einklappen',
+  noResults: 'Keine Ergebnisse für "{term}" gefunden.',
   sections: {
     firstSteps: {
       title: 'Erste Schritte & Hauptfunktionen',
-      description: 'Willkommen beim CannaGuide! Diese App ist dein interaktiver Begleiter für den Cannabis-Anbau. Hier ein kurzer Überblick über die leistungsstarken Funktionen:',
-      list: {
-        strains: '<strong>1. Die Sorten-Datenbank ({strainsView}):</strong> Deine zentrale Bibliothek für Cannabis-Wissen. Greife auf Daten von über 300 Sorten zu, nutze die erweiterte Suche und Filter (THC/CBD, Blütezeit, Terpene), wechsle zwischen Listen- und Rasteransicht und verwalte deine eigenen Sorten mit voller Erstellen-, Lese-, Aktualisierungs- & Lösch-Funktionalität (CRUD). Exportiere jede Auswahl als professionelles PDF, CSV, TXT oder JSON.',
-        plants: '<strong>2. Der Grow Room ({plantsView}):</strong> Deine Kommandozentrale für bis zu drei gleichzeitige Grows. Das Dashboard gibt einen schnellen Überblick über Gesundheit, Phase und Vitalwerte jeder Pflanze. Tauche tief in eine Pflanze ein, um ihre Lebenszyklus-Zeitleiste, historische Wachstums-Charts, ein komplettes Journal, eine Fotogalerie und personalisierte Ratschläge vom KI-Berater zu sehen. Du hast die volle CRUD-Kontrolle über die KI-Ratschläge und baust so ein einzigartiges Archiv für jede Pflanze auf.',
-        knowledge: '<strong>3. Die Bibliothek ({knowledgeView}):</strong> Folge der interaktiven Schritt-für-Schritt-Anleitung, um die Grundlagen zu meistern. Hake Checklisten ab, um deinen Lernfortschritt zu verfolgen. Stelle dem KI-Mentor deine Fragen und verwalte die Antworten in deinem persönlichen Wissensarchiv mit voller CRUD-Funktionalität.',
-        equipment: '<strong>4. Die Werkstatt ({equipmentView}):</strong> Plane dein Setup mit dem KI-Konfigurator, der maßgeschneiderte Empfehlungen generiert. Speichere, bearbeite (CRUD) und exportiere deine Setups. Nutze die essentiellen Rechner für Belüftung, Beleuchtung und mehr.',
-        settings: '<strong>5. Das Kontrollzentrum ({settingsView}):</strong> Passe die App mit Sprachen und Themen an. Verwalte deine Daten mit der robusten Backup- & Wiederherstellungsfunktion für die gesamte App.',
-        commandPalette: '<strong>Befehlspalette:</strong> Drücke überall <strong>Cmd/Strg + K</strong> für den Schnellzugriff. Navigiere sofort, führe Aktionen wie "Alle gießen" aus oder inspiziere eine Pflanze, ohne zu klicken.'
+      sections: {
+        s1: {
+          title: '1. Die Sorten-Datenbank (Ansicht <strong>Sorten</strong>)',
+          description: 'Deine zentrale Bibliothek für Cannabis-Wissen, vollständig offline verfügbar.<ul><li><strong>Riesige Bibliothek:</strong> Zugriff auf detaillierte Informationen zu über 300+ Cannabissorten.</li><li><strong>Leistungsstarke Filter & Sortierung:</strong> Finde Sorten nach Name, THC/CBD-Bereich, Blütezeit, Schwierigkeit, Typ, Aromen und Terpenen.</li><li><strong>Duale Ansichtsmodi:</strong> Wechsle zwischen einer detaillierten Listenansicht und einer ansprechenden Rasteransicht.</li><li><strong>Eigene Sorten verwalten (CRUD):</strong> Füge deine eigenen Sorten hinzu, bearbeite oder lösche sie.</li><li><strong>Professioneller Export:</strong> Exportiere Daten als PDF, CSV, TXT oder JSON.</li><li><strong>Export-Management:</strong> Greife im "Exporte"-Tab auf deine Export-Historie zu.</li></ul>'
+        },
+        s2: {
+          title: '2. Der Grow Room (Ansicht <strong>Pflanzen</strong>)',
+          description: 'Deine Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Grows.<ul><li><strong>Interaktives Dashboard:</strong> Verwalte deine Pflanzen in drei Slots. Jede Karte zeigt den Status auf einen Blick.</li><li><strong>Gartenübersicht:</strong> Sieh die allgemeine Gesundheit deines Gartens, offene Aufgaben und globale Aktionen wie "Alle gießen".</li><li><strong>Detaillierte Pflanzenansicht:</strong> Klicke auf eine Pflanze für eine Tiefenanalyse mit Übersicht, Journal, Aufgaben, Fotogalerie und dem KI-Berater.</li><li><strong>KI-Pflanzenberater:</strong> Erhalte personalisierte, datengestützte Ratschläge von der KI. Verwalte diese Ratschläge im pflanzenspezifischen Archiv (CRUD).</li><li><strong>Globales Berater-Archiv:</strong> Ein Dashboard, das alle gespeicherten KI-Ratschläge von all deinen Pflanzen zusammenfasst.</li></ul>'
+        },
+        s3: {
+          title: '3. Die Werkstatt (Ansicht <strong>Ausrüstung</strong>)',
+          description: 'Plane und optimiere dein reales Grow-Setup.<ul><li><strong>KI-Setup-Konfigurator:</strong> Generiere eine komplette Ausrüstungsliste basierend auf deinen Bedürfnissen.</li><li><strong>Gespeicherte Setups (CRUD):</strong> Speichere, bearbeite, exportiere und lösche deine Konfigurationen.</li><li><strong>Essentielle Rechner:</strong> Eine Suite von Werkzeugen für Belüftung, Beleuchtung, Kosten und mehr.</li><li><strong>Kuratierte Grow-Shops:</strong> Eine hilfreiche Liste von seriösen Online-Shops in Europa und den USA.</li></ul>'
+        },
+        s4: {
+          title: '4. Die Bibliothek (Ansichten <strong>Wissen</strong> & <strong>Hilfe</strong>)',
+          description: 'Deine vollständige Ressource zum Lernen und zur Problemlösung.<ul><li><strong>Interaktiver Grow-Guide:</strong> Eine geführte Reise durch die fünf Hauptphasen des Anbaus mit Fortschrittsverfolgung.</li><li><strong>KI-Mentor mit CRUD-Archiv:</strong> Stelle allgemeine Anbaufragen an die KI. Speichere, sieh an, bearbeite und lösche die Antworten, um deine persönliche Wissensdatenbank aufzubauen.</li><li><strong>Umfassendes Hilfecenter:</strong> Detaillierte FAQ, Anleitungen und tiefgehende Lexika zu Cannabinoiden, Terpenen und Flavonoiden.</li></ul>'
+        },
+        s5: {
+          title: '5. Das Kontrollzentrum (Ansicht <strong>Einstellungen</strong>)',
+          description: 'Passe die App an und verwalte deine Daten.<ul><li><strong>Personalisierung:</strong> Ändere Sprache, Thema, Schriftgröße und Standardansicht.</li><li><strong>Barrierefreiheit:</strong> Aktiviere Hochkontrastmodus, eine legasthenikerfreundliche Schriftart oder reduzierte Bewegung.</li><li><strong>Datenverwaltung:</strong> Erstelle ein komplettes Backup all deiner App-Daten in einer einzigen JSON-Datei oder setze die App zurück.</li></ul>'
+        },
+        s6: {
+          title: 'Befehlspalette (<strong>Cmd/Strg + K</strong>)',
+          description: 'Drücke überall <strong>Cmd/Strg + K</strong> für den Schnellzugriff. Navigiere sofort, führe Aktionen wie "Alle gießen" aus oder inspiziere eine Pflanze, ohne zu klicken.'
+        }
       }
     },
     faq: {

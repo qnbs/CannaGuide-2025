@@ -1,8 +1,7 @@
 import React from 'react';
-// FIX: Correct import path for types.
-import { PlantStage } from '../../../types';
-import { PLANT_STAGE_DETAILS, STAGES_ORDER } from '../../../constants';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { PlantStage } from '@/types';
+import { PLANT_STAGE_DETAILS, STAGES_ORDER } from '@/constants';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface TimelineProps {
     currentStage: PlantStage;

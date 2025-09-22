@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { JournalEntry } from '../../../../types';
-import { Card } from '../../../common/Card';
-import { useTranslations } from '../../../../hooks/useTranslations';
-import { dbService } from '../../../../services/dbService';
-import { SkeletonLoader } from '../../../common/SkeletonLoader';
+import { JournalEntry } from '@/types';
+import { Card } from '@/components/common/Card';
+import { useTranslations } from '@/hooks/useTranslations';
+import { dbService } from '@/services/dbService';
+import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
 interface PhotoTabProps {
     journal: JournalEntry[];

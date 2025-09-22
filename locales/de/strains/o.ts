@@ -18,7 +18,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
   },
   "orange-bud": {
-    "description": "Eine klassische Skunk-Sorte, bekannt für ihre leuchtend orangefarbenen Haare und ihr süßes, zitrusartiges Aroma. Die Wirkung ist erhebend, energetisierend und fröhlich.",
+    "description": "Eine klassische Skunk-Sorte, bekannt für ihre leuchtend orangen Haare und ihr süßes, zitrusartiges Aroma. Die Wirkung ist erhebend, energetisierend und fröhlich.",
     "typeDetails": "Sativa 90% / Indica 10%",
     "genetics": "Skunk #1 Phänotyp",
     "aromas": [
@@ -54,7 +54,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" }
   },
   "orange-cream-sicle": {
-    "description": "Eine ausgewogene Hybride mit einem süßen, cremigen Orangenaroma, das an Eiscreme erinnert. Die Wirkung ist entspannend und erhebend.",
+    "description": "Eine ausgewogene Hybride mit einem süßen, cremigen Orangenaroma, das an ein Eis am Stiel erinnert. Die Wirkung ist entspannend und erhebend.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Orange Crush x Juicy Fruit",
     "aromas": [
@@ -90,7 +90,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2.2 m)" }
   },
   "orange-juice": {
-    "description": "Eine sativa-dominante Sorte mit einem starken, frischen Orangensaftaroma. Die Wirkung ist erhebend, energetisierend und fröhlich.",
+    "description": "Eine sativa-dominante Sorte mit einem starken, frischen Orangensaft-Aroma. Die Wirkung ist erhebend, energetisierend und fröhlich.",
     "typeDetails": "Sativa 70% / Indica 30%",
     "genetics": "California Orange x Skunk #1",
     "aromas": [

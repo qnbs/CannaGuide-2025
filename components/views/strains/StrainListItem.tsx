@@ -1,11 +1,10 @@
 import React, { useId } from 'react';
-// FIX: Correct import path for types.
-import { Strain } from '../../../types';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { Button } from '../../common/Button';
-import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
-import { LIST_GRID_CLASS } from './constants';
+import { Strain } from '@/types';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { Button } from '@/components/common/Button';
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -83,18 +82,21 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                     aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     aria-pressed={isFavorite}
                 >
-                    {/* FIX: Correct weight prop type to allow 'fill' or 'regular' */}
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>
             <div className="min-w-0 px-3 py-3 text-sm">
-                <p className="font-semibold text-slate-100 truncate">{strain.name}</p>
+                <p className="font-semibold text-slate-100 truncate flex items-center gap-1.5">
+                     {/* FIX: The `title` prop is not valid on the `PhosphorIcons.Star` component. Moved it to a wrapping `span` element to provide a tooltip for accessibility. */}
+                     {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
+                    {strain.name}
+                </p>
                  <p className="text-xs text-slate-400 sm:hidden">{strain.type}</p>
             </div>
             {visibleColumns.type && <div className="hidden sm:flex items-center px-3 py-3 text-sm" title={strain.typeDetails || strain.type}><TypeDisplay /></div>}
             {visibleColumns.thc && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>}
             {visibleColumns.cbd && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>}
-            {visibleColumns.floweringTime && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-200">{strain.floweringTime} {t('strainsView.weeks')}</div>}
+            {visibleColumns.floweringTime && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-200">{strain.floweringTime} {t('common.units.weeks')}</div>}
             {visibleColumns.yield && <div className="hidden md:flex items-center px-3 py-3 text-sm text-slate-300">{strain.agronomic.yieldDetails?.indoor || 'N/A'}</div>}
             {visibleColumns.difficulty && <div className="flex items-center px-3 py-3" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">

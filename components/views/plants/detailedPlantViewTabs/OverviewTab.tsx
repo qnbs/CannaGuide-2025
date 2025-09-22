@@ -1,12 +1,12 @@
 import React from 'react';
-import { Plant } from '../../../../types';
-import { Card } from '../../../common/Card';
-import { PlantVisual } from '../PlantVisual';
-import { PLANT_STAGE_DETAILS } from '../../../../constants';
-import { HistoryChart } from '../HistoryChart';
-import { PlantLifecycleTimeline } from '../PlantLifecycleTimeline';
-import { useTranslations } from '../../../../hooks/useTranslations';
-import { VitalBar } from '../VitalBar';
+import { Plant } from '@/types';
+import { Card } from '@/components/common/Card';
+import { PlantVisual } from '@/components/views/plants/PlantVisual';
+import { PLANT_STAGE_DETAILS } from '@/constants';
+import { HistoryChart } from '@/components/views/plants/HistoryChart';
+import { PlantLifecycleTimeline } from '@/components/views/plants/PlantLifecycleTimeline';
+import { useTranslations } from '@/hooks/useTranslations';
+import { VitalBar } from '@/components/views/plants/VitalBar';
 
 interface OverviewTabProps {
     plant: Plant;
@@ -29,9 +29,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                     <h3 className="text-lg font-bold font-display text-primary-400 mb-3">{t('plantsView.detailedView.vitals')}</h3>
                     <div className="space-y-4">
                        <VitalBar label={t('plantsView.vitals.ph')} value={plant.vitals.ph} min={4} max={8} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} unit="" colorClass="bg-green-500" />
-                       <VitalBar label={t('plantsView.vitals.ec')} value={plant.vitals.ec} min={0} max={3} idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} unit=" mS/cm" colorClass="bg-amber-500" />
-                       <VitalBar label={t('plantsView.vitals.moisture')} value={plant.vitals.substrateMoisture} min={0} max={100} idealMin={30} idealMax={80} unit="%" colorClass="bg-blue-500" />
-                       <VitalBar label={t('plantsView.detailedView.stress')} value={plant.stressLevel} min={0} max={100} idealMin={0} idealMax={20} unit="%" colorClass="bg-red-500" />
+                       <VitalBar label={t('plantsView.vitals.ec')} value={plant.vitals.ec} min={0} max={3} idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} unit={` ${t('common.units.ms_cm')}`} colorClass="bg-amber-500" />
+                       <VitalBar label={t('plantsView.vitals.moisture')} value={plant.vitals.substrateMoisture} min={0} max={100} idealMin={30} idealMax={80} unit={t('common.units.percent')} colorClass="bg-blue-500" />
+                       <VitalBar label={t('plantsView.detailedView.stress')} value={plant.stressLevel} min={0} max={100} idealMin={0} idealMax={20} unit={t('common.units.percent')} colorClass="bg-red-500" />
                     </div>
                 </Card>
             </div>

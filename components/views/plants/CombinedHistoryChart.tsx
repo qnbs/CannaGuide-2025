@@ -1,6 +1,6 @@
 import React from 'react';
-import { Plant } from '../../../types';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { Plant } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface CombinedHistoryChartProps {
     plants: Plant[];

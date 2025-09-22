@@ -1,19 +1,44 @@
 export const helpView = {
   title: 'Help Center',
   tabs: {
-    cultivation: 'Cultivation',
+    start: 'Getting Started',
+    faq: 'FAQ',
+    cultivation: 'Cultivation Guide',
+    lexicons: 'Lexicons',
+    about: 'About'
   },
+  searchPlaceholder: 'Search in help...',
+  expandAll: 'Expand All',
+  collapseAll: 'Collapse All',
+  noResults: 'No results found for "{term}".',
   sections: {
     firstSteps: {
       title: 'First Steps & Main Features',
-      description: 'Welcome to the CannaGuide! This app is your interactive companion for cannabis cultivation. Here is a brief overview of its powerful features:',
-      list: {
-        strains: '<strong>1. The Strain Database ({strainsView}):</strong> Your central library for cannabis knowledge. Access data on 300+ strains, use powerful search and advanced filters (THC/CBD, flowering time, terpenes), switch between List and Grid views, and manage your own custom strains with full Create, Read, Update & Delete (CRUD) capabilities. Export any selection to professional PDF, CSV, TXT, or JSON formats.',
-        plants: '<strong>2. The Grow Room ({plantsView}):</strong> Your command center for up to three simultaneous grows. The dashboard gives an at-a-glance overview of each plant\'s health, stage, and vitals. Dive deep into any plant to view its lifecycle timeline, historical growth charts, a complete journal, a photo gallery, and get personalized advice from the AI Advisor. You have full CRUD control over the AI\'s advice, building a unique archive for each plant.',
-        knowledge: '<strong>3. The Library ({knowledgeView}):</strong> Follow the interactive step-by-step guide to master the basics. Check off checklist items to track your learning progress. Ask the AI Mentor your questions and manage the answers in your personal knowledge archive with full CRUD functionality.',
-        equipment: '<strong>4. The Workshop ({equipmentView}):</strong> Plan your setup with the AI Configurator that generates tailored recommendations. Save, edit (CRUD), and export your setups. Use the essential calculators for ventilation, lighting, and more.',
-        settings: '<strong>5. The Control Panel ({settingsView}):</strong> Customize the app with languages and themes. Manage your data with the robust full-app backup and restore feature.',
-        commandPalette: '<strong>Command Palette:</strong> Press <strong>Cmd/Ctrl + K</strong> anywhere for quick access. Instantly navigate, perform actions like "Water All", or inspect a plant without clicking.'
+      sections: {
+        s1: {
+          title: '1. The Strain Database (<strong>Strains</strong> View)',
+          description: 'Your central library for cannabis knowledge, fully available offline.<ul><li><strong>Massive Library:</strong> Access detailed information on 300+ cannabis strains.</li><li><strong>Powerful Filtering & Sorting:</strong> Find strains by name, THC/CBD range, flowering time, difficulty, type, aromas, and terpenes.</li><li><strong>Dual View Modes:</strong> Switch between a detailed List View and a visual Grid View.</li><li><strong>Manage Your Strains (CRUD):</strong> Add your own custom strains, edit, or delete them.</li><li><strong>Professional Exporting:</strong> Export data as professional PDF, CSV, TXT, or JSON files.</li><li><strong>Export Management:</strong> Access your export history in the "Exports" tab for quick re-downloads.</li></ul>'
+        },
+        s2: {
+          title: '2. The Grow Room (<strong>Plants</strong> View)',
+          description: 'Your command center for managing and simulating up to three simultaneous grows.<ul><li><strong>Interactive Dashboard:</strong> Manage your plants in three slots. Each card shows at-a-glance status.</li><li><strong>Garden Overview:</strong> See your garden\'s overall health, open tasks, and global actions like "Water All".</li><li><strong>Detailed Plant View:</strong> Click a plant for a deep dive with an overview, journal, tasks, photo gallery, and the AI Advisor.</li><li><strong>AI Plant Advisor:</strong> Get personalized, data-driven advice from the AI. Manage this advice in the plant-specific archive (CRUD).</li><li><strong>Global Advisor Archive:</strong> A dashboard that aggregates all saved AI advice from all your plants.</li></ul>'
+        },
+        s3: {
+          title: '3. The Workshop (<strong>Equipment</strong> View)',
+          description: 'Plan and optimize your real-world grow setup.<ul><li><strong>AI Setup Configurator:</strong> Generate a complete equipment list based on your needs.</li><li><strong>Saved Setups (CRUD):</strong> Save, edit, export, and delete your configurations.</li><li><strong>Essential Calculators:</strong> A suite of tools for ventilation, lighting, costs, and more.</li><li><strong>Curated Grow Shops:</strong> A helpful list of reputable online shops in Europe and the USA.</li></ul>'
+        },
+        s4: {
+          title: '4. The Library (<strong>Knowledge</strong> & <strong>Help</strong> Views)',
+          description: 'Your complete resource for learning and problem-solving.<ul><li><strong>Interactive Grow Guide:</strong> A guided journey through the five main phases of cultivation with progress tracking.</li><li><strong>AI Mentor with CRUD Archive:</strong> Ask general growing questions to the AI. Save, view, edit, and delete the responses to build your personal knowledge base.</li><li><strong>Comprehensive Help Center:</strong> Detailed FAQ, guides, and in-depth lexicons for cannabinoids, terpenes, and flavonoids.</li></ul>'
+        },
+        s5: {
+          title: '5. The Control Panel (<strong>Settings</strong> View)',
+          description: 'Customize the app and manage your data with confidence.<ul><li><strong>Personalization:</strong> Change language, theme, font size, and default view.</li><li><strong>Accessibility:</strong> Enable High Contrast Mode, a Dyslexia-Friendly Font, or Reduced Motion.</li><li><strong>Data Management:</strong> Create a full backup of all your app data to a single JSON file or reset the app.</li></ul>'
+        },
+        s6: {
+          title: 'Command Palette (<strong>Cmd/Ctrl + K</strong>)',
+          description: 'Press <strong>Cmd/Ctrl + K</strong> anywhere for quick access. Instantly navigate, perform actions like "Water All," or inspect a plant without clicking through menus.'
+        }
       }
     },
     faq: {

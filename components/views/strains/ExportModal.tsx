@@ -1,11 +1,10 @@
-
 import React, { useState } from 'react';
-import { ExportSource, ExportFormat } from '../../../types';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useSettings } from '../../../hooks/useSettings';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { ExportSource, ExportFormat } from '@/types';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useSettings } from '@/hooks/useSettings';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ExportModalProps {
   isOpen: boolean;

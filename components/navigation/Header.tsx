@@ -14,19 +14,34 @@ interface HeaderProps {
     onInstallClick: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ setActiveView, onCommandPaletteOpen, showInstallPrompt, onInstallClick }) => {
+export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView, onCommandPaletteOpen, showInstallPrompt, onInstallClick }) => {
     const { t } = useTranslations();
+
+    const viewTitles: Record<View, string> = {
+        [View.Strains]: t('nav.strains'),
+        [View.Plants]: t('nav.plants'),
+        [View.Equipment]: t('nav.equipment'),
+        [View.Knowledge]: t('nav.knowledge'),
+        [View.Settings]: t('nav.settings'),
+        [View.Help]: t('nav.help'),
+    };
+
+    const currentTitle = viewTitles[activeView];
     
     return (
         <header className="glass-pane sticky top-0 z-30 flex-shrink-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    <div className="flex items-center gap-3">
-                        <CannabisLeafIcon className="w-8 h-8" />
-                        <h1 className="text-xl font-bold font-display text-slate-100 hidden sm:block">
-                            CannaGuide 2025
-                        </h1>
-                    </div>
+                    <button onClick={() => setActiveView(View.Plants)} className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1">
+                        <CannabisLeafIcon className="w-8 h-8 flex-shrink-0" />
+                        <div className="flex items-baseline gap-2">
+                            <h1 className="text-xl font-bold font-display text-slate-100 hidden sm:block">
+                                CannaGuide 2025
+                            </h1>
+                            <span className="text-slate-400 hidden sm:inline">/</span>
+                            <h2 className="text-lg font-semibold text-slate-300">{currentTitle}</h2>
+                        </div>
+                    </button>
                     <div className="flex items-center gap-2">
                         {showInstallPrompt && (
                             <Button onClick={onInstallClick} size="sm" className="hidden sm:flex items-center gap-1.5">

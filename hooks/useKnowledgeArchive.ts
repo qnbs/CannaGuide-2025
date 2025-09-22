@@ -1,9 +1,10 @@
 
+
 import { useState, useEffect, useCallback } from 'react';
-import { ArchivedMentorResponse } from '../types';
-import { useNotifications } from '../context/NotificationContext';
-import { useTranslations } from './useTranslations';
-import { storageService } from '../services/storageService';
+import { ArchivedMentorResponse } from '@/types';
+import { useNotifications } from '@/context/NotificationContext';
+import { useTranslations } from '@/hooks/useTranslations';
+import { storageService } from '@/services/storageService';
 
 const STORAGE_KEY = 'knowledge-archive';
 

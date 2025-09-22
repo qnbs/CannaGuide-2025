@@ -1,9 +1,9 @@
 import React from 'react';
-import { Card } from '../../../common/Card';
-import { Button } from '../../../common/Button';
-import { Task } from '../../../../types';
-import { useTranslations } from '../../../../hooks/useTranslations';
-import { PhosphorIcons } from '../../../icons/PhosphorIcons';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { Task } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface TasksTabProps {
     tasks: Task[];

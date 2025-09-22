@@ -1,7 +1,6 @@
 import React from 'react';
-// FIX: Correct import path for types.
-import { PlantHistoryEntry } from '../../../types';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { PlantHistoryEntry } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface HistoryChartProps {
     history: PlantHistoryEntry[];
@@ -63,11 +62,11 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
              <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-xs mt-2">
                  <span className="flex items-center gap-1.5">
                     <div className="w-2.5 h-0.5" style={{backgroundColor: '#3b82f6'}}></div>
-                    {t('plantsView.detailedView.height')} (cm)
+                    {`${t('plantsView.detailedView.height')} (${t('common.units.cm')})`}
                 </span>
                  <span className="flex items-center gap-1.5">
                     <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: '#ef4444'}}></div>
-                    {t('plantsView.detailedView.stress')} (%)
+                    {`${t('plantsView.detailedView.stress')} (${t('common.units.percent')})`}
                 </span>
             </div>
         </div>

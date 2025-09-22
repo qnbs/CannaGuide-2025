@@ -1,9 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { View, Command, Plant } from '../types';
-import { useTranslations } from './useTranslations';
-import { PhosphorIcons } from '../components/icons/PhosphorIcons';
-import { usePlants } from './usePlants';
-import { useSettings } from './useSettings';
+import { View, Command, Plant } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { usePlants } from '@/hooks/usePlants';
+import { useSettings } from '@/hooks/useSettings';
 
 interface UseCommandPaletteProps {
     setActiveView: (view: View) => void;

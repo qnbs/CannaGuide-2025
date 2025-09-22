@@ -263,7 +263,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
   },
   "black-dahlia": {
-    "description": "Eine indica-dominante Sorte, die für ihre dunklen, fast schwarzen Blätter und ihr süßes, beerenartiges Aroma bekannt ist. Die Wirkung ist entspannend und beruhigend, ideal zur Linderung von Stress und Schmerzen am Abend.",
+    "description": "Eine indica-dominante Sorte, bekannt für ihre dunklen, fast schwarzen Blätter und ihr süßes, beerenartiges Aroma. Die Wirkung ist entspannend und beruhigend, ideal zur Linderung von Stress und Schmerzen am Abend.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Black Cherry Soda x Querkle",
     "aromas": [

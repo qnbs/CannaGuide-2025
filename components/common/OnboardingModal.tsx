@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Card } from './Card';
-import { Button } from './Button';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { useTranslations } from '../../hooks/useTranslations';
-import { useSettings } from '../../hooks/useSettings';
-// FIX: Correct import path for types.
-import { Language } from '../../types';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useSettings } from '@/hooks/useSettings';
+import { Language } from '@/types';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface OnboardingModalProps {
     onClose: () => void;

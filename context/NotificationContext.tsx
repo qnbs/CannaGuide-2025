@@ -1,8 +1,7 @@
 import React, { createContext, useState, useCallback, ReactNode, useContext } from 'react';
-// FIX: Correct import path for types.
-import { Notification, NotificationType } from '../types';
-import { ToastContainer } from '../components/common/Toast';
-import { useSettings } from '../hooks/useSettings';
+import { Notification, NotificationType } from '@/types';
+import { ToastContainer } from '@/components/common/Toast';
+import { useSettings } from '@/hooks/useSettings';
 
 interface NotificationContextType {
   addNotification: (message: string, type?: NotificationType) => void;

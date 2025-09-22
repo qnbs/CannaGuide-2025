@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useId } from 'react';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useKnowledgeProgress } from '../../../hooks/useKnowledgeProgress';
-import { useKnowledgeArchive } from '../../../hooks/useKnowledgeArchive';
-import { geminiService } from '../../../services/geminiService';
-import { AIResponse, ArchivedMentorResponse } from '../../../types';
-import { EditResponseModal } from '../../common/EditResponseModal';
-import { Tabs } from '../../common/Tabs';
-import { useNotifications } from '../../../context/NotificationContext';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useKnowledgeProgress } from '@/hooks/useKnowledgeProgress';
+import { useKnowledgeArchive } from '@/hooks/useKnowledgeArchive';
+import { geminiService } from '@/services/geminiService';
+import { AIResponse, ArchivedMentorResponse } from '@/types';
+import { EditResponseModal } from '@/components/common/EditResponseModal';
+import { Tabs } from '@/components/common/Tabs';
+import { useNotifications } from '@/context/NotificationContext';
 
 type KnowledgeViewTab = 'guide' | 'archive';
 
@@ -156,22 +156,57 @@ export const KnowledgeView: React.FC = () => {
                             <PhosphorIcons.Brain className="w-6 h-6"/> {t('knowledgeView.aiMentor.title')}
                         </h3>
                         <p className="text-sm text-slate-400 mb-4">{t('knowledgeView.aiMentor.subtitle')}</p>
-                        <div className="flex gap-2">
-                            <label htmlFor={mentorInputId} className="sr-only">{t('knowledgeView.aiMentor.placeholder')}</label>
-                            <input id={mentorInputId} type="text" value={query} onChange={e => setQuery(e.target.value)} placeholder={t('knowledgeView.aiMentor.placeholder')} className="w-full pl-3 pr-3 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500" />
-                            <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>{t('knowledgeView.aiMentor.button')}</Button>
+                        
+                        <div className="relative">
+                             <input 
+                                id={mentorInputId} 
+                                value={query} 
+                                onChange={e => setQuery(e.target.value)} 
+                                placeholder={t('knowledgeView.aiMentor.placeholder')} 
+                                className="w-full pl-3 pr-10 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleAskMentor();
+                                    }
+                                }}
+                            />
+                            {query && !isLoading && (
+                                <button onClick={() => { setQuery(''); setAiResponse(null); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
+                                    <PhosphorIcons.XCircle className="w-5 h-5"/>
+                                </button>
+                            )}
                         </div>
+
+                        <div className="flex justify-between items-end mt-2">
+                            <div className="text-sm text-slate-400">
+                                <span className="font-semibold">{t('knowledgeView.aiMentor.examplePromptsTitle')}:</span>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    {(t('knowledgeView.aiMentor.examples') as string[]).map((ex, i) => (
+                                        <button key={i} onClick={() => setQuery(ex)} className="text-xs bg-slate-800 hover:bg-slate-700/80 px-2 py-1 rounded-md transition-colors">{ex}</button>
+                                    ))}
+                                </div>
+                            </div>
+                            <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>
+                                {t('knowledgeView.aiMentor.button')}
+                            </Button>
+                        </div>
+
                         {isLoading && (
-                            <div className="text-center p-4">
-                                <p className="text-slate-400 animate-pulse">{loadingMessage}</p>
+                            <div className="text-center p-6 flex flex-col items-center">
+                                <PhosphorIcons.Brain className="w-12 h-12 text-primary-500 animate-pulse mb-3" />
+                                <p className="text-slate-400">{loadingMessage || t('knowledgeView.aiMentor.loading')}</p>
                             </div>
                         )}
-                        {aiResponse && (
+                        {aiResponse && !isLoading && (
                             <Card className="mt-4 bg-slate-800 animate-fade-in">
-                                <h4 className="font-bold text-primary-300">{aiResponse.title}</h4>
-                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
-                                <div className="text-right mt-2">
-                                    <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>{t('knowledgeView.archive.saveButton')}</Button>
+                                <h4 className="font-bold text-primary-300 text-lg">{aiResponse.title}</h4>
+                                <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
+                                <div className="text-right mt-4">
+                                     <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>
+                                        <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
+                                        {t('knowledgeView.archive.saveButton')}
+                                    </Button>
                                 </div>
                             </Card>
                         )}

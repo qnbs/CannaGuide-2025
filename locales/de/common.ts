@@ -31,6 +31,7 @@ export const common = {
   error: 'Fehler',
   offlineWarning: 'Du bist offline. Einige Funktionen könnten eingeschränkt sein.',
   installPwa: 'App installieren',
+  installed: 'Installiert',
   installPwaDescription: 'Installiere diese Anwendung auf deinem Gerät für schnellen Zugriff und eine Offline-Erfahrung.',
   installPwaSuccess: 'App erfolgreich installiert!',
   installPwaDismissed: 'Installation abgelehnt.',

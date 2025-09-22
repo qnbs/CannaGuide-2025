@@ -30,7 +30,21 @@ const AppContent: React.FC = () => {
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
     const isOffline = useOnlineStatus();
-    const { deferredPrompt, handleInstallClick } = usePwaInstall();
+    const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
+
+    useEffect(() => {
+        // Request persistent storage to protect user data from being cleared automatically.
+        const requestPersistence = async () => {
+            if (navigator.storage && navigator.storage.persist) {
+                const isPersisted = await navigator.storage.persisted();
+                if (!isPersisted) {
+                    const result = await navigator.storage.persist();
+                    console.log(`Storage persistence request result: ${result}`);
+                }
+            }
+        };
+        requestPersistence();
+    }, []);
 
     useEffect(() => {
         // Initialize the strain service with the translation function.
@@ -107,7 +121,8 @@ const AppContent: React.FC = () => {
                 activeView={activeView} 
                 setActiveView={setActiveView} 
                 onCommandPaletteOpen={() => setIsCommandPaletteOpen(true)}
-                showInstallPrompt={!!deferredPrompt}
+                deferredPrompt={deferredPrompt}
+                isInstalled={isInstalled}
                 onInstallClick={handleInstallClick}
             />
             

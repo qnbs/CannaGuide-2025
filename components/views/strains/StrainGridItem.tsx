@@ -24,7 +24,6 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
     const { t } = useTranslations();
     const { state, actions } = useStrainView();
     const { hasAvailableSlots } = usePlants();
-    // FIX: Destructure toggleFavorite from actions instead of state.
     const { isFavorite } = state;
     const { toggleFavorite } = actions;
     
@@ -46,6 +45,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.selectStrain(strain); } }}
             role="button"
             tabIndex={0}
+            aria-label={`View details for ${strain.name}`}
         >
             <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                  {isUserStrain && onDelete && (

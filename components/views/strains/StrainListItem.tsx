@@ -30,7 +30,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     const { t } = useTranslations();
     const { state, actions } = useStrainView();
     const { hasAvailableSlots } = usePlants();
-    // FIX: Destructure toggleFavorite from actions instead of state.
     const { isFavorite } = state;
     const { toggleFavorite } = actions;
     const checkboxId = useId();
@@ -98,13 +97,13 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             {visibleColumns.cbd && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>}
             {visibleColumns.floweringTime && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-200">{strain.floweringTime} {t('common.units.weeks')}</div>}
             {visibleColumns.yield && <div className="hidden md:flex items-center px-3 py-3 text-sm text-slate-300">{strain.agronomic.yieldDetails?.indoor || 'N/A'}</div>}
-            {visibleColumns.difficulty && <div className="flex items-center px-3 py-3" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
+            <div className="flex items-center px-3 py-3" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Easy' ? 'text-green-500' : strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : 'text-red-500'}`} />
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
                 </div>
-            </div>}
+            </div>
             <div className="flex items-center justify-start px-3 py-3">
                 <div className="flex gap-1">
                     <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>

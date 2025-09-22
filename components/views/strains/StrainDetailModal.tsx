@@ -66,7 +66,6 @@ interface StrainDetailModalProps {
 export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
     const { state, actions } = useStrainView();
-    // FIX: Destructure toggleFavorite from actions and rename closeDetailModal to onClose for consistency.
     const { isFavorite } = state;
     const { toggleFavorite, closeDetailModal: onClose } = actions;
     const { addNotification } = useNotifications();

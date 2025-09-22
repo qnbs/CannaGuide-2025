@@ -5,29 +5,29 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
+import { useStrainView } from '@/context/StrainViewContext';
 
 interface StrainGridItemProps {
     strain: Strain;
     isFavorite: boolean;
-    onSelect: (strain: Strain) => void;
     onToggleFavorite: (id: string) => void;
     isUserStrain?: boolean;
-    onEdit?: (strain: Strain) => void;
     onDelete?: (id: string) => void;
+    hasAvailableSlots: boolean;
     index: number;
 }
 
 const StrainGridItem: React.FC<StrainGridItemProps> = ({
     strain,
     isFavorite,
-    onSelect,
     onToggleFavorite,
     isUserStrain = false,
-    onEdit,
     onDelete,
+    hasAvailableSlots,
     index,
 }) => {
     const { t } = useTranslations();
+    const { actions } = useStrainView();
     
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-500', Indica: 'text-indigo-500', Hybrid: 'text-blue-500' };
@@ -41,27 +41,35 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
         <Card 
             className="flex flex-col h-full cursor-pointer group relative hover:border-primary-500/50 transition-all p-3 animate-fade-in-stagger"
             style={{ animationDelay: `${index * 30}ms` }}
-            onClick={() => onSelect(strain)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(strain); } }}
+            onClick={() => actions.selectStrain(strain)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.selectStrain(strain); } }}
             role="button"
             tabIndex={0}
         >
-            <div className="absolute top-2 right-2 flex gap-1 z-10">
-                 {isUserStrain && onEdit && onDelete && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onEdit(strain))} aria-label={t('common.edit')}>
+            <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                 {isUserStrain && onDelete && (
+                    <div className="flex gap-1">
+                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => actions.openAddModal(strain))} aria-label={t('common.edit')}>
                             <PhosphorIcons.PencilSimple className="w-4 h-4" />
-                            <span className="sr-only">{t('common.edit')}</span>
                         </Button>
                         <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))} aria-label={t('common.delete')}>
-                            <PhosphorIcons.TrashSimple className="w-4 h-4" />
-                             <span className="sr-only">{t('common.delete')}</span>
+                             <PhosphorIcons.TrashSimple className="w-4 h-4" />
                         </Button>
                     </div>
                 )}
+                 <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
+                    <button
+                        onClick={(e) => handleActionClick(e, () => actions.initiateGrow(strain))}
+                        disabled={!hasAvailableSlots}
+                        className="p-1.5 rounded-full bg-slate-800/80 text-slate-300 hover:text-primary-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        aria-label={t('strainsView.startGrowing')}
+                    >
+                        <PhosphorIcons.Plant className="w-5 h-5" />
+                    </button>
+                </div>
                 <button
                     onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                    className={`favorite-btn-glow p-1 rounded-full bg-slate-700 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`}
+                    className={`favorite-btn-glow p-1.5 rounded-full bg-slate-800/80 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`}
                     aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     aria-pressed={isFavorite}
                 >

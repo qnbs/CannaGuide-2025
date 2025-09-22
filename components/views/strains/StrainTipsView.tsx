@@ -1,15 +1,18 @@
 import React, { useState, useMemo } from 'react';
-import { SavedStrainTip } from '@/types';
+import { SavedStrainTip, Strain } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
+import { useStrainView } from '@/context/StrainViewContext';
+import { usePlants } from '@/hooks/usePlants';
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[];
     deleteTip: (id: string) => void;
     updateTip: (updatedTip: SavedStrainTip) => void;
+    allStrains: Strain[];
 }
 
 const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => void, onDelete: (id: string) => void }> = ({ tip, onEdit, onDelete }) => {
@@ -36,8 +39,12 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 };
 
 
-export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip }) => {
+export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
     const { t } = useTranslations();
+    const { actions } = useStrainView();
+    const { plants } = usePlants();
+    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
+
     const [editingTip, setEditingTip] = useState<SavedStrainTip | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortMode, setSortMode] = useState<'grouped' | 'date'>('grouped');
@@ -125,21 +132,39 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
             ) : (
                 <div className="space-y-3">
                     {sortMode === 'grouped' ? (
-                        (groupedAndSortedTips as [string, SavedStrainTip[]][]).map(([strainName, tips]) => (
-                            <details key={strainName} open={true} className="group">
-                                 <summary className="list-none">
-                                    <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer">
-                                         <h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4>
-                                         <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
+                        (groupedAndSortedTips as [string, SavedStrainTip[]][]).map(([strainName, tips]) => {
+                             const strain = allStrains.find(s => s.id === tips[0].strainId);
+                             return (
+                                <details key={strainName} open={true} className="group">
+                                     <summary className="list-none">
+                                        <div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer">
+                                             <h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4>
+                                             <div className="flex items-center gap-2">
+                                                {strain && (
+                                                    <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="secondary"
+                                                            className="!p-1.5"
+                                                            onClick={(e) => { e.stopPropagation(); actions.initiateGrow(strain); }}
+                                                            disabled={!hasAvailableSlots}
+                                                        >
+                                                            <PhosphorIcons.Plant className="w-4 h-4" />
+                                                        </Button>
+                                                    </div>
+                                                )}
+                                                 <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
+                                             </div>
+                                        </div>
+                                    </summary>
+                                    <div className="pl-6 pt-3 space-y-3">
+                                        {tips.map(tip => (
+                                            <TipItem key={tip.id} tip={tip} onEdit={setEditingTip} onDelete={deleteTip} />
+                                        ))}
                                     </div>
-                                </summary>
-                                <div className="pl-6 pt-3 space-y-3">
-                                    {tips.map(tip => (
-                                        <TipItem key={tip.id} tip={tip} onEdit={setEditingTip} onDelete={deleteTip} />
-                                    ))}
-                                </div>
-                            </details>
-                        ))
+                                </details>
+                            )
+                        })
                     ) : (
                         (groupedAndSortedTips as SavedStrainTip[]).map(tip => (
                              <Card key={tip.id} className="bg-slate-800 animate-fade-in p-3">

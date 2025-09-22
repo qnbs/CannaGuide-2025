@@ -54,6 +54,7 @@ export const AiDiagnostics: React.FC = () => {
             setImagePreview(reader.result as string);
             setImageMimeType(file.type);
             setResponse(null);
+            handleDiagnose(reader.result as string, file.type);
         };
         reader.readAsDataURL(file);
     }, [addNotification, t]);
@@ -88,15 +89,16 @@ export const AiDiagnostics: React.FC = () => {
         setImageMimeType('image/jpeg');
         setResponse(null);
         setIsCameraOpen(false);
+        handleDiagnose(dataUrl, 'image/jpeg');
     };
     
-    const handleDiagnose = async () => {
-        if (!imagePreview || !imageMimeType) return;
+    const handleDiagnose = async (imageDataUrl: string, mimeType: string) => {
+        if (!imageDataUrl || !mimeType) return;
 
         setIsLoading(true);
         setResponse(null);
         try {
-            const base64Data = imagePreview.split(',')[1];
+            const base64Data = imageDataUrl.split(',')[1];
             const selectedPlant = activePlants.find(p => p.id === selectedPlantId);
             
             const context = {
@@ -104,7 +106,7 @@ export const AiDiagnostics: React.FC = () => {
                 userNotes: userNotes.trim() || undefined,
             };
 
-            const res = await geminiService.diagnosePlantProblem(base64Data, imageMimeType, context, t);
+            const res = await geminiService.diagnosePlantProblem(base64Data, mimeType, context, t);
             setResponse(res);
         } catch (error) {
             console.error("Diagnosis Error:", error);

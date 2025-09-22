@@ -14,6 +14,7 @@ export const strainsView = {
   sativa: 'Sativa',
   indica: 'Indica',
   hybrid: 'Hybrid',
+  all: 'All',
   level: 'Difficulty',
   yield: 'Yield',
   height: 'Height',
@@ -22,6 +23,7 @@ export const strainsView = {
   cbdMax: 'Max. CBD (%)',
   terpenes: 'Terpenes',
   aromas: 'Aromas',
+  toggleView: 'Toggle view mode',
   loadError: 'Failed to load strain data. Please check your connection or try again later.',
   tabs: {
     allStrains: 'All Strains',

@@ -9,6 +9,7 @@ import { StrainsView } from '@/components/views/StrainsView';
 import { PlantsView } from '@/components/views/PlantsView';
 import { EquipmentView } from '@/components/views/EquipmentView';
 import { KnowledgeView } from '@/components/views/KnowledgeView';
+// FIX: Corrected import error by creating the SettingsView component.
 import { SettingsView } from '@/components/views/SettingsView';
 import { HelpView } from '@/components/views/HelpView';
 import { OnboardingModal } from '@/components/common/OnboardingModal';

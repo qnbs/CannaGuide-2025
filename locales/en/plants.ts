@@ -1,3 +1,4 @@
+
 export const plantsView = {
   title: 'My Grow Room',
   plantCard: {
@@ -180,8 +181,8 @@ export const plantsView = {
         label: 'SCROG',
         tooltip: 'Using a screen (Screen of Green) to guide shoots horizontally, creating a perfectly even canopy.'
       },
-      superCropping: {
-        label: 'Super Cropping',
+      supercropping: {
+        label: 'Supercropping',
         tooltip: 'Carefully pinching and bending stems to damage the inner tissue, promoting stronger growth and better nutrient flow.'
       }
     },

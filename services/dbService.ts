@@ -1,5 +1,5 @@
 
-const DB_NAME = 'CannabisGrowGuideDB';
+const DB_NAME = 'CannaGuide2025DB';
 const DB_VERSION = 1;
 const STORE_NAME = 'plant_images';
 

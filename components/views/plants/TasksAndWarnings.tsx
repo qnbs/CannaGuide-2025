@@ -47,7 +47,7 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
                     <div className="space-y-3">
                         {problems.map((problem, index) => (
                             <div key={`${problem.plantId}-${index}`} className="p-2 border-l-4 border-amber-500/50 bg-amber-500/10 rounded-r-md">
-                                <p className="font-bold text-sm text-slate-100">{t(problem.message)}</p>
+                                <p className="font-bold text-sm text-slate-100">{t(`problemMessages.${problem.type.charAt(0).toLowerCase() + problem.type.slice(1)}.message`)}</p>
                                 <p className="text-xs text-slate-300">{problem.plantName}</p>
                             </div>
                         ))}

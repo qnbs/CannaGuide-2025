@@ -29,7 +29,7 @@ export const settingsView = {
     },
     defaultView: 'Standard-Startansicht',
     installApp: 'App installieren',
-    installAppDesc: 'Installiere den CannaGuide auf deinem Gerät für ein natives App-Erlebnis, inklusive Offline-Zugriff.',
+    installAppDesc: 'Installiere den CannaGuide 2025 auf deinem Gerät für ein natives App-Erlebnis, inklusive Offline-Zugriff.',
   },
   accessibility: {
     title: 'Barrierefreiheit',
@@ -137,7 +137,7 @@ export const settingsView = {
     importConfirm: 'Bist du sicher, dass du diese Daten importieren möchtest? Dies wird alle deine aktuellen Daten überschreiben.',
     importSuccess: 'Daten erfolgreich importiert! Die App wird neu geladen.',
     importError: 'Fehler beim Importieren der Daten',
-    importInvalidFile: 'Ungültige Backup-Datei.',
+    importInvalidFile: 'Ungültige CannaGuide 2025 Backup-Datei.',
   },
    about: {
       title: 'Über die App',

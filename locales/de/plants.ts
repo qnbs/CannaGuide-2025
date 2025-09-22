@@ -1,3 +1,4 @@
+
 export const plantsView = {
   title: 'Mein Grow Room',
   plantCard: {
@@ -180,8 +181,8 @@ export const plantsView = {
         label: 'SCROG',
         tooltip: 'Verwendung eines Netzes (Screen of Green), um die Triebe horizontal zu führen und ein perfekt ebenes Blätterdach zu schaffen.'
       },
-      superCropping: {
-        label: 'Super Cropping',
+      supercropping: {
+        label: 'Supercropping',
         tooltip: 'Vorsichtiges Quetschen und Biegen von Stängeln, um das innere Gewebe zu verletzen, was zu stärkerem Wachstum und besserem Nährstofffluss führt.'
       }
     },

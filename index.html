@@ -19,20 +19,20 @@
 </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cannabis Grow Guide with Gemini</title>
-    <meta name="description" content="An interactive guide to help you manage your cannabis cultivation journey, from seed to harvest. Track your plants, learn about strains, and get expert tips on equipment and techniques." />
+    <title>CannaGuide 2025 - Cannabis Grow Guide with Gemini</title>
+    <meta name="description" content="Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 300+ strains, get AI equipment advice, and master your grow with an interactive guide." />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0F172A" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Cannabis Grow Guide with Gemini" />
-    <link rel="apple-touch-icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3c!-- Background squircle --%3e%3cpath fill='rgb(20, 31, 25)' d='M50,0 C10,0 0,10 0,50 C0,90 10,100 50,100 C90,100 100,90 100,50 C100,10 90,0 50,0 Z'/%3e%3c!-- Central Leaf Icon with gradient --%3e%3cdefs%3e%3clinearGradient id='leaf-grad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:rgb(74, 222, 128)'/%3e%3cstop offset='100%25' style='stop-color:rgb(16, 185, 129)'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath fill='url(%23leaf-grad)' transform='scale(0.8) translate(12.5, 12.5)' d='M50 0C48.7 13.9 44.8 21.6 40 29.3C28.2 29.7 19.3 32 15.6 43.1C14.7 46.1 16.1 49.3 18.8 51.1C24.4 54.8 30.5 53.9 35.2 49.6C38.9 56.6 41.5 65.4 43.3 75C46.6 74.3 48.8 72.8 50 70.7C51.2 72.8 53.4 74.3 56.7 75C58.5 65.4 61.1 56.6 64.8 49.6C69.5 53.9 75.6 54.8 81.2 51.1C83.9 49.3 85.3 46.1 84.4 43.1C80.7 32 71.8 29.7 60 29.3C55.2 21.6 51.3 13.9 50 0Z'/%3e%3c/svg%3e" />
+    <meta name="apple-mobile-web-app-title" content="CannaGuide 2025" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3e%3c!-- Background squircle --%3e%3cpath fill='rgb(15, 23, 42)' d='M50,0 C10,0 0,10 0,50 C0,90 10,100 50,100 C90,100 100,90 100,50 C100,10 90,0 50,0 Z'/%3e%3c!-- Central Leaf Icon with gradient --%3e%3cdefs%3e%3clinearGradient id='leaf-grad' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3e%3cstop offset='0%25' style='stop-color:rgb(96, 165, 250)'/%3e%3cstop offset='100%25' style='stop-color:rgb(6, 182, 212)'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath fill='url(%23leaf-grad)' transform='scale(0.8) translate(12.5, 12.5)' d='M50 0C48.7 13.9 44.8 21.6 40 29.3C28.2 29.7 19.3 32 15.6 43.1C14.7 46.1 16.1 49.3 18.8 51.1C24.4 54.8 30.5 53.9 35.2 49.6C38.9 56.6 41.5 65.4 43.3 75C46.6 74.3 48.8 72.8 50 70.7C51.2 72.8 53.4 74.3 56.7 75C58.5 65.4 61.1 56.6 64.8 49.6C69.5 53.9 75.6 54.8 81.2 51.1C83.9 49.3 85.3 46.1 84.4 43.1C80.7 32 71.8 29.7 60 29.3C55.2 21.6 51.3 13.9 50 0Z'/%3e%3c/svg%3e" />
 
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <style>
-      :root, :root.dark.theme-midnight { color-scheme: dark; --color-bg-primary: 15 23 42; --color-bg-component: 30 41 59; --color-border: 51 65 85; --color-primary-50: 239 246 255; --color-primary-100: 219 234 254; --color-primary-200: 191 219 254; --color-primary-300: 147 197 253; --color-primary-400: 96 165 250; --color-primary-500: 59 130 246; --color-primary-600: 37 99 235; --color-primary-700: 29 78 216; --color-primary-800: 30 64 175; --color-primary-900: 30 58 138; --color-primary-950: 23 37 84; --color-accent-50: 236 254 255; --color-accent-100: 207 250 254; --color-accent-200: 165 243 252; --color-accent-300: 103 232 249; --color-accent-400: 34 211 238; --color-accent-500: 6 182 212; --color-accent-600: 8 145 178; --color-accent-700: 14 116 144; --color-accent-800: 21 94 117; --color-accent-900: 24 78 99; --color-accent-950: 8 46 60; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 2 6 23; --color-text-on-accent: 23 37 84; }
+      :root, :root.dark.theme-midnight { color-scheme: dark; --color-bg-primary: 0 0 0; --color-bg-component: 10 10 10; --color-border: 120 120 120; --color-primary-50: 239 246 255; --color-primary-100: 219 234 254; --color-primary-200: 191 219 254; --color-primary-300: 147 197 253; --color-primary-400: 96 165 250; --color-primary-500: 59 130 246; --color-primary-600: 37 99 235; --color-primary-700: 29 78 216; --color-primary-800: 30 64 175; --color-primary-900: 30 58 138; --color-primary-950: 23 37 84; --color-accent-50: 236 254 255; --color-accent-100: 207 250 254; --color-accent-200: 165 243 252; --color-accent-300: 103 232 249; --color-accent-400: 34 211 238; --color-accent-500: 6 182 212; --color-accent-600: 8 145 178; --color-accent-700: 14 116 144; --color-accent-800: 21 94 117; --color-accent-900: 24 78 99; --color-accent-950: 8 46 60; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 255 255 255; --color-neutral-400: 220 220 220; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 2 6 23; --color-text-on-accent: 23 37 84; }
       :root.dark.theme-forest { color-scheme: dark; --color-bg-primary: 20 31 25; --color-bg-component: 28 44 35; --color-border: 41 61 49; --color-primary-50: 240 253 244; --color-primary-100: 220 252 231; --color-primary-200: 187 247 208; --color-primary-300: 134 239 172; --color-primary-400: 74 222 128; --color-primary-500: 34 197 94; --color-primary-600: 22 163 74; --color-primary-700: 21 128 61; --color-primary-800: 22 101 52; --color-primary-900: 20 83 45; --color-primary-950: 5 46 22; --color-accent-50: 236 252 241; --color-accent-100: 209 250 229; --color-accent-200: 167 243 208; --color-accent-300: 110 231 183; --color-accent-400: 52 211 153; --color-accent-500: 16 185 129; --color-accent-600: 5 150 105; --color-accent-700: 4 120 87; --color-accent-800: 6 95 70; --color-accent-900: 6 78 59; --color-accent-950: 3 44 34; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 2 6 23; --color-text-on-accent: 5 46 22; }
       :root.dark.theme-purpleHaze { color-scheme: dark; --color-bg-primary: 28 25 45; --color-bg-component: 40 37 68; --color-border: 55 51 86; --color-primary-50: 245 243 255; --color-primary-100: 238 234 254; --color-primary-200: 224 218 255; --color-primary-300: 198 189 255; --color-primary-400: 163 148 255; --color-primary-500: 128 109 251; --color-primary-600: 110 87 248; --color-primary-700: 93 68 227; --color-primary-800: 77 54 186; --color-primary-900: 64 45 153; --color-primary-950: 37 26 89; --color-accent-50: 252 246 255; --color-accent-100: 247 236 255; --color-accent-200: 239 219 255; --color-accent-300: 227 194 255; --color-accent-400: 210 159 255; --color-accent-500: 192 121 255; --color-accent-600: 173 83 248; --color-accent-700: 149 57 222; --color-accent-800: 122 46 179; --color-accent-900: 100 39 146; --color-accent-950: 67 19 98; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 2 6 23; --color-text-on-accent: 255 255 255; }
       :root.dark.theme-desertSky { color-scheme: dark; --color-bg-primary: 38 34 50; --color-bg-component: 56 50 71; --color-border: 71 63 90; --color-primary-50: 247 243 255; --color-primary-100: 237 232 253; --color-primary-200: 221 214 254; --color-primary-300: 196 181 253; --color-primary-400: 167 139 250; --color-primary-500: 139 92 246; --color-primary-600: 124 58 237; --color-primary-700: 109 40 217; --color-primary-800: 91 33 182; --color-primary-900: 76 29 149; --color-primary-950: 46 16 101; --color-accent-50: 254 245 231; --color-accent-100: 253 230 138; --color-accent-200: 252 211 77; --color-accent-300: 251 191 36; --color-accent-400: 245 158 11; --color-accent-500: 217 119 6; --color-accent-600: 180 83 9; --color-accent-700: 146 64 14; --color-accent-800: 120 53 15; --color-accent-900: 99 44 19; --color-accent-950: 57 25 10; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 2 6 23; --color-text-on-accent: 46 16 101; }
@@ -46,10 +46,8 @@
       }
 
       .glass-pane {
-        background-color: rgba(var(--color-bg-component), 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(var(--color-border), 0.5);
+        background-color: rgb(var(--color-bg-component));
+        border: 1px solid rgb(var(--color-border));
         box-shadow: 0 0 0 1px rgba(var(--color-bg-primary), 0.1), 0 2px 4px rgba(0,0,0,0.1);
       }
 
@@ -65,10 +63,8 @@
       }
 
       .toast {
-        background-color: rgba(var(--color-bg-component), 0.9);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(var(--color-border), 0.5);
+        background-color: rgb(var(--color-bg-component));
+        border: 1px solid rgb(var(--color-border));
         transition: all 0.3s ease-in-out;
       }
 
@@ -254,20 +250,6 @@
       /* Accessibility & UI Styles */
       .dyslexia-font, .dyslexia-font body {
         font-family: 'IBM Plex Mono', monospace !important;
-      }
-      .high-contrast {
-        --color-bg-primary: 0 0 0;
-        --color-bg-component: 10 10 10;
-        --color-border: 120 120 120;
-        --color-neutral-300: 255 255 255;
-        --color-neutral-400: 220 220 220;
-      }
-      .high-contrast .glass-pane,
-      .high-contrast .toast {
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
-        background-color: rgb(var(--color-bg-component));
-        border: 1px solid rgb(var(--color-border));
       }
       .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
         animation-duration: 0.01ms !important;

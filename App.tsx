@@ -53,7 +53,6 @@ const AppContent: React.FC = () => {
         const root = window.document.documentElement;
         root.className = '';
         root.classList.add('dark', `theme-${settings.theme}`);
-        if (settings.accessibility.highContrast) root.classList.add('high-contrast');
         if (settings.accessibility.dyslexiaFont) root.classList.add('dyslexia-font');
         if (settings.accessibility.reducedMotion) root.classList.add('reduced-motion');
         if (settings.uiDensity === 'compact') root.classList.add('ui-density-compact');
@@ -76,6 +75,8 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         if (t) {
             strainService.init(t);
+            // Initialize the Zustand store with the translation function
+            useAppStore.getState().init(t);
         }
     }, [t]);
 
@@ -119,15 +120,12 @@ const AppContent: React.FC = () => {
 
     const renderView = () => {
         switch (activeView) {
-            // FIX: Remove `setActiveView` prop as it's now handled by the store.
             case View.Strains: return <StrainsView />;
-            // FIX: Remove `setActiveView` prop as it's now handled by the store.
             case View.Plants: return <PlantsView />;
             case View.Equipment: return <EquipmentView />;
             case View.Knowledge: return <KnowledgeView />;
             case View.Settings: return <SettingsView deferredPrompt={deferredPrompt} onInstallClick={handleInstallClick} />;
             case View.Help: return <HelpView />;
-            // FIX: Remove `setActiveView` prop as it's now handled by the store.
             default: return <PlantsView />;
         }
     };
@@ -142,7 +140,6 @@ const AppContent: React.FC = () => {
             />
 
             <Header 
-                // FIX: Remove `activeView` and `setActiveView` props as they are now accessed from the store within Header.
                 onCommandPaletteOpen={() => setIsCommandPaletteOpen(true)}
                 deferredPrompt={deferredPrompt}
                 isInstalled={isInstalled}
@@ -157,7 +154,6 @@ const AppContent: React.FC = () => {
                 </div>
             </main>
 
-            {/* FIX: Remove props from BottomNav as it accesses state directly from the store. */}
             <BottomNav />
         </div>
     );

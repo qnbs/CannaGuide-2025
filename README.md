@@ -1,7 +1,8 @@
 
-# 🌿 Cannabis Grow Guide with Gemini
 
-**Your AI-powered digital companion for the entire cannabis cultivation cycle.**
+# 🌿 CannaGuide 2025
+
+**Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle.**
 
 This advanced web application is designed to help both novice and experienced growers master their cultivation journey—from seed selection to a successful harvest and cure. Track your plants in a realistic simulation, learn about hundreds of strains, plan your equipment with AI-powered recommendations, and deepen your knowledge with our interactive step-by-step guide.
 
@@ -19,7 +20,7 @@ This advanced web application is designed to help both novice and experienced gr
 - [💻 Tech Stack](#-tech-stack)
 - [🏁 Getting Started](#-getting-started)
 - [⚠️ Disclaimer](#️-disclaimer)
-- [Deutsche Version (German Version)](#-cannabis-grow-guide-with-gemini-deutsch)
+- [Deutsche Version (German Version)](#-cannaguide-2025-deutsch)
 
 ---
 
@@ -157,9 +158,9 @@ No installation or setup is required. The application runs entirely in your web 
 ---
 ---
 
-# 🌿 Cannabis Grow Guide with Gemini (Deutsch)
+# 🌿 CannaGuide 2025 (Deutsch)
 
-**Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.**
+**Cannabis Grow Guide with Gemini - Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.**
 
 Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung. Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles über Hunderte von Sorten, planen Sie Ihre Ausrüstung mit KI-gestützten Empfehlungen und vertiefen Sie Ihr Wissen mit unserer interaktiven Schritt-für-Schritt-Anleitung.
 

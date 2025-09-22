@@ -36,16 +36,17 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ setActiveView }) => {
     const { t } = useTranslations();
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
 
+    // FIX: Replaced NodeJS.Timeout with inferred type from setInterval and refactored
+    // to conditionally set up and clear the interval, which is safer.
     useEffect(() => {
-        let intervalId: NodeJS.Timeout;
         if (settings.simulationSettings.autoAdvance) {
             updatePlantState(); // Initial update
             const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed];
-            intervalId = setInterval(() => {
+            const intervalId = setInterval(() => {
                 updatePlantState();
             }, speedInMinutes * 60 * 1000); 
+            return () => clearInterval(intervalId);
         }
-        return () => clearInterval(intervalId);
     }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, updatePlantState]);
 
     const activePlants = useMemo(() => plants.filter((p): p is Plant => p !== null), [plants]);

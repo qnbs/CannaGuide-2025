@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Strain, AIResponse } from '@/types';
+import { Strain, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useStrainNotes } from '@/hooks/useStrainNotes';
@@ -17,7 +17,7 @@ interface StrainDetailModalProps {
     onClose: () => void;
     isFavorite: boolean;
     onToggleFavorite: (id: string) => void;
-    onStartGrow: (setup: any, strain: Strain) => void;
+    onStartGrow: (setup: GrowSetup, strain: Strain) => void;
     onSaveTip: (strain: Strain, tip: AIResponse) => void;
 }
 

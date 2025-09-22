@@ -40,6 +40,7 @@ export const common = {
   page: 'Page',
   generated: 'Generated',
   for: 'For:',
+  moreActions: 'More actions',
   units: {
     cm: 'cm',
     ml: 'ml',

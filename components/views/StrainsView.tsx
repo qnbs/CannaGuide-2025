@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
 import { Strain, View, SortDirection, Plant, PlantStage, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFavorites } from '@/hooks/useFavorites';
@@ -25,15 +25,13 @@ import StrainListItem from '@/components/views/strains/StrainListItem';
 import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
 import AdvancedFilterModal from '@/components/views/strains/AdvancedFilterModal';
 import { StrainTipsView } from '@/components/views/strains/StrainTipsView';
-
+import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
+import { StrainViewProvider, useStrainView } from '@/context/StrainViewContext';
+import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
 type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
 
-interface StrainsViewProps {
-    setActiveView: (view: View) => void;
-}
-
-export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
+const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({ setActiveView }) => {
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
     const { settings } = useSettings();
@@ -41,28 +39,41 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     const { userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain } = useUserStrains();
     const { savedExports, addExport, deleteExport, updateExport } = useExportsManager();
     const { savedTips, addTip, updateTip, deleteTip } = useStrainTips();
-    const { startNewPlant } = usePlants();
+    const { startNewPlant, plants } = usePlants();
+    
+    // State from the new context
+    const { state, actions } = useStrainView();
+    const { selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen } = state;
+    
+    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
 
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(settings.strainsViewSettings.defaultViewMode);
     
-    const [selectedStrain, setSelectedStrain] = useState<Strain | null>(null);
-    const [strainToEdit, setStrainToEdit] = useState<Strain | null>(null);
-    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    const moreMenuRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) setIsMoreMenuOpen(false);
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        setIsLoading(true);
         strainService.getAllStrains().then(strains => {
             setAllStrains(strains);
-            // After initial load, if user-strains tab is active but empty, switch to 'all'
-            if (activeTab === 'my-strains' && userStrains.length === 0) {
-                setActiveTab('all');
-            }
+            if (activeTab === 'my-strains' && userStrains.length === 0) setActiveTab('all');
+            setIsLoading(false);
         }).catch(err => {
             console.error("Failed to load strains:", err);
             addNotification(t('strainsView.loadError'), 'error');
+            setIsLoading(false);
         });
     }, [t, userStrains.length, activeTab, addNotification]);
 
@@ -79,87 +90,45 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     }, [activeTab, allStrains, userStrains, favoriteIds]);
 
     const {
-        sortedAndFilteredStrains,
-        filterControls,
-        filterState,
-        isAdvancedFilterModalOpen,
-        setIsAdvancedFilterModalOpen,
-        tempFilterState,
-        setTempFilterState,
-        previewFilteredStrains,
-        openAdvancedFilterModal,
-        handleApplyAdvancedFilters,
+        sortedAndFilteredStrains, filterControls, filterState, isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen,
+        tempFilterState, setTempFilterState, previewFilteredStrains, openAdvancedFilterModal, handleApplyAdvancedFilters,
     } = useStrainFilters(strainsToDisplay, favoriteIds, {
-        key: settings.strainsViewSettings.defaultSortKey as any,
-        direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
+        key: settings.strainsViewSettings.defaultSortKey as any, direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
     });
     
-    const handleToggleAll = () => {
-        if (selectedIds.size === sortedAndFilteredStrains.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(sortedAndFilteredStrains.map(s => s.id)));
-        }
-    };
-    
-    const handleToggleSelection = useCallback((id: string) => {
-        setSelectedIds(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) newSet.delete(id);
-            else newSet.add(id);
-            return newSet;
-        });
-    }, []);
+    const handleToggleAll = () => setSelectedIds(prev => prev.size === sortedAndFilteredStrains.length ? new Set() : new Set(sortedAndFilteredStrains.map(s => s.id)));
+    const handleToggleSelection = useCallback((id: string) => setSelectedIds(prev => { const newSet = new Set(prev); newSet.has(id) ? newSet.delete(id) : newSet.add(id); return newSet; }), []);
 
     const handleExport = (source: 'selected' | 'favorites' | 'filtered' | 'all', format: 'pdf' | 'txt' | 'csv' | 'json') => {
         let strainsToExport: Strain[] = [];
-        let exportName = `CannaGuide_Export_${new Date().toISOString().split('T')[0]}`;
-        
         const sourceStrains = [...allStrains, ...userStrains];
-
         switch(source) {
             case 'selected': strainsToExport = sourceStrains.filter(s => selectedIds.has(s.id)); break;
             case 'favorites': strainsToExport = sourceStrains.filter(s => favoriteIds.has(s.id)); break;
             case 'filtered': strainsToExport = sortedAndFilteredStrains; break;
             case 'all': strainsToExport = strainsToDisplay; break;
         }
-
-        if (strainsToExport.length === 0) {
-            addNotification(t('common.noDataToExport'), 'error');
-            return;
-        }
-
-        exportName = `${t('strainsView.exportModal.sources.' + source)}-${strainsToExport.length}`;
-        const strainIds = strainsToExport.map(s => s.id);
-        
-        const savedExport = addExport({ name: exportName, source, format }, strainIds);
+        if (strainsToExport.length === 0) { addNotification(t('common.noDataToExport'), 'error'); return; }
+        const exportName = `${t('strainsView.exportModal.sources.' + source)}-${strainsToExport.length}`;
+        const savedExport = addExport({ name: exportName, source, format }, strainsToExport.map(s => s.id));
         const fileName = `${savedExport.name}-${savedExport.id.slice(-4)}`;
-
         switch (format) {
             case 'pdf': exportService.exportAsPDF(strainsToExport, fileName, t); break;
             case 'txt': exportService.exportAsTXT(strainsToExport, fileName, t); break;
             case 'csv': exportService.exportAsCSV(strainsToExport, fileName, t); break;
             case 'json': exportService.exportAsJSON(strainsToExport, fileName); break;
         }
-        
         addNotification(t('common.successfullyExported', { count: strainsToExport.length, format: format.toUpperCase() }), 'success');
     };
     
     const handleStartGrow = (setup: GrowSetup, strain: Strain) => {
-        const success = startNewPlant(strain, setup);
-        if (success) {
-            // Directly navigate and then clean up state. This is more robust.
-            setActiveView(View.Plants);
-            setSelectedStrain(null);
-        } else {
-            // Notification is handled inside startNewPlant hook
-            setSelectedStrain(null);
+        if (actions.confirmGrow(setup, strain)) {
+            const success = startNewPlant(strain, setup);
+            if (success) setActiveView(View.Plants);
         }
     };
 
-    const handleSaveTip = (strain: Strain, tip: AIResponse) => {
-        addTip(strain, tip);
-    };
+    const handleSaveTip = (strain: Strain, tip: AIResponse) => addTip(strain, tip);
 
     const allAromas = useMemo(() => Array.from(new Set(strainsToDisplay.flatMap(s => s.aromas || []))).sort(), [strainsToDisplay]);
     const allTerpenes = useMemo(() => Array.from(new Set(strainsToDisplay.flatMap(s => s.dominantTerpenes || []))).sort(), [strainsToDisplay]);
@@ -174,14 +143,14 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
     
     return (
         <div className="space-y-4">
-            {selectedStrain && <StrainDetailModal strain={selectedStrain} onClose={() => setSelectedStrain(null)} isFavorite={favoriteIds.has(selectedStrain.id)} onToggleFavorite={toggleFavorite} onStartGrow={(setup) => handleStartGrow(setup, selectedStrain)} onSaveTip={handleSaveTip} onSelectSimilar={(strain) => setSelectedStrain(strain)} />}
-            {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={() => { setIsAddModalOpen(false); setStrainToEdit(null); }} onAddStrain={(s) => { addUserStrain(s); setIsAddModalOpen(false); }} onUpdateStrain={(s) => { updateUserStrain(s); setIsAddModalOpen(false); setStrainToEdit(null); }} strainToEdit={strainToEdit} />}
-            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
+            {/* FIX: Removed onSelectSimilar prop as it's not defined in StrainDetailModalProps. The component uses the useStrainView context to handle this action. */}
+            {selectedStrain && <StrainDetailModal strain={selectedStrain} onClose={actions.closeDetailModal} isFavorite={favoriteIds.has(selectedStrain.id)} onToggleFavorite={toggleFavorite} onSaveTip={handleSaveTip} />}
+            {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={actions.closeAddModal} onAddStrain={(s) => { addUserStrain(s); actions.closeAddModal(); }} onUpdateStrain={(s) => { updateUserStrain(s); actions.closeAddModal(); }} strainToEdit={strainToEdit} />}
+            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
             {isAdvancedFilterModalOpen && <AdvancedFilterModal isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}
-            
-            <Card>
-                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => setActiveTab(id as StrainViewTab)} />
-            </Card>
+            {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => handleStartGrow(setup, strainForSetup)} />}
+
+            <Card><Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => setActiveTab(id as StrainViewTab)} /></Card>
 
             {['all', 'my-strains', 'favorites'].includes(activeTab) && (
                  <Card>
@@ -190,45 +159,58 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
                             <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                             <input type="text" placeholder={t('strainsView.searchPlaceholder')} value={filterState.searchTerm} onChange={e => filterControls.setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"/>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Button onClick={openAdvancedFilterModal} variant="secondary"><PhosphorIcons.FunnelSimple className="w-4 h-4 mr-1.5"/>{t('strainsView.advancedFilters')}</Button>
-                            <Button onClick={() => filterControls.setShowFavorites(!filterState.showFavorites)} variant={filterState.showFavorites ? 'primary' : 'secondary'}><PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} className="w-4 h-4 mr-1.5"/>{t('strainsView.favoritesOnly')}</Button>
-                            <Button onClick={() => setViewMode(viewMode === 'list' ? 'grid' : 'list')} variant="secondary" aria-label="Toggle view mode">{viewMode === 'list' ? <PhosphorIcons.GridFour /> : <PhosphorIcons.ListBullets />}</Button>
-                             <div className="flex items-center gap-2">
-                                <Button onClick={() => setIsExportModalOpen(true)}><PhosphorIcons.DownloadSimple className="w-4 h-4 mr-1"/> {t('common.export')}</Button>
-                                <Button onClick={() => { setStrainToEdit(null); setIsAddModalOpen(true); }}><PhosphorIcons.PlusCircle className="w-4 h-4 mr-1"/> {t('strainsView.addStrain')}</Button>
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
+                            <Button onClick={openAdvancedFilterModal} variant="secondary" className="!p-2.5 sm:!px-4 sm:!py-2" title={t('strainsView.advancedFilters')}><PhosphorIcons.FunnelSimple className="w-5 h-5" /><span className="hidden sm:inline ml-1.5">{t('strainsView.advancedFilters')}</span></Button>
+                             <Button onClick={() => filterControls.setShowFavorites(!filterState.showFavorites)} variant={filterState.showFavorites ? 'primary' : 'secondary'} className="!p-2.5 sm:!px-4 sm:!py-2" title={t('strainsView.favoritesOnly')}><PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} className="w-5 h-5" /><span className="hidden sm:inline ml-1.5">{t('strainsView.favoritesOnly')}</span></Button>
+                            <Button onClick={() => setViewMode(prev => prev === 'list' ? 'grid' : 'list')} variant="secondary" title={t('strainsView.toggleView')} className="!p-2.5"><span className="sr-only">{t('strainsView.toggleView')}</span>{viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}</Button>
+                             <div className="hidden sm:flex items-center gap-2">
+                                <Button onClick={actions.openExportModal}><PhosphorIcons.DownloadSimple className="w-4 h-4 mr-1"/> {t('common.export')}</Button>
+                                <Button onClick={() => actions.openAddModal()}><PhosphorIcons.PlusCircle className="w-4 h-4 mr-1"/> {t('strainsView.addStrain')}</Button>
+                            </div>
+                            <div ref={moreMenuRef} className="relative sm:hidden">
+                                <Button variant="secondary" onClick={() => setIsMoreMenuOpen(prev => !prev)} title={t('common.moreActions')} className="!p-2.5"><span className="sr-only">{t('common.moreActions')}</span><PhosphorIcons.DotsThreeVertical className="w-5 h-5" /></Button>
+                                {isMoreMenuOpen && (<Card className="absolute right-0 mt-2 w-48 z-10 p-2 animate-fade-in"><ul className="space-y-1"><li><button onClick={() => { actions.openExportModal(); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors"><PhosphorIcons.DownloadSimple className="w-5 h-5" /><span>{t('common.export')}</span></button></li><li><button onClick={() => { actions.openAddModal(); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors"><PhosphorIcons.PlusCircle className="w-5 h-5" /><span>{t('strainsView.addStrain')}</span></button></li></ul></Card>)}
                             </div>
                         </div>
                     </div>
                 </Card>
             )}
            
-            {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={strainsToDisplay} onOpenExportModal={() => setIsExportModalOpen(true)} />}
-            {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} />}
+            {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={strainsToDisplay} onOpenExportModal={actions.openExportModal} />}
+            {/* FIX: Removed onInitiateGrow and hasAvailableSlots props as they are not defined in StrainTipsViewProps. The component derives this data from the useStrainView and usePlants contexts. */}
+            {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} allStrains={strainsToDisplay} />}
 
             {['all', 'my-strains', 'favorites'].includes(activeTab) && (
-                 viewMode === 'list' ? (
+                 isLoading ? (
+                    viewMode === 'list' 
+                        ? <SkeletonLoader count={10} variant="list" columns={settings.strainsViewSettings.visibleColumns} />
+                        : <SkeletonLoader count={10} variant="grid" />
+                 ) : viewMode === 'list' ? (
                      <div className="space-y-2">
                         <div className={`${LIST_GRID_CLASS} text-xs uppercase font-semibold text-slate-400 px-3 py-2`}>
                              <input type="checkbox" checked={selectedIds.size === sortedAndFilteredStrains.length && sortedAndFilteredStrains.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
-                            <div />
-                            <button className="text-left" onClick={() => filterControls.handleSort('name')}>{t('strainsView.table.strain')}</button>
+                            <div /><button className="text-left" onClick={() => filterControls.handleSort('name')}>{t('strainsView.table.strain')}</button>
                             {settings.strainsViewSettings.visibleColumns.type && <button className="hidden sm:inline" onClick={() => filterControls.handleSort('type')}>{t('strainsView.table.type')}</button>}
                             {settings.strainsViewSettings.visibleColumns.thc && <button className="hidden sm:inline" onClick={() => filterControls.handleSort('thc')}>{t('strainsView.table.thc')}</button>}
                             {settings.strainsViewSettings.visibleColumns.cbd && <button className="hidden sm:inline" onClick={() => filterControls.handleSort('cbd')}>{t('strainsView.table.cbd')}</button>}
                             {settings.strainsViewSettings.visibleColumns.floweringTime && <button className="hidden sm:inline" onClick={() => filterControls.handleSort('floweringTime')}>{t('strainsView.table.flowering')}</button>}
                             {settings.strainsViewSettings.visibleColumns.yield && <button className="hidden md:inline" onClick={() => filterControls.handleSort('yield')}>{t('strainsView.table.yield')}</button>}
-                            <button onClick={() => filterControls.handleSort('difficulty')}>{t('strainsView.table.level')}</button>
-                            <div>{t('common.actions')}</div>
+                            <button onClick={() => filterControls.handleSort('difficulty')}>{t('strainsView.table.level')}</button><div>{t('common.actions')}</div>
                         </div>
-                        {sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} isFavorite={favoriteIds.has(strain.id)} onSelect={setSelectedStrain} onToggleSelection={handleToggleSelection} onToggleFavorite={toggleFavorite} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onEdit={(s) => { setStrainToEdit(s); setIsAddModalOpen(true); }} onDelete={deleteUserStrain} index={index}/>)}
+                        {sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} isFavorite={favoriteIds.has(strain.id)} onToggleSelection={handleToggleSelection} onToggleFavorite={toggleFavorite} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} hasAvailableSlots={hasAvailableSlots} index={index}/>)}
                      </div>
                  ) : (
                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isFavorite={favoriteIds.has(strain.id)} onSelect={setSelectedStrain} onToggleFavorite={toggleFavorite} isUserStrain={isUserStrain(strain.id)} onEdit={(s) => { setStrainToEdit(s); setIsAddModalOpen(true); }} onDelete={deleteUserStrain} index={index}/>)}
+                        {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isFavorite={favoriteIds.has(strain.id)} onToggleFavorite={toggleFavorite} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} hasAvailableSlots={hasAvailableSlots} index={index}/>)}
                      </div>
                  )
             )}
         </div>
     );
 };
+
+export const StrainsView: React.FC<{ setActiveView: (view: View) => void }> = ({ setActiveView }) => (
+    <StrainViewProvider>
+        <StrainsViewContent setActiveView={setActiveView} />
+    </StrainViewProvider>
+);

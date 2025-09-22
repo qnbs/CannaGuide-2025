@@ -40,6 +40,7 @@ export const common = {
   page: 'Seite',
   generated: 'Erstellt',
   for: 'Für:',
+  moreActions: 'Weitere Aktionen',
   units: {
     cm: 'cm',
     ml: 'ml',

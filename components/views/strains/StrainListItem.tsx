@@ -5,18 +5,18 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
+import { useStrainView } from '@/context/StrainViewContext';
 
 interface StrainListItemProps {
     strain: Strain;
     isSelected: boolean;
     isFavorite: boolean;
-    onSelect: (strain: Strain) => void;
     onToggleSelection: (id: string) => void;
     onToggleFavorite: (id: string) => void;
     visibleColumns: Record<string, boolean>;
     isUserStrain?: boolean;
-    onEdit?: (strain: Strain) => void;
     onDelete?: (id: string) => void;
+    hasAvailableSlots: boolean;
     index: number;
 }
 
@@ -24,16 +24,16 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
     isSelected,
     isFavorite,
-    onSelect,
     onToggleSelection,
     onToggleFavorite,
     visibleColumns,
     isUserStrain = false,
-    onEdit,
     onDelete,
+    hasAvailableSlots,
     index,
 }) => {
     const { t } = useTranslations();
+    const { actions } = useStrainView();
     const checkboxId = useId();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
@@ -55,8 +55,8 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
 
     return (
         <div
-            onClick={() => onSelect(strain)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelect(strain); } }}
+            onClick={() => actions.selectStrain(strain)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.selectStrain(strain); } }}
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
@@ -105,18 +105,26 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                 </div>
             </div>}
             <div className="flex items-center justify-start px-3 py-3">
-                {isUserStrain && onEdit && onDelete && (
-                    <div className="flex gap-1">
-                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onEdit(strain))}>
-                            <PhosphorIcons.PencilSimple className="w-4 h-4" />
-                            <span className="sr-only">{t('common.edit')}</span>
-                        </Button>
-                        <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))}>
-                            <PhosphorIcons.TrashSimple className="w-4 h-4" />
-                            <span className="sr-only">{t('common.delete')}</span>
+                <div className="flex gap-1">
+                    <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
+                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => actions.initiateGrow(strain))} disabled={!hasAvailableSlots}>
+                            <PhosphorIcons.Plant className="w-4 h-4" />
+                            <span className="sr-only">{t('strainsView.startGrowing')}</span>
                         </Button>
                     </div>
-                )}
+                    {isUserStrain && onDelete && (
+                        <>
+                            <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => actions.openAddModal(strain))}>
+                                <PhosphorIcons.PencilSimple className="w-4 h-4" />
+                                <span className="sr-only">{t('common.edit')}</span>
+                            </Button>
+                            <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))}>
+                                <PhosphorIcons.TrashSimple className="w-4 h-4" />
+                                <span className="sr-only">{t('common.delete')}</span>
+                            </Button>
+                        </>
+                    )}
+                </div>
             </div>
         </div>
     );

@@ -24,7 +24,8 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
     const { t } = useTranslations();
     const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
     
-    const { healthStatus, healthTitle } = useMemo(() => {
+    // FIX: Explicitly type the return value of useMemo to ensure healthStatus is typed as 'good' | 'danger'.
+    const { healthStatus, healthTitle } = useMemo<{ healthStatus: 'good' | 'danger'; healthTitle: string }>(() => {
         const hasProblems = plant.problems.length > 0;
         const hasHighPriorityTask = plant.tasks.some(t => !t.isCompleted && t.priority === 'high');
 
@@ -58,7 +59,6 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
                     <h3 className="text-xl font-bold font-display text-primary-400 truncate">{plant.name}</h3>
                     <p className="text-slate-400 text-xs truncate">{plant.strain.name}</p>
                 </div>
-                 {/* FIX: Corrected 'key of' to 'keyof' and removed the redundant type assertion. */}
                  <div className={`w-6 h-6 flex-shrink-0 ${healthClasses[healthStatus]}`} title={healthTitle}>
                     {healthStatus === 'danger' ? <PhosphorIcons.WarningCircle /> : <PhosphorIcons.CheckCircle />}
                  </div>

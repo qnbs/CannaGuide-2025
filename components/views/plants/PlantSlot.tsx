@@ -29,7 +29,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
         const hasHighPriorityTask = plant.tasks.some(t => !t.isCompleted && t.priority === 'high');
 
         if (hasProblems || hasHighPriorityTask) {
-            const problemMessages = plant.problems.map(p => p.message).join(', ');
+            const problemMessages = plant.problems.map(p => t(`problemMessages.${p.type.charAt(0).toLowerCase() + p.type.slice(1)}.message`)).join(', ');
             return {
                 healthStatus: 'danger',
                 healthTitle: problemMessages || t('plantsView.tasks.priorities.high')
@@ -58,7 +58,8 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
                     <h3 className="text-xl font-bold font-display text-primary-400 truncate">{plant.name}</h3>
                     <p className="text-slate-400 text-xs truncate">{plant.strain.name}</p>
                 </div>
-                 <div className={`w-6 h-6 flex-shrink-0 ${healthClasses[healthStatus as keyof typeof healthClasses]}`} title={healthTitle}>
+                 {/* FIX: Corrected 'key of' to 'keyof' and removed the redundant type assertion. */}
+                 <div className={`w-6 h-6 flex-shrink-0 ${healthClasses[healthStatus]}`} title={healthTitle}>
                     {healthStatus === 'danger' ? <PhosphorIcons.WarningCircle /> : <PhosphorIcons.CheckCircle />}
                  </div>
             </div>

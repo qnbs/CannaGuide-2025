@@ -1,5 +1,5 @@
 
-const STORAGE_PREFIX = 'cannabis-grow-guide-';
+const STORAGE_PREFIX = 'cannaguide-2025-';
 
 /**
  * A centralized service for interacting with localStorage.

@@ -53,7 +53,7 @@ const exportAsCSV = (strains: Strain[], filename: string, t: TFunction) => {
 };
 
 const exportAsTXT = (strains: Strain[], filename: string, t: TFunction) => {
-    let txtString = `${t('strainsView.exportModal.title')} - ${new Date().toLocaleString()}\n\n`;
+    let txtString = `CannaGuide 2025 - ${t('strainsView.exportModal.title')} - ${new Date().toLocaleString()}\n\n`;
     strains.forEach(s => {
         txtString += `========================================\n`;
         txtString += `** ${s.name} **\n`;
@@ -101,7 +101,7 @@ const exportAsPDF = (strains: Strain[], filename: string, t: TFunction) => {
         doc.text('CannaGuide 2025', margin + 15, 17);
         doc.setFontSize(10);
         doc.setTextColor(100, 116, 139); // slate-500
-        doc.text(t('strainsView.exportModal.title'), margin + 15, 22);
+        doc.text('Cannabis Grow Guide with Gemini', margin + 15, 22);
         doc.setDrawColor(226, 232, 240); // slate-200
         doc.line(margin, 28, pageWidth - margin, 28);
         y = 38;

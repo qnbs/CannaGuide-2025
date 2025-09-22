@@ -246,7 +246,7 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
 
 const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIResponse> => {
     const ai = getAiClient();
-    const prompt = t('ai.gemini.strainTipsQuery', {
+    const prompt = t('ai.gemini.strainTipsCombinedPrompt', {
         name: strain.name,
         difficulty: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
         height: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
@@ -267,7 +267,6 @@ const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIRespon
         model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
-            systemInstruction: t('ai.gemini.strainTipsSystemInstruction', { name: strain.name }),
             responseMimeType: "application/json",
             responseSchema: responseSchema
         }
@@ -276,6 +275,10 @@ const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIRespon
     try {
         // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
         const jsonStr = response.text;
+        if (!jsonStr || jsonStr.trim() === '') {
+             console.error("AI returned an empty response for grow tips:", response);
+             throw new Error("ai.error.parsing");
+        }
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {

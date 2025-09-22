@@ -37,8 +37,7 @@ export type PlantProblemType =
 
 export interface PlantProblem {
   type: PlantProblemType;
-  message: string;
-  solution: string;
+  detectedAt: number; // Timestamp when the problem was first detected
 }
 
 export interface PlantVitals {
@@ -310,7 +309,6 @@ export interface AppSettings {
     };
     lastBackupTimestamp?: number;
     accessibility: {
-        highContrast: boolean;
         reducedMotion: boolean;
         dyslexiaFont: boolean;
     };

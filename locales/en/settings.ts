@@ -29,7 +29,7 @@ export const settingsView = {
     },
     defaultView: 'Default View on Startup',
     installApp: 'Install App',
-    installAppDesc: 'Install the CannaGuide on your device for a native-app experience, including offline access.',
+    installAppDesc: 'Install CannaGuide 2025 on your device for a native-app experience, including offline access.',
   },
   accessibility: {
     title: 'Accessibility',
@@ -137,7 +137,7 @@ export const settingsView = {
     importConfirm: 'Are you sure you want to import this data? This will overwrite all your current data.',
     importSuccess: 'Data imported successfully! The app will now reload.',
     importError: 'Error importing data',
-    importInvalidFile: 'Invalid backup file.',
+    importInvalidFile: 'Invalid CannaGuide 2025 backup file.',
   },
   about: {
       title: 'About the App',

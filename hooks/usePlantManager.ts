@@ -1,7 +1,7 @@
 
 
 import { useCallback } from 'react';
-import { Plant, PlantStage, PlantProblem, JournalEntry, Task, PlantProblemType } from '@/types';
+import { Plant, PlantStage, PlantProblem, JournalEntry, Task, PlantProblemType, GrowSetup, Strain } from '@/types';
 import { PLANT_STAGE_DETAILS, STAGES_ORDER, PROBLEM_THRESHOLDS, YIELD_FACTORS, SIMULATION_CONSTANTS } from '@/constants';
 import { useSettings } from '@/hooks/useSettings';
 import { useNotifications } from '@/context/NotificationContext';
@@ -316,11 +316,50 @@ export const usePlantManager = (
         }
     };
 
+    const startNewPlant = (strain: Strain, setup: GrowSetup): boolean => {
+        const emptySlotIndex = plants.findIndex(p => p === null);
+
+        if (emptySlotIndex === -1) {
+            addNotification(t('plantsView.notifications.allSlotsFull'), 'error');
+            return false;
+        }
+
+        const now = Date.now();
+        const newPlant: Plant = {
+            id: `${strain.id}-${now}`,
+            name: strain.name,
+            strain,
+            stage: PlantStage.Seed,
+            age: 0,
+            height: 0,
+            startedAt: now,
+            lastUpdated: now,
+            growSetup: setup,
+            vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 },
+            environment: { temperature: setup.temperature, humidity: setup.humidity, light: 100 },
+            stressLevel: 0,
+            problems: [],
+            journal: [{ id: `start-${now}`, timestamp: now, type: 'SYSTEM', notes: t('plantsView.journal.startGrowing', { name: strain.name }) }],
+            tasks: [],
+            history: [{ day: 0, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 }, stressLevel: 0, height: 0 }],
+        };
+
+        setPlants(prevPlants => {
+            const newPlants = [...prevPlants];
+            newPlants[emptySlotIndex] = newPlant;
+            return newPlants;
+        });
+        
+        addNotification(t('plantsView.notifications.startSuccess', { name: newPlant.name }), 'success');
+        return true;
+    };
+
     return {
         updatePlantState,
         addJournalEntry,
         completeTask,
         waterAllPlants,
         advanceDay,
+        startNewPlant,
     };
 };

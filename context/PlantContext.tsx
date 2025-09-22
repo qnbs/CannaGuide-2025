@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode, useMemo, useContext } from 'react';
-import { Plant, JournalEntry } from '@/types';
+import { Plant, JournalEntry, Strain, GrowSetup } from '@/types';
 import { usePlantManager } from '@/hooks/usePlantManager';
 import { storageService } from '@/services/storageService';
 
@@ -12,6 +12,7 @@ interface PlantContextType {
     advanceDay: () => void;
     resetPlants: () => void;
     updatePlantState: (plantIdToUpdate?: string) => void;
+    startNewPlant: (strain: Strain, setup: GrowSetup) => boolean;
 }
 
 export const PlantContext = createContext<PlantContextType | undefined>(undefined);

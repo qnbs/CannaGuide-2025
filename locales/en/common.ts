@@ -18,6 +18,7 @@ export const common = {
   noDataToExport: 'No data available to export.',
   notes: 'Notes',
   save: 'Save',
+  select: 'Select',
   start: 'Start',
   style: 'Style',
   successfullyExported: 'Successfully exported {count} items as {format}.',

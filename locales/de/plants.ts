@@ -6,6 +6,11 @@ export const plantsView = {
   emptySlot: {
     title: 'Leerer Pflanz-Slot',
     subtitle: 'Beginne einen neuen Anbau im Sorten-Bereich.',
+    subtitleInline: 'oder hier klicken zum Auswählen.'
+  },
+  inlineSelector: {
+    title: 'Sorte auswählen',
+    subtitle: 'Suche und wähle eine Sorte aus, um den Anbau zu starten.'
   },
   archivedPlant: 'Archivierte Pflanze',
   vitals: {
@@ -21,6 +26,11 @@ export const plantsView = {
     finalYield: 'Finaler Ertrag berechnet: {yield}g',
     waterAllSuccess: '{count} Pflanzen erfolgreich gegossen.',
     waterAllNone: 'Keine Pflanzen mussten gegossen werden.',
+  },
+  journal: {
+    startGrowing: 'Anbau von {name} gestartet',
+    problemDetected: 'Problem erkannt: {message}',
+    newTask: 'Neue Aufgabe erstellt: {title}',
   },
   setupModal: {
     title: 'Setup für {name}',

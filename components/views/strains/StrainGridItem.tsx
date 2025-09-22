@@ -73,7 +73,6 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                 <div className="flex-grow">
                     <TypeIcon className={`w-12 h-12 mx-auto mb-2 ${typeClasses[strain.type]}`} />
                     <h3 className="font-bold text-base text-slate-100 truncate flex items-center justify-center gap-1">
-                        {/* FIX: The `title` prop is not valid on the `PhosphorIcons.Star` component. Moved it to a wrapping `span` element to provide a tooltip for accessibility. */}
                         {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
                         {strain.name}
                     </h3>

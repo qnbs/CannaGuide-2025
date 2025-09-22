@@ -211,6 +211,15 @@ export interface AIResponse {
     content: string;
 }
 
+export interface PlantDiagnosisResponse {
+    problemName: string;
+    confidence: number;
+    diagnosis: string;
+    immediateActions: string;
+    longTermSolution: string;
+    prevention: string;
+}
+
 export interface SavedStrainTip extends AIResponse {
   id: string;
   createdAt: number;

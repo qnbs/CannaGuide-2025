@@ -3,7 +3,6 @@ import { Card } from '../../common/Card';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { Task, PlantProblem, TaskPriority } from '../../../types';
-import { AiDiagnostics } from './AiDiagnostics';
 
 interface TasksAndWarningsProps {
     tasks: (Task & { plantId: string, plantName: string })[],
@@ -57,7 +56,6 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
                     <p className="text-slate-300 text-sm">{t('plantsView.warnings.none')}</p>
                 )}
             </Card>
-            <AiDiagnostics />
         </div>
     );
 }

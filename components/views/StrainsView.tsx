@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Strain, View, SortDirection, Plant, PlantStage, AIResponse } from '@/types';
+import { Strain, View, SortDirection, Plant, PlantStage, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -145,7 +145,7 @@ export const StrainsView: React.FC<StrainsViewProps> = ({ setActiveView }) => {
         addNotification(t('common.successfullyExported', { count: strainsToExport.length, format: format.toUpperCase() }), 'success');
     };
     
-    const handleStartGrow = (setup: any, strain: Strain) => {
+    const handleStartGrow = (setup: GrowSetup, strain: Strain) => {
         const emptySlotIndex = plants.findIndex(p => p === null);
 
         if (emptySlotIndex === -1) {

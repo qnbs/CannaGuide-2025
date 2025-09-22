@@ -173,6 +173,36 @@ export const strainsView = {
     sortOptions: {
       grouped: 'Nach Sorte gruppieren',
       date: 'Neueste zuerst'
+    },
+    form: {
+        title: 'KI Grow-Pro',
+        description: 'Erhalte Anbau-Tipps, die auf dein spezifisches Setup und deine Ziele zugeschnitten sind.',
+        focus: 'Fokus',
+        stage: 'Phase',
+        experience: 'Erfahrung',
+        generate: 'Profi-Tipps generieren',
+        focusOptions: {
+            overall: 'Allgemeine Profi-Tipps',
+            yield: 'Ertrag maximieren',
+            terpenes: 'Terpene verbessern',
+            organic: 'Biologische Methoden'
+        },
+        stageOptions: {
+            all: 'Alle Phasen',
+            vegetative: 'Wachstum',
+            flowering: 'Blüte'
+        },
+        experienceOptions: {
+            beginner: 'Anfänger',
+            advanced: 'Fortgeschritten',
+            expert: 'Experte'
+        },
+        categories: {
+            nutrientTip: 'Nährstoff-Tipp',
+            trainingTip: 'Trainings-Tipp',
+            environmentalTip: 'Umwelt-Tipp',
+            proTip: 'Profi-Tipp'
+        }
     }
   }
 };

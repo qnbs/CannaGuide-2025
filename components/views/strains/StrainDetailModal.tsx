@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Strain, AIResponse } from '@/types';
+import { Strain, AIResponse, StructuredGrowTips } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-// Fix: Removed incorrect context/hook imports.
 import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { strainService } from '@/services/strainService';
-// Fix: Import the central Zustand store for state management.
 import { useAppStore } from '@/stores/useAppStore';
 
 // --- Sub-components for better structure ---
@@ -54,6 +52,38 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
     );
 };
 
+const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips, onSave: () => void, isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
+    const { t } = useTranslations();
+
+    const tipCategories = [
+        { key: 'nutrientTip', icon: <PhosphorIcons.Flask />, label: t('strainsView.tips.form.categories.nutrientTip') },
+        { key: 'trainingTip', icon: <PhosphorIcons.Scissors />, label: t('strainsView.tips.form.categories.trainingTip') },
+        { key: 'environmentalTip', icon: <PhosphorIcons.Fan />, label: t('strainsView.tips.form.categories.environmentalTip') },
+        { key: 'proTip', icon: <PhosphorIcons.Sparkle />, label: t('strainsView.tips.form.categories.proTip') },
+    ];
+
+    return (
+        <Card className="bg-slate-800 animate-fade-in">
+            <div className="space-y-4">
+                {tipCategories.map(cat => (
+                    <div key={cat.key}>
+                        <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
+                            {cat.icon}
+                            {cat.label}
+                        </h4>
+                        <p className="text-sm text-slate-300 pl-8">{tips[cat.key as keyof StructuredGrowTips]}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="text-right mt-4">
+                <Button size="sm" variant="secondary" onClick={onSave} disabled={isSaved}>
+                    {isSaved ? <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" weight="fill" /> {t('strainsView.tips.saved')}</> : <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" /> {t('strainsView.tips.saveButton')}</>}
+                </Button>
+            </div>
+        </Card>
+    );
+};
+
 
 // --- Main Modal Component ---
 
@@ -64,7 +94,6 @@ interface StrainDetailModalProps {
 
 export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
-    // Fix: Get all state and actions from the central Zustand store.
     const {
         isFavorite,
         toggleFavorite,
@@ -92,29 +121,44 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
     const [noteContent, setNoteContent] = useState('');
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [similarStrains, setSimilarStrains] = useState<Strain[]>([]);
-    const [aiTip, setAiTip] = useState<AIResponse | null>(null);
+    const [structuredTip, setStructuredTip] = useState<StructuredGrowTips | null>(null);
     const [isTipLoading, setIsTipLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isTipSaved, setIsTipSaved] = useState(false);
+    const [tipRequest, setTipRequest] = useState({
+        focus: 'overall',
+        stage: 'all',
+        experience: 'advanced'
+    });
 
     useEffect(() => {
         setNoteContent(getNoteForStrain(strain.id));
         setSimilarStrains(strainService.getSimilarStrains(strain));
-        setAiTip(null);
+        setStructuredTip(null);
         setIsTipSaved(false);
     }, [strain, getNoteForStrain]);
     
      useEffect(() => {
         if (isTipLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'growTips' }, t);
+            const messages = geminiService.getDynamicLoadingMessages({ 
+                useCase: 'growTips',
+                data: {
+                    strainName: strain.name,
+                    focus: t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`),
+                    stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`)
+                }
+            }, t);
             let messageIndex = 0;
-            const intervalId = setInterval(() => {
+            const updateLoadingMessage = () => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
-            }, 2000);
+            };
+            
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
             return () => clearInterval(intervalId);
         }
-    }, [isTipLoading, t]);
+    }, [isTipLoading, t, strain.name, tipRequest]);
 
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
@@ -122,16 +166,40 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
 
     const handleGetAiTips = async () => {
         setIsTipLoading(true);
-        setAiTip(null);
+        setStructuredTip(null);
+        setIsTipSaved(false);
         try {
-            const result = await geminiService.getStrainGrowTips(strain, t);
-            setAiTip(result);
+            const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
+            const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
+            const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
+
+            const result = await geminiService.getStrainGrowTips(strain, { focus: focusText, stage: stageText, experience: experienceText }, t);
+            setStructuredTip(result);
         } catch (err) {
             const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
             const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
             addNotification(errorMessage, 'error');
         }
         setIsTipLoading(false);
+    };
+
+    const handleSaveTip = () => {
+        if (!structuredTip) return;
+
+        const title = t('strainsView.tips.getTipsFor', { name: strain.name });
+        const content = `
+            <h3>${t('strainsView.tips.form.categories.nutrientTip')}</h3>
+            <p>${structuredTip.nutrientTip}</p>
+            <h3>${t('strainsView.tips.form.categories.trainingTip')}</h3>
+            <p>${structuredTip.trainingTip}</p>
+            <h3>${t('strainsView.tips.form.categories.environmentalTip')}</h3>
+            <p>${structuredTip.environmentalTip}</p>
+            <h3>${t('strainsView.tips.form.categories.proTip')}</h3>
+            <p>${structuredTip.proTip}</p>
+        `;
+        
+        onSaveTip(strain, { title, content });
+        setIsTipSaved(true);
     };
 
     const handleSaveNote = () => {
@@ -233,22 +301,37 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                             </div>
                         </DetailSection>
                         
-                        <DetailSection title="AI Grow Tips" icon={<PhosphorIcons.Brain />}>
-                           {isTipLoading ? (
-                                <p className="text-slate-400 animate-pulse">{loadingMessage || t('ai.generating')}</p>
-                           ) : aiTip ? (
-                               <Card className="bg-slate-800">
-                                   <h4 className="font-bold text-primary-300">{aiTip.title}</h4>
-                                   <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiTip.content }}></div>
-                                   <div className="text-right mt-2">
-                                       <Button size="sm" variant="secondary" onClick={() => { onSaveTip(strain, aiTip); setIsTipSaved(true); }} disabled={isTipSaved}>
-                                            {isTipSaved ? <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" weight="fill" /> {t('strainsView.tips.saved')}</> : <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" /> {t('strainsView.tips.saveButton')}</>}
-                                        </Button>
-                                   </div>
-                               </Card>
-                           ) : (
-                               <Button size="sm" onClick={handleGetAiTips}>{t('strainsView.strainModal.getAiTips')}</Button>
-                           )}
+                        <DetailSection title={t('strainsView.tips.form.title')} icon={<PhosphorIcons.Brain />}>
+                           <p className="text-sm text-slate-400 mb-4 -mt-2">{t('strainsView.tips.form.description')}</p>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.focus')}</label>
+                                        <select value={tipRequest.focus} onChange={e => setTipRequest(p => ({...p, focus: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                                            {Object.keys(t('strainsView.tips.form.focusOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.stage')}</label>
+                                        <select value={tipRequest.stage} onChange={e => setTipRequest(p => ({...p, stage: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                                            {Object.keys(t('strainsView.tips.form.stageOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
+                                        <select value={tipRequest.experience} onChange={e => setTipRequest(p => ({...p, experience: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                                            {Object.keys(t('strainsView.tips.form.experienceOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <Button size="sm" onClick={handleGetAiTips} disabled={isTipLoading} className="w-full">
+                                    {isTipLoading ? loadingMessage : t('strainsView.tips.form.generate')}
+                                </Button>
+                                {isTipLoading && <div className="text-center text-sm text-slate-400 animate-pulse">{loadingMessage || t('ai.generating')}</div>}
+                                {structuredTip && !isTipLoading && (
+                                    <StructuredTipDisplay tips={structuredTip} onSave={handleSaveTip} isSaved={isTipSaved} />
+                                )}
+                            </div>
                        </DetailSection>
                     </div>
                 </Card>

@@ -173,6 +173,36 @@ export const strainsView = {
     sortOptions: {
       grouped: 'Group by Strain',
       date: 'Newest First'
+    },
+    form: {
+        title: 'AI Grow-Pro',
+        description: 'Get cultivation tips tailored to your specific setup and goals.',
+        focus: 'Focus',
+        stage: 'Stage',
+        experience: 'Experience',
+        generate: 'Generate Pro-Tips',
+        focusOptions: {
+            overall: 'Overall Pro-Tips',
+            yield: 'Maximize Yield',
+            terpenes: 'Enhance Terpenes',
+            organic: 'Organic Methods'
+        },
+        stageOptions: {
+            all: 'All Stages',
+            vegetative: 'Vegetative',
+            flowering: 'Flowering'
+        },
+        experienceOptions: {
+            beginner: 'Beginner',
+            advanced: 'Advanced',
+            expert: 'Expert'
+        },
+        categories: {
+            nutrientTip: 'Nutrient Tip',
+            trainingTip: 'Training Tip',
+            environmentalTip: 'Environmental Tip',
+            proTip: 'Pro-Tip'
+        }
     }
   }
 };

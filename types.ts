@@ -210,6 +210,13 @@ export interface AIResponse {
     content: string;
 }
 
+export interface StructuredGrowTips {
+  nutrientTip: string;
+  trainingTip: string;
+  environmentalTip: string;
+  proTip: string;
+}
+
 export interface PlantDiagnosisResponse {
     problemName: string;
     confidence: number;

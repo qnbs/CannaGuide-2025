@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useMemo } from 'react';
-import { Strain, GrowSetup } from '@/types';
+import { Strain, GrowSetup, View } from '@/types';
 import { usePlants } from '@/hooks/usePlants';
 import { useNotifications } from '@/context/NotificationContext';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -21,15 +21,15 @@ interface StrainViewContextType {
         openExportModal: () => void;
         closeExportModal: () => void;
         initiateGrow: (strain: Strain) => void;
-        confirmGrow: (setup: GrowSetup, strain: Strain) => boolean;
+        confirmGrow: (setup: GrowSetup, strain: Strain) => void;
         closeGrowModal: () => void;
     };
 }
 
 export const StrainViewContext = createContext<StrainViewContextType | undefined>(undefined);
 
-export const StrainViewProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const { plants } = usePlants();
+export const StrainViewProvider: React.FC<{ children: ReactNode, setActiveView: (view: View) => void }> = ({ children, setActiveView }) => {
+    const { hasAvailableSlots, startNewPlant } = usePlants();
     const { addNotification } = useNotifications();
     const { t } = useTranslations();
 
@@ -42,8 +42,6 @@ export const StrainViewProvider: React.FC<{ children: ReactNode }> = ({ children
     const [strainForSetup, setStrainForSetup] = useState<Strain | null>(null);
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
     
-    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
-
     const actions = useMemo(() => ({
         selectStrain: (strain: Strain) => setSelectedStrain(strain),
         closeDetailModal: () => setSelectedStrain(null),
@@ -65,19 +63,20 @@ export const StrainViewProvider: React.FC<{ children: ReactNode }> = ({ children
                 addNotification(t('plantsView.notifications.allSlotsFull'), 'error');
             }
         },
-        confirmGrow: (setup: GrowSetup, strain: Strain): boolean => {
-             // The actual plant creation logic remains in PlantContext.
-             // This method just orchestrates the UI flow.
-             setIsSetupModalOpen(false);
-             setStrainForSetup(null);
-             setSelectedStrain(null); // Close detail modal if open
-             return true; // Let the caller know it can proceed
+        confirmGrow: (setup: GrowSetup, strain: Strain) => {
+             const success = startNewPlant(strain, setup);
+             if (success) {
+                setIsSetupModalOpen(false);
+                setStrainForSetup(null);
+                setSelectedStrain(null);
+                setActiveView(View.Plants);
+             }
         },
         closeGrowModal: () => {
             setStrainForSetup(null);
             setIsSetupModalOpen(false);
         }
-    }), [hasAvailableSlots, addNotification, t]);
+    }), [hasAvailableSlots, addNotification, t, startNewPlant, setActiveView]);
 
     const value = {
         state: {

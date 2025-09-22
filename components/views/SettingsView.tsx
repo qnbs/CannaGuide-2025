@@ -67,7 +67,7 @@ const InputRow: React.FC<{ label: string, type: string, value: string | number, 
 };
 
 // Settings Category Components
-const GeneralSettingsPanel: React.FC<{ settings: AppSettings; setSetting: (path: string, value: any) => void }> = ({ settings, setSetting }) => {
+const GeneralSettingsPanel: React.FC<{ settings: AppSettings; setSetting: (path: string, value: any) => void; deferredPrompt: any; onInstallClick: () => void; }> = ({ settings, setSetting, deferredPrompt, onInstallClick }) => {
     const { t } = useTranslations();
     const themes: { id: Theme; colors: string[] }[] = [
         { id: 'midnight', colors: ['#0F172A', '#3B82F6', '#06B6D4'] },
@@ -95,6 +95,20 @@ const GeneralSettingsPanel: React.FC<{ settings: AppSettings; setSetting: (path:
             <SelectRow label={t('settingsView.general.defaultView')} value={settings.defaultView} onChange={e => setSetting('defaultView', e.target.value)}>
                 {Object.values(View).map((v: string) => <option key={v} value={v}>{t(`nav.${v.toLowerCase()}`)}</option>)}
             </SelectRow>
+            {deferredPrompt && (
+                <div className="pt-6 border-t border-slate-700">
+                    <div className="flex items-center justify-between">
+                        <div>
+                             <label className="text-slate-200 font-semibold">{t('settingsView.general.installApp')}</label>
+                             <p className="text-xs text-slate-400 max-w-sm mt-1">{t('settingsView.general.installAppDesc')}</p>
+                        </div>
+                        <Button onClick={onInstallClick} className="flex-shrink-0">
+                            <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />
+                            {t('common.installPwa')}
+                        </Button>
+                    </div>
+                </div>
+            )}
         </SettingsSection>
     );
 };
@@ -252,8 +266,12 @@ const AboutPanel: React.FC = () => {
     );
 };
 
+interface SettingsViewProps {
+    deferredPrompt: any;
+    onInstallClick: () => void;
+}
 
-export const SettingsView: React.FC = () => {
+export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onInstallClick }) => {
     const { settings, setSetting } = useSettings();
     const { resetPlants } = usePlants();
     const { t } = useTranslations();
@@ -272,7 +290,7 @@ export const SettingsView: React.FC = () => {
     
     const activePanel = useMemo(() => {
         switch(activeCategory) {
-            case 'general': return <GeneralSettingsPanel settings={settings} setSetting={setSetting} />;
+            case 'general': return <GeneralSettingsPanel settings={settings} setSetting={setSetting} deferredPrompt={deferredPrompt} onInstallClick={onInstallClick} />;
             case 'accessibility': return <AccessibilitySettingsPanel settings={settings} setSetting={setSetting} />;
             case 'strains': return <StrainsSettingsPanel settings={settings} setSetting={setSetting} />;
             case 'plants': return <PlantsSettingsPanel settings={settings} setSetting={setSetting} />;
@@ -282,7 +300,7 @@ export const SettingsView: React.FC = () => {
             case 'about': return <AboutPanel />;
             default: return null;
         }
-    }, [activeCategory, settings, setSetting, resetPlants]);
+    }, [activeCategory, settings, setSetting, resetPlants, deferredPrompt, onInstallClick]);
 
     const activeCategoryData = categories.find(c => c.id === activeCategory);
 

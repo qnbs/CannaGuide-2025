@@ -28,6 +28,8 @@ export const settingsView = {
       lg: 'Groß',
     },
     defaultView: 'Standard-Startansicht',
+    installApp: 'App installieren',
+    installAppDesc: 'Installiere den CannaGuide auf deinem Gerät für ein natives App-Erlebnis, inklusive Offline-Zugriff.',
   },
   accessibility: {
     title: 'Barrierefreiheit',

@@ -42,8 +42,7 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
     const { t } = useTranslations();
     const { actions } = useStrainView();
-    const { plants } = usePlants();
-    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
+    const { hasAvailableSlots } = usePlants();
 
     const [editingTip, setEditingTip] = useState<SavedStrainTip | null>(null);
     const [searchTerm, setSearchTerm] = useState('');

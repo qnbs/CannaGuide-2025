@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Strain, AIResponse, GrowSetup } from '@/types';
+import { Strain, AIResponse } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useStrainNotes } from '@/hooks/useStrainNotes';
@@ -72,7 +72,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
     const { addNotification } = useNotifications();
     const modalRef = useFocusTrap(true);
     const { getNoteForStrain, updateNoteForStrain } = useStrainNotes();
-    const { plants } = usePlants();
+    const { hasAvailableSlots } = usePlants();
     
     const [noteContent, setNoteContent] = useState('');
     const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -81,8 +81,6 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
     const [isTipLoading, setIsTipLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isTipSaved, setIsTipSaved] = useState(false);
-
-    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
 
     useEffect(() => {
         setNoteContent(getNoteForStrain(strain.id));

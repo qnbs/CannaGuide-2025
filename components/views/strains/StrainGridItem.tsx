@@ -1,13 +1,10 @@
-
-
 import React from 'react';
-// FIX: Correct import path for types.
-import { Strain } from '../../../types';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { Card } from '../../common/Card';
-import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
-import { Button } from '../../common/Button';
+import { Strain } from '@/types';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { Card } from '@/components/common/Card';
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { Button } from '@/components/common/Button';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -68,7 +65,6 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                     aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     aria-pressed={isFavorite}
                 >
-                    {/* FIX: Correct weight prop type to allow 'fill' or 'regular' */}
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>
@@ -76,7 +72,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
             <div className="flex-grow flex flex-col justify-between text-center">
                 <div className="flex-grow">
                     <TypeIcon className={`w-12 h-12 mx-auto mb-2 ${typeClasses[strain.type]}`} />
-                    <h3 className="font-bold text-base text-slate-100 truncate">{strain.name}</h3>
+                    <h3 className="font-bold text-base text-slate-100 truncate flex items-center justify-center gap-1">
+                        {/* FIX: The `title` prop is not valid on the `PhosphorIcons.Star` component. Moved it to a wrapping `span` element to provide a tooltip for accessibility. */}
+                        {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
+                        {strain.name}
+                    </h3>
                     <p className="text-xs text-slate-300">{strain.type}</p>
                 </div>
                 

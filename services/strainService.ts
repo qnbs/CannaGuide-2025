@@ -1,5 +1,5 @@
-import { Strain } from '../types';
-import { allStrainsData } from '../data/strains/index';
+import { Strain } from '@/types';
+import { allStrainsData } from '@/data/strains/index';
 
 // Define the TFunction type locally to avoid circular dependency issues
 // and keep the service self-contained.

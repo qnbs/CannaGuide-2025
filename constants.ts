@@ -1,5 +1,4 @@
-// FIX: Correct import path for types.
-import { PlantStage } from './types';
+import { PlantStage } from '@/types';
 
 export const PLANT_STAGE_DETAILS: { 
   [key in PlantStage]: { 

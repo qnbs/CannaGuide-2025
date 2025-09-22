@@ -1,6 +1,7 @@
 
+
 import { useState, useEffect, useCallback } from 'react';
-import { storageService } from '../services/storageService';
+import { storageService } from '@/services/storageService';
 
 const STORAGE_KEY = 'favorites';
 

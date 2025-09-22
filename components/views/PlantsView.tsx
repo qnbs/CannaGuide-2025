@@ -1,19 +1,16 @@
-// This file was missing and has been recreated based on its usage across the application.
 import React, { useState, useEffect, useMemo } from 'react';
-import { Plant, View } from '../../types';
-import { usePlants } from '../../hooks/usePlants';
-import { PlantCard } from './plants/PlantSlot';
-import { DetailedPlantView } from './plants/DetailedPlantView';
-import { TipOfTheDay } from './plants/TipOfTheDay';
-import { GardenVitals } from './plants/DashboardSummary';
-import { TasksAndWarnings } from './plants/TasksAndWarnings';
-import { usePlantManager } from '../../hooks/usePlantManager';
-import { useSettings } from '../../hooks/useSettings';
-import { useTranslations } from '../../hooks/useTranslations';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { Card } from '../common/Card';
-// FIX: Correctly import GlobalAdvisorArchiveView.
-import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
+import { Plant, View } from '@/types';
+import { usePlants } from '@/hooks/usePlants';
+import { PlantCard } from '@/components/views/plants/PlantSlot';
+import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
+import { TipOfTheDay } from '@/components/views/plants/TipOfTheDay';
+import { GardenVitals } from '@/components/views/plants/DashboardSummary';
+import { TasksAndWarnings } from '@/components/views/plants/TasksAndWarnings';
+import { useSettings } from '@/hooks/useSettings';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Card } from '@/components/common/Card';
+import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -37,18 +34,19 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ setActiveView }) => {
     const { plants, waterAllPlants, advanceDay, updatePlantState } = usePlants();
     const { settings } = useSettings();
     const { t } = useTranslations();
-    const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
+    const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
 
     useEffect(() => {
         let intervalId: NodeJS.Timeout;
         if (settings.simulationSettings.autoAdvance) {
             updatePlantState(); // Initial update
+            const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed];
             intervalId = setInterval(() => {
                 updatePlantState();
-            }, 5 * 60 * 1000); // every 5 minutes
+            }, speedInMinutes * 60 * 1000); 
         }
         return () => clearInterval(intervalId);
-    }, [settings.simulationSettings.autoAdvance, updatePlantState]);
+    }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, updatePlantState]);
 
     const activePlants = useMemo(() => plants.filter((p): p is Plant => p !== null), [plants]);
 
@@ -60,8 +58,13 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ setActiveView }) => {
         p.problems.map(problem => ({...problem, plantId: p.id, plantName: p.name}))
     ), [activePlants]);
     
+    const selectedPlant = useMemo(() => {
+        if (!selectedPlantId) return null;
+        return activePlants.find(p => p.id === selectedPlantId) || null;
+    }, [selectedPlantId, activePlants]);
+
     if (selectedPlant) {
-        return <DetailedPlantView plant={selectedPlant} onClose={() => setSelectedPlant(null)} />;
+        return <DetailedPlantView plant={selectedPlant} onClose={() => setSelectedPlantId(null)} />;
     }
 
     return (
@@ -71,7 +74,7 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ setActiveView }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {plants.map((plant, index) =>
                         plant ? (
-                            <PlantCard key={plant.id} plant={plant} onInspect={() => setSelectedPlant(plant)} />
+                            <PlantCard key={plant.id} plant={plant} onInspect={() => setSelectedPlantId(plant.id)} />
                         ) : (
                             <EmptyPlantSlot key={`empty-${index}`} onStart={() => setActiveView(View.Strains)} />
                         )

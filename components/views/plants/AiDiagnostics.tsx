@@ -1,13 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useNotifications } from '../../../context/NotificationContext';
-import { geminiService } from '../../../services/geminiService';
-import { AIResponse } from '../../../types';
-import { CameraModal } from '../../common/CameraModal';
-import { usePlants } from '../../../hooks/usePlants';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useNotifications } from '@/context/NotificationContext';
+import { geminiService } from '@/services/geminiService';
+import { AIResponse } from '@/types';
+import { CameraModal } from '@/components/common/CameraModal';
+import { usePlants } from '@/hooks/usePlants';
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();

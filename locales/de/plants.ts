@@ -7,6 +7,12 @@ export const plantsView = {
     title: 'Leerer Pflanz-Slot',
     subtitle: 'Beginne einen neuen Anbau im Sorten-Bereich.',
   },
+  archivedPlant: 'Archivierte Pflanze',
+  vitals: {
+    ph: 'pH-Wert',
+    ec: 'EC-Wert',
+    moisture: 'Feuchtigkeit',
+  },
   notifications: {
     startSuccess: 'Anbau für {name} erfolgreich gestartet!',
     allSlotsFull: 'Alle Anbau-Slots sind belegt. Beende einen Anbau, um einen neuen zu starten.',
@@ -112,22 +118,67 @@ export const plantsView = {
       none: 'Keine Warnungen. Alles sieht gut aus!',
   },
   actionModals: {
-    wateringTitle: 'Wasser hinzufügen',
-    feedingTitle: 'Nährstoffe hinzufügen',
-    observationTitle: 'Beobachtung hinzufügen',
+    logAction: 'Aktion protokollieren',
+    idealRange: 'Ideal: {min} - {max}',
+    current: 'Aktuell',
+    wateringTitle: 'Gießen protokollieren',
+    feedingTitle: 'Düngung protokollieren',
+    observationTitle: 'Beobachtung protokollieren',
     trainingTitle: 'Training protokollieren',
-    photoTitle: 'Foto hinzufügen',
+    photoTitle: 'Foto protokollieren',
     waterAmount: 'Wassermenge (ml)',
-    phValue: 'pH-Wert',
-    ecValue: 'EC-Wert',
+    phValue: 'pH-Wert (Eingang)',
+    ecValue: 'EC-Wert (Eingang)',
+    runoffPh: 'pH-Wert (Drainage)',
+    runoffEc: 'EC-Wert (Drainage)',
+    runoff: 'Drainage (optional)',
+    nutrientDetails: 'Dünger-Details',
+    nutrientDetailsPlaceholder: 'z.B. BioBizz Grow 2ml/L',
     observationPlaceholder: 'Was hast du beobachtet?',
     trainingType: 'Trainingsart',
     trainingTypes: {
-      lst: 'LST',
-      topping: 'Topping',
-      defoliation: 'Entlaubung',
+      topping: {
+        label: 'Topping',
+        tooltip: 'Abschneiden des Haupttriebs, um zwei neue Haupttriebe zu fördern und eine buschigere Pflanze zu erzeugen.'
+      },
+      lst: {
+        label: 'LST',
+        tooltip: 'Sanftes Herunterbiegen von Ästen, um ein breites, flaches Blätterdach für eine bessere Lichtausbeute zu schaffen.'
+      },
+      defoliation: {
+        label: 'Entlaubung',
+        tooltip: 'Strategisches Entfernen von Fächerblättern, um die Lichtdurchdringung und Luftzirkulation zu den unteren Blüten zu verbessern.'
+      },
+      fiming: {
+        label: 'FIMing',
+        tooltip: 'Eine Variante des Toppings, bei der nur ein Teil des neuen Triebs entfernt wird, was zu vier oder mehr neuen Trieben führen kann.'
+      },
+      scrog: {
+        label: 'SCROG',
+        tooltip: 'Verwendung eines Netzes (Screen of Green), um die Triebe horizontal zu führen und ein perfekt ebenes Blätterdach zu schaffen.'
+      },
+      superCropping: {
+        label: 'Super Cropping',
+        tooltip: 'Vorsichtiges Quetschen und Biegen von Stängeln, um das innere Gewebe zu verletzen, was zu stärkerem Wachstum und besserem Nährstofffluss führt.'
+      }
     },
     photoNotes: 'Notizen zum Foto',
+    photoCategory: 'Kategorie',
+    photoCategories: {
+      'Full Plant': 'Ganze Pflanze',
+      'Bud': 'Blüte',
+      'Leaf': 'Blatt',
+      'Problem': 'Problem',
+      'Trichomes': 'Trichome',
+    },
+    healthStatus: 'Gesundheitszustand',
+    healthStatuses: {
+      'Excellent': 'Ausgezeichnet',
+      'Good': 'Gut',
+      'Showing Issues': 'Zeigt Probleme',
+    },
+    observationTags: 'Tags (kommagetrennt)',
+    observationTagsPlaceholder: 'z.B. Schädlinge, Mangelerscheinung',
     defaultNotes: {
         watering: 'Pflanze gegossen.',
         feeding: 'Pflanze gedüngt.',

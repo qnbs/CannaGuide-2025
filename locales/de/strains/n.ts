@@ -1,38 +1,31 @@
-export const strains = {
-  "n13-kush": {
-    "description": "Eine indica-dominante Sorte mit einem fruchtigen, erdigen Aroma. Die Wirkung ist stark, entspannend und körperlich, ideal für den Abendgebrauch.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "G13 Hashplant x Nicole Kush",
-    "aromas": [
-      "Fruchtig",
-      "Erdig",
-      "Süß",
-      "Beere"
-    ],
-    "dominantTerpenes": [
-      "Myrcen",
-      "Caryophyllen",
-      "Limonen"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/Pflanze" },
-    "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz (bis 1.5 m)" }
-  },
-  "nebula": {
-    "description": "Eine ausgewogene Hybride mit einem süßen, honigartigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend, kann aber auch leicht psychedelisch sein.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "US Haze x Master Widow",
-    "aromas": [
-      "Süß",
-      "Honig",
-      "Fruchtig",
-      "Blumig"
-    ],
-    "dominantTerpenes": [
-      "Myrcen",
-      "Caryophyllen",
-      "Terpinolen"
-    ],
-    "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/Pflanze" },
-    "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
-  }
-}
+import { Strain } from '@/types';
+
+export const strains: Strain[] = [
+    {
+        id: 'n13-kush',
+        name: 'N13 Kush',
+        type: 'Hybrid',
+        thc: 24,
+        cbd: 1,
+        floweringTime: 8,
+        agronomic: {
+            difficulty: 'Medium',
+            yield: 'High',
+            height: 'Short',
+        },
+    },
+    {
+        id: 'nebula',
+        name: 'Nebula',
+        type: 'Hybrid',
+        thc: 22,
+        cbd: 1,
+        floweringTime: 8.5,
+        floweringTimeRange: '8-9',
+        agronomic: {
+            difficulty: 'Easy',
+            yield: 'Medium',
+            height: 'Medium',
+        },
+    }
+];

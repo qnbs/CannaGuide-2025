@@ -1,6 +1,6 @@
 export const strains = {
   "acdc": {
-    "description": "Eine berühmte CBD-dominante Sorte, gezüchtet für therapeutische Zwecke ohne starke psychoaktive Wirkung. Der Name steht für 'Alternative Cannabinoid Dietary Cannabis'. Wirkt entspannend und angstlösend, während der Geist klar bleibt. Ideal bei Schmerzen und Angstzuständen.",
+    "description": "Eine renommierte CBD-dominante Sorte, die für ihre außergewöhnliche 1:20 THC:CBD-Ratio berühmt ist. ACDC wurde speziell für therapeutische Zwecke entwickelt und liefert eine tief beruhigende, angstlösende Wirkung ohne signifikante Psychoaktivität, was den Geist klar und fokussiert lässt. Ihr komplexes Terpenprofil erzeugt ein Aroma von erdigem, süßem Holz mit subtilen Noten von Kirsche und Zitronengras. Sie ist eine erstklassige Wahl zur Behandlung von Schmerzen, Epilepsie, Angstzuständen und den negativen Auswirkungen der Chemotherapie.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Cannatonic x Ruderalis",
     "aromas": [
@@ -625,9 +625,9 @@ export const strains = {
       "Süß"
     ],
     "dominantTerpenes": [
-      "Myrcen",
-      "Caryophyllen",
-      "Pinen"
+      "Myrcene",
+      "Caryophyllene",
+      "Pinene"
     ],
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "50-150 g/Pflanze" },
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.2m)" }

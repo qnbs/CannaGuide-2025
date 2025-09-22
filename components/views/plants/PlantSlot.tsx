@@ -1,12 +1,11 @@
 import React, { useMemo } from 'react';
-// FIX: Correct import path for types.
-import { Plant, PlantStage } from '../../../types';
-import { Card } from '../../common/Card';
-import { PlantVisual } from './PlantVisual';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { VitalBar } from './VitalBar';
-import { PLANT_STAGE_DETAILS } from '../../../constants';
+import { Plant, PlantStage } from '@/types';
+import { Card } from '@/components/common/Card';
+import { PlantVisual } from '@/components/views/plants/PlantVisual';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { VitalBar } from '@/components/views/plants/VitalBar';
+import { PLANT_STAGE_DETAILS } from '@/constants';
 
 interface PlantCardProps {
   plant: Plant;
@@ -66,9 +65,9 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
             
             <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
                  <Stat icon={<PhosphorIcons.Sun />} label={t('common.days')} value={`${t('plantsView.plantCard.day')} ${plant.age}`} />
-                 <Stat icon={<PhosphorIcons.Ruler />} label={t('plantsView.detailedView.height')} value={`${plant.height.toFixed(1)} cm`} />
+                 <Stat icon={<PhosphorIcons.Ruler />} label={t('plantsView.detailedView.height')} value={`${plant.height.toFixed(1)} ${t('common.units.cm')}`} />
                  <Stat icon={<PhosphorIcons.Plant />} label={t('plantsView.detailedView.stage')} value={t(`plantStages.${plant.stage}`)} />
-                 <Stat icon={<PhosphorIcons.Heart weight="fill"/>} label={t('plantsView.detailedView.stress')} value={`${plant.stressLevel.toFixed(0)}%`} />
+                 <Stat icon={<PhosphorIcons.Heart weight="fill"/>} label={t('plantsView.detailedView.stress')} value={`${plant.stressLevel.toFixed(0)}${t('common.units.percent')}`} />
             </div>
 
             <div className="mt-4 space-y-3 pt-3 border-t border-slate-700/50">
@@ -77,7 +76,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
                     value={plant.vitals.substrateMoisture}
                     min={0} max={100}
                     idealMin={30} idealMax={80}
-                    unit="%"
+                    unit={t('common.units.percent')}
                     colorClass="bg-blue-500"
                 />
                 <VitalBar
@@ -93,7 +92,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
                     value={plant.vitals.ec}
                     min={0} max={3}
                     idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max}
-                    unit=" mS/cm"
+                    unit={` ${t('common.units.ms_cm')}`}
                     colorClass="bg-orange-500"
                 />
             </div>

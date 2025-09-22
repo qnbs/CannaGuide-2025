@@ -1,12 +1,12 @@
 import React, { useState, useId } from 'react';
-import { SavedSetup, RecommendationCategory, RecommendationItem } from '../../../types';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useNotifications } from '../../../context/NotificationContext';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
-import { exportService } from '../../../services/exportService';
+import { SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useNotifications } from '@/context/NotificationContext';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { exportService } from '@/services/exportService';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
@@ -77,7 +77,7 @@ const SetupDetailModal: React.FC<{
                             <tr className="border-b border-slate-700">
                                 <th className="text-left py-2 font-semibold">{t('equipmentView.savedSetups.modal.item')}</th>
                                 <th className="text-left py-2 font-semibold">{t('common.details')}</th>
-                                <th className="text-right py-2 font-semibold">{t('equipmentView.savedSetups.modal.price')} (€)</th>
+                                <th className="text-right py-2 font-semibold">{`${t('equipmentView.savedSetups.modal.price')} (${t('common.units.currency_eur')})`}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -101,7 +101,7 @@ const SetupDetailModal: React.FC<{
                 </div>
 
                 <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-700">
-                    <span className="font-bold">{t('equipmentView.configurator.total')}: {editedSetup.totalCost.toFixed(2)} €</span>
+                    <span className="font-bold">{t('equipmentView.configurator.total')}: {editedSetup.totalCost.toFixed(2)} {t('common.units.currency_eur')}</span>
                     <div>
                         {isEditing && <Button onClick={handleSave} className="mr-2">{t('equipmentView.savedSetups.modal.saveChanges')}</Button>}
                         <Button variant="secondary" onClick={onClose}>{t('common.close')}</Button>
@@ -175,7 +175,7 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
                                <span className="flex items-center gap-1" title="Style"><PhosphorIcons.Leafy/> {setup.sourceDetails.growStyle}</span>
                                <span className="flex items-center gap-1" title="Budget"><PhosphorIcons.Drop/> {setup.sourceDetails.budget}</span>
                             </div>
-                            <p className="text-2xl font-bold text-right my-3">{setup.totalCost.toFixed(2)} €</p>
+                            <p className="text-2xl font-bold text-right my-3">{setup.totalCost.toFixed(2)} {t('common.units.currency_eur')}</p>
                             <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-slate-700">
                                 <Button size="sm" onClick={() => setSelectedSetup(setup)} className="flex-1">{t('equipmentView.savedSetups.inspect')}</Button>
                                 <details className="relative group">

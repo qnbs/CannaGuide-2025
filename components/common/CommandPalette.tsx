@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Card } from './Card';
-import { Command } from '../../types';
-import { useTranslations } from '../../hooks/useTranslations';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { Card } from '@/components/common/Card';
+import { Command } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface CommandPaletteProps {
     isOpen: boolean;

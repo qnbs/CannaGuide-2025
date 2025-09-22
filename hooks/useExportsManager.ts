@@ -1,9 +1,9 @@
 
 
+
 import { useState, useEffect, useCallback } from 'react';
-// FIX: Import SavedExport type from the correct location.
-import { SavedExport, ExportSource, ExportFormat } from '../types';
-import { storageService } from '../services/storageService';
+import { SavedExport, ExportSource, ExportFormat } from '@/types';
+import { storageService } from '@/services/storageService';
 
 const STORAGE_KEY = 'exports';
 
@@ -16,7 +16,7 @@ export const useExportsManager = () => {
         storageService.setItem(STORAGE_KEY, savedExports);
     }, [savedExports]);
 
-    const addExport = useCallback((newExport: Omit<SavedExport, 'id' | 'createdAt' | 'count' | 'strainIds'>, strainIds: string[]) => {
+    const addExport = useCallback((newExport: Omit<SavedExport, 'id' | 'createdAt' | 'count' | 'strainIds' | 'notes'>, strainIds: string[]) => {
         const exportToAdd: SavedExport = {
             ...newExport,
             id: Date.now().toString(),
@@ -28,9 +28,13 @@ export const useExportsManager = () => {
         return exportToAdd;
     }, []);
 
+    const updateExport = useCallback((updatedExport: SavedExport) => {
+        setSavedExports(prev => prev.map(exp => (exp.id === updatedExport.id ? updatedExport : exp)));
+    }, []);
+
     const deleteExport = useCallback((exportId: string) => {
         setSavedExports(prev => prev.filter(exp => exp.id !== exportId));
     }, []);
 
-    return { savedExports, addExport, deleteExport };
+    return { savedExports, addExport, deleteExport, updateExport };
 };

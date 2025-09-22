@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { useTranslations } from '../../hooks/useTranslations';
-import { Button } from './Button';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useTranslations } from '@/hooks/useTranslations';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface CameraModalProps {
   isOpen: boolean;

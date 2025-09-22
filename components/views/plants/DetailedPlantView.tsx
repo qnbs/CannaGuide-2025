@@ -1,18 +1,18 @@
-// This file was missing and has been recreated based on its usage across the application.
 import React, { useState } from 'react';
-import { Plant, JournalEntry, PlantStage } from '../../../types';
-import { usePlants } from '../../../hooks/usePlants';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { Button } from '../../common/Button';
-import { Tabs } from '../../common/Tabs';
-import { OverviewTab } from './detailedPlantViewTabs/OverviewTab';
-import { JournalTab } from './detailedPlantViewTabs/JournalTab';
-import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
-import { TasksTab } from './detailedPlantViewTabs/TasksTab';
-import { AiTab } from './detailedPlantViewTabs/AiTab';
-import { usePlantAdvisorArchive } from '../../../hooks/usePlantAdvisorArchive';
-import { ActionModalsContainer, ModalState, ModalType } from '../../common/ActionModalsContainer';
+import { Plant } from '@/types';
+import { usePlants } from '@/hooks/usePlants';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Button } from '@/components/common/Button';
+import { Tabs } from '@/components/common/Tabs';
+import { OverviewTab } from '@/components/views/plants/detailedPlantViewTabs/OverviewTab';
+import { JournalTab } from '@/components/views/plants/detailedPlantViewTabs/JournalTab';
+import { PhotosTab } from '@/components/views/plants/detailedPlantViewTabs/PhotosTab';
+import { TasksTab } from '@/components/views/plants/detailedPlantViewTabs/TasksTab';
+import { AiTab } from '@/components/views/plants/detailedPlantViewTabs/AiTab';
+import { usePlantAdvisorArchive } from '@/hooks/usePlantAdvisorArchive';
+import { LogActionModal, ModalState, ModalType } from '@/components/views/plants/LogActionModal';
+
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -30,8 +30,8 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
 
     const plantArchive = archive[plant.id] || [];
 
-    const handleAction = (type: ModalType) => {
-        setModalState({ plantId: plant.id, type });
+    const handleAction = (type: NonNullable<ModalType>) => {
+        setModalState({ type, plantId: plant.id });
     };
 
     const tabs: { id: PlantDetailTab; label: string; icon: React.ReactNode }[] = [
@@ -44,11 +44,14 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
     
     return (
         <div className="animate-fade-in">
-            <ActionModalsContainer 
-                modalState={modalState} 
-                setModalState={setModalState}
-                onAddJournalEntry={addJournalEntry}
-            />
+            {modalState && (
+                <LogActionModal 
+                    plant={plant}
+                    modalState={modalState} 
+                    setModalState={setModalState}
+                    onAddJournalEntry={addJournalEntry}
+                />
+            )}
 
             <div className="flex items-center justify-between mb-4">
                 <Button variant="secondary" onClick={onClose}>
@@ -65,10 +68,12 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
                  <div className="flex-grow">
                     <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as PlantDetailTab)} />
                 </div>
-                 <div className="flex-shrink-0 flex gap-2">
+                 <div className="flex-shrink-0 flex flex-wrap gap-2">
                     <Button onClick={() => handleAction('watering')}><PhosphorIcons.Drop className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.watering')}</Button>
                     <Button onClick={() => handleAction('feeding')}><PhosphorIcons.TestTube className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.feeding')}</Button>
-                    <Button onClick={() => handleAction('photo')}><PhosphorIcons.Camera className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.photo')}</Button>
+                    <Button onClick={() => handleAction('training')}><PhosphorIcons.Scissors className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.training')}</Button>
+                    <Button onClick={() => handleAction('observation')} variant="secondary"><PhosphorIcons.MagnifyingGlass className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.observation')}</Button>
+                    <Button onClick={() => handleAction('photo')} variant="secondary"><PhosphorIcons.Camera className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.photo')}</Button>
                 </div>
             </div>
 

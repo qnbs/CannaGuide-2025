@@ -1,8 +1,9 @@
 
 
+
 import { useState, useEffect, useCallback } from 'react';
-import { SavedSetup } from '../types';
-import { storageService } from '../services/storageService';
+import { SavedSetup } from '@/types';
+import { storageService } from '@/services/storageService';
 
 const STORAGE_KEY = 'setups';
 

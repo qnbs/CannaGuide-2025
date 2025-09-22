@@ -1,11 +1,10 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-// FIX: Correct import path for types.
-import { AppSettings, Language, GrowSetup, Theme, View, UiDensity } from '../types';
-import { storageService } from '../services/storageService';
+import React, { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { AppSettings, Language, GrowSetup, Theme, View, UiDensity } from '@/types';
+import { storageService } from '@/services/storageService';
 
 interface SettingsContextType {
   settings: AppSettings;
-  setSetting: <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => void;
+  setSetting: (path: string, value: any) => void;
 }
 
 export const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -142,9 +141,27 @@ export const SettingsProvider: React.FC<{ children: ReactNode }> = ({ children }
     storageService.setItem('settings', settings);
   }, [settings]);
 
-  const setSetting = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
-    setSettingsState(prev => ({ ...prev, [key]: value }));
-  };
+  const setSetting = useCallback((path: string, value: any) => {
+    setSettingsState(prev => {
+      const keys = path.split('.');
+      // Create a deep copy to avoid mutation
+      const newState = JSON.parse(JSON.stringify(prev));
+      
+      let currentLevel = newState;
+      for (let i = 0; i < keys.length - 1; i++) {
+        const key = keys[i];
+        if (currentLevel[key] === undefined) {
+          // If a key in the path doesn't exist, create it.
+          currentLevel[key] = {};
+        }
+        currentLevel = currentLevel[key];
+      }
+
+      currentLevel[keys[keys.length - 1]] = value;
+      return newState;
+    });
+  }, []);
+
 
   return (
     <SettingsContext.Provider value={{ settings, setSetting }}>

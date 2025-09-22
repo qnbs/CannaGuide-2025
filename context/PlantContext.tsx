@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, ReactNode, useMemo, useContext } from 'react';
-import { Plant, JournalEntry } from '../types';
-import { usePlantManager } from '../hooks/usePlantManager';
-import { storageService } from '../services/storageService';
+import { Plant, JournalEntry } from '@/types';
+import { usePlantManager } from '@/hooks/usePlantManager';
+import { storageService } from '@/services/storageService';
 
 interface PlantContextType {
     plants: (Plant | null)[];

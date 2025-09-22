@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useNotifications } from '../../../context/NotificationContext';
-import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '../../../types';
-import { geminiService } from '../../../services/geminiService';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useNotifications } from '@/context/NotificationContext';
+import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '@/types';
+import { geminiService } from '@/services/geminiService';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
@@ -28,10 +28,10 @@ const RationaleModal: React.FC<{ content: { title: string, content: string }, on
     const { t } = useTranslations();
     const modalRef = useFocusTrap(true);
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="rationale-modal-title">
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" role="dialog" aria-modal="true" aria-labelledby="rationale-modal-title">
             <Card ref={modalRef} className="w-full max-w-md modal-content-animate" onClick={(e) => e.stopPropagation()}>
-                <h3 id="rationale-modal-title" className="text-xl font-bold text-primary-500 mb-4">{content.title}</h3>
-                <p className="text-slate-600 dark:text-slate-300">{content.content}</p>
+                <h3 id="rationale-modal-title" className="text-xl font-bold text-primary-400 mb-4">{content.title}</h3>
+                <p className="text-slate-300">{content.content}</p>
                 <div className="text-right mt-6">
                     <Button onClick={onClose}>{t('common.close')}</Button>
                 </div>
@@ -158,15 +158,15 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
                                 return (
                                     <Card key={key} className="flex items-center justify-between gap-4">
                                         <div className="flex items-start gap-4">
-                                            <div className="text-primary-500 mt-1 w-8 h-8 flex-shrink-0">{gearIcons[key]}</div>
+                                            <div className="text-primary-400 mt-1 w-8 h-8 flex-shrink-0">{gearIcons[key]}</div>
                                             <div>
-                                                <h4 className="font-bold text-white">{categoryLabels[key]}</h4>
+                                                <h4 className="font-bold text-slate-100">{categoryLabels[key]}</h4>
                                                 <p className="text-sm text-slate-400">{item.name}</p>
                                             </div>
                                         </div>
                                         <div className="text-right flex-shrink-0">
                                             <p className="font-bold">{item.price} €</p>
-                                            <Button variant="secondary" size="sm" className="mt-1 !shadow-none !bg-slate-700/50" onClick={() => setRationaleModalContent({title: t('equipmentView.configurator.rationaleModalTitle', { category: categoryLabels[key] }), content: item.rationale})}>
+                                            <Button variant="secondary" size="sm" className="mt-1 !shadow-none !bg-slate-800" onClick={() => setRationaleModalContent({title: t('equipmentView.configurator.rationaleModalTitle', { category: categoryLabels[key] }), content: item.rationale})}>
                                                 {t('common.why')}
                                             </Button>
                                         </div>
@@ -176,7 +176,7 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
                         </div>
                         <div className="space-y-6">
                             <Card>
-                                <h4 className="font-bold text-white flex items-center gap-2 mb-3"><PhosphorIcons.Calculator/>{t('equipmentView.configurator.costBreakdown')}</h4>
+                                <h4 className="font-bold text-slate-100 flex items-center gap-2 mb-3"><PhosphorIcons.Calculator/>{t('equipmentView.configurator.costBreakdown')}</h4>
                                 <div className="space-y-1 text-sm">
                                     {costBreakdown.breakdown.map(item => (
                                         <div key={item.category} className="flex justify-between">
@@ -184,9 +184,9 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
                                             <span>{item.price} €</span>
                                         </div>
                                     ))}
-                                    <div className="flex justify-between font-bold border-t border-slate-600 pt-2 mt-2">
+                                    <div className="flex justify-between font-bold border-t border-slate-700 pt-2 mt-2">
                                         <span>{t('equipmentView.configurator.total')}</span>
-                                        <span>≈ {costBreakdown.total} €</span>
+                                        <span>≈ {costBreakdown.total.toFixed(2)} €</span>
                                     </div>
                                 </div>
                                 <div className="mt-4 space-y-2 pt-4 border-t border-slate-700">

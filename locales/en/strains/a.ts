@@ -1,6 +1,6 @@
 export const strains = {
   "acdc": {
-    "description": "A famous CBD-dominant strain bred for therapeutic purposes without strong psychoactive effects. The name stands for 'Alternative Cannabinoid Dietary Cannabis'. It has a relaxing and anxiety-reducing effect while keeping the mind clear. Ideal for pain and anxiety.",
+    "description": "A renowned CBD-dominant strain, celebrated for its exceptional 1:20 THC:CBD ratio. ACDC was specifically bred for therapeutic purposes, delivering a profoundly calming, anxiety-reducing effect without significant psychoactivity, leaving the mind clear and focused. Its complex terpene profile creates an aroma of earthy, sweet wood with subtle notes of cherry and lemongrass. It is a premier choice for managing pain, epilepsy, anxiety, and the adverse effects of chemotherapy.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Cannatonic x Ruderalis",
     "aromas": [

@@ -1,6 +1,6 @@
 import React, { createContext, ReactNode } from 'react';
-import { useSettings } from '../hooks/useSettings';
-import { locales, Locale } from '../locales';
+import { useSettings } from '@/hooks/useSettings';
+import { locales, Locale } from '@/locales';
 
 interface LanguageContextType {
   locale: Locale;

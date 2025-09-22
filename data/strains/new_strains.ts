@@ -1,4 +1,4 @@
-import { Strain } from '../../types';
+import { Strain } from '@/types';
 
 // Fügen Sie hier neue Sorten hinzu, um die Datenbank zu erweitern.
 // Diese werden automatisch geladen und zur bestehenden Liste hinzugefügt.

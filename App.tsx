@@ -1,26 +1,26 @@
-
 import React, { useState, useEffect } from 'react';
-import { View } from './types';
-import { useSettings } from './hooks/useSettings';
-import { SettingsProvider } from './context/SettingsContext';
-import { LanguageProvider } from './context/LanguageContext';
-import { NotificationProvider } from './context/NotificationContext';
-import { PlantProvider } from './context/PlantContext';
-import { Header } from './components/navigation/Header';
-import { BottomNav } from './components/navigation/BottomNav';
-import { StrainsView } from './components/views/StrainsView';
-import { PlantsView } from './components/views/PlantsView';
-import { EquipmentView } from './components/views/EquipmentView';
-import { KnowledgeView } from './components/views/KnowledgeView';
-import { SettingsView } from './components/views/SettingsView';
-import { HelpView } from './components/views/HelpView';
-import { OnboardingModal } from './components/common/OnboardingModal';
-import { CommandPalette } from './components/common/CommandPalette';
-import { useCommandPalette } from './hooks/useCommandPalette';
-import { useOnlineStatus } from './hooks/useOnlineStatus';
-import { useNotifications } from './context/NotificationContext';
-import { useTranslations } from './hooks/useTranslations';
-import { usePwaInstall } from './hooks/usePwaInstall';
+import { View } from '@/types';
+import { useSettings } from '@/hooks/useSettings';
+import { SettingsProvider } from '@/context/SettingsContext';
+import { LanguageProvider } from '@/context/LanguageContext';
+import { NotificationProvider } from '@/context/NotificationContext';
+import { PlantProvider } from '@/context/PlantContext';
+import { Header } from '@/components/navigation/Header';
+import { BottomNav } from '@/components/navigation/BottomNav';
+import { StrainsView } from '@/components/views/StrainsView';
+import { PlantsView } from '@/components/views/PlantsView';
+import { EquipmentView } from '@/components/views/EquipmentView';
+import { KnowledgeView } from '@/components/views/KnowledgeView';
+import { SettingsView } from '@/components/views/SettingsView';
+import { HelpView } from '@/components/views/HelpView';
+import { OnboardingModal } from '@/components/common/OnboardingModal';
+import { CommandPalette } from '@/components/common/CommandPalette';
+import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useNotifications } from '@/context/NotificationContext';
+import { useTranslations } from '@/hooks/useTranslations';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
+import { strainService } from '@/services/strainService';
 
 
 const AppContent: React.FC = () => {
@@ -31,6 +31,14 @@ const AppContent: React.FC = () => {
     const { t } = useTranslations();
     const isOffline = useOnlineStatus();
     const { deferredPrompt, handleInstallClick } = usePwaInstall();
+
+    useEffect(() => {
+        // Initialize the strain service with the translation function.
+        // This is critical for the app to function as it populates the strain data.
+        if (t) {
+            strainService.init(t);
+        }
+    }, [t]);
 
     useEffect(() => {
         if (isOffline) {

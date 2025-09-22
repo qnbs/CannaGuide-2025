@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useId } from 'react';
-import { Strain } from '../../../types';
-import { Button } from '../../common/Button';
-import { Card } from '../../common/Card';
-import { useNotifications } from '../../../context/NotificationContext';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useFocusTrap } from '../../../hooks/useFocusTrap';
+import { Strain } from '@/types';
+import { Button } from '@/components/common/Button';
+import { Card } from '@/components/common/Card';
+import { useNotifications } from '@/context/NotificationContext';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface AddStrainModalProps {
     isOpen: boolean;

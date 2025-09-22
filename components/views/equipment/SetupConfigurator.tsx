@@ -1,12 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-// FIX: Correct import path for types.
-import { SavedSetup, Recommendation } from '../../../types';
-import { SetupResults } from './SetupResults';
-import { configurations } from './setupConfigurations';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { SavedSetup, Recommendation } from '@/types';
+import { SetupResults } from '@/components/views/equipment/SetupResults';
+import { configurations } from '@/components/views/equipment/setupConfigurations';
 
 interface SetupConfiguratorProps {
     onGenerate: (promptDetails: string) => void;

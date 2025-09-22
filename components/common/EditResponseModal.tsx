@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Card } from './Card';
-import { Button } from './Button';
-import { useTranslations } from '../../hooks/useTranslations';
-import { useFocusTrap } from '../../hooks/useFocusTrap';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import React, { useState, useRef } from 'react';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface EditableResponse {
     id: string;
@@ -15,9 +15,10 @@ interface EditResponseModalProps<T extends EditableResponse> {
     response: T;
     onClose: () => void;
     onSave: (updatedResponse: T) => void;
+    title?: string;
 }
 
-export const EditResponseModal = <T extends EditableResponse>({ response, onClose, onSave }: EditResponseModalProps<T>) => {
+export const EditResponseModal = <T extends EditableResponse>({ response, onClose, onSave, title: customTitle }: EditResponseModalProps<T>) => {
     const { t } = useTranslations();
     const [title, setTitle] = useState(response.title);
     const [content, setContent] = useState(response.content);
@@ -43,7 +44,7 @@ export const EditResponseModal = <T extends EditableResponse>({ response, onClos
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
             <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={e => e.stopPropagation()}>
-                <h2 className="text-xl font-bold text-primary-400 mb-4">{t('knowledgeView.archive.editTitle')}</h2>
+                <h2 className="text-xl font-bold text-primary-400 mb-4">{customTitle || t('knowledgeView.archive.editTitle')}</h2>
                 <div className="space-y-4">
                     <input 
                         type="text" 
@@ -54,11 +55,8 @@ export const EditResponseModal = <T extends EditableResponse>({ response, onClos
                     
                     <div className="bg-slate-800 border border-slate-600 rounded-md">
                         <div className="flex items-center gap-2 p-1 border-b border-slate-600">
-                            {/* FIX: Removed invalid 'weight' prop */}
                             <button type="button" onClick={() => applyFormat('bold')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.TextBolder className="w-5 h-5" /></button>
-                            {/* FIX: Removed invalid 'weight' prop */}
                             <button type="button" onClick={() => applyFormat('italic')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.TextItalic className="w-5 h-5" /></button>
-                            {/* FIX: Removed invalid 'weight' prop */}
                             <button type="button" onClick={() => applyFormat('insertUnorderedList')} className="p-1.5 hover:bg-slate-700 rounded"><PhosphorIcons.ListBullets className="w-5 h-5" /></button>
                         </div>
                         <div

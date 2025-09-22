@@ -9,10 +9,16 @@ export const knowledgeView = {
   stepsCompleted: '{completed} von {total} Schritten erledigt',
   aiMentor: {
     title: 'Frag den KI-Mentor',
-    subtitle: 'Hast du eine spezifische Frage zum Anbau? Stelle sie hier und erhalte eine detaillierte Antwort.',
-    placeholder: 'z.B. Was ist der beste pH-Wert in der Blütephase?',
-    button: 'Frage stellen',
-    loading: 'Frage wird analysiert...',
+    subtitle: 'Dein persönlicher Gartenbau-Wissenschaftler. Frag alles, von einfachen Grundlagen bis zu komplexen Anbau-Szenarien.',
+    placeholder: 'z.B. Vergleiche LST vs. Topping für den Ertrag...',
+    button: 'Mentor fragen',
+    loading: 'Durchsuche gartenbauliche Archive...',
+    examplePromptsTitle: 'Beispielfragen',
+    examples: [
+        'Erkläre Nährstoffsperre',
+        'Wie erhöhe ich die Terpenproduktion?',
+        'Vergleiche Erde vs. Hydroponik'
+    ]
   },
   sections: {
     phase1: {

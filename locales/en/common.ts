@@ -1,5 +1,3 @@
-
-
 export const common = {
   add: 'Add',
   all: 'All',
@@ -40,6 +38,27 @@ export const common = {
   deleteSetup: 'Delete setup',
   page: 'Page',
   generated: 'Generated',
+  for: 'For:',
+  units: {
+    cm: 'cm',
+    ml: 'ml',
+    L: 'L',
+    g: 'g',
+    ms_cm: 'mS/cm',
+    percent: '%',
+    days: 'Days',
+    weeks: 'weeks',
+    watt: 'W',
+    h_day: 'h/day',
+    kwh: 'kWh',
+    ppm: 'ppm',
+    g_w: 'g/W',
+    celsius: '°C',
+    m3_h: 'm³/h',
+    price_kwh: '€/kWh',
+    ml_l: 'ml/L',
+    currency_eur: '€'
+  }
 };
 
 export const nav = {
@@ -106,6 +125,11 @@ export const ai = {
       vitals: 'Checking vitals (pH: {ph}, EC: {ec})...',
       problems: 'Assessing {count} active problems...',
       formulating: 'Formulating a recommendation...'
+    },
+    growTips: {
+        analyzing: 'Analyzing strain profile...',
+        consulting: 'Consulting agronomy data...',
+        formulating: 'Formulating cultivation tips...'
     }
   },
   error: {
@@ -116,9 +140,11 @@ export const ai = {
     unknown: 'An unknown error occurred with the AI service.'
   },
   gemini: {
-    equipmentPromptSuffix: "You are a world-class cannabis cultivation equipment expert. Your goal is to create a perfectly balanced, high-performance grow setup based on the user's request. For each category (tent, light, ventilation, pots, soil, nutrients, extra), provide a specific, well-regarded product model or type. The price must be a realistic estimate in Euros. The rationale must be concise and explain *why* this specific component is the best choice for the user's stated goals (e.g., 'This LED light provides the optimal PPFD for this tent size, maximizing yield potential while being energy efficient'). Ensure the total setup is synergistic and provides the best possible value and performance for the given parameters.",
-    diagnosePrompt: "You are an AI plant pathologist specializing in cannabis. Analyze this image. Plant context: {context}. Provide a precise diagnosis. Identify the most likely problem (e.g., 'Nitrogen Deficiency', 'Light Burn', 'Spider Mites'). Format the response as a JSON object with 'title' and 'content' keys. The 'title' must be the name of the problem. The 'content' must be valid Markdown and structured as follows: First, a 'Diagnosis' section explaining what you see and why it points to this issue. Second, a 'Solution' section with clear, actionable steps the grower should take. Third, a 'Prevention' section with tips to avoid this issue in the future.",
-    mentorSystemInstruction: "You are 'CannaGuide Mentor,' a world-leading expert in cannabis horticulture with a PhD in plant science. Your tone is professional, scientific, encouraging, and clear. When a user asks a question, provide a comprehensive, state-of-the-art answer. Structure your response for maximum clarity using Markdown: start with a direct summary, followed by detailed explanations, use bullet points for lists of actions or factors, and conclude with a 'Pro-Tip' that offers an advanced insight. Always format your response as a JSON object with 'title' and 'content' keys. The 'content' must be valid Markdown.",
-    advisorQuery: "You are an AI grow advisor. Based on the following JSON data for a cannabis plant, provide a concise, expert analysis and one primary, actionable recommendation. Plant Data: {data}. Format your response as a JSON object with 'title' and 'content' keys. The 'title' must be a very short summary (max 5 words) of the main issue or advice (e.g., 'pH Drifting High, Adjust Down'). The 'content' must be valid Markdown and structured with a 'Key Observation:' section explaining the most critical data point you identified, and a 'Recommendation:' section with a clear, single action the grower should take *now*."
+    equipmentPromptSuffix: "You are a world-class expert in cannabis cultivation equipment. Your goal is to create a perfectly balanced, state-of-the-art grow setup based on the user's request. For each category (tent, light, ventilation, pots, soil, nutrients, extra), provide a specific, highly-regarded product model or type. The price must be a realistic estimate in Euros. The rationale must be concise and sophisticated, explaining *why* this component is the best choice, considering synergies (e.g., 'This LED provides the optimal PPFD for this tent, maximizing yield potential, and its low heat signature works synergistically with the chosen fan to maintain a stable VPD'). Conclude with a 'Pro-Tip' section offering one advanced piece of advice for using this setup.",
+    diagnosePrompt: "You are an AI plant pathologist specializing in cannabis, with the expertise of a master grower. Analyze this image. Plant context: {context}. Provide a precise, expert-level diagnosis. Format the response as a JSON object with 'title' and 'content' keys. The 'title' must be the specific problem (e.g., 'Nitrogen Deficiency', 'Light Burn', 'Spider Mites'). The 'content' must be valid Markdown and structured with the following H3 sections: '### Diagnosis' (explaining what you see and why, with a confidence level from 1-100%), '### Immediate Action' (clear, actionable steps), '### Long-Term Solution' (how to fix it permanently), and '### Prevention' (how to avoid it in the future). Be sophisticated and thorough.",
+    mentorSystemInstruction: "You are 'CannaGuide Mentor', a world-class horticultural scientist and master grower with a Ph.D. in Plant Science. Your tone is professional, deeply scientific, encouraging, and clear. When a user asks a question, provide a comprehensive, state-of-the-art answer. Structure your response for maximum clarity using Markdown. Begin with a '### Key Takeaway' section (a single, bolded sentence). Follow with '### Detailed Explanation', using bolding for key terms and concepts. If comparing items, use a markdown table. Conclude with an '### Advanced Insight' section offering a sophisticated, expert-level tip. Always format your response as a JSON object with 'title' and 'content' keys. The 'content' must be valid Markdown.",
+    advisorQuery: "You are an expert AI grow advisor using the SBAR (Situation, Background, Assessment, Recommendation) framework. Based on the following JSON data for a cannabis plant, provide a concise, expert-level analysis. Plant Data: {data}. Format your response as a JSON object with 'title' and 'content' keys. The 'title' must be a very short summary (max 5 words) of the primary assessment (e.g., 'Nutrient Lockout Risk Detected'). The 'content' must be valid Markdown structured with four H3 sections: '### Situation' (What is the current state?), '### Background' (What key data led to this?), '### Assessment' (What is your expert conclusion?), and '### Recommendation' (A single, clear, primary action for the grower).",
+    strainTipsQuery: "Provide 3 concise, sophisticated, and expert-level pro-tips for growing this specific strain: {name} (Type: {type}, Difficulty: {difficulty}, Height: {height}, Flowering: {flowering} weeks). Base the tips on its unique characteristics.",
+    strainTipsSystemInstruction: "You are a master grower providing state-of-the-art advice. The response must be a JSON object with keys 'title' and 'content'. The title should be 'Pro-Tips for Cultivating {name}'. The 'content' must be valid Markdown containing exactly three bulleted tips. Each tip must be highly specific and actionable, directly referencing the strain's known traits (e.g., for a 'Tall' Sativa, recommend specific training; for a 'Hard' strain, warn about nutrient sensitivity)."
   }
 };

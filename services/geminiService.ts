@@ -1,17 +1,11 @@
-
-
-
-
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
-// FIX: Correct import path for types.
-import { Plant, Recommendation, AIResponse } from '../types';
+import { Plant, Recommendation, AIResponse, Strain } from '@/types';
 
 const getAiClient = (): GoogleGenAI => {
     // As per guidelines, the API key must come from environment variables.
     // The app should not prompt the user for it.
     if (!process.env.API_KEY) {
         console.error("API_KEY environment variable not set.");
-        // FIX: Throw error with key that can be translated
         throw new Error("ai.error.apiKey");
     }
     return new GoogleGenAI({ apiKey: process.env.API_KEY });
@@ -20,7 +14,7 @@ const getAiClient = (): GoogleGenAI => {
 type TFunction = (key: string, params?: Record<string, any>) => string;
 
 type LoadingMessageContext = {
-    useCase: 'equipment' | 'diagnostics' | 'mentor' | 'advisor';
+    useCase: 'equipment' | 'diagnostics' | 'mentor' | 'advisor' | 'growTips';
     data?: any;
 };
 
@@ -56,6 +50,12 @@ const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction)
                     { key: 'ai.loading.advisor.vitals', params: { ph: plant.vitals.ph.toFixed(1), ec: plant.vitals.ec.toFixed(1) } },
                     { key: 'ai.loading.advisor.problems', params: { count: plant.problems.length } },
                     { key: 'ai.loading.advisor.formulating' },
+                ];
+             case 'growTips':
+                return [
+                    { key: 'ai.loading.growTips.analyzing' },
+                    { key: 'ai.loading.growTips.consulting' },
+                    { key: 'ai.loading.growTips.formulating' },
                 ];
             default:
                 return [{ key: `ai.generating` }];
@@ -215,10 +215,50 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
     }
 };
 
+const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIResponse> => {
+    const ai = getAiClient();
+    const prompt = t('ai.gemini.strainTipsQuery', {
+        name: strain.name,
+        difficulty: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
+        height: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
+        flowering: strain.floweringTime,
+        type: strain.type
+    });
+    
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING },
+            content: { type: Type.STRING },
+        },
+        required: ['title', 'content']
+    };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+            systemInstruction: t('ai.gemini.strainTipsSystemInstruction', { name: strain.name }),
+            responseMimeType: "application/json",
+            responseSchema: responseSchema
+        }
+    });
+    
+    try {
+        const jsonStr = response.text.trim();
+        const result = JSON.parse(jsonStr);
+        return result as AIResponse;
+    } catch (e) {
+        console.error("Failed to parse AI response for grow tips:", e, response.text);
+        throw new Error("ai.error.parsing");
+    }
+};
+
 export const geminiService = {
     getDynamicLoadingMessages,
     getEquipmentRecommendation,
     getAiMentorResponse,
     diagnosePlantProblem,
     getAiPlantAdvisorResponse,
+    getStrainGrowTips,
 };

@@ -1,17 +1,16 @@
 import React, { useState, useCallback } from 'react';
-import { Card } from '../common/Card';
-import { useTranslations } from '../../hooks/useTranslations';
-import { SetupConfigurator } from './equipment/SetupConfigurator';
-import { Calculators } from './equipment/Calculators';
-import { SavedSetupsView } from './equipment/SavedSetupsView';
-import { useSetupManager } from '../../hooks/useSetupManager';
-import { geminiService } from '../../services/geminiService';
-// FIX: Correct import path for types.
-import { Recommendation, SavedSetup } from '../../types';
-import { Tabs } from '../common/Tabs';
-import { useNotifications } from '../../context/NotificationContext';
-import { GrowShopsView } from './equipment/GrowShopsView';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { Card } from '@/components/common/Card';
+import { useTranslations } from '@/hooks/useTranslations';
+import { SetupConfigurator } from '@/components/views/equipment/SetupConfigurator';
+import { Calculators } from '@/components/views/equipment/Calculators';
+import { SavedSetupsView } from '@/components/views/equipment/SavedSetupsView';
+import { useSetupManager } from '@/hooks/useSetupManager';
+import { geminiService } from '@/services/geminiService';
+import { Recommendation, SavedSetup } from '@/types';
+import { Tabs } from '@/components/common/Tabs';
+import { useNotifications } from '@/context/NotificationContext';
+import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups' | 'grow-shops';
 

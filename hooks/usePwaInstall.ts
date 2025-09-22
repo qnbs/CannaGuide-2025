@@ -1,7 +1,8 @@
 
+
 import { useState, useEffect } from 'react';
-import { useNotifications } from '../context/NotificationContext';
-import { useTranslations } from './useTranslations';
+import { useNotifications } from '@/context/NotificationContext';
+import { useTranslations } from '@/hooks/useTranslations';
 
 export const usePwaInstall = () => {
     const { addNotification } = useNotifications();

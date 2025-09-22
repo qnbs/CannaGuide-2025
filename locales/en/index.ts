@@ -9,7 +9,7 @@ import { onboarding } from './onboarding';
 import { plantsView } from './plants';
 import { settingsView } from './settings';
 import { strainsView } from './strains';
-import { strainsData } from './strainsData';
+import { strainsData } from './strains/index';
 
 export const en = {
   common,

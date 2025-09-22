@@ -9,10 +9,16 @@ export const knowledgeView = {
   stepsCompleted: '{completed} of {total} steps completed',
   aiMentor: {
     title: 'Ask the AI Mentor',
-    subtitle: 'Have a specific question about growing? Ask it here and get a detailed answer.',
-    placeholder: 'e.g., What is the best pH in the flowering stage?',
-    button: 'Ask Question',
-    loading: 'Analyzing question...',
+    subtitle: 'Your personal horticultural scientist. Ask anything from basic questions to complex cultivation scenarios.',
+    placeholder: 'e.g., Compare LST vs. Topping for yield...',
+    button: 'Ask Mentor',
+    loading: 'Consulting horticultural archives...',
+    examplePromptsTitle: 'Example Prompts',
+    examples: [
+        'Explain nutrient lockout',
+        'How to increase terpene production?',
+        'Compare soil vs. hydroponics'
+    ]
   },
   sections: {
     phase1: {

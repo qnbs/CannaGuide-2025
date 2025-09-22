@@ -7,6 +7,12 @@ export const plantsView = {
     title: 'Empty Plant Slot',
     subtitle: 'Start a new grow from the Strains section.',
   },
+  archivedPlant: 'Archived Plant',
+  vitals: {
+    ph: 'pH Value',
+    ec: 'EC Value',
+    moisture: 'Moisture',
+  },
   notifications: {
     startSuccess: 'Grow for {name} started successfully!',
     allSlotsFull: 'All grow slots are full. Finish a grow to start a new one.',
@@ -112,22 +118,67 @@ export const plantsView = {
       none: 'No warnings. Everything looks good!',
   },
   actionModals: {
-    wateringTitle: 'Add Watering',
-    feedingTitle: 'Add Feeding',
-    observationTitle: 'Add Observation',
+    logAction: 'Log Action',
+    idealRange: 'Ideal: {min} - {max}',
+    current: 'Current',
+    wateringTitle: 'Log Watering',
+    feedingTitle: 'Log Feeding',
+    observationTitle: 'Log Observation',
     trainingTitle: 'Log Training',
-    photoTitle: 'Add Photo',
+    photoTitle: 'Log Photo',
     waterAmount: 'Water Amount (ml)',
-    phValue: 'pH Value',
-    ecValue: 'EC Value',
+    phValue: 'pH Value (In)',
+    ecValue: 'EC Value (In)',
+    runoffPh: 'pH Value (Runoff)',
+    runoffEc: 'EC Value (Runoff)',
+    runoff: 'Runoff (Optional)',
+    nutrientDetails: 'Nutrient Details',
+    nutrientDetailsPlaceholder: 'e.g. BioBizz Grow 2ml/L',
     observationPlaceholder: 'What did you observe?',
     trainingType: 'Training Type',
     trainingTypes: {
-      lst: 'LST',
-      topping: 'Topping',
-      defoliation: 'Defoliation',
+      topping: {
+        label: 'Topping',
+        tooltip: 'Cutting the main stem to encourage two new main shoots, creating a bushier plant.'
+      },
+      lst: {
+        label: 'LST',
+        tooltip: 'Gently bending branches down to create a wide, flat canopy for better light exposure.'
+      },
+      defoliation: {
+        label: 'Defoliation',
+        tooltip: 'Strategically removing fan leaves to improve light penetration and air circulation to lower buds.'
+      },
+      fiming: {
+        label: 'FIMing',
+        tooltip: 'A variation of topping where only part of the new shoot is removed, potentially resulting in four or more new shoots.'
+      },
+      scrog: {
+        label: 'SCROG',
+        tooltip: 'Using a screen (Screen of Green) to guide shoots horizontally, creating a perfectly even canopy.'
+      },
+      superCropping: {
+        label: 'Super Cropping',
+        tooltip: 'Carefully pinching and bending stems to damage the inner tissue, promoting stronger growth and better nutrient flow.'
+      }
     },
     photoNotes: 'Notes for photo',
+    photoCategory: 'Category',
+    photoCategories: {
+      'Full Plant': 'Full Plant',
+      'Bud': 'Bud',
+      'Leaf': 'Leaf',
+      'Problem': 'Problem',
+      'Trichomes': 'Trichomes',
+    },
+    healthStatus: 'Health Status',
+    healthStatuses: {
+      'Excellent': 'Excellent',
+      'Good': 'Good',
+      'Showing Issues': 'Showing Issues',
+    },
+    observationTags: 'Tags (comma-separated)',
+    observationTagsPlaceholder: 'e.g. Pests, Deficiency',
     defaultNotes: {
         watering: 'Watered the plant.',
         feeding: 'Fed the plant.',

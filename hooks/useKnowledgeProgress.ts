@@ -1,7 +1,8 @@
 
+
 import { useState, useEffect, useCallback } from 'react';
-import { KnowledgeProgress } from '../types';
-import { storageService } from '../services/storageService';
+import { KnowledgeProgress } from '@/types';
+import { storageService } from '@/services/storageService';
 
 const STORAGE_KEY = 'knowledge-progress';
 

@@ -3,7 +3,7 @@ import { ExportSource, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useSettings } from '@/hooks/useSettings';
+import { useAppStore } from '@/stores/useAppStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 interface ExportModalProps {
@@ -18,7 +18,7 @@ interface ExportModalProps {
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, selectionCount, favoritesCount, filteredCount, totalCount }) => {
   const { t } = useTranslations();
-  const { settings } = useSettings();
+  const settings = useAppStore(state => state.settings);
   const [source, setSource] = useState<ExportSource>(settings.defaultExportSettings.source);
   const [format, setFormat] = useState<ExportFormat>(settings.defaultExportSettings.format);
   const modalRef = useFocusTrap(isOpen);

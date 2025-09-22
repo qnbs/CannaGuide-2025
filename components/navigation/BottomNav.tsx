@@ -2,6 +2,7 @@ import React from 'react';
 import { View } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useAppStore } from '@/stores/useAppStore';
 
 const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,
@@ -12,14 +13,13 @@ const navIcons: Record<string, React.ReactNode> = {
 
 const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Knowledge];
 
-
-interface BottomNavProps {
-    activeView: View;
-    setActiveView: (view: View) => void;
-}
-
-export const BottomNav: React.FC<BottomNavProps> = ({ activeView, setActiveView }) => {
+export const BottomNav: React.FC = () => {
     const { t } = useTranslations();
+    const { activeView, setActiveView } = useAppStore(state => ({
+        activeView: state.activeView,
+        setActiveView: state.setActiveView
+    }));
+
     const navLabels: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
         [View.Plants]: t('nav.plants'),

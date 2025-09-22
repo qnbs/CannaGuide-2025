@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAppStore } from '@/stores/useAppStore';
 import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '@/types';
 import { geminiService } from '@/services/geminiService';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -44,7 +44,7 @@ export const SetupResults: React.FC<SetupResultsProps> = ({
     recommendation, isLoading, error, onSaveSetup, startOver, handleGenerate, area, budget, growStyle
 }) => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
+    const addNotification = useAppStore(state => state.addNotification);
     const [rationaleModalContent, setRationaleModalContent] = useState<{title: string, content: string} | null>(null);
     const [setupName, setSetupName] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('');

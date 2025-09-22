@@ -5,8 +5,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
-import { useStrainView } from '@/context/StrainViewContext';
-import { usePlants } from '@/hooks/usePlants';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -22,10 +21,21 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
     index,
 }) => {
     const { t } = useTranslations();
-    const { state, actions } = useStrainView();
-    const { hasAvailableSlots } = usePlants();
-    const { isFavorite } = state;
-    const { toggleFavorite } = actions;
+    const { 
+        isFavorite,
+        toggleFavorite,
+        selectStrain,
+        initiateGrow,
+        openAddModal,
+        hasAvailableSlots,
+    } = useAppStore(state => ({
+        isFavorite: state.favoriteIds.has(strain.id),
+        toggleFavorite: state.toggleFavorite,
+        selectStrain: state.selectStrain,
+        initiateGrow: state.initiateGrow,
+        openAddModal: state.openAddModal,
+        hasAvailableSlots: state.plants.some(p => p === null),
+    }));
     
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-500', Indica: 'text-indigo-500', Hybrid: 'text-blue-500' };
@@ -34,15 +44,13 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
         e.stopPropagation();
         action();
     };
-    
-    const isFav = isFavorite(strain.id);
 
     return (
         <Card 
             className="flex flex-col h-full cursor-pointer group relative hover:border-primary-500/50 transition-all p-3 animate-fade-in-stagger"
             style={{ animationDelay: `${index * 30}ms` }}
-            onClick={() => actions.selectStrain(strain)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.selectStrain(strain); } }}
+            onClick={() => selectStrain(strain)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectStrain(strain); } }}
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
@@ -50,7 +58,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
             <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                  {isUserStrain && onDelete && (
                     <div className="flex gap-1">
-                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => actions.openAddModal(strain))} aria-label={t('common.edit')}>
+                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => openAddModal(strain))} aria-label={t('common.edit')}>
                             <PhosphorIcons.PencilSimple className="w-4 h-4" />
                         </Button>
                         <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))} aria-label={t('common.delete')}>
@@ -60,7 +68,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                 )}
                  <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
                     <button
-                        onClick={(e) => handleActionClick(e, () => actions.initiateGrow(strain))}
+                        onClick={(e) => handleActionClick(e, () => initiateGrow(strain))}
                         disabled={!hasAvailableSlots}
                         className="p-1.5 rounded-full bg-slate-800/80 text-slate-300 hover:text-primary-400 disabled:opacity-50 disabled:cursor-not-allowed"
                         aria-label={t('strainsView.startGrowing')}
@@ -70,11 +78,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                 </div>
                 <button
                     onClick={(e) => handleActionClick(e, () => toggleFavorite(strain.id))}
-                    className={`favorite-btn-glow p-1.5 rounded-full bg-slate-800/80 text-slate-400 hover:text-primary-400 ${isFav ? 'is-favorite' : ''}`}
-                    aria-label={isFav ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
-                    aria-pressed={isFav}
+                    className={`favorite-btn-glow p-1.5 rounded-full bg-slate-800/80 text-slate-400 hover:text-primary-400 ${isFavorite ? 'is-favorite' : ''}`}
+                    aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
+                    aria-pressed={isFavorite}
                 >
-                    <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className="w-5 h-5" />
+                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                 </button>
             </div>
             

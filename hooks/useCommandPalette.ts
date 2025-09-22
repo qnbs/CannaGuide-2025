@@ -1,19 +1,34 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { View, Command, Plant } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { usePlants } from '@/hooks/usePlants';
-import { useSettings } from '@/hooks/useSettings';
+import { useAppStore } from '@/stores/useAppStore';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
-interface UseCommandPaletteProps {
-    setActiveView: (view: View) => void;
-}
-
-export const useCommandPalette = ({ setActiveView }: UseCommandPaletteProps) => {
-    const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+export const useCommandPalette = () => {
     const { t } = useTranslations();
-    const { plants, waterAllPlants, advanceDay } = usePlants();
-    const { settings, setSetting } = useSettings();
+    const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
+    
+    // Select multiple state slices and actions from the store
+    const {
+        setActiveView,
+        setIsCommandPaletteOpen,
+        plants,
+        waterAllPlants,
+        advanceDay,
+        settings,
+        setSetting,
+        setSelectedPlantId
+    } = useAppStore(state => ({
+        setActiveView: state.setActiveView,
+        setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
+        plants: state.plants,
+        waterAllPlants: state.waterAllPlants,
+        advanceDay: state.advanceDay,
+        settings: state.settings,
+        setSetting: state.setSetting,
+        setSelectedPlantId: state.setSelectedPlantId,
+    }));
 
     const commands: Command[] = useMemo(() => {
         const activePlants = plants.filter((p): p is Plant => p !== null);
@@ -37,12 +52,11 @@ export const useCommandPalette = ({ setActiveView }: UseCommandPaletteProps) => 
                 subtitle: t('commandPalette.plants'),
                 icon: React.createElement(PhosphorIcons.Plant),
                 action: () => {
-                    // This is a simplified action. A more robust implementation might
-                    // involve a global state to set the selected plant for the detailed view.
                     setActiveView(View.Plants);
+                    setSelectedPlantId(plant.id);
                     setIsCommandPaletteOpen(false);
                 },
-                 keywords: `view details ${plant!.name}`
+                keywords: `view details ${plant!.name}`
             })),
             {
                 id: 'plant-water-all',
@@ -68,6 +82,23 @@ export const useCommandPalette = ({ setActiveView }: UseCommandPaletteProps) => 
             }
         ];
         
+        const generalActionCommands: Command[] = [];
+        if (deferredPrompt || isInstalled) {
+            generalActionCommands.push({
+                id: 'pwa-install',
+                title: isInstalled ? t('common.installed') : t('common.installPwa'),
+                subtitle: t('commandPalette.actions'),
+                icon: React.createElement(isInstalled ? PhosphorIcons.CheckCircle : PhosphorIcons.DownloadSimple, { weight: 'fill' }),
+                action: () => {
+                    if (!isInstalled && deferredPrompt) {
+                        handleInstallClick();
+                    }
+                    setIsCommandPaletteOpen(false);
+                },
+                keywords: 'install pwa application app homescreen add herunterladen installieren'
+            });
+        }
+        
         const settingsCommands: Command[] = [
             {
                 id: 'settings-toggle-language',
@@ -82,8 +113,8 @@ export const useCommandPalette = ({ setActiveView }: UseCommandPaletteProps) => 
             },
         ];
 
-        return [...navigationCommands, ...plantCommands, ...settingsCommands];
-    }, [t, setActiveView, plants, waterAllPlants, advanceDay, settings.language, setSetting]);
+        return [...navigationCommands, ...generalActionCommands, ...plantCommands, ...settingsCommands];
+    }, [t, setActiveView, plants, waterAllPlants, advanceDay, settings.language, setSetting, setIsCommandPaletteOpen, setSelectedPlantId, deferredPrompt, handleInstallClick, isInstalled]);
 
-    return { isCommandPaletteOpen, setIsCommandPaletteOpen, commands };
+    return { commands };
 };

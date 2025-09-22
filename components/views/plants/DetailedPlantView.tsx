@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plant } from '@/types';
-import { usePlants } from '@/hooks/usePlants';
+import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
@@ -10,9 +10,7 @@ import { JournalTab } from '@/components/views/plants/detailedPlantViewTabs/Jour
 import { PhotosTab } from '@/components/views/plants/detailedPlantViewTabs/PhotosTab';
 import { TasksTab } from '@/components/views/plants/detailedPlantViewTabs/TasksTab';
 import { AiTab } from '@/components/views/plants/detailedPlantViewTabs/AiTab';
-import { usePlantAdvisorArchive } from '@/hooks/usePlantAdvisorArchive';
 import { LogActionModal, ModalState, ModalType } from '@/components/views/plants/LogActionModal';
-
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -23,9 +21,22 @@ type PlantDetailTab = 'overview' | 'journal' | 'photos' | 'tasks' | 'ai';
 
 export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onClose }) => {
     const { t } = useTranslations();
-    const { addJournalEntry, completeTask } = usePlants();
+    const { 
+        addJournalEntry, 
+        completeTask,
+        archive,
+        addResponse,
+        updateResponse,
+        deleteResponse
+    } = useAppStore(state => ({
+        addJournalEntry: state.addJournalEntry,
+        completeTask: state.completeTask,
+        archive: state.archivedAdvisorResponses,
+        addResponse: state.addArchivedAdvisorResponse,
+        updateResponse: state.updateArchivedAdvisorResponse,
+        deleteResponse: state.deleteArchivedAdvisorResponse,
+    }));
     const [activeTab, setActiveTab] = useState<PlantDetailTab>('overview');
-    const { archive, addResponse, updateResponse, deleteResponse } = usePlantAdvisorArchive();
     const [modalState, setModalState] = useState<ModalState | null>(null);
 
     const plantArchive = archive[plant.id] || [];

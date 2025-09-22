@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View } from '@/types';
-import { useSettings } from '@/hooks/useSettings';
-import { SettingsProvider } from '@/context/SettingsContext';
-import { LanguageProvider } from '@/context/LanguageContext';
-import { NotificationProvider } from '@/context/NotificationContext';
-import { PlantProvider } from '@/context/PlantContext';
+import { View, Notification } from '@/types';
+import { useAppStore } from '@/stores/useAppStore';
+import { useTranslations } from '@/hooks/useTranslations';
+import { ToastContainer } from '@/components/common/Toast';
 import { Header } from '@/components/navigation/Header';
 import { BottomNav } from '@/components/navigation/BottomNav';
 import { StrainsView } from '@/components/views/StrainsView';
@@ -17,47 +15,79 @@ import { OnboardingModal } from '@/components/common/OnboardingModal';
 import { CommandPalette } from '@/components/common/CommandPalette';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useNotifications } from '@/context/NotificationContext';
-import { useTranslations } from '@/hooks/useTranslations';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { strainService } from '@/services/strainService';
 
+// This component subscribes to the notifications state and renders the toast container.
+const ToastManager: React.FC = () => {
+    const notifications = useAppStore(state => state.notifications);
+    const removeNotification = useAppStore(state => state.removeNotification);
+    return <ToastContainer notifications={notifications} onClose={removeNotification} />;
+};
 
 const AppContent: React.FC = () => {
-    const { settings, setSetting } = useSettings();
-    const [activeView, setActiveView] = useState<View>(settings.defaultView);
+    const {
+        settings,
+        setSetting,
+        activeView,
+        setActiveView,
+        isCommandPaletteOpen,
+        setIsCommandPaletteOpen,
+        addNotification
+    } = useAppStore(state => ({
+        settings: state.settings,
+        setSetting: state.setSetting,
+        activeView: state.activeView,
+        setActiveView: state.setActiveView,
+        isCommandPaletteOpen: state.isCommandPaletteOpen,
+        setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
+        addNotification: state.addNotification,
+    }));
+    
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(!settings.onboardingCompleted);
-    const { addNotification } = useNotifications();
     const { t } = useTranslations();
     const isOffline = useOnlineStatus();
     const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
 
     useEffect(() => {
-        // Request persistent storage to protect user data from being cleared automatically.
+        const root = window.document.documentElement;
+        root.className = '';
+        root.classList.add('dark', `theme-${settings.theme}`);
+        if (settings.accessibility.highContrast) root.classList.add('high-contrast');
+        if (settings.accessibility.dyslexiaFont) root.classList.add('dyslexia-font');
+        if (settings.accessibility.reducedMotion) root.classList.add('reduced-motion');
+        if (settings.uiDensity === 'compact') root.classList.add('ui-density-compact');
+        root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
+        root.lang = settings.language;
+    }, [settings.theme, settings.fontSize, settings.language, settings.accessibility, settings.uiDensity]);
+
+    useEffect(() => {
         const requestPersistence = async () => {
             if (navigator.storage && navigator.storage.persist) {
                 const isPersisted = await navigator.storage.persisted();
                 if (!isPersisted) {
-                    const result = await navigator.storage.persist();
-                    console.log(`Storage persistence request result: ${result}`);
+                    await navigator.storage.persist();
                 }
             }
         };
         requestPersistence();
     }, []);
-
+    
     useEffect(() => {
-        // Initialize the strain service with the translation function.
-        // This is critical for the app to function as it populates the strain data.
         if (t) {
             strainService.init(t);
         }
     }, [t]);
 
     useEffect(() => {
+        let notificationId: number | null = null;
         if (isOffline) {
+            // Using a simple notification system that might not have IDs
             addNotification(t('common.offlineWarning'), 'info');
         }
+        return () => {
+            // Cleanup logic if needed when component unmounts or status changes
+        };
     }, [isOffline, addNotification, t]);
 
     const handleOnboardingClose = () => {
@@ -65,20 +95,19 @@ const AppContent: React.FC = () => {
         setIsOnboardingOpen(false);
     };
     
-    const { isCommandPaletteOpen, setIsCommandPaletteOpen, commands } = useCommandPalette({ setActiveView });
+    const { commands } = useCommandPalette();
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
                 e.preventDefault();
-                setIsCommandPaletteOpen(prev => !prev);
+                setIsCommandPaletteOpen(!isCommandPaletteOpen);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [setIsCommandPaletteOpen]);
+    }, [isCommandPaletteOpen, setIsCommandPaletteOpen]);
     
-    // Add an offline banner
     const OfflineBanner = () => {
         if (!isOffline) return null;
         return (
@@ -88,23 +117,18 @@ const AppContent: React.FC = () => {
         );
     };
 
-
     const renderView = () => {
         switch (activeView) {
-            case View.Strains:
-                return <StrainsView setActiveView={setActiveView} />;
-            case View.Plants:
-                return <PlantsView setActiveView={setActiveView} />;
-            case View.Equipment:
-                return <EquipmentView />;
-            case View.Knowledge:
-                return <KnowledgeView />;
-            case View.Settings:
-                return <SettingsView deferredPrompt={deferredPrompt} onInstallClick={handleInstallClick} />;
-            case View.Help:
-                 return <HelpView />;
-            default:
-                return <PlantsView setActiveView={setActiveView} />;
+            // FIX: Remove `setActiveView` prop as it's now handled by the store.
+            case View.Strains: return <StrainsView />;
+            // FIX: Remove `setActiveView` prop as it's now handled by the store.
+            case View.Plants: return <PlantsView />;
+            case View.Equipment: return <EquipmentView />;
+            case View.Knowledge: return <KnowledgeView />;
+            case View.Settings: return <SettingsView deferredPrompt={deferredPrompt} onInstallClick={handleInstallClick} />;
+            case View.Help: return <HelpView />;
+            // FIX: Remove `setActiveView` prop as it's now handled by the store.
+            default: return <PlantsView />;
         }
     };
 
@@ -118,8 +142,7 @@ const AppContent: React.FC = () => {
             />
 
             <Header 
-                activeView={activeView} 
-                setActiveView={setActiveView} 
+                // FIX: Remove `activeView` and `setActiveView` props as they are now accessed from the store within Header.
                 onCommandPaletteOpen={() => setIsCommandPaletteOpen(true)}
                 deferredPrompt={deferredPrompt}
                 isInstalled={isInstalled}
@@ -134,22 +157,20 @@ const AppContent: React.FC = () => {
                 </div>
             </main>
 
-            <BottomNav activeView={activeView} setActiveView={setActiveView} />
+            {/* FIX: Remove props from BottomNav as it accesses state directly from the store. */}
+            <BottomNav />
         </div>
     );
 };
 
-
 export const App: React.FC = () => {
+    // Initialize the Zustand store which loads from localStorage
+    useAppStore();
+    
     return (
-        <SettingsProvider>
-            <LanguageProvider>
-                <NotificationProvider>
-                    <PlantProvider>
-                        <AppContent />
-                    </PlantProvider>
-                </NotificationProvider>
-            </LanguageProvider>
-        </SettingsProvider>
+        <>
+            <AppContent />
+            <ToastManager />
+        </>
     );
 };

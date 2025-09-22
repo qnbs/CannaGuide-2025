@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useSettings } from '@/hooks/useSettings';
+import { useAppStore } from '@/stores/useAppStore';
 import { Language } from '@/types';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 
@@ -14,7 +14,7 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const { t } = useTranslations();
-    const { setSetting } = useSettings();
+    const setSetting = useAppStore(state => state.setSetting);
     const modalRef = useFocusTrap(true);
 
     const steps = useMemo(() => [

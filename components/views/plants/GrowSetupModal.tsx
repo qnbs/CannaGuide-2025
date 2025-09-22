@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { GrowSetup, Strain } from '@/types';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useSettings } from '@/hooks/useSettings';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 
 
@@ -16,8 +15,10 @@ interface GrowSetupModalProps {
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslations();
-  const { addNotification } = useNotifications();
-  const { settings } = useSettings();
+  const { addNotification, settings } = useAppStore(state => ({
+      addNotification: state.addNotification,
+      settings: state.settings,
+  }));
   const modalRef = useFocusTrap(true);
   
   const [setup, setSetup] = useState<GrowSetup>(settings.defaultGrowSetup);

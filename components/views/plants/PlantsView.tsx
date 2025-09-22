@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
+// Fix: Corrected type imports to include `Strain` and `GrowSetup`
 import { Plant, View, Strain, GrowSetup } from '@/types';
-import { usePlants } from '@/hooks/usePlants';
+// Fix: Replaced multiple hook imports with a single import from the central Zustand store.
+import { useAppStore } from '@/stores/useAppStore';
 import { PlantCard } from '@/components/views/plants/PlantSlot';
 import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
 import { TipOfTheDay } from '@/components/views/plants/TipOfTheDay';
 import { GardenVitals } from '@/components/views/plants/DashboardSummary';
 import { TasksAndWarnings } from '@/components/views/plants/TasksAndWarnings';
-import { useSettings } from '@/hooks/useSettings';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
@@ -29,15 +30,21 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     );
 };
 
-interface PlantsViewProps {
-    setActiveView: (view: View) => void;
-}
-
-export const PlantsView: React.FC<PlantsViewProps> = ({ setActiveView }) => {
-    const { plants, waterAllPlants, advanceDay, updatePlantState, startNewPlant } = usePlants();
-    const { settings } = useSettings();
+// Fix: Removed `setActiveView` prop as it's now handled by the store.
+export const PlantsView: React.FC = () => {
+    // Fix: Get state and actions from the central Zustand store.
+    const { plants, waterAllPlants, advanceDay, updatePlantState, startNewPlant, settings } = useAppStore(state => ({
+        plants: state.plants,
+        waterAllPlants: state.waterAllPlants,
+        advanceDay: state.advanceDay,
+        updatePlantState: state.updatePlantState,
+        startNewPlant: state.startNewPlant,
+        settings: state.settings,
+    }));
     const { t } = useTranslations();
-    const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+    // Fix: Get selectedPlantId state management from the store
+    const selectedPlantId = useAppStore(state => state.selectedPlantId);
+    const setSelectedPlantId = useAppStore(state => state.setSelectedPlantId);
 
     // State for the new inline selector flow
     const [selectingSlotIndex, setSelectingSlotIndex] = useState<number | null>(null);
@@ -71,9 +78,9 @@ export const PlantsView: React.FC<PlantsViewProps> = ({ setActiveView }) => {
     }, [selectedPlantId, activePlants]);
 
     const handleStartGrow = (setup: GrowSetup) => {
-        if (!strainForSetup) return;
+        if (!strainForSetup || selectingSlotIndex === null) return;
         
-        const success = startNewPlant(strainForSetup, setup);
+        const success = startNewPlant(strainForSetup, setup, selectingSlotIndex);
         if (success) {
             setIsSetupModalOpen(false);
             setStrainForSetup(null);

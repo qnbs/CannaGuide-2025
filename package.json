@@ -1,5 +1,5 @@
 {
-  "name": "cannabis-grow-guide-with-gemini---cannaguide-2025",
+  "name": "cannaguide-2025---cannabis-grow-guide-with-gemini",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +13,9 @@
     "jspdf": "^2.5.1",
     "@google/genai": "^1.19.0",
     "react-dom": "^19.1.1",
-    "react": "^19.1.1"
+    "react": "^19.1.1",
+    "zustand": "^4.5.4",
+    "i18next": "^25.5.2"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",

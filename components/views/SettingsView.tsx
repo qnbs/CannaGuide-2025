@@ -1,12 +1,11 @@
 import React, { useId, useState, useMemo } from 'react';
-import { useSettings } from '@/hooks/useSettings';
-import { useNotifications } from '@/context/NotificationContext';
+// FIX: Replaced multiple hook imports with a single import from the central Zustand store.
+import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { AppSettings, Language, Theme, View, SortKey, SortDirection, UiDensity, ExportSource, ExportFormat, NotificationSettings } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { usePlants } from '@/hooks/usePlants';
 import { storageService } from '@/services/storageService';
 import { RangeSlider } from '@/components/common/RangeSlider';
 
@@ -215,7 +214,7 @@ const DefaultsSettingsPanel: React.FC<{ settings: AppSettings; setSetting: (path
 
 const DataManagementPanel: React.FC<{ settings: AppSettings; setSetting: (path: string, value: any) => void; resetPlants: () => void }> = ({ settings, setSetting, resetPlants }) => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
+    const addNotification = useAppStore(state => state.addNotification);
     const importId = useId();
 
     const handleResetPlants = () => { if (window.confirm(t('settingsView.data.resetPlantsConfirm'))) { resetPlants(); addNotification(t('settingsView.data.resetPlantsSuccess'), 'success'); } };
@@ -272,8 +271,12 @@ interface SettingsViewProps {
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onInstallClick }) => {
-    const { settings, setSetting } = useSettings();
-    const { resetPlants } = usePlants();
+    // FIX: Get state and actions from the central Zustand store.
+    const { settings, setSetting, resetPlants } = useAppStore(state => ({
+        settings: state.settings,
+        setSetting: state.setSetting,
+        resetPlants: state.resetPlants,
+    }));
     const { t } = useTranslations();
     const [activeCategory, setActiveCategory] = useState<SettingsCategory>('general');
 

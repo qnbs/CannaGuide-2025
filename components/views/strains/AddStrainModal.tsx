@@ -2,7 +2,7 @@ import React, { useState, useEffect, useId } from 'react';
 import { Strain } from '@/types';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
@@ -76,7 +76,7 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: 
 
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose, onAddStrain, onUpdateStrain, strainToEdit }) => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
+    const addNotification = useAppStore(state => state.addNotification);
     const [strainData, setStrainData] = useState<any>({});
     const modalRef = useFocusTrap(isOpen);
     

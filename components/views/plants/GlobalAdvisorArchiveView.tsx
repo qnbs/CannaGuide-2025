@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { usePlantAdvisorArchive } from '@/hooks/usePlantAdvisorArchive';
-import { usePlants } from '@/hooks/usePlants';
+// Fix: Replaced hook imports with a single import from the central Zustand store.
+import { useAppStore } from '@/stores/useAppStore';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -8,15 +8,19 @@ import { ArchivedAdvisorResponse, Plant } from '@/types';
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslations();
-    const { archive } = usePlantAdvisorArchive();
-    const { plants } = usePlants();
+    // Fix: Get state from the central Zustand store.
+    const { archive, plants } = useAppStore(state => ({
+        archive: state.archivedAdvisorResponses,
+        plants: state.plants,
+    }));
     const [searchTerm, setSearchTerm] = useState('');
 
     const allAdvice = useMemo(() => {
         const plantMap = new Map(plants.filter((p): p is Plant => p !== null).map(p => [p.id, p.name]));
         
+        // Fix: Use type assertion on initial value for reduce to fix type inference issue.
         return Object.values(archive)
-            .flat()
+            .reduce((acc, val) => acc.concat(val), [] as ArchivedAdvisorResponse[])
             .map(advice => ({
                 ...advice,
                 plantName: plantMap.get(advice.plantId) || t('plantsView.archivedPlant')

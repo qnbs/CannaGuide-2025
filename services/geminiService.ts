@@ -95,10 +95,12 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
     });
 
     try {
-        const jsonStr = response.text.trim();
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
+        const jsonStr = response.text;
         const result = JSON.parse(jsonStr);
         return result as Recommendation;
     } catch (e) {
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly.
         console.error("Failed to parse AI response for equipment:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -126,10 +128,12 @@ const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIRespo
     });
     
     try {
-        const jsonStr = response.text.trim();
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
+        const jsonStr = response.text;
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly.
         console.error("Failed to parse AI response for mentor:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -187,10 +191,12 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, conte
     });
 
     try {
-        const jsonStr = response.text.trim();
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
+        const jsonStr = response.text;
         const result = JSON.parse(jsonStr);
         return result as PlantDiagnosisResponse;
     } catch (e) {
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly.
         console.error("Failed to parse AI response for diagnostics:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -227,10 +233,12 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
     });
 
     try {
-        const jsonStr = response.text.trim();
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
+        const jsonStr = response.text;
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly.
         console.error("Failed to parse AI response for advisor:", e, response.text);
         throw new Error("ai.error.parsing");
     }
@@ -266,10 +274,12 @@ const getStrainGrowTips = async (strain: Strain, t: TFunction): Promise<AIRespon
     });
     
     try {
-        const jsonStr = response.text.trim();
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly to get the JSON string.
+        const jsonStr = response.text;
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {
+        // @google/genai-sdk: Per guidelines, access text output via the .text property directly.
         console.error("Failed to parse AI response for grow tips:", e, response.text);
         throw new Error("ai.error.parsing");
     }

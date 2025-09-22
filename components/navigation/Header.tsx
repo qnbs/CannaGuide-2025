@@ -1,21 +1,25 @@
 import React from 'react';
-import { View } from '../../types';
-import { useTranslations } from '../../hooks/useTranslations';
+import { View } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon';
 import { Button } from '../common/Button';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface HeaderProps {
-    activeView: View;
-    setActiveView: (view: View) => void;
     onCommandPaletteOpen: () => void;
     deferredPrompt: any;
     isInstalled: boolean;
     onInstallClick: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeView, setActiveView, onCommandPaletteOpen, deferredPrompt, isInstalled, onInstallClick }) => {
+// FIX: Component no longer receives activeView/setActiveView as props, uses store instead.
+export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPrompt, isInstalled, onInstallClick }) => {
     const { t } = useTranslations();
+    const { activeView, setActiveView } = useAppStore(state => ({
+        activeView: state.activeView,
+        setActiveView: state.setActiveView,
+    }));
 
     const viewTitles: Record<View, string> = {
         [View.Strains]: t('nav.strains'),

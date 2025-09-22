@@ -2,16 +2,15 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Strain, AIResponse } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import { useStrainNotes } from '@/hooks/useStrainNotes';
-import { useNotifications } from '@/context/NotificationContext';
+// Fix: Removed incorrect context/hook imports.
 import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { strainService } from '@/services/strainService';
-import { usePlants } from '@/hooks/usePlants';
-import { useStrainView } from '@/context/StrainViewContext';
+// Fix: Import the central Zustand store for state management.
+import { useAppStore } from '@/stores/useAppStore';
 
 // --- Sub-components for better structure ---
 
@@ -65,13 +64,30 @@ interface StrainDetailModalProps {
 
 export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
-    const { state, actions } = useStrainView();
-    const { isFavorite } = state;
-    const { toggleFavorite, closeDetailModal: onClose } = actions;
-    const { addNotification } = useNotifications();
+    // Fix: Get all state and actions from the central Zustand store.
+    const {
+        isFavorite,
+        toggleFavorite,
+        closeDetailModal,
+        addNotification,
+        getNoteForStrain,
+        updateNoteForStrain,
+        hasAvailableSlots,
+        initiateGrow,
+        selectStrain
+    } = useAppStore(state => ({
+        isFavorite: state.favoriteIds.has(strain.id),
+        toggleFavorite: state.toggleFavorite,
+        closeDetailModal: state.closeDetailModal,
+        addNotification: state.addNotification,
+        getNoteForStrain: (id: string) => state.strainNotes[id] || '',
+        updateNoteForStrain: state.updateNoteForStrain,
+        hasAvailableSlots: state.plants.some(p => p === null),
+        initiateGrow: state.initiateGrow,
+        selectStrain: state.selectStrain,
+    }));
+    const onClose = closeDetailModal;
     const modalRef = useFocusTrap(true);
-    const { getNoteForStrain, updateNoteForStrain } = useStrainNotes();
-    const { hasAvailableSlots } = usePlants();
     
     const [noteContent, setNoteContent] = useState('');
     const [isEditingNotes, setIsEditingNotes] = useState(false);
@@ -102,7 +118,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
 
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
-    const isFav = isFavorite(strain.id);
+    const isFav = isFavorite;
 
     const handleGetAiTips = async () => {
         setIsTipLoading(true);
@@ -138,7 +154,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                         </div>
                         <div className="flex items-center gap-2">
                              <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                                <Button onClick={() => actions.initiateGrow(strain)} disabled={!hasAvailableSlots} className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                                <Button onClick={() => initiateGrow(strain)} disabled={!hasAvailableSlots} className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                             </div>
                             <Button variant="secondary" onClick={() => toggleFavorite(strain.id)} aria-pressed={isFav} className="favorite-btn-glow p-2">
                                 <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className={`w-5 h-5 ${isFav ? 'is-favorite' : ''}`} />
@@ -148,7 +164,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                     </header>
                     
                      <div className="sm:hidden mt-4 flex-shrink-0" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                        <Button onClick={() => actions.initiateGrow(strain)} disabled={!hasAvailableSlots} className="w-full">{t('strainsView.startGrowing')}</Button>
+                        <Button onClick={() => initiateGrow(strain)} disabled={!hasAvailableSlots} className="w-full">{t('strainsView.startGrowing')}</Button>
                     </div>
 
                     <div className="overflow-y-auto pr-2 mt-4 flex-grow space-y-6">
@@ -167,7 +183,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                                      <DetailSection title={t('strainsView.strainModal.similarStrains')} icon={<PhosphorIcons.Leafy />}>
                                         <div className="grid grid-cols-2 gap-2">
                                              {similarStrains.map(s => 
-                                                <button key={s.id} onClick={() => actions.selectStrain(s)} className="p-2 text-center rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">
+                                                <button key={s.id} onClick={() => selectStrain(s)} className="p-2 text-center rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors">
                                                     <p className="text-sm font-semibold">{s.name}</p>
                                                 </button>
                                             )}

@@ -5,8 +5,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
-import { useStrainView } from '@/context/StrainViewContext';
-import { usePlants } from '@/hooks/usePlants';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -28,11 +27,22 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     index,
 }) => {
     const { t } = useTranslations();
-    const { state, actions } = useStrainView();
-    const { hasAvailableSlots } = usePlants();
-    const { isFavorite } = state;
-    const { toggleFavorite } = actions;
+    const { 
+        toggleFavorite,
+        selectStrain,
+        initiateGrow,
+        openAddModal,
+    } = useAppStore(state => ({
+        toggleFavorite: state.toggleFavorite,
+        selectStrain: state.selectStrain,
+        initiateGrow: state.initiateGrow,
+        openAddModal: state.openAddModal,
+    }));
+    
+    const isFav = useAppStore(state => state.favoriteIds.has(strain.id));
+    const hasAvailableSlots = useAppStore(state => state.plants.some(p => p === null));
     const checkboxId = useId();
+
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
         Medium: t('strainsView.difficulty.medium'),
@@ -51,12 +61,10 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
         return <TypeIcon className={`w-6 h-6 ${typeClasses[strain.type]}`} />;
     };
 
-    const isFav = isFavorite(strain.id);
-
     return (
         <div
-            onClick={() => actions.selectStrain(strain)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); actions.selectStrain(strain); } }}
+            onClick={() => selectStrain(strain)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectStrain(strain); } }}
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
@@ -107,18 +115,18 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             <div className="flex items-center justify-start px-3 py-3">
                 <div className="flex gap-1">
                     <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
-                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => actions.initiateGrow(strain))} disabled={!hasAvailableSlots}>
+                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>
                             <PhosphorIcons.Plant className="w-4 h-4" />
                             <span className="sr-only">{t('strainsView.startGrowing')}</span>
                         </Button>
                     </div>
                     {isUserStrain && onDelete && (
                         <>
-                            <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => actions.openAddModal(strain))}>
+                            <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => openAddModal(strain))}>
                                 <PhosphorIcons.PencilSimple className="w-4 h-4" />
                                 <span className="sr-only">{t('common.edit')}</span>
                             </Button>
-                            <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => onDelete(strain.id))}>
+                            <Button variant="danger" size="sm" className="!p-1.5" onClick={(e) => { e.stopPropagation(); onDelete(strain.id); }}>
                                 <PhosphorIcons.TrashSimple className="w-4 h-4" />
                                 <span className="sr-only">{t('common.delete')}</span>
                             </Button>

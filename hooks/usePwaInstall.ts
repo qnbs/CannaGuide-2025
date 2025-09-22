@@ -1,30 +1,34 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 
 export const usePwaInstall = () => {
-    const { addNotification } = useNotifications();
+    const addNotification = useAppStore(state => state.addNotification);
     const { t } = useTranslations();
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
+        // Function to check the current installation status
         const checkInstalledStatus = () => {
-            if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
-                setIsInstalled(true);
+            const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
+            setIsInstalled(isAppInstalled);
+            if (isAppInstalled) {
                 setDeferredPrompt(null);
             }
+            return isAppInstalled;
         };
 
         checkInstalledStatus();
 
         const beforeInstallPromptHandler = (e: Event) => {
             e.preventDefault();
-            // Stash the event so it can be triggered later, only if not already installed.
-            checkInstalledStatus(); // Re-check just in case
-            if (!isInstalled) {
-                 setDeferredPrompt(e);
+            // Re-check status inside the handler to ensure it's not stale.
+            // Do not show the install prompt if the app is already running standalone.
+            if (checkInstalledStatus()) {
+                return;
             }
+            setDeferredPrompt(e);
         };
 
         window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);
@@ -39,7 +43,7 @@ export const usePwaInstall = () => {
             window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
             window.removeEventListener('appinstalled', appInstalledHandler);
         };
-    }, [isInstalled]);
+    }, []); // This effect should only run once to set up event listeners.
 
     const handleInstallClick = useCallback(async () => {
         if (deferredPrompt) {

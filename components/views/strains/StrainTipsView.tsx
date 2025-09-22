@@ -5,8 +5,7 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { useStrainView } from '@/context/StrainViewContext';
-import { usePlants } from '@/hooks/usePlants';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[];
@@ -41,8 +40,10 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 
 export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
     const { t } = useTranslations();
-    const { actions } = useStrainView();
-    const { hasAvailableSlots } = usePlants();
+    const { initiateGrow, hasAvailableSlots } = useAppStore(state => ({
+        initiateGrow: state.initiateGrow,
+        hasAvailableSlots: state.plants.some(p => p === null),
+    }));
 
     const [editingTip, setEditingTip] = useState<SavedStrainTip | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -145,7 +146,7 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
                                                             size="sm"
                                                             variant="secondary"
                                                             className="!p-1.5"
-                                                            onClick={(e) => { e.stopPropagation(); actions.initiateGrow(strain); }}
+                                                            onClick={(e) => { e.stopPropagation(); initiateGrow(strain); }}
                                                             disabled={!hasAvailableSlots}
                                                         >
                                                             <PhosphorIcons.Plant className="w-4 h-4" />

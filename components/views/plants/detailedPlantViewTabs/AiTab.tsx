@@ -6,7 +6,8 @@ import { geminiService } from '@/services/geminiService';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { useNotifications } from '@/context/NotificationContext';
+// Fix: Replaced context import with a single import from the central Zustand store.
+import { useAppStore } from '@/stores/useAppStore';
 
 interface AiTabProps {
     plant: Plant;
@@ -18,7 +19,8 @@ interface AiTabProps {
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
+    // Fix: Get state and actions from the central Zustand store.
+    const addNotification = useAppStore(state => state.addNotification);
     const [isLoading, setIsLoading] = useState(false);
     const [response, setResponse] = useState<AIResponse | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');

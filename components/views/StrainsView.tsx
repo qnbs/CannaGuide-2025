@@ -2,11 +2,8 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { Strain, View, SortDirection, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
-import { useUserStrains } from '@/hooks/useUserStrains';
-import { useExportsManager } from '@/hooks/useExportsManager';
-import { useStrainTips } from '@/hooks/useStrainTips';
-import { useSettings } from '@/hooks/useSettings';
-import { useNotifications } from '@/context/NotificationContext';
+// FIX: Replaced multiple hook/context imports with the central Zustand store.
+import { useAppStore } from '@/stores/useAppStore';
 import { strainService } from '@/services/strainService';
 import { exportService } from '@/services/exportService';
 
@@ -24,21 +21,61 @@ import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
 import AdvancedFilterModal from '@/components/views/strains/AdvancedFilterModal';
 import { StrainTipsView } from '@/components/views/strains/StrainTipsView';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-import { StrainViewProvider, useStrainView } from '@/context/StrainViewContext';
+// FIX: Removed context import as it's being replaced by the Zustand store.
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
 type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
 
 const StrainsViewContent: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
-    const { settings } = useSettings();
-    const { userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain } = useUserStrains();
-    const { savedExports, addExport, deleteExport, updateExport } = useExportsManager();
-    const { savedTips, addTip, updateTip, deleteTip } = useStrainTips();
-    
-    const { state, actions } = useStrainView();
-    const { selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen, favoriteIds } = state;
+    // FIX: Get state and actions from the central Zustand store.
+    const { 
+        settings,
+        userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain,
+        savedExports, addExport, deleteExport, updateExport,
+        savedStrainTips, addStrainTip, updateStrainTip, deleteStrainTip,
+        addNotification,
+        selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen, favoriteIds,
+        actions
+    } = useAppStore(state => ({
+        settings: state.settings,
+        userStrains: state.userStrains,
+        addUserStrain: state.addUserStrain,
+        updateUserStrain: state.updateUserStrain,
+        deleteUserStrain: state.deleteUserStrain,
+        isUserStrain: state.isUserStrain,
+        savedExports: state.savedExports,
+        addExport: state.addExport,
+        deleteExport: state.deleteExport,
+        updateExport: state.updateExport,
+        savedStrainTips: state.savedStrainTips,
+        addStrainTip: state.addStrainTip,
+        updateStrainTip: state.updateStrainTip,
+        deleteStrainTip: state.deleteStrainTip,
+        addNotification: state.addNotification,
+        selectedStrain: state.selectedStrain,
+        strainToEdit: state.strainToEdit,
+        strainForSetup: state.strainForSetup,
+        isAddModalOpen: state.isAddModalOpen,
+        isExportModalOpen: state.isExportModalOpen,
+        isSetupModalOpen: state.isSetupModalOpen,
+        favoriteIds: state.favoriteIds,
+        actions: {
+            closeAddModal: () => state.closeAddModal(),
+            openAddModal: (strain?: Strain) => state.openAddModal(strain),
+            closeExportModal: () => state.closeExportModal(),
+            openExportModal: () => state.openExportModal(),
+            closeGrowModal: () => state.closeGrowModal(),
+            confirmGrow: (setup: GrowSetup, strain: Strain) => {
+                // This logic seems more appropriate to live in the store, but for minimal changes:
+                const success = useAppStore.getState().startNewPlant(strain, setup);
+                if(success) {
+                    state.closeGrowModal();
+                    state.setActiveView(View.Plants);
+                }
+            }
+        }
+    }));
     
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
@@ -114,17 +151,18 @@ const StrainsViewContent: React.FC = () => {
         addNotification(t('common.successfullyExported', { count: strainsToExport.length, format: format.toUpperCase() }), 'success');
     };
     
-    const handleSaveTip = (strain: Strain, tip: AIResponse) => addTip(strain, tip);
+    const handleSaveTip = (strain: Strain, tip: AIResponse) => addStrainTip(strain, tip);
 
-    const allAromas = useMemo(() => Array.from(new Set(strainsToDisplay.flatMap(s => s.aromas || []))).sort(), [strainsToDisplay]);
-    const allTerpenes = useMemo(() => Array.from(new Set(strainsToDisplay.flatMap(s => s.dominantTerpenes || []))).sort(), [strainsToDisplay]);
+    // FIX: Using `reduce` with a type assertion on the initial value to fix type inference issues.
+    const allAromas = useMemo(() => Array.from(new Set(strainsToDisplay.reduce((acc, s) => acc.concat(s.aromas || []), [] as string[]))).sort(), [strainsToDisplay]);
+    const allTerpenes = useMemo(() => Array.from(new Set(strainsToDisplay.reduce((acc, s) => acc.concat(s.dominantTerpenes || []), [] as string[]))).sort(), [strainsToDisplay]);
 
     const tabs = [
         { id: 'all', label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
         { id: 'my-strains', label: t('strainsView.tabs.myStrains'), icon: <PhosphorIcons.Star weight="fill" /> },
         { id: 'favorites', label: t('strainsView.tabs.favorites'), icon: <PhosphorIcons.Heart /> },
         { id: 'exports', label: t('strainsView.tabs.exports', { count: savedExports.length }), icon: <PhosphorIcons.ArchiveBox /> },
-        { id: 'tips', label: t('strainsView.tabs.tips', { count: savedTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
+        { id: 'tips', label: t('strainsView.tabs.tips', { count: savedStrainTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
     ];
     
     return (
@@ -162,7 +200,7 @@ const StrainsViewContent: React.FC = () => {
             )}
            
             {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={strainsToDisplay} onOpenExportModal={actions.openExportModal} />}
-            {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} allStrains={strainsToDisplay} />}
+            {activeTab === 'tips' && <StrainTipsView savedTips={savedStrainTips} deleteTip={deleteStrainTip} updateTip={updateStrainTip} allStrains={strainsToDisplay} />}
 
             {['all', 'my-strains', 'favorites'].includes(activeTab) && (
                  isLoading ? (
@@ -193,8 +231,7 @@ const StrainsViewContent: React.FC = () => {
     );
 };
 
-export const StrainsView: React.FC<{ setActiveView: (view: View) => void }> = ({ setActiveView }) => (
-    <StrainViewProvider setActiveView={setActiveView}>
-        <StrainsViewContent />
-    </StrainViewProvider>
+// FIX: Remove the Provider wrapper and `setActiveView` prop.
+export const StrainsView: React.FC = () => (
+    <StrainsViewContent />
 );

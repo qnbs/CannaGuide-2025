@@ -3,16 +3,18 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAppStore } from '@/stores/useAppStore';
 import { geminiService } from '@/services/geminiService';
 import { Plant, PlantDiagnosisResponse } from '@/types';
 import { CameraModal } from '@/components/common/CameraModal';
-import { usePlants } from '@/hooks/usePlants';
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
-    const { plants, addJournalEntry } = usePlants();
+    const { addNotification, plants, addJournalEntry } = useAppStore(state => ({
+        addNotification: state.addNotification,
+        plants: state.plants,
+        addJournalEntry: state.addJournalEntry,
+    }));
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const [isLoading, setIsLoading] = useState(false);

@@ -4,7 +4,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { exportService } from '@/services/exportService';
-import { useNotifications } from '@/context/NotificationContext';
+import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 
@@ -17,7 +17,7 @@ interface ExportsManagerViewProps {
 }
 
 export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, deleteExport, updateExport, allStrains, onOpenExportModal }) => {
-    const { addNotification } = useNotifications();
+    const addNotification = useAppStore(state => state.addNotification);
     const { t } = useTranslations();
     const [editingExport, setEditingExport] = useState<SavedExport | null>(null);
 

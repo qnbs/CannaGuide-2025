@@ -3,15 +3,16 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useKnowledgeArchive } from '@/hooks/useKnowledgeArchive';
+import { useAppStore } from '@/stores/useAppStore';
 import { geminiService } from '@/services/geminiService';
 import { AIResponse } from '@/types';
-import { useNotifications } from '@/context/NotificationContext';
 
 export const AiMentor: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification } = useNotifications();
-    const { addResponse } = useKnowledgeArchive();
+    const { addNotification, addResponse } = useAppStore(state => ({
+        addNotification: state.addNotification,
+        addResponse: state.addArchivedMentorResponse,
+    }));
     const mentorInputId = useId();
 
     const [query, setQuery] = useState('');

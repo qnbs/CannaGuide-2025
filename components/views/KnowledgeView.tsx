@@ -3,8 +3,8 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useKnowledgeProgress } from '@/hooks/useKnowledgeProgress';
-import { useKnowledgeArchive } from '@/hooks/useKnowledgeArchive';
+// FIX: Replaced hook/context imports with a single import from the central Zustand store.
+import { useAppStore } from '@/stores/useAppStore';
 import { ArchivedMentorResponse } from '@/types';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { Tabs } from '@/components/common/Tabs';
@@ -65,8 +65,14 @@ const KnowledgeStep: React.FC<{
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
-    const { progress, toggleItem } = useKnowledgeProgress();
-    const { responses: archivedResponses, updateResponse, deleteResponse } = useKnowledgeArchive();
+    // FIX: Get state and actions from the central Zustand store.
+    const { progress, toggleItem, responses: archivedResponses, updateResponse, deleteResponse } = useAppStore(state => ({
+        progress: state.knowledgeProgress,
+        toggleItem: state.toggleKnowledgeProgressItem,
+        responses: state.archivedMentorResponses,
+        updateResponse: state.updateArchivedMentorResponse,
+        deleteResponse: state.deleteArchivedMentorResponse,
+    }));
     
     const [activeTab, setActiveTab] = useState<KnowledgeViewTab>('guide');
     const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null);

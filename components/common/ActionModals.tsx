@@ -5,7 +5,8 @@ import { Plant, JournalEntry, TrainingType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { dbService } from '@/services/dbService';
-import { useSettings } from '@/hooks/useSettings';
+// Fix: Replaced useSettings hook with useAppStore.
+import { useAppStore } from '@/stores/useAppStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { CameraModal } from '@/components/common/CameraModal';
 import { PLANT_STAGE_DETAILS } from '@/constants';
@@ -58,7 +59,8 @@ const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModal
 
 export const WateringModal: React.FC<ModalProps> = ({ plant, onClose, onConfirm }) => {
     const { t } = useTranslations();
-    const { settings } = useSettings();
+    // Fix: Get settings from the central Zustand store.
+    const { settings } = useAppStore(state => ({ settings: state.settings }));
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.5');
     const [notes, setNotes] = useState(() => {
@@ -104,7 +106,8 @@ export const WateringModal: React.FC<ModalProps> = ({ plant, onClose, onConfirm 
 
 export const FeedingModal: React.FC<ModalProps> = ({ plant, onClose, onConfirm }) => {
     const { t } = useTranslations();
-    const { settings } = useSettings();
+    // Fix: Get settings from the central Zustand store.
+    const { settings } = useAppStore(state => ({ settings: state.settings }));
     const [waterAmount, setWaterAmount] = useState('500');
     const [ph, setPh] = useState('6.2');
     const [ec, setEc] = useState('1.2');

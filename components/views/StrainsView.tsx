@@ -161,7 +161,6 @@ const StrainsViewContent: React.FC = () => {
                 </Card>
             )}
            
-            {/* FIX: Pass onOpenExportModal prop to ExportsManagerView */}
             {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={strainsToDisplay} onOpenExportModal={actions.openExportModal} />}
             {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} allStrains={strainsToDisplay} />}
 

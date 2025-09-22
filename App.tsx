@@ -86,7 +86,7 @@ const AppContent: React.FC = () => {
             case View.Knowledge:
                 return <KnowledgeView />;
             case View.Settings:
-                return <SettingsView />;
+                return <SettingsView deferredPrompt={deferredPrompt} onInstallClick={handleInstallClick} />;
             case View.Help:
                  return <HelpView />;
             default:

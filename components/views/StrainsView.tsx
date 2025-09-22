@@ -1,12 +1,11 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef, Suspense } from 'react';
-import { Strain, View, SortDirection, Plant, PlantStage, AIResponse, GrowSetup } from '@/types';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { Strain, View, SortDirection, AIResponse, GrowSetup } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFavorites } from '@/hooks/useFavorites';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
 import { useUserStrains } from '@/hooks/useUserStrains';
 import { useExportsManager } from '@/hooks/useExportsManager';
 import { useStrainTips } from '@/hooks/useStrainTips';
-import { usePlants } from '@/hooks/usePlants';
 import { useSettings } from '@/hooks/useSettings';
 import { useNotifications } from '@/context/NotificationContext';
 import { strainService } from '@/services/strainService';
@@ -31,7 +30,7 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
 type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
 
-const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({ setActiveView }) => {
+const StrainsViewContent: React.FC = () => {
     const { t } = useTranslations();
     const { addNotification } = useNotifications();
     const { settings } = useSettings();
@@ -39,14 +38,10 @@ const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({
     const { userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain } = useUserStrains();
     const { savedExports, addExport, deleteExport, updateExport } = useExportsManager();
     const { savedTips, addTip, updateTip, deleteTip } = useStrainTips();
-    const { startNewPlant, plants } = usePlants();
     
-    // State from the new context
     const { state, actions } = useStrainView();
     const { selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen } = state;
     
-    const hasAvailableSlots = useMemo(() => plants.some(p => p === null), [plants]);
-
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(settings.strainsViewSettings.defaultViewMode);
@@ -122,10 +117,7 @@ const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({
     };
     
     const handleStartGrow = (setup: GrowSetup, strain: Strain) => {
-        if (actions.confirmGrow(setup, strain)) {
-            const success = startNewPlant(strain, setup);
-            if (success) setActiveView(View.Plants);
-        }
+        actions.confirmGrow(setup, strain);
     };
 
     const handleSaveTip = (strain: Strain, tip: AIResponse) => addTip(strain, tip);
@@ -143,7 +135,6 @@ const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({
     
     return (
         <div className="space-y-4">
-            {/* FIX: Removed onSelectSimilar prop as it's not defined in StrainDetailModalProps. The component uses the useStrainView context to handle this action. */}
             {selectedStrain && <StrainDetailModal strain={selectedStrain} onClose={actions.closeDetailModal} isFavorite={favoriteIds.has(selectedStrain.id)} onToggleFavorite={toggleFavorite} onSaveTip={handleSaveTip} />}
             {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={actions.closeAddModal} onAddStrain={(s) => { addUserStrain(s); actions.closeAddModal(); }} onUpdateStrain={(s) => { updateUserStrain(s); actions.closeAddModal(); }} strainToEdit={strainToEdit} />}
             {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
@@ -177,7 +168,6 @@ const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({
             )}
            
             {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={strainsToDisplay} onOpenExportModal={actions.openExportModal} />}
-            {/* FIX: Removed onInitiateGrow and hasAvailableSlots props as they are not defined in StrainTipsViewProps. The component derives this data from the useStrainView and usePlants contexts. */}
             {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} allStrains={strainsToDisplay} />}
 
             {['all', 'my-strains', 'favorites'].includes(activeTab) && (
@@ -197,11 +187,11 @@ const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({
                             {settings.strainsViewSettings.visibleColumns.yield && <button className="hidden md:inline" onClick={() => filterControls.handleSort('yield')}>{t('strainsView.table.yield')}</button>}
                             <button onClick={() => filterControls.handleSort('difficulty')}>{t('strainsView.table.level')}</button><div>{t('common.actions')}</div>
                         </div>
-                        {sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} isFavorite={favoriteIds.has(strain.id)} onToggleSelection={handleToggleSelection} onToggleFavorite={toggleFavorite} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} hasAvailableSlots={hasAvailableSlots} index={index}/>)}
+                        {sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} isFavorite={favoriteIds.has(strain.id)} onToggleSelection={handleToggleSelection} onToggleFavorite={toggleFavorite} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                      </div>
                  ) : (
                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isFavorite={favoriteIds.has(strain.id)} onToggleFavorite={toggleFavorite} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} hasAvailableSlots={hasAvailableSlots} index={index}/>)}
+                        {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isFavorite={favoriteIds.has(strain.id)} onToggleFavorite={toggleFavorite} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                      </div>
                  )
             )}
@@ -210,7 +200,7 @@ const StrainsViewContent: React.FC<{ setActiveView: (view: View) => void }> = ({
 };
 
 export const StrainsView: React.FC<{ setActiveView: (view: View) => void }> = ({ setActiveView }) => (
-    <StrainViewProvider>
-        <StrainsViewContent setActiveView={setActiveView} />
+    <StrainViewProvider setActiveView={setActiveView}>
+        <StrainsViewContent />
     </StrainViewProvider>
 );

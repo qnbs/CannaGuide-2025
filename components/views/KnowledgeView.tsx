@@ -12,7 +12,7 @@ import { Tabs } from '@/components/common/Tabs';
 import { useNotifications } from '@/context/NotificationContext';
 import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
 
-type KnowledgeViewTab = 'guide' | 'diagnostics' | 'archive';
+type KnowledgeViewTab = 'guide' | 'mentor' | 'diagnostics' | 'archive';
 
 const KnowledgeStep: React.FC<{
     phase: string;
@@ -122,6 +122,7 @@ export const KnowledgeView: React.FC = () => {
 
     const tabs = [
         { id: 'guide', label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.GraduationCap /> },
+        { id: 'mentor', label: t('ai.mentor'), icon: <PhosphorIcons.Brain /> },
         { id: 'diagnostics', label: t('ai.diagnostics'), icon: <PhosphorIcons.Sparkle /> },
         { id: 'archive', label: t('knowledgeView.archive.title'), icon: <PhosphorIcons.Archive /> },
     ];
@@ -153,67 +154,6 @@ export const KnowledgeView: React.FC = () => {
                         </div>
                         <p className="text-sm text-slate-400">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: checklistItems.length })}</p>
                     </Card>
-                    <Card>
-                        <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">
-                            <PhosphorIcons.Brain className="w-6 h-6"/> {t('knowledgeView.aiMentor.title')}
-                        </h3>
-                        <p className="text-sm text-slate-400 mb-4">{t('knowledgeView.aiMentor.subtitle')}</p>
-                        
-                        <div className="relative">
-                            <textarea 
-                                id={mentorInputId} 
-                                value={query} 
-                                onChange={e => setQuery(e.target.value)} 
-                                placeholder={t('knowledgeView.aiMentor.placeholder')} 
-                                className="w-full pl-3 pr-10 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                                rows={2}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-                                        e.preventDefault();
-                                        handleAskMentor();
-                                    }
-                                }}
-                            />
-                            {query && !isLoading && (
-                                <button onClick={() => { setQuery(''); setAiResponse(null); }} className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors">
-                                    <PhosphorIcons.XCircle className="w-5 h-5"/>
-                                </button>
-                            )}
-                        </div>
-
-                        <div className="flex justify-between items-end mt-2">
-                            <div className="text-sm text-slate-400">
-                                <span className="font-semibold">{t('knowledgeView.aiMentor.examplePromptsTitle')}:</span>
-                                <div className="flex flex-wrap gap-2 mt-1">
-                                    {(t('knowledgeView.aiMentor.examples') as string[]).map((ex, i) => (
-                                        <button key={i} onClick={() => setQuery(ex)} className="text-xs bg-slate-800 hover:bg-slate-700/80 px-2 py-1 rounded-md transition-colors">{ex}</button>
-                                    ))}
-                                </div>
-                            </div>
-                            <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>
-                                {t('knowledgeView.aiMentor.button')}
-                            </Button>
-                        </div>
-
-                        {isLoading && (
-                            <div className="text-center p-6 flex flex-col items-center">
-                                <PhosphorIcons.Brain className="w-12 h-12 text-primary-500 animate-pulse mb-3" />
-                                <p className="text-slate-400">{loadingMessage || t('knowledgeView.aiMentor.loading')}</p>
-                            </div>
-                        )}
-                        {aiResponse && !isLoading && (
-                            <Card className="mt-4 bg-slate-800 animate-fade-in">
-                                <h4 className="font-bold text-primary-300 text-lg">{aiResponse.title}</h4>
-                                <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
-                                <div className="text-right mt-4">
-                                     <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>
-                                        <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
-                                        {t('knowledgeView.archive.saveButton')}
-                                    </Button>
-                                </div>
-                            </Card>
-                        )}
-                    </Card>
                     
                     <div className="space-y-6">
                         {phases.map(p => (
@@ -234,6 +174,70 @@ export const KnowledgeView: React.FC = () => {
                         ))}
                     </div>
                 </div>
+            )}
+
+            {activeTab === 'mentor' && (
+                 <Card>
+                    <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">
+                        <PhosphorIcons.Brain className="w-6 h-6"/> {t('knowledgeView.aiMentor.title')}
+                    </h3>
+                    <p className="text-sm text-slate-400 mb-4">{t('knowledgeView.aiMentor.subtitle')}</p>
+                    
+                    <div className="relative">
+                        <textarea 
+                            id={mentorInputId} 
+                            value={query} 
+                            onChange={e => setQuery(e.target.value)} 
+                            placeholder={t('knowledgeView.aiMentor.placeholder')} 
+                            className="w-full pl-3 pr-10 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
+                            rows={2}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                    e.preventDefault();
+                                    handleAskMentor();
+                                }
+                            }}
+                        />
+                        {query && !isLoading && (
+                            <button onClick={() => { setQuery(''); setAiResponse(null); }} className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors">
+                                <PhosphorIcons.XCircle className="w-5 h-5"/>
+                            </button>
+                        )}
+                    </div>
+
+                    <div className="flex justify-between items-end mt-2">
+                        <div className="text-sm text-slate-400">
+                            <span className="font-semibold">{t('knowledgeView.aiMentor.examplePromptsTitle')}:</span>
+                            <div className="flex flex-wrap gap-2 mt-1">
+                                {(t('knowledgeView.aiMentor.examples') as string[]).map((ex, i) => (
+                                    <button key={i} onClick={() => setQuery(ex)} className="text-xs bg-slate-800 hover:bg-slate-700/80 px-2 py-1 rounded-md transition-colors">{ex}</button>
+                                ))}
+                            </div>
+                        </div>
+                        <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>
+                            {t('knowledgeView.aiMentor.button')}
+                        </Button>
+                    </div>
+
+                    {isLoading && (
+                        <div className="text-center p-6 flex flex-col items-center">
+                            <PhosphorIcons.Brain className="w-12 h-12 text-primary-500 animate-pulse mb-3" />
+                            <p className="text-slate-400">{loadingMessage || t('knowledgeView.aiMentor.loading')}</p>
+                        </div>
+                    )}
+                    {aiResponse && !isLoading && (
+                        <Card className="mt-4 bg-slate-800 animate-fade-in">
+                            <h4 className="font-bold text-primary-300 text-lg">{aiResponse.title}</h4>
+                            <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
+                            <div className="text-right mt-4">
+                                    <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>
+                                    <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
+                                    {t('knowledgeView.archive.saveButton')}
+                                </Button>
+                            </div>
+                        </Card>
+                    )}
+                </Card>
             )}
             
             {activeTab === 'diagnostics' && <AiDiagnostics />}

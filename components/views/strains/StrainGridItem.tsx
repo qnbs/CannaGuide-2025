@@ -6,6 +6,7 @@ import { Card } from '@/components/common/Card';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
 import { useStrainView } from '@/context/StrainViewContext';
+import { usePlants } from '@/hooks/usePlants';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -13,7 +14,6 @@ interface StrainGridItemProps {
     onToggleFavorite: (id: string) => void;
     isUserStrain?: boolean;
     onDelete?: (id: string) => void;
-    hasAvailableSlots: boolean;
     index: number;
 }
 
@@ -23,11 +23,11 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
     onToggleFavorite,
     isUserStrain = false,
     onDelete,
-    hasAvailableSlots,
     index,
 }) => {
     const { t } = useTranslations();
     const { actions } = useStrainView();
+    const { hasAvailableSlots } = usePlants();
     
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-500', Indica: 'text-indigo-500', Hybrid: 'text-blue-500' };

@@ -6,6 +6,7 @@ import { Button } from '@/components/common/Button';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
 import { useStrainView } from '@/context/StrainViewContext';
+import { usePlants } from '@/hooks/usePlants';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -16,7 +17,6 @@ interface StrainListItemProps {
     visibleColumns: Record<string, boolean>;
     isUserStrain?: boolean;
     onDelete?: (id: string) => void;
-    hasAvailableSlots: boolean;
     index: number;
 }
 
@@ -29,11 +29,11 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     visibleColumns,
     isUserStrain = false,
     onDelete,
-    hasAvailableSlots,
     index,
 }) => {
     const { t } = useTranslations();
     const { actions } = useStrainView();
+    const { hasAvailableSlots } = usePlants();
     const checkboxId = useId();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),

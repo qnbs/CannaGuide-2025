@@ -28,6 +28,8 @@ export const settingsView = {
       lg: 'Large',
     },
     defaultView: 'Default View on Startup',
+    installApp: 'Install App',
+    installAppDesc: 'Install the CannaGuide on your device for a native-app experience, including offline access.',
   },
   accessibility: {
     title: 'Accessibility',

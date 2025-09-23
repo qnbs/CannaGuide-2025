@@ -2,29 +2,29 @@ const CACHE_NAME = 'pwa-cache-v1';
 
 // App Shell: The minimal resources needed for the app to start.
 const APP_SHELL_URLS = [
-  '/',
-  '/index.html',
-  '/index.tsx',
-  '/types.ts',
-  '/constants.ts',
-  '/manifest.json',
-  '/App.tsx',
-  '/components/common/Button.tsx',
-  '/components/common/Card.tsx',
-  '/components/common/Tabs.tsx',
-  '/components/icons/PhosphorIcons.tsx',
-  '/components/icons/CannabisLeafIcon.tsx',
-  '/components/navigation/Header.tsx',
-  '/components/navigation/BottomNav.tsx',
-  '/components/views/StrainsView.tsx',
-  '/components/views/PlantsView.tsx',
-  '/components/views/EquipmentView.tsx',
-  '/components/views/KnowledgeView.tsx',
-  '/components/views/SettingsView.tsx',
-  '/components/views/HelpView.tsx',
-  '/services/storageService.ts',
-  '/services/strainService.ts',
-  '/data/strains/index.ts',
+  '.',
+  'index.html',
+  'index.tsx',
+  'types.ts',
+  'constants.ts',
+  'manifest.json',
+  'App.tsx',
+  'components/common/Button.tsx',
+  'components/common/Card.tsx',
+  'components/common/Tabs.tsx',
+  'components/icons/PhosphorIcons.tsx',
+  'components/icons/CannabisLeafIcon.tsx',
+  'components/navigation/Header.tsx',
+  'components/navigation/BottomNav.tsx',
+  'components/views/StrainsView.tsx',
+  'components/views/PlantsView.tsx',
+  'components/views/EquipmentView.tsx',
+  'components/views/KnowledgeView.tsx',
+  'components/views/SettingsView.tsx',
+  'components/views/HelpView.tsx',
+  'services/storageService.ts',
+  'services/strainService.ts',
+  'data/strains/index.ts',
   // All other app files will be cached on first load via the fetch handler.
 ];
 
@@ -105,7 +105,7 @@ self.addEventListener('fetch', event => {
         // If the fetch fails (e.g., user is offline) and it's a navigation request,
         // return the cached index.html as a fallback.
         if (event.request.mode === 'navigate') {
-            const indexPage = await cache.match('/index.html');
+            const indexPage = await cache.match('index.html');
             if (indexPage) return indexPage;
         }
       }

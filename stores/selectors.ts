@@ -29,8 +29,8 @@ export const selectStrainNotes = (state: AppState) => state.strainNotes;
 
 // --- DERIVED / COMPUTED SELECTORS ---
 
-/** Selects all plant objects from the record. */
-export const selectActivePlants = (state: AppState): Plant[] => Object.values(state.plants);
+/** Selects all plant objects from the record, ensuring no null/undefined values are returned. */
+export const selectActivePlants = (state: AppState): Plant[] => Object.values(state.plants).filter((p): p is Plant => !!p);
 
 /** Checks if there is at least one empty slot to start a new grow. */
 export const selectHasAvailableSlots = (state: AppState): boolean => state.plantSlots.some(p => p === null);

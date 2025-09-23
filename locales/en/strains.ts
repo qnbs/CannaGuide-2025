@@ -25,6 +25,19 @@ export const strainsView = {
   aromas: 'Aromas',
   toggleView: 'Toggle view mode',
   loadError: 'Failed to load strain data. Please check your connection or try again later.',
+  selectedCount: '{count} selected',
+  clearSelection: 'Clear selection',
+  emptyStates: {
+    myStrains: {
+        title: 'No Custom Strains',
+        text: 'You haven\'t added any of your own strains to the database yet.',
+    },
+    favorites: {
+        title: 'No Favorites Yet',
+        text: 'Mark strains with a heart to save them here for quick access.',
+        button: 'Browse All Strains'
+    },
+  },
   tabs: {
     allStrains: 'All Strains',
     myStrains: 'My Strains',

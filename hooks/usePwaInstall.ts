@@ -9,7 +9,6 @@ export const usePwaInstall = () => {
     const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
-        // Function to check the current installation status
         const checkInstalledStatus = () => {
             const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
             setIsInstalled(isAppInstalled);
@@ -23,8 +22,6 @@ export const usePwaInstall = () => {
 
         const beforeInstallPromptHandler = (e: Event) => {
             e.preventDefault();
-            // Re-check status inside the handler to ensure it's not stale.
-            // Do not show the install prompt if the app is already running standalone.
             if (checkInstalledStatus()) {
                 return;
             }

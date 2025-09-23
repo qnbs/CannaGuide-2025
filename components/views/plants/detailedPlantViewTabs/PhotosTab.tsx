@@ -18,8 +18,8 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
         if (entry.details?.imageId && !imageUrl) {
             setIsLoading(true);
             dbService.getImage(entry.details.imageId)
-                .then(data => {
-                    if (isMounted && data) setImageUrl(data);
+                .then(storedImage => {
+                    if (isMounted && storedImage) setImageUrl(storedImage.data);
                 })
                 .catch(console.error)
                 .finally(() => {

@@ -4,22 +4,21 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { SetupConfigurator } from '@/components/views/equipment/SetupConfigurator';
 import { Calculators } from '@/components/views/equipment/Calculators';
 import { SavedSetupsView } from '@/components/views/equipment/SavedSetupsView';
-// FIX: Replaced multiple hook imports with a single import from the central Zustand store.
 import { useAppStore } from '@/stores/useAppStore';
 import { geminiService } from '@/services/geminiService';
 import { Recommendation, SavedSetup } from '@/types';
 import { Tabs } from '@/components/common/Tabs';
 import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { selectSavedSetups } from '@/stores/selectors';
 
 type EquipmentViewTab = 'configurator' | 'calculators' | 'setups' | 'grow-shops';
 
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslations();
-    // FIX: Get state and actions from the central Zustand store.
-    const { addNotification, savedSetups, addSetup, updateSetup, deleteSetup } = useAppStore(state => ({
+    const savedSetups = useAppStore(selectSavedSetups);
+    const { addNotification, addSetup, updateSetup, deleteSetup } = useAppStore(state => ({
         addNotification: state.addNotification,
-        savedSetups: state.savedSetups,
         addSetup: state.addSetup,
         updateSetup: state.updateSetup,
         deleteSetup: state.deleteSetup,

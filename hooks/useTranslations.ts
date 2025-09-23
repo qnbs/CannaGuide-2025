@@ -1,13 +1,14 @@
 import { useMemo } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
-import { locales, Locale } from '@/locales';
+import { locales } from '@/locales';
+import { selectLanguage } from '@/stores/selectors';
 
 const getNestedValue = (obj: any, path: string): any => {
   return path.split('.').reduce((acc, part) => acc && acc[part], obj) || path;
 };
 
 export const useTranslations = () => {
-  const language = useAppStore(state => state.settings.language);
+  const language = useAppStore(selectLanguage);
   
   const t = useMemo(() => {
     const translations = locales[language] || locales.en;

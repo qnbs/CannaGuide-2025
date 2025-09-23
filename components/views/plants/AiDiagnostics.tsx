@@ -7,14 +7,15 @@ import { useAppStore } from '@/stores/useAppStore';
 import { geminiService } from '@/services/geminiService';
 import { Plant, PlantDiagnosisResponse } from '@/types';
 import { CameraModal } from '@/components/common/CameraModal';
+import { selectActivePlants } from '@/stores/selectors';
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification, plants, addJournalEntry } = useAppStore(state => ({
+    const { addNotification, addJournalEntry } = useAppStore(state => ({
         addNotification: state.addNotification,
-        plants: state.plants,
         addJournalEntry: state.addJournalEntry,
     }));
+    const activePlants = useAppStore(selectActivePlants);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
     const [isLoading, setIsLoading] = useState(false);
@@ -27,8 +28,6 @@ export const AiDiagnostics: React.FC = () => {
 
     const [selectedPlantId, setSelectedPlantId] = useState<string>('');
     const [userNotes, setUserNotes] = useState('');
-
-    const activePlants = plants.filter((p): p is Plant => p !== null);
 
     useEffect(() => {
         if (isLoading) {

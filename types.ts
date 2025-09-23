@@ -10,6 +10,16 @@ export enum View {
     Help = 'HELP',
 }
 
+// --- Entity-specific ID type aliases for clarity ---
+export type PlantID = string;
+export type StrainID = string;
+export type JournalEntryID = string;
+export type TaskID = string;
+export type ImageID = string;
+export type SavedSetupID = string;
+export type SavedExportID = string;
+export type AIResponseID = string;
+
 // Plant-related types
 export enum PlantStage {
     Seed = 'SEED',
@@ -33,11 +43,17 @@ export type PlantProblemType =
   | 'TempTooLow'
   | 'TempTooHigh'
   | 'HumidityTooLow'
-  | 'HumidityTooHigh';
+  | 'HumidityTooHigh'
+  | 'VpdTooLow'
+  | 'VpdTooHigh'
+  | 'Pest';
 
 export interface PlantProblem {
   type: PlantProblemType;
-  detectedAt: number; // Timestamp when the problem was first detected
+  detectedAt: number; // Day number when the problem was first detected
+  severity: 'low' | 'medium' | 'high';
+  status: 'active' | 'resolved';
+  resolvedAt?: number; // Day number when the problem was resolved
 }
 
 export interface PlantVitals {
@@ -57,7 +73,7 @@ export type TrainingType = 'LST' | 'Topping' | 'Defoliation' | 'FIMing' | 'SCROG
 export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'PHOTO' | 'SYSTEM';
 
 export interface JournalEntry {
-    id: string;
+    id: JournalEntryID;
     timestamp: number;
     type: JournalEntryType;
     notes: string;
@@ -72,7 +88,7 @@ export interface JournalEntry {
         // Training
         trainingType?: TrainingType;
         // Photo
-        imageId?: string;
+        imageId?: ImageID;
         imageUrl?: string; // for immediate preview
         photoCategory?: 'Full Plant' | 'Bud' | 'Leaf' | 'Problem' | 'Trichomes';
         // Observation
@@ -85,7 +101,7 @@ export interface JournalEntry {
 export type TaskPriority = 'low' | 'medium' | 'high';
 
 export interface Task {
-    id: string;
+    id: TaskID;
     title: string;
     description: string;
     priority: TaskPriority;
@@ -101,8 +117,15 @@ export interface PlantHistoryEntry {
     height: number;
 }
 
+export interface YieldRecord {
+    wetWeight?: number; // in grams
+    dryWeight: number; // in grams
+    quality: 'poor' | 'average' | 'good' | 'excellent';
+    notes?: string;
+}
+
 export interface Plant {
-    id: string;
+    id: PlantID;
     name: string;
     strain: Strain;
     stage: PlantStage;
@@ -118,7 +141,7 @@ export interface Plant {
     journal: JournalEntry[];
     tasks: Task[];
     history: PlantHistoryEntry[];
-    yield?: number;
+    yield?: YieldRecord;
 }
 
 // Strain-related types
@@ -128,7 +151,7 @@ export type YieldLevel = 'Low' | 'Medium' | 'High';
 export type HeightLevel = 'Short' | 'Medium' | 'Tall';
 
 export interface Strain {
-    id: string;
+    id: StrainID;
     name: string;
     type: StrainType;
     typeDetails?: string;
@@ -179,7 +202,7 @@ export type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'pots' |
 export type Recommendation = Record<RecommendationCategory, RecommendationItem>;
 
 export interface SavedSetup {
-    id: string;
+    id: SavedSetupID;
     name: string;
     createdAt: number;
     recommendation: Recommendation;
@@ -194,13 +217,13 @@ export interface SavedSetup {
 export type ExportSource = 'selected' | 'favorites' | 'filtered' | 'all';
 export type ExportFormat = 'pdf' | 'txt' | 'csv' | 'json';
 export interface SavedExport {
-    id: string;
+    id: SavedExportID;
     createdAt: number;
     name: string;
     source: ExportSource;
     format: ExportFormat;
     count: number;
-    strainIds: string[];
+    strainIds: StrainID[];
     notes?: string;
 }
 
@@ -227,25 +250,35 @@ export interface PlantDiagnosisResponse {
 }
 
 export interface SavedStrainTip extends AIResponse {
-  id: string;
+  id: AIResponseID;
   createdAt: number;
-  strainId: string;
+  strainId: StrainID;
   strainName: string;
 }
 
 export interface ArchivedMentorResponse extends AIResponse {
-    id: string;
+    id: AIResponseID;
     createdAt: number;
     query: string;
 }
 
 export interface ArchivedAdvisorResponse extends AIResponse {
-    id: string;
+    id: AIResponseID;
     createdAt: number;
-    plantId: string;
+    plantId: PlantID;
     plantStage: PlantStage;
     query: string;
 }
+
+// IndexedDB specific types
+export interface StoredImageData {
+    id: ImageID;
+    plantId: PlantID;
+    timestamp: number;
+    data: string; // Base64 encoded image
+}
+
+export type SearchIndex = Record<string, StrainID[]>;
 
 // UI & Settings types
 export type SortDirection = 'asc' | 'desc';

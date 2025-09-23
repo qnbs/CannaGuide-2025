@@ -17,7 +17,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~400 g/m²', outdoor: '~450 g/plant' },
     },
   },
@@ -37,7 +36,6 @@ export const strains: Strain[] = [
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~500 g/m²', outdoor: '~600 g/plant' },
     },
   },
@@ -57,7 +55,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '600-800 g/m²', outdoor: '~900 g/plant' },
     },
   },
@@ -77,7 +74,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '450 g/m²', outdoor: '~500 g/plant' },
     },
   },
@@ -97,7 +93,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'High',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '500-600 g/m²', outdoor: '~700 g/plant' },
     },
   },
@@ -117,7 +112,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -137,7 +131,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-800 g/m²', outdoor: '~900 g/plant' },
     },
   },
@@ -157,7 +150,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -177,7 +169,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
     },
   },
@@ -197,7 +188,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '350-500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -217,7 +207,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: 'bis 800 g/m²', outdoor: '~900 g/plant' },
     },
   },
@@ -237,7 +226,6 @@ export const strains: Strain[] = [
         difficulty: 'Easy',
         yield: 'High',
         height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
         yieldDetails: { indoor: '~550 g/m²', outdoor: '~600 g/plant' },
     },
   },
@@ -257,7 +245,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -277,7 +264,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -297,7 +283,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-500 g/m²', outdoor: '~500 g/plant' },
     },
   },
@@ -317,7 +302,6 @@ export const strains: Strain[] = [
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-500 g/m²', outdoor: '~450 g/plant' },
     },
   },
@@ -337,7 +321,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~400 g/m²', outdoor: '~450 g/plant' },
     },
   },
@@ -357,7 +340,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'High',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: 'bis 700 g/m²', outdoor: '~800 g/plant' },
     },
   },
@@ -377,7 +359,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~600 g/m²', outdoor: '~700 g/plant' },
     },
   },
@@ -397,7 +378,6 @@ export const strains: Strain[] = [
       difficulty: 'Hard',
       yield: 'High',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '600-650 g/m²', outdoor: '~700 g/plant' },
     },
   },
@@ -417,7 +397,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~550 g/m²', outdoor: '~600 g/plant' },
     },
   },
@@ -437,7 +416,6 @@ export const strains: Strain[] = [
       difficulty: 'Hard',
       yield: 'Low',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '250-350 g/m²', outdoor: '~400 g/plant' },
     },
   },
@@ -457,7 +435,6 @@ export const strains: Strain[] = [
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -477,7 +454,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-500 g/m²', outdoor: '~550 g/plant' },
     },
   },
@@ -497,7 +473,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~550 g/m²', outdoor: '~650 g/plant' },
     },
   },
@@ -517,7 +492,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '450-550 g/m²', outdoor: '~600 g/plant' },
     },
   },
@@ -537,7 +511,6 @@ export const strains: Strain[] = [
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
     },
   },
@@ -557,7 +530,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'High',
       height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~600 g/m²', outdoor: '~700 g/plant' },
     },
   },
@@ -577,7 +549,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '500-600 g/m²', outdoor: '~650 g/plant' },
     },
   },
@@ -597,7 +568,6 @@ export const strains: Strain[] = [
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '~550 g/m²', outdoor: '~600 g/plant' },
     },
   },
@@ -617,7 +587,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-500 g/m²', outdoor: '~500 g/plant' },
     },
   },
@@ -637,7 +606,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-450 g/m²', outdoor: '50-100 g/plant' },
     },
   },
@@ -657,7 +625,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: '400-500 g/m²', outdoor: '50-150 g/plant' },
     },
   },
@@ -677,7 +644,6 @@ export const strains: Strain[] = [
       difficulty: 'Easy',
       yield: 'High',
       height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
       yieldDetails: { indoor: 'bis 650 g/m²', outdoor: '~700 g/plant' },
     },
   }

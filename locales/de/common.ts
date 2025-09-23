@@ -96,6 +96,9 @@ export const problemMessages = {
     tempTooLow: { message: 'Temperatur zu niedrig', solution: 'Heizmatte verwenden oder Raumtemperatur erhöhen.' },
     humidityTooHigh: { message: 'Luftfeuchtigkeit zu hoch', solution: 'Abluft erhöhen und ggf. einen Luftentfeuchter verwenden.' },
     humidityTooLow: { message: 'Luftfeuchtigkeit zu niedrig', solution: 'Luftbefeuchter verwenden oder nasse Handtücher aufhängen.' },
+    vpdTooLow: { message: 'VPD zu niedrig (zu feucht)', solution: 'Luftfeuchtigkeit senken oder Temperatur leicht erhöhen, um die Transpiration zu fördern.' },
+    vpdTooHigh: { message: 'VPD zu hoch (zu trocken)', solution: 'Luftfeuchtigkeit erhöhen oder Temperatur leicht senken, um Stress zu reduzieren.' },
+    pest: { message: 'Schädlingsbefall erkannt', solution: 'Pflanze isolieren, mit Neemöl behandeln und Nützlinge einsetzen.' },
 };
 
 export const ai = {

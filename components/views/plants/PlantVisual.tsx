@@ -1,6 +1,6 @@
 import React from 'react';
 import { PlantStage, JournalEntry, PlantProblem } from '@/types';
-import { PLANT_STAGE_DETAILS } from '@/constants';
+import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 
 interface PlantVisualProps {
   stage: PlantStage;

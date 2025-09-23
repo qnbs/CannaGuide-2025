@@ -17,7 +17,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '500-600 g/m²', outdoor: '~700 g/plant' },
         },
     },
@@ -37,7 +36,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '~500 g/m²', outdoor: '~600 g/plant' },
         },
     },
@@ -57,7 +55,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Low',
             height: 'Medium',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '~350 g/m²', outdoor: '~400 g/plant' },
         },
     },
@@ -77,7 +74,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'Medium',
             height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
         },
     },
@@ -97,7 +93,6 @@ export const strains: Strain[] = [
             difficulty: 'Medium',
             yield: 'High',
             height: 'Tall',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '500-600 g/m²', outdoor: '~700 g/plant' },
         },
     },
@@ -117,7 +112,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'Medium',
             height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
         },
     },
@@ -137,7 +131,6 @@ export const strains: Strain[] = [
             difficulty: 'Easy',
             yield: 'High',
             height: 'Short',
-// FIX: Added missing 'outdoor' property to 'yieldDetails'
             yieldDetails: { indoor: '500-600 g/m²', outdoor: '~700 g/plant' },
         },
     }

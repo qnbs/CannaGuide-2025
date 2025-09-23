@@ -135,6 +135,10 @@ export const plantsView = {
       wateringTask: {
           title: 'Watering Required',
           description: 'Substrate moisture is low.'
+      },
+      trichomeTask: {
+          title: 'Check Trichomes',
+          description: 'The harvest window is approaching. Time to inspect the trichomes!'
       }
   },
   warnings: {

@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Strain, View, SortDirection, AIResponse, GrowSetup } from '@/types';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Strain, View, SortDirection, AIResponse, GrowSetup, StrainType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useStrainFilters, SortKey } from '@/hooks/useStrainFilters';
+// FIX: Import `defaultAdvancedFilters` to reset the temporary filter state correctly.
+import { useStrainFilters, SortKey, defaultAdvancedFilters } from '@/hooks/useStrainFilters';
 import { useAppStore } from '@/stores/useAppStore';
 import { strainService } from '@/services/strainService';
 import { exportService } from '@/services/exportService';
@@ -17,16 +18,25 @@ import { ExportsManagerView } from '@/components/views/strains/ExportsManagerVie
 import StrainGridItem from '@/components/views/strains/StrainGridItem';
 import StrainListItem from '@/components/views/strains/StrainListItem';
 import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
-import AdvancedFilterModal from '@/components/views/strains/AdvancedFilterModal';
+import { FilterDrawer } from '@/components/views/strains/FilterDrawer';
 import { StrainTipsView } from '@/components/views/strains/StrainTipsView';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
 type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
 
-const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab: (tab: StrainViewTab) => void }> = ({ tab, onAdd, onSwitchTab }) => {
+const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab: (tab: StrainViewTab) => void, isFiltered: boolean, onResetFilters: () => void }> = ({ tab, onAdd, onSwitchTab, isFiltered, onResetFilters }) => {
     const { t } = useTranslations();
     const content = useMemo(() => {
+        if (isFiltered) {
+             return {
+                icon: <PhosphorIcons.MagnifyingGlass className="w-16 h-16 text-slate-400 mb-4" weight="regular" />,
+                title: t('strainsView.emptyStates.noResults.title'),
+                text: t('strainsView.emptyStates.noResults.text'),
+                buttonText: t('strainsView.resetFilters'),
+                buttonAction: onResetFilters
+            };
+        }
         if (tab === 'my-strains') {
             return {
                 icon: <PhosphorIcons.Star className="w-16 h-16 text-slate-400 mb-4" weight="regular" />,
@@ -46,7 +56,7 @@ const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab:
             };
         }
         return null;
-    }, [tab, t, onAdd, onSwitchTab]);
+    }, [tab, t, onAdd, onSwitchTab, isFiltered, onResetFilters]);
 
     if (!content) return null;
 
@@ -116,17 +126,7 @@ const StrainsViewContent: React.FC = () => {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>(settings.strainsViewSettings.defaultViewMode);
     
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-    const moreMenuRef = useRef<HTMLDivElement>(null);
     const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) setIsMoreMenuOpen(false);
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
 
     useEffect(() => {
         setIsLoading(true);
@@ -155,6 +155,7 @@ const StrainsViewContent: React.FC = () => {
     const {
         sortedAndFilteredStrains, filterControls, filterState, isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen,
         tempFilterState, setTempFilterState, previewFilteredStrains, openAdvancedFilterModal, handleApplyAdvancedFilters,
+        resetAdvancedFilters, activeFilterCount
     } = useStrainFilters(strainsToDisplay, favoriteIds, {
         key: settings.strainsViewSettings.defaultSortKey as any, direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
     });
@@ -211,7 +212,8 @@ const StrainsViewContent: React.FC = () => {
             {selectedStrain && <StrainDetailModal strain={selectedStrain} onSaveTip={handleSaveTip} />}
             {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={actions.closeAddModal} onAddStrain={(s) => { addUserStrain(s); actions.closeAddModal(); }} onUpdateStrain={(s) => { updateUserStrain(s); actions.closeAddModal(); }} strainToEdit={strainToEdit} />}
             {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
-            {isAdvancedFilterModalOpen && <AdvancedFilterModal isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}
+            {/* FIX: Replaced the invalid hook call in `onReset` with a direct call to set the default filter state. This fixes the "Cannot find name 'defaultSort'" error and adheres to React hook rules. */}
+            {isAdvancedFilterModalOpen && <FilterDrawer isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} onReset={() => setTempFilterState(defaultAdvancedFilters)} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}
             {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => actions.confirmGrow(setup, strainForSetup)} />}
 
             <Card><Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => setActiveTab(id as StrainViewTab)} /></Card>
@@ -224,45 +226,59 @@ const StrainsViewContent: React.FC = () => {
                             <input type="text" placeholder={t('strainsView.searchPlaceholder')} value={filterState.searchTerm} onChange={e => filterControls.setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"/>
                         </div>
 
-                        <div className="flex items-center gap-2 self-end sm:self-auto">
-                            <div className="hidden sm:flex items-center bg-slate-800/60 border border-slate-700/80 rounded-lg p-1 gap-1">
-                                <button onClick={openAdvancedFilterModal} title={t('strainsView.advancedFilters')} className="p-2 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
-                                    <PhosphorIcons.FunnelSimple className="w-5 h-5" />
-                                </button>
-                                <div className="w-px h-6 bg-slate-700"></div>
-                                <button onClick={() => filterControls.setShowFavorites(!filterState.showFavorites)} title={t('strainsView.favoritesOnly')} className={`p-2 rounded-md transition-all duration-200 ${filterState.showFavorites ? 'bg-primary-500 text-white shadow' : 'text-slate-300 hover:bg-slate-700 hover:text-white'}`}>
-                                    <PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} className="w-5 h-5" />
-                                </button>
+                        <div className="hidden sm:flex items-center gap-2">
+                             <div className="flex items-center bg-slate-800/60 border border-slate-700/80 rounded-lg p-1 gap-1">
                                 <button onClick={() => setViewMode(prev => prev === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} className="p-2 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                                     {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
                                 </button>
-                                <div className="w-px h-6 bg-slate-700"></div>
-                                <Button onClick={actions.openExportModal} variant="secondary" className="!py-2 !px-3 !bg-transparent !border-none hover:!bg-slate-700">
-                                    <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-0 lg:mr-1.5" />
-                                    <span className="hidden lg:inline">{t('common.export')}</span>
-                                </Button>
-                                <Button onClick={() => actions.openAddModal()} variant="primary" className="!py-2 !px-3">
-                                    <PhosphorIcons.PlusCircle className="w-5 h-5 mr-0 lg:mr-1.5" />
-                                    <span className="hidden lg:inline">{t('strainsView.addStrain')}</span>
-                                </Button>
                             </div>
-                            
-                            <div ref={moreMenuRef} className="relative sm:hidden">
-                                <Button variant="secondary" onClick={() => setIsMoreMenuOpen(prev => !prev)} title={t('common.moreActions')} className="!p-2.5"><span className="sr-only">{t('common.moreActions')}</span><PhosphorIcons.DotsThreeVertical className="w-5 h-5" /></Button>
-                                {isMoreMenuOpen && (
-                                    <Card className="absolute right-0 mt-2 w-56 z-10 p-2 animate-fade-in">
-                                        <ul className="space-y-1">
-                                            <li><button onClick={() => { openAdvancedFilterModal(); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors"><PhosphorIcons.FunnelSimple className="w-5 h-5" /><span>{t('strainsView.advancedFilters')}</span></button></li>
-                                            <li><button onClick={() => { filterControls.setShowFavorites(!filterState.showFavorites); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors"><PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} className="w-5 h-5" /><span>{t('strainsView.favoritesOnly')}</span></button></li>
-                                            <li><button onClick={() => { setViewMode(prev => prev === 'list' ? 'grid' : 'list'); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors">{viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}<span>{t('strainsView.toggleView')}</span></button></li>
-                                            <hr className="border-slate-700 my-1"/>
-                                            <li><button onClick={() => { actions.openExportModal(); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors"><PhosphorIcons.DownloadSimple className="w-5 h-5" /><span>{t('common.export')}</span></button></li>
-                                            <li><button onClick={() => { actions.openAddModal(); setIsMoreMenuOpen(false); }} className="w-full text-left flex items-center gap-3 p-2 rounded-md text-slate-200 hover:bg-slate-700 transition-colors"><PhosphorIcons.PlusCircle className="w-5 h-5" /><span>{t('strainsView.addStrain')}</span></button></li>
-                                        </ul>
-                                    </Card>
-                                )}
-                            </div>
+                            <Button onClick={actions.openExportModal} variant="secondary" className="!py-2 !px-3">
+                                <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
+                                <span>{t('common.export')}</span>
+                            </Button>
+                            <Button onClick={() => actions.openAddModal()} variant="primary" className="!py-2 !px-3">
+                                <PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />
+                                <span>{t('strainsView.addStrain')}</span>
+                            </Button>
                         </div>
+                    </div>
+
+                    <div className="mt-4 flex gap-2 items-center overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6">
+                        <button onClick={() => filterControls.setShowFavorites(!filterState.showFavorites)} className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 ${filterState.showFavorites ? 'bg-primary-500/80 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
+                            <PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} />
+                            <span>{t('strainsView.favorites')}</span>
+                        </button>
+                        <div className="w-px h-5 bg-slate-700 mx-1"></div>
+                        {(['Sativa', 'Indica', 'Hybrid'] as StrainType[]).map(type => (
+                            <button key={type} onClick={() => filterControls.toggleTypeFilter(type)} className={`px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 ${filterState.typeFilter.has(type) ? 'bg-primary-500/80 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
+                                {t(`strainsView.${type.toLowerCase()}`)}
+                            </button>
+                        ))}
+                        <div className="w-px h-5 bg-slate-700 mx-1"></div>
+                        <button onClick={openAdvancedFilterModal} className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                            <PhosphorIcons.FunnelSimple />
+                            <span>{t('strainsView.advancedFilters')}</span>
+                            {activeFilterCount > 0 && (
+                                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+                                    {activeFilterCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    <div className="sm:hidden mt-4 flex items-center gap-2">
+                        <Button onClick={() => actions.openAddModal()} variant="primary" className="flex-1">
+                            <PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />
+                            <span>{t('strainsView.addStrain')}</span>
+                        </Button>
+                        <Button onClick={actions.openExportModal} variant="secondary" className="flex-1">
+                            <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
+                            <span>{t('common.export')}</span>
+                        </Button>
+                         <Button onClick={() => setViewMode(prev => prev === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} variant="secondary" className="p-2.5">
+                             <span className="sr-only">{t('strainsView.toggleView')}</span>
+                            {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
+                        </Button>
                     </div>
                 </Card>
             )}
@@ -297,7 +313,7 @@ const StrainsViewContent: React.FC = () => {
                         {sortedAndFilteredStrains.length > 0 ? (
                             sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} onToggleSelection={handleToggleSelection} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)
                         ) : (
-                            <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} />
+                            <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={filterState.searchTerm.length > 0 || activeFilterCount > 0 || filterState.showFavorites} onResetFilters={resetAdvancedFilters} />
                         )}
                      </div>
                  ) : (
@@ -306,7 +322,7 @@ const StrainsViewContent: React.FC = () => {
                             {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                         </div>
                      ) : (
-                         <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} />
+                         <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={filterState.searchTerm.length > 0 || activeFilterCount > 0 || filterState.showFavorites} onResetFilters={resetAdvancedFilters} />
                      )
                  )
             )}

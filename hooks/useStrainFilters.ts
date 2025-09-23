@@ -34,8 +34,8 @@ const useDebounce = <T,>(value: T, delay: number): T => {
 };
 
 // Advanced filter state shape
-interface AdvancedFilterState {
-    typeFilter: 'All' | StrainType;
+export interface AdvancedFilterState {
+    typeFilter: Set<StrainType>;
     thcRange: [number, number];
     cbdRange: [number, number];
     floweringRange: [number, number];
@@ -53,8 +53,8 @@ interface FilterState extends AdvancedFilterState {
     sort: SortOption;
 }
 
-const defaultAdvancedFilters: AdvancedFilterState = {
-    typeFilter: 'All',
+// FIX: Export the default filter state so it can be used externally to reset the temporary filter state.
+export const defaultAdvancedFilters: AdvancedFilterState = {
     thcRange: [0, 35],
     cbdRange: [0, 20],
     floweringRange: [6, 16],
@@ -63,6 +63,7 @@ const defaultAdvancedFilters: AdvancedFilterState = {
     selectedHeights: new Set(),
     selectedAromas: new Set(),
     selectedTerpenes: new Set(),
+    typeFilter: new Set(),
 };
 
 
@@ -79,16 +80,16 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
 
     const debouncedSearchTerm = useDebounce(filterState.searchTerm, 300);
 
-    const applyFilters = (strains: Strain[], filters: Partial<FilterState> & AdvancedFilterState) => {
+    const applyFilters = useCallback((strains: Strain[], filters: Partial<FilterState> & AdvancedFilterState) => {
         return strains.filter(strain => {
-            // Basic filters
+            // Basic filters from main state
             if (filters.showFavorites && !favoriteIds.has(strain.id)) return false;
             
-            const searchTerm = filters.searchTerm || debouncedSearchTerm;
+            const searchTerm = filters.searchTerm === undefined ? debouncedSearchTerm : filters.searchTerm;
             if (searchTerm && !strain.name.toLowerCase().includes(searchTerm.toLowerCase())) return false;
             
             // Advanced filters
-            if (filters.typeFilter !== 'All' && strain.type !== filters.typeFilter) return false;
+            if (filters.typeFilter.size > 0 && !filters.typeFilter.has(strain.type)) return false;
             if (strain.thc < filters.thcRange[0] || strain.thc > filters.thcRange[1]) return false;
             if (strain.cbd < filters.cbdRange[0] || strain.cbd > filters.cbdRange[1]) return false;
             if (strain.floweringTime < filters.floweringRange[0] || strain.floweringTime > filters.floweringRange[1]) return false;
@@ -100,7 +101,7 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
 
             return true;
         });
-    };
+    }, [debouncedSearchTerm, favoriteIds]);
     
     const sortedAndFilteredStrains = useMemo(() => {
         let filtered = applyFilters(strainsToDisplay, filterState);
@@ -136,12 +137,12 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
         }
 
         return sorted;
-    }, [strainsToDisplay, debouncedSearchTerm, filterState, favoriteIds]);
+    }, [strainsToDisplay, filterState, applyFilters]);
     
     const previewFilteredStrains = useMemo(() => {
         // Preview uses the temp state for advanced filters but the current state for search/favorites
         return applyFilters(strainsToDisplay, { ...filterState, ...tempFilterState, searchTerm: filterState.searchTerm });
-    }, [strainsToDisplay, filterState.searchTerm, filterState.showFavorites, tempFilterState, favoriteIds]);
+    }, [strainsToDisplay, filterState, tempFilterState, applyFilters]);
 
 
     const handleSort = useCallback((key: SortKey) => {
@@ -151,15 +152,28 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
         });
     }, []);
 
+    const toggleTypeFilter = useCallback((type: StrainType) => {
+        setFilterState(prev => {
+            const newTypes = new Set(prev.typeFilter);
+            if (newTypes.has(type)) {
+                newTypes.delete(type);
+            } else {
+                newTypes.add(type);
+            }
+            return { ...prev, typeFilter: newTypes };
+        });
+    }, []);
+
     const filterControls = useMemo(() => ({
         setSearchTerm: (term: string) => setFilterState(prev => ({...prev, searchTerm: term })),
         setShowFavorites: (show: boolean) => setFilterState(prev => ({...prev, showFavorites: show })),
         handleSort,
-    }), [handleSort]);
+        toggleTypeFilter,
+    }), [handleSort, toggleTypeFilter]);
     
     const openAdvancedFilterModal = () => {
         setTempFilterState({
-            typeFilter: filterState.typeFilter,
+            typeFilter: new Set(filterState.typeFilter),
             thcRange: filterState.thcRange,
             cbdRange: filterState.cbdRange,
             floweringRange: filterState.floweringRange,
@@ -177,6 +191,27 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
         setIsAdvancedFilterModalOpen(false);
     };
 
+    const resetAdvancedFilters = useCallback(() => {
+        setTempFilterState(defaultAdvancedFilters);
+        setFilterState(prev => ({...prev, ...defaultAdvancedFilters}));
+    }, []);
+    
+    const activeFilterCount = useMemo(() => {
+        let count = 0;
+        const stateToCheck = filterState;
+        const defaults = defaultAdvancedFilters;
+        if (stateToCheck.thcRange[0] !== defaults.thcRange[0] || stateToCheck.thcRange[1] !== defaults.thcRange[1]) count++;
+        if (stateToCheck.cbdRange[0] !== defaults.cbdRange[0] || stateToCheck.cbdRange[1] !== defaults.cbdRange[1]) count++;
+        if (stateToCheck.floweringRange[0] !== defaults.floweringRange[0] || stateToCheck.floweringRange[1] !== defaults.floweringRange[1]) count++;
+        if (stateToCheck.selectedDifficulties.size > 0) count++;
+        if (stateToCheck.selectedYields.size > 0) count++;
+        if (stateToCheck.selectedHeights.size > 0) count++;
+        if (stateToCheck.selectedAromas.size > 0) count++;
+        if (stateToCheck.selectedTerpenes.size > 0) count++;
+        count += stateToCheck.typeFilter.size;
+        return count;
+    }, [filterState]);
+
     return {
         sortedAndFilteredStrains,
         filterControls,
@@ -188,5 +223,7 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
         previewFilteredStrains,
         openAdvancedFilterModal,
         handleApplyAdvancedFilters,
+        resetAdvancedFilters,
+        activeFilterCount,
     };
 };

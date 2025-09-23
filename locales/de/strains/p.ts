@@ -169,5 +169,68 @@ export const strains = {
     "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
     "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "~400 g/plant" },
     "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1 m)" },
+  },
+  "painkiller-xl": {
+    "description": "Eine CBD-reiche Sorte mit einem ausgewogenen THC- und CBD-Gehalt. Die Wirkung ist mild, entspannend und schmerzlindernd, ohne starke Psychoaktivität."
+  },
+  "papaya": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, tropischen Papaya-Aroma. Die Wirkung ist entspannend, beruhigend und kann zu einem 'Couch-Lock' führen."
+  },
+  "papaya-cookies": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen, fruchtigen Aroma von Papaya und Keksen. Die Wirkung ist erhebend, energetisierend und kreativ."
+  },
+  "papaya-punch": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, tropischen Aroma von Papaya und fruchtigem Punsch. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "pave-runtz": {
+    "description": "Eine potente Hybride mit einem süßen, fruchtigen und gasartigen Aroma. Die Wirkung ist stark, euphorisch und entspannend."
+  },
+  "peanut-butter-breath": {
+    "description": "Eine ausgewogene Hybride mit einem einzigartigen, nussigen und erdigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch."
+  },
+  "peanut-butter-souffle": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, nussigen und schokoladigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "permanent-chimera": {
+    "description": "Eine potente Hybride mit einem süßen, fruchtigen und chemischen Aroma. Die Wirkung ist stark, euphorisch und kreativ."
+  },
+  "peyote-critical": {
+    "description": "Eine indica-dominante Sorte, bekannt für ihre schnelle Blütezeit und hohen Erträge. Die Wirkung ist stark, entspannend und fast psychedelisch."
+  },
+  "phantom-og": {
+    "description": "Eine sativa-dominante Sorte mit einem zitrusartigen, erdigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend."
+  },
+  "pineapple-upside-down-cake": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen Ananas- und Kuchenaroma. Die Wirkung ist erhebend, energetisierend und kreativ."
+  },
+  "pink-rozay": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, blumigen und fruchtigen Aroma. Die Wirkung ist entspannend und euphorisch, ideal für den Abendgebrauch."
+  },
+  "pinkman-goo": {
+    "description": "Eine seltene Indica-Sorte, die für ihre einzigartigen, harzigen 'Goo'-Tropfen bekannt ist. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "platinum-kush-mints": {
+    "description": "Eine potente Hybride mit einem minzigen, erdigen und süßen Aroma. Die Wirkung ist stark, entspannend und euphorisch."
+  },
+  "platinum-og": {
+    "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch."
+  },
+  "point-break": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen, tropischen und zitrusartigen Aroma. Die Wirkung ist erhebend, energetisierend und kreativ."
+  },
+  "project-4516": {
+    "description": "Eine potente Hybride mit einem fruchtigen, gasartigen und leicht cremigen Aroma. Die Wirkung ist stark, euphorisch und entspannend."
+  },
+  "punch-breath": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "pure-kush": {
+    "description": "Ein Phänotyp von OG Kush, bekannt für seine extrem potente und sedierende Wirkung. Ideal für erfahrene Konsumenten und medizinische Anwender."
+  },
+  "purple-candy": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, traubenartigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch."
+  },
+  "purple-cream": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, cremigen und beerenartigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
   }
 };

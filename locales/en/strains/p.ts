@@ -1,6 +1,4 @@
-// FIX: Removed incorrect type annotation 'Partial<Strain>' to resolve type errors.
-// The structure of this translation object doesn't directly map to the Strain type.
-export const strains: Record<string, any> = {
+export const strains = {
     "panama-red": {
         "description": "A pure Sativa landrace from Panama, famous for its long flowering time and its energetic, cerebral, and almost psychedelic effects. A classic from the 1960s.",
         "typeDetails": "Sativa 100%",
@@ -38,7 +36,7 @@ export const strains: Record<string, any> = {
         "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" },
     },
     "peyote-cookies": {
-        "description": "An indica-dominant hybrid known for its sweet, earthy, and coffee-like aroma. The effect is deeply relaxing and euphoric, with a strong body buzz.",
+        "description": "An indica-dominant hybrid with a sweet, earthy, and coffee-like aroma. The effect is deeply relaxing and euphoric, with a strong body buzz.",
         "typeDetails": "Indica 95% / Sativa 5%",
         "genetics": "Peyote Purple x Cookies Kush",
         "aromas": ["Coffee", "Vanilla", "Sweet", "Earthy"],
@@ -171,5 +169,68 @@ export const strains: Record<string, any> = {
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
         "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "~400 g/plant" },
         "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1 m)" },
+    },
+    "painkiller-xl": {
+        "description": "A CBD-rich strain with a balanced THC and CBD content. The effect is mild, relaxing, and pain-relieving, without strong psychoactivity."
+    },
+    "papaya": {
+        "description": "An indica-dominant strain with a sweet, tropical papaya aroma. The effect is relaxing, calming, and can lead to a 'couch-lock'."
+    },
+    "papaya-cookies": {
+        "description": "A sativa-dominant strain with a sweet, fruity aroma of papaya and cookies. The effect is uplifting, energizing, and creative."
+    },
+    "papaya-punch": {
+        "description": "An indica-dominant strain with a sweet, tropical aroma of papaya and fruity punch. The effect is strong, relaxing, and sedating."
+    },
+    "pave-runtz": {
+        "description": "A potent hybrid with a sweet, fruity, and gassy aroma. The effect is strong, euphoric, and relaxing."
+    },
+    "peanut-butter-breath": {
+        "description": "A balanced hybrid with a unique, nutty, and earthy aroma. The effect is relaxing and calming, ideal for evening use."
+    },
+    "peanut-butter-souffle": {
+        "description": "An indica-dominant strain with a sweet, nutty, and chocolatey aroma. The effect is strong, relaxing, and sedating."
+    },
+    "permanent-chimera": {
+        "description": "A potent hybrid with a sweet, fruity, and chemical aroma. The effect is strong, euphoric, and creative."
+    },
+    "peyote-critical": {
+        "description": "An indica-dominant strain known for its fast flowering time and high yields. The effect is strong, relaxing, and almost psychedelic."
+    },
+    "phantom-og": {
+        "description": "A sativa-dominant strain with a citrusy, earthy aroma. The effect is uplifting, creative, and energizing."
+    },
+    "pineapple-upside-down-cake": {
+        "description": "A sativa-dominant strain with a sweet pineapple and cake aroma. The effect is uplifting, energizing, and creative."
+    },
+    "pink-rozay": {
+        "description": "An indica-dominant strain with a sweet, floral, and fruity aroma. The effect is relaxing and euphoric, ideal for evening use."
+    },
+    "pinkman-goo": {
+        "description": "A rare Indica strain known for its unique, resinous 'goo' droplets. The effect is strong, relaxing, and sedating."
+    },
+    "platinum-kush-mints": {
+        "description": "A potent hybrid with a minty, earthy, and sweet aroma. The effect is strong, relaxing, and euphoric."
+    },
+    "platinum-og": {
+        "description": "An indica-dominant strain with an earthy, piney aroma. The effect is strong, relaxing, and sedating, ideal for evening use."
+    },
+    "point-break": {
+        "description": "A sativa-dominant strain with a sweet, tropical, and citrusy aroma. The effect is uplifting, energizing, and creative."
+    },
+    "project-4516": {
+        "description": "A potent hybrid with a fruity, gassy, and slightly creamy aroma. The effect is strong, euphoric, and relaxing."
+    },
+    "punch-breath": {
+        "description": "An indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is strong, relaxing, and sedating."
+    },
+    "pure-kush": {
+        "description": "An OG Kush phenotype known for its extremely potent and sedating effect. Ideal for experienced consumers and medical users."
+    },
+    "purple-candy": {
+        "description": "An indica-dominant strain with a sweet, grape-like aroma. The effect is relaxing and calming, ideal for evening use."
+    },
+    "purple-cream": {
+        "description": "An indica-dominant strain with a sweet, creamy, and berry-like aroma. The effect is strong, relaxing, and sedating."
     }
 };

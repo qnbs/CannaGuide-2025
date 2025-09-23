@@ -53,6 +53,9 @@ export const strains = {
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/Pflanze" },
     "heightDetails": { "indoor": "120-180 cm", "outdoor": "bis 1.8 m" }
   },
+  "jealousy-z": {
+    "description": "Eine potente Hybride mit einem süßen, fruchtigen und bonbonartigen Aroma. Die Wirkung ist stark, euphorisch und entspannend."
+  },
   "jedi-kush": {
     "description": "Eine indica-dominante Sorte mit einem erdigen, würzigen und leicht süßen Aroma. Die Wirkung ist stark, körperlich entspannend und beruhigend.",
     "typeDetails": "Indica 60% / Sativa 40%",

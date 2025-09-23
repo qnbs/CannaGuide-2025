@@ -43,5 +43,29 @@ export const strains = {
     "dominantTerpenes": ["Limonen", "Caryophyllen", "Linalool"],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/Pflanze" },
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8m)" }
+  },
+  "k2": {
+    "description": "Eine indica-dominante Sorte, bekannt für ihre schnelle Blütezeit und ihre dichten, harzigen Knospen. Die Wirkung ist entspannend und beruhigend."
+  },
+  "kandy-kush": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, bonbonartigen Aroma. Die Wirkung ist stark, entspannend und euphorisch."
+  },
+  "key-lime-pie": {
+    "description": "Ein Phänotyp von Girl Scout Cookies mit einem ausgeprägten Limetten- und Minzaroma. Die Wirkung ist entspannend und euphorisch, ideal für den Abendgebrauch."
+  },
+  "khalifa-kush": {
+    "description": "Eine potente indica-dominante Sorte, die für den Rapper Wiz Khalifa entwickelt wurde. Bekannt für ihr starkes, zitroniges und kiefernartiges Aroma und ihre entspannende, euphorische Wirkung."
+  },
+  "king": {
+    "description": "Eine potente indica-dominante Sorte mit einem erdigen, würzigen Aroma. Die Wirkung ist stark, körperlich entspannend und sedierend."
+  },
+  "kings-kush": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, traubenartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend."
+  },
+  "kosher-tangie": {
+    "description": "Eine sativa-dominante Sorte mit einem starken Zitrus- und Orangenaroma. Die Wirkung ist erhebend, kreativ und energetisierend."
+  },
+  "kush-sorbet": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, cremigen und fruchtigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch."
   }
 }

@@ -79,5 +79,44 @@ export const strains = {
     "dominantTerpenes": ["Myrcene", "Limonene", "Pinene"],
     "yieldDetails": { "indoor": "600-700 g/m²", "outdoor": "~800 g/plant" },
     "heightDetails": { "indoor": "Short", "outdoor": "Medium (up to 1.5m)" }
+  },
+  "la-cake": {
+    "description": "An indica-dominant strain with a sweet, cake-like, and earthy aroma. The effect is strong, relaxing, and sedating."
+  },
+  "la-kush": {
+    "description": "A balanced hybrid with an earthy, piney aroma. The effect is relaxing and euphoric, ideal for all-day use."
+  },
+  "lambs-bread": {
+    "description": "A famous Sativa landrace from Jamaica, reportedly Bob Marley's favorite strain. The effect is uplifting, energizing, and creative."
+  },
+  "larry-og": {
+    "description": "An indica-dominant strain with a strong lemon and pine aroma. The effect is relaxing and happy, ideal for evening use."
+  },
+  "lava-cake": {
+    "description": "An indica-dominant strain with a sweet, chocolatey, and minty aroma. The effect is strong, relaxing, and sedating."
+  },
+  "legend-orange-apricot": {
+    "description": "A sativa-dominant strain with a sweet, fruity aroma of oranges and apricots. The effect is uplifting, energizing, and creative."
+  },
+  "lemon-berry": {
+    "description": "A sativa-dominant strain with a sweet, fruity aroma of lemons and berries. The effect is uplifting, energizing, and social."
+  },
+  "lemon-pepper": {
+    "description": "A sativa-dominant strain with a spicy, peppery lemon aroma. The effect is uplifting, energizing, and creative."
+  },
+  "lemon-thai": {
+    "description": "A sativa-dominant strain with a strong lemon and mint aroma. The effect is uplifting, creative, and energizing."
+  },
+  "lemon-tree": {
+    "description": "A balanced hybrid with a strong, fresh lemon aroma. The effect is uplifting, relaxing, and happy, ideal for all-day use."
+  },
+  "lemonchello": {
+    "description": "A sativa-dominant strain with a sweet, lemony aroma reminiscent of the Italian liqueur. The effect is uplifting, social, and relaxing."
+  },
+  "london-pound-cake": {
+    "description": "An indica-dominant strain with a sweet, berry-like, and grape-like aroma. The effect is strong, relaxing, and calming, ideal for evening use."
+  },
+  "lowryder": {
+    "description": "The original autoflowering strain that revolutionized the world of cannabis cultivation. It is small, fast, and discreet, with a mild, relaxing effect."
   }
 }

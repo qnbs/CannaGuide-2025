@@ -12,7 +12,7 @@ import { Card } from '@/components/common/Card';
 import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-import { selectActivePlants, selectPlantById, selectPlantSlots, selectPlantsRecord, selectSelectedPlantId, selectSettings, selectOpenTasksSummary, selectActiveProblemsSummary } from '@/stores/selectors';
+import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots, selectSettings } from '@/stores/selectors';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -37,16 +37,12 @@ export const PlantsView: React.FC = () => {
     }));
     const settings = useAppStore(selectSettings);
     const plantSlots = useAppStore(selectPlantSlots);
-    const plantsRecord = useAppStore(selectPlantsRecord);
-    const activePlants = useAppStore(selectActivePlants);
-    
+    const plantsRecord = useAppStore(state => state.plants);
+
     const { t } = useTranslations();
     const selectedPlantId = useAppStore(selectSelectedPlantId);
     const setSelectedPlantId = useAppStore(state => state.setSelectedPlantId);
     
-    const allTasks = useAppStore(selectOpenTasksSummary);
-    const allProblems = useAppStore(selectActiveProblemsSummary);
-
     const [selectingSlotIndex, setSelectingSlotIndex] = useState<number | null>(null);
     const [strainForSetup, setStrainForSetup] = useState<Strain | null>(null);
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
@@ -55,12 +51,23 @@ export const PlantsView: React.FC = () => {
         if (settings.simulationSettings.autoAdvance) {
             updatePlantState();
             const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed];
-            const intervalId = setInterval(updatePlantState, speedInMinutes * 60 * 1000); 
+            const intervalId = setInterval(() => {
+                updatePlantState();
+            }, speedInMinutes * 60 * 1000);
             return () => clearInterval(intervalId);
         }
     }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, updatePlantState]);
+
+    const activePlants = useAppStore(selectActivePlants);
+    const allTasks = useAppStore(selectOpenTasksSummary);
+    const allProblems = useAppStore(selectActiveProblemsSummary);
     
-    const selectedPlant = useAppStore(selectPlantById(selectedPlantId));
+    const selectedPlant = useMemo(() => {
+        if (!selectedPlantId) return null;
+        return activePlants.find(p => p.id === selectedPlantId) || null;
+    }, [selectedPlantId, activePlants]);
+    
+    const plants = useMemo(() => plantSlots.map(id => id ? plantsRecord[id] : null), [plantSlots, plantsRecord]);
 
     const handleStartGrow = (setup: GrowSetup) => {
         if (!strainForSetup || selectingSlotIndex === null) return;
@@ -93,7 +100,7 @@ export const PlantsView: React.FC = () => {
             <div className="lg:col-span-2 space-y-6">
                 <TipOfTheDay />
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {plantSlots.map((plantId, index) => {
+                    {plants.map((plant, index) => {
                         if (selectingSlotIndex === index) {
                             return (
                                 <InlineStrainSelector 
@@ -106,7 +113,6 @@ export const PlantsView: React.FC = () => {
                                 />
                             );
                         }
-                        const plant = plantId ? plantsRecord[plantId] : null;
                         return plant ? (
                             <PlantCard key={plant.id} plant={plant} onInspect={() => setSelectedPlantId(plant.id)} />
                         ) : (

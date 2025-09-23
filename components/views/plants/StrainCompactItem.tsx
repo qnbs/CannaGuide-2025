@@ -3,6 +3,7 @@ import { Strain } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface StrainCompactItemProps {
     strain: Strain;
@@ -11,6 +12,10 @@ interface StrainCompactItemProps {
 
 export const StrainCompactItem: React.FC<StrainCompactItemProps> = React.memo(({ strain, onSelect }) => {
     const { t } = useTranslations();
+    const { isFavorite, isUserStrain } = useAppStore(state => ({
+        isFavorite: state.favoriteIds.has(strain.id),
+        isUserStrain: state.userStrains.some(s => s.id === strain.id)
+    }));
 
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
@@ -20,26 +25,39 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = React.memo(({
         Medium: t('strainsView.difficulty.medium'),
         Hard: t('strainsView.difficulty.hard'),
     };
+    
+    const difficultyMap = {
+        Easy: { level: 1, color: 'text-green-500' },
+        Medium: { level: 2, color: 'text-amber-500' },
+        Hard: { level: 3, color: 'text-red-500' },
+    };
+    const { level, color } = difficultyMap[strain.agronomic.difficulty];
 
     return (
         <button
             onClick={onSelect}
-            className="w-full text-left p-2 rounded-lg flex items-center gap-3 transition-colors hover:bg-slate-700/50 focus:outline-none focus:bg-slate-700"
+            className="w-full text-left p-2 rounded-lg flex items-center gap-3 transition-colors hover:bg-slate-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             aria-label={`${t('common.select')} ${strain.name}`}
         >
             <TypeIcon className={`w-8 h-8 flex-shrink-0 ${typeClasses[strain.type]}`} />
             <div className="flex-grow min-w-0">
-                <p className="font-semibold text-slate-100 truncate">{strain.name}</p>
+                <p className="font-semibold text-slate-100 truncate flex items-center gap-1.5">
+                    {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" title={t('strainsView.myStrains')} />}
+                    {isFavorite && <PhosphorIcons.Heart weight="fill" className="w-4 h-4 text-red-500/80 flex-shrink-0" title={t('strainsView.favorites')} />}
+                    <span>{strain.name}</span>
+                </p>
                 <p className="text-xs text-slate-400">{strain.type}</p>
             </div>
             <div className="flex-shrink-0 text-right">
                 <p className="text-xs font-mono text-slate-200">{strain.thc.toFixed(1)}% THC</p>
                 <div className="flex justify-end" title={difficultyLabels[strain.agronomic.difficulty]}>
-                     <PhosphorIcons.Cannabis className={`w-3 h-3 ${strain.agronomic.difficulty === 'Easy' ? 'text-green-500' : strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : 'text-red-500'}`} />
-                     <PhosphorIcons.Cannabis className={`w-3 h-3 ${strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
-                     <PhosphorIcons.Cannabis className={`w-3 h-3 ${strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
+                    {[...Array(3)].map((_, i) => (
+                        <PhosphorIcons.Cannabis key={i} className={`w-3 h-3 ${i < level ? color : 'text-slate-700'}`} />
+                    ))}
                 </div>
             </div>
         </button>
     );
 });
+
+StrainCompactItem.displayName = 'StrainCompactItem';

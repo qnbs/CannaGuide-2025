@@ -17,58 +17,49 @@ export const strains = {
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/Pflanze" },
     "heightDetails": { "indoor": "150-200 cm", "outdoor": "bis 2m" }
   },
-  "3-kings": {
-    "description": "Eine sativa-dominante Sorte, die aus drei legendären Sorten gezüchtet wurde. Sie bietet eine ausgewogene, erhebende und kreative Wirkung. Das Aroma ist eine Mischung aus Kiefer, Erde und Diesel.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "Headband x Sour Diesel x OG Kush",
-    "aromas": ["Kiefer", "Erdig", "Sauer", "Diesel"],
-    "dominantTerpenes": ["Caryophyllen", "Myrcen", "Limonen"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "700-800 g/Pflanze" },
-    "heightDetails": { "indoor": "150-200 cm", "outdoor": "bis 2.5 m" }
-  },
   "303-og": {
     "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
     "typeDetails": "Indica 70% / Sativa 30%",
     "genetics": "Pre-98 Bubba Kush x Chemdawg",
-    "aromas": ["Erdig", "Kiefer", "Scharf", "Diesel"],
-    "dominantTerpenes": ["Myrcen", "Caryophyllen", "Limonen"],
+    "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
+    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
     "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "~400 g/Pflanze" },
-    "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel" }
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
   },
   "501st-og": {
     "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist stark, entspannend und körperlich.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Skywalker OG x Rare Dankness #1",
-    "aromas": ["Süß", "Fruchtig", "Erdig", "Kiefer"],
-    "dominantTerpenes": ["Myrcen", "Limonen", "Caryophyllen"],
+    "aromas": ["Sweet", "Fruity", "Earthy", "Pine"],
+    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/Pflanze" },
-    "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz" }
+    "heightDetails": { "indoor": "Short", "outdoor": "Short" }
   },
   "707-headband": {
     "description": "Eine sativa-dominante Sorte mit einem erdigen, zitrusartigen und dieselartigen Aroma. Die Wirkung ist erhebend, kreativ und entspannend.",
     "typeDetails": "Sativa 70% / Indica 30%",
     "genetics": "Sour Diesel x OG Kush x Master Kush",
-    "aromas": ["Erdig", "Zitrus", "Diesel", "Scharf"],
-    "dominantTerpenes": ["Caryophyllen", "Myrcen", "Limonen"],
+    "aromas": ["Earthy", "Citrus", "Diesel", "Pungent"],
+    "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"],
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/Pflanze" },
-    "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch" }
+    "heightDetails": { "indoor": "Tall", "outdoor": "Tall" }
   },
   "8-ball-kush": {
     "description": "Eine reine Indica-Sorte mit einem erdigen, würzigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch.",
     "typeDetails": "Indica 100%",
     "genetics": "Afghanische Landrasse",
-    "aromas": ["Erdig", "Würzig", "Süß", "Kiefer"],
-    "dominantTerpenes": ["Myrcen", "Caryophyllen", "Pinen"],
+    "aromas": ["Earthy", "Spicy", "Sweet", "Pine"],
+    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/Pflanze" },
-    "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz" }
+    "heightDetails": { "indoor": "Short", "outdoor": "Short" }
   },
   "9-pound-hammer": {
     "description": "Eine potente indica-dominante Sorte mit einem süßen, fruchtigen Aroma von Trauben und Limetten. Die Wirkung ist stark, schnell einsetzend und sedierend.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Gooberry x Hells OG x Jack The Ripper",
-    "aromas": ["Traube", "Limette", "Süß", "Fruchtig"],
-    "dominantTerpenes": ["Myrcen", "Pinen", "Caryophyllen"],
+    "aromas": ["Grape", "Lime", "Sweet", "Fruity"],
+    "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/Pflanze" },
-    "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz" }
+    "heightDetails": { "indoor": "Short", "outdoor": "Short" }
   }
 };

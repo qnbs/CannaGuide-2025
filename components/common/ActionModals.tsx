@@ -99,7 +99,7 @@ const SliderInputField: React.FC<{
                 <input
                     id={id} type="range" min={min} max={max} step={step} value={value}
                     onChange={onChange}
-                    className="absolute w-full h-2 appearance-none bg-transparent cursor-pointer"
+                    className="absolute w-full h-2 appearance-none bg-transparent cursor-pointer range-slider-input"
                 />
             </div>
             {context && <p className="text-xs text-slate-400 mt-1 text-right">{context}</p>}

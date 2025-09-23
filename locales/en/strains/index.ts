@@ -53,5 +53,5 @@ export const strainsData = {
     ...strainsW,
     ...strainsX,
     ...strainsY,
-    ...strainsZ,
+    ...strainsZ
 };

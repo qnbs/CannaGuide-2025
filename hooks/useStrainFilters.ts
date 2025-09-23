@@ -113,8 +113,7 @@ export const useStrainFilters = (strainsToDisplay: Strain[], favoriteIds: Set<st
                 case 'type':
                     valA = a[key];
                     valB = b[key];
-                    // FIX: Cast values to string to ensure localeCompare can be called safely.
-                    return (valA as string).localeCompare(valB as string);
+                    return String(valA).localeCompare(String(valB));
                 case 'difficulty':
                     valA = difficultyValues[a.agronomic.difficulty];
                     valB = difficultyValues[b.agronomic.difficulty];

@@ -11,6 +11,7 @@ import { PhotosTab } from '@/components/views/plants/detailedPlantViewTabs/Photo
 import { TasksTab } from '@/components/views/plants/detailedPlantViewTabs/TasksTab';
 import { AiTab } from '@/components/views/plants/detailedPlantViewTabs/AiTab';
 import { LogActionModal, ModalState, ModalType } from '@/components/views/plants/LogActionModal';
+import { ActionToolbar } from './ActionToolbar';
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -79,13 +80,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
                  <div className="flex-grow">
                     <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as PlantDetailTab)} />
                 </div>
-                 <div className="flex-shrink-0 flex flex-wrap gap-2">
-                    <Button onClick={() => handleAction('watering')}><PhosphorIcons.Drop className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.watering')}</Button>
-                    <Button onClick={() => handleAction('feeding')}><PhosphorIcons.TestTube className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.feeding')}</Button>
-                    <Button onClick={() => handleAction('training')}><PhosphorIcons.Scissors className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.training')}</Button>
-                    <Button onClick={() => handleAction('observation')} variant="secondary"><PhosphorIcons.MagnifyingGlass className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.observation')}</Button>
-                    <Button onClick={() => handleAction('photo')} variant="secondary"><PhosphorIcons.Camera className="w-4 h-4 mr-1"/> {t('plantsView.detailedView.journalFilters.photo')}</Button>
-                </div>
+                <ActionToolbar onAction={handleAction} />
             </div>
 
             <div className="mt-6">

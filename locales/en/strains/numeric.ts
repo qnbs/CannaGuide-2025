@@ -1,3 +1,5 @@
+import { Strain } from '@/types';
+
 export const strains = {
   "1024": {
     "description": "A sativa-dominant strain known for its high potency and its uplifting, cerebral effects. It has a sweet, fruity, and spicy aroma.",
@@ -16,15 +18,6 @@ export const strains = {
     "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
     "heightDetails": { "indoor": "150-200 cm", "outdoor": "up to 2m" }
-  },
-  "3-kings": {
-    "description": "A sativa-dominant strain bred from three legendary varieties. It offers a balanced, uplifting, and creative effect. The aroma is a mix of pine, earth, and diesel.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "Headband x Sour Diesel x OG Kush",
-    "aromas": ["Pine", "Earthy", "Sour", "Diesel"],
-    "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "700-800 g/plant" },
-    "heightDetails": { "indoor": "150-200 cm", "outdoor": "up to 2.5 m" }
   },
   "303-og": {
     "description": "An indica-dominant strain with an earthy, piney aroma. The effect is strong, relaxing, and sedating.",

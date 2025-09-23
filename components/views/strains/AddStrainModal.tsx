@@ -116,7 +116,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
         }
     };
     
-    const parseStringToArray = (str: string = '') => str.split(',').map(s => s.trim()).filter(Boolean);
+    // Use a robust regex to split by comma and trim whitespace.
+    const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -129,6 +130,15 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
 
         const floweringTime = parseFloat(strainData.floweringTime);
         if (isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20) errors.push(t('strainsView.addStrainModal.validation.floweringTime'));
+        
+        // Sophisticated regex for validating range fields (e.g., '18-22%', '<1%', '~20%')
+        const rangeRegex = /^(?:[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?)$|^(?:\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?)$/;
+        if (strainData.thcRange && !rangeRegex.test(strainData.thcRange)) {
+            errors.push(t('strainsView.addStrainModal.validation.thcRange'));
+        }
+        if (strainData.cbdRange && !rangeRegex.test(strainData.cbdRange)) {
+            errors.push(t('strainsView.addStrainModal.validation.cbdRange'));
+        }
 
         if (errors.length > 0) {
             addNotification(errors.join(' '), 'error');
@@ -208,6 +218,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
                                 <Input label={t('strainsView.addStrainModal.floweringTimeRange')} value={strainData.floweringTimeRange || ''} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
                                 <Select label={t('strainsView.table.level')} value={strainData.agronomic?.difficulty} onChange={(e) => handleChange('agronomic.difficulty', e.target.value)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
                                 <Select label={t('strainsView.addStrainModal.yield')} value={strainData.agronomic?.yield} onChange={(e) => handleChange('agronomic.yield', e.target.value)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
+                                <Select label={t('strainsView.addStrainModal.height')} value={strainData.agronomic?.height} onChange={(e) => handleChange('agronomic.height', e.target.value)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
                                 <Input label={t('strainsView.strainModal.yieldIndoor')} value={strainData.agronomic?.yieldIndoor || ''} onChange={(e) => handleChange('agronomic.yieldIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}/>
                                 <Input label={t('strainsView.strainModal.yieldOutdoor')} value={strainData.agronomic?.yieldOutdoor || ''} onChange={(e) => handleChange('agronomic.yieldOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}/>
                                 <Input label={t('strainsView.strainModal.heightIndoor')} value={strainData.agronomic?.heightIndoor || ''} onChange={(e) => handleChange('agronomic.heightIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}/>

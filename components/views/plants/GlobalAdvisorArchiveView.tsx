@@ -44,7 +44,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
             <div className="relative mb-4">
                 <input
                     type="text"
-                    placeholder={t('strainsView.searchPlaceholder')}
+                    placeholder={t('strainsView.tips.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -58,8 +58,8 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                         <Card key={res.id} className="bg-slate-800">
                             <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
-                                <div className="text-xs text-slate-400 text-right">
-                                    <p>{res.plantName}</p>
+                                <div className="text-xs text-slate-400 text-right flex-shrink-0 ml-2">
+                                    <p className="font-semibold">{res.plantName}</p>
                                     <p>{new Date(res.createdAt).toLocaleDateString()}</p>
                                 </div>
                             </div>
@@ -68,6 +68,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                     ))
                 ) : (
                     <div className="text-center py-10 text-slate-500">
+                        <PhosphorIcons.Archive className="w-12 h-12 mx-auto text-slate-500 mb-2"/>
                         <h3 className="font-semibold">{t('knowledgeView.archive.empty')}</h3>
                     </div>
                 )}

@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-// Fix: Corrected type imports to include `Strain` and `GrowSetup`
 import { Plant, View, Strain, GrowSetup } from '@/types';
-// Fix: Replaced multiple hook imports with a single import from the central Zustand store.
 import { useAppStore } from '@/stores/useAppStore';
 import { PlantCard } from '@/components/views/plants/PlantSlot';
 import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
@@ -14,7 +12,7 @@ import { Card } from '@/components/common/Card';
 import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-
+import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots, selectSettings } from '@/stores/selectors';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -30,52 +28,46 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     );
 };
 
-// Fix: Removed `setActiveView` prop as it's now handled by the store.
 export const PlantsView: React.FC = () => {
-    // Fix: Get state and actions from the central Zustand store.
-    const { plants, waterAllPlants, advanceDay, updatePlantState, startNewPlant, settings } = useAppStore(state => ({
-        plants: state.plants,
+    const { waterAllPlants, advanceDay, updatePlantState, startNewPlant } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
         advanceDay: state.advanceDay,
         updatePlantState: state.updatePlantState,
         startNewPlant: state.startNewPlant,
-        settings: state.settings,
     }));
-    const { t } = useTranslations();
-    // Fix: Get selectedPlantId state management from the store
-    const selectedPlantId = useAppStore(state => state.selectedPlantId);
-    const setSelectedPlantId = useAppStore(state => state.setSelectedPlantId);
+    const settings = useAppStore(selectSettings);
+    const plantSlots = useAppStore(selectPlantSlots);
+    const plantsRecord = useAppStore(state => state.plants);
 
-    // State for the new inline selector flow
+    const { t } = useTranslations();
+    const selectedPlantId = useAppStore(selectSelectedPlantId);
+    const setSelectedPlantId = useAppStore(state => state.setSelectedPlantId);
+    
     const [selectingSlotIndex, setSelectingSlotIndex] = useState<number | null>(null);
     const [strainForSetup, setStrainForSetup] = useState<Strain | null>(null);
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
     useEffect(() => {
         if (settings.simulationSettings.autoAdvance) {
-            updatePlantState(); // Initial update
+            updatePlantState();
             const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed];
             const intervalId = setInterval(() => {
                 updatePlantState();
-            }, speedInMinutes * 60 * 1000); 
+            }, speedInMinutes * 60 * 1000);
             return () => clearInterval(intervalId);
         }
     }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, updatePlantState]);
 
-    const activePlants = useMemo(() => plants.filter((p): p is Plant => p !== null), [plants]);
-
-    const allTasks = useMemo(() => activePlants.flatMap(p => 
-        p.tasks.filter(t => !t.isCompleted).map(task => ({ ...task, plantId: p.id, plantName: p.name }))
-    ), [activePlants]);
-    
-    const allProblems = useMemo(() => activePlants.flatMap(p => 
-        p.problems.map(problem => ({...problem, plantId: p.id, plantName: p.name}))
-    ), [activePlants]);
+    const activePlants = useAppStore(selectActivePlants);
+    const allTasks = useAppStore(selectOpenTasksSummary);
+    const allProblems = useAppStore(selectActiveProblemsSummary);
     
     const selectedPlant = useMemo(() => {
         if (!selectedPlantId) return null;
         return activePlants.find(p => p.id === selectedPlantId) || null;
     }, [selectedPlantId, activePlants]);
+    
+    const plants = useMemo(() => plantSlots.map(id => id ? plantsRecord[id] : null), [plantSlots, plantsRecord]);
 
     const handleStartGrow = (setup: GrowSetup) => {
         if (!strainForSetup || selectingSlotIndex === null) return;

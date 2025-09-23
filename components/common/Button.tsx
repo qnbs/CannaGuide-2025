@@ -1,8 +1,6 @@
 import React from 'react';
 
 type ButtonOwnProps<E extends React.ElementType> = {
-    // FIX: Made children optional to resolve widespread TypeScript errors where the
-    // children prop was not being correctly inferred for this polymorphic component.
     children?: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'danger';
     size?: 'sm' | 'base' | 'lg';
@@ -22,7 +20,7 @@ export const Button = <E extends React.ElementType = typeof defaultElement>({
     as,
     ...props
 }: ButtonProps<E>) => {
-    // FIX: Using `any` here to resolve a complex TypeScript generic inference issue
+    // Using `any` here to resolve a complex TypeScript generic inference issue
     // with polymorphic components. This allows `as` prop to work with different
     // element types (like 'label' or other components) without causing type errors
     // in various call sites across the app.

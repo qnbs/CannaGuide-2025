@@ -11,10 +11,6 @@ let t: TFunction = (key: string) => key;
 const getT = () => t;
 
 export type AppState = SettingsSlice & DataSlice & UserSlice & UISlice & AppSlice;
-// FIX: The StoreSet type was too restrictive for use with the immer middleware.
-// The updater function passed to `set` with immer can return `void` after mutating the draft state.
-// Added `| void` to the return type of the updater function to align with immer's behavior
-// and resolve TypeScript errors across all store slices.
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
 

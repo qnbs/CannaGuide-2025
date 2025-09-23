@@ -12,7 +12,7 @@ import { Card } from '@/components/common/Card';
 import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-import { selectActivePlants, selectPlantById, selectPlantSlots, selectPlantsRecord, selectSelectedPlantId, selectSettings } from '@/stores/selectors';
+import { selectActivePlants, selectPlantById, selectPlantSlots, selectPlantsRecord, selectSelectedPlantId, selectSettings, selectOpenTasksSummary, selectActiveProblemsSummary } from '@/stores/selectors';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -43,6 +43,9 @@ export const PlantsView: React.FC = () => {
     const { t } = useTranslations();
     const selectedPlantId = useAppStore(selectSelectedPlantId);
     const setSelectedPlantId = useAppStore(state => state.setSelectedPlantId);
+    
+    const allTasks = useAppStore(selectOpenTasksSummary);
+    const allProblems = useAppStore(selectActiveProblemsSummary);
 
     const [selectingSlotIndex, setSelectingSlotIndex] = useState<number | null>(null);
     const [strainForSetup, setStrainForSetup] = useState<Strain | null>(null);
@@ -56,14 +59,6 @@ export const PlantsView: React.FC = () => {
             return () => clearInterval(intervalId);
         }
     }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, updatePlantState]);
-
-    const allTasks = useMemo(() => activePlants.flatMap(p => 
-        p.tasks.filter(t => !t.isCompleted).map(task => ({ ...task, plantId: p.id, plantName: p.name }))
-    ), [activePlants]);
-    
-    const allProblems = useMemo(() => activePlants.flatMap(p => 
-        p.problems.map(problem => ({...problem, plantId: p.id, plantName: p.name}))
-    ), [activePlants]);
     
     const selectedPlant = useAppStore(selectPlantById(selectedPlantId));
 

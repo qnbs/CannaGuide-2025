@@ -60,7 +60,7 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
     knowledgeProgress: {},
 
     startNewPlant: (strain, setup, slotIndex) => {
-        const { plantSlots, plants } = get();
+        const { plantSlots } = get();
         const emptySlotIndex = slotIndex !== undefined && plantSlots[slotIndex] === null ? slotIndex : plantSlots.findIndex(p => p === null);
 
         if (emptySlotIndex === -1) {
@@ -76,63 +76,65 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
             stressLevel: 0, problems: [], journal: [], tasks: [], history: [{ day: 0, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 }, stressLevel: 0, height: 0 }],
         };
         
-        const newPlantSlots = [...plantSlots];
-        newPlantSlots[emptySlotIndex] = newPlantId;
-        const newPlants = { ...plants, [newPlantId]: newPlant };
-        
-        set({ plants: newPlants, plantSlots: newPlantSlots });
+        set(state => {
+            state.plantSlots[emptySlotIndex] = newPlantId;
+            state.plants[newPlantId] = newPlant;
+        });
 
         get().addJournalEntry(newPlant.id, { type: 'SYSTEM', notes: t()('plantsView.journal.startGrowing', { name: newPlant.name }) });
         get().addNotification(t()('plantsView.notifications.startSuccess', { name: newPlant.name }), 'success');
         return true;
     },
     
-    updatePlantState: () => {
-        // This is called by the simulation interval. It advances one day per tick.
-        get().advanceDay();
-    },
+    updatePlantState: () => get().advanceDay(),
 
     addJournalEntry: (plantId, entryData) => set(state => {
         const plant = state.plants[plantId];
-        if (!plant) return {};
-        const newEntry: JournalEntry = { ...entryData, id: `${entryData.type}-${Date.now()}`, timestamp: Date.now() };
-        const updatedPlant = { ...plant, journal: [...plant.journal, newEntry] };
+        if (!plant) return;
         
-        // Update vitals based on action
+        const newEntry: JournalEntry = { ...entryData, id: `${entryData.type}-${Date.now()}`, timestamp: Date.now() };
+        plant.journal.push(newEntry);
+        
         if (entryData.type === 'WATERING' && entryData.details?.waterAmount) {
-            updatedPlant.vitals.substrateMoisture = Math.min(100, updatedPlant.vitals.substrateMoisture + (entryData.details.waterAmount / (updatedPlant.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR);
+            plant.vitals.substrateMoisture = Math.min(100, plant.vitals.substrateMoisture + (entryData.details.waterAmount / (plant.growSetup.potSize * SIMULATION_CONSTANTS.ML_PER_LITER)) * SIMULATION_CONSTANTS.WATER_REPLENISH_FACTOR);
         }
         if (entryData.type === 'FEEDING' && entryData.details?.ec) {
-            updatedPlant.vitals.ec = entryData.details.ec;
+            plant.vitals.ec = entryData.details.ec;
         }
         if ((entryData.type === 'WATERING' || entryData.type === 'FEEDING') && entryData.details?.ph) {
-            updatedPlant.vitals.ph = entryData.details.ph;
+            plant.vitals.ph = entryData.details.ph;
         }
-        
-        return { plants: { ...state.plants, [plantId]: updatedPlant } };
     }),
 
     completeTask: (plantId, taskId) => set(state => {
-        const plant = state.plants[plantId];
-        if (!plant) return {};
-        const updatedTasks = plant.tasks.map(t => t.id === taskId ? { ...t, isCompleted: true, completedAt: Date.now() } : t);
-        const updatedPlant = { ...plant, tasks: updatedTasks };
-        return { plants: { ...state.plants, [plantId]: updatedPlant } };
+        const task = state.plants[plantId]?.tasks.find(t => t.id === taskId);
+        if (task) {
+            task.isCompleted = true;
+            task.completedAt = Date.now();
+        }
     }),
 
     waterAllPlants: () => {
         let wateredCount = 0;
-        const newPlants = { ...get().plants };
-        for (const plantId in newPlants) {
-            const p = newPlants[plantId];
+        const plantsToUpdate: Plant[] = [];
+        
+        for (const plantId in get().plants) {
+            const p = get().plants[plantId];
             if (p && p.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD) {
                 wateredCount++;
                 get().addJournalEntry(p.id, { type: 'WATERING', notes: t()('plantsView.actionModals.defaultNotes.watering'), details: { waterAmount: 500, ph: 6.5 }});
-                newPlants[plantId] = { ...p, vitals: { ...p.vitals, substrateMoisture: 100 } };
+                plantsToUpdate.push(p);
             }
         }
+        
         if (wateredCount > 0) {
-            set({ plants: newPlants });
+            set(state => {
+                plantsToUpdate.forEach(p => {
+                    if (state.plants[p.id]) {
+                       state.plants[p.id].vitals.substrateMoisture = 100;
+                    }
+                });
+            });
             get().addNotification(t()('plantsView.notifications.waterAllSuccess', { count: wateredCount }), 'success');
         } else {
             get().addNotification(t()('plantsView.notifications.waterAllNone'), 'info');
@@ -140,26 +142,33 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
     },
 
     advanceDay: () => {
-        const { plants: currentPlants, settings } = get();
-        const newPlantsRecord: Record<string, Plant> = {};
-        
-        Object.values(currentPlants).forEach(plant => {
+        const { settings, plants } = get();
+        const updatedPlants: Record<string, Plant> = {};
+        const allEvents: { plantId: string, events: any[] }[] = [];
+
+        Object.values(plants).forEach(plant => {
             if (!plant) return;
-
             const { updatedPlant, events } = advancePlantOneDay(plant, settings, t());
-            newPlantsRecord[plant.id] = updatedPlant;
-
+            updatedPlants[plant.id] = updatedPlant;
+            if (events.length > 0) allEvents.push({ plantId: plant.id, events });
+        });
+        
+        set(state => {
+            Object.assign(state.plants, updatedPlants);
+        });
+        
+        allEvents.forEach(({ plantId, events }) => {
             events.forEach(event => {
                 if (event.type === 'notification') get().addNotification(event.data.message, event.data.type as NotificationType);
-                if (event.type === 'journal') get().addJournalEntry(plant.id, event.data);
+                if (event.type === 'journal') get().addJournalEntry(plantId, event.data);
                 if (event.type === 'task') {
                     const newTask: Task = { ...event.data, id: `${event.data.title}-${Date.now()}`, isCompleted: false, createdAt: Date.now() };
-                    newPlantsRecord[plant.id].tasks = [...newPlantsRecord[plant.id].tasks, newTask];
+                    set(state => {
+                        state.plants[plantId]?.tasks.push(newTask);
+                    });
                 }
             });
         });
-
-        set({ plants: { ...currentPlants, ...newPlantsRecord } });
     },
 
     resetPlants: () => {
@@ -169,114 +178,80 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
         }
     },
     
-    addUserStrain: (strain) => set(state => ({ userStrains: [...state.userStrains, strain] })),
-    updateUserStrain: (updatedStrain) => set(state => ({ userStrains: state.userStrains.map(s => s.id === updatedStrain.id ? updatedStrain : s) })),
+    addUserStrain: (strain) => set(state => { state.userStrains.push(strain) }),
+    updateUserStrain: (updatedStrain) => set(state => {
+        const index = state.userStrains.findIndex(s => s.id === updatedStrain.id);
+        if (index !== -1) state.userStrains[index] = updatedStrain;
+    }),
     deleteUserStrain: (strainId) => set(state => ({ userStrains: state.userStrains.filter(s => s.id !== strainId) })),
     
     addExport: (newExport, strainIds) => {
-        const savedExport: SavedExport = {
-            ...newExport,
-            id: `export-${Date.now()}`,
-            createdAt: Date.now(),
-            count: strainIds.length,
-            strainIds,
-        };
-        set(state => ({ savedExports: [...state.savedExports, savedExport] }));
+        const savedExport: SavedExport = { ...newExport, id: `export-${Date.now()}`, createdAt: Date.now(), count: strainIds.length, strainIds };
+        set(state => { state.savedExports.push(savedExport) });
         return savedExport;
     },
-    updateExport: (updatedExport) => set(state => ({ savedExports: state.savedExports.map(e => e.id === updatedExport.id ? updatedExport : e) })),
+    updateExport: (updatedExport) => set(state => {
+        const index = state.savedExports.findIndex(e => e.id === updatedExport.id);
+        if (index !== -1) state.savedExports[index] = updatedExport;
+    }),
     deleteExport: (exportId) => set(state => ({ savedExports: state.savedExports.filter(e => e.id !== exportId) })),
     
     addSetup: (setup) => {
-        const newSetup: SavedSetup = {
-            ...setup,
-            id: `setup-${Date.now()}`,
-            createdAt: Date.now(),
-        };
-        set(state => ({ savedSetups: [...state.savedSetups, newSetup] }));
+        const newSetup: SavedSetup = { ...setup, id: `setup-${Date.now()}`, createdAt: Date.now() };
+        set(state => { state.savedSetups.push(newSetup) });
     },
-    updateSetup: (updatedSetup) => set(state => ({ savedSetups: state.savedSetups.map(s => s.id === updatedSetup.id ? updatedSetup : s) })),
+    updateSetup: (updatedSetup) => set(state => {
+        const index = state.savedSetups.findIndex(s => s.id === updatedSetup.id);
+        if (index !== -1) state.savedSetups[index] = updatedSetup;
+    }),
     deleteSetup: (setupId) => set(state => ({ savedSetups: state.savedSetups.filter(s => s.id !== setupId) })),
     
     addArchivedMentorResponse: (response) => {
-        const newResponse: ArchivedMentorResponse = {
-            ...response,
-            id: `mentor-${Date.now()}`,
-            createdAt: Date.now(),
-        };
-        set(state => ({ archivedMentorResponses: [...state.archivedMentorResponses, newResponse] }));
+        const newResponse: ArchivedMentorResponse = { ...response, id: `mentor-${Date.now()}`, createdAt: Date.now() };
+        set(state => { state.archivedMentorResponses.push(newResponse) });
     },
-    updateArchivedMentorResponse: (updatedResponse) => set(state => ({
-        archivedMentorResponses: state.archivedMentorResponses.map(r => r.id === updatedResponse.id ? updatedResponse : r)
-    })),
-    deleteArchivedMentorResponse: (responseId) => set(state => ({
-        archivedMentorResponses: state.archivedMentorResponses.filter(r => r.id !== responseId)
-    })),
+    updateArchivedMentorResponse: (updatedResponse) => set(state => {
+        const index = state.archivedMentorResponses.findIndex(r => r.id === updatedResponse.id);
+        if (index !== -1) state.archivedMentorResponses[index] = updatedResponse;
+    }),
+    deleteArchivedMentorResponse: (responseId) => set(state => ({ archivedMentorResponses: state.archivedMentorResponses.filter(r => r.id !== responseId) })),
     
     addArchivedAdvisorResponse: (plantId, response, query) => {
         const plant = get().plants[plantId];
         if (!plant) return;
-        const newResponse: ArchivedAdvisorResponse = {
-            ...response,
-            id: `advisor-${plantId}-${Date.now()}`,
-            createdAt: Date.now(),
-            plantId: plantId,
-            plantStage: plant.stage,
-            query,
-        };
-        set(state => ({
-            archivedAdvisorResponses: {
-                ...state.archivedAdvisorResponses,
-                [plantId]: [...(state.archivedAdvisorResponses[plantId] || []), newResponse]
-            }
-        }));
+        const newResponse: ArchivedAdvisorResponse = { ...response, id: `advisor-${plantId}-${Date.now()}`, createdAt: Date.now(), plantId, plantStage: plant.stage, query };
+        set(state => {
+            if (!state.archivedAdvisorResponses[plantId]) state.archivedAdvisorResponses[plantId] = [];
+            state.archivedAdvisorResponses[plantId].push(newResponse);
+        });
     },
     updateArchivedAdvisorResponse: (updatedResponse) => set(state => {
         const { plantId } = updatedResponse;
-        if (!state.archivedAdvisorResponses[plantId]) return {};
-        return {
-            archivedAdvisorResponses: {
-                ...state.archivedAdvisorResponses,
-                [plantId]: state.archivedAdvisorResponses[plantId].map(r => r.id === updatedResponse.id ? updatedResponse : r)
-            }
-        };
+        const archive = state.archivedAdvisorResponses[plantId];
+        if (!archive) return;
+        const index = archive.findIndex(r => r.id === updatedResponse.id);
+        if (index !== -1) archive[index] = updatedResponse;
     }),
     deleteArchivedAdvisorResponse: (plantId, responseId) => set(state => {
-        if (!state.archivedAdvisorResponses[plantId]) return {};
-        return {
-            archivedAdvisorResponses: {
-                ...state.archivedAdvisorResponses,
-                [plantId]: state.archivedAdvisorResponses[plantId].filter(r => r.id !== responseId)
-            }
-        };
+        const archive = state.archivedAdvisorResponses[plantId];
+        if (archive) state.archivedAdvisorResponses[plantId] = archive.filter(r => r.id !== responseId);
     }),
 
     addStrainTip: (strain, tip) => {
-        const newTip: SavedStrainTip = {
-            ...tip,
-            id: `tip-${strain.id}-${Date.now()}`,
-            createdAt: Date.now(),
-            strainId: strain.id,
-            strainName: strain.name,
-        };
-        set(state => ({ savedStrainTips: [...state.savedStrainTips, newTip] }));
+        const newTip: SavedStrainTip = { ...tip, id: `tip-${strain.id}-${Date.now()}`, createdAt: Date.now(), strainId: strain.id, strainName: strain.name };
+        set(state => { state.savedStrainTips.push(newTip) });
     },
-    updateStrainTip: (updatedTip) => set(state => ({
-        savedStrainTips: state.savedStrainTips.map(t => t.id === updatedTip.id ? updatedTip : t)
-    })),
-    deleteStrainTip: (tipId) => set(state => ({
-        savedStrainTips: state.savedStrainTips.filter(t => t.id !== tipId)
-    })),
+    updateStrainTip: (updatedTip) => set(state => {
+        const index = state.savedStrainTips.findIndex(t => t.id === updatedTip.id);
+        if (index !== -1) state.savedStrainTips[index] = updatedTip;
+    }),
+    deleteStrainTip: (tipId) => set(state => ({ savedStrainTips: state.savedStrainTips.filter(t => t.id !== tipId) })),
 
     toggleKnowledgeProgressItem: (sectionId, itemId) => set(state => {
-        const sectionProgress = state.knowledgeProgress[sectionId] || [];
-        const newProgress = new Set(sectionProgress);
-        newProgress.has(itemId) ? newProgress.delete(itemId) : newProgress.add(itemId);
-        return {
-            knowledgeProgress: {
-                ...state.knowledgeProgress,
-                [sectionId]: Array.from(newProgress)
-            }
-        };
+        const progress = state.knowledgeProgress[sectionId] || [];
+        const index = progress.indexOf(itemId);
+        if (index > -1) progress.splice(index, 1);
+        else progress.push(itemId);
+        state.knowledgeProgress[sectionId] = progress;
     }),
 });

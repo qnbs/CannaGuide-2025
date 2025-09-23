@@ -9,6 +9,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { strainService } from '@/services/strainService';
 import { useAppStore } from '@/stores/useAppStore';
+import { selectHasAvailableSlots } from '@/stores/selectors';
 
 // --- Sub-components for better structure ---
 
@@ -101,7 +102,6 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         addNotification,
         getNoteForStrain,
         updateNoteForStrain,
-        hasAvailableSlots,
         initiateGrow,
         selectStrain
     } = useAppStore(state => ({
@@ -111,10 +111,10 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         addNotification: state.addNotification,
         getNoteForStrain: (id: string) => state.strainNotes[id] || '',
         updateNoteForStrain: state.updateNoteForStrain,
-        hasAvailableSlots: state.plants.some(p => p === null),
         initiateGrow: state.initiateGrow,
         selectStrain: state.selectStrain,
     }));
+    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
     const onClose = closeDetailModal;
     const modalRef = useFocusTrap(true);
     

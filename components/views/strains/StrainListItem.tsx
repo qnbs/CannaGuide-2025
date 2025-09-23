@@ -69,7 +69,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
             className={`${LIST_GRID_CLASS} glass-pane rounded-lg transition-all duration-200 cursor-pointer hover:!border-primary-500/80 hover:bg-slate-700/50 animate-fade-in-stagger`}
-            style={{ animationDelay: `${index * 30}ms` }}
+            style={{ animationDelay: `${Math.min(index, 10) * 20}ms` }}
         >
             <div className="flex items-center justify-center px-3 py-3">
                 <input
@@ -83,16 +83,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                     className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                 />
             </div>
-            <div className="flex items-center justify-center px-3 py-3">
-                <button
-                    onClick={(e) => handleActionClick(e, () => toggleFavorite(strain.id))}
-                    className={`favorite-btn-glow text-slate-400 hover:text-primary-400 ${isFav ? 'is-favorite' : ''}`}
-                    aria-label={isFav ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
-                    aria-pressed={isFav}
-                >
-                    <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className="w-5 h-5" />
-                </button>
-            </div>
             <div className="min-w-0 px-3 py-3 text-sm">
                 <p className="font-semibold text-slate-100 truncate flex items-center gap-1.5">
                      {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
@@ -104,7 +94,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             {visibleColumns.thc && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>}
             {visibleColumns.cbd && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>}
             {visibleColumns.floweringTime && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-200">{strain.floweringTime} {t('common.units.weeks')}</div>}
-            {visibleColumns.yield && <div className="hidden md:flex items-center px-3 py-3 text-sm text-slate-300">{strain.agronomic.yieldDetails?.indoor || 'N/A'}</div>}
+            {visibleColumns.yield && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-300">{strain.agronomic.yieldDetails?.indoor || 'N/A'}</div>}
             <div className="flex items-center px-3 py-3" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Easy' ? 'text-green-500' : strain.agronomic.difficulty === 'Medium' ? 'text-amber-500' : 'text-red-500'}`} />
@@ -115,7 +105,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             <div className="flex items-center justify-start px-3 py-3">
                 <div className="flex gap-1">
                     <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
-                        <Button variant="secondary" size="sm" className="!p-1.5" onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>
+                        <Button variant="secondary" size="sm" className={`!p-1.5 ${hasAvailableSlots ? 'animate-pulse' : ''}`} onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>
                             <PhosphorIcons.Plant className="w-4 h-4" />
                             <span className="sr-only">{t('strainsView.startGrowing')}</span>
                         </Button>

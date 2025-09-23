@@ -2,16 +2,43 @@ import { Strain } from '@/types';
 
 export const strains: Strain[] = [
     {
+        id: 'xj-13',
+        name: 'XJ-13',
+        type: 'Hybrid',
+        thc: 22,
+        cbd: 1,
+        thcRange: '20-24%',
+        cbdRange: '<1%',
+        floweringTime: 8.5,
+        floweringTimeRange: '8-9',
+        typeDetails: 'Sativa 50% / Indica 50%',
+        genetics: 'Jack Herer x G13 Haze',
+        agronomic: {
+            difficulty: 'Medium',
+            yield: 'Medium',
+            height: 'Tall',
+            yieldDetails: { indoor: '400-500 g/m²', outdoor: '~550 g/plant' },
+            heightDetails: { indoor: '150-200 cm', outdoor: 'up to 2.2 m' },
+        },
+    },
+    {
         id: 'xanadu',
         name: 'Xanadu',
         type: 'Hybrid',
         thc: 20,
         cbd: 1,
+        thcRange: '18-22%',
+        cbdRange: '<1%',
         floweringTime: 9,
+        floweringTimeRange: '9',
+        typeDetails: 'Sativa 60% / Indica 40%',
+        genetics: 'Unknown',
         agronomic: {
             difficulty: 'Medium',
             yield: 'Medium',
-            height: 'Tall',
+            height: 'Medium',
+            yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
+            heightDetails: { indoor: 'Medium', outdoor: 'Medium' },
         },
     },
     {
@@ -23,10 +50,15 @@ export const strains: Strain[] = [
         thcRange: '20-26%',
         cbdRange: '<1%',
         floweringTime: 9,
+        floweringTimeRange: '8-10',
+        typeDetails: 'Hybrid 50% / 50%',
+        genetics: 'Kush Mints x Zkittlez',
         agronomic: {
             difficulty: 'Medium',
             yield: 'High',
             height: 'Medium',
+            yieldDetails: { indoor: '500-600 g/m²', outdoor: '~650 g/plant' },
+            heightDetails: { indoor: 'Medium', outdoor: 'Medium' },
         },
     }
 ];

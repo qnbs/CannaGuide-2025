@@ -1,6 +1,6 @@
 export const strains = {
   "dance-world": {
-    "description": "Eine CBD-reiche Sorte mit einem ausgewogenen THC- und CBD-Gehalt. Die Wirkung ist erhebend und funktional, ideal zur Linderung von Schmerzen und Angstzuständen, ohne starke Psychoaktivität.",
+    "description": "Eine CBD-reiche Sorte mit einem ausgewogenen THC- und CBD-Gehalt. Die Wirkung ist erhebend und funktional, ideal zur Linderung von Schmerzen und Angstzuständen ohne starke psychoaktive Effekte.",
     "typeDetails": "Sativa 75% / Indica 25%",
     "genetics": "Dance Hall x Juanita la Lagrimosa",
     "aromas": [
@@ -72,7 +72,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
   },
   "death-star": {
-    "description": "Eine indica-dominante Sorte mit einem stechenden, erdigen und dieselartigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend, ideal für den Abendgebrauch.",
+    "description": "Eine indica-dominante Sorte mit einem scharfen, erdigen und dieselartigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend, ideal für den Abendgebrauch.",
     "typeDetails": "Indica 75% / Sativa 25%",
     "genetics": "Sensi Star x Sour Diesel",
     "aromas": [
@@ -92,7 +92,7 @@ export const strains = {
   "diablo-og": {
     "description": "Eine sativa-dominante Sorte mit einem fruchtigen, würzigen Aroma. Die Wirkung ist erhebend, energetisierend und kreativ, ideal für den Tagesgebrauch.",
     "typeDetails": "Sativa 60% / Indica 40%",
-    "genetics": "Grapefruit x Blueberry x Südafrikanische Sativa",
+    "genetics": "Grapefruit x Blueberry x South African Sativa",
     "aromas": [
       "Fruchtig",
       "Würzig",
@@ -108,7 +108,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel bis Hoch (bis 2 m)" }
   },
   "diamond-og": {
-    "description": "Eine indica-dominante Sorte, die für ihre harzigen, 'diamant'-artigen Knospen bekannt ist. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch.",
+    "description": "Eine indica-dominante Sorte, bekannt für ihre harzigen, 'diamantartigen' Knospen. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch.",
     "typeDetails": "Indica 75% / Sativa 25%",
     "genetics": "Unbekannte OG Kush Kreuzung",
     "aromas": [
@@ -125,8 +125,17 @@ export const strains = {
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/Pflanze" },
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
   },
+  "diesel": {
+    "description": "Eine klassische Sativa-Hybride, bekannt für ihr starkes, dieselartiges Aroma. Sie bietet eine erhebende und energetisierende Wirkung, die ideal für den Tagesgebrauch ist.",
+    "typeDetails": "Sativa 60% / Indica 40%",
+    "genetics": "Afghani x Mexican Sativa",
+    "aromas": ["Diesel", "Scharf", "Erdig", "Zitrus"],
+    "dominantTerpenes": ["Myrcen", "Limonen", "Caryophyllen"],
+    "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/Pflanze" },
+    "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch" }
+  },
   "divine-gelato": {
-    "description": "Eine ausgewogene Hybride mit einem süßen, cremigen und fruchtigen Aroma. Die Wirkung ist stark, euphorisch und entspannend, ideal für den ganzen Tag.",
+    "description": "Eine ausgewogene Hybride mit einem süßen, cremigen und fruchtigen Aroma. Die Wirkung ist stark, euphorisch und entspannend, ideal für den ganztägigen Gebrauch.",
     "typeDetails": "Hybrid 50% / 50%",
     "genetics": "Gelato #33 x OG Kush Breath",
     "aromas": [
@@ -252,7 +261,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
   },
   "double-dream": {
-    "description": "Eine sativa-dominante Sorte mit einem süßen, blumigen Aroma. Die Wirkung ist erhebend, verträumt und entspannend, ideal für den Tagesgebrauch.",
+    "description": "Eine sativa-dominante Sorte mit einem süßen, blumigen Aroma. Die Wirkung ist erhebend, traumhaft und entspannend, ideal für den Tagesgebrauch.",
     "typeDetails": "Sativa 70% / Indica 30%",
     "genetics": "Blue Dream x Dream Star",
     "aromas": [
@@ -270,7 +279,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel bis Hoch (bis 2 m)" }
   },
   "dr-grinspoon": {
-    "description": "Eine reine Sativa-Heirloom-Sorte, die für ihre einzigartige, perlenartige Knospenstruktur bekannt ist. Die Wirkung ist stark, zerebral, energetisierend und langanhaltend. Benannt nach dem Cannabis-Forscher Dr. Lester Grinspoon.",
+    "description": "Eine reine Sativa-Heirloom-Sorte, bekannt für ihre einzigartige, perlenartige Knospenstruktur. Die Wirkung ist stark, zerebral, energetisierend und langanhaltend. Benannt nach dem Cannabis-Forscher Dr. Lester Grinspoon.",
     "typeDetails": "Sativa 100%",
     "genetics": "Heirloom Sativa",
     "aromas": [
@@ -306,7 +315,7 @@ export const strains = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" }
   },
   "ducksfoot": {
-    "description": "Eine einzigartige Sativa-Sorte, die für ihre entenfußartigen Blätter bekannt ist, was sie unauffällig macht. Die Wirkung ist erhebend, energetisierend und kreativ.",
+    "description": "Eine einzigartige Sativa-Sorte, bekannt für ihre Schwimmhaut-ähnlichen, entenfußartigen Blätter, die sie unauffällig machen. Die Wirkung ist erhebend, energetisierend und kreativ.",
     "typeDetails": "Sativa 80% / Indica 20%",
     "genetics": "Australische Sativa",
     "aromas": [
@@ -323,8 +332,17 @@ export const strains = {
     "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/Pflanze" },
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 1.8 m)" }
   },
+  "dumpster": {
+    "description": "Eine potente Hybride mit einem starken, skunkigen und fruchtigen Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Northern Lights #5 x G-13",
+    "aromas": ["Skunk", "Erdig", "Scharf", "Süß"],
+    "dominantTerpenes": ["Myrcen", "Terpinolen", "Caryophyllen"],
+    "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/Pflanze" },
+    "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel" }
+  },
   "durban-poison": {
-    "description": "Eine reine Sativa-Landrasse aus Südafrika, bekannt für ihre süße, anisartige Aroma und ihre klare, energetisierende und erhebende Wirkung. Ideal für den Tagesgebrauch.",
+    "description": "Eine reine Sativa-Landrasse aus Südafrika, bekannt für ihr süßes, anisartiges Aroma und ihre klare, energetisierende und erhebende Wirkung. Ideal für den Tagesgebrauch, um produktiv zu bleiben.",
     "typeDetails": "Sativa 100%",
     "genetics": "Südafrikanische Landrasse",
     "aromas": [

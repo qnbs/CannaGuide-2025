@@ -1,5 +1,6 @@
 import { Strain } from '@/types';
 import { allStrainsData } from '@/data/strains/index';
+import { dbService } from '@/services/dbService';
 
 // Define the TFunction type locally to avoid circular dependency issues
 // and keep the service self-contained.
@@ -86,21 +87,43 @@ class StrainService {
    * Initializes the service by processing, translating, caching data, and building the search index.
    * Must be called once before any other methods are used.
    * @param t The translation function from the app's context.
+   * @param lang The current language code ('en' or 'de').
    */
-  public async init(t: TFunction): Promise<void> {
-    if (this.isInitialized) {
-      // Re-initialize if language changes, for example.
-      // A more complex app might compare language codes.
-      this.strainsCache = this.processAndTranslateStrains(t);
-      this.buildSearchIndex(this.strainsCache);
-      return;
-    }
+  public async init(t: TFunction, lang: string): Promise<void> {
+    if (this.isInitialized) return;
     
-    const translatedStrains = this.processAndTranslateStrains(t);
-    translatedStrains.sort((a, b) => a.name.localeCompare(b.name)); // Default sort
-    this.strainsCache = translatedStrains;
-    this.buildSearchIndex(this.strainsCache);
-    this.isInitialized = true;
+    try {
+      const metadata = await dbService.getMetadata('strain_cache_metadata');
+      const dbCount = await dbService.getStrainsCount();
+      
+      let strainsToCache: Strain[] = [];
+
+      // If DB is populated and for the correct language, use it.
+      if (metadata && metadata.lang === lang && dbCount > 0) {
+        strainsToCache = await dbService.getAllStrains();
+      } else {
+        // Otherwise, process from source, and update DB.
+        console.log(`[StrainService] Cache miss or language change. Populating IndexedDB for language: ${lang}.`);
+        const translatedStrains = this.processAndTranslateStrains(t);
+        await dbService.addStrains(translatedStrains);
+        await dbService.setMetadata({ key: 'strain_cache_metadata', lang: lang });
+        strainsToCache = translatedStrains;
+      }
+
+      strainsToCache.sort((a, b) => a.name.localeCompare(b.name));
+      this.strainsCache = strainsToCache;
+      this.buildSearchIndex(this.strainsCache);
+      this.isInitialized = true;
+
+    } catch (error) {
+      console.error("Error initializing StrainService from IndexedDB, falling back to static data:", error);
+      // Fallback to in-memory processing if IndexedDB fails
+      const translatedStrains = this.processAndTranslateStrains(t);
+      translatedStrains.sort((a, b) => a.name.localeCompare(b.name));
+      this.strainsCache = translatedStrains;
+      this.buildSearchIndex(this.strainsCache);
+      this.isInitialized = true;
+    }
   }
 
   /**

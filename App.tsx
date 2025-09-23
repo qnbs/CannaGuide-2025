@@ -75,11 +75,11 @@ const AppContent: React.FC = () => {
     
     useEffect(() => {
         if (t) {
-            strainService.init(t);
+            strainService.init(t, settings.language);
             // Initialize the Zustand store with the translation function
             useAppStore.getState().init(t);
         }
-    }, [t]);
+    }, [t, settings.language]);
 
     useEffect(() => {
         let notificationId: number | null = null;

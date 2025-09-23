@@ -31,7 +31,7 @@ const AccordionItem: React.FC<{
             <h3 className="text-base font-semibold">
                 <button
                     type="button"
-                    className="flex items-center justify-between w-full p-4 font-medium text-left text-slate-200 hover:bg-slate-800/50"
+                    className="flex items-center justify-between w-full p-4 font-medium text-left text-slate-100 hover:bg-slate-800/50"
                     onClick={onToggle}
                     aria-expanded={isOpen}
                 >
@@ -55,7 +55,7 @@ const SectionCard: React.FC<{ icon: React.ReactNode, title: string, children: Re
     <Card id={id} className="scroll-mt-20">
         <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 text-primary-400">{icon}</div>
-            <h2 className="text-2xl font-bold font-display text-slate-100">{title}</h2>
+            <h2 className="text-2xl font-bold font-display text-primary-400">{title}</h2>
         </div>
         <div className="pl-11">{children}</div>
     </Card>

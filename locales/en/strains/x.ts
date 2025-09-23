@@ -1,38 +1,11 @@
 export const strains = {
-  "xanadu": {
-    "description": "A sativa-dominant strain with a sweet, fruity, and floral aroma. The effect is uplifting, creative, and energizing.",
-    "typeDetails": "Sativa 60% / Indica 40%",
-    "genetics": "Unknown",
-    "aromas": [
-      "Sweet",
-      "Fruity",
-      "Floral",
-      "Tropical"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Limonene",
-      "Caryophyllene"
-    ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
-  },
-  "xeno": {
-    "description": "A balanced hybrid with a sweet, fruity, and gassy aroma. The effect is strong, euphoric, and relaxing.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Kush Mints x Zkittlez",
-    "aromas": [
-      "Sweet",
-      "Fruity",
-      "Diesel",
-      "Candy"
-    ],
-    "dominantTerpenes": [
-      "Limonene",
-      "Caryophyllene",
-      "Myrcene"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
+  "xj-13": {
+    "description": "A sativa-dominant hybrid with a strong lemon and pine aroma. The effect is uplifting, creative, and energizing, ideal for daytime use.",
+    "typeDetails": "Sativa 50% / Indica 50%",
+    "genetics": "Jack Herer x G13 Haze",
+    "aromas": ["Lemon", "Pine", "Spicy", "Sweet"],
+    "dominantTerpenes": ["Terpinolene", "Caryophyllene", "Pinene"],
+    "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/plant" },
+    "heightDetails": { "indoor": "150-200 cm", "outdoor": "up to 2.2 m" }
   }
-}
+};

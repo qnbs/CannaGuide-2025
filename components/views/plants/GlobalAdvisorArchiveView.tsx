@@ -15,13 +15,17 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
     }));
     const [searchTerm, setSearchTerm] = useState('');
 
-    const allAdvice = useMemo(() => {
+    // FIX: Explicitly type the return value of useMemo to ensure `allAdvice` is
+    // correctly typed, preventing downstream type errors where it might be inferred as 'unknown'.
+    const allAdvice = useMemo<(ArchivedAdvisorResponse & { plantName: string })[]>(() => {
         const plantMap = new Map(plants.filter((p): p is Plant => p !== null).map(p => [p.id, p.name]));
         
-        // Fix: Use type assertion on initial value for reduce to fix type inference issue.
+        // Fix: Replaced the complex reduce operation with Array.prototype.flat() to simplify the code
+        // and resolve a TypeScript error where the result of reduce was being inferred as 'unknown'.
         return Object.values(archive)
-            .reduce((acc, val) => acc.concat(val), [] as ArchivedAdvisorResponse[])
-            .map(advice => ({
+            .flat()
+            // FIX: Explicitly typing `advice` as `ArchivedAdvisorResponse` fixes type inference issues after `flat()`.
+            .map((advice: ArchivedAdvisorResponse) => ({
                 ...advice,
                 plantName: plantMap.get(advice.plantId) || t('plantsView.archivedPlant')
             }))
@@ -58,7 +62,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
 
             <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                 {filteredAdvice.length > 0 ? (
-                    filteredAdvice.map((res: ArchivedAdvisorResponse & { plantName: string }) => (
+                    filteredAdvice.map((res) => (
                         <Card key={res.id} className="bg-slate-800">
                             <div className="flex justify-between items-start">
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>

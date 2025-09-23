@@ -10,9 +10,10 @@ export const useFocusTrap = (isOpen: boolean) => {
         if (isOpen && containerRef.current) {
             previouslyFocusedElement.current = document.activeElement as HTMLElement;
 
+            // FIX: Explicitly type querySelectorAll to return HTMLElements.
             const focusableElements = Array.from(
-                containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
-            );
+                containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS)
+            ) as HTMLElement[];
 
             if (focusableElements.length > 0) {
                 // Delay focus to allow for modal transitions
@@ -25,9 +26,10 @@ export const useFocusTrap = (isOpen: boolean) => {
             const handleKeyDown = (e: KeyboardEvent) => {
                 if (e.key !== 'Tab' || !containerRef.current) return;
 
+                // FIX: Explicitly type querySelectorAll to return HTMLElements.
                 const focusableContent = Array.from(
-                    containerRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
-                );
+                    containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS)
+                ) as HTMLElement[];
 
                 if (focusableContent.length === 0) {
                     e.preventDefault();

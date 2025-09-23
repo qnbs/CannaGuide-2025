@@ -1,5 +1,3 @@
-
-
 # 🌿 CannaGuide 2025
 
 **Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle.**
@@ -125,7 +123,7 @@ This application was developed entirely with **Google's AI Studio**, an innovati
 This project is also fully open source. You are welcome to review the source code, report issues, or contribute to development on GitHub.
 
 *   **See how it was made or fork the project in AI Studio:** [https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-](https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-)
-*   **Contribute or view the source code on GitHub:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
+*   **Contribute or view the source code on GitHub:** [https://github.com/qnbs/CannaGuide-2025](https://github.com/qnbs/CannaGuide-2025)
 
 ---
 
@@ -282,7 +280,7 @@ Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer i
 Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
 
 *   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-](https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-)
-*   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/Cannabis-Grow-Guide-2025](https://github.com/qnbs/Cannabis-Grow-Guide-2025)
+*   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/CannaGuide-2025](https://github.com/qnbs/CannaGuide-2025)
 
 ---
 

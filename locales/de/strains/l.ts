@@ -79,5 +79,44 @@ export const strains = {
     "dominantTerpenes": ["Myrcen", "Limonen", "Pinen"],
     "yieldDetails": { "indoor": "600-700 g/m²", "outdoor": "~800 g/Pflanze" },
     "heightDetails": { "indoor": "Kurz", "outdoor": "Mittel (bis 1.5m)" }
+  },
+  "la-cake": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, kuchenartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "la-kush": {
+    "description": "Eine ausgewogene Hybride mit einem erdigen, kiefernartigen Aroma. Die Wirkung ist entspannend und euphorisch, ideal für den ganzen Tag."
+  },
+  "lambs-bread": {
+    "description": "Eine berühmte Sativa-Landrasse aus Jamaika, angeblich die Lieblingssorte von Bob Marley. Die Wirkung ist erhebend, energetisierend und kreativ."
+  },
+  "larry-og": {
+    "description": "Eine indica-dominante Sorte mit einem starken Zitronen- und Kiefernaroma. Die Wirkung ist entspannend und fröhlich, ideal für den Abendgebrauch."
+  },
+  "lava-cake": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, schokoladigen und minzigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "legend-orange-apricot": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen, fruchtigen Aroma von Orangen und Aprikosen. Die Wirkung ist erhebend, energetisierend und kreativ."
+  },
+  "lemon-berry": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen, fruchtigen Aroma von Zitronen und Beeren. Die Wirkung ist erhebend, energetisierend und sozial."
+  },
+  "lemon-pepper": {
+    "description": "Eine sativa-dominante Sorte mit einem würzigen, pfeffrigen Zitronenaroma. Die Wirkung ist erhebend, energetisierend und kreativ."
+  },
+  "lemon-thai": {
+    "description": "Eine sativa-dominante Sorte mit einem starken Zitronen- und Minzaroma. Die Wirkung ist erhebend, kreativ und energetisierend."
+  },
+  "lemon-tree": {
+    "description": "Eine ausgewogene Hybride mit einem starken, frischen Zitronenaroma. Die Wirkung ist erhebend, entspannend und glücklich, ideal für den ganzen Tag."
+  },
+  "lemonchello": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen, zitronigen Aroma, das an den italienischen Likör erinnert. Die Wirkung ist erhebend, sozial und entspannend."
+  },
+  "london-pound-cake": {
+    "description": "Eine indica-dominante Sorte mit einem süßen, beerenartigen und traubenartigen Aroma. Die Wirkung ist stark, entspannend und beruhigend, ideal für den Abendgebrauch."
+  },
+  "lowryder": {
+    "description": "Die ursprüngliche Autoflowering-Sorte, die die Welt des Cannabisanbaus revolutionierte. Sie ist klein, schnell und diskret, mit einer milden, entspannenden Wirkung."
   }
 }

@@ -1,8 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Strain, View, SortDirection, AIResponse, GrowSetup, StrainType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
-// FIX: Import `defaultAdvancedFilters` to reset the temporary filter state correctly.
-import { useStrainFilters, SortKey, defaultAdvancedFilters } from '@/hooks/useStrainFilters';
+import { useStrainFilters, SortKey } from '@/hooks/useStrainFilters';
 import { useAppStore } from '@/stores/useAppStore';
 import { strainService } from '@/services/strainService';
 import { exportService } from '@/services/exportService';
@@ -128,6 +127,11 @@ const StrainsViewContent: React.FC = () => {
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(true);
 
+    // --- Quick Filter State ---
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showFavorites, setShowFavorites] = useState(false);
+    const [typeFilter, setTypeFilter] = useState<Set<StrainType>>(new Set());
+
     useEffect(() => {
         setIsLoading(true);
         strainService.getAllStrains().then(strains => {
@@ -153,14 +157,33 @@ const StrainsViewContent: React.FC = () => {
     }, [activeTab, allStrains, userStrains, favoriteIds]);
 
     const {
-        sortedAndFilteredStrains, filterControls, filterState, isAdvancedFilterModalOpen, setIsAdvancedFilterModalOpen,
-        tempFilterState, setTempFilterState, previewFilteredStrains, openAdvancedFilterModal, handleApplyAdvancedFilters,
-        resetAdvancedFilters, activeFilterCount
+        sort, handleSort,
+        isDrawerOpen, openDrawer, closeAndApply, closeAndDiscard,
+        draftFilters, setDraftFilters,
+        strainsForDisplay, previewCount,
+        resetAllFilters, activeFilterCount
     } = useStrainFilters(strainsToDisplay, favoriteIds, {
         key: settings.strainsViewSettings.defaultSortKey as any, direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
-    });
+    }, { searchTerm, showFavorites, typeFilter });
+
+    const handleClearAllFilters = () => {
+        resetAllFilters();
+        setShowFavorites(false);
+        setSearchTerm('');
+        setTypeFilter(new Set());
+    };
     
-    const handleToggleAll = () => setSelectedIds(prev => prev.size === sortedAndFilteredStrains.length ? new Set() : new Set(sortedAndFilteredStrains.map(s => s.id)));
+    const handleToggleTypeFilter = (type: StrainType) => {
+        setTypeFilter(prev => {
+            const newSet = new Set(prev);
+            newSet.has(type) ? newSet.delete(type) : newSet.add(type);
+            return newSet;
+        });
+    };
+
+    const isAnyFilterActive = searchTerm || showFavorites || typeFilter.size > 0 || activeFilterCount > 0;
+
+    const handleToggleAll = () => setSelectedIds(prev => prev.size === strainsForDisplay.length ? new Set() : new Set(strainsForDisplay.map(s => s.id)));
     const handleToggleSelection = useCallback((id: string) => setSelectedIds(prev => { const newSet = new Set(prev); newSet.has(id) ? newSet.delete(id) : newSet.add(id); return newSet; }), []);
 
     const handleExport = (source: 'selected' | 'favorites' | 'filtered' | 'all', format: 'pdf' | 'txt' | 'csv' | 'json') => {
@@ -169,7 +192,7 @@ const StrainsViewContent: React.FC = () => {
         switch(source) {
             case 'selected': strainsToExport = sourceStrains.filter(s => selectedIds.has(s.id)); break;
             case 'favorites': strainsToExport = sourceStrains.filter(s => favoriteIds.has(s.id)); break;
-            case 'filtered': strainsToExport = sortedAndFilteredStrains; break;
+            case 'filtered': strainsToExport = strainsForDisplay; break;
             case 'all': strainsToExport = strainsToDisplay; break;
         }
         if (strainsToExport.length === 0) { addNotification(t('common.noDataToExport'), 'error'); return; }
@@ -203,17 +226,16 @@ const StrainsViewContent: React.FC = () => {
     ];
     
     const SortIndicator: React.FC<{ sortKey: SortKey }> = ({ sortKey }) => {
-        if (filterState.sort.key !== sortKey) return <div className="w-4 h-4 opacity-20"><PhosphorIcons.ArrowUp /></div>;
-        return filterState.sort.direction === 'asc' ? <PhosphorIcons.ArrowUp className="w-4 h-4" /> : <PhosphorIcons.ArrowDown className="w-4 h-4" />;
+        if (sort.key !== sortKey) return <div className="w-4 h-4 opacity-20"><PhosphorIcons.ArrowUp /></div>;
+        return sort.direction === 'asc' ? <PhosphorIcons.ArrowUp className="w-4 h-4" /> : <PhosphorIcons.ArrowDown className="w-4 h-4" />;
     };
 
     return (
         <div className="space-y-4">
             {selectedStrain && <StrainDetailModal strain={selectedStrain} onSaveTip={handleSaveTip} />}
             {isAddModalOpen && <AddStrainModal isOpen={isAddModalOpen} onClose={actions.closeAddModal} onAddStrain={(s) => { addUserStrain(s); actions.closeAddModal(); }} onUpdateStrain={(s) => { updateUserStrain(s); actions.closeAddModal(); }} strainToEdit={strainToEdit} />}
-            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={sortedAndFilteredStrains.length} totalCount={strainsToDisplay.length} />}
-            {/* FIX: Replaced the invalid hook call in `onReset` with a direct call to set the default filter state. This fixes the "Cannot find name 'defaultSort'" error and adheres to React hook rules. */}
-            {isAdvancedFilterModalOpen && <FilterDrawer isOpen={isAdvancedFilterModalOpen} onClose={() => setIsAdvancedFilterModalOpen(false)} onApply={handleApplyAdvancedFilters} onReset={() => setTempFilterState(defaultAdvancedFilters)} tempFilterState={tempFilterState} setTempFilterState={setTempFilterState} allAromas={allAromas} allTerpenes={allTerpenes} count={previewFilteredStrains.length}/>}
+            {isExportModalOpen && <ExportModal isOpen={isExportModalOpen} onClose={actions.closeExportModal} onExport={handleExport} selectionCount={selectedIds.size} favoritesCount={favoriteIds.size} filteredCount={strainsForDisplay.length} totalCount={strainsToDisplay.length} />}
+            {isDrawerOpen && <FilterDrawer isOpen={isDrawerOpen} onClose={closeAndDiscard} onApply={closeAndApply} onReset={resetAllFilters} tempFilterState={draftFilters} setTempFilterState={setDraftFilters} allAromas={allAromas} allTerpenes={allTerpenes} count={previewCount}/>}
             {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => actions.confirmGrow(setup, strainForSetup)} />}
 
             <Card><Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => setActiveTab(id as StrainViewTab)} /></Card>
@@ -223,7 +245,7 @@ const StrainsViewContent: React.FC = () => {
                     <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                          <div className="relative flex-grow">
                             <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-                            <input type="text" placeholder={t('strainsView.searchPlaceholder')} value={filterState.searchTerm} onChange={e => filterControls.setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"/>
+                            <input type="text" placeholder={t('strainsView.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"/>
                         </div>
 
                         <div className="hidden sm:flex items-center gap-2">
@@ -244,18 +266,18 @@ const StrainsViewContent: React.FC = () => {
                     </div>
 
                     <div className="mt-4 flex gap-2 items-center overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 sm:-mx-6 sm:px-6">
-                        <button onClick={() => filterControls.setShowFavorites(!filterState.showFavorites)} className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 ${filterState.showFavorites ? 'bg-primary-500/80 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
-                            <PhosphorIcons.Heart weight={filterState.showFavorites ? 'fill' : 'regular'} />
+                        <button onClick={() => setShowFavorites(!showFavorites)} className={`flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 ${showFavorites ? 'bg-primary-500/80 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
+                            <PhosphorIcons.Heart weight={showFavorites ? 'fill' : 'regular'} />
                             <span>{t('strainsView.favorites')}</span>
                         </button>
                         <div className="w-px h-5 bg-slate-700 mx-1"></div>
                         {(['Sativa', 'Indica', 'Hybrid'] as StrainType[]).map(type => (
-                            <button key={type} onClick={() => filterControls.toggleTypeFilter(type)} className={`px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 ${filterState.typeFilter.has(type) ? 'bg-primary-500/80 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
+                            <button key={type} onClick={() => handleToggleTypeFilter(type)} className={`px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 ${typeFilter.has(type) ? 'bg-primary-500/80 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>
                                 {t(`strainsView.${type.toLowerCase()}`)}
                             </button>
                         ))}
                         <div className="w-px h-5 bg-slate-700 mx-1"></div>
-                        <button onClick={openAdvancedFilterModal} className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 bg-slate-800 text-slate-200 hover:bg-slate-700">
+                        <button onClick={openDrawer} className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-full transition-colors flex-shrink-0 bg-slate-800 text-slate-200 hover:bg-slate-700">
                             <PhosphorIcons.FunnelSimple />
                             <span>{t('strainsView.advancedFilters')}</span>
                             {activeFilterCount > 0 && (
@@ -264,6 +286,12 @@ const StrainsViewContent: React.FC = () => {
                                 </span>
                             )}
                         </button>
+                        {isAnyFilterActive && (
+                            <Button onClick={handleClearAllFilters} variant="secondary" size="sm" className="ml-2 flex-shrink-0 !py-1 !px-2.5">
+                                <PhosphorIcons.X className="w-4 h-4 mr-1" />
+                                {t('common.all')}
+                            </Button>
+                        )}
                     </div>
 
                     <div className="sm:hidden mt-4 flex items-center gap-2">
@@ -294,14 +322,14 @@ const StrainsViewContent: React.FC = () => {
                  ) : viewMode === 'list' ? (
                      <div className="space-y-2">
                         <div className={`${LIST_GRID_CLASS} sticky top-16 z-10 bg-slate-800/80 backdrop-blur-sm text-xs uppercase font-semibold text-slate-400 px-3 py-2 rounded-lg`}>
-                             <input type="checkbox" checked={selectedIds.size === sortedAndFilteredStrains.length && sortedAndFilteredStrains.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
-                            <button className="flex items-center gap-1 text-left" onClick={() => filterControls.handleSort('name')}>{t('strainsView.table.strain')}<SortIndicator sortKey="name" /></button>
-                            {settings.strainsViewSettings.visibleColumns.type && <button className="hidden sm:flex items-center gap-1" onClick={() => filterControls.handleSort('type')}>{t('strainsView.table.type')}<SortIndicator sortKey="type" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.thc && <button className="hidden sm:flex items-center gap-1" onClick={() => filterControls.handleSort('thc')}>{t('strainsView.table.thc')}<SortIndicator sortKey="thc" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.cbd && <button className="hidden sm:flex items-center gap-1" onClick={() => filterControls.handleSort('cbd')}>{t('strainsView.table.cbd')}<SortIndicator sortKey="cbd" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.floweringTime && <button className="hidden sm:flex items-center gap-1" onClick={() => filterControls.handleSort('floweringTime')}>{t('strainsView.table.flowering')}<SortIndicator sortKey="floweringTime" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.yield && <button className="hidden sm:flex items-center gap-1" onClick={() => filterControls.handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
-                            <button className="flex items-center gap-1" onClick={() => filterControls.handleSort('difficulty')}>{t('strainsView.table.level')}<SortIndicator sortKey="difficulty" /></button>
+                             <input type="checkbox" checked={selectedIds.size === strainsForDisplay.length && strainsForDisplay.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                            <button className="flex items-center gap-1 text-left" onClick={() => handleSort('name')}>{t('strainsView.table.strain')}<SortIndicator sortKey="name" /></button>
+                            {settings.strainsViewSettings.visibleColumns.type && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('type')}>{t('strainsView.table.type')}<SortIndicator sortKey="type" /></button>}
+                            {settings.strainsViewSettings.visibleColumns.thc && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('thc')}>{t('strainsView.table.thc')}<SortIndicator sortKey="thc" /></button>}
+                            {settings.strainsViewSettings.visibleColumns.cbd && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('cbd')}>{t('strainsView.table.cbd')}<SortIndicator sortKey="cbd" /></button>}
+                            {settings.strainsViewSettings.visibleColumns.floweringTime && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('floweringTime')}>{t('strainsView.table.flowering')}<SortIndicator sortKey="floweringTime" /></button>}
+                            {settings.strainsViewSettings.visibleColumns.yield && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
+                            <button className="flex items-center gap-1" onClick={() => handleSort('difficulty')}>{t('strainsView.table.level')}<SortIndicator sortKey="difficulty" /></button>
                             <div className="text-right">{t('common.actions')}</div>
                         </div>
                         {selectedIds.size > 0 && 
@@ -310,19 +338,19 @@ const StrainsViewContent: React.FC = () => {
                                <button onClick={() => setSelectedIds(new Set())} className="text-primary-400 hover:underline text-xs">{t('strainsView.clearSelection')}</button>
                             </div>
                         }
-                        {sortedAndFilteredStrains.length > 0 ? (
-                            sortedAndFilteredStrains.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} onToggleSelection={handleToggleSelection} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)
+                        {strainsForDisplay.length > 0 ? (
+                            strainsForDisplay.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} onToggleSelection={handleToggleSelection} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)
                         ) : (
-                            <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={filterState.searchTerm.length > 0 || activeFilterCount > 0 || filterState.showFavorites} onResetFilters={resetAdvancedFilters} />
+                            <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={isAnyFilterActive} onResetFilters={handleClearAllFilters} />
                         )}
                      </div>
                  ) : (
-                     sortedAndFilteredStrains.length > 0 ? (
+                     strainsForDisplay.length > 0 ? (
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                            {sortedAndFilteredStrains.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
+                            {strainsForDisplay.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                         </div>
                      ) : (
-                         <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={filterState.searchTerm.length > 0 || activeFilterCount > 0 || filterState.showFavorites} onResetFilters={resetAdvancedFilters} />
+                         <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={isAnyFilterActive} onResetFilters={handleClearAllFilters} />
                      )
                  )
             )}

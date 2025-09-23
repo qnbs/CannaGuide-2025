@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StrainType, DifficultyLevel, YieldLevel, HeightLevel } from '@/types';
+import { DifficultyLevel, YieldLevel, HeightLevel } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { RangeSlider } from '@/components/common/RangeSlider';

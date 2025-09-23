@@ -34,5 +34,29 @@ export const strains = {
     "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
     "yieldDetails": { "indoor": "300-500 g/m²", "outdoor": "~600 g/plant" },
     "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 3m)" }
+  },
+  "k2": {
+    "description": "An indica-dominant strain known for its fast flowering time and its dense, resinous buds. The effect is relaxing and calming."
+  },
+  "kandy-kush": {
+    "description": "An indica-dominant strain with a sweet, candy-like aroma. The effect is strong, relaxing, and euphoric."
+  },
+  "key-lime-pie": {
+    "description": "A Girl Scout Cookies phenotype with a distinct lime and mint aroma. The effect is relaxing and euphoric, ideal for evening use."
+  },
+  "khalifa-kush": {
+    "description": "A potent indica-dominant strain developed for the rapper Wiz Khalifa. Known for its strong, lemony, and piney aroma and its relaxing, euphoric effect."
+  },
+  "king": {
+    "description": "A potent indica-dominant strain with an earthy, spicy aroma. The effect is strong, physically relaxing, and sedating."
+  },
+  "kings-kush": {
+    "description": "An indica-dominant strain with a sweet, grape-like, and earthy aroma. The effect is strong, relaxing, and long-lasting."
+  },
+  "kosher-tangie": {
+    "description": "A sativa-dominant strain with a strong citrus and orange aroma. The effect is uplifting, creative, and energizing."
+  },
+  "kush-sorbet": {
+    "description": "An indica-dominant strain with a sweet, creamy, and fruity aroma. The effect is relaxing and calming, ideal for evening use."
   }
 }

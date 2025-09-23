@@ -50,8 +50,10 @@
       }
 
       .glass-pane {
-        background-color: rgb(var(--color-bg-component));
-        border: 1px solid rgb(var(--color-border));
+        background-color: rgb(var(--color-bg-component) / 0.5);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgb(var(--color-border) / 0.5);
         box-shadow: 0 0 0 1px rgba(var(--color-bg-primary), 0.1), 0 2px 4px rgba(0,0,0,0.1);
       }
 
@@ -173,13 +175,30 @@
         font-weight: 500;
       }
 
-      .card-interactive {
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, border-color 0.2s ease-in-out;
+      .card-interactive-glow {
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
       }
-      .card-interactive:hover {
+      .card-interactive-glow:hover {
         transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1), 0 0 25px -5px rgba(var(--color-primary-500), 0.2);
         border-color: rgba(var(--color-primary-500), 0.5);
+      }
+      .card-interactive-glow::before {
+        content: '';
+        position: absolute;
+        left: var(--x, 50%);
+        top: var(--y, 50%);
+        transform: translate(-50%, -50%);
+        width: 200px;
+        height: 200px;
+        background: radial-gradient(circle, rgba(var(--color-primary-500), 0.15) 0%, rgba(var(--color-primary-500), 0) 60%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+      }
+      .card-interactive-glow:hover::before {
+        opacity: 1;
       }
 
       @keyframes fade-in-overlay {

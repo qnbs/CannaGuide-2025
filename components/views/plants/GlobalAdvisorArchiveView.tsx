@@ -1,36 +1,28 @@
 import React, { useMemo, useState } from 'react';
-// Fix: Replaced hook imports with a single import from the central Zustand store.
 import { useAppStore } from '@/stores/useAppStore';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { ArchivedAdvisorResponse, Plant } from '@/types';
+import { ArchivedAdvisorResponse } from '@/types';
+import { selectActivePlants, selectArchivedAdvisorResponses } from '@/stores/selectors';
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslations();
-    // Fix: Get state from the central Zustand store.
-    const { archive, plants } = useAppStore(state => ({
-        archive: state.archivedAdvisorResponses,
-        plants: state.plants,
-    }));
+    const archive = useAppStore(selectArchivedAdvisorResponses);
+    const activePlants = useAppStore(selectActivePlants);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // FIX: Explicitly type the return value of useMemo to ensure `allAdvice` is
-    // correctly typed, preventing downstream type errors where it might be inferred as 'unknown'.
     const allAdvice = useMemo<(ArchivedAdvisorResponse & { plantName: string })[]>(() => {
-        const plantMap = new Map(plants.filter((p): p is Plant => p !== null).map(p => [p.id, p.name]));
+        const plantMap = new Map(activePlants.map(p => [p.id, p.name]));
         
-        // Fix: Replaced the complex reduce operation with Array.prototype.flat() to simplify the code
-        // and resolve a TypeScript error where the result of reduce was being inferred as 'unknown'.
         return Object.values(archive)
             .flat()
-            // FIX: Explicitly typing `advice` as `ArchivedAdvisorResponse` fixes type inference issues after `flat()`.
             .map((advice: ArchivedAdvisorResponse) => ({
                 ...advice,
                 plantName: plantMap.get(advice.plantId) || t('plantsView.archivedPlant')
             }))
             .sort((a, b) => b.createdAt - a.createdAt);
-    }, [archive, plants, t]);
+    }, [archive, activePlants, t]);
 
     const filteredAdvice = useMemo(() => {
         if (!searchTerm) return allAdvice;

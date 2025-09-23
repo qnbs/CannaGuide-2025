@@ -4,35 +4,24 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppStore } from '@/stores/useAppStore';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
+import { selectActivePlants, selectSettings } from '@/stores/selectors';
 
 export const useCommandPalette = () => {
     const { t } = useTranslations();
     const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
     
-    // Select multiple state slices and actions from the store
-    const {
-        setActiveView,
-        setIsCommandPaletteOpen,
-        plants,
-        waterAllPlants,
-        advanceDay,
-        settings,
-        setSetting,
-        setSelectedPlantId
-    } = useAppStore(state => ({
+    const { setActiveView, setIsCommandPaletteOpen, waterAllPlants, advanceDay, setSetting, setSelectedPlantId } = useAppStore(state => ({
         setActiveView: state.setActiveView,
         setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
-        plants: state.plants,
         waterAllPlants: state.waterAllPlants,
         advanceDay: state.advanceDay,
-        settings: state.settings,
         setSetting: state.setSetting,
         setSelectedPlantId: state.setSelectedPlantId,
     }));
+    const activePlants = useAppStore(selectActivePlants);
+    const settings = useAppStore(selectSettings);
 
     const commands: Command[] = useMemo(() => {
-        const activePlants = plants.filter((p): p is Plant => p !== null);
-
         const navigationCommands: Command[] = Object.values(View).map(view => ({
             id: `nav-${view}`,
             title: t(`nav.${view.toLowerCase()}`),
@@ -47,8 +36,8 @@ export const useCommandPalette = () => {
 
         const plantCommands: Command[] = [
             ...activePlants.map((plant) => ({
-                id: `plant-inspect-${plant!.id}`,
-                title: `${t('commandPalette.inspect')} ${plant!.name}`,
+                id: `plant-inspect-${plant.id}`,
+                title: `${t('commandPalette.inspect')} ${plant.name}`,
                 subtitle: t('commandPalette.plants'),
                 icon: React.createElement(PhosphorIcons.Plant),
                 action: () => {
@@ -56,7 +45,7 @@ export const useCommandPalette = () => {
                     setSelectedPlantId(plant.id);
                     setIsCommandPaletteOpen(false);
                 },
-                keywords: `view details ${plant!.name}`
+                keywords: `view details ${plant.name}`
             })),
             {
                 id: 'plant-water-all',
@@ -114,7 +103,7 @@ export const useCommandPalette = () => {
         ];
 
         return [...navigationCommands, ...generalActionCommands, ...plantCommands, ...settingsCommands];
-    }, [t, setActiveView, plants, waterAllPlants, advanceDay, settings.language, setSetting, setIsCommandPaletteOpen, setSelectedPlantId, deferredPrompt, handleInstallClick, isInstalled]);
+    }, [t, setActiveView, activePlants, waterAllPlants, advanceDay, settings.language, setSetting, setIsCommandPaletteOpen, setSelectedPlantId, deferredPrompt, handleInstallClick, isInstalled]);
 
     return { commands };
 };

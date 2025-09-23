@@ -1,24 +1,154 @@
-# 🌿 CannaGuide 2025
+# 🌿 CannaGuide 2025 (Deutsch)
+
+**Cannabis Grow Guide with Gemini - Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.**
+
+Diese hochmoderne Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung. Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles über Hunderte von Sorten, planen Sie Ihre Ausrüstung mit KI-gestützten Empfehlungen und vertiefen Sie Ihr Wissen mit unserer interaktiven Schritt-für-Schritt-Anleitung.
+
+---
+
+## Inhaltsverzeichnis
+
+- [🚀 Hauptfunktionen](#-hauptfunktionen)
+  - [1. Die Sorten-Datenbank (`Sorten`-Ansicht)](#1-die-sorten-datenbank-sorten-ansicht)
+  - [2. Der Grow Room (`Pflanzen`-Ansicht)](#2-der-grow-room-pflanzen-ansicht)
+  - [3. Die Werkstatt (`Ausrüstung`-Ansicht)](#3-die-werkstatt-ausrüstung-ansicht)
+  - [4. Die Bibliothek (`Wissen` & `Hilfe`-Ansichten)](#4-die-bibliothek-wissen--hilfe-ansichten)
+  - [5. Das Kontrollzentrum (`Einstellungen`-Ansicht)](#5-das-kontrollzentrum-einstellungen-ansicht)
+  - [6. App-weite Funktionen](#6-app-weite-funktionen)
+- [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source)
+- [💻 Technologiestapel](#-technologiestapel)
+- [🏁 Erste Schritte](#-erste-schritte)
+- [⚠️ Haftungsausschluss](#️-haftungsausschluss)
+- [English Version](#-cannaguide-2025-english)
+
+---
+
+## 🚀 Hauptfunktionen
+
+Diese Anwendung ist in mehrere Hauptansichten gegliedert, die jeweils mit leistungsstarken Funktionen ausgestattet sind, um Sie auf Ihrer Anbaureise zu begleiten.
+
+### 1. Die Sorten-Datenbank (`Sorten`-Ansicht)
+
+Ihre zentrale Bibliothek für Cannabis-Wissen, vollständig offline verfügbar und für tiefgehende Erkundungen konzipiert.
+
+*   **Riesige Bibliothek**: Zugriff auf detaillierte Informationen zu über 300+ Cannabissorten.
+*   **Hochleistungs-Volltextsuche**: Finden Sie Sorten sofort nach Name, Genetik, Aroma oder Terpenen dank eines in IndexedDB gespeicherten Suchindex.
+*   **Umfassende Filter & Sortierung**: Grenzen Sie Ihre Suche mit einem anspruchsvollen Filter-Modal ein, einschließlich THC/CBD-Bereichen, Blütezeit, Schwierigkeitsgrad, Typ, Aromen und Terpenen.
+*   **Volle CRUD für Ihre Sorten**: Sie haben die vollständige Kontrolle über Ihre persönliche Sortensammlung (Erstellen, Lesen, Aktualisieren, Löschen).
+*   **KI-Anbau-Tipps mit CRUD-Archiv**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte und verwalten Sie diese in einem dedizierten, durchsuchbaren "Tipps"-Archiv (Speichern, Ansehen, Bearbeiten, Löschen).
+*   **Professioneller Export & Management**: Exportieren Sie Ihre Sortendaten als **PDF**, **CSV**, **TXT** oder **JSON**. Verwalten Sie alle vergangenen Exporte im "Exporte"-Tab mit voller CRUD-Funktionalität.
+
+### 2. Der Grow Room (`Pflanzen`-Ansicht)
+
+Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Grows.
+
+*   **Hochmoderne Simulations-Engine**: Erleben Sie eine realistische Simulation, die auf **VPD (Dampfdruckdefizit)**, Biomasse-skaliertem Ressourcenverbrauch, dynamischer Problem- und Stresseskalation sowie mediumspezifischem pH-Pufferverhalten basiert.
+*   **Interaktives Dashboard**: Verwalten Sie Ihre Pflanzen in drei Slots. Jede `Pflanzenkarte` zeigt eine dynamische visuelle Darstellung der Pflanze und detaillierte Vitalwerte auf einen Blick.
+*   **Nahtloser Startprozess**: Ein leerer Slot öffnet einen Inline-Sortenwähler, der einen reibungslosen Übergang von der Auswahl zur Konfiguration Ihres Setups ermöglicht.
+*   **KI-gestützte Diagnose**: Laden Sie ein Foto hoch, um eine sofortige KI-basierte Diagnose und empfohlene Lösungen zu erhalten.
+*   **Detaillierte Pflanzenansicht**: Tauchen Sie tief in den Status Ihrer Pflanze ein, mit Tabs für **Übersicht**, **Journal**, **Aufgaben**, **Fotogalerie** und dem **KI-Berater**.
+*   **KI-Pflanzenberater mit vollem CRUD**: Erhalten Sie proaktive, datengestützte Ratschläge von Gemini AI. **Speichern, ansehen, bearbeiten und löschen** Sie Empfehlungen, um eine einzigartige Historie der KI-geführten Pflege aufzubauen.
+*   **Globales Berater-Archiv**: Eine dedizierte Ansicht auf dem Haupt-Dashboard, die alle gespeicherten KI-Berater-Antworten von all Ihren Pflanzen aggregiert und durchsuchbar macht.
+
+### 3. Die Werkstatt (`Ausrüstung`-Ansicht)
+
+Planen und optimieren Sie Ihr reales Grow-Setup mit leistungsstarken Werkzeugen.
+
+*   **KI-Setup-Konfigurator**: Generieren Sie eine komplette, individualisierte Ausrüstungsliste basierend auf Pflanzenanzahl und Anbaustil.
+*   **Gespeicherte Setups mit voller CRUD & Export**: **Speichern, bearbeiten, löschen** und **exportieren** Sie Ihre generierten Setups in verschiedenen Formaten (PDF, CSV, etc.).
+*   **Essentielle Rechner**: Eine Suite von Werkzeugen zur Feinabstimmung: Belüftung, Beleuchtung, Nährstoffe, Kosten, EC/PPM-Umrechner und ein Ertragsschätzer.
+*   **Kuratierte Grow-Shops**: Eine hilfreiche Liste von seriösen Online-Grow-Shops in Europa und den USA.
+
+### 4. Die Bibliothek (`Wissen` & `Hilfe`-Ansichten)
+
+Ihre vollständige Ressource zum Lernen und zur Problemlösung.
+
+*   **Interaktiver Grow-Guide**: Eine geführte Reise durch die fünf Hauptphasen des Anbaus mit visueller Fortschrittsverfolgung.
+*   **KI-Mentor mit CRUD-Archiv**: Stellen Sie allgemeine Anbaufragen an die KI. **Speichern, ansehen, bearbeiten und löschen** Sie die Antworten, um Ihre persönliche Wissensdatenbank aufzubauen.
+*   **Umfassendes Hilfecenter**: Eine detaillierte, durchsuchbare FAQ und tiefgehende Lexika zu **Cannabinoiden**, **Terpenen** und **Flavonoiden**.
+
+### 5. Das Kontrollzentrum (`Einstellungen`-Ansicht)
+
+Passen Sie die App an Ihre genauen Vorlieben an und verwalten Sie Ihre Daten mit Zuversicht.
+
+*   **Tiefgreifende Personalisierung**: Passen Sie Sprache (DE/EN), Thema, Schriftgröße und UI-Dichte an.
+*   **Erweiterte Barrierefreiheit**: Aktivieren Sie eine **Legastheniker-freundliche Schriftart** oder **Reduzierte Bewegung**.
+*   **Vollständige Datenverwaltung**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Favoriten, Archive) in eine einzige JSON-Datei für ein **Backup**. Importieren Sie diese später, um Ihren Zustand wiederherzustellen.
+
+### 6. App-weite Funktionen
+
+*   **Befehlspalette (`Cmd/Strg + K`)**: Ein Power-User-Tool für sofortige Navigation und Aktionen. Springen Sie zu Ansichten, inspizieren Sie Pflanzen oder gießen Sie alle auf einmal, ohne zu klicken.
+*   **Vollständige Offline-Fähigkeit (PWA)**: Dank eines robusten Service Workers ist die App installierbar und funktioniert vollständig offline, einschließlich des Zugriffs auf alle Daten und die meisten Funktionen.
+
+---
+
+## 🤖 Entwicklung mit AI Studio & Open Source
+
+Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer innovativen Plattform, die die Erstellung und Änderung komplexer, funktionsreicher Webanwendungen durch Befehle in natürlicher Sprache ermöglicht. Der gesamte Prozess, vom Aufbau des initialen Projekts bis zur Implementierung komplexer Features wie der Simulations-Engine und den KI-gestützten Werkzeugen, wurde durch iterative Prompts gesteuert.
+
+Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
+
+*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-](https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-)
+*   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/CannaGuide-2025](https://github.com/qnbs/CannaGuide-2025)
+
+---
+
+## 💻 Technologiestapel
+
+*   **Kerntechnologie:** React 19, TypeScript
+*   **KI-Integration:** Google Gemini API (`@google/genai`) mit dem Modell `gemini-2.5-flash` für strukturierte JSON-Ausgaben.
+*   **Zustandsverwaltung:** Zustand (Zustand) für eine zentralisierte, reaktive Zustandsverwaltung.
+*   **Styling:** Tailwind CSS (via CDN) für ein Utility-First-Design-System.
+*   **Datenpersistenz:**
+    *   **localStorage:** Für den primären Anwendungszustand (Einstellungen, Pflanzen-Metadaten, etc.) über `zustand/middleware/persist`.
+    *   **IndexedDB:** Für große Datenmengen wie Bilder (`StoredImageData`) und den leistungsstarken Volltext-Suchindex für Sorten.
+*   **PWA & Offline-Fähigkeit:**
+    *   **Web App Manifest:** Ermöglicht die Installation der App auf dem Startbildschirm.
+    *   **Service Worker (`sw.js`):** Implementiert eine "Cache First"-Strategie für vollständige Offline-Funktionalität.
+*   **Werkzeuge:** `jsPDF` & `jsPDF-AutoTable` für die professionelle PDF-Erstellung.
+
+---
+
+## 🏁 Erste Schritte
+
+Es ist keine Installation oder Einrichtung erforderlich. Die Anwendung läuft vollständig in Ihrem Webbrowser.
+
+1.  **Sorten entdecken:** Beginnen Sie in der **Sorten**-Ansicht. Nutzen Sie die leistungsstarke Suche und die Filter, um eine Sorte zu finden, und speichern Sie sie mit dem Herz-Symbol als Favorit.
+2.  **Anbau starten:** Klicken Sie in einem leeren Slot im **Pflanzen**-Dashboard auf "Anbau starten", wählen Sie eine Sorte aus dem Inline-Wähler und konfigurieren Sie Ihr Setup.
+3.  **Pflanzen verwalten:** Das **Pflanzen**-Dashboard ist Ihre Kommandozentrale. Die Simulation schreitet automatisch voran. Klicken Sie auf eine Pflanze, um ihren detaillierten Status zu überprüfen, Aktionen in ihrem Journal zu protokollieren und Aufgaben zu erledigen, um sie gesund zu halten.
+4.  **Lernen & Planen:** Nutzen Sie die Ansichten **Wissen** und **Ausrüstung**, um Ihr Verständnis zu vertiefen und Ihr reales Setup mit dem KI-Konfigurator und den Rechnern zu planen.
+5.  **Befehlspalette nutzen:** Für den schnellsten Zugriff drücken Sie `Cmd/Strg + K`, um sofort zu navigieren oder Aktionen auszuführen.
+
+---
+
+## ⚠️ Haftungsausschluss
+
+> Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen, die je nach Land und Region variieren. Bitte informieren Sie sich über die Gesetze in Ihrer Gegend und handeln Sie stets verantwortungsbewusst und gesetzeskonform.
+
+---
+---
+
+# 🌿 CannaGuide 2025 (English)
 
 **Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle.**
 
-This advanced web application is designed to help both novice and experienced growers master their cultivation journey—from seed selection to a successful harvest and cure. Track your plants in a realistic simulation, learn about hundreds of strains, plan your equipment with AI-powered recommendations, and deepen your knowledge with our interactive step-by-step guide.
+This state-of-the-art web application is designed to help both novice and experienced growers master their cultivation journey—from seed selection to a successful harvest and cure. Track your plants in a realistic simulation, learn about hundreds of strains, plan your equipment with AI-powered recommendations, and deepen your knowledge with our interactive step-by-step guide.
 
 ---
 
 ## Table of Contents
 
-- [🚀 Key Features](#-key-features)
-  - [1. The Strain Database (`Strains` View)](#1-the-strain-database-strains-view)
-  - [2. The Grow Room (`Plants` View)](#2-the-grow-room-plants-view)
-  - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view)
-  - [4. The Library (`Knowledge` & `Help` Views)](#4-the-library-knowledge--help-views)
-  - [5. The Control Panel (`Settings` View)](#5-the-control-panel-settings-view)
-- [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
-- [💻 Tech Stack](#-tech-stack)
-- [🏁 Getting Started](#-getting-started)
-- [⚠️ Disclaimer](#️-disclaimer)
-- [Deutsche Version (German Version)](#-cannaguide-2025-deutsch)
+- [🚀 Key Features](#-key-features-1)
+  - [1. The Strain Database (`Strains` View)](#1-the-strain-database-strains-view-1)
+  - [2. The Grow Room (`Plants` View)](#2-the-grow-room-plants-view-1)
+  - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view-1)
+  - [4. The Library (`Knowledge` & `Help` Views)](#4-the-library-knowledge--help-views-1)
+  - [5. The Control Panel (`Settings` View)](#5-the-control-panel-settings-view-1)
+  - [6. App-Wide Features](#6-app-wide-features)
+- [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source-1)
+- [💻 Tech Stack](#-tech-stack-1)
+- [🏁 Getting Started](#-getting-started-1)
+- [⚠️ Disclaimer](#️-disclaimer-1)
 
 ---
 
@@ -30,89 +160,54 @@ This application is structured into several main views, each packed with powerfu
 
 Your central library for cannabis knowledge, fully available offline and designed for deep exploration.
 
-*   **Massive Library**: Access detailed information on over 300+ cannabis strains.
-*   **Powerful Filtering & Sorting**:
-    *   **Advanced Search**: Instantly find strains by name.
-    *   **Comprehensive Filters**: Narrow down your search with a sophisticated filter modal, including THC/CBD content ranges, flowering time, difficulty level, strain type (Sativa, Indica, Hybrid), specific aromas, and dominant terpenes.
-    *   **Flexible Sorting**: Organize the list by name, THC/CBD content, flowering time, and more, in ascending or descending order.
-    *   **Favorites**: Toggle to view only your favorite strains.
-*   **Dual View Modes**: Switch seamlessly between a detailed **List View** with configurable columns and a visually appealing **Grid View**.
-*   **Full CRUD for Your Strains**: You have complete control over your personal strain collection.
-    *   **Create**: Add your own custom strains using a detailed form that captures everything from genetics and cannabinoid profiles to agronomic data and descriptions.
-    *   **Read**: View your custom strains alongside the main database.
-    *   **Update**: Easily edit any information for the strains you've created.
-    *   **Delete**: Remove your custom strains with a confirmation step.
-*   **AI Grow Tips with CRUD Archive**:
-    *   **Generate Tips**: Get unique, AI-powered cultivation advice tailored to any specific strain.
-    *   **Manage Your Archive**: **Save**, **view**, **edit**, and **delete** these tips in a dedicated, searchable "Tips" archive.
-*   **Professional Exporting & Management**:
-    *   **Multiple Formats**: Export your strain data as a professional multi-page **PDF** report, a data-friendly **CSV** file, a simple **TXT** file, or a developer-friendly **JSON** file.
-    *   **Flexible Sources**: Choose to export only selected strains, your favorites, the currently filtered list, or the entire database.
-    *   **Full CRUD for Exports**: The "Exports" tab keeps a log of your past exports. **Re-download** any export, **edit** its name and add notes, or **delete** it from your history.
+*   **Massive Library**: Access detailed information on 300+ cannabis strains.
+*   **High-Performance Full-Text Search**: Instantly find strains by name, genetics, aroma, or terpenes, powered by an IndexedDB-based search index.
+*   **Comprehensive Filtering & Sorting**: Narrow down your search with a sophisticated filter modal, including THC/CBD ranges, flowering time, difficulty, type, aromas, and terpenes.
+*   **Full CRUD for Your Strains**: You have complete control over your personal strain collection (Create, Read, Update, Delete).
+*   **AI Grow Tips with CRUD Archive**: Generate unique, AI-powered cultivation advice for any strain and manage it in a dedicated, searchable "Tips" archive (Save, View, Edit, Delete).
+*   **Professional Exporting & Management**: Export your strain data as **PDF**, **CSV**, **TXT**, or **JSON**. Manage all past exports in the "Exports" tab with full CRUD functionality.
 
 ### 2. The Grow Room (`Plants` View)
 
 Your command center for managing and simulating up to three simultaneous grows.
 
-*   **Interactive Dashboard**:
-    *   **Plant Slots**: Manage your active grows in three dedicated slots. An empty slot prompts you to start a new plant.
-    *   **At-a-Glance Status**: Each `PlantCard` displays a visual representation of the plant, its current stage, age, height, and a health indicator for immediate feedback.
-    *   **Garden Overview**: A summary panel shows your total active grows, open tasks, and an overall "Garden Health" score based on average plant stress.
-    *   **Global Actions**: Use the "Water All" button to efficiently care for thirsty plants or the "Simulate Next Day" button to advance the simulation.
-*   **AI-Powered Diagnostics**: Upload a photo of a leaf or problem area to get an instant AI-based diagnosis and recommended solution.
-*   **Detailed Plant View**: Click on any plant to dive deep into its status.
-    *   **Comprehensive Tabs**: Navigate between **Overview**, **Journal**, **Tasks**, **Photos**, and the **AI Advisor**.
-    *   **Overview**: See a large plant visual, detailed vitals (pH, EC, moisture, stress) with ideal range indicators, a complete lifecycle timeline, and a historical chart of its growth and stress levels.
-    *   **Journal**: A complete, filterable log of every action and event in the plant's life, from watering and feeding to system-generated stage changes and problem detections.
-    *   **Photo Gallery**: The "Photos" tab provides a beautiful gallery view of all images you've logged in the journal.
-*   **AI-Powered Plant Advisor with Full CRUD**:
-    *   **Personalized Advice**: Get proactive, data-driven advice from Gemini AI based on your plant's current vitals, stage, and problems.
-    *   **Plant-Specific Archive**: You have full **CRUD** control over the AI's advice for each plant. **Save**, **view**, **edit**, and **delete** recommendations to build a unique history of AI-guided care.
-*   **Global Advisor Archive**: A dedicated view on the main dashboard that aggregates all saved AI advisor responses from all your past and present plants, creating a powerful, searchable knowledge base of your AI interactions.
+*   **State-of-the-Art Simulation Engine**: Experience a realistic simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, dynamic problem and stress escalation, and medium-specific pH buffering.
+*   **Interactive Dashboard**: Manage your plants in three slots. Each `PlantCard` shows a dynamic visual representation of the plant and detailed vitals at a glance.
+*   **Seamless Start Process**: An empty slot opens an inline strain selector, providing a smooth transition from selection to configuring your setup.
+*   **AI-Powered Diagnostics**: Upload a photo to get an instant AI-based diagnosis and recommended solutions.
+*   **Detailed Plant View**: Deep dive into your plant's status with tabs for **Overview**, **Journal**, **Tasks**, **Photo Gallery**, and the **AI Advisor**.
+*   **AI Plant Advisor with Full CRUD**: Get proactive, data-driven advice from Gemini AI. **Save, view, edit, and delete** recommendations to build a unique history of AI-guided care.
+*   **Global Advisor Archive**: A dedicated dashboard view that aggregates and makes searchable all saved AI advisor responses from all your plants.
 
 ### 3. The Workshop (`Equipment` View)
 
 Plan and optimize your real-world grow setup with powerful tools.
 
-*   **AI Setup Configurator**:
-    *   **Guided Process**: A simple, step-by-step wizard asks for your plant count and desired configuration style (Standard, Medium, Premium).
-    *   **Tailored Recommendations**: Gemini AI generates a complete, itemized equipment list with product suggestions, pricing estimates, and a rationale for each choice.
-*   **Saved Setups with Full CRUD & Export**:
-    *   **Save & Manage**: Save your generated setups for future reference.
-    *   **Full Editing**: **Update** any saved setup by changing its name, swapping components, or adjusting prices.
-    *   **Export**: Export your saved setups to PDF, CSV, TXT, or JSON for shopping or sharing.
-    *   **Delete**: Remove old setups you no longer need.
-*   **Essential Calculators**: A suite of tools to fine-tune your grow:
-    *   **Ventilation**, **Lighting**, **Nutrients**, **Cost**, **EC/PPM Converter**, and a **Yield Estimator**.
-*   **Curated Grow Shops**: A helpful guide listing reputable online grow shops in Europe and the USA, complete with descriptions, ratings, and strengths to help you source your gear.
+*   **AI Setup Configurator**: Generate a complete, customized equipment list based on plant count and growing style.
+*   **Saved Setups with Full CRUD & Export**: **Save, edit, delete**, and **export** your generated setups in various formats (PDF, CSV, etc.).
+*   **Essential Calculators**: A suite of tools for fine-tuning: Ventilation, Lighting, Nutrients, Cost, EC/PPM Converter, and a Yield Estimator.
+*   **Curated Grow Shops**: A helpful list of reputable online grow shops in Europe and the USA.
 
 ### 4. The Library (`Knowledge` & `Help` Views)
 
 Your complete resource for learning and problem-solving.
 
-*   **Interactive Grow Guide**:
-    *   **Step-by-Step Learning**: A guided journey through the five main phases of cultivation, from preparation to curing.
-    *   **Progress Tracking**: Mark off checklist items in each phase to track your learning progress visually.
-*   **AI Mentor with CRUD Archive**:
-    *   **Ask Anything**: Pose any general growing question to the AI Mentor and receive a comprehensive, formatted answer.
-    *   **Personal Knowledge Base**: You have full **CRUD** control over your mentor sessions. **Save**, **view**, **edit** (title and content), and **delete** responses to build your own curated knowledge database.
-*   **Comprehensive Help Center**:
-    *   **Getting Started & FAQ**: A detailed introduction to the app's features and an extensive, updated FAQ section to answer common questions.
-    *   **In-Depth Lexicons**: Detailed, accordion-style glossaries covering **Cannabinoids**, **Terpenes**, and **Flavonoids** to deepen your scientific understanding.
-    *   **Cultivation Guides**: Sections on agronomic basics, plant care, and advanced training techniques.
+*   **Interactive Grow Guide**: A guided journey through the five main phases of cultivation with visual progress tracking.
+*   **AI Mentor with CRUD Archive**: Ask general growing questions to the AI. **Save, view, edit, and delete** the responses to build your personal knowledge base.
+*   **Comprehensive Help Center**: A detailed, searchable FAQ and in-depth lexicons for **Cannabinoids**, **Terpenes**, and **Flavonoids**.
 
 ### 5. The Control Panel (`Settings` View)
 
 Customize the app to your exact preferences and manage your data with confidence.
 
-*   **Personalization**: Adjust the app's **language** (English/German), **theme**, and **font size**. Set your preferred default view on startup.
-*   **Advanced Accessibility**: Enable **High Contrast Mode**, a **Dyslexia-Friendly Font**, or **Reduced Motion** for a tailored viewing experience.
-*   **UI Density**: Switch between a spacious `Comfortable` layout or a data-rich `Compact` view.
-*   **View Customization**: Configure the Strains View by setting a default sort order, view mode, and choosing which data columns are visible.
-*   **Simulation Control**: Fine-tune the plant simulation with settings for speed, difficulty, and toggles for automatic background progression and journaling.
-*   **Data Management**:
-    *   **Full Backup & Restore**: Export *all* your app data (plants, settings, favorites, custom strains, archives) to a single JSON file. Import it later to restore your state on any device.
-    *   **Reset Options**: Safely reset just your plants or perform a full factory reset of the entire application.
+*   **Deep Personalization**: Adjust language (EN/DE), theme, font size, and UI density.
+*   **Advanced Accessibility**: Enable a **Dyslexia-Friendly Font** or **Reduced Motion**.
+*   **Complete Data Management**: Export *all* your app data (plants, settings, favorites, archives) to a single JSON file for **backup**. Import it later to **restore** your state.
+
+### 6. App-Wide Features
+
+*   **Command Palette (`Cmd/Ctrl + K`)**: A power-user tool for instant navigation and actions. Jump to views, inspect plants, or water all at once without clicking.
+*   **Full Offline Capability (PWA)**: Thanks to a robust Service Worker, the app is installable and works completely offline, including access to all data and most features.
 
 ---
 
@@ -129,11 +224,17 @@ This project is also fully open source. You are welcome to review the source cod
 
 ## 💻 Tech Stack
 
-*   **Frontend:** React, TypeScript
-*   **Styling:** Tailwind CSS
-*   **AI Integration:** Google Gemini API (`@google/genai`)
-*   **Data Persistence:** `localStorage`, `IndexedDB` (for images)
-*   **PDF Generation:** `jsPDF` & `jsPDF-AutoTable`
+*   **Core:** React 19, TypeScript
+*   **AI Integration:** Google Gemini API (`@google/genai`) using the `gemini-2.5-flash` model for structured JSON output.
+*   **State Management:** Zustand for centralized, reactive state management.
+*   **Styling:** Tailwind CSS (via CDN) for a utility-first design system.
+*   **Data Persistence:**
+    *   **localStorage:** For the primary application state (settings, plant metadata, etc.) via `zustand/middleware/persist`.
+    *   **IndexedDB:** For large data such as images (`StoredImageData`) and the high-performance full-text search index for strains.
+*   **PWA & Offline Capability:**
+    *   **Web App Manifest:** Allows the app to be installed to the home screen.
+    *   **Service Worker (`sw.js`):** Implements a "Cache First" strategy for full offline functionality.
+*   **Tooling:** `jsPDF` & `jsPDF-AutoTable` for professional PDF generation.
 
 ---
 
@@ -141,171 +242,14 @@ This project is also fully open source. You are welcome to review the source cod
 
 No installation or setup is required. The application runs entirely in your web browser.
 
-1.  **Discover Strains:** Start in the **Strains** view to browse the database. Use the filters and search bar to find a strain that interests you and save it as a favorite with the heart icon.
-2.  **Start Growing:** From a strain's detail page, click "Start Growing" to configure your initial setup and add the new plant to your **Plants** dashboard.
-3.  **Manage Plants:** The **Plants** view is your main dashboard. The simulation progresses automatically. Click on a plant to check its detailed status, log actions in its journal, and complete tasks to keep it healthy and stress-free.
+1.  **Discover Strains:** Start in the **Strains** view. Use the powerful search and filters to find a strain, and save it as a favorite with the heart icon.
+2.  **Start Growing:** From an empty slot on the **Plants** dashboard, click "Start Growing," select a strain from the inline selector, and configure your setup.
+3.  **Manage Plants:** The **Plants** view is your main command center. The simulation progresses automatically. Click on a plant to check its detailed status, log actions in its journal, and complete tasks to keep it healthy.
 4.  **Learn & Plan:** Use the **Knowledge** and **Equipment** views to deepen your understanding and plan your real-world setup with the AI configurator and calculators.
-5.  **Use the Command Palette:** For quick access, press `Cmd/Ctrl + K` at any time to jump between sections or perform actions instantly.
+5.  **Use the Command Palette:** For the fastest access, press `Cmd/Ctrl + K` at any time to navigate or perform actions instantly.
 
 ---
 
 ## ⚠️ Disclaimer
 
 > All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations that vary by country and region. Please inform yourself about the laws in your area and always act responsibly and in accordance with the law.
-
----
----
-
-# 🌿 CannaGuide 2025 (Deutsch)
-
-**Cannabis Grow Guide with Gemini - Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.**
-
-Diese fortschrittliche Webanwendung wurde entwickelt, um sowohl Anfängern als auch erfahrenen Züchtern zu helfen, ihre Anbaureise zu meistern – von der Samenauswahl bis zur erfolgreichen Ernte und Aushärtung. Verfolgen Sie Ihre Pflanzen in einer realistischen Simulation, lernen Sie alles über Hunderte von Sorten, planen Sie Ihre Ausrüstung mit KI-gestützten Empfehlungen und vertiefen Sie Ihr Wissen mit unserer interaktiven Schritt-für-Schritt-Anleitung.
-
----
-
-## Inhaltsverzeichnis
-
-- [🚀 Hauptfunktionen](#-hauptfunktionen-1)
-  - [1. Die Sortendatenbank (Ansicht `Sorten`)](#1-die-sortendatenbank-ansicht-sorten)
-  - [2. Der Grow Room (Ansicht `Pflanzen`)](#2-der-grow-room-ansicht-pflanzen)
-  - [3. Die Werkstatt (Ansicht `Ausrüstung`)](#3-die-werkstatt-ansicht-ausrüstung)
-  - [4. Die Bibliothek (Ansichten `Wissen` & `Hilfe`)](#4-die-bibliothek-ansichten-wissen--hilfe)
-  - [5. Das Kontrollzentrum (Ansicht `Einstellungen`)](#5-das-kontrollzentrum-ansicht-einstellungen)
-- [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
-- [💻 Technologiestapel](#-technologiestapel-1)
-- [🏁 Erste Schritte](#-erste-schritte-1)
-- [⚠️ Haftungsausschluss](#️-haftungsausschluss-1)
-
----
-
-## 🚀 Hauptfunktionen
-
-Diese Anwendung ist in mehrere Hauptansichten gegliedert, die jeweils mit leistungsstarken Funktionen ausgestattet sind, um Sie auf Ihrer Anbaureise zu begleiten.
-
-### 1. Die Sortendatenbank (Ansicht `Sorten`)
-
-Ihre zentrale Bibliothek für Cannabis-Wissen, vollständig offline verfügbar und für tiefgehende Erkundungen konzipiert.
-
-*   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu über 300+ Cannabissorten zu.
-*   **Leistungsstarke Filter & Sortierung**:
-    *   **Erweiterte Suche**: Finden Sie Sorten sofort nach Namen.
-    *   **Umfassende Filter**: Grenzen Sie Ihre Suche mit einem anspruchsvollen Filter-Modal ein, einschließlich THC/CBD-Gehaltsbereichen, Blütezeit, Schwierigkeitsgrad, Sortentyp (Sativa, Indica, Hybrid), spezifischen Aromen und dominanten Terpenen.
-    *   **Flexible Sortierung**: Organisieren Sie die Liste nach Name, THC/CBD-Gehalt, Blütezeit und mehr, in auf- oder absteigender Reihenfolge.
-    *   **Favoriten**: Schalten Sie um, um nur Ihre Lieblingssorten anzuzeigen.
-*   **Duale Ansichtsmodi**: Wechseln Sie nahtlos zwischen einer detaillierten **Listenansicht** mit konfigurierbaren Spalten und einer visuell ansprechenden **Rasteransicht**.
-*   **Volle CRUD für Ihre Sorten**: Sie haben die vollständige Kontrolle über Ihre persönliche Sortensammlung.
-    *   **Erstellen**: Fügen Sie Ihre eigenen Sorten mit einem detaillierten Formular hinzu, das alles von der Genetik und den Cannabinoidprofilen bis hin zu agronomischen Daten und Beschreibungen erfasst.
-    *   **Lesen**: Sehen Sie Ihre benutzerdefinierten Sorten neben der Hauptdatenbank an.
-    *   **Aktualisieren**: Bearbeiten Sie ganz einfach alle Informationen für die von Ihnen erstellten Sorten.
-    *   **Löschen**: Entfernen Sie Ihre benutzerdefinierten Sorten nach einer Bestätigung.
-*   **KI-Anbau-Tipps mit CRUD-Archiv**:
-    *   **Tipps generieren**: Erhalten Sie einzigartige, KI-gestützte Anbauratschläge, die auf eine bestimmte Sorte zugeschnitten sind.
-    *   **Archiv verwalten**: **Speichern**, **ansehen**, **bearbeiten** und **löschen** Sie diese Tipps in einem dedizierten, durchsuchbaren "Tipps"-Archiv.
-*   **Professioneller Export & Verwaltung**:
-    *   **Mehrere Formate**: Exportieren Sie Ihre Sortendaten als professionellen, mehrseitigen **PDF**-Bericht, eine datenfreundliche **CSV**-Datei, eine einfache **TXT**-Datei oder eine entwicklerfreundliche **JSON**-Datei.
-    *   **Flexible Quellen**: Wählen Sie, ob Sie nur ausgewählte Sorten, Ihre Favoriten, die aktuell gefilterte Liste oder die gesamte Datenbank exportieren möchten.
-    *   **Volle CRUD für Exporte**: Der "Exporte"-Tab speichert ein Protokoll Ihrer letzten Exporte. **Laden Sie jeden Export erneut herunter**, **bearbeiten** Sie seinen Namen und fügen Sie Notizen hinzu oder **löschen** Sie ihn aus Ihrem Verlauf.
-
-### 2. Der Grow Room (Ansicht `Pflanzen`)
-
-Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Grows.
-
-*   **Interaktives Dashboard**:
-    *   **Pflanzen-Slots**: Verwalten Sie Ihre aktiven Grows in drei dedizierten Slots. Ein leerer Slot fordert Sie auf, eine neue Pflanze zu starten.
-    *   **Status auf einen Blick**: Jede `Pflanzenkarte` zeigt eine visuelle Darstellung der Pflanze, ihre aktuelle Phase, ihr Alter, ihre Höhe und einen Gesundheitsindikator für sofortiges Feedback.
-    *   **Gartenübersicht**: Ein zusammenfassendes Panel zeigt Ihre gesamten aktiven Grows, offene Aufgaben und eine allgemeine "Gartengesundheit"-Punktzahl basierend auf dem durchschnittlichen Pflanzenstress.
-    *   **Globale Aktionen**: Verwenden Sie die "Alle gießen"-Schaltfläche, um durstige Pflanzen effizient zu versorgen, oder die "Nächster Tag"-Schaltfläche, um die Simulation voranzutreiben.
-*   **KI-gestützte Diagnose**: Laden Sie ein Foto eines Blattes oder einer Problemzone hoch, um eine sofortige KI-basierte Diagnose und eine empfohlene Lösung zu erhalten.
-*   **Detaillierte Pflanzenansicht**: Klicken Sie auf eine Pflanze, um tief in ihren Status einzutauchen.
-    *   **Umfassende Tabs**: Navigieren Sie zwischen **Übersicht**, **Journal**, **Aufgaben**, **Fotos** und dem **KI-Berater**.
-    *   **Übersicht**: Sehen Sie eine große Pflanzenvisualisierung, detaillierte Vitalwerte (pH, EC, Feuchtigkeit, Stress) mit Idealbereichsindikatoren, eine vollständige Lebenszyklus-Zeitleiste und ein historisches Diagramm ihres Wachstums und ihrer Stresslevel.
-    *   **Journal**: Ein vollständiges, filterbares Protokoll jeder Aktion und jedes Ereignisses im Leben der Pflanze, vom Gießen und Düngen bis hin zu systemgenerierten Phasenwechseln und Problemerkennungen.
-    *   **Fotogalerie**: Der "Fotos"-Tab bietet eine schöne Galerieansicht aller Bilder, die Sie im Journal protokolliert haben.
-*   **KI-gestützter Pflanzenberater mit voller CRUD-Funktionalität**:
-    *   **Personalisierte Ratschläge**: Erhalten Sie proaktive, datengestützte Ratschläge von der Gemini-KI basierend auf den aktuellen Vitalwerten, der Phase und den Problemen Ihrer Pflanze.
-    *   **Pflanzenspezifisches Archiv**: Sie haben die volle **CRUD**-Kontrolle über die Ratschläge der KI für jede Pflanze. **Speichern**, **ansehen**, **bearbeiten** und **löschen** Sie Empfehlungen, um eine einzigartige Historie der KI-geführten Pflege aufzubauen.
-*   **Globales Berater-Archiv**: Eine dedizierte Ansicht auf dem Haupt-Dashboard, die alle gespeicherten KI-Berater-Antworten von all Ihren vergangenen und gegenwärtigen Pflanzen zusammenfasst und so eine leistungsstarke, durchsuchbare Wissensdatenbank Ihrer KI-Interaktionen erstellt.
-
-### 3. Die Werkstatt (Ansicht `Ausrüstung`)
-
-Planen und optimieren Sie Ihr reales Grow-Setup mit leistungsstarken Werkzeugen.
-
-*   **KI-Setup-Konfigurator**:
-    *   **Geführter Prozess**: Ein einfacher Schritt-für-Schritt-Assistent fragt nach Ihrer Pflanzenanzahl und dem gewünschten Konfigurationsstil (Standard, Medium, Premium).
-    *   **Maßgeschneiderte Empfehlungen**: Die Gemini-KI generiert eine vollständige, detaillierte Ausrüstungsliste mit Produktvorschlägen, Preisschätzungen und einer Begründung für jede Wahl.
-*   **Gespeicherte Setups mit voller CRUD-Funktionalität & Export**:
-    *   **Speichern & Verwalten**: Speichern Sie Ihre generierten Setups zur späteren Verwendung.
-    *   **Vollständige Bearbeitung**: **Aktualisieren** Sie jedes gespeicherte Setup, indem Sie den Namen ändern, Komponenten austauschen oder Preise anpassen.
-    *   **Exportieren**: Exportieren Sie Ihre gespeicherten Setups als PDF, CSV, TXT oder JSON zum Einkaufen oder Teilen.
-    *   **Löschen**: Entfernen Sie alte Setups, die Sie nicht mehr benötigen.
-*   **Essentielle Rechner**: Eine Reihe von Werkzeugen zur Feinabstimmung Ihres Grows:
-    *   **Belüftung**, **Beleuchtung**, **Nährstoffe**, **Kosten**, **EC/PPM-Umrechner** und ein **Ertragsschätzer**.
-*   **Kuratierte Grow-Shops**: Ein hilfreicher Leitfaden, der seriöse Online-Grow-Shops in Europa und den USA auflistet, komplett mit Beschreibungen, Bewertungen und Stärken, um Ihnen bei der Beschaffung Ihrer Ausrüstung zu helfen.
-
-### 4. Die Bibliothek (Ansichten `Wissen` & `Hilfe`)
-
-Ihre vollständige Ressource zum Lernen und zur Problemlösung.
-
-*   **Interaktiver Grow-Guide**:
-    *   **Schritt-für-Schritt-Lernen**: Eine geführte Reise durch die fünf Hauptphasen des Anbaus, von der Vorbereitung bis zum Curing.
-    *   **Fortschrittsverfolgung**: Haken Sie Checklistenpunkte in jeder Phase ab, um Ihren Lernfortschritt visuell zu verfolgen.
-*   **KI-Mentor mit CRUD-Archiv**:
-    *   **Fragen Sie alles**: Stellen Sie dem KI-Mentor eine beliebige allgemeine Anbaufrage und erhalten Sie eine umfassende, formatierte Antwort.
-    *   **Persönliche Wissensdatenbank**: Sie haben die volle **CRUD**-Kontrolle über Ihre Mentor-Sitzungen. **Speichern**, **ansehen**, **bearbeiten** (Titel und Inhalt) und **löschen** Sie Antworten, um Ihre eigene kuratierte Wissensdatenbank aufzubauen.
-*   **Umfassendes Hilfecenter**:
-    *   **Erste Schritte & FAQ**: Eine detaillierte Einführung in die Funktionen der App und ein umfangreicher, aktualisierter FAQ-Bereich zur Beantwortung häufiger Fragen.
-    *   **Tiefgehende Lexika**: Detaillierte Glossare im Akkordeon-Stil zu **Cannabinoiden**, **Terpenen** und **Flavonoiden**, um Ihr wissenschaftliches Verständnis zu vertiefen.
-    *   **Anbauleitfäden**: Abschnitte zu agronomischen Grundlagen, Pflanzenpflege und fortgeschrittenen Trainingstechniken.
-
-### 5. Das Kontrollzentrum (Ansicht `Einstellungen`)
-
-Passen Sie die App an Ihre genauen Vorlieben an und verwalten Sie Ihre Daten mit Zuversicht.
-
-*   **Personalisierung**: Passen Sie die **Sprache** (Englisch/Deutsch), das **Thema** und die **Schriftgröße** der App an. Legen Sie Ihre bevorzugte Standardansicht beim Start fest.
-*   **Erweiterte Barrierefreiheit**: Aktivieren Sie einen **Hochkontrastmodus**, eine **Legastheniker-freundliche Schriftart** oder **Reduzierte Bewegung** für ein maßgeschneidertes Seherlebnis.
-*   **UI-Dichte**: Wechseln Sie zwischen einem geräumigen `Komfortablen` Layout oder einer datenreichen `Kompakten` Ansicht.
-*   **Ansichtsanpassung**: Konfigurieren Sie die Sortenansicht, indem Sie eine Standard-Sortierreihenfolge, einen Ansichtsmodus und die sichtbaren Datenspalten festlegen.
-*   **Simulationssteuerung**: Feinabstimmung der Pflanzensimulation mit Einstellungen für Geschwindigkeit, Schwierigkeit und Schaltern für den automatischen Hintergrundfortschritt und das Journaling.
-*   **Datenverwaltung**:
-    *   **Vollständiges Backup & Wiederherstellung**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Favoriten, benutzerdefinierte Sorten, Archive) in eine einzige JSON-Datei. Importieren Sie sie später, um Ihren Zustand auf jedem Gerät wiederherzustellen.
-    *   **Zurücksetzungsoptionen**: Setzen Sie sicher nur Ihre Pflanzen zurück oder führen Sie einen vollständigen Werksreset der gesamten Anwendung durch.
-
----
-
-## 🤖 Entwicklung mit AI Studio & Open Source
-
-Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt, einer innovativen Plattform, die die Erstellung und Änderung komplexer, funktionsreicher Webanwendungen durch Befehle in natürlicher Sprache ermöglicht. Der gesamte Prozess, vom Aufbau des initialen Projekts bis zur Implementierung komplexer Funktionen wie der Simulations-Engine und den KI-gestützten Werkzeugen, wurde durch iterative Prompts gesteuert.
-
-Dieses Projekt ist zudem vollständig Open Source. Sie sind herzlich eingeladen, den Quellcode einzusehen, Fehler zu melden oder auf GitHub zur Entwicklung beizutragen.
-
-*   **Sehen Sie, wie es gemacht wurde, oder forken Sie das Projekt in AI Studio:** [https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-](https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-)
-*   **Tragen Sie bei oder sehen Sie den Quellcode auf GitHub ein:** [https://github.com/qnbs/CannaGuide-2025](https://github.com/qnbs/CannaGuide-2025)
-
----
-
-## 💻 Technologiestapel
-
-*   **Frontend:** React, TypeScript
-*   **Styling:** Tailwind CSS
-*   **KI-Integration:** Google Gemini API (`@google/genai`)
-*   **Datenpersistenz:** `localStorage`, `IndexedDB` (für Bilder)
-*   **PDF-Generierung:** `jsPDF` & `jsPDF-AutoTable`
-
----
-
-## 🏁 Erste Schritte
-
-Es ist keine Installation oder Einrichtung erforderlich. Die Anwendung läuft vollständig in Ihrem Webbrowser.
-
-1.  **Sorten entdecken:** Beginnen Sie in der **Sorten**-Ansicht, um die Datenbank zu durchsuchen. Verwenden Sie die Filter und die Suchleiste, um eine Sorte zu finden, die Sie interessiert, und speichern Sie sie mit dem Herz-Symbol als Favorit.
-2.  **Anbau starten:** Klicken Sie auf der Detailseite einer Sorte auf "Anbau starten", um Ihr initiales Setup zu konfigurieren und die neue Pflanze Ihrem **Pflanzen**-Dashboard hinzuzufügen.
-3.  **Pflanzen verwalten:** Die **Pflanzen**-Ansicht ist Ihr Haupt-Dashboard. Die Simulation schreitet automatisch voran. Klicken Sie auf eine Pflanze, um ihren detaillierten Status zu überprüfen, Aktionen in ihrem Journal zu protokollieren und Aufgaben zu erledigen, um sie gesund und stressfrei zu halten.
-4.  **Lernen und Planen:** Nutzen Sie die Ansichten **Wissen** und **Ausrüstung**, um Ihr Verständnis zu vertiefen und Ihr reales Setup mit dem KI-Konfigurator und den Rechnern zu planen.
-5.  **Befehlspalette nutzen:** Für einen schnellen Zugriff drücken Sie jederzeit `Cmd/Strg + K`, um zwischen den Bereichen zu springen oder Aktionen sofort auszuführen.
-
----
-
-## ⚠️ Haftungsausschluss
-
-> Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen, die je nach Land und Region variieren. Bitte informieren Sie sich über die Gesetze in Ihrer Gegend und handeln Sie stets verantwortungsbewusst und gesetzeskonform.

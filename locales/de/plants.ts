@@ -135,6 +135,10 @@ export const plantsView = {
       wateringTask: {
           title: 'Gießen erforderlich',
           description: 'Die Substratfeuchtigkeit ist niedrig.'
+      },
+      trichomeTask: {
+          title: 'Trichome prüfen',
+          description: 'Das Erntefenster rückt näher. Zeit, die Trichome zu inspizieren!'
       }
   },
   warnings: {

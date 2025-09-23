@@ -6,6 +6,7 @@ import { Button } from '@/components/common/Button';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { LIST_GRID_CLASS } from '@/components/views/strains/constants';
 import { useAppStore } from '@/stores/useAppStore';
+import { selectHasAvailableSlots } from '@/stores/selectors';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -40,7 +41,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     }));
     
     const isFav = useAppStore(state => state.favoriteIds.has(strain.id));
-    const hasAvailableSlots = useAppStore(state => state.plants.some(p => p === null));
+    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
     const checkboxId = useId();
 
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
@@ -68,8 +69,12 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
-            className={`${LIST_GRID_CLASS} glass-pane rounded-lg transition-all duration-200 cursor-pointer hover:!border-primary-500/80 hover:bg-slate-700/50 animate-fade-in-stagger`}
-            style={{ animationDelay: `${Math.min(index, 10) * 20}ms` }}
+            className={`${LIST_GRID_CLASS} group glass-pane rounded-lg transition-all duration-200 cursor-pointer odd:bg-slate-800/20 hover:!bg-slate-700/50 hover:!border-primary-500/80 animate-fade-in-stagger`}
+            style={{ 
+                animationDelay: `${Math.min(index, 10) * 20}ms`,
+                contentVisibility: 'auto',
+                containIntrinsicSize: '72px'
+             }}
         >
             <div className="flex items-center justify-center px-3 py-3">
                 <input
@@ -102,7 +107,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                     <PhosphorIcons.Cannabis className={`w-4 h-4 ${strain.agronomic.difficulty === 'Hard' ? 'text-red-500' : 'text-slate-700'}`} />
                 </div>
             </div>
-            <div className="flex items-center justify-start px-3 py-3">
+            <div className="flex items-center justify-end px-3 py-3">
                 <div className="flex gap-1">
                     <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
                         <Button variant="secondary" size="sm" className={`!p-1.5 ${hasAvailableSlots ? 'animate-pulse' : ''}`} onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>

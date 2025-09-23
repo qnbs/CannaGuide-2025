@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlantStage } from '@/types';
-import { PLANT_STAGE_DETAILS, STAGES_ORDER } from '@/constants';
+import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { STAGES_ORDER } from '@/constants';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface TimelineProps {

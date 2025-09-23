@@ -43,5 +43,59 @@ export const strains = {
     "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"],
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/plant" },
     "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.2m)" }
+  },
+  "han-solo-burger": {
+    "description": "A potent indica-dominant strain with a strong, spicy and earthy aroma. The effect is strong, physically relaxing and long-lasting.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "GMO Cookies x Larry OG",
+    "aromas": ["Spicy", "Earthy", "Pine", "Pungent"],
+    "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"],
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
+  },
+  "harry-potter": {
+    "description": "An indica-dominant strain with a sweet, earthy aroma. The effect is magical, relaxing and euphoric, ideal for evening use.",
+    "typeDetails": "Indica 60% / Sativa 40%",
+    "genetics": "Blissful Wizard x Fire Alien Kush",
+    "aromas": ["Sweet", "Earthy", "Spicy", "Pine"],
+    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
+    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
+  },
+  "hawaiian-punch": {
+    "description": "A sativa-dominant strain with a sweet, tropical aroma. The effect is uplifting, energizing and social, ideal for daytime use.",
+    "typeDetails": "Sativa 70% / Indica 30%",
+    "genetics": "Hawaiian Sativa",
+    "aromas": ["Tropical", "Sweet", "Citrus", "Pineapple"],
+    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
+    "heightDetails": { "indoor": "Tall", "outdoor": "Tall" }
+  },
+  "hawaiian-snow": {
+    "description": "An award-winning Sativa strain with a spicy, citrusy aroma. The effect is strong, uplifting, creative and long-lasting.",
+    "typeDetails": "Sativa 85% / Indica 15%",
+    "genetics": "Hawaiian Haze x Neville's Haze",
+    "aromas": ["Spicy", "Citrus", "Pine", "Eucalyptus"],
+    "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"],
+    "yieldDetails": { "indoor": "600-700 g/m²", "outdoor": "~800 g/plant" },
+    "heightDetails": { "indoor": "Tall", "outdoor": "Very Tall" }
+  },
+  "hellcat": {
+    "description": "An indica-dominant strain with a sweet, fruity and slightly earthy aroma. The effect is relaxing and calming, ideal for evening use.",
+    "typeDetails": "Indica 70% / Sativa 30%",
+    "genetics": "Unknown",
+    "aromas": ["Sweet", "Fruity", "Earthy", "Berry"],
+    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
+    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
+  },
+  "herijuana": {
+    "description": "An extremely potent Indica strain known for its heavily sedating and pain-relieving effects. Ideal for medical users and experienced consumers.",
+    "typeDetails": "Indica 90% / Sativa 10%",
+    "genetics": "Petrolia Headstash x Killer New Haven",
+    "aromas": ["Earthy", "Woody", "Spicy", "Pungent"],
+    "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
+    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
+    "heightDetails": { "indoor": "Short", "outdoor": "Short" }
   }
 }

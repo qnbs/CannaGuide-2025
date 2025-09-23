@@ -5,6 +5,7 @@ import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon';
 import { Button } from '../common/Button';
 import { useAppStore } from '@/stores/useAppStore';
+import { selectActiveView } from '@/stores/selectors';
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void;
@@ -13,13 +14,10 @@ interface HeaderProps {
     onInstallClick: () => void;
 }
 
-// FIX: Component no longer receives activeView/setActiveView as props, uses store instead.
 export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPrompt, isInstalled, onInstallClick }) => {
     const { t } = useTranslations();
-    const { activeView, setActiveView } = useAppStore(state => ({
-        activeView: state.activeView,
-        setActiveView: state.setActiveView,
-    }));
+    const activeView = useAppStore(selectActiveView);
+    const setActiveView = useAppStore(state => state.setActiveView);
 
     const viewTitles: Record<View, string> = {
         [View.Strains]: t('nav.strains'),

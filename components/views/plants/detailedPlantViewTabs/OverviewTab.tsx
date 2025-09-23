@@ -2,7 +2,7 @@ import React from 'react';
 import { Plant } from '@/types';
 import { Card } from '@/components/common/Card';
 import { PlantVisual } from '@/components/views/plants/PlantVisual';
-import { PLANT_STAGE_DETAILS } from '@/constants';
+import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { HistoryChart } from '@/components/views/plants/HistoryChart';
 import { PlantLifecycleTimeline } from '@/components/views/plants/PlantLifecycleTimeline';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -15,7 +15,6 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslations();
     const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
-    const idealEnv = PLANT_STAGE_DETAILS[plant.stage].idealEnv;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

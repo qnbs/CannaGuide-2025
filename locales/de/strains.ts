@@ -25,6 +25,19 @@ export const strainsView = {
   aromas: 'Aromen',
   toggleView: 'Ansichtsmodus umschalten',
   loadError: 'Laden der Sortendaten fehlgeschlagen. Bitte prüfe deine Verbindung oder versuche es später erneut.',
+  selectedCount: '{count} ausgewählt',
+  clearSelection: 'Auswahl aufheben',
+  emptyStates: {
+    myStrains: {
+        title: 'Keine eigenen Sorten',
+        text: 'Du hast noch keine eigenen Sorten zur Datenbank hinzugefügt.',
+    },
+    favorites: {
+        title: 'Keine Favoriten',
+        text: 'Markiere Sorten mit einem Herz, um sie hier zu speichern.',
+        button: 'Alle Sorten durchsuchen'
+    },
+  },
   tabs: {
     allStrains: 'Alle Sorten',
     myStrains: 'Meine Sorten',

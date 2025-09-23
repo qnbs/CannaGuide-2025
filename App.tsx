@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Notification } from '@/types';
+import { View } from '@/types';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { ToastContainer } from '@/components/common/Toast';
@@ -8,8 +8,7 @@ import { BottomNav } from '@/components/navigation/BottomNav';
 import { StrainsView } from '@/components/views/StrainsView';
 import { PlantsView } from '@/components/views/PlantsView';
 import { EquipmentView } from '@/components/views/EquipmentView';
-import { KnowledgeView } from '@/components/views/KnowledgeView';
-// FIX: Corrected import error by creating the SettingsView component.
+import { KnowledgeView } from '@/components/views/knowledge/KnowledgeView';
 import { SettingsView } from '@/components/views/SettingsView';
 import { HelpView } from '@/components/views/HelpView';
 import { OnboardingModal } from '@/components/common/OnboardingModal';
@@ -18,29 +17,21 @@ import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { strainService } from '@/services/strainService';
+import { selectActiveView, selectIsCommandPaletteOpen, selectNotifications, selectSettings } from '@/stores/selectors';
 
-// This component subscribes to the notifications state and renders the toast container.
 const ToastManager: React.FC = () => {
-    const notifications = useAppStore(state => state.notifications);
+    const notifications = useAppStore(selectNotifications);
     const removeNotification = useAppStore(state => state.removeNotification);
     return <ToastContainer notifications={notifications} onClose={removeNotification} />;
 };
 
 const AppContent: React.FC = () => {
-    const {
-        settings,
-        setSetting,
-        activeView,
-        setActiveView,
-        isCommandPaletteOpen,
-        setIsCommandPaletteOpen,
-        addNotification
-    } = useAppStore(state => ({
-        settings: state.settings,
+    const settings = useAppStore(selectSettings);
+    const activeView = useAppStore(selectActiveView);
+    const isCommandPaletteOpen = useAppStore(selectIsCommandPaletteOpen);
+    
+    const { setSetting, setIsCommandPaletteOpen, addNotification } = useAppStore(state => ({
         setSetting: state.setSetting,
-        activeView: state.activeView,
-        setActiveView: state.setActiveView,
-        isCommandPaletteOpen: state.isCommandPaletteOpen,
         setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
         addNotification: state.addNotification,
     }));
@@ -76,20 +67,14 @@ const AppContent: React.FC = () => {
     useEffect(() => {
         if (t) {
             strainService.init(t, settings.language);
-            // Initialize the Zustand store with the translation function
             useAppStore.getState().init(t);
         }
     }, [t, settings.language]);
 
     useEffect(() => {
-        let notificationId: number | null = null;
         if (isOffline) {
-            // Using a simple notification system that might not have IDs
             addNotification(t('common.offlineWarning'), 'info');
         }
-        return () => {
-            // Cleanup logic if needed when component unmounts or status changes
-        };
     }, [isOffline, addNotification, t]);
 
     const handleOnboardingClose = () => {
@@ -112,11 +97,7 @@ const AppContent: React.FC = () => {
     
     const OfflineBanner = () => {
         if (!isOffline) return null;
-        return (
-            <div className="offline-banner">
-                {t('common.offlineWarning')}
-            </div>
-        );
+        return <div className="offline-banner">{t('common.offlineWarning')}</div>;
     };
 
     const renderView = () => {
@@ -139,31 +120,25 @@ const AppContent: React.FC = () => {
                 onClose={() => setIsCommandPaletteOpen(false)}
                 commands={commands}
             />
-
             <Header 
                 onCommandPaletteOpen={() => setIsCommandPaletteOpen(true)}
                 deferredPrompt={deferredPrompt}
                 isInstalled={isInstalled}
                 onInstallClick={handleInstallClick}
             />
-            
             <OfflineBanner />
-
             <main className="flex-grow overflow-y-auto p-4 sm:p-6">
                 <div className="max-w-7xl mx-auto">
                     {renderView()}
                 </div>
             </main>
-
             <BottomNav />
         </div>
     );
 };
 
 export const App: React.FC = () => {
-    // Initialize the Zustand store which loads from localStorage
     useAppStore();
-    
     return (
         <>
             <AppContent />

@@ -6,6 +6,7 @@ import { Card } from '@/components/common/Card';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
 import { useAppStore } from '@/stores/useAppStore';
+import { selectHasAvailableSlots } from '@/stores/selectors';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -27,15 +28,14 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
         selectStrain,
         initiateGrow,
         openAddModal,
-        hasAvailableSlots,
     } = useAppStore(state => ({
         isFavorite: state.favoriteIds.has(strain.id),
         toggleFavorite: state.toggleFavorite,
         selectStrain: state.selectStrain,
         initiateGrow: state.initiateGrow,
         openAddModal: state.openAddModal,
-        hasAvailableSlots: state.plants.some(p => p === null),
     }));
+    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
     
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-500', Indica: 'text-indigo-500', Hybrid: 'text-blue-500' };

@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
-import { Plant, PlantStage } from '@/types';
+import { Plant } from '@/types';
 import { Card } from '@/components/common/Card';
 import { PlantVisual } from '@/components/views/plants/PlantVisual';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { VitalBar } from '@/components/views/plants/VitalBar';
-import { PLANT_STAGE_DETAILS } from '@/constants';
+import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 
 interface PlantCardProps {
   plant: Plant;
@@ -24,7 +24,6 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
     const { t } = useTranslations();
     const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
     
-    // FIX: Explicitly type the return value of useMemo to ensure healthStatus is typed as 'good' | 'danger'.
     const { healthStatus, healthTitle } = useMemo<{ healthStatus: 'good' | 'danger'; healthTitle: string }>(() => {
         const hasProblems = plant.problems.length > 0;
         const hasHighPriorityTask = plant.tasks.some(t => !t.isCompleted && t.priority === 'high');

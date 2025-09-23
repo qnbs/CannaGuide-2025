@@ -96,6 +96,9 @@ export const problemMessages = {
     tempTooLow: { message: 'Temperature Too Low', solution: 'Use a heating mat or increase room temperature.' },
     humidityTooHigh: { message: 'Humidity Too High', solution: 'Increase exhaust fan speed and use a dehumidifier if necessary.' },
     humidityTooLow: { message: 'Humidity Too Low', solution: 'Use a humidifier or hang wet towels.' },
+    vpdTooLow: { message: 'VPD Too Low (Too Humid)', solution: 'Decrease humidity or slightly increase temperature to encourage transpiration.' },
+    vpdTooHigh: { message: 'VPD Too High (Too Dry)', solution: 'Increase humidity or slightly decrease temperature to reduce stress.' },
+    pest: { message: 'Pest Infestation Detected', solution: 'Isolate plant, treat with neem oil, and introduce beneficial insects.' },
 };
 
 export const ai = {

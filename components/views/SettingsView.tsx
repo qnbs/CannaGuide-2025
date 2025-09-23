@@ -5,7 +5,8 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { dbService } from '@/services/dbService';
-import { Language, Theme, View, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity } from '@/types';
+import { Language, Theme, View, UiDensity } from '@/types';
+import { selectSettings } from '@/stores/selectors';
 
 interface SettingsViewProps {
     deferredPrompt: any;
@@ -48,24 +49,22 @@ const Checkbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & {label: s
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onInstallClick }) => {
     const { t } = useTranslations();
-    const { settings, setSetting, resetPlants } = useAppStore(state => ({
-        settings: state.settings,
+    const settings = useAppStore(selectSettings);
+    const { setSetting, resetPlants, addNotification } = useAppStore(state => ({
         setSetting: state.setSetting,
         resetPlants: state.resetPlants,
+        addNotification: state.addNotification,
     }));
-    const addNotification = useAppStore(state => state.addNotification);
     const isInstalled = !deferredPrompt && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true);
     
     const handleExportData = () => {
         if(window.confirm(t('settingsView.data.exportConfirm'))) {
             try {
-                // Use the new single storage key from persist middleware
                 const appDataString = localStorage.getItem('cannaguide-2025-storage');
                 if (!appDataString) throw new Error("No data found in storage");
 
                 const appData = JSON.parse(appDataString);
                 
-                // We only need the 'state' part of the persisted object
                 const jsonString = JSON.stringify(appData.state, null, 2);
                 const blob = new Blob([jsonString], { type: "application/json" });
                 const url = URL.createObjectURL(blob);
@@ -102,10 +101,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                         return;
                     }
                     
-                    // Create the object structure that the persist middleware expects
                     const persistedData = {
                         state: data,
-                        version: useAppStore.getState().settings.onboardingCompleted ? 1 : 0 // a simple version check
+                        version: useAppStore.getState().settings.onboardingCompleted ? 1 : 0
                     };
 
                     localStorage.setItem('cannaguide-2025-storage', JSON.stringify(persistedData));
@@ -124,23 +122,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
 
     const handleResetAllData = () => {
         if (window.confirm(t('settingsView.data.resetAllConfirm'))) {
-            // This function ensures all data is cleared. The logic is to first
-            // clear the secondary database (IndexedDB for images), then trigger a 
-            // success notification, and only after a delay (to let the user see the notification),
-            // clear the primary data from localStorage and reload the page.
-            // This fixes a bug where clearing localStorage before the notification caused
-            // the in-memory state to be re-persisted, effectively cancelling the reset.
             dbService.clearAllData()
                 .catch(err => {
-                    // Log the error but continue, as clearing localStorage is more critical for a reset.
                     console.error("Failed to clear IndexedDB data, but proceeding with reset:", err);
                 })
                 .finally(() => {
-                    // Show success notification. This will briefly re-write localStorage with the current in-memory state.
                     addNotification(t('settingsView.data.resetAllSuccess'), 'success');
-                    
-                    // After a short delay to allow the notification to be seen,
-                    // clear localStorage and reload the page. This is the crucial part.
                     setTimeout(() => {
                         localStorage.removeItem('cannaguide-2025-storage');
                         window.location.reload();

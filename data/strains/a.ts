@@ -11,10 +11,14 @@ export const strains: Strain[] = [
     cbdRange: '8-24%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Cannatonic x Ruderalis',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~400 g/m²', outdoor: '~450 g/plant' },
     },
   },
   {
@@ -27,10 +31,14 @@ export const strains: Strain[] = [
     cbdRange: '<1-2%',
     floweringTime: 10.5,
     floweringTimeRange: '10-11',
+    typeDetails: 'Sativa 80% / Indica 20%',
+    genetics: 'Mexikanische Landrasse',
     agronomic: {
       difficulty: 'Hard',
       yield: 'Medium',
-      height: 'Medium',
+      height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~500 g/m²', outdoor: '~600 g/plant' },
     },
   },
   {
@@ -43,10 +51,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Sativa 80% / Indica 20%',
+    genetics: 'Lilly (Queen Mother x Congo) x OG Badazz',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
-      height: 'Medium',
+      height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '600-800 g/m²', outdoor: '~900 g/plant' },
     },
   },
   {
@@ -55,11 +67,18 @@ export const strains: Strain[] = [
     type: 'Indica',
     thc: 19,
     cbd: 1,
+    thcRange: '19%',
+    cbdRange: '1%',
     floweringTime: 8,
+    floweringTimeRange: '8',
+    typeDetails: 'Indica 100%',
+    genetics: 'Hindukusch Landrasse',
     agronomic: {
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '450 g/m²', outdoor: '~500 g/plant' },
     },
   },
   {
@@ -72,10 +91,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Indica 85% / Sativa 15%',
+    genetics: 'Afghani x Skunk #1',
     agronomic: {
       difficulty: 'Easy',
       yield: 'High',
-      height: 'Medium',
+      height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '500-600 g/m²', outdoor: '~700 g/plant' },
     },
   },
   {
@@ -88,10 +111,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 7.5,
     floweringTimeRange: '7-8',
+    typeDetails: 'Indica 100%',
+    genetics: 'Afghanische Landrasse',
     agronomic: {
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
@@ -104,10 +131,14 @@ export const strains: Strain[] = [
     cbdRange: '<2%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Indica 80% / Sativa 20%',
+    genetics: 'Afghani x Maui Haze',
     agronomic: {
       difficulty: 'Medium',
-      yield: 'Medium',
+      yield: 'High',
       height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-800 g/m²', outdoor: '~900 g/plant' },
     },
   },
   {
@@ -120,10 +151,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9,
     floweringTimeRange: '8-10',
+    typeDetails: 'Sativa 75% / Indica 25%',
+    genetics: 'Orange Velvet x Jack The Ripper',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
@@ -136,10 +171,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Atomic Apple x Xeno #1',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
     },
   },
   {
@@ -152,10 +191,14 @@ export const strains: Strain[] = [
     cbdRange: '<2%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Sativa 65% / Indica 35%',
+    genetics: 'Kolumbianisch x Mexikanisch x Thailändisch x Afghanisch',
     agronomic: {
       difficulty: 'Easy',
-      yield: 'High',
-      height: 'Medium',
+      yield: 'Medium',
+      height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '350-500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
@@ -168,10 +211,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Sativa 70% / Indica 30%',
+    genetics: 'White Widow x Haze',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: 'bis 800 g/m²', outdoor: '~900 g/plant' },
     },
   },
   {
@@ -184,42 +231,54 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Indica 70% / Sativa 30%',
+    genetics: '(Purple Alaskan x Kush) x Brasilianische Sativa',
     agronomic: {
-      difficulty: 'Easy',
-      yield: 'High',
-      height: 'Medium',
+        difficulty: 'Easy',
+        yield: 'High',
+        height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+        yieldDetails: { indoor: '~550 g/m²', outdoor: '~600 g/plant' },
     },
   },
   {
     id: 'alaskan-thunder-fuck',
     name: 'Alaskan Thunder Fuck',
-    type: 'Sativa',
+    type: 'Hybrid',
     thc: 22,
     cbd: 1,
     thcRange: '18-26%',
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Sativa 70% / Indica 30%',
+    genetics: '(Nordkalifornische Sativa x Russische Ruderalis) x Afghanisch',
     agronomic: {
       difficulty: 'Medium',
-      yield: 'High',
+      yield: 'Medium',
       height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
     id: 'alien-dawg',
     name: 'Alien Dawg',
-    type: 'Hybrid',
+    type: 'Indica',
     thc: 21,
     cbd: 1,
     thcRange: '18-24%',
     cbdRange: '<1%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Indica 100%',
+    genetics: 'Chemdawg x Alien Technology',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
-      height: 'Medium',
+      height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
@@ -232,10 +291,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Las Vegas Purple Kush x Alien Dawg',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-500 g/m²', outdoor: '~500 g/plant' },
     },
   },
   {
@@ -248,10 +311,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Tahoe OG x Alien Kush',
     agronomic: {
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-500 g/m²', outdoor: '~450 g/plant' },
     },
   },
   {
@@ -264,10 +331,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8,
     floweringTimeRange: '7-9',
+    typeDetails: 'Indica 80% / Sativa 20%',
+    genetics: 'Sour Dubble x Tahoe Alien',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~400 g/m²', outdoor: '~450 g/plant' },
     },
   },
   {
@@ -280,42 +351,54 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8,
     floweringTimeRange: '7-9',
+    typeDetails: 'Indica 75% / Sativa 25%',
+    genetics: 'Afghan Skunk x (Jamaikanisch x Hawaiianisch)',
     agronomic: {
       difficulty: 'Easy',
       yield: 'High',
-      height: 'Medium',
+      height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: 'bis 700 g/m²', outdoor: '~800 g/plant' },
     },
   },
   {
     id: 'amnesia',
     name: 'Amnesia',
-    type: 'Sativa',
+    type: 'Hybrid',
     thc: 22,
     cbd: 1,
     thcRange: '20-24%',
     cbdRange: '<1%',
     floweringTime: 10.5,
     floweringTimeRange: '10-11',
+    typeDetails: 'Sativa 70% / Indica 30%',
+    genetics: 'Unbekannt (oft mit Skunk, Cinderella 99, Jack Herer assoziiert)',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
       height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~600 g/m²', outdoor: '~700 g/plant' },
     },
   },
   {
     id: 'amnesia-haze',
     name: 'Amnesia Haze',
-    type: 'Sativa',
+    type: 'Hybrid',
     thc: 22,
     cbd: 1,
     thcRange: '20-24%',
     cbdRange: '<1%',
     floweringTime: 10.5,
     floweringTimeRange: '10-11',
+    typeDetails: 'Sativa 80% / Indica 20%',
+    genetics: 'Diverse Landrassen (Südasiatisch, Jamaikanisch, etc.)',
     agronomic: {
       difficulty: 'Hard',
-      yield: 'Medium',
+      yield: 'High',
       height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '600-650 g/m²', outdoor: '~700 g/plant' },
     },
   },
   {
@@ -328,10 +411,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Sativa 60% / Indica 40%',
+    genetics: 'Amnesia Haze x Lemon Skunk',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~550 g/m²', outdoor: '~600 g/plant' },
     },
   },
   {
@@ -344,10 +431,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Indica 75% / Sativa 25%',
+    genetics: 'GSC x Fire OG',
     agronomic: {
       difficulty: 'Hard',
       yield: 'Low',
-      height: 'Medium',
+      height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '250-350 g/m²', outdoor: '~400 g/plant' },
     },
   },
   {
@@ -360,10 +451,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Animal Cookies x SinMint Cookies (oder andere GSC-Kreuzungen)',
     agronomic: {
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
@@ -376,26 +471,34 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9,
     floweringTimeRange: '8-10',
+    typeDetails: 'Indica 60% / Sativa 40%',
+    genetics: 'Green Crack x Tres Dawg',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-500 g/m²', outdoor: '~550 g/plant' },
     },
   },
   {
     id: 'apple-betty',
     name: 'Apple Betty',
     type: 'Hybrid',
-    thc: 33,
+    thc: 32.5,
     cbd: 1,
     thcRange: '30-35%',
     cbdRange: '<1%',
     floweringTime: 9,
     floweringTimeRange: '8-10',
+    typeDetails: 'Indica 60% / Sativa 40%',
+    genetics: 'Sour Apple x Animal Cookies (oder Chem\'s Sister x Sour Apple x Chocolate Diesel)',
     agronomic: {
       difficulty: 'Medium',
-      yield: 'Medium',
+      yield: 'High',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~550 g/m²', outdoor: '~650 g/plant' },
     },
   },
   {
@@ -408,10 +511,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9.5,
     floweringTimeRange: '9-10',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Blueberry Moonshine x Sour Apple (oder Sour Apple x Animal Cookies)',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '450-550 g/m²', outdoor: '~600 g/plant' },
     },
   },
   {
@@ -424,10 +531,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9,
     floweringTimeRange: '8-10',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Sour Apple x Animal Cookies',
     agronomic: {
       difficulty: 'Hard',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~450 g/m²', outdoor: '~500 g/plant' },
     },
   },
   {
@@ -440,26 +551,34 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 8.5,
     floweringTimeRange: '8-9',
+    typeDetails: 'Sativa 70% / Indica 30%',
+    genetics: 'Jack Herer x White Widow',
     agronomic: {
       difficulty: 'Easy',
-      yield: 'Medium',
-      height: 'Medium',
+      yield: 'High',
+      height: 'Tall',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~600 g/m²', outdoor: '~700 g/plant' },
     },
   },
   {
     id: 'apples-and-bananas',
     name: 'Apples and Bananas',
     type: 'Hybrid',
-    thc: 28,
+    thc: 27.5,
     cbd: 1,
     thcRange: '23-32%',
     cbdRange: '<1%',
     floweringTime: 9,
     floweringTimeRange: '9',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: '[(Platinum Cookies x Granddaddy Purple) x Blue Power] x Gelatti',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '500-600 g/m²', outdoor: '~650 g/plant' },
     },
   },
   {
@@ -472,26 +591,34 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 9,
     floweringTimeRange: '8-10',
+    typeDetails: 'Hybrid 50% / 50%',
+    genetics: 'Triangle Mints x Apple Fritter',
     agronomic: {
       difficulty: 'Medium',
       yield: 'High',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '~550 g/m²', outdoor: '~600 g/plant' },
     },
   },
   {
     id: 'aurora-indica',
     name: 'Aurora Indica',
-    type: 'Indica',
+    type: 'Hybrid',
     thc: 18,
     cbd: 1,
     thcRange: '16-20%',
     cbdRange: '<1%',
     floweringTime: 8,
     floweringTimeRange: '7-9',
+    typeDetails: 'Indica 90% / Sativa 10%',
+    genetics: 'Afghan x Northern Lights',
     agronomic: {
       difficulty: 'Easy',
-      yield: 'High',
+      yield: 'Medium',
       height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-500 g/m²', outdoor: '~500 g/plant' },
     },
   },
   {
@@ -504,10 +631,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 11.5,
     floweringTimeRange: '11-12 (Lifecycle)',
+    typeDetails: 'Sativa 50% / Indica 50% (Autoflower)',
+    genetics: 'Frisian Duck x Auto White Widow',
     agronomic: {
       difficulty: 'Easy',
       yield: 'Medium',
-      height: 'Medium',
+      height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-450 g/m²', outdoor: '50-100 g/plant' },
     },
   },
   {
@@ -520,10 +651,14 @@ export const strains: Strain[] = [
     cbdRange: '<1%',
     floweringTime: 10.5,
     floweringTimeRange: '10-11 (Lifecycle)',
+    typeDetails: 'Hybrid 50% / 50% (Autoflower)',
+    genetics: 'White Widow x Ruderalis',
     agronomic: {
       difficulty: 'Easy',
       yield: 'Medium',
       height: 'Medium',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: '400-500 g/m²', outdoor: '50-150 g/plant' },
     },
   },
   {
@@ -531,15 +666,19 @@ export const strains: Strain[] = [
     name: 'Ayahuasca Purple',
     type: 'Indica',
     thc: 21,
-    cbd: 1.4,
+    cbd: 1.25,
     thcRange: '18-24%',
     cbdRange: '0.5-2%',
     floweringTime: 8,
     floweringTimeRange: '7-9',
+    typeDetails: 'Indica 100%',
+    genetics: 'Red River Delta x Master Kush',
     agronomic: {
       difficulty: 'Easy',
       yield: 'High',
       height: 'Short',
+// FIX: Added missing 'outdoor' property to 'yieldDetails'
+      yieldDetails: { indoor: 'bis 650 g/m²', outdoor: '~700 g/plant' },
     },
   }
 ];

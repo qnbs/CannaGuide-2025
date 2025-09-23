@@ -1,38 +1,20 @@
 export const strains = {
-  "uk-cheese": {
-    "description": "The original Cheese phenotype from the UK, known for its extremely pungent, cheese-like aroma. The effect is strong, euphoric, and physically relaxing.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Skunk #1 phenotype",
-    "aromas": [
-      "Cheese",
-      "Pungent",
-      "Skunk",
-      "Earthy"
-    ],
-    "dominantTerpenes": [
-      "Caryophyllene",
-      "Myrcene",
-      "Limonene"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
-  },
   "unicorn-poop": {
-    "description": "An indica-dominant strain with a sweet, fruity, and slightly gassy aroma. The effect is relaxing and euphoric.",
-    "typeDetails": "Indica 70% / Sativa 30%",
+    "description": "A balanced hybrid with a sweet, fruity, and earthy aroma. The effect is relaxing, happy, and uplifting.",
+    "typeDetails": "Hybrid 50% / 50%",
     "genetics": "GMO Cookies x Sophisticated Lady",
-    "aromas": [
-      "Sweet",
-      "Fruity",
-      "Diesel",
-      "Berry"
-    ],
-    "dominantTerpenes": [
-      "Limonene",
-      "Caryophyllene",
-      "Myrcene"
-    ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "aromas": ["Sweet", "Fruity", "Earthy", "Citrus"],
+    "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
+    "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/plant" },
+    "heightDetails": { "indoor": "100-150 cm", "outdoor": "up to 1.8 m" }
+  },
+  "urkle": {
+    "description": "A classic California Indica, known for its deep purple colors and grape-like aroma. The effect is strongly relaxing and ideal for pain and insomnia.",
+    "typeDetails": "Indica 80% / Sativa 20%",
+    "genetics": "Mendocino Purps phenotype",
+    "aromas": ["Grape", "Berry", "Earthy", "Skunk"],
+    "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
+    "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "~400 g/plant" },
+    "heightDetails": { "indoor": "70-100 cm", "outdoor": "up to 1.2 m" }
   }
-}
+};

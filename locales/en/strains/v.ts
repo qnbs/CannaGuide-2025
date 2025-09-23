@@ -1,110 +1,20 @@
 export const strains = {
-  "v-kush": {
-    "description": "An indica-dominant strain with an earthy, piney aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "SFV OG Kush x Unknown",
-    "aromas": [
-      "Earthy",
-      "Pine",
-      "Spicy",
-      "Pungent"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Limonene",
-      "Caryophyllene"
-    ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.5 m)" }
-  },
-  "vader-og": {
-    "description": "A potent indica-dominant strain with an earthy, sweet aroma. The effect is strong, physically relaxing, and sedating.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "SFV OG Kush x Larry OG",
-    "aromas": [
-      "Earthy",
-      "Sweet",
-      "Grape",
-      "Spicy"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Limonene",
-      "Caryophyllene"
-    ],
-    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.2 m)" }
-  },
-  "vanilla-kush": {
-    "description": "An indica-dominant strain with a sweet, vanilla, and floral aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "Kashmir x Afghani",
-    "aromas": [
-      "Vanilla",
-      "Sweet",
-      "Floral",
-      "Lavender"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Caryophyllene",
-      "Linalool"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1 m)" }
-  },
-  "velvet-glove": {
-    "description": "An indica-dominant strain with an earthy, diesel-like, and slightly fruity aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "GMO Cookies x Nookies",
-    "aromas": [
-      "Earthy",
-      "Diesel",
-      "Fruity",
-      "Pungent"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Limonene",
-      "Caryophyllene"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.5 m)" }
-  },
-  "venom-og": {
-    "description": "An indica-dominant strain with an earthy, piney, and citrusy aroma. The effect is strong, physically relaxing, and sedating.",
-    "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "Poison OG x Rare Dankness #1",
-    "aromas": [
-      "Earthy",
-      "Pine",
-      "Citrus",
-      "Pungent"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Limonene",
-      "Caryophyllene"
-    ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.5 m)" }
+  "vanilla-frosting": {
+    "description": "An indica-dominant strain with a sweet, vanilla-like, and creamy aroma. The effect is relaxing and calming, ideal for evening use.",
+    "typeDetails": "Indica 65% / Sativa 35%",
+    "genetics": "Humboldt Frost OG x Humboldt Gelato Bx3",
+    "aromas": ["Vanilla", "Sweet", "Creamy", "Earthy"],
+    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
+    "heightDetails": { "indoor": "100-160 cm", "outdoor": "up to 2 m" }
   },
   "violator-kush": {
-    "description": "A potent indica-dominant strain with an earthy, spicy, and slightly sweet aroma. The effect is strong, physically relaxing, and sedating.",
+    "description": "A pure Indica with an earthy, spicy, and pungent aroma. The effect is strong, physically relaxing, and sedating, ideal for pain and insomnia.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Hindu Kush x Malana",
-    "aromas": [
-      "Earthy",
-      "Spicy",
-      "Sweet",
-      "Pine"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Caryophyllene",
-      "Limonene"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.2 m)" }
+    "aromas": ["Earthy", "Spicy", "Pungent", "Pine"],
+    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"],
+    "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~600 g/plant" },
+    "heightDetails": { "indoor": "80-100 cm", "outdoor": "up to 1.3 m" }
   }
-}
+};

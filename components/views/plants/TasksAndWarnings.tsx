@@ -18,8 +18,8 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
     return (
         <div className="space-y-6">
             <Card>
-                <h3 className="text-xl font-bold mb-4 text-slate-100 flex items-center gap-2">
-                    <PhosphorIcons.Checks className="w-6 h-6 text-primary-400" /> {t('plantsView.tasks.title')}
+                <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2 mb-4">
+                    <PhosphorIcons.Checks className="w-6 h-6" /> {t('plantsView.tasks.title')}
                 </h3>
                 {tasks.length > 0 ? (
                     <div className="space-y-3">
@@ -40,7 +40,7 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
                 )}
             </Card>
              <Card>
-                <h3 className="text-xl font-bold mb-4 text-amber-400 flex items-center gap-2">
+                <h3 className="text-xl font-bold font-display mb-4 text-amber-400 flex items-center gap-2">
                     <PhosphorIcons.WarningCircle className="w-6 h-6" /> {t('plantsView.warnings.title')}
                 </h3>
                 {problems.length > 0 ? (

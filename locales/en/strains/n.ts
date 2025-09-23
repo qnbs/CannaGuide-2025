@@ -1,38 +1,20 @@
 export const strains = {
-  "n13-kush": {
-    "description": "An indica-dominant strain with a fruity, earthy aroma. The effect is strong, relaxing, and physical, ideal for evening use.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "G13 Hashplant x Nicole Kush",
-    "aromas": [
-      "Fruity",
-      "Earthy",
-      "Sweet",
-      "Berry"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Caryophyllene",
-      "Limonene"
-    ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.5 m)" }
+  "northern-lights": {
+    "description": "A legendary, almost pure Indica strain, known for its fast flowering, high resin production, and deeply relaxing effects. Ideal for evening use and for insomnia.",
+    "typeDetails": "Indica 95% / Sativa 5%",
+    "genetics": "Afghani x Thai Landrace",
+    "aromas": ["Earthy", "Sweet", "Pine", "Spicy"],
+    "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
+    "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "600-650 g/plant" },
+    "heightDetails": { "indoor": "Short", "outdoor": "Medium" }
   },
-  "nebula": {
-    "description": "A balanced hybrid with a sweet, honey-like aroma. The effect is uplifting, creative, and energizing, but can also be slightly psychedelic.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "US Haze x Master Widow",
-    "aromas": [
-      "Sweet",
-      "Honey",
-      "Fruity",
-      "Floral"
-    ],
-    "dominantTerpenes": [
-      "Myrcene",
-      "Caryophyllene",
-      "Terpinolene"
-    ],
-    "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+  "nevilles-haze": {
+    "description": "A highly praised Sativa known for its extremely long flowering time and its strongly cerebral, almost psychedelic effects. Recommended only for experienced growers and consumers.",
+    "typeDetails": "Sativa 90% / Indica 10%",
+    "genetics": "Haze x Northern Lights #5",
+    "aromas": ["Pine", "Earthy", "Sweet", "Floral"],
+    "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"],
+    "yieldDetails": { "indoor": "~700 g/m²", "outdoor": "~900 g/plant" },
+    "heightDetails": { "indoor": "Very tall", "outdoor": "Very tall" }
   }
-}
+};

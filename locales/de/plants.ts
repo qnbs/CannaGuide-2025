@@ -1,8 +1,8 @@
-
 export const plantsView = {
   title: 'Mein Grow Room',
   plantCard: {
     day: 'Tag',
+    healthy: 'Gesund',
   },
   emptySlot: {
     title: 'Leerer Pflanz-Slot',

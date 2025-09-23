@@ -36,7 +36,7 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
                 healthTitle: problemMessages || t('plantsView.tasks.priorities.high')
             }
         }
-        return { healthStatus: 'good', healthTitle: 'Healthy' };
+        return { healthStatus: 'good', healthTitle: t('plantsView.plantCard.healthy') };
 
     }, [plant.problems, plant.tasks, t]);
 

@@ -36,6 +36,7 @@ export const usePwaInstall = () => {
         const appInstalledHandler = () => {
             setDeferredPrompt(null);
             setIsInstalled(true);
+            addNotification(t('common.installPwaSuccess'), 'success');
         };
         window.addEventListener('appinstalled', appInstalledHandler);
 
@@ -43,14 +44,14 @@ export const usePwaInstall = () => {
             window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
             window.removeEventListener('appinstalled', appInstalledHandler);
         };
-    }, []); // This effect should only run once to set up event listeners.
+    }, [t, addNotification]);
 
     const handleInstallClick = useCallback(async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                addNotification(t('common.installPwaSuccess'), 'success');
+                // The 'appinstalled' event will handle the success notification.
             } else {
                 addNotification(t('common.installPwaDismissed'), 'info');
             }

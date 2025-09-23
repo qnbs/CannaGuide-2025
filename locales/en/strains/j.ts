@@ -1,7 +1,7 @@
 export const strains = {
   "jack-frost": {
     "description": "A sativa-dominant strain with a sweet, citrusy, and piney aroma. The effect is uplifting, creative, and energizing, ideal for daytime use.",
-    "typeDetails": "Sativa 70% / Indica 30%",
+    "typeDetails": "Sativa 60% / Indica 40%",
     "genetics": "Jack Herer x White Widow x Northern Lights #5",
     "aromas": [
       "Sweet",
@@ -14,8 +14,8 @@ export const strains = {
       "Myrcene",
       "Pinene"
     ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
+    "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~600 g/plant" },
+    "heightDetails": { "indoor": "120-180 cm", "outdoor": "up to 2 m" }
   },
   "jack-herer": {
     "description": "A legendary Sativa strain named after the famous cannabis activist. Known for its uplifting, creative, and happy effects.",
@@ -32,8 +32,8 @@ export const strains = {
       "Caryophyllene",
       "Myrcene"
     ],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~800 g/plant" },
+    "heightDetails": { "indoor": "150-200 cm", "outdoor": "up to 2.5 m" }
   },
   "jack-the-ripper": {
     "description": "A sativa-dominant strain with a strong lemon aroma. The effect is strong, cerebral, almost psychedelic, and energizing.",
@@ -51,7 +51,7 @@ export const strains = {
       "Pinene"
     ],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.2 m)" }
+    "heightDetails": { "indoor": "160-200 cm", "outdoor": "up to 2.2 m" }
   },
   "jager": {
     "description": "An indica-dominant strain with a sweet, licorice-like aroma. The effect is relaxing and calming, ideal for evening use.",
@@ -68,8 +68,8 @@ export const strains = {
       "Caryophyllene",
       "Limonene"
     ],
-    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.5 m)" }
+    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
+    "heightDetails": { "indoor": "80-120 cm", "outdoor": "up to 1.5 m" }
   },
   "jamaican-pearl": {
     "description": "A sativa-dominant strain developed for outdoor cultivation in cooler climates. The effect is uplifting, happy, and social.",
@@ -86,8 +86,8 @@ export const strains = {
       "Caryophyllene",
       "Limonene"
     ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 3 m)" }
+    "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~600 g/plant" },
+    "heightDetails": { "indoor": "180-250 cm", "outdoor": "up to 3 m" }
   },
   "jealousy": {
     "description": "A balanced hybrid with a sweet, fruity, and slightly creamy aroma. The effect is strong, euphoric, and relaxing.",
@@ -105,25 +105,7 @@ export const strains = {
       "Myrcene"
     ],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
-  },
-  "jealousy-z": {
-    "description": "A potent hybrid with a sweet, fruity, and candy-like aroma. The effect is strong, euphoric, and relaxing.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Jealousy x Zkittlez",
-    "aromas": [
-      "Sweet",
-      "Fruity",
-      "Candy",
-      "Citrus"
-    ],
-    "dominantTerpenes": [
-      "Caryophyllene",
-      "Limonene",
-      "Myrcene"
-    ],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "heightDetails": { "indoor": "120-180 cm", "outdoor": "up to 1.8 m" }
   },
   "jedi-kush": {
     "description": "An indica-dominant strain with an earthy, spicy, and slightly sweet aroma. The effect is strong, physically relaxing, and calming.",
@@ -141,7 +123,7 @@ export const strains = {
       "Caryophyllene"
     ],
     "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.2 m)" }
+    "heightDetails": { "indoor": "90-130 cm", "outdoor": "up to 1.2 m" }
   },
   "jenny-kush": {
     "description": "A balanced hybrid with a sweet, citrusy, and floral aroma. The effect is uplifting, creative, and relaxing.",
@@ -159,7 +141,7 @@ export const strains = {
       "Caryophyllene"
     ],
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
+    "heightDetails": { "indoor": "130-180 cm", "outdoor": "up to 2 m" }
   },
   "jesus-og": {
     "description": "A sativa-dominant strain with an earthy, citrusy aroma. The effect is uplifting, creative, and energizing.",
@@ -177,7 +159,7 @@ export const strains = {
       "Limonene"
     ],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
+    "heightDetails": { "indoor": "160-220 cm", "outdoor": "up to 2.5 m" }
   },
   "jet-fuel": {
     "description": "Also known as G6. A sativa-dominant strain with a strong, diesel-like aroma. The effect is uplifting, energizing, and euphoric.",
@@ -195,11 +177,11 @@ export const strains = {
       "Caryophyllene"
     ],
     "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.2 m)" }
+    "heightDetails": { "indoor": "150-200 cm", "outdoor": "up to 2.2 m" }
   },
   "jillybean": {
     "description": "A balanced hybrid with a sweet, fruity aroma of oranges and mangoes. The effect is uplifting, happy, and creative.",
-    "typeDetails": "Hybrid 50% / 50%",
+    "typeDetails": "Hybrid 60% Sativa / 40% Indica",
     "genetics": "Orange Velvet x Space Queen",
     "aromas": [
       "Orange",
@@ -213,6 +195,6 @@ export const strains = {
       "Caryophyllene"
     ],
     "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "heightDetails": { "indoor": "100-150 cm", "outdoor": "up to 1.8 m" }
   }
 }

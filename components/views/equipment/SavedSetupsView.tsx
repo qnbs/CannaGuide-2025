@@ -42,7 +42,8 @@ const SetupDetailModal: React.FC<{
             (newRec[category] as any)[field] = value;
 
             if (field === 'price') {
-                 const newTotal = Object.values(newRec).reduce((sum, item: RecommendationItem) => sum + (Number(item.price) || 0), 0);
+                 // FIX: Explicitly type the accumulator `sum` as a number to resolve type inference issue.
+                 const newTotal = Object.values(newRec).reduce((sum: number, item: RecommendationItem) => sum + (Number(item.price) || 0), 0);
                  return { ...prev, recommendation: newRec, totalCost: newTotal };
             }
             

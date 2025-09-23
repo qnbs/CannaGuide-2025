@@ -4,7 +4,7 @@ import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { storageService } from '@/services/storageService';
+import { dbService } from '@/services/dbService';
 import { Language, Theme, View, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity } from '@/types';
 
 interface SettingsViewProps {
@@ -123,10 +123,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
     };
 
     const handleResetAllData = () => {
-        if(window.confirm(t('settingsView.data.resetAllConfirm'))) {
-            localStorage.removeItem('cannaguide-2025-storage');
-            addNotification(t('settingsView.data.resetAllSuccess'), 'success');
-            setTimeout(() => window.location.reload(), 1000);
+        if (window.confirm(t('settingsView.data.resetAllConfirm'))) {
+            // This function ensures all data is cleared. The logic is to first
+            // clear the secondary database (IndexedDB for images), then trigger a 
+            // success notification, and only after a delay (to let the user see the notification),
+            // clear the primary data from localStorage and reload the page.
+            // This fixes a bug where clearing localStorage before the notification caused
+            // the in-memory state to be re-persisted, effectively cancelling the reset.
+            dbService.clearAllData()
+                .catch(err => {
+                    // Log the error but continue, as clearing localStorage is more critical for a reset.
+                    console.error("Failed to clear IndexedDB data, but proceeding with reset:", err);
+                })
+                .finally(() => {
+                    // Show success notification. This will briefly re-write localStorage with the current in-memory state.
+                    addNotification(t('settingsView.data.resetAllSuccess'), 'success');
+                    
+                    // After a short delay to allow the notification to be seen,
+                    // clear localStorage and reload the page. This is the crucial part.
+                    setTimeout(() => {
+                        localStorage.removeItem('cannaguide-2025-storage');
+                        window.location.reload();
+                    }, 1000);
+                });
         }
     };
 

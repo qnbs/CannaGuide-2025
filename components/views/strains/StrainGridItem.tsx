@@ -48,7 +48,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
     return (
         <Card 
             className="flex flex-col h-full cursor-pointer group relative hover:border-primary-500/50 transition-all p-3 animate-fade-in-stagger"
-            style={{ animationDelay: `${index * 30}ms` }}
+            style={{ animationDelay: `${Math.min(index, 10) * 20}ms` }}
             onClick={() => selectStrain(strain)}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectStrain(strain); } }}
             role="button"
@@ -70,7 +70,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
                     <button
                         onClick={(e) => handleActionClick(e, () => initiateGrow(strain))}
                         disabled={!hasAvailableSlots}
-                        className="p-1.5 rounded-full bg-slate-800/80 text-slate-300 hover:text-primary-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className={`p-1.5 rounded-full bg-slate-800/80 text-slate-300 hover:text-primary-400 disabled:opacity-50 disabled:cursor-not-allowed ${hasAvailableSlots ? 'animate-pulse' : ''}`}
                         aria-label={t('strainsView.startGrowing')}
                     >
                         <PhosphorIcons.Plant className="w-5 h-5" />

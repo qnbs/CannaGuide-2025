@@ -89,8 +89,14 @@ self.addEventListener('fetch', event => {
       // 2. If not in cache, try to fetch from the network
       try {
         const networkResponse = await fetch(event.request);
-        // If the fetch is successful, clone the response and store it in the cache for next time
-        if (networkResponse && networkResponse.status === 200) {
+        
+        const isApiCall = event.request.url.includes('googleapis.com');
+        const isAppUrl = event.request.url.startsWith(self.origin);
+        const isThirdPartyUrl = THIRD_PARTY_URLS.some(url => event.request.url.startsWith(url));
+        
+        // Only cache successful GET requests that are part of the app shell or known 3rd party CDNs.
+        // Explicitly do not cache API calls.
+        if (networkResponse && networkResponse.status === 200 && !isApiCall && (isAppUrl || isThirdPartyUrl)) {
           await cache.put(event.request, networkResponse.clone());
         }
         return networkResponse;
@@ -102,8 +108,6 @@ self.addEventListener('fetch', event => {
             const indexPage = await cache.match('/index.html');
             if (indexPage) return indexPage;
         }
-        // For other failed requests, we don't have a specific offline fallback, so the browser's default error will be shown.
-        // This is a network-first strategy for dynamic content.
       }
     })
   );

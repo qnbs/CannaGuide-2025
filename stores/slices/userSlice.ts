@@ -15,12 +15,14 @@ export const createUserSlice = (set: StoreSet, get: StoreGet): UserSlice => ({
     isUserStrain: (strainId) => get().userStrains.some(s => s.id === strainId),
     
     toggleFavorite: (strainId) => set(state => {
-        const newSet = new Set(state.favoriteIds);
-        newSet.has(strainId) ? newSet.delete(strainId) : newSet.add(strainId);
-        return { favoriteIds: newSet };
+        if (state.favoriteIds.has(strainId)) {
+            state.favoriteIds.delete(strainId);
+        } else {
+            state.favoriteIds.add(strainId);
+        }
     }),
 
-    updateNoteForStrain: (strainId, content) => set(state => ({
-        strainNotes: { ...state.strainNotes, [strainId]: content }
-    })),
+    updateNoteForStrain: (strainId, content) => set(state => {
+        state.strainNotes[strainId] = content;
+    })
 });

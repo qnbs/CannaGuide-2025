@@ -40,33 +40,47 @@ export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
     isSetupModalOpen: false,
     selectedPlantId: null,
 
-    setActiveView: (view) => set({ activeView: view }),
-    setIsCommandPaletteOpen: (isOpen) => set({ isCommandPaletteOpen: isOpen }),
+    setActiveView: (view) => set(state => { state.activeView = view; }),
+    setIsCommandPaletteOpen: (isOpen) => set(state => { state.isCommandPaletteOpen = isOpen; }),
     
     addNotification: (message, type = 'info') => {
         if (!get().settings.notificationsEnabled) return;
         const newNotification: Notification = { id: Date.now(), message, type };
-        set(state => ({ notifications: [...state.notifications, newNotification] }));
+        set(state => { state.notifications.push(newNotification); });
     },
-    removeNotification: (id) => set(state => ({ notifications: state.notifications.filter(n => n.id !== id) })),
+    removeNotification: (id) => set(state => {
+        state.notifications = state.notifications.filter(n => n.id !== id);
+    }),
     
-    selectStrain: (strain) => set({ selectedStrain: strain }),
-    closeDetailModal: () => set({ selectedStrain: null }),
+    selectStrain: (strain) => set(state => { state.selectedStrain = strain; }),
+    closeDetailModal: () => set(state => { state.selectedStrain = null; }),
     
-    openAddModal: (strain) => set({ strainToEdit: strain || null, isAddModalOpen: true }),
-    closeAddModal: () => set({ isAddModalOpen: false, strainToEdit: null }),
+    openAddModal: (strain) => set(state => {
+        state.strainToEdit = strain || null;
+        state.isAddModalOpen = true;
+    }),
+    closeAddModal: () => set(state => {
+        state.isAddModalOpen = false;
+        state.strainToEdit = null;
+    }),
     
-    openExportModal: () => set({ isExportModalOpen: true }),
-    closeExportModal: () => set({ isExportModalOpen: false }),
+    openExportModal: () => set(state => { state.isExportModalOpen = true; }),
+    closeExportModal: () => set(state => { state.isExportModalOpen = false; }),
     
     initiateGrow: (strain) => {
         if (get().plantSlots.some(p => p === null)) {
-            set({ strainForSetup: strain, isSetupModalOpen: true });
+            set(state => {
+                state.strainForSetup = strain;
+                state.isSetupModalOpen = true;
+            });
         } else {
             get().addNotification(t()('plantsView.notifications.allSlotsFull'), 'error');
         }
     },
-    closeGrowModal: () => set({ isSetupModalOpen: false, strainForSetup: null }),
+    closeGrowModal: () => set(state => {
+        state.isSetupModalOpen = false;
+        state.strainForSetup = null;
+    }),
     
-    setSelectedPlantId: (plantId) => set({ selectedPlantId: plantId }),
+    setSelectedPlantId: (plantId) => set(state => { state.selectedPlantId = plantId; }),
 });

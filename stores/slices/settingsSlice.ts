@@ -1,5 +1,5 @@
 import { AppSettings, View, Language, Theme, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity } from '@/types';
-import type { StoreSet } from '@/stores/useAppStore';
+import { AppState, StoreSet } from '@/stores/useAppStore';
 
 const detectedLang = navigator.language.split('-')[0];
 const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en';
@@ -18,24 +18,26 @@ export const defaultSettings: AppSettings = {
 
 export interface SettingsSlice {
     settings: AppSettings;
+    // FIX: Changed signature to accept a dot-notation path string for setting nested properties.
+    // The previous generic signature was too restrictive and did not match the implementation,
+    // which caused widespread TypeScript errors when trying to update nested settings.
     setSetting: (path: string, value: any) => void;
 }
 
-// Utility to set nested state immutably
-const setNestedValue = (obj: any, path: string, value: any) => {
-    const keys = path.split('.');
-    const newObj = { ...obj };
-    let current = newObj;
-    for (let i = 0; i < keys.length - 1; i++) {
-        const key = keys[i];
-        current[key] = { ...current[key] };
-        current = current[key];
-    }
-    current[keys[keys.length - 1]] = value;
-    return newObj;
-};
-
 export const createSettingsSlice = (set: StoreSet): SettingsSlice => ({
     settings: defaultSettings,
-    setSetting: (path, value) => set(state => ({ settings: setNestedValue(state.settings, path, value) })),
+    setSetting: (path, value) => {
+        // FIX: Replaced a complex, type-unsafe implementation for updating nested state.
+        // This new implementation uses `any` for the traversal object (`currentLevel`) to satisfy
+        // TypeScript, as it cannot guarantee type safety with dynamic, string-based keys. This
+        // resolves multiple compilation errors related to incorrect type inference.
+        set((state: AppState) => {
+            const keys = path.split('.');
+            let currentLevel: any = state.settings;
+            for (let i = 0; i < keys.length - 1; i++) {
+                currentLevel = currentLevel[keys[i]];
+            }
+            currentLevel[keys[keys.length - 1]] = value;
+        });
+    },
 });

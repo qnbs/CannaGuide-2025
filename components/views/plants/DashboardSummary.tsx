@@ -4,9 +4,11 @@ import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
 import { Plant } from '../../../types';
+import { useAppStore } from '@/stores/useAppStore';
+import { selectGardenHealthMetrics } from '@/stores/selectors';
 
 interface GardenVitalsProps { 
-    plants: Plant[];
+    plants: Plant[]; // Kept for checking if any plants exist for button disabling
     openTasksCount: number;
     onWaterAll: () => void;
     onAdvanceDay: () => void;
@@ -14,13 +16,7 @@ interface GardenVitalsProps {
 
 export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll, onAdvanceDay }) => {
     const { t } = useTranslations();
-    
-    const activePlantsCount = plants.length;
-    const avgStress = activePlantsCount > 0 ? plants.reduce((sum, p) => sum + p.stressLevel, 0) / activePlantsCount : 0;
-    const gardenHealth = Math.max(0, 100 - avgStress);
-
-    const avgTemp = activePlantsCount > 0 ? plants.reduce((sum, p) => sum + p.environment.temperature, 0) / activePlantsCount : 0;
-    const avgHumidity = activePlantsCount > 0 ? plants.reduce((sum, p) => sum + p.environment.humidity, 0) / activePlantsCount : 0;
+    const { activePlantsCount, gardenHealth, avgTemp, avgHumidity } = useAppStore(selectGardenHealthMetrics);
     
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
@@ -59,6 +55,7 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
                             <p className="text-xs text-slate-400 -mt-1">{t('plantsView.summary.gardenHealth')}</p>
                         </div>
                     </div>
+                </div>
 
                 <div className="space-y-3 text-center">
                     <div className="p-2 bg-slate-900 rounded-lg">
@@ -83,11 +80,11 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
                 </div>
             </div>
              <div className="mt-4 pt-4 border-t border-slate-700 flex flex-col sm:flex-row gap-2">
-                <Button onClick={onWaterAll} disabled={activePlantsCount === 0} className="flex-1" variant="secondary">
+                <Button onClick={onWaterAll} disabled={plants.length === 0} className="flex-1" variant="secondary">
                     <PhosphorIcons.Drop className="inline w-5 h-5 mr-1.5"/>
                     {t('plantsView.summary.waterAll')}
                 </Button>
-                <Button onClick={onAdvanceDay} disabled={activePlantsCount === 0} className="flex-1">
+                <Button onClick={onAdvanceDay} disabled={plants.length === 0} className="flex-1">
                     <PhosphorIcons.ArrowClockwise className="inline w-5 h-5 mr-1.5"/>
                     {t('plantsView.summary.simulateNextDay')}
                 </Button>

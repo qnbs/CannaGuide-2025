@@ -109,6 +109,8 @@ export const strainsView = {
         name: 'Strain name is required.',
         thc: 'THC must be between 0 and 50.',
         floweringTime: 'Flowering time must be between 4 and 20 weeks.',
+        thcRange: 'Invalid format for THC Range. Use formats like \'18-22%\', \'<1%\', or \'~20%\'.',
+        cbdRange: 'Invalid format for CBD Range. Use formats like \'8-12%\', \'<1%\', or \'~10%\'.',
         duplicate: 'A strain with the name "{name}" already exists.',
         addSuccess: 'Strain "{name}" successfully added.',
         updateSuccess: 'Strain "{name}" successfully updated.',

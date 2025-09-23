@@ -368,6 +368,8 @@ export interface Command {
     action: () => void;
     keywords?: string;
     shortcut?: string[];
+    group: string;
+    isHeader?: boolean;
 }
 
 export interface KnowledgeProgress {

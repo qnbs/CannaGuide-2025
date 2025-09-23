@@ -1,105 +1,47 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Plant } from '@/types';
 import { Card } from '@/components/common/Card';
-import { PlantVisual } from '@/components/views/plants/PlantVisual';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { VitalBar } from '@/components/views/plants/VitalBar';
+import { PlantVisual } from '@/components/views/plants/PlantVisual';
+import { VitalBar } from './VitalBar';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 
 interface PlantCardProps {
-  plant: Plant;
-  onInspect: () => void;
+    plant: Plant;
+    onInspect: () => void;
 }
-
-const Stat: React.FC<{ icon: React.ReactNode; label: string; value: string | number; }> = ({ icon, label, value }) => (
-    <div className="flex items-center gap-1 text-xs text-slate-300" title={label}>
-        <div className="w-4 h-4 text-primary-400">{icon}</div>
-        <span>{value}</span>
-    </div>
-);
-
 
 export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
     const { t } = useTranslations();
-    const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
-    
-    const { healthStatus, healthTitle } = useMemo<{ healthStatus: 'good' | 'danger'; healthTitle: string }>(() => {
-        const hasProblems = plant.problems.length > 0;
-        const hasHighPriorityTask = plant.tasks.some(t => !t.isCompleted && t.priority === 'high');
+    const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
 
-        if (hasProblems || hasHighPriorityTask) {
-            const problemMessages = plant.problems.map(p => t(`problemMessages.${p.type.charAt(0).toLowerCase() + p.type.slice(1)}.message`)).join(', ');
-            return {
-                healthStatus: 'danger',
-                healthTitle: problemMessages || t('plantsView.tasks.priorities.high')
-            }
-        }
-        return { healthStatus: 'good', healthTitle: t('plantsView.plantCard.healthy') };
-
-    }, [plant.problems, plant.tasks, t]);
-
-    const healthClasses = {
-        good: 'text-green-400',
-        danger: 'text-red-400 animate-pulse',
-    };
-    
     return (
-        <Card 
-            className="flex flex-col h-full border-2 border-transparent transition-all duration-300 cursor-pointer hover:shadow-xl hover:border-primary-500/50"
-            onClick={onInspect}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onInspect(); } }}
-            role="button"
-            tabIndex={0}
-            aria-label={`${t('commandPalette.inspect')} ${plant.name}`}
-        >
-            <div className="flex justify-between items-start mb-2">
-                <div className="min-w-0">
-                    <h3 className="text-xl font-bold font-display text-primary-400 truncate">{plant.name}</h3>
-                    <p className="text-slate-400 text-xs truncate">{plant.strain.name}</p>
+        <Card className="flex flex-col h-full">
+            <div className="flex justify-between items-start">
+                <div>
+                    <h3 className="font-bold text-lg text-primary-400 truncate">{plant.name}</h3>
+                    <p className="text-xs text-slate-400">{plant.strain.name}</p>
                 </div>
-                 <div className={`w-6 h-6 flex-shrink-0 ${healthClasses[healthStatus]}`} title={healthTitle}>
-                    {healthStatus === 'danger' ? <PhosphorIcons.WarningCircle /> : <PhosphorIcons.CheckCircle />}
-                 </div>
+                <div className="text-right flex-shrink-0 ml-2">
+                    <p className="font-bold text-slate-100">{t('plantsView.plantCard.day')} {plant.age}</p>
+                    <p className="text-xs text-slate-400">{t(`plantStages.${plant.stage}`)}</p>
+                </div>
             </div>
 
-            <div className="flex-grow flex items-center justify-center my-2 min-h-[150px]">
-               <PlantVisual stage={plant.stage} age={plant.age} stress={plant.stressLevel} water={plant.vitals.substrateMoisture} problems={plant.problems} />
+            <div className="my-4 flex-grow flex items-center justify-center min-h-[120px]">
+                <PlantVisual stage={plant.stage} height={plant.height} stressLevel={plant.stressLevel} className="w-24 h-24" />
+            </div>
+
+            <div className="space-y-2">
+                <VitalBar label={t('plantsView.vitals.ph')} value={plant.vitals.ph} min={5} max={8} unit="" idealMin={stageDetails.idealVitals.ph.min} idealMax={stageDetails.idealVitals.ph.max} colorClass="bg-yellow-500" />
+                <VitalBar label={t('plantsView.vitals.ec')} value={plant.vitals.ec} min={0} max={3} unit="" idealMin={stageDetails.idealVitals.ec.min} idealMax={stageDetails.idealVitals.ec.max} colorClass="bg-orange-500" />
+                <VitalBar label={t('plantsView.vitals.moisture')} value={plant.vitals.substrateMoisture} min={0} max={100} unit="%" idealMin={40} idealMax={80} colorClass="bg-blue-500" />
             </div>
             
-            <div className="grid grid-cols-2 gap-x-2 gap-y-1 mt-2">
-                 <Stat icon={<PhosphorIcons.Sun />} label={t('common.days')} value={`${t('plantsView.plantCard.day')} ${plant.age}`} />
-                 <Stat icon={<PhosphorIcons.Ruler />} label={t('plantsView.detailedView.height')} value={`${plant.height.toFixed(1)} ${t('common.units.cm')}`} />
-                 <Stat icon={<PhosphorIcons.Plant />} label={t('plantsView.detailedView.stage')} value={t(`plantStages.${plant.stage}`)} />
-                 <Stat icon={<PhosphorIcons.Heart weight="fill"/>} label={t('plantsView.detailedView.stress')} value={`${plant.stressLevel.toFixed(0)}${t('common.units.percent')}`} />
-            </div>
-
-            <div className="mt-4 space-y-3 pt-3 border-t border-slate-700/50">
-                <VitalBar
-                    label={t('plantsView.vitals.moisture')}
-                    value={plant.vitals.substrateMoisture}
-                    min={0} max={100}
-                    idealMin={30} idealMax={80}
-                    unit={t('common.units.percent')}
-                    colorClass="bg-blue-500"
-                />
-                <VitalBar
-                    label={t('plantsView.vitals.ph')}
-                    value={plant.vitals.ph}
-                    min={4} max={8}
-                    idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max}
-                    unit=""
-                    colorClass="bg-green-500"
-                />
-                <VitalBar
-                    label={t('plantsView.vitals.ec')}
-                    value={plant.vitals.ec}
-                    min={0} max={3}
-                    idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max}
-                    unit={` ${t('common.units.ms_cm')}`}
-                    colorClass="bg-orange-500"
-                />
-            </div>
+            <Button onClick={onInspect} className="w-full mt-4">
+                {t('common.inspect')}
+            </Button>
         </Card>
     );
 };

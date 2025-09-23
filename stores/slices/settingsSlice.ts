@@ -18,19 +18,12 @@ export const defaultSettings: AppSettings = {
 
 export interface SettingsSlice {
     settings: AppSettings;
-    // FIX: Changed signature to accept a dot-notation path string for setting nested properties.
-    // The previous generic signature was too restrictive and did not match the implementation,
-    // which caused widespread TypeScript errors when trying to update nested settings.
     setSetting: (path: string, value: any) => void;
 }
 
 export const createSettingsSlice = (set: StoreSet): SettingsSlice => ({
     settings: defaultSettings,
     setSetting: (path, value) => {
-        // FIX: Replaced a complex, type-unsafe implementation for updating nested state.
-        // This new implementation uses `any` for the traversal object (`currentLevel`) to satisfy
-        // TypeScript, as it cannot guarantee type safety with dynamic, string-based keys. This
-        // resolves multiple compilation errors related to incorrect type inference.
         set((state: AppState) => {
             const keys = path.split('.');
             let currentLevel: any = state.settings;

@@ -1,20 +1,22 @@
-export const strains = {
-  "unicorn-poop": {
-    "description": "A balanced hybrid with a sweet, fruity, and earthy aroma. The effect is relaxing, happy, and uplifting.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "GMO Cookies x Sophisticated Lady",
-    "aromas": ["Sweet", "Fruity", "Earthy", "Citrus"],
-    "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
-    "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "100-150 cm", "outdoor": "up to 1.8 m" }
-  },
-  "urkle": {
-    "description": "A classic California Indica, known for its deep purple colors and grape-like aroma. The effect is strongly relaxing and ideal for pain and insomnia.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "Mendocino Purps phenotype",
-    "aromas": ["Grape", "Berry", "Earthy", "Skunk"],
-    "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "~400 g/plant" },
-    "heightDetails": { "indoor": "70-100 cm", "outdoor": "up to 1.2 m" }
-  }
+// FIX: Removed incorrect type annotation 'Partial<Strain>' and unused import to resolve type errors.
+// The structure of this translation object doesn't directly map to the Strain type.
+export const strains: Record<string, any> = {
+    "unicorn-poop": {
+        "description": "A balanced hybrid with a sweet, fruity, and earthy aroma. The effect is relaxing, happy, and uplifting.",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "GMO Cookies x Sophisticated Lady",
+        "aromas": ["Sweet", "Fruity", "Earthy", "Citrus"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
+        "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "~550 g/plant" },
+        "heightDetails": { "indoor": "100-150 cm", "outdoor": "up to 1.8 m" }
+    },
+    "uk-cheese": {
+        "description": "A legendary hybrid strain that originated in the United Kingdom. It is a phenotype of Skunk #1 and is famous for its distinct, pungent cheesy aroma. UK Cheese provides a balanced high, starting with an energetic, euphoric buzz that mellows into a relaxing body stone, making it suitable for managing stress and pain throughout the day.",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Skunk #1 Phenotype",
+        "aromas": ["Cheese", "Pungent", "Skunk", "Earthy"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"],
+        "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~600 g/plant" },
+        "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8m)" }
+    }
 };

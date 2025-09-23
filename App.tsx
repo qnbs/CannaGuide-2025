@@ -6,7 +6,7 @@ import { ToastContainer } from '@/components/common/Toast';
 import { Header } from '@/components/navigation/Header';
 import { BottomNav } from '@/components/navigation/BottomNav';
 import { StrainsView } from '@/components/views/StrainsView';
-import { PlantsView } from '@/components/views/PlantsView';
+import { PlantsView } from '@/components/views/plants/PlantsView';
 import { EquipmentView } from '@/components/views/EquipmentView';
 import { KnowledgeView } from '@/components/views/knowledge/KnowledgeView';
 import { SettingsView } from '@/components/views/SettingsView';
@@ -82,7 +82,7 @@ const AppContent: React.FC = () => {
         setIsOnboardingOpen(false);
     };
     
-    const { commands } = useCommandPalette();
+    const { allCommands: commands } = useCommandPalette();
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {

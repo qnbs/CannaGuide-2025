@@ -4,7 +4,6 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-// Fix: Removed incorrect context import.
 import { useAppStore } from '@/stores/useAppStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { exportService } from '@/services/exportService';
@@ -42,7 +41,6 @@ const SetupDetailModal: React.FC<{
             (newRec[category] as any)[field] = value;
 
             if (field === 'price') {
-                 // FIX: Explicitly type the accumulator `sum` as a number to resolve type inference issue.
                  const newTotal = Object.values(newRec).reduce((sum: number, item: RecommendationItem) => sum + (Number(item.price) || 0), 0);
                  return { ...prev, recommendation: newRec, totalCost: newTotal };
             }
@@ -117,7 +115,6 @@ const SetupDetailModal: React.FC<{
 
 export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, updateSetup, deleteSetup }) => {
     const { t } = useTranslations();
-    // Fix: Get addNotification action from the central Zustand store.
     const addNotification = useAppStore(state => state.addNotification);
     const [selectedSetup, setSelectedSetup] = useState<SavedSetup | null>(null);
     

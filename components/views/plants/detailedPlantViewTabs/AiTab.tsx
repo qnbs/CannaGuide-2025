@@ -6,7 +6,6 @@ import { geminiService } from '@/services/geminiService';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-// Fix: Replaced context import with a single import from the central Zustand store.
 import { useAppStore } from '@/stores/useAppStore';
 
 interface AiTabProps {
@@ -19,7 +18,6 @@ interface AiTabProps {
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
-    // Fix: Get state and actions from the central Zustand store.
     const addNotification = useAppStore(state => state.addNotification);
     const [isLoading, setIsLoading] = useState(false);
     const [response, setResponse] = useState<AIResponse | null>(null);
@@ -38,7 +36,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                 messageIndex++;
             };
             
-            updateLoadingMessage(); // Set initial message
+            updateLoadingMessage();
             const intervalId = setInterval(updateLoadingMessage, 2000);
 
             return () => clearInterval(intervalId);

@@ -29,7 +29,6 @@ const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab:
     const content = useMemo(() => {
         if (tab === 'my-strains') {
             return {
-                // FIX: The `weight` prop for PhosphorIcons.Star only accepts "fill" or "regular", not "light".
                 icon: <PhosphorIcons.Star className="w-16 h-16 text-slate-400 mb-4" weight="regular" />,
                 title: t('strainsView.emptyStates.myStrains.title'),
                 text: t('strainsView.emptyStates.myStrains.text'),
@@ -39,7 +38,6 @@ const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab:
         }
         if (tab === 'favorites') {
             return {
-                // FIX: The `weight` prop for PhosphorIcons.Heart only accepts "fill" or "regular", not "light".
                 icon: <PhosphorIcons.Heart className="w-16 h-16 text-slate-400 mb-4" weight="regular" />,
                 title: t('strainsView.emptyStates.favorites.title'),
                 text: t('strainsView.emptyStates.favorites.text'),
@@ -192,7 +190,6 @@ const StrainsViewContent: React.FC = () => {
         actions.closeDetailModal();
     };
 
-    // FIX: Replaced `flatMap` with `map(..).flat()` to be more explicit and resolve a `unknown[]` type inference issue.
     const allAromas: string[] = useMemo(() => [...new Set(strainsToDisplay.map(s => s.aromas || []).flat())].sort(), [strainsToDisplay]);
     const allTerpenes: string[] = useMemo(() => [...new Set(strainsToDisplay.map(s => s.dominantTerpenes || []).flat())].sort(), [strainsToDisplay]);
 

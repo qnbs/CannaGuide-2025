@@ -192,17 +192,19 @@
 
       @keyframes slide-in-up {
         from {
-          opacity: 0;
-          transform: translateY(20px) scale(0.98);
+          transform: translateY(100%);
         }
         to {
-          opacity: 1;
-          transform: translateY(0) scale(1);
+          transform: translateY(0);
         }
       }
 
       .modal-content-animate {
         animation: slide-in-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+      }
+      
+      .animate-slide-in-up {
+          animation: slide-in-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
       }
 
       @keyframes fade-in-stagger {
@@ -234,6 +236,15 @@
       ::-webkit-scrollbar-thumb:hover {
         background-color: rgb(var(--color-border));
       }
+      
+       .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
 
       /* For Firefox */
       * {

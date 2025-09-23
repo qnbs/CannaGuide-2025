@@ -72,8 +72,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             className={`${LIST_GRID_CLASS} group glass-pane rounded-lg transition-all duration-200 cursor-pointer odd:bg-slate-800/20 hover:!bg-slate-700/50 hover:!border-primary-500/80 animate-fade-in-stagger`}
             style={{ 
                 animationDelay: `${Math.min(index, 10) * 20}ms`,
-                contentVisibility: 'auto',
-                containIntrinsicSize: '72px'
              }}
         >
             <div className="flex items-center justify-center px-3 py-3">

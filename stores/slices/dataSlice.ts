@@ -14,7 +14,7 @@ export interface DataSlice {
     knowledgeProgress: KnowledgeProgress;
     
     startNewPlant: (strain: Strain, setup: GrowSetup, slotIndex?: number) => boolean;
-    updatePlantState: () => void;
+    updatePlantState: () => Promise<void>;
     addJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'timestamp'>) => void;
     completeTask: (plantId: string, taskId: string) => void;
     waterAllPlants: () => void;
@@ -86,7 +86,42 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
         return true;
     },
     
-    updatePlantState: () => get().advanceDay(),
+    updatePlantState: async () => {
+        const { settings, plants } = get();
+        const now = Date.now();
+        const speedInMinutes = { '1x': 1440, '2x': 720, '5x': 288, '10x': 144, '20x': 72 }[settings.simulationSettings.speed];
+        const updateIntervalMs = speedInMinutes * 60 * 1000;
+
+        const activePlants = Object.values(plants).filter((p): p is Plant => !!p && p.stage !== PlantStage.Finished);
+        if (activePlants.length === 0) return;
+
+        const updatePromises = activePlants.map(plant => {
+            const timeDiff = now - plant.lastUpdated;
+            const daysToAdvance = Math.floor(timeDiff / updateIntervalMs);
+            if (daysToAdvance > 0) {
+                return runSimulationInWorker(plant, settings, daysToAdvance);
+            }
+            return Promise.resolve(null);
+        });
+        
+        const results = await Promise.all(updatePromises);
+
+        results.forEach(result => {
+            if (!result) return;
+            const { updatedPlant, events } = result;
+            set(state => {
+                state.plants[updatedPlant.id] = updatedPlant;
+            });
+             events.forEach((event: any) => {
+                if (event.type === 'notification') get().addNotification(t()(event.data.messageKey, event.data.params), event.data.type as NotificationType);
+                if (event.type === 'journal') get().addJournalEntry(updatedPlant.id, { type: event.data.type, notes: t()(event.data.notesKey, event.data.params) });
+                if (event.type === 'task') {
+                    const newTask: Task = { ...event.data, id: `${event.data.title}-${Date.now()}`, isCompleted: false, createdAt: Date.now() };
+                    set(state => { state.plants[updatedPlant.id]?.tasks.push(newTask) });
+                }
+            });
+        });
+    },
 
     addJournalEntry: (plantId, entryData) => set(state => {
         const plant = state.plants[plantId];
@@ -145,34 +180,20 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
         const { settings, plants } = get();
         const activePlants = Object.values(plants).filter((p): p is Plant => !!p && p.stage !== PlantStage.Finished);
         if (activePlants.length === 0) return;
-
-        const plantUpdatePromises = activePlants.map(plant => runSimulationInWorker(plant, settings));
+        
+        const plantUpdatePromises = activePlants.map(plant => runSimulationInWorker(plant, settings, 1));
         
         try {
             const results = await Promise.all(plantUpdatePromises);
 
-            set(state => {
-                results.forEach(({ updatedPlant }) => {
-                    state.plants[updatedPlant.id] = updatedPlant;
-                });
-            });
-
             results.forEach(({ updatedPlant, events }) => {
+                set(state => { state.plants[updatedPlant.id] = updatedPlant; });
                 events.forEach((event: any) => {
-                    if (event.type === 'notification') {
-                        get().addNotification(t()(event.data.messageKey, event.data.params), event.data.type as NotificationType);
-                    }
-                    if (event.type === 'journal') {
-                        get().addJournalEntry(updatedPlant.id, {
-                            type: event.data.type,
-                            notes: t()(event.data.notesKey, event.data.params),
-                        });
-                    }
+                    if (event.type === 'notification') get().addNotification(t()(event.data.messageKey, event.data.params), event.data.type as NotificationType);
+                    if (event.type === 'journal') get().addJournalEntry(updatedPlant.id, { type: event.data.type, notes: t()(event.data.notesKey, event.data.params) });
                     if (event.type === 'task') {
                         const newTask: Task = { ...event.data, id: `${event.data.title}-${Date.now()}`, isCompleted: false, createdAt: Date.now() };
-                        set(state => {
-                            state.plants[updatedPlant.id]?.tasks.push(newTask);
-                        });
+                        set(state => { state.plants[updatedPlant.id]?.tasks.push(newTask) });
                     }
                 });
             });

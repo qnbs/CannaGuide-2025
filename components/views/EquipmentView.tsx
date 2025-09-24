@@ -1,12 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { SetupConfigurator } from '@/components/views/equipment/SetupConfigurator';
 import { Calculators } from '@/components/views/equipment/Calculators';
 import { SavedSetupsView } from '@/components/views/equipment/SavedSetupsView';
 import { useAppStore } from '@/stores/useAppStore';
-import { geminiService } from '@/services/geminiService';
-import { Recommendation, SavedSetup } from '@/types';
+import { SavedSetup } from '@/types';
 import { Tabs } from '@/components/common/Tabs';
 import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -17,35 +16,31 @@ type EquipmentViewTab = 'configurator' | 'calculators' | 'setups' | 'grow-shops'
 export const EquipmentView: React.FC = () => {
     const { t } = useTranslations();
     const savedSetups = useAppStore(selectSavedSetups);
-    const { addNotification, addSetup, updateSetup, deleteSetup } = useAppStore(state => ({
+    const { addNotification, addSetup, updateSetup, deleteSetup, generateEquipmentRecommendation, equipmentTask, resetAiTask } = useAppStore(state => ({
         addNotification: state.addNotification,
         addSetup: state.addSetup,
         updateSetup: state.updateSetup,
         deleteSetup: state.deleteSetup,
+        generateEquipmentRecommendation: state.generateEquipmentRecommendation,
+        equipmentTask: state.equipmentTask,
+        resetAiTask: state.resetAiTask
     }));
     const [activeTab, setActiveTab] = useState<EquipmentViewTab>('configurator');
     
-    const [recommendation, setRecommendation] = useState<Recommendation | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    useEffect(() => {
+        // If the task was successful but the user navigates away and back,
+        // we might not want to show the configurator immediately in the results step.
+        // However, for this implementation, we'll reset if the tab changes.
+        return () => {
+            if (activeTab !== 'configurator') {
+                resetAiTask('equipmentTask');
+            }
+        };
+    }, [activeTab, resetAiTask]);
 
     const handleGenerate = useCallback(async (promptDetails: string) => {
-        setIsLoading(true);
-        setError(null);
-        setRecommendation(null);
-        try {
-            const result = await geminiService.getEquipmentRecommendation(promptDetails, t);
-            setRecommendation(result);
-        } catch (err) {
-            console.error("Failed to generate setup:", err);
-            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
-            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
-            setError(errorMessage);
-            addNotification(errorMessage, 'error');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [t, addNotification]);
+        await generateEquipmentRecommendation(promptDetails);
+    }, [generateEquipmentRecommendation]);
 
     const handleSaveSetup = (setupToSave: Omit<SavedSetup, 'id' | 'createdAt'>) => {
         addSetup(setupToSave);
@@ -70,11 +65,8 @@ export const EquipmentView: React.FC = () => {
                 <SetupConfigurator
                     onGenerate={handleGenerate}
                     onSaveSetup={handleSaveSetup}
-                    recommendation={recommendation}
-                    setRecommendation={setRecommendation}
-                    isLoading={isLoading}
-                    error={error}
-                    setError={setError}
+                    task={equipmentTask}
+                    resetTask={() => resetAiTask('equipmentTask')}
                 />
             )}
             

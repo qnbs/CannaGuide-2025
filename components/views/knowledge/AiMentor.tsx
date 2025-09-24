@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -6,55 +6,43 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { geminiService } from '@/services/geminiService';
 import { AIResponse } from '@/types';
+import { selectArchivedMentorResponses } from '@/stores/selectors';
 
 export const AiMentor: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification, addResponse } = useAppStore(state => ({
+    const { addNotification, addResponse, askMentor, mentorTask, resetAiTask } = useAppStore(state => ({
         addNotification: state.addNotification,
         addResponse: state.addArchivedMentorResponse,
+        askMentor: state.askMentor,
+        mentorTask: state.mentorTask,
+        resetAiTask: state.resetAiTask,
     }));
+    const archivedResponses = useAppStore(selectArchivedMentorResponses);
     const mentorInputId = useId();
 
     const [query, setQuery] = useState('');
-    const [aiResponse, setAiResponse] = useState<AIResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState('');
+    
+    // Check if the current, successfully generated response is already in the archive
+    const isCurrentResponseSaved = useMemo(() => {
+        if (mentorTask.status !== 'success' || !mentorTask.result) return false;
+        return archivedResponses.some(r => r.content === mentorTask.result?.content && r.query === query);
+    }, [mentorTask.status, mentorTask.result, archivedResponses, query]);
 
-    useEffect(() => {
-        if (isLoading) {
-            const shortQuery = query.length > 20 ? query.substring(0, 20) + '...' : query;
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'mentor', data: { query: shortQuery } }, t);
-            let messageIndex = 0;
-            
-            const updateLoadingMessage = () => {
-                setLoadingMessage(messages[messageIndex % messages.length]);
-                messageIndex++;
-            };
-
-            updateLoadingMessage(); // Set initial message
-            const intervalId = setInterval(updateLoadingMessage, 2000);
-
-            return () => clearInterval(intervalId);
-        }
-    }, [isLoading, query, t]);
-
-    const handleAskMentor = async () => {
+    const handleAskMentor = () => {
         if (!query.trim()) return;
-
-        setIsLoading(true);
-        setAiResponse(null);
-        try {
-            const res = await geminiService.getAiMentorResponse(query, t);
-            setAiResponse(res);
-        } catch (e) {
-            console.error(e);
-            const errorMessageKey = e instanceof Error ? e.message : 'ai.error.unknown';
-            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
-            setAiResponse({ title: t('common.error'), content: errorMessage});
-            addNotification(errorMessage, 'error');
-        }
-        setIsLoading(false);
+        askMentor(query);
     };
+
+    const handleSaveResponse = () => {
+        if (mentorTask.result) {
+            addResponse({ ...mentorTask.result, query });
+        }
+    };
+    
+    const handleClear = () => {
+        setQuery('');
+        resetAiTask('mentorTask');
+    }
 
     return (
         <Card>
@@ -78,8 +66,8 @@ export const AiMentor: React.FC = () => {
                         }
                     }}
                 />
-                {query && !isLoading && (
-                    <button onClick={() => { setQuery(''); setAiResponse(null); }} className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors" aria-label={t('common.close')}>
+                {query && mentorTask.status !== 'loading' && (
+                    <button onClick={handleClear} className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors" aria-label={t('common.close')}>
                         <PhosphorIcons.XCircle className="w-5 h-5"/>
                     </button>
                 )}
@@ -94,28 +82,34 @@ export const AiMentor: React.FC = () => {
                         ))}
                     </div>
                 </div>
-                <Button onClick={handleAskMentor} disabled={isLoading || !query.trim()}>
+                <Button onClick={handleAskMentor} disabled={mentorTask.status === 'loading' || !query.trim()}>
                     {t('knowledgeView.aiMentor.button')}
                 </Button>
             </div>
 
-            {isLoading && (
+            {mentorTask.status === 'loading' && (
                 <div className="text-center p-6 flex flex-col items-center">
                     <PhosphorIcons.Brain className="w-12 h-12 text-primary-500 animate-pulse mb-3" />
-                    <p className="text-slate-400">{loadingMessage || t('knowledgeView.aiMentor.loading')}</p>
+                    <p className="text-slate-400">{mentorTask.loadingMessage || t('knowledgeView.aiMentor.loading')}</p>
                 </div>
             )}
-            {aiResponse && !isLoading && (
-                <Card className="mt-4 bg-slate-800 animate-fade-in">
-                    <h4 className="font-bold text-primary-300 text-lg">{aiResponse.title}</h4>
-                    <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
-                    <div className="text-right mt-4">
-                            <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>
-                            <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
-                            {t('knowledgeView.archive.saveButton')}
-                        </Button>
-                    </div>
-                </Card>
+            {(mentorTask.status === 'success' || mentorTask.status === 'error') && mentorTask.result && (
+                 <div className="max-h-[50vh] overflow-y-auto pr-2 mt-4">
+                    <Card className="bg-slate-800 animate-fade-in">
+                        <h4 className="font-bold text-primary-300 text-lg">{mentorTask.result.title}</h4>
+                        <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: mentorTask.result.content }}></div>
+                        {mentorTask.status !== 'error' && (
+                            <div className="text-right mt-4">
+                                <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
+                                    {isCurrentResponseSaved ? 
+                                        <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />{t('strainsView.tips.saved')}</> :
+                                        <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />{t('knowledgeView.archive.saveButton')}</>
+                                    }
+                                </Button>
+                            </div>
+                        )}
+                    </Card>
+                </div>
             )}
         </Card>
     );

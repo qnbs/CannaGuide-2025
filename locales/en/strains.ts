@@ -37,6 +37,10 @@ export const strainsView = {
         text: 'Mark strains with a heart to save them here for quick access.',
         button: 'Browse All Strains'
     },
+    noResults: {
+        title: 'No Results Found',
+        text: 'Your filter criteria did not match any strains. Try resetting the filters.'
+    }
   },
   tabs: {
     allStrains: 'All Strains',

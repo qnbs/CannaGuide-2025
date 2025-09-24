@@ -9,13 +9,16 @@ const FAQItem: React.FC<{ question: string; answer: string }> = ({ question, ans
       <h4 className="font-semibold text-slate-100">{question}</h4>
       <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
     </summary>
-    <p className="text-sm text-slate-300 pt-2 pl-4">{answer}</p>
+    <p className="text-sm text-slate-300 pt-2 pl-4 prose prose-sm dark:prose-invert max-w-none">{answer}</p>
   </details>
 );
 
-const FAQSection: React.FC<{ title: string; faqs: { q: string; a: string }[] }> = ({ title, faqs }) => (
+const FAQSection: React.FC<{ title: string; faqs: { q: string; a: string }[], icon: React.ReactNode }> = ({ title, faqs, icon }) => (
   <Card>
-    <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{title}</h3>
+    <h3 className="text-xl font-bold font-display text-primary-400 mb-4 flex items-center gap-2">
+      {icon}
+      {title}
+    </h3>
     <div className="space-y-3">
       {faqs.map((faq, index) => (
         <FAQItem key={index} question={faq.q} answer={faq.a} />
@@ -27,8 +30,16 @@ const FAQSection: React.FC<{ title: string; faqs: { q: string; a: string }[] }> 
 export const HelpView: React.FC = () => {
   const { t } = useTranslations();
 
-  // The translation file returns an object of sections, so we can map over it.
   const sections = t('helpView.sections') || {};
+  const icons: Record<string, React.ReactNode> = {
+    general: <PhosphorIcons.Question />,
+    strains: <PhosphorIcons.Leafy />,
+    plants: <PhosphorIcons.Plant />,
+    equipment: <PhosphorIcons.Wrench />,
+    cannabinoids: <PhosphorIcons.TestTube />,
+    terpenes: <PhosphorIcons.Sparkle />,
+    flavonoids: <PhosphorIcons.PaintBrush />
+  };
 
   return (
     <div className="space-y-6">
@@ -38,7 +49,7 @@ export const HelpView: React.FC = () => {
       </div>
       
       {Object.entries(sections).map(([key, sectionData]: [string, any]) => (
-        <FAQSection key={key} title={sectionData.title} faqs={sectionData.faqs} />
+        <FAQSection key={key} title={sectionData.title} faqs={sectionData.faqs} icon={icons[key] || <PhosphorIcons.Info />} />
       ))}
     </div>
   );

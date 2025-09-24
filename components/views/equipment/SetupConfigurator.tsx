@@ -1,20 +1,19 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { SavedSetup, Recommendation } from '@/types';
+import { SavedSetup } from '@/types';
 import { SetupResults } from '@/components/views/equipment/SetupResults';
 import { configurations } from '@/components/views/equipment/setupConfigurations';
+import { AiTask } from '@/stores/slices/aiSlice';
+import { Recommendation } from '@/types';
 
 interface SetupConfiguratorProps {
     onGenerate: (promptDetails: string) => void;
     onSaveSetup: (setup: Omit<SavedSetup, 'id' | 'createdAt'>) => void;
-    recommendation: Recommendation | null;
-    setRecommendation: (rec: Recommendation | null) => void;
-    isLoading: boolean;
-    error: string | null;
-    setError: (err: string | null) => void;
+    task: AiTask<Recommendation>;
+    resetTask: () => void;
 }
 
 type PlantCount = 1 | 2 | 3;
@@ -57,26 +56,31 @@ const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect })
 
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ 
-    onGenerate, onSaveSetup, recommendation, setRecommendation, isLoading, error, setError
+    onGenerate, onSaveSetup, task, resetTask
 }) => {
     const { t } = useTranslations();
     const [step, setStep] = useState<1 | 2>(1);
     const [plantCount, setPlantCount] = useState<PlantCount | null>(null);
     const [selectedConfigKey, setSelectedConfigKey] = useState<ConfigType | null>(null);
 
+    useEffect(() => {
+        if (task.status === 'success' || task.status === 'error' || task.status === 'loading') {
+            setStep(2);
+        } else {
+            setStep(1);
+        }
+    }, [task.status]);
+    
     const handleGenerate = () => {
         if (!plantCount || !selectedConfigKey) return;
         const config = configurations[plantCount][selectedConfigKey];
         onGenerate(t(config.promptKey));
-        setStep(2);
     };
 
     const startOver = () => {
-        setStep(1);
         setPlantCount(null);
         setSelectedConfigKey(null);
-        setRecommendation(null);
-        setError(null);
+        resetTask();
     };
     
     const currentConfigs = plantCount ? configurations[plantCount] : null;
@@ -84,32 +88,13 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
 
     const sourceDetails = useMemo(() => {
         if (!plantCount || !selectedConfigKey || !selectedConfigData) {
-            return {
-                area: '60x60' as Area,
-                budget: 'low' as Budget,
-                growStyle: 'beginner' as GrowStyle
-            };
+            return { area: '60x60' as Area, budget: 'low' as Budget, growStyle: 'beginner' as GrowStyle };
         }
-
         const areaString = selectedConfigData.details.zelt.split(' ')[0].split('x').slice(0, 2).join('x');
+        const budgetMap: Record<ConfigType, Budget> = { standard: 'low', medium: 'medium', premium: 'high' };
+        const growStyleMap: Record<ConfigType, GrowStyle> = { standard: 'beginner', medium: 'balanced', premium: 'yield' };
         
-        const budgetMap: Record<ConfigType, Budget> = {
-            standard: 'low',
-            medium: 'medium',
-            premium: 'high',
-        };
-        
-        const growStyleMap: Record<ConfigType, GrowStyle> = {
-            standard: 'beginner',
-            medium: 'balanced',
-            premium: 'yield',
-        };
-        
-        return {
-            area: areaString as Area,
-            growStyle: growStyleMap[selectedConfigKey],
-            budget: budgetMap[selectedConfigKey]
-        };
+        return { area: areaString as Area, growStyle: growStyleMap[selectedConfigKey], budget: budgetMap[selectedConfigKey] };
     }, [plantCount, selectedConfigData, selectedConfigKey]);
 
     return (
@@ -161,9 +146,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
                  </>
             ) : (
                 <SetupResults
-                    recommendation={recommendation}
-                    isLoading={isLoading}
-                    error={error}
+                    task={task}
                     onSaveSetup={onSaveSetup}
                     startOver={startOver}
                     handleGenerate={() => handleGenerate()}

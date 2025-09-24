@@ -38,11 +38,10 @@ const workerCode = `
     const STAGES_ORDER = ${JSON.stringify(STAGES_ORDER)};
     const SIMULATION_CONSTANTS = ${JSON.stringify(SIMULATION_CONSTANTS)};
 
-    const advancePlantOneDay = (plant, settings) => {
-        if (plant.stage === 'FINISHED') return { updatedPlant: plant, events: [] };
+    const advancePlantOneDay = (plant, settings, allEvents) => {
+        if (plant.stage === 'FINISHED') return plant;
 
         let updatedPlant = JSON.parse(JSON.stringify(plant));
-        const events = [];
         
         updatedPlant.age += 1;
         const currentStageIndex = STAGES_ORDER.indexOf(updatedPlant.stage);
@@ -56,12 +55,12 @@ const workerCode = `
             const nextStage = STAGES_ORDER[currentStageIndex + 1];
             if (nextStage) {
                 updatedPlant.stage = nextStage;
-                events.push({ type: 'notification', data: { messageKey: 'plantsView.notifications.stageChange', params: { stage: \`plantStages.\${nextStage}\` }, type: 'info' } });
+                allEvents.push({ type: 'notification', data: { messageKey: 'plantsView.notifications.stageChange', params: { stage: \`plantStages.\${nextStage}\` }, type: 'info' } });
                 if (settings.simulationSettings.autoJournaling.stageChanges) {
-                     events.push({ type: 'journal', data: { type: 'SYSTEM', notesKey: 'plantsView.notifications.stageChange', params: { stage: \`plantStages.\${nextStage}\` } } });
+                     allEvents.push({ type: 'journal', data: { type: 'SYSTEM', notesKey: 'plantsView.notifications.stageChange', params: { stage: \`plantStages.\${nextStage}\` } } });
                 }
                 if (nextStage === 'HARVEST') {
-                    events.push({ type: 'notification', data: { messageKey: 'plantsView.notifications.harvestReady', params: { name: plant.name }, type: 'success' } });
+                    allEvents.push({ type: 'notification', data: { messageKey: 'plantsView.notifications.harvestReady', params: { name: plant.name }, type: 'success' } });
                 }
             }
         }
@@ -97,20 +96,26 @@ const workerCode = `
 
         const openTasks = updatedPlant.tasks.filter(t => !t.isCompleted);
         if (updatedPlant.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && !openTasks.some(t => t.title === 'plantsView.tasks.wateringTask.title')) {
-            events.push({ type: 'task', data: { title: 'plantsView.tasks.wateringTask.title', description: 'plantsView.tasks.wateringTask.description', priority: 'high' } });
+            allEvents.push({ type: 'task', data: { title: 'plantsView.tasks.wateringTask.title', description: 'plantsView.tasks.wateringTask.description', priority: 'high' } });
         }
         if (updatedPlant.stage === 'FLOWERING' && stageAge > stageDuration - 14 && !openTasks.some(t => t.title === 'plantsView.tasks.trichomeTask.title')) {
-            events.push({ type: 'task', data: { title: 'plantsView.tasks.trichomeTask.title', description: 'plantsView.tasks.trichomeTask.description', priority: 'medium' } });
+            allEvents.push({ type: 'task', data: { title: 'plantsView.tasks.trichomeTask.title', description: 'plantsView.tasks.trichomeTask.description', priority: 'medium' } });
         }
-
-        updatedPlant.lastUpdated = Date.now();
-        return { updatedPlant, events };
+        
+        return updatedPlant;
     };
 
     self.onmessage = (e) => {
-        const { plant, settings } = e.data;
-        const result = advancePlantOneDay(plant, settings);
-        self.postMessage(result);
+        const { plant, settings, daysToAdvance } = e.data;
+        let currentPlantState = plant;
+        const allEvents = [];
+
+        for (let i = 0; i < daysToAdvance; i++) {
+            currentPlantState = advancePlantOneDay(currentPlantState, settings, allEvents);
+        }
+        
+        currentPlantState.lastUpdated = Date.now();
+        self.postMessage({ updatedPlant: currentPlantState, events: allEvents });
     };
 `;
 
@@ -124,7 +129,7 @@ const getWorker = () => {
     return workerInstance;
 }
 
-export const runSimulationInWorker = (plant: Plant, settings: AppSettings): Promise<{ updatedPlant: Plant, events: any[] }> => {
+export const runSimulationInWorker = (plant: Plant, settings: AppSettings, daysToAdvance: number): Promise<{ updatedPlant: Plant, events: any[] }> => {
     return new Promise((resolve, reject) => {
         const worker = getWorker();
         const messageHandler = (e: MessageEvent) => {
@@ -141,7 +146,7 @@ export const runSimulationInWorker = (plant: Plant, settings: AppSettings): Prom
         worker.addEventListener('message', messageHandler);
         worker.addEventListener('error', errorHandler);
         
-        worker.postMessage({ plant, settings });
+        worker.postMessage({ plant, settings, daysToAdvance });
     });
 };
 

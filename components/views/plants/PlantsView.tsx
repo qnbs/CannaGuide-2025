@@ -48,8 +48,11 @@ export const PlantsView: React.FC = () => {
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
     useEffect(() => {
+        // On mount, catch up simulation based on elapsed time since last update
+        updatePlantState();
+        
         if (settings.simulationSettings.autoAdvance) {
-            updatePlantState();
+            // Then, set interval for periodic real-time updates
             const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed];
             const intervalId = setInterval(() => {
                 updatePlantState();

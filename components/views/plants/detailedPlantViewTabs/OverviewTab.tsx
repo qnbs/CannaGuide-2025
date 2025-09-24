@@ -1,10 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Plant } from '@/types';
 import { Card } from '@/components/common/Card';
 import { PlantLifecycleTimeline } from '@/components/views/plants/PlantLifecycleTimeline';
 import { HistoryChart } from '@/components/views/plants/HistoryChart';
 import { VitalBar } from '@/components/views/plants/VitalBar';
-import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { PLANT_STAGE_DETAILS, generateIdealHistory } from '@/services/plantSimulationService';
 import { useTranslations } from '@/hooks/useTranslations';
 
 interface OverviewTabProps {
@@ -14,6 +14,8 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslations();
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
+
+    const { idealHistory, idealVitalRanges } = useMemo(() => generateIdealHistory(plant), [plant]);
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -53,7 +55,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
 
             <Card>
                  <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.detailedView.history')}</h3>
-                <HistoryChart history={plant.history} />
+                <HistoryChart history={plant.history} idealHistory={idealHistory} idealVitalRanges={idealVitalRanges} />
             </Card>
         </div>
     );

@@ -5,7 +5,6 @@ export enum CommandGroup {
     Navigation = 'Navigation',
     Plants = 'Plants',
     Strains = 'Strains',
-    Equipment = 'Equipment',
     Knowledge = 'Knowledge',
     Settings = 'Settings',
     General = 'General Actions'
@@ -15,7 +14,6 @@ const groupOrder: CommandGroup[] = [
     CommandGroup.Navigation,
     CommandGroup.Plants,
     CommandGroup.Strains,
-    CommandGroup.Equipment,
     CommandGroup.Knowledge,
     CommandGroup.Settings,
     CommandGroup.General,

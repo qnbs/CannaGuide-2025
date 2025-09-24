@@ -4,9 +4,11 @@ import { useTranslations } from '@/hooks/useTranslations';
 
 interface HistoryChartProps {
     history: PlantHistoryEntry[];
+    idealHistory: PlantHistoryEntry[];
+    idealVitalRanges: any[]; // Not used in this visual, but kept for potential future use
 }
 
-export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
+export const HistoryChart: React.FC<HistoryChartProps> = ({ history, idealHistory }) => {
     const { t } = useTranslations();
     
     if (!history || history.length < 2) {
@@ -17,19 +19,19 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
     const height = 150;
     const padding = { top: 10, right: 10, bottom: 20, left: 25 };
 
-    const maxDay = Math.max(1, ...history.map(h => h.day));
-    const maxHeight = Math.max(10, ...history.map(h => h.height));
+    const maxDay = Math.max(1, ...history.map(h => h.day), ...idealHistory.map(h => h.day));
+    const maxHeight = Math.max(10, ...history.map(h => h.height), ...idealHistory.map(h => h.height));
 
     const scaleX = (day: number) => padding.left + (day / maxDay) * (width - padding.left - padding.right);
     const scaleY = (heightValue: number) => padding.top + (1 - heightValue / maxHeight) * (height - padding.top - padding.bottom);
     
-    const createPath = (dataKey: 'height' | 'stressLevel') => {
+    const createPath = (data: PlantHistoryEntry[], dataKey: 'height' | 'stressLevel') => {
         const maxValue = dataKey === 'height' ? maxHeight : 100;
         const scale = (val: number) => padding.top + (1 - val / maxValue) * (height - padding.top - padding.bottom);
 
-        return history.map((point, i) => {
+        return data.map((point, i) => {
             const x = scaleX(point.day);
-            const y = scale(point[dataKey]);
+            const y = scale(dataKey === 'height' ? point.height : point.stressLevel);
             return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)},${y.toFixed(2)}`;
         }).join(' ');
     };
@@ -56,16 +58,21 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
                     ))}
                 </g>
 
-                <path d={createPath('height')} fill="none" stroke="#3b82f6" strokeWidth="2" />
-                <path d={createPath('stressLevel')} fill="none" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="3,3" />
+                <path d={createPath(idealHistory, 'height')} fill="none" stroke="rgb(var(--color-primary-700))" strokeWidth="1.5" strokeDasharray="4,4" />
+                <path d={createPath(history, 'height')} fill="none" stroke="rgb(var(--color-primary-500))" strokeWidth="2" />
+                <path d={createPath(history, 'stressLevel')} fill="none" stroke="rgb(var(--color-accent-500))" strokeWidth="1.5" strokeDasharray="3,3" />
             </svg>
              <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-xs mt-2">
                  <span className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-0.5" style={{backgroundColor: '#3b82f6'}}></div>
+                    <div className="w-2.5 h-0.5" style={{backgroundColor: 'rgb(var(--color-primary-500))'}}></div>
                     {`${t('plantsView.detailedView.height')} (${t('common.units.cm')})`}
                 </span>
                  <span className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: '#ef4444'}}></div>
+                    <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: 'rgb(var(--color-primary-700))'}}></div>
+                    {'Ideal'}
+                </span>
+                 <span className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: 'rgb(var(--color-accent-500))'}}></div>
                     {`${t('plantsView.detailedView.stress')} (${t('common.units.percent')})`}
                 </span>
             </div>

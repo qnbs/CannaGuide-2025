@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { Strain, AIResponse, StructuredGrowTips } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -133,7 +134,17 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
 
     useEffect(() => {
         setNoteContent(getNoteForStrain(strain.id));
-        setSimilarStrains(strainService.getSimilarStrains(strain));
+
+        const fetchSimilarStrains = async () => {
+            try {
+                const similar = await strainService.getSimilarStrains(strain);
+                setSimilarStrains(similar);
+            } catch (error) {
+                console.error("Failed to fetch similar strains:", error);
+            }
+        };
+
+        fetchSimilarStrains();
         setStructuredTip(null);
         setIsTipSaved(false);
     }, [strain, getNoteForStrain]);

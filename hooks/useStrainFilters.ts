@@ -55,6 +55,7 @@ export const useStrainFilters = (
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     const debouncedSearchTerm = useDebounce(quickFilters.searchTerm, 300);
+    const debouncedDraftFilters = useDebounce(draftFilters, 200);
 
     const filterFunction = useCallback((strain: Strain, currentQuickFilters: QuickFilterState, currentAdvancedFilters: AdvancedFilterState): boolean => {
         // Quick Filters
@@ -79,23 +80,22 @@ export const useStrainFilters = (
         const { key, direction } = sort;
         let valA: string | number, valB: string | number;
         switch (key) {
-            case 'name': case 'type': valA = a[key]; valB = b[key]; return String(valA).localeCompare(String(valB));
+            case 'name': case 'type': valA = a[key]; valB = b[key]; break;
             case 'difficulty': valA = difficultyValues[a.agronomic.difficulty]; valB = difficultyValues[b.agronomic.difficulty]; break;
             case 'yield': valA = yieldValues[a.agronomic.yield]; valB = yieldValues[b.agronomic.yield]; break;
             default: valA = a[key as 'thc' | 'cbd' | 'floweringTime']; valB = b[key as 'thc' | 'cbd' | 'floweringTime'];
         }
-        const comparison = valA < valB ? -1 : valA > valB ? 1 : 0;
+        const comparison = String(valA).localeCompare(String(valB));
         return direction === 'asc' ? comparison : -comparison;
     }, [sort]);
 
     const strainsForDisplay = useMemo(() => {
-        const filtersToApply = isDrawerOpen ? draftFilters : appliedFilters;
-        return allStrains.filter(strain => filterFunction(strain, quickFilters, filtersToApply)).sort(sortFunction);
-    }, [allStrains, quickFilters, appliedFilters, draftFilters, isDrawerOpen, filterFunction, sortFunction]);
+        return allStrains.filter(strain => filterFunction(strain, quickFilters, appliedFilters)).sort(sortFunction);
+    }, [allStrains, quickFilters, appliedFilters, filterFunction, sortFunction]);
 
     const previewCount = useMemo(() => {
-        return allStrains.filter(strain => filterFunction(strain, quickFilters, draftFilters)).length;
-    }, [allStrains, quickFilters, draftFilters, filterFunction]);
+        return allStrains.filter(strain => filterFunction(strain, quickFilters, debouncedDraftFilters)).length;
+    }, [allStrains, quickFilters, debouncedDraftFilters, filterFunction]);
 
     const handleSort = useCallback((key: SortKey) => {
         setSort(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));

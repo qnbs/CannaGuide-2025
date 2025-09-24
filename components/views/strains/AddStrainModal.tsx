@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useId } from 'react';
-import { Strain } from '@/types';
+import React, { useEffect, useId } from 'react';
+import { Strain, StrainType, DifficultyLevel, YieldLevel, HeightLevel } from '@/types';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useForm } from '@/hooks/useForm';
 
 interface AddStrainModalProps {
     isOpen: boolean;
@@ -15,17 +16,33 @@ interface AddStrainModalProps {
     strainToEdit: Strain | null;
 }
 
-const defaultStrainData: Partial<Strain> = {
-    type: 'Hybrid',
-    thc: 20,
-    cbd: 1,
-    floweringTime: 9,
-    agronomic: {
-        difficulty: 'Medium',
-        yield: 'Medium',
-        height: 'Medium',
-    },
-};
+// Helper to get a flat representation for the form
+const strainToFormValues = (strain: Partial<Strain>) => ({
+    name: strain.name || '',
+    type: strain.type || 'Hybrid',
+    typeDetails: strain.typeDetails || '',
+    genetics: strain.genetics || '',
+    thc: strain.thc || 20,
+    cbd: strain.cbd || 1,
+    thcRange: strain.thcRange || '',
+    cbdRange: strain.cbdRange || '',
+    floweringTime: strain.floweringTime || 9,
+    floweringTimeRange: strain.floweringTimeRange || '',
+    description: strain.description || '',
+    aromasString: (strain.aromas || []).join(', '),
+    terpenesString: (strain.dominantTerpenes || []).join(', '),
+    difficulty: strain.agronomic?.difficulty || 'Medium',
+    yield: strain.agronomic?.yield || 'Medium',
+    height: strain.agronomic?.height || 'Medium',
+    yieldIndoor: strain.agronomic?.yieldDetails?.indoor || '',
+    yieldOutdoor: strain.agronomic?.yieldDetails?.outdoor || '',
+    heightIndoor: strain.agronomic?.heightDetails?.indoor || '',
+    heightOutdoor: strain.agronomic?.heightDetails?.outdoor || '',
+});
+
+const defaultStrainValues = strainToFormValues({
+    agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' }
+});
 
 const FormSection: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, defaultOpen = false }) => (
     <details open={defaultOpen}>
@@ -74,104 +91,48 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: 
     )
 }
 
-export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose, onAddStrain, onUpdateStrain, strainToEdit }) => {
+export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStrain, onUpdateStrain, strainToEdit, ...props }) => {
     const { t } = useTranslations();
     const addNotification = useAppStore(state => state.addNotification);
-    const [strainData, setStrainData] = useState<any>({});
     const modalRef = useFocusTrap(isOpen);
-    
     const isEditMode = !!strainToEdit;
 
-    useEffect(() => {
-        if (isOpen) {
-            if (isEditMode) {
-                 setStrainData({
-                    ...strainToEdit,
-                    aromasString: (strainToEdit.aromas || []).join(', '),
-                    terpenesString: (strainToEdit.dominantTerpenes || []).join(', '),
-                    agronomic: {
-                        ...strainToEdit.agronomic,
-                        yieldIndoor: strainToEdit.agronomic.yieldDetails?.indoor || '',
-                        yieldOutdoor: strainToEdit.agronomic.yieldDetails?.outdoor || '',
-                        heightIndoor: strainToEdit.agronomic.heightDetails?.indoor || '',
-                        heightOutdoor: strainToEdit.agronomic.heightDetails?.outdoor || '',
-                    }
-                });
-            } else {
-                setStrainData(defaultStrainData);
-            }
-        }
-    }, [isOpen, strainToEdit, isEditMode]);
-
-
-    const handleChange = (field: string, value: any) => {
-        const keys = field.split('.');
-        if (keys.length > 1) {
-            setStrainData((prev: any) => ({
-                ...prev,
-                [keys[0]]: { ...prev[keys[0]], [keys[1]]: value }
-            }));
-        } else {
-            setStrainData((prev: any) => ({ ...prev, [field]: value }));
-        }
+    const validate = (values: any) => {
+        const errors: any = {};
+        if (!values.name?.trim()) errors.name = t('strainsView.addStrainModal.validation.name');
+        const thc = parseFloat(values.thc);
+        if (isNaN(thc) || thc < 0 || thc > 50) errors.thc = t('strainsView.addStrainModal.validation.thc');
+        const floweringTime = parseFloat(values.floweringTime);
+        if (isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20) errors.floweringTime = t('strainsView.addStrainModal.validation.floweringTime');
+        const rangeRegex = /^(?:[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?)$|^(?:\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?)$/;
+        if (values.thcRange && !rangeRegex.test(values.thcRange)) errors.thcRange = t('strainsView.addStrainModal.validation.thcRange');
+        if (values.cbdRange && !rangeRegex.test(values.cbdRange)) errors.cbdRange = t('strainsView.addStrainModal.validation.cbdRange');
+        return errors;
     };
     
-    // Use a robust regex to split by comma and trim whitespace.
-    const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        
-        const errors = [];
-        if (!strainData.name?.trim()) errors.push(t('strainsView.addStrainModal.validation.name'));
-        
-        const thc = parseFloat(strainData.thc);
-        if (isNaN(thc) || thc < 0 || thc > 50) errors.push(t('strainsView.addStrainModal.validation.thc'));
-
-        const floweringTime = parseFloat(strainData.floweringTime);
-        if (isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20) errors.push(t('strainsView.addStrainModal.validation.floweringTime'));
-        
-        // Sophisticated regex for validating range fields (e.g., '18-22%', '<1%', '~20%')
-        const rangeRegex = /^(?:[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?)$|^(?:\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?)$/;
-        if (strainData.thcRange && !rangeRegex.test(strainData.thcRange)) {
-            errors.push(t('strainsView.addStrainModal.validation.thcRange'));
-        }
-        if (strainData.cbdRange && !rangeRegex.test(strainData.cbdRange)) {
-            errors.push(t('strainsView.addStrainModal.validation.cbdRange'));
-        }
-
-        if (errors.length > 0) {
-            addNotification(errors.join(' '), 'error');
-            return;
-        }
-
+    const onSubmit = (values: any) => {
+        const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
         const finalStrain: Strain = {
-            id: isEditMode ? strainToEdit.id : `${strainData.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
-            name: strainData.name,
-            type: strainData.type,
-            typeDetails: strainData.typeDetails,
-            genetics: strainData.genetics,
-            thc: parseFloat(strainData.thc),
-            cbd: parseFloat(strainData.cbd || 1),
-            thcRange: strainData.thcRange,
-            cbdRange: strainData.cbdRange,
-            floweringTime: parseFloat(strainData.floweringTime),
-            floweringTimeRange: strainData.floweringTimeRange,
-            description: strainData.description,
-            aromas: parseStringToArray(strainData.aromasString),
-            dominantTerpenes: parseStringToArray(strainData.terpenesString),
+            id: isEditMode ? strainToEdit.id : `${values.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
+            name: values.name,
+            type: values.type as StrainType,
+            typeDetails: values.typeDetails,
+            genetics: values.genetics,
+            thc: parseFloat(values.thc),
+            cbd: parseFloat(values.cbd || 1),
+            thcRange: values.thcRange,
+            cbdRange: values.cbdRange,
+            floweringTime: parseFloat(values.floweringTime),
+            floweringTimeRange: values.floweringTimeRange,
+            description: values.description,
+            aromas: parseStringToArray(values.aromasString),
+            dominantTerpenes: parseStringToArray(values.terpenesString),
             agronomic: {
-                difficulty: strainData.agronomic.difficulty,
-                yield: strainData.agronomic.yield,
-                height: strainData.agronomic.height,
-                yieldDetails: {
-                    indoor: strainData.agronomic.yieldIndoor,
-                    outdoor: strainData.agronomic.yieldOutdoor,
-                },
-                heightDetails: {
-                    indoor: strainData.agronomic.heightIndoor,
-                    outdoor: strainData.agronomic.heightOutdoor,
-                }
+                difficulty: values.difficulty as DifficultyLevel,
+                yield: values.yield as YieldLevel,
+                height: values.height as HeightLevel,
+                yieldDetails: { indoor: values.yieldIndoor, outdoor: values.yieldOutdoor },
+                heightDetails: { indoor: values.heightIndoor, outdoor: values.heightOutdoor }
             }
         };
 
@@ -181,18 +142,30 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
             onAddStrain(finalStrain);
         }
     };
+    
+    const { values, errors, handleChange, handleSubmit } = useForm({
+        initialValues: isEditMode ? strainToFormValues(strainToEdit) : defaultStrainValues,
+        validate,
+        onSubmit
+    });
+
+    useEffect(() => {
+        if (Object.keys(errors).length > 0) {
+            addNotification(Object.values(errors).join(' '), 'error');
+        }
+    }, [errors, addNotification]);
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={props.onClose}>
             <Card ref={modalRef} className="w-full max-w-2xl modal-content-animate" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="flex justify-between items-start">
                         <h2 className="text-2xl font-bold text-primary-400 mb-4">
                             {isEditMode ? t('strainsView.addStrainModal.editTitle') : t('strainsView.addStrainModal.title')}
                         </h2>
-                        <button type="button" onClick={onClose} className="p-1 rounded-full hover:bg-slate-700" aria-label={t('common.close')}>
+                        <button type="button" onClick={props.onClose} className="p-1 rounded-full hover:bg-slate-700" aria-label={t('common.close')}>
                             <PhosphorIcons.X className="w-6 h-6" />
                         </button>
                     </div>
@@ -200,41 +173,41 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onClose,
                     <div className="overflow-y-auto pr-2 flex-grow" style={{maxHeight: '70vh'}}>
                         <div className="space-y-6">
                            <FormSection title={t('strainsView.addStrainModal.generalInfo')} defaultOpen={true}>
-                                <Input label={`${t('strainsView.addStrainModal.strainName')} *`} value={strainData.name || ''} onChange={(e) => handleChange('name', e.target.value)} required />
-                                <Select label={t('common.type')} value={strainData.type} onChange={(e) => handleChange('type', e.target.value)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
-                                <Input label={t('common.typeDetails')} value={strainData.typeDetails || ''} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
-                                <Input label={t('common.genetics')} value={strainData.genetics || ''} onChange={(e) => handleChange('genetics', e.target.value)} />
+                                <Input label={`${t('strainsView.addStrainModal.strainName')} *`} value={values.name} onChange={(e) => handleChange('name', e.target.value)} required />
+                                <Select label={t('common.type')} value={values.type} onChange={(e) => handleChange('type', e.target.value)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
+                                <Input label={t('common.typeDetails')} value={values.typeDetails} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
+                                <Input label={t('common.genetics')} value={values.genetics} onChange={(e) => handleChange('genetics', e.target.value)} />
                            </FormSection>
 
                            <FormSection title={t('strainsView.addStrainModal.cannabinoids')}>
-                                <Input label={`${t('strainsView.addStrainModal.thcPercent')} *`} type="number" step="0.1" value={strainData.thc || ''} onChange={(e) => handleChange('thc', e.target.value)} required />
-                                <Input label={t('strainsView.addStrainModal.cbdPercent')} type="number" step="0.1" value={strainData.cbd || ''} onChange={(e) => handleChange('cbd', e.target.value)} />
-                                <Input label={t('strainsView.addStrainModal.thcRange')} value={strainData.thcRange || ''} onChange={(e) => handleChange('thcRange', e.target.value)} placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')} />
-                                <Input label={t('strainsView.addStrainModal.cbdRange')} value={strainData.cbdRange || ''} onChange={(e) => handleChange('cbdRange', e.target.value)} placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')} />
+                                <Input label={`${t('strainsView.addStrainModal.thcPercent')} *`} type="number" step="0.1" value={values.thc} onChange={(e) => handleChange('thc', e.target.value)} required />
+                                <Input label={t('strainsView.addStrainModal.cbdPercent')} type="number" step="0.1" value={values.cbd} onChange={(e) => handleChange('cbd', e.target.value)} />
+                                <Input label={t('strainsView.addStrainModal.thcRange')} value={values.thcRange} onChange={(e) => handleChange('thcRange', e.target.value)} placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')} />
+                                <Input label={t('strainsView.addStrainModal.cbdRange')} value={values.cbdRange} onChange={(e) => handleChange('cbdRange', e.target.value)} placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')} />
                            </FormSection>
 
                            <FormSection title={t('strainsView.addStrainModal.growData')}>
-                                <Input label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`} type="number" step="0.5" value={strainData.floweringTime || ''} onChange={(e) => handleChange('floweringTime', e.target.value)} required />
-                                <Input label={t('strainsView.addStrainModal.floweringTimeRange')} value={strainData.floweringTimeRange || ''} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
-                                <Select label={t('strainsView.table.level')} value={strainData.agronomic?.difficulty} onChange={(e) => handleChange('agronomic.difficulty', e.target.value)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
-                                <Select label={t('strainsView.addStrainModal.yield')} value={strainData.agronomic?.yield} onChange={(e) => handleChange('agronomic.yield', e.target.value)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
-                                <Select label={t('strainsView.addStrainModal.height')} value={strainData.agronomic?.height} onChange={(e) => handleChange('agronomic.height', e.target.value)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
-                                <Input label={t('strainsView.strainModal.yieldIndoor')} value={strainData.agronomic?.yieldIndoor || ''} onChange={(e) => handleChange('agronomic.yieldIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}/>
-                                <Input label={t('strainsView.strainModal.yieldOutdoor')} value={strainData.agronomic?.yieldOutdoor || ''} onChange={(e) => handleChange('agronomic.yieldOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}/>
-                                <Input label={t('strainsView.strainModal.heightIndoor')} value={strainData.agronomic?.heightIndoor || ''} onChange={(e) => handleChange('agronomic.heightIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}/>
-                                <Input label={t('strainsView.strainModal.heightOutdoor')} value={strainData.agronomic?.heightOutdoor || ''} onChange={(e) => handleChange('agronomic.heightOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightOutdoorPlaceholder')}/>
+                                <Input label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`} type="number" step="0.5" value={values.floweringTime} onChange={(e) => handleChange('floweringTime', e.target.value)} required />
+                                <Input label={t('strainsView.addStrainModal.floweringTimeRange')} value={values.floweringTimeRange} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
+                                <Select label={t('strainsView.table.level')} value={values.difficulty} onChange={(e) => handleChange('difficulty', e.target.value)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
+                                <Select label={t('strainsView.addStrainModal.yield')} value={values.yield} onChange={(e) => handleChange('yield', e.target.value)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
+                                <Select label={t('strainsView.addStrainModal.height')} value={values.height} onChange={(e) => handleChange('height', e.target.value)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
+                                <Input label={t('strainsView.strainModal.yieldIndoor')} value={values.yieldIndoor} onChange={(e) => handleChange('yieldIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}/>
+                                <Input label={t('strainsView.strainModal.yieldOutdoor')} value={values.yieldOutdoor} onChange={(e) => handleChange('yieldOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}/>
+                                <Input label={t('strainsView.strainModal.heightIndoor')} value={values.heightIndoor} onChange={(e) => handleChange('heightIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}/>
+                                <Input label={t('strainsView.strainModal.heightOutdoor')} value={values.heightOutdoor} onChange={(e) => handleChange('heightOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightOutdoorPlaceholder')}/>
                            </FormSection>
 
                            <FormSection title={t('strainsView.addStrainModal.profile')}>
-                                <Textarea label={t('common.description')} value={strainData.description || ''} onChange={(e) => handleChange('description', e.target.value)} />
-                                <Input label={t('strainsView.strainModal.aromas')} value={strainData.aromasString || ''} onChange={(e) => handleChange('aromasString', e.target.value)} placeholder={t('strainsView.addStrainModal.aromasPlaceholder')} />
-                                <Input label={t('strainsView.strainModal.dominantTerpenes')} value={strainData.terpenesString || ''} onChange={(e) => handleChange('terpenesString', e.target.value)} placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')} />
+                                <Textarea label={t('common.description')} value={values.description} onChange={(e) => handleChange('description', e.target.value)} />
+                                <Input label={t('strainsView.strainModal.aromas')} value={values.aromasString} onChange={(e) => handleChange('aromasString', e.target.value)} placeholder={t('strainsView.addStrainModal.aromasPlaceholder')} />
+                                <Input label={t('strainsView.strainModal.dominantTerpenes')} value={values.terpenesString} onChange={(e) => handleChange('terpenesString', e.target.value)} placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')} />
                            </FormSection>
                         </div>
                     </div>
 
                     <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
-                        <Button type="button" variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+                        <Button type="button" variant="secondary" onClick={props.onClose}>{t('common.cancel')}</Button>
                         <Button type="submit">{t('common.save')}</Button>
                     </div>
                 </form>

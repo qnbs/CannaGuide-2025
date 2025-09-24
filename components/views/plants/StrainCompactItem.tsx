@@ -42,8 +42,10 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = React.memo(({
             <TypeIcon className={`w-8 h-8 flex-shrink-0 ${typeClasses[strain.type]}`} />
             <div className="flex-grow min-w-0">
                 <p className="font-semibold text-slate-100 truncate flex items-center gap-1.5">
-                    {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" title={t('strainsView.myStrains')} />}
-                    {isFavorite && <PhosphorIcons.Heart weight="fill" className="w-4 h-4 text-red-500/80 flex-shrink-0" title={t('strainsView.favorites')} />}
+                    {/* FIX: Wrapped icon in a span to apply the title attribute correctly, as the icon component does not accept it. */}
+                    {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
+                    {/* FIX: Wrapped icon in a span to apply the title attribute correctly, as the icon component does not accept it. */}
+                    {isFavorite && <span title={t('strainsView.favorites')}><PhosphorIcons.Heart weight="fill" className="w-4 h-4 text-red-500/80 flex-shrink-0" /></span>}
                     <span>{strain.name}</span>
                 </p>
                 <p className="text-xs text-slate-400">{strain.type}</p>

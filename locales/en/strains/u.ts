@@ -1,6 +1,6 @@
-// FIX: Removed incorrect type annotation 'Partial<Strain>' and unused import to resolve type errors.
-// The structure of this translation object doesn't directly map to the Strain type.
-export const strains: Record<string, any> = {
+import { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
     "unicorn-poop": {
         "description": "A balanced hybrid with a sweet, fruity, and earthy aroma. The effect is relaxing, happy, and uplifting.",
         "typeDetails": "Hybrid 50% / 50%",

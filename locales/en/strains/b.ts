@@ -1,6 +1,6 @@
-// FIX: Removed incorrect type annotation 'Partial<Strain>' and unused import to resolve type errors.
-// The structure of this translation object doesn't directly map to the Strain type.
-export const strains: Record<string, any> = {
+import { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
     "b-52": {
         "description": "A Skunk hybrid known for its large, dense buds and high yields. The effect is balanced, starting with a cerebral, uplifting feeling that transitions into a gentle body relaxation. The aroma is sweet and skunky.",
         "typeDetails": "Indica 80% / Sativa 20%",

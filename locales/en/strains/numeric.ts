@@ -1,4 +1,6 @@
-export const strains: Record<string, any> = {
+import { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "1024": {
     "description": "A sativa-dominant strain known for its high potency and its uplifting, cerebral effects. It has a sweet, fruity, and spicy aroma.",
     "typeDetails": "Sativa 70% / Indica 30%",

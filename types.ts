@@ -283,6 +283,7 @@ export type SearchIndex = Record<string, StrainID[]>;
 // UI & Settings types
 export type SortDirection = 'asc' | 'desc';
 export type SortKey = 'name' | 'difficulty' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'yield';
+export type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
 
 export type NotificationType = 'success' | 'error' | 'info';
 export interface Notification {
@@ -374,4 +375,20 @@ export interface Command {
 
 export interface KnowledgeProgress {
     [sectionId: string]: string[];
+}
+
+export interface StrainTranslationData {
+  description?: string;
+  typeDetails?: string;
+  genetics?: string;
+  aromas?: string[];
+  dominantTerpenes?: string[];
+  yieldDetails?: {
+    indoor: string;
+    outdoor: string;
+  };
+  heightDetails?: {
+    indoor: string;
+    outdoor: string;
+  };
 }

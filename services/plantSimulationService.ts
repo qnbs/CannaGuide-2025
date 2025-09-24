@@ -1,4 +1,4 @@
-import { Plant, PlantStage, PlantProblem, Task, AppSettings } from '@/types';
+import { Plant, PlantStage, AppSettings, PlantHistoryEntry } from '@/types';
 import { STAGES_ORDER } from '@/constants';
 
 // A simple TFunction type to avoid circular dependencies if this file were to import from the store.
@@ -32,78 +32,158 @@ export const PLANT_STAGE_DETAILS: Record<PlantStage, { duration: number, idealVi
     [PlantStage.Finished]: { duration: Infinity, idealVitals: { ph: {min: 0, max: 0}, ec: {min: 0, max: 0} }, idealEnv: {temp: {min: 0, max: 0}, humidity: {min: 0, max: 0}} },
 };
 
-export const advancePlantOneDay = (plant: Plant, settings: AppSettings, t: TFunction): { updatedPlant: Plant, events: any[] } => {
-    if (plant.stage === PlantStage.Finished) return { updatedPlant: plant, events: [] };
 
-    let updatedPlant = { ...plant };
-    const events: any[] = [];
-    
-    // 1. Advance age and check for stage changes
-    updatedPlant.age += 1;
-    const currentStageIndex = STAGES_ORDER.indexOf(updatedPlant.stage);
-    const stageDuration = PLANT_STAGE_DETAILS[updatedPlant.stage].duration;
-    let stageAge = updatedPlant.age;
-    if (currentStageIndex > 0) {
-        stageAge -= STAGES_ORDER.slice(0, currentStageIndex).reduce((acc, s) => acc + PLANT_STAGE_DETAILS[s].duration, 0);
-    }
-    
-    if (stageAge >= stageDuration) {
-        const nextStage = STAGES_ORDER[currentStageIndex + 1];
-        if (nextStage) {
-            updatedPlant.stage = nextStage;
-            events.push({ type: 'notification', data: { message: t('plantsView.notifications.stageChange', { stage: t(`plantStages.${nextStage}`) }), type: 'info' } });
-            if (settings.simulationSettings.autoJournaling.stageChanges) {
-                 events.push({ type: 'journal', data: { type: 'SYSTEM', notes: t('plantsView.notifications.stageChange', { stage: t(`plantStages.${nextStage}`) }) } });
-            }
-            if (nextStage === PlantStage.Harvest) {
-                events.push({ type: 'notification', data: { message: t('plantsView.notifications.harvestReady', { name: plant.name }), type: 'success' } });
+const workerCode = `
+    const PLANT_STAGE_DETAILS = ${JSON.stringify(PLANT_STAGE_DETAILS)};
+    const STAGES_ORDER = ${JSON.stringify(STAGES_ORDER)};
+    const SIMULATION_CONSTANTS = ${JSON.stringify(SIMULATION_CONSTANTS)};
+
+    const advancePlantOneDay = (plant, settings) => {
+        if (plant.stage === 'FINISHED') return { updatedPlant: plant, events: [] };
+
+        let updatedPlant = JSON.parse(JSON.stringify(plant));
+        const events = [];
+        
+        updatedPlant.age += 1;
+        const currentStageIndex = STAGES_ORDER.indexOf(updatedPlant.stage);
+        const stageDuration = PLANT_STAGE_DETAILS[updatedPlant.stage].duration;
+        let stageAge = updatedPlant.age;
+        if (currentStageIndex > 0) {
+            stageAge -= STAGES_ORDER.slice(0, currentStageIndex).reduce((acc, s) => acc + PLANT_STAGE_DETAILS[s].duration, 0);
+        }
+        
+        if (stageAge >= stageDuration && updatedPlant.stage !== 'Curing') {
+            const nextStage = STAGES_ORDER[currentStageIndex + 1];
+            if (nextStage) {
+                updatedPlant.stage = nextStage;
+                events.push({ type: 'notification', data: { messageKey: 'plantsView.notifications.stageChange', params: { stage: \`plantStages.\${nextStage}\` }, type: 'info' } });
+                if (settings.simulationSettings.autoJournaling.stageChanges) {
+                     events.push({ type: 'journal', data: { type: 'SYSTEM', notesKey: 'plantsView.notifications.stageChange', params: { stage: \`plantStages.\${nextStage}\` } } });
+                }
+                if (nextStage === 'HARVEST') {
+                    events.push({ type: 'notification', data: { messageKey: 'plantsView.notifications.harvestReady', params: { name: plant.name }, type: 'success' } });
+                }
             }
         }
-    }
 
-    // 2. Simulate vital changes (Water, Nutrients)
-    updatedPlant.vitals.substrateMoisture = Math.max(0, updatedPlant.vitals.substrateMoisture - SIMULATION_CONSTANTS.DAILY_WATER_CONSUMPTION);
-    if (updatedPlant.stage === PlantStage.Vegetative || updatedPlant.stage === PlantStage.Flowering) {
-        updatedPlant.vitals.ec = Math.max(0, updatedPlant.vitals.ec - SIMULATION_CONSTANTS.DAILY_NUTRIENT_CONSUMPTION);
-    }
+        updatedPlant.vitals.substrateMoisture = Math.max(0, updatedPlant.vitals.substrateMoisture - SIMULATION_CONSTANTS.DAILY_WATER_CONSUMPTION);
+        if (updatedPlant.stage === 'VEGETATIVE' || updatedPlant.stage === 'FLOWERING') {
+            updatedPlant.vitals.ec = Math.max(0, updatedPlant.vitals.ec - SIMULATION_CONSTANTS.DAILY_NUTRIENT_CONSUMPTION);
+        }
 
-    // 3. Simulate height growth
-    let heightGrowth = SIMULATION_CONSTANTS.HEIGHT_GROWTH_BASE;
-    if (updatedPlant.stage === PlantStage.Vegetative) heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_VEG_MULTIPLIER;
-    if (updatedPlant.stage === PlantStage.Flowering) heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_FLOWER_MULTIPLIER;
-    heightGrowth *= (1 - (updatedPlant.stressLevel * SIMULATION_CONSTANTS.HEIGHT_STRESS_IMPACT_FACTOR));
-    if (updatedPlant.stage < PlantStage.Harvest) {
-        updatedPlant.height = parseFloat((updatedPlant.height + heightGrowth).toFixed(2));
-    }
+        let heightGrowth = SIMULATION_CONSTANTS.HEIGHT_GROWTH_BASE;
+        if (updatedPlant.stage === 'VEGETATIVE') heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_VEG_MULTIPLIER;
+        if (updatedPlant.stage === 'FLOWERING') heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_FLOWER_MULTIPLIER;
+        heightGrowth *= (1 - (updatedPlant.stressLevel * SIMULATION_CONSTANTS.HEIGHT_STRESS_IMPACT_FACTOR / 100));
+        if (STAGES_ORDER.indexOf(updatedPlant.stage) < STAGES_ORDER.indexOf('HARVEST')) {
+            updatedPlant.height = parseFloat((updatedPlant.height + heightGrowth).toFixed(2));
+        }
 
-    // 4. Update history
-    updatedPlant.history.push({ day: updatedPlant.age, vitals: { ...updatedPlant.vitals }, stressLevel: updatedPlant.stressLevel, height: updatedPlant.height });
+        updatedPlant.history.push({ day: updatedPlant.age, vitals: { ...updatedPlant.vitals }, stressLevel: updatedPlant.stressLevel, height: updatedPlant.height });
+        
+        const currentStageDetails = PLANT_STAGE_DETAILS[updatedPlant.stage];
+        const idealVitals = currentStageDetails.idealVitals;
+        let stressIncrease = 0;
+
+        if (updatedPlant.vitals.substrateMoisture < 20) { stressIncrease += 2; }
+        if (updatedPlant.vitals.ph < idealVitals.ph.min || updatedPlant.vitals.ph > idealVitals.ph.max) { stressIncrease += 1; }
+        if (updatedPlant.vitals.ec > idealVitals.ec.max * 1.2) { stressIncrease += 2; }
+        
+        if (stressIncrease > 0) {
+            updatedPlant.stressLevel = Math.min(100, updatedPlant.stressLevel + stressIncrease);
+        } else {
+            updatedPlant.stressLevel = Math.max(0, updatedPlant.stressLevel - SIMULATION_CONSTANTS.STRESS_RECOVERY_RATE);
+        }
+
+        const openTasks = updatedPlant.tasks.filter(t => !t.isCompleted);
+        if (updatedPlant.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && !openTasks.some(t => t.title === 'plantsView.tasks.wateringTask.title')) {
+            events.push({ type: 'task', data: { title: 'plantsView.tasks.wateringTask.title', description: 'plantsView.tasks.wateringTask.description', priority: 'high' } });
+        }
+        if (updatedPlant.stage === 'FLOWERING' && stageAge > stageDuration - 14 && !openTasks.some(t => t.title === 'plantsView.tasks.trichomeTask.title')) {
+            events.push({ type: 'task', data: { title: 'plantsView.tasks.trichomeTask.title', description: 'plantsView.tasks.trichomeTask.description', priority: 'medium' } });
+        }
+
+        updatedPlant.lastUpdated = Date.now();
+        return { updatedPlant, events };
+    };
+
+    self.onmessage = (e) => {
+        const { plant, settings } = e.data;
+        const result = advancePlantOneDay(plant, settings);
+        self.postMessage(result);
+    };
+`;
+
+let workerInstance: Worker | null = null;
+const getWorker = () => {
+    if (!workerInstance) {
+        const workerBlob = new Blob([workerCode], { type: 'application/javascript' });
+        const workerUrl = URL.createObjectURL(workerBlob);
+        workerInstance = new Worker(workerUrl);
+    }
+    return workerInstance;
+}
+
+export const runSimulationInWorker = (plant: Plant, settings: AppSettings): Promise<{ updatedPlant: Plant, events: any[] }> => {
+    return new Promise((resolve, reject) => {
+        const worker = getWorker();
+        const messageHandler = (e: MessageEvent) => {
+            resolve(e.data);
+            worker.removeEventListener('message', messageHandler);
+            worker.removeEventListener('error', errorHandler);
+        };
+        const errorHandler = (e: ErrorEvent) => {
+            reject(e);
+            worker.removeEventListener('message', messageHandler);
+            worker.removeEventListener('error', errorHandler);
+        };
+        
+        worker.addEventListener('message', messageHandler);
+        worker.addEventListener('error', errorHandler);
+        
+        worker.postMessage({ plant, settings });
+    });
+};
+
+export const generateIdealHistory = (plant: Plant): { idealHistory: PlantHistoryEntry[], idealVitalRanges: { day: number; ph: { min: number; max: number; }; ec: { min: number; max: number; }; }[] } => {
+    const idealHistory: PlantHistoryEntry[] = [];
+    const idealVitalRanges: { day: number; ph: { min: number; max: number; }; ec: { min: number; max: number; }; }[] = [];
+    let cumulativeDays = 0;
+    let currentHeight = 0;
+
+    for (const stage of STAGES_ORDER) {
+        if (stage === PlantStage.Finished) break;
+        const details = PLANT_STAGE_DETAILS[stage];
+        for (let i = 0; i < details.duration; i++) {
+            const day = cumulativeDays + i + 1;
+            
+            let heightGrowth = SIMULATION_CONSTANTS.HEIGHT_GROWTH_BASE;
+            if (stage === PlantStage.Vegetative) heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_VEG_MULTIPLIER;
+            if (stage === PlantStage.Flowering) heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_FLOWER_MULTIPLIER;
+            
+            if (STAGES_ORDER.indexOf(stage) < STAGES_ORDER.indexOf(PlantStage.Harvest)) {
+                 currentHeight += heightGrowth;
+            }
+
+            idealHistory.push({
+                day,
+                height: parseFloat(currentHeight.toFixed(2)),
+                stressLevel: 0,
+                vitals: {
+                    ph: (details.idealVitals.ph.min + details.idealVitals.ph.max) / 2,
+                    ec: (details.idealVitals.ec.min + details.idealVitals.ec.max) / 2,
+                    substrateMoisture: 60,
+                }
+            });
+
+            idealVitalRanges.push({
+                day,
+                ph: details.idealVitals.ph,
+                ec: details.idealVitals.ec,
+            });
+        }
+        cumulativeDays += details.duration;
+    }
     
-    // 5. Check for problems and update stress
-    updatedPlant.problems = updatedPlant.problems.map(p => ({ ...p, status: p.status === 'active' ? 'active' : 'resolved' })); // Reset for daily check
-    const currentStageDetails = PLANT_STAGE_DETAILS[updatedPlant.stage];
-    const idealVitals = currentStageDetails.idealVitals;
-    let stressIncrease = 0;
-
-    if (updatedPlant.vitals.substrateMoisture < 20) { stressIncrease += 2; }
-    if (updatedPlant.vitals.ph < idealVitals.ph.min || updatedPlant.vitals.ph > idealVitals.ph.max) { stressIncrease += 1; }
-    if (updatedPlant.vitals.ec > idealVitals.ec.max * 1.2) { stressIncrease += 2; }
-    
-    if (stressIncrease > 0) {
-        updatedPlant.stressLevel = Math.min(100, updatedPlant.stressLevel + stressIncrease);
-    } else {
-        updatedPlant.stressLevel = Math.max(0, updatedPlant.stressLevel - SIMULATION_CONSTANTS.STRESS_RECOVERY_RATE);
-    }
-
-    // 6. Check for tasks
-    const openTasks = updatedPlant.tasks.filter(t => !t.isCompleted);
-    if (updatedPlant.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && !openTasks.some(t => t.title.includes('Watering'))) {
-        events.push({ type: 'task', data: { title: 'plantsView.tasks.wateringTask.title', description: 'plantsView.tasks.wateringTask.description', priority: 'high' } });
-    }
-    if (updatedPlant.stage === PlantStage.Flowering && stageAge > stageDuration - 14 && !openTasks.some(t => t.title.includes('Trichome'))) {
-        events.push({ type: 'task', data: { title: 'plantsView.tasks.trichomeTask.title', description: 'plantsView.tasks.trichomeTask.description', priority: 'medium' } });
-    }
-
-    updatedPlant.lastUpdated = Date.now();
-    return { updatedPlant, events };
+    return { idealHistory, idealVitalRanges };
 };

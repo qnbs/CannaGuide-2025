@@ -1,17 +1,12 @@
-import React, { useMemo } from 'react';
-import { View, Command } from '@/types';
+import React, { useMemo, useState, useEffect } from 'react';
+import { View, Command, Strain, SavedStrainTip } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
-// FIX: Use the correct path alias for PhosphorIcons to resolve the module.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppStore } from '@/stores/useAppStore';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
-import { selectActivePlants, selectSettings } from '@/stores/selectors';
-import { CommandGroup, groupAndSortCommands } from '@/services/commandService';
-
-// State-of-the-art utility to escape strings for regex construction, preventing injection.
-const escapeRegExp = (string: string) => {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-};
+import { selectActivePlants, selectSettings, selectSavedStrainTips } from '@/stores/selectors';
+import { CommandGroup } from '@/services/commandService';
+import { strainService } from '@/services/strainService';
 
 export const useCommandPalette = () => {
     const { t } = useTranslations();
@@ -19,7 +14,7 @@ export const useCommandPalette = () => {
     
     const { 
         setActiveView, setIsCommandPaletteOpen, waterAllPlants, advanceDay, setSetting, 
-        setSelectedPlantId, addNotification, openAddModal, openExportModal
+        setSelectedPlantId, addNotification, openAddModal, openExportModal, selectStrain,
     } = useAppStore(state => ({
         setActiveView: state.setActiveView,
         setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
@@ -30,16 +25,22 @@ export const useCommandPalette = () => {
         addNotification: state.addNotification,
         openAddModal: state.openAddModal,
         openExportModal: state.openExportModal,
+        selectStrain: state.selectStrain,
     }));
     const activePlants = useAppStore(selectActivePlants);
     const settings = useAppStore(selectSettings);
+    const savedStrainTips = useAppStore(selectSavedStrainTips);
+    const [allStrains, setAllStrains] = useState<Strain[]>([]);
+
+    useEffect(() => {
+        strainService.getAllStrains().then(setAllStrains);
+    }, []);
 
     const allCommands = useMemo(() => {
         const navigationCommands: Command[] = Object.values(View).map(view => ({
             id: `nav-${view}`,
             title: t(`nav.${view.toLowerCase()}`),
             group: CommandGroup.Navigation,
-            // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
             icon: React.createElement(PhosphorIcons.ArrowSquareOut),
             action: () => {
                 setActiveView(view);
@@ -53,7 +54,6 @@ export const useCommandPalette = () => {
                 id: `plant-inspect-${plant.id}`,
                 title: `${t('commandPalette.inspect')} ${plant.name}`,
                 group: CommandGroup.Plants,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.Plant),
                 action: () => {
                     setActiveView(View.Plants);
@@ -66,7 +66,6 @@ export const useCommandPalette = () => {
                 id: 'plant-water-all',
                 title: t('plantsView.summary.waterAll'),
                 group: CommandGroup.Plants,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.Drop),
                 action: () => {
                     waterAllPlants();
@@ -78,7 +77,6 @@ export const useCommandPalette = () => {
                 id: 'plant-advance-day',
                 title: t('plantsView.summary.simulateNextDay'),
                 group: CommandGroup.Plants,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.ArrowClockwise),
                 action: () => {
                     advanceDay();
@@ -89,11 +87,19 @@ export const useCommandPalette = () => {
         ];
         
         const strainCommands: Command[] = [
+            ...allStrains.map(strain => ({
+                id: `strain-view-${strain.id}`,
+                title: strain.name,
+                subtitle: strain.type,
+                group: CommandGroup.Strains,
+                icon: React.createElement(PhosphorIcons.Leafy),
+                action: () => { setActiveView(View.Strains); selectStrain(strain); setIsCommandPaletteOpen(false); },
+                keywords: `strain ${strain.name} ${strain.type} ${(strain.aromas || []).join(' ')}`
+            })),
             {
                 id: 'strain-add-new',
                 title: t('strainsView.addStrain'),
                 group: CommandGroup.Strains,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.PlusCircle),
                 action: () => { openAddModal(); setIsCommandPaletteOpen(false); },
                 keywords: 'create new custom strain'
@@ -102,33 +108,28 @@ export const useCommandPalette = () => {
                 id: 'strain-export',
                 title: t('common.export'),
                 group: CommandGroup.Strains,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.DownloadSimple),
                 action: () => { openExportModal(); setIsCommandPaletteOpen(false); },
                 keywords: 'export strains download save pdf csv txt'
             }
         ];
-
-        const knowledgeCommands: Command[] = [
-             {
-                id: 'knowledge-diagnostics',
-                title: t('ai.diagnostics'),
-                group: CommandGroup.Knowledge,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
-                icon: React.createElement(PhosphorIcons.Sparkle),
-                action: () => { setActiveView(View.Knowledge); useAppStore.getState().setSetting('knowledgeView.activeTab', 'diagnostics'); setIsCommandPaletteOpen(false); },
-                keywords: 'diagnose plant problem photo issue doctor analysis'
+        
+        const tipCommands: Command[] = savedStrainTips.map(tip => ({
+            id: `tip-view-${tip.id}`,
+            title: tip.strainName,
+            subtitle: tip.title,
+            group: CommandGroup.Knowledge,
+            icon: React.createElement(PhosphorIcons.LightbulbFilament),
+            action: () => {
+                const strain = allStrains.find(s => s.id === tip.strainId);
+                if (strain) {
+                    setActiveView(View.Strains);
+                    selectStrain(strain);
+                    setIsCommandPaletteOpen(false);
+                }
             },
-             {
-                id: 'knowledge-mentor',
-                title: t('ai.mentor'),
-                group: CommandGroup.Knowledge,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
-                icon: React.createElement(PhosphorIcons.Brain),
-                action: () => { setActiveView(View.Knowledge); useAppStore.getState().setSetting('knowledgeView.activeTab', 'mentor'); setIsCommandPaletteOpen(false); },
-                keywords: 'ask question help guide mentor'
-            }
-        ];
+            keywords: `tip ${tip.strainName} ${tip.title} ${tip.content}`
+        }));
 
         const themes = Object.keys(t('settingsView.general.themes'));
         const currentThemeIndex = themes.indexOf(settings.theme);
@@ -139,7 +140,6 @@ export const useCommandPalette = () => {
                 id: 'settings-toggle-language',
                 title: t('commandPalette.toggleLanguage', { lang: settings.language === 'en' ? 'Deutsch' : 'English' }),
                 group: CommandGroup.Settings,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.Globe),
                 action: () => { setSetting('language', settings.language === 'en' ? 'de' : 'en'); setIsCommandPaletteOpen(false); },
                 keywords: 'sprache language deutsch english'
@@ -148,7 +148,6 @@ export const useCommandPalette = () => {
                 id: 'settings-toggle-theme',
                 title: `${t('settingsView.general.theme')}: ${t(`settingsView.general.themes.${nextTheme}`)}`,
                 group: CommandGroup.Settings,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.PaintBrush),
                 action: () => { setSetting('theme', nextTheme); setIsCommandPaletteOpen(false); },
                 keywords: 'theme design color style midnight forest purplehaze'
@@ -157,7 +156,6 @@ export const useCommandPalette = () => {
                 id: 'settings-toggle-dyslexia',
                 title: `${settings.accessibility.dyslexiaFont ? 'Disable' : 'Enable'} ${t('settingsView.accessibility.dyslexiaFont')}`,
                 group: CommandGroup.Settings,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.TextBolder),
                 action: () => { setSetting('accessibility.dyslexiaFont', !settings.accessibility.dyslexiaFont); setIsCommandPaletteOpen(false); },
                 keywords: 'accessibility font dyslexia text reading'
@@ -166,7 +164,6 @@ export const useCommandPalette = () => {
                 id: 'settings-toggle-motion',
                 title: `${settings.accessibility.reducedMotion ? 'Enable' : 'Disable'} ${t('settingsView.accessibility.reducedMotion')}`,
                 group: CommandGroup.Settings,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.GameController),
                 action: () => { setSetting('accessibility.reducedMotion', !settings.accessibility.reducedMotion); setIsCommandPaletteOpen(false); },
                 keywords: 'accessibility animation motion reduce'
@@ -175,7 +172,6 @@ export const useCommandPalette = () => {
                 id: 'settings-toggle-density',
                 title: `${t('settingsView.accessibility.uiDensity')}: ${settings.uiDensity === 'compact' ? 'Comfortable' : 'Compact'}`,
                 group: CommandGroup.Settings,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.Ruler),
                 action: () => { setSetting('uiDensity', settings.uiDensity === 'compact' ? 'comfortable' : 'compact'); setIsCommandPaletteOpen(false); },
                 keywords: 'ui density compact comfortable layout'
@@ -188,71 +184,14 @@ export const useCommandPalette = () => {
                 id: 'pwa-install',
                 title: t('common.installPwa'),
                 group: CommandGroup.General,
-                // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
                 icon: React.createElement(PhosphorIcons.DownloadSimple),
                 action: () => { handleInstallClick(); setIsCommandPaletteOpen(false); },
                 keywords: 'install pwa application app homescreen add herunterladen installieren'
             });
         }
-        generalActionCommands.push({
-            id: 'data-backup',
-            title: t('settingsView.data.exportAll'),
-            group: CommandGroup.General,
-            // FIX: Replaced JSX syntax with React.createElement to be valid in a .ts file.
-            icon: React.createElement(PhosphorIcons.ArchiveBox),
-            action: () => {
-                 if(window.confirm(t('settingsView.data.exportConfirm'))) {
-                    try {
-                        const appDataString = localStorage.getItem('cannaguide-2025-storage');
-                        if (!appDataString) throw new Error("No data in storage");
-                        const appData = JSON.parse(appDataString);
-                        const jsonString = JSON.stringify(appData.state, null, 2);
-                        const blob = new Blob([jsonString], { type: "application/json" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `CannaGuide_Backup_${new Date().toISOString().slice(0, 10)}.json`;
-                        a.click();
-                        URL.revokeObjectURL(url);
-                        setSetting('lastBackupTimestamp', Date.now());
-                        addNotification(t('settingsView.data.exportSuccess'), 'success');
-                    } catch (error) {
-                         addNotification(t('settingsView.data.exportError'), 'error');
-                    }
-                }
-                setIsCommandPaletteOpen(false);
-            },
-            keywords: 'backup export save data settings plants strains json'
-        });
 
-        return [...navigationCommands, ...generalActionCommands, ...plantCommands, ...strainCommands, ...knowledgeCommands, ...settingsCommands];
-    }, [t, setActiveView, activePlants, waterAllPlants, advanceDay, settings, setSetting, setIsCommandPaletteOpen, setSelectedPlantId, deferredPrompt, handleInstallClick, isInstalled, addNotification, openAddModal, openExportModal]);
+        return [...navigationCommands, ...generalActionCommands, ...plantCommands, ...strainCommands, ...tipCommands, ...settingsCommands];
+    }, [t, allStrains, savedStrainTips, setActiveView, activePlants, waterAllPlants, advanceDay, settings, setSetting, setIsCommandPaletteOpen, setSelectedPlantId, deferredPrompt, handleInstallClick, isInstalled, addNotification, openAddModal, openExportModal, selectStrain]);
 
-    // Full-fledged sophisticated fuzzy search implementation
-    const filterAndGroupCommands = (query: string): Command[] => {
-        if (!query.trim()) return groupAndSortCommands(allCommands);
-        
-        const lowerCaseQuery = query.toLowerCase();
-        
-        // This state-of-the-art regex matches characters in order, allowing for a fast and intuitive fuzzy search.
-        const fuzzyRegex = new RegExp(
-            lowerCaseQuery.split('').map(escapeRegExp).join('.*?'), // Use non-greedy match for performance
-            'i'
-        );
-
-        const filtered = allCommands.filter((command) => {
-            const commandText = [
-                command.title,
-                command.group,
-                command.keywords || '',
-                command.subtitle || ''
-            ].join(' ').toLowerCase();
-
-            return fuzzyRegex.test(commandText);
-        });
-        
-        return groupAndSortCommands(filtered);
-    };
-
-    return { allCommands, filterAndGroupCommands };
+    return { allCommands };
 };

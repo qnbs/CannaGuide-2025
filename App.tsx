@@ -13,7 +13,6 @@ import { SettingsView } from '@/components/views/SettingsView';
 import { HelpView } from '@/components/views/HelpView';
 import { OnboardingModal } from '@/components/common/OnboardingModal';
 import { CommandPalette } from '@/components/common/CommandPalette';
-import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { strainService } from '@/services/strainService';
@@ -81,8 +80,6 @@ const AppContent: React.FC = () => {
         setSetting('onboardingCompleted', true);
         setIsOnboardingOpen(false);
     };
-    
-    const { allCommands: commands } = useCommandPalette();
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -118,7 +115,6 @@ const AppContent: React.FC = () => {
             <CommandPalette 
                 isOpen={isCommandPaletteOpen}
                 onClose={() => setIsCommandPaletteOpen(false)}
-                commands={commands}
             />
             <Header 
                 onCommandPaletteOpen={() => setIsCommandPaletteOpen(true)}

@@ -214,8 +214,10 @@ const StrainsViewContent: React.FC = () => {
         actions.closeDetailModal();
     };
 
-    const allAromas: string[] = useMemo(() => [...new Set(strainsToDisplay.map(s => s.aromas || []).flat())].sort(), [strainsToDisplay]);
-    const allTerpenes: string[] = useMemo(() => [...new Set(strainsToDisplay.map(s => s.dominantTerpenes || []).flat())].sort(), [strainsToDisplay]);
+    // FIX: Replaced .flatMap() with a typed .reduce() to ensure correct type inference when flattening arrays of strings.
+    const allAromas: string[] = useMemo(() => [...new Set(strainsToDisplay.reduce<string[]>((acc, s) => acc.concat(s.aromas || []), []))].sort(), [strainsToDisplay]);
+    // FIX: Replaced .flatMap() with a typed .reduce() to ensure correct type inference when flattening arrays of strings.
+    const allTerpenes: string[] = useMemo(() => [...new Set(strainsToDisplay.reduce<string[]>((acc, s) => acc.concat(s.dominantTerpenes || []), []))].sort(), [strainsToDisplay]);
 
     const tabs = [
         { id: 'all', label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
@@ -328,7 +330,8 @@ const StrainsViewContent: React.FC = () => {
                             {settings.strainsViewSettings.visibleColumns.thc && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('thc')}>{t('strainsView.table.thc')}<SortIndicator sortKey="thc" /></button>}
                             {settings.strainsViewSettings.visibleColumns.cbd && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('cbd')}>{t('strainsView.table.cbd')}<SortIndicator sortKey="cbd" /></button>}
                             {settings.strainsViewSettings.visibleColumns.floweringTime && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('floweringTime')}>{t('strainsView.table.flowering')}<SortIndicator sortKey="floweringTime" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.yield && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
+                            {/* FIX: Explicitly cast 'yield' property to boolean to resolve potential type ambiguity due to the 'yield' keyword. */}
+                            {Boolean(settings.strainsViewSettings.visibleColumns['yield']) && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
                             <button className="flex items-center gap-1" onClick={() => handleSort('difficulty')}>{t('strainsView.table.level')}<SortIndicator sortKey="difficulty" /></button>
                             <div className="text-right">{t('common.actions')}</div>
                         </div>

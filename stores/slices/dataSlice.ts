@@ -1,5 +1,5 @@
 import { Plant, Strain, GrowSetup, JournalEntry, Task, NotificationType, ArchivedMentorResponse, AIResponse, SavedExport, SavedSetup, SavedStrainTip, ArchivedAdvisorResponse, PlantStage, KnowledgeProgress } from '@/types';
-import { advancePlantOneDay, SIMULATION_CONSTANTS } from '@/services/plantSimulationService';
+import { runSimulationInWorker, SIMULATION_CONSTANTS } from '@/services/plantSimulationService';
 import type { AppState, StoreSet, StoreGet, TFunction } from '@/stores/useAppStore';
 
 export interface DataSlice {
@@ -18,7 +18,7 @@ export interface DataSlice {
     addJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'timestamp'>) => void;
     completeTask: (plantId: string, taskId: string) => void;
     waterAllPlants: () => void;
-    advanceDay: () => void;
+    advanceDay: () => Promise<void>;
     resetPlants: () => void;
     
     addUserStrain: (strain: Strain) => void;
@@ -141,34 +141,45 @@ export const createDataSlice = (set: StoreSet, get: StoreGet, t: () => TFunction
         }
     },
 
-    advanceDay: () => {
+    advanceDay: async () => {
         const { settings, plants } = get();
-        const updatedPlants: Record<string, Plant> = {};
-        const allEvents: { plantId: string, events: any[] }[] = [];
+        const activePlants = Object.values(plants).filter((p): p is Plant => !!p && p.stage !== PlantStage.Finished);
+        if (activePlants.length === 0) return;
 
-        Object.values(plants).forEach(plant => {
-            if (!plant) return;
-            const { updatedPlant, events } = advancePlantOneDay(plant, settings, t());
-            updatedPlants[plant.id] = updatedPlant;
-            if (events.length > 0) allEvents.push({ plantId: plant.id, events });
-        });
+        const plantUpdatePromises = activePlants.map(plant => runSimulationInWorker(plant, settings));
         
-        set(state => {
-            Object.assign(state.plants, updatedPlants);
-        });
-        
-        allEvents.forEach(({ plantId, events }) => {
-            events.forEach(event => {
-                if (event.type === 'notification') get().addNotification(event.data.message, event.data.type as NotificationType);
-                if (event.type === 'journal') get().addJournalEntry(plantId, event.data);
-                if (event.type === 'task') {
-                    const newTask: Task = { ...event.data, id: `${event.data.title}-${Date.now()}`, isCompleted: false, createdAt: Date.now() };
-                    set(state => {
-                        state.plants[plantId]?.tasks.push(newTask);
-                    });
-                }
+        try {
+            const results = await Promise.all(plantUpdatePromises);
+
+            set(state => {
+                results.forEach(({ updatedPlant }) => {
+                    state.plants[updatedPlant.id] = updatedPlant;
+                });
             });
-        });
+
+            results.forEach(({ updatedPlant, events }) => {
+                events.forEach((event: any) => {
+                    if (event.type === 'notification') {
+                        get().addNotification(t()(event.data.messageKey, event.data.params), event.data.type as NotificationType);
+                    }
+                    if (event.type === 'journal') {
+                        get().addJournalEntry(updatedPlant.id, {
+                            type: event.data.type,
+                            notes: t()(event.data.notesKey, event.data.params),
+                        });
+                    }
+                    if (event.type === 'task') {
+                        const newTask: Task = { ...event.data, id: `${event.data.title}-${Date.now()}`, isCompleted: false, createdAt: Date.now() };
+                        set(state => {
+                            state.plants[updatedPlant.id]?.tasks.push(newTask);
+                        });
+                    }
+                });
+            });
+        } catch (error) {
+            console.error("Error running simulation in worker:", error);
+            get().addNotification("Simulation failed to run.", 'error');
+        }
     },
 
     resetPlants: () => {

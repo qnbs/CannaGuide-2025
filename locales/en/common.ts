@@ -13,6 +13,7 @@ export const common = {
   export: 'Export',
   exportError: 'Export failed. Please try again.',
   genetics: 'Genetics',
+  inspect: 'Inspect',
   name: 'Name',
   next: 'Next',
   noDataToExport: 'No data available to export.',

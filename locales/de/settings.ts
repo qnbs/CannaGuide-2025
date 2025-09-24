@@ -33,6 +33,8 @@ export const settingsView = {
   },
   accessibility: {
     title: 'Barrierefreiheit',
+    highContrast: 'Hoher Kontrast',
+    highContrastDesc: 'Erhöht den Textkontrast für bessere Lesbarkeit.',
     dyslexiaFont: 'Legastheniker-Schriftart',
     dyslexiaFontDesc: 'Verwendet eine Schriftart, die für Menschen mit Legasthenie leichter zu lesen ist.',
     reducedMotion: 'Bewegung reduzieren',
@@ -46,8 +48,6 @@ export const settingsView = {
   strains: {
     title: 'Einstellungen der Sorten-Ansicht',
     defaultSort: 'Standard-Sortierung',
-    defaultSortKey: 'Sortieren nach',
-    defaultSortDirection: 'Richtung',
     defaultViewMode: 'Standard-Ansichtsmodus',
     viewModes: {
       list: 'Liste',
@@ -69,7 +69,6 @@ export const settingsView = {
       floweringTime: 'Blütezeit',
       difficulty: 'Schwierigkeit',
       type: 'Typ',
-      yield: 'Ertrag'
     },
     sortDirections: {
       asc: 'Aufsteigend',
@@ -79,20 +78,13 @@ export const settingsView = {
   plants: {
       title: 'Pflanzen & Simulation',
       autoAdvance: 'Simulation automatisch fortsetzen',
-      autoAdvanceDesc: 'Aktualisiert den Pflanzenstatus im Hintergrund basierend auf der Echtzeit.',
+      autoAdvanceDesc: 'Aktualisiert den Pflanzenstatus alle 5 Minuten im Hintergrund.',
       autoJournaling: 'Automatisches Journaling',
       autoJournalingDesc: 'Automatisch System-Einträge im Journal für bestimmte Ereignisse erstellen.',
       logStageChanges: 'Phasenwechsel protokollieren',
       logProblems: 'Erkannte Probleme protokollieren',
       logTasks: 'Erstellte Aufgaben protokollieren',
       speed: 'Simulationsgeschwindigkeit',
-      speeds: {
-        '1x': '1x (Echtzeit)',
-        '2x': '2x',
-        '5x': '5x',
-        '10x': '10x',
-        '20x': '20x'
-      },
       difficulty: 'Schwierigkeitsgrad',
       difficulties: {
         easy: 'Leicht',
@@ -100,6 +92,10 @@ export const settingsView = {
         hard: 'Schwer',
         custom: 'Benutzerdefiniert',
       },
+      customDifficulty: 'Benutzerdefinierte Schwierigkeit',
+      pestPressure: 'Schädlingsdruck',
+      nutrientSensitivity: 'Nährstoffempfindlichkeit',
+      environmentalStability: 'Umweltstabilität',
   },
   notifications: {
     title: 'Benachrichtigungen',
@@ -114,9 +110,8 @@ export const settingsView = {
   },
   defaults: {
       title: 'Standardwerte',
+      growSetup: 'Standard-Grow-Setup',
       export: 'Standard-Export-Einstellungen',
-      exportSource: 'Quelle',
-      exportFormat: 'Format',
       journalNotesTitle: 'Standard-Journalnotizen',
       wateringNoteLabel: 'Notiz für Gießen',
       feedingNoteLabel: 'Notiz für Düngen',

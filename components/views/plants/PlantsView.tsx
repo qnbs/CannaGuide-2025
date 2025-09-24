@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Plant, View, Strain, GrowSetup } from '@/types';
+import React, { useState, useMemo } from 'react';
+import { Plant, Strain, GrowSetup } from '@/types';
 import { useAppStore } from '@/stores/useAppStore';
 import { PlantCard } from '@/components/views/plants/PlantSlot';
 import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
@@ -12,7 +12,7 @@ import { Card } from '@/components/common/Card';
 import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots, selectSettings } from '@/stores/selectors';
+import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '@/stores/selectors';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -29,13 +29,11 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, advanceDay, updatePlantState, startNewPlant } = useAppStore(state => ({
+    const { waterAllPlants, advanceDay, startNewPlant } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
         advanceDay: state.advanceDay,
-        updatePlantState: state.updatePlantState,
         startNewPlant: state.startNewPlant,
     }));
-    const settings = useAppStore(selectSettings);
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
 
@@ -47,28 +45,15 @@ export const PlantsView: React.FC = () => {
     const [strainForSetup, setStrainForSetup] = useState<Strain | null>(null);
     const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
 
-    useEffect(() => {
-        // On mount, catch up simulation based on elapsed time since last update
-        updatePlantState();
-        
-        if (settings.simulationSettings.autoAdvance) {
-            // Then, set interval for periodic real-time updates
-            const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed];
-            const intervalId = setInterval(() => {
-                updatePlantState();
-            }, speedInMinutes * 60 * 1000);
-            return () => clearInterval(intervalId);
-        }
-    }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, updatePlantState]);
-
     const activePlants = useAppStore(selectActivePlants);
     const allTasks = useAppStore(selectOpenTasksSummary);
     const allProblems = useAppStore(selectActiveProblemsSummary);
     
     const selectedPlant = useMemo(() => {
         if (!selectedPlantId) return null;
-        return activePlants.find(p => p.id === selectedPlantId) || null;
-    }, [selectedPlantId, activePlants]);
+        // Find from the most up-to-date record
+        return plantsRecord[selectedPlantId] || null;
+    }, [selectedPlantId, plantsRecord]);
     
     const plants = useMemo(() => plantSlots.map(id => id ? plantsRecord[id] : null), [plantSlots, plantsRecord]);
 

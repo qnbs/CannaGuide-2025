@@ -4,31 +4,47 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
+import { geminiService } from '@/services/geminiService';
+import { Plant, PlantDiagnosisResponse } from '@/types';
 import { CameraModal } from '@/components/common/CameraModal';
 import { selectActivePlants } from '@/stores/selectors';
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification, addJournalEntry, diagnosePlant, diagnosticsTask, resetAiTask } = useAppStore(state => ({
+    const { addNotification, addJournalEntry } = useAppStore(state => ({
         addNotification: state.addNotification,
         addJournalEntry: state.addJournalEntry,
-        diagnosePlant: state.diagnosePlant,
-        diagnosticsTask: state.diagnosticsTask,
-        resetAiTask: state.resetAiTask,
     }));
     const activePlants = useAppStore(selectActivePlants);
     const fileInputRef = useRef<HTMLInputElement>(null);
     
+    const [isLoading, setIsLoading] = useState(false);
+    const [response, setResponse] = useState<PlantDiagnosisResponse | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [imageMimeType, setImageMimeType] = useState<string | null>(null);
+    const [loadingMessage, setLoadingMessage] = useState('');
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [isDragOver, setIsDragOver] = useState(false);
 
     const [selectedPlantId, setSelectedPlantId] = useState<string>('');
     const [userNotes, setUserNotes] = useState('');
 
-    const { status: taskStatus, result: response, loadingMessage } = diagnosticsTask;
-    const isLoading = taskStatus === 'loading';
+    useEffect(() => {
+        if (isLoading) {
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'diagnostics' }, t);
+            let messageIndex = 0;
+            const updateLoadingMessage = () => {
+                setLoadingMessage(messages[messageIndex % messages.length]);
+                messageIndex++;
+            };
+            
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
 
+            return () => clearInterval(intervalId);
+        }
+    }, [isLoading, t]);
+    
     const handleFile = useCallback((file: File) => {
         if (!file.type.startsWith('image/')) {
             addNotification(t('plantsView.aiDiagnostics.validation.imageOnly'), 'error');
@@ -36,15 +52,13 @@ export const AiDiagnostics: React.FC = () => {
         }
         const reader = new FileReader();
         reader.onloadend = () => {
-            const imageDataUrl = reader.result as string;
-            setImagePreview(imageDataUrl);
-            const base64Data = imageDataUrl.split(',')[1];
-            const selectedPlant = activePlants.find(p => p.id === selectedPlantId);
-            const context = { plant: selectedPlant, userNotes: userNotes.trim() || undefined };
-            diagnosePlant(base64Data, file.type, context);
+            setImagePreview(reader.result as string);
+            setImageMimeType(file.type);
+            setResponse(null);
+            handleDiagnose(reader.result as string, file.type);
         };
         reader.readAsDataURL(file);
-    }, [addNotification, t, activePlants, selectedPlantId, userNotes, diagnosePlant]);
+    }, [addNotification, t]);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -73,29 +87,51 @@ export const AiDiagnostics: React.FC = () => {
     
     const handleCameraCapture = (dataUrl: string) => {
         setImagePreview(dataUrl);
+        setImageMimeType('image/jpeg');
+        setResponse(null);
         setIsCameraOpen(false);
-        const base64Data = dataUrl.split(',')[1];
-        const selectedPlant = activePlants.find(p => p.id === selectedPlantId);
-        const context = { plant: selectedPlant, userNotes: userNotes.trim() || undefined };
-        diagnosePlant(base64Data, 'image/jpeg', context);
+        handleDiagnose(dataUrl, 'image/jpeg');
     };
+    
+    const handleDiagnose = async (imageDataUrl: string, mimeType: string) => {
+        if (!imageDataUrl || !mimeType) return;
 
-    const handleReset = () => {
-        setImagePreview(null);
-        resetAiTask('diagnosticsTask');
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+        setIsLoading(true);
+        setResponse(null);
+        try {
+            const base64Data = imageDataUrl.split(',')[1];
+            const selectedPlant = activePlants.find(p => p.id === selectedPlantId);
+            
+            const context = {
+                plant: selectedPlant,
+                userNotes: userNotes.trim() || undefined,
+            };
+
+            const res = await geminiService.diagnosePlantProblem(base64Data, mimeType, context, t);
+            setResponse(res);
+        } catch (error) {
+            console.error("Diagnosis Error:", error);
+            const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
+            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
+            addNotification(errorMessage, 'error');
         }
+        setIsLoading(false);
     };
     
     const handleSaveToJournal = () => {
         if (!response || !selectedPlantId) return;
+        
         const formattedNotes = `**${t('ai.diagnostics')}**: ${response.problemName} (${response.confidence}% ${t('plantsView.aiDiagnostics.confidence')})\n\n**${t('plantsView.aiDiagnostics.diagnosis')}**\n${response.diagnosis}\n\n**${t('plantsView.aiDiagnostics.actions')}**\n${response.immediateActions}`;
+        
         addJournalEntry(selectedPlantId, {
             type: 'OBSERVATION',
             notes: formattedNotes,
-            details: { healthStatus: 'Showing Issues', observationTags: [response.problemName, 'AI Diagnosis'] }
+            details: {
+                healthStatus: 'Showing Issues',
+                observationTags: [response.problemName, 'AI Diagnosis']
+            }
         });
+        
         addNotification(t('plantsView.aiDiagnostics.savedToJournal'), 'success');
     };
 
@@ -112,7 +148,10 @@ export const AiDiagnostics: React.FC = () => {
                     <div className="space-y-4">
                         {!imagePreview ? (
                             <div 
-                                onDrop={handleDrop} onDragOver={handleDragEvents} onDragEnter={handleDragEvents} onDragLeave={handleDragEvents}
+                                onDrop={handleDrop}
+                                onDragOver={handleDragEvents}
+                                onDragEnter={handleDragEvents}
+                                onDragLeave={handleDragEvents}
                                 className={`p-6 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-primary-500 bg-primary-500/10' : 'border-slate-600 hover:border-slate-500'}`}
                                 onClick={() => fileInputRef.current?.click()}
                             >
@@ -128,20 +167,19 @@ export const AiDiagnostics: React.FC = () => {
                         )}
                         <div className="flex gap-2">
                             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="diagnostics-upload"/>
-                            <Button as="label" htmlFor="diagnostics-upload" className="flex-1 cursor-pointer" disabled={isLoading}><PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />{imagePreview ? t('common.changeImage') : t('plantsView.aiDiagnostics.buttonLabel')}</Button>
-                            <Button onClick={() => setIsCameraOpen(true)} variant="secondary" aria-label={t('plantsView.aiDiagnostics.capture')} disabled={isLoading}><PhosphorIcons.Camera className="w-5 h-5"/></Button>
-                            {imagePreview && <Button onClick={handleReset} variant="danger" aria-label={t('common.cancel')} disabled={isLoading}><PhosphorIcons.X className="w-5 h-5"/></Button>}
+                            <Button as="label" htmlFor="diagnostics-upload" className="flex-1 cursor-pointer"><PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />{imagePreview ? t('common.changeImage') : t('plantsView.aiDiagnostics.buttonLabel')}</Button>
+                            <Button onClick={() => setIsCameraOpen(true)} variant="secondary" aria-label={t('plantsView.aiDiagnostics.capture')}><PhosphorIcons.Camera className="w-5 h-5"/></Button>
                         </div>
                          <div>
                             <label htmlFor="plant-context" className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.aiDiagnostics.plantContext')}</label>
-                            <select id="plant-context" value={selectedPlantId} onChange={e => setSelectedPlantId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white" disabled={isLoading}>
+                            <select id="plant-context" value={selectedPlantId} onChange={e => setSelectedPlantId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white">
                                 <option value="">{t('plantsView.aiDiagnostics.generalContext')}</option>
                                 {activePlants.map(p => <option key={p.id} value={p.id}>{p.name} ({t(`plantStages.${p.stage}`)})</option>)}
                             </select>
                         </div>
                          <div>
                             <label htmlFor="user-notes" className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.aiDiagnostics.userNotes')}</label>
-                            <textarea id="user-notes" value={userNotes} onChange={e => setUserNotes(e.target.value)} rows={2} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white" placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')} disabled={isLoading} />
+                            <textarea id="user-notes" value={userNotes} onChange={e => setUserNotes(e.target.value)} rows={2} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white" placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')} />
                         </div>
                     </div>
                 </Card>

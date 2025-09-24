@@ -37,10 +37,6 @@ export const strainsView = {
         text: 'Markiere Sorten mit einem Herz, um sie hier zu speichern.',
         button: 'Alle Sorten durchsuchen'
     },
-    noResults: {
-        title: 'Keine Ergebnisse gefunden',
-        text: 'Deine Filterkriterien ergaben keine Treffer. Versuche, die Filter zurückzusetzen.'
-    }
   },
   tabs: {
     allStrains: 'Alle Sorten',
@@ -103,7 +99,7 @@ export const strainsView = {
     yieldIndoorPlaceholder: 'z.B. 450 g/m²',
     yieldOutdoorPlaceholder: 'z.B. 500 g/Pflanze',
     height: 'Höhe',
-    heights: { short: 'Kurz', medium: 'Mittel', tall: 'Hoch' },
+    heights: { short: 'Kurz', medium: 'Mittel', high: 'Hoch' },
     heightIndoorPlaceholder: 'z.B. 80-120cm',
     heightOutdoorPlaceholder: 'z.B. 150-200cm',
     profile: 'Profil',

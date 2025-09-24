@@ -6,6 +6,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { PlantVisual } from '@/components/views/plants/PlantVisual';
 import { VitalBar } from './VitalBar';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface PlantCardProps {
     plant: Plant;
@@ -18,13 +19,13 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
     const activeProblemsCount = plant.problems.filter(p => p.status === 'active').length;
 
     return (
-        <Card className="flex flex-col h-full relative">
+        <Card className="flex flex-col h-full relative" onClick={onInspect}>
             {activeProblemsCount > 0 && (
                 <div
-                    className="absolute top-2 right-2 bg-red-500 rounded-full w-5 h-5 flex items-center justify-center text-white font-bold text-xs border-2 border-slate-900"
+                    className="absolute top-2 right-2 bg-red-500 rounded-full w-6 h-6 flex items-center justify-center text-white font-bold text-xs border-2 border-slate-900/50 shadow-lg"
                     title={`${activeProblemsCount} ${t('plantsView.warnings.title')}`}
                 >
-                    {activeProblemsCount}
+                    <span className="flex items-center"><PhosphorIcons.WarningCircle className="w-3 h-3 mr-0.5" weight="fill" /> {activeProblemsCount}</span>
                 </div>
             )}
             <div className="flex justify-between items-start">

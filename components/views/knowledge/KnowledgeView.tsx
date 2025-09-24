@@ -46,7 +46,7 @@ const KnowledgeStep: React.FC<{
                 </div>
                 <div className="space-y-2">
                     {Object.entries(checklist).map(([key, text]) => (
-                        <label key={key} className="flex items-center gap-3 cursor-pointer">
+                        <label key={key} className="flex items-center gap-3 cursor-pointer p-2 rounded-md hover:bg-slate-800/50">
                             <input type="checkbox" checked={progress.includes(key)} onChange={() => onToggle(key)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/>
                             <span className={`text-sm ${progress.includes(key) ? 'text-slate-400 line-through' : 'text-slate-200'}`}>{text}</span>
                         </label>
@@ -110,8 +110,8 @@ export const KnowledgeView: React.FC = () => {
                 <div className="space-y-6">
                     <Card>
                         <h3 className="font-semibold">{t('knowledgeView.progress')}</h3>
-                        <div className="relative h-2 w-full bg-slate-700 rounded-full my-2">
-                            <div className="absolute h-2 bg-primary-500 rounded-full transition-all duration-500" style={{width: `${progressPercent}%`}}></div>
+                        <div className="relative h-3 w-full bg-slate-700 rounded-full my-2 overflow-hidden">
+                            <div className="absolute h-full bg-primary-500 rounded-full transition-all duration-500" style={{width: `${progressPercent}%`, boxShadow: '0 0 10px rgba(var(--color-primary-500), 0.7)'}}></div>
                         </div>
                         <p className="text-sm text-slate-400">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: checklistItems.length })}</p>
                     </Card>

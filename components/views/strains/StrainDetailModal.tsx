@@ -312,38 +312,44 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                             </div>
                         </DetailSection>
                         
-                        <DetailSection title={t('strainsView.tips.form.title')} icon={<PhosphorIcons.Brain />}>
-                           <p className="text-sm text-slate-400 mb-4 -mt-2">{t('strainsView.tips.form.description')}</p>
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.focus')}</label>
-                                        <select value={tipRequest.focus} onChange={e => setTipRequest(p => ({...p, focus: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                                            {Object.keys(t('strainsView.tips.form.focusOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
-                                        </select>
+                        <details className="group">
+                           <summary className="text-lg font-bold text-primary-400 flex items-center gap-2 cursor-pointer list-none">
+                               <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
+                               {t('strainsView.tips.form.title')}
+                           </summary>
+                            <div className="pl-8 pt-2">
+                               <p className="text-sm text-slate-400 mb-4">{t('strainsView.tips.form.description')}</p>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.focus')}</label>
+                                            <select value={tipRequest.focus} onChange={e => setTipRequest(p => ({...p, focus: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                                                {Object.keys(t('strainsView.tips.form.focusOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.stage')}</label>
+                                            <select value={tipRequest.stage} onChange={e => setTipRequest(p => ({...p, stage: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                                                {Object.keys(t('strainsView.tips.form.stageOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
+                                            <select value={tipRequest.experience} onChange={e => setTipRequest(p => ({...p, experience: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                                                {Object.keys(t('strainsView.tips.form.experienceOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
+                                            </select>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.stage')}</label>
-                                        <select value={tipRequest.stage} onChange={e => setTipRequest(p => ({...p, stage: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                                            {Object.keys(t('strainsView.tips.form.stageOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
-                                        <select value={tipRequest.experience} onChange={e => setTipRequest(p => ({...p, experience: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                                            {Object.keys(t('strainsView.tips.form.experienceOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
-                                        </select>
-                                    </div>
+                                    <Button size="sm" onClick={handleGetAiTips} disabled={isTipLoading} className="w-full">
+                                        {isTipLoading ? loadingMessage : t('strainsView.tips.form.generate')}
+                                    </Button>
+                                    {isTipLoading && <div className="text-center text-sm text-slate-400 animate-pulse">{loadingMessage || t('ai.generating')}</div>}
+                                    {structuredTip && !isTipLoading && (
+                                        <StructuredTipDisplay tips={structuredTip} onSave={handleSaveTip} isSaved={isTipSaved} />
+                                    )}
                                 </div>
-                                <Button size="sm" onClick={handleGetAiTips} disabled={isTipLoading} className="w-full">
-                                    {isTipLoading ? loadingMessage : t('strainsView.tips.form.generate')}
-                                </Button>
-                                {isTipLoading && <div className="text-center text-sm text-slate-400 animate-pulse">{loadingMessage || t('ai.generating')}</div>}
-                                {structuredTip && !isTipLoading && (
-                                    <StructuredTipDisplay tips={structuredTip} onSave={handleSaveTip} isSaved={isTipSaved} />
-                                )}
                             </div>
-                       </DetailSection>
+                       </details>
                     </div>
                 </Card>
             </div>

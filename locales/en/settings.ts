@@ -33,6 +33,8 @@ export const settingsView = {
   },
   accessibility: {
     title: 'Accessibility',
+    highContrast: 'High Contrast',
+    highContrastDesc: 'Increases text contrast for better readability.',
     dyslexiaFont: 'Dyslexia-Friendly Font',
     dyslexiaFontDesc: 'Uses a font designed to be easier to read for people with dyslexia.',
     reducedMotion: 'Reduce Motion',
@@ -45,8 +47,7 @@ export const settingsView = {
   },
   strains: {
     title: 'Strains View Settings',
-    defaultSortKey: 'Sort by',
-    defaultSortDirection: 'Direction',
+    defaultSort: 'Default Sort Order',
     defaultViewMode: 'Default View Mode',
     viewModes: {
       list: 'List',
@@ -68,7 +69,6 @@ export const settingsView = {
       floweringTime: 'Flowering Time',
       difficulty: 'Difficulty',
       type: 'Type',
-      yield: 'Yield'
     },
     sortDirections: {
       asc: 'Ascending',
@@ -78,20 +78,13 @@ export const settingsView = {
   plants: {
       title: 'Plants & Simulation',
       autoAdvance: 'Auto-Advance Simulation',
-      autoAdvanceDesc: 'Updates plant state in the background based on real-time progression.',
+      autoAdvanceDesc: 'Updates plant state every 5 minutes in the background.',
       autoJournaling: 'Automatic Journaling',
       autoJournalingDesc: 'Automatically create system journal entries for certain events.',
       logStageChanges: 'Log stage changes',
       logProblems: 'Log detected problems',
       logTasks: 'Log created tasks',
       speed: 'Simulation Speed',
-      speeds: {
-        '1x': '1x (Real-time)',
-        '2x': '2x',
-        '5x': '5x',
-        '10x': '10x',
-        '20x': '20x'
-      },
       difficulty: 'Difficulty',
       difficulties: {
         easy: 'Easy',
@@ -99,23 +92,26 @@ export const settingsView = {
         hard: 'Hard',
         custom: 'Custom',
       },
+      customDifficulty: 'Custom Difficulty',
+      pestPressure: 'Pest Pressure',
+      nutrientSensitivity: 'Nutrient Sensitivity',
+      environmentalStability: 'Environmental Stability',
   },
   notifications: {
-    title: 'Notifications',
-    enableAll: 'Enable All Notifications',
-    stageChange: 'Stage Change',
-    problemDetected: 'Problem Detected',
-    harvestReady: 'Harvest Ready',
-    newTask: 'New Task',
-    quietHours: 'Quiet Hours',
-    enableQuietHours: 'Enable Quiet Hours',
-    quietHoursDesc: 'Notifications will be silenced during this time.',
+      title: 'Notifications',
+      enableAll: 'Enable All Notifications',
+      stageChange: 'Stage Change',
+      problemDetected: 'Problem Detected',
+      harvestReady: 'Harvest Ready',
+      newTask: 'New Task',
+      quietHours: 'Quiet Hours',
+      enableQuietHours: 'Enable Quiet Hours',
+      quietHoursDesc: 'Notifications will be silenced during this time.',
   },
   defaults: {
       title: 'Defaults',
+      growSetup: 'Default Grow Setup',
       export: 'Default Export Settings',
-      exportSource: 'Source',
-      exportFormat: 'Format',
       journalNotesTitle: 'Default Journal Notes',
       wateringNoteLabel: 'Note for Watering',
       feedingNoteLabel: 'Note for Feeding',
@@ -143,7 +139,7 @@ export const settingsView = {
     importError: 'Error importing data',
     importInvalidFile: 'Invalid CannaGuide 2025 backup file.',
   },
-   about: {
+  about: {
       title: 'About the App',
       version: 'Version',
       description: 'Description',

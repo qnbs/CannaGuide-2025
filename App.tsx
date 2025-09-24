@@ -29,10 +29,11 @@ const AppContent: React.FC = () => {
     const activeView = useAppStore(selectActiveView);
     const isCommandPaletteOpen = useAppStore(selectIsCommandPaletteOpen);
     
-    const { setSetting, setIsCommandPaletteOpen, addNotification } = useAppStore(state => ({
+    const { setSetting, setIsCommandPaletteOpen, addNotification, advanceSimulation } = useAppStore(state => ({
         setSetting: state.setSetting,
         setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
         addNotification: state.addNotification,
+        advanceSimulation: state.advanceSimulation,
     }));
     
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(!settings.onboardingCompleted);
@@ -62,6 +63,20 @@ const AppContent: React.FC = () => {
         };
         requestPersistence();
     }, []);
+
+    // Time-based simulation logic
+    useEffect(() => {
+        // Run once on load to catch up
+        advanceSimulation();
+
+        if (settings.simulationSettings.autoAdvance) {
+            const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed] || 5;
+            const intervalId = setInterval(() => {
+                advanceSimulation();
+            }, speedInMinutes * 60 * 1000); // Check based on simulation speed
+            return () => clearInterval(intervalId);
+        }
+    }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, advanceSimulation]);
     
     useEffect(() => {
         if (t) {

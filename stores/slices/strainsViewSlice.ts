@@ -17,12 +17,7 @@ export const createStrainsViewSlice = (set: StoreSet, get: StoreGet): StrainsVie
     strainsViewMode: 'list',
     selectedStrainIds: new Set(),
     
-    setStrainsViewTab: (tab) => {
-        set(state => {
-            state.strainsViewTab = tab;
-            state.clearStrainSelection();
-        });
-    },
+    setStrainsViewTab: (tab) => set({ strainsViewTab: tab }),
     
     setStrainsViewMode: (mode) => set({ strainsViewMode: mode }),
 

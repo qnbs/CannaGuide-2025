@@ -1,4 +1,5 @@
 
+
 import { Strain } from '@/types';
 import { allStrainsData } from '@/data/strains/index';
 import { dbService } from '@/services/dbService';
@@ -19,7 +20,7 @@ class StrainService {
   }
 
   private processAndTranslateStrains(t: TFunction): Strain[] {
-    const getTranslatedString = (key: string, fallback = ''): string => {
+    const getTranslatedString = (key: string, fallback: string | undefined): string | undefined => {
         const result = t(key);
         return (typeof result === 'string' && result !== key) ? result : fallback;
     };
@@ -29,24 +30,33 @@ class StrainService {
          return (typeof result === 'object' && result !== null) ? result : fallback;
     }
 
-    const getTranslatedArray = (key: string): string[] => {
-        const result = t(key);
-        return Array.isArray(result) && result.every(item => typeof item === 'string') ? result : [];
-    };
+    return allStrainsData.map(strain => {
+        // Translate terpenes and aromas centrally
+        const translatedTerpenes = (strain.dominantTerpenes || []).map(terp => {
+            const translationKey = `common.terpenes.${terp.replace(/\s/g, '')}`;
+            const translated = t(translationKey);
+            return translated === translationKey ? terp : translated;
+        });
+        const translatedAromas = (strain.aromas || []).map(aroma => {
+            const translationKey = `common.aromas.${aroma.replace(/\s/g, '')}`;
+            const translated = t(translationKey);
+            return translated === translationKey ? aroma : translated;
+        });
 
-    return allStrainsData.map(strain => ({
-      ...strain,
-      description: getTranslatedString(`strainsData.${strain.id}.description`),
-      typeDetails: getTranslatedString(`strainsData.${strain.id}.typeDetails`),
-      genetics: getTranslatedString(`strainsData.${strain.id}.genetics`),
-      aromas: getTranslatedArray(`strainsData.${strain.id}.aromas`),
-      dominantTerpenes: getTranslatedArray(`strainsData.${strain.id}.dominantTerpenes`),
-      agronomic: {
-        ...strain.agronomic,
-        yieldDetails: getTranslatedObject(`strainsData.${strain.id}.yieldDetails`, { indoor: 'N/A', outdoor: 'N/A' }) as { indoor: string, outdoor: string },
-        heightDetails: getTranslatedObject(`strainsData.${strain.id}.heightDetails`, { indoor: 'N/A', outdoor: 'N/A' }) as { indoor: string, outdoor: string },
-      },
-    }));
+        return {
+          ...strain,
+          description: getTranslatedString(`strainsData.${strain.id}.description`, strain.description),
+          typeDetails: getTranslatedString(`strainsData.${strain.id}.typeDetails`, strain.typeDetails),
+          genetics: getTranslatedString(`strainsData.${strain.id}.genetics`, strain.genetics),
+          aromas: translatedAromas,
+          dominantTerpenes: translatedTerpenes,
+          agronomic: {
+            ...strain.agronomic,
+            yieldDetails: getTranslatedObject(`strainsData.${strain.id}.yieldDetails`, strain.agronomic.yieldDetails || { indoor: 'N/A', outdoor: 'N/A' }) as { indoor: string, outdoor: string },
+            heightDetails: getTranslatedObject(`strainsData.${strain.id}.heightDetails`, strain.agronomic.heightDetails || { indoor: 'N/A', outdoor: 'N/A' }) as { indoor: string, outdoor: string },
+          },
+        };
+    });
   }
 
   private async _initialize(t: TFunction, lang: string): Promise<void> {

@@ -3,13 +3,14 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Strain, AIResponse, StructuredGrowTips } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { strainService } from '@/services/strainService';
 import { useAppStore } from '@/stores/useAppStore';
-import { selectHasAvailableSlots, selectSavedStrainTips } from '@/stores/selectors';
+import { selectHasAvailableSlots } from '@/stores/selectors';
 
 // --- Sub-components for better structure ---
 
@@ -96,8 +97,14 @@ interface StrainDetailModalProps {
 export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
     const {
-        isFavorite, toggleFavorite, closeDetailModal, addNotification, getNoteForStrain,
-        updateNoteForStrain, initiateGrow, selectStrain, generateStrainTips, strainTipsTask, resetAiTask,
+        isFavorite,
+        toggleFavorite,
+        closeDetailModal,
+        addNotification,
+        getNoteForStrain,
+        updateNoteForStrain,
+        initiateGrow,
+        selectStrain
     } = useAppStore(state => ({
         isFavorite: state.favoriteIds.has(strain.id),
         toggleFavorite: state.toggleFavorite,
@@ -107,11 +114,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         updateNoteForStrain: state.updateNoteForStrain,
         initiateGrow: state.initiateGrow,
         selectStrain: state.selectStrain,
-        generateStrainTips: state.generateStrainTips,
-        strainTipsTask: state.strainTipsTask,
-        resetAiTask: state.resetAiTask,
     }));
-    const savedStrainTips = useAppStore(selectSavedStrainTips);
     const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
     const onClose = closeDetailModal;
     const modalRef = useFocusTrap(true);
@@ -119,39 +122,76 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
     const [noteContent, setNoteContent] = useState('');
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [similarStrains, setSimilarStrains] = useState<Strain[]>([]);
+    const [structuredTip, setStructuredTip] = useState<StructuredGrowTips | null>(null);
+    const [isTipLoading, setIsTipLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
+    const [isTipSaved, setIsTipSaved] = useState(false);
     const [tipRequest, setTipRequest] = useState({
-        focus: 'overall', stage: 'all', experience: 'advanced'
+        focus: 'overall',
+        stage: 'all',
+        experience: 'advanced'
     });
-
-    const { status: taskStatus, result: structuredTip, loadingMessage } = strainTipsTask;
-    const isTipLoading = taskStatus === 'loading';
-
-    // Check if the current, successfully generated response is already in the archive
-    const isTipSaved = useMemo(() => {
-        if (!structuredTip) return false;
-        // A simple content check to see if a similar tip has been saved
-        return savedStrainTips.some(tip => tip.strainId === strain.id && tip.content.includes(structuredTip.proTip));
-    }, [structuredTip, savedStrainTips, strain.id]);
-
 
     useEffect(() => {
         setNoteContent(getNoteForStrain(strain.id));
-        strainService.getSimilarStrains(strain).then(setSimilarStrains).catch(console.error);
-        // Reset AI task state when modal opens for a new strain
-        resetAiTask('strainTipsTask');
-    }, [strain, getNoteForStrain, resetAiTask]);
+
+        const fetchSimilarStrains = async () => {
+            try {
+                const similar = await strainService.getSimilarStrains(strain);
+                setSimilarStrains(similar);
+            } catch (error) {
+                console.error("Failed to fetch similar strains:", error);
+            }
+        };
+
+        fetchSimilarStrains();
+        setStructuredTip(null);
+        setIsTipSaved(false);
+    }, [strain, getNoteForStrain]);
+    
+     useEffect(() => {
+        if (isTipLoading) {
+            const messages = geminiService.getDynamicLoadingMessages({ 
+                useCase: 'growTips',
+                data: {
+                    strainName: strain.name,
+                    focus: t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`),
+                    stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`)
+                }
+            }, t);
+            let messageIndex = 0;
+            const updateLoadingMessage = () => {
+                setLoadingMessage(messages[messageIndex % messages.length]);
+                messageIndex++;
+            };
+            
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
+            return () => clearInterval(intervalId);
+        }
+    }, [isTipLoading, t, strain.name, tipRequest]);
 
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
     const isFav = isFavorite;
 
     const handleGetAiTips = async () => {
-        const context = {
-            focus: t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`),
-            stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`),
-            experience: t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`)
-        };
-        await generateStrainTips(strain, context);
+        setIsTipLoading(true);
+        setStructuredTip(null);
+        setIsTipSaved(false);
+        try {
+            const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
+            const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
+            const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
+
+            const result = await geminiService.getStrainGrowTips(strain, { focus: focusText, stage: stageText, experience: experienceText }, t);
+            setStructuredTip(result);
+        } catch (err) {
+            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
+            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
+            addNotification(errorMessage, 'error');
+        }
+        setIsTipLoading(false);
     };
 
     const handleSaveTip = () => {
@@ -170,6 +210,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         `;
         
         onSaveTip(strain, { title, content });
+        setIsTipSaved(true);
     };
 
     const handleSaveNote = () => {

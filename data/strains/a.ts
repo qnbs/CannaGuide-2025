@@ -317,6 +317,8 @@ export const strains: Strain[] = [
     floweringTimeRange: '7-9',
     typeDetails: 'Indica 80% / Sativa 20%',
     genetics: 'Sour Dubble x Tahoe Alien',
+    aromas: ['Sweet', 'Citrus', 'Earthy', 'Fruity'],
+    dominantTerpenes: ['Caryophyllene', 'Limonene', 'Nerolidol'],
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',

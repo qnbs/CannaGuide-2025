@@ -5,15 +5,17 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '@/types';
+import { geminiService } from '@/services/geminiService';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import { AiTask } from '@/stores/slices/aiSlice';
 
 type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
 type Budget = 'low' | 'medium' | 'high';
 type GrowStyle = 'beginner' | 'balanced' | 'yield' | 'stealth';
 
 interface SetupResultsProps {
-    task: AiTask<Recommendation>;
+    recommendation: Recommendation | null;
+    isLoading: boolean;
+    error: string | null;
     onSaveSetup: (setup: Omit<SavedSetup, 'id' | 'createdAt'>) => void;
     startOver: () => void;
     handleGenerate: () => void;
@@ -39,19 +41,30 @@ const RationaleModal: React.FC<{ content: { title: string, content: string }, on
 };
 
 export const SetupResults: React.FC<SetupResultsProps> = ({
-    task, onSaveSetup, startOver, handleGenerate, area, budget, growStyle
+    recommendation, isLoading, error, onSaveSetup, startOver, handleGenerate, area, budget, growStyle
 }) => {
     const { t } = useTranslations();
     const addNotification = useAppStore(state => state.addNotification);
     const [rationaleModalContent, setRationaleModalContent] = useState<{title: string, content: string} | null>(null);
     const [setupName, setSetupName] = useState('');
+    const [loadingMessage, setLoadingMessage] = useState('');
 
-    const { recommendation, isLoading, error, loadingMessage } = useMemo(() => ({
-        recommendation: task.result,
-        isLoading: task.status === 'loading',
-        error: task.error || null,
-        loadingMessage: task.loadingMessage || t('ai.generating')
-    }), [task, t]);
+    useEffect(() => {
+        if (isLoading) {
+            const configName = `${t(`equipmentView.configurator.styles.${growStyle}`)} / ${t(`equipmentView.configurator.budgets.${budget}`)}`;
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { configName } }, t);
+            let messageIndex = 0;
+            const updateLoadingMessage = () => {
+                setLoadingMessage(messages[messageIndex % messages.length]);
+                messageIndex++;
+            };
+            
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
+
+            return () => clearInterval(intervalId);
+        }
+    }, [isLoading, area, budget, growStyle, t]);
 
      useEffect(() => {
         if (recommendation) {

@@ -5,12 +5,13 @@ import { SettingsSlice, createSettingsSlice, defaultSettings } from './slices/se
 import { DataSlice, createDataSlice } from './slices/dataSlice';
 import { UserSlice, createUserSlice } from './slices/userSlice';
 import { UISlice, createUISlice } from './slices/uiSlice';
+import { StrainsViewSlice, createStrainsViewSlice } from './slices/strainsViewSlice';
 
 export type TFunction = (key: string, params?: Record<string, any>) => string;
 let t: TFunction = (key: string) => key;
 const getT = () => t;
 
-export type AppState = SettingsSlice & DataSlice & UserSlice & UISlice & AppSlice;
+export type AppState = SettingsSlice & DataSlice & UserSlice & UISlice & StrainsViewSlice & AppSlice;
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
 
@@ -27,6 +28,7 @@ export const useAppStore = create<AppState>()(
         ...createUISlice(set, get, getT),
         ...createUserSlice(set, get),
         ...createDataSlice(set, get, getT),
+        ...createStrainsViewSlice(set, get),
       })),
       {
         name: 'cannaguide-2025-storage',
@@ -38,6 +40,7 @@ export const useAppStore = create<AppState>()(
           plantSlots: state.plantSlots,
           userStrains: state.userStrains,
           favoriteIds: Array.from(state.favoriteIds), // Convert Set to Array for JSON serialization
+          selectedStrainIds: Array.from(state.selectedStrainIds), // Convert Set to Array
           strainNotes: state.strainNotes,
           savedExports: state.savedExports,
           savedSetups: state.savedSetups,
@@ -45,11 +48,14 @@ export const useAppStore = create<AppState>()(
           archivedAdvisorResponses: state.archivedAdvisorResponses,
           savedStrainTips: state.savedStrainTips,
           knowledgeProgress: state.knowledgeProgress,
+          strainsViewTab: state.strainsViewTab,
+          strainsViewMode: state.strainsViewMode,
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {
-            // Restore Set from persisted Array
+            // Restore Sets from persisted Arrays
             state.favoriteIds = new Set(state.favoriteIds as unknown as string[]);
+            state.selectedStrainIds = new Set(state.selectedStrainIds as unknown as string[]);
             
             // Set default view from potentially updated settings
             state.activeView = state.settings?.defaultView || defaultSettings.defaultView;
@@ -62,6 +68,9 @@ export const useAppStore = create<AppState>()(
                 strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...state.settings.strainsViewSettings },
                 simulationSettings: { ...defaultSettings.simulationSettings, ...state.settings.simulationSettings },
             };
+            
+            // Initialize strains view mode from settings
+            state.strainsViewMode = state.settings.strainsViewSettings.defaultViewMode;
           }
         },
       }

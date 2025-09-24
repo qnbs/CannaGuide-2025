@@ -15,9 +15,18 @@ interface PlantCardProps {
 export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
     const { t } = useTranslations();
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
+    const activeProblemsCount = plant.problems.filter(p => p.status === 'active').length;
 
     return (
-        <Card className="flex flex-col h-full">
+        <Card className="flex flex-col h-full relative">
+            {activeProblemsCount > 0 && (
+                <div
+                    className="absolute top-2 right-2 bg-red-500 rounded-full w-5 h-5 flex items-center justify-center text-white font-bold text-xs border-2 border-slate-900"
+                    title={`${activeProblemsCount} ${t('plantsView.warnings.title')}`}
+                >
+                    {activeProblemsCount}
+                </div>
+            )}
             <div className="flex justify-between items-start">
                 <div>
                     <h3 className="font-bold text-lg text-primary-400 truncate">{plant.name}</h3>

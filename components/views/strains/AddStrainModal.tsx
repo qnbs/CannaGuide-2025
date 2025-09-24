@@ -45,9 +45,9 @@ const defaultStrainValues = strainToFormValues({
 });
 
 const FormSection: React.FC<{ title: string; children: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, defaultOpen = false }) => (
-    <details open={defaultOpen}>
+    <details open={defaultOpen} className="group">
         <summary className="text-lg font-semibold text-primary-400 cursor-pointer mb-3 list-none flex items-center gap-2">
-            <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 open:rotate-180" />
+            <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-90" />
             {title}
         </summary>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-4 border-l-2 border-slate-700 pl-5">

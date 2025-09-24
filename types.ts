@@ -180,6 +180,22 @@ export interface Strain {
     };
 }
 
+export interface StrainTranslationData {
+  description?: string;
+  typeDetails?: string;
+  genetics?: string;
+  aromas?: string[];
+  dominantTerpenes?: string[];
+  yieldDetails?: {
+    indoor: string;
+    outdoor: string;
+  };
+  heightDetails?: {
+    indoor: string;
+    outdoor: string;
+  };
+}
+
 // Equipment & Setup types
 export interface GrowSetup {
     lightType: 'LED' | 'HPS' | 'CFL';
@@ -375,20 +391,4 @@ export interface Command {
 
 export interface KnowledgeProgress {
     [sectionId: string]: string[];
-}
-
-export interface StrainTranslationData {
-  description?: string;
-  typeDetails?: string;
-  genetics?: string;
-  aromas?: string[];
-  dominantTerpenes?: string[];
-  yieldDetails?: {
-    indoor: string;
-    outdoor: string;
-  };
-  heightDetails?: {
-    indoor: string;
-    outdoor: string;
-  };
 }

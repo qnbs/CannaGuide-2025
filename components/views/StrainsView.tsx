@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Strain, View, SortDirection, AIResponse, GrowSetup, StrainType } from '@/types';
+import { Strain, View, SortDirection, AIResponse, GrowSetup, StrainType, StrainViewTab } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useStrainFilters, SortKey } from '@/hooks/useStrainFilters';
 import { useAppStore } from '@/stores/useAppStore';
@@ -21,8 +21,6 @@ import { FilterDrawer } from '@/components/views/strains/FilterDrawer';
 import { StrainTipsView } from '@/components/views/strains/StrainTipsView';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-
-type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
 
 const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab: (tab: StrainViewTab) => void, isFiltered: boolean, onResetFilters: () => void }> = ({ tab, onAdd, onSwitchTab, isFiltered, onResetFilters }) => {
     const { t } = useTranslations();
@@ -73,12 +71,10 @@ const EmptyState: React.FC<{ tab: StrainViewTab; onAdd: () => void; onSwitchTab:
 const StrainsViewContent: React.FC = () => {
     const { t } = useTranslations();
     const { 
-        settings,
-        userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain,
-        savedExports, addExport, deleteExport, updateExport,
-        savedStrainTips, addStrainTip, updateStrainTip, deleteStrainTip,
-        addNotification,
-        selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen, favoriteIds,
+        settings, userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain,
+        savedExports, addExport, deleteExport, updateExport, savedStrainTips, addStrainTip, updateStrainTip, deleteStrainTip,
+        addNotification, selectedStrain, strainToEdit, strainForSetup, isAddModalOpen, isExportModalOpen, isSetupModalOpen, favoriteIds,
+        activeTab, viewMode, selectedIds,
         actions
     } = useAppStore(state => ({
         settings: state.settings,
@@ -103,7 +99,15 @@ const StrainsViewContent: React.FC = () => {
         isExportModalOpen: state.isExportModalOpen,
         isSetupModalOpen: state.isSetupModalOpen,
         favoriteIds: state.favoriteIds,
+        activeTab: state.strainsViewTab,
+        viewMode: state.strainsViewMode,
+        selectedIds: state.selectedStrainIds,
         actions: {
+            setStrainsViewTab: state.setStrainsViewTab,
+            setStrainsViewMode: state.setStrainsViewMode,
+            toggleStrainSelection: state.toggleStrainSelection,
+            toggleAllStrainSelection: state.toggleAllStrainSelection,
+            clearStrainSelection: state.clearStrainSelection,
             closeAddModal: () => state.closeAddModal(),
             openAddModal: (strain?: Strain) => state.openAddModal(strain),
             closeExportModal: () => state.closeExportModal(),
@@ -121,13 +125,7 @@ const StrainsViewContent: React.FC = () => {
     }));
     
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
-    const [activeTab, setActiveTab] = useState<StrainViewTab>('all');
-    const [viewMode, setViewMode] = useState<'list' | 'grid'>(settings.strainsViewSettings.defaultViewMode);
-    
-    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
     const [isLoading, setIsLoading] = useState(true);
-
-    // --- Quick Filter State ---
     const [searchTerm, setSearchTerm] = useState('');
     const [showFavorites, setShowFavorites] = useState(false);
     const [typeFilter, setTypeFilter] = useState<Set<StrainType>>(new Set());
@@ -157,13 +155,11 @@ const StrainsViewContent: React.FC = () => {
     }, [activeTab, allStrains, userStrains, favoriteIds]);
 
     const {
-        sort, handleSort,
-        isDrawerOpen, openDrawer, closeAndApply, closeAndDiscard,
-        draftFilters, setDraftFilters,
-        strainsForDisplay, previewCount,
+        sort, handleSort, isDrawerOpen, openDrawer, closeAndApply, closeAndDiscard,
+        draftFilters, setDraftFilters, strainsForDisplay, previewCount,
         resetAllFilters, activeFilterCount
     } = useStrainFilters(strainsToDisplay, favoriteIds, {
-        key: settings.strainsViewSettings.defaultSortKey as any, direction: settings.strainsViewSettings.defaultSortDirection as SortDirection,
+        key: settings.strainsViewSettings.defaultSortKey, direction: settings.strainsViewSettings.defaultSortDirection,
     }, { searchTerm, showFavorites, typeFilter });
 
     const handleClearAllFilters = () => {
@@ -183,8 +179,7 @@ const StrainsViewContent: React.FC = () => {
 
     const isAnyFilterActive = searchTerm || showFavorites || typeFilter.size > 0 || activeFilterCount > 0;
 
-    const handleToggleAll = () => setSelectedIds(prev => prev.size === strainsForDisplay.length ? new Set() : new Set(strainsForDisplay.map(s => s.id)));
-    const handleToggleSelection = useCallback((id: string) => setSelectedIds(prev => { const newSet = new Set(prev); newSet.has(id) ? newSet.delete(id) : newSet.add(id); return newSet; }), []);
+    const handleToggleAll = () => actions.toggleAllStrainSelection(strainsForDisplay.map(s => s.id), selectedIds.size === strainsForDisplay.length);
 
     const handleExport = (source: 'selected' | 'favorites' | 'filtered' | 'all', format: 'pdf' | 'txt' | 'csv' | 'json') => {
         let strainsToExport: Strain[] = [];
@@ -210,14 +205,14 @@ const StrainsViewContent: React.FC = () => {
     
     const handleSaveTip = (strain: Strain, tip: AIResponse) => {
         addStrainTip(strain, tip);
-        setActiveTab('tips');
+        actions.setStrainsViewTab('tips');
         actions.closeDetailModal();
     };
 
-    // FIX: Replaced .flatMap() with a typed .reduce() to ensure correct type inference when flattening arrays of strings.
-    const allAromas: string[] = useMemo(() => [...new Set(strainsToDisplay.reduce<string[]>((acc, s) => acc.concat(s.aromas || []), []))].sort(), [strainsToDisplay]);
-    // FIX: Replaced .flatMap() with a typed .reduce() to ensure correct type inference when flattening arrays of strings.
-    const allTerpenes: string[] = useMemo(() => [...new Set(strainsToDisplay.reduce<string[]>((acc, s) => acc.concat(s.dominantTerpenes || []), []))].sort(), [strainsToDisplay]);
+    // FIX: Using flatMap for a cleaner and more efficient way to flatten and collect arrays.
+    const allAromas: string[] = useMemo(() => [...new Set(strainsToDisplay.flatMap(s => s.aromas || []))].sort(), [strainsToDisplay]);
+    // FIX: Using flatMap for a cleaner and more efficient way to flatten and collect arrays.
+    const allTerpenes: string[] = useMemo(() => [...new Set(strainsToDisplay.flatMap(s => s.dominantTerpenes || []))].sort(), [strainsToDisplay]);
 
     const tabs = [
         { id: 'all', label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
@@ -240,7 +235,7 @@ const StrainsViewContent: React.FC = () => {
             {isDrawerOpen && <FilterDrawer isOpen={isDrawerOpen} onClose={closeAndDiscard} onApply={closeAndApply} onReset={resetAllFilters} tempFilterState={draftFilters} setTempFilterState={setDraftFilters} allAromas={allAromas} allTerpenes={allTerpenes} count={previewCount}/>}
             {isSetupModalOpen && strainForSetup && <GrowSetupModal strain={strainForSetup} onClose={actions.closeGrowModal} onConfirm={(setup) => actions.confirmGrow(setup, strainForSetup)} />}
 
-            <Card><Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => setActiveTab(id as StrainViewTab)} /></Card>
+            <Card><Tabs tabs={tabs} activeTab={activeTab} setActiveTab={id => actions.setStrainsViewTab(id as StrainViewTab)} /></Card>
 
             {['all', 'my-strains', 'favorites'].includes(activeTab) && (
                  <Card>
@@ -252,7 +247,7 @@ const StrainsViewContent: React.FC = () => {
 
                         <div className="hidden sm:flex items-center gap-2">
                              <div className="flex items-center bg-slate-800/60 border border-slate-700/80 rounded-lg p-1 gap-1">
-                                <button onClick={() => setViewMode(prev => prev === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} className="p-2 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
+                                <button onClick={() => actions.setStrainsViewMode(viewMode === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} className="p-2 rounded-md text-slate-300 hover:bg-slate-700 hover:text-white transition-colors">
                                     {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
                                 </button>
                             </div>
@@ -305,7 +300,7 @@ const StrainsViewContent: React.FC = () => {
                             <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
                             <span>{t('common.export')}</span>
                         </Button>
-                         <Button onClick={() => setViewMode(prev => prev === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} variant="secondary" className="p-2.5">
+                         <Button onClick={() => actions.setStrainsViewMode(viewMode === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} variant="secondary" className="p-2.5">
                              <span className="sr-only">{t('strainsView.toggleView')}</span>
                             {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
                         </Button>
@@ -323,28 +318,32 @@ const StrainsViewContent: React.FC = () => {
                         : <SkeletonLoader count={10} variant="grid" />
                  ) : viewMode === 'list' ? (
                      <div className="space-y-2">
-                        <div className={`${LIST_GRID_CLASS} sticky top-16 z-10 bg-slate-800/80 backdrop-blur-sm text-xs uppercase font-semibold text-slate-400 px-3 py-2 rounded-lg`}>
+                        <div className={`${LIST_GRID_CLASS} sticky top-16 z-10 bg-slate-900/70 backdrop-blur-md border-b border-slate-700/50 text-xs uppercase font-semibold text-slate-400 px-3 py-2 rounded-lg`}>
                              <input type="checkbox" checked={selectedIds.size === strainsForDisplay.length && strainsForDisplay.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
-                            <button className="flex items-center gap-1 text-left" onClick={() => handleSort('name')}>{t('strainsView.table.strain')}<SortIndicator sortKey="name" /></button>
-                            {settings.strainsViewSettings.visibleColumns.type && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('type')}>{t('strainsView.table.type')}<SortIndicator sortKey="type" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.thc && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('thc')}>{t('strainsView.table.thc')}<SortIndicator sortKey="thc" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.cbd && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('cbd')}>{t('strainsView.table.cbd')}<SortIndicator sortKey="cbd" /></button>}
-                            {settings.strainsViewSettings.visibleColumns.floweringTime && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('floweringTime')}>{t('strainsView.table.flowering')}<SortIndicator sortKey="floweringTime" /></button>}
-                            {/* FIX: Explicitly cast 'yield' property to boolean to resolve potential type ambiguity due to the 'yield' keyword. */}
-                            {Boolean(settings.strainsViewSettings.visibleColumns['yield']) && <button className="hidden sm:flex items-center gap-1" onClick={() => handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
-                            <button className="flex items-center gap-1" onClick={() => handleSort('difficulty')}>{t('strainsView.table.level')}<SortIndicator sortKey="difficulty" /></button>
+                            <button className="flex items-center gap-1 text-left hover:text-slate-100" onClick={() => handleSort('name')}>{t('strainsView.table.strain')}<SortIndicator sortKey="name" /></button>
+                            {/* FIX: Explicitly cast to boolean for conditional rendering to avoid type errors and ensure correct behavior. */}
+                            {Boolean(settings.strainsViewSettings.visibleColumns.type) && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('type')}>{t('strainsView.table.type')}<SortIndicator sortKey="type" /></button>}
+                            {/* FIX: Explicitly cast to boolean for conditional rendering to avoid type errors and ensure correct behavior. */}
+                            {Boolean(settings.strainsViewSettings.visibleColumns.thc) && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('thc')}>{t('strainsView.table.thc')}<SortIndicator sortKey="thc" /></button>}
+                            {/* FIX: Explicitly cast to boolean for conditional rendering to avoid type errors and ensure correct behavior. */}
+                            {Boolean(settings.strainsViewSettings.visibleColumns.cbd) && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('cbd')}>{t('strainsView.table.cbd')}<SortIndicator sortKey="cbd" /></button>}
+                            {/* FIX: Explicitly cast to boolean for conditional rendering to avoid type errors and ensure correct behavior. */}
+                            {Boolean(settings.strainsViewSettings.visibleColumns.floweringTime) && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('floweringTime')}>{t('strainsView.table.flowering')}<SortIndicator sortKey="floweringTime" /></button>}
+                            {/* FIX: Explicitly cast to boolean for conditional rendering to avoid type errors and ensure correct behavior. */}
+                            {Boolean(settings.strainsViewSettings.visibleColumns['yield']) && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
+                            <button className="flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('difficulty')}>{t('strainsView.table.level')}<SortIndicator sortKey="difficulty" /></button>
                             <div className="text-right">{t('common.actions')}</div>
                         </div>
                         {selectedIds.size > 0 && 
                             <div className="text-sm text-slate-300 px-3 py-1 flex items-center gap-2">
                                <span>{t('strainsView.selectedCount', {count: selectedIds.size})}</span>
-                               <button onClick={() => setSelectedIds(new Set())} className="text-primary-400 hover:underline text-xs">{t('strainsView.clearSelection')}</button>
+                               <button onClick={() => actions.clearStrainSelection()} className="text-primary-400 hover:underline text-xs">{t('strainsView.clearSelection')}</button>
                             </div>
                         }
                         {strainsForDisplay.length > 0 ? (
-                            strainsForDisplay.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} onToggleSelection={handleToggleSelection} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)
+                            strainsForDisplay.map((strain, index) => <StrainListItem key={strain.id} strain={strain} isSelected={selectedIds.has(strain.id)} onToggleSelection={actions.toggleStrainSelection} visibleColumns={settings.strainsViewSettings.visibleColumns} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)
                         ) : (
-                            <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={isAnyFilterActive} onResetFilters={handleClearAllFilters} />
+                            <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={actions.setStrainsViewTab} isFiltered={isAnyFilterActive} onResetFilters={handleClearAllFilters} />
                         )}
                      </div>
                  ) : (
@@ -353,7 +352,7 @@ const StrainsViewContent: React.FC = () => {
                             {strainsForDisplay.map((strain, index) => <StrainGridItem key={strain.id} strain={strain} isUserStrain={isUserStrain(strain.id)} onDelete={deleteUserStrain} index={index}/>)}
                         </div>
                      ) : (
-                         <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={setActiveTab} isFiltered={isAnyFilterActive} onResetFilters={handleClearAllFilters} />
+                         <EmptyState tab={activeTab as StrainViewTab} onAdd={() => actions.openAddModal()} onSwitchTab={actions.setStrainsViewTab} isFiltered={isAnyFilterActive} onResetFilters={handleClearAllFilters} />
                      )
                  )
             )}

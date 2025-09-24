@@ -34,25 +34,25 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
             </h3>
             <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col items-center justify-center">
-                     <div className="relative w-28 h-28">
+                     <div className="relative w-32 h-32">
                         <svg className="w-full h-full transform -rotate-90">
-                            <circle className="text-slate-700" strokeWidth="10" stroke="currentColor" fill="transparent" r={radius} cx="56" cy="56" />
+                            <circle className="text-slate-700" strokeWidth="12" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" />
                             <circle
                                 className={`transition-all duration-500 ${healthColor}`}
-                                strokeWidth="10"
+                                strokeWidth="12"
                                 strokeDasharray={circumference}
                                 style={{ strokeDashoffset }}
                                 strokeLinecap="round"
                                 stroke="currentColor"
                                 fill="transparent"
                                 r={radius}
-                                cx="56"
-                                cy="56"
+                                cx="64"
+                                cy="64"
                             />
                         </svg>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center -mt-3">
-                            <p className="text-3xl font-bold">{gardenHealth.toFixed(0)}%</p>
-                            <p className="text-xs text-slate-400 -mt-1">{t('plantsView.summary.gardenHealth')}</p>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center" style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.5))' }}>
+                            <p className="text-4xl font-bold">{gardenHealth.toFixed(0)}%</p>
+                            <p className="text-xs text-slate-300 -mt-1">{t('plantsView.summary.gardenHealth')}</p>
                         </div>
                     </div>
                 </div>

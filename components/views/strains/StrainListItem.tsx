@@ -69,7 +69,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
-            className={`${LIST_GRID_CLASS} group glass-pane rounded-lg transition-all duration-200 cursor-pointer odd:bg-slate-800/20 hover:!bg-slate-700/50 hover:!border-primary-500/80 animate-fade-in-stagger`}
+            className={`${LIST_GRID_CLASS} group glass-pane rounded-lg transition-all duration-200 cursor-pointer border-l-4 ${isSelected ? 'bg-primary-900/40 border-primary-500/80' : 'border-transparent odd:bg-slate-800/20'} hover:!bg-slate-700/50 hover:!border-primary-500/80 animate-fade-in-stagger`}
             style={{ 
                 animationDelay: `${Math.min(index, 10) * 20}ms`,
              }}
@@ -97,7 +97,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
             {visibleColumns.thc && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-200">{strain.thc.toFixed(1)}%</div>}
             {visibleColumns.cbd && <div className="hidden sm:flex items-center px-3 py-3 text-sm font-mono text-slate-400">{strain.cbd.toFixed(1)}%</div>}
             {visibleColumns.floweringTime && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-200">{strain.floweringTime} {t('common.units.weeks')}</div>}
-            {/* FIX: Accessing 'yield' property using bracket notation to avoid potential conflicts with the 'yield' keyword in tooling. */}
             {visibleColumns['yield'] && <div className="hidden sm:flex items-center px-3 py-3 text-sm text-slate-300">{strain.agronomic.yieldDetails?.indoor || 'N/A'}</div>}
             <div className="flex items-center px-3 py-3" aria-label={`Difficulty: ${difficultyLabels[strain.agronomic.difficulty]}`} title={difficultyLabels[strain.agronomic.difficulty]}>
                 <div className="flex">

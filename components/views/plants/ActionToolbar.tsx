@@ -22,6 +22,9 @@ export const ActionToolbar: React.FC<ActionToolbarProps> = ({ onAction }) => {
             <Button onClick={() => onAction('training')}>
                 <PhosphorIcons.Scissors className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.training')}
             </Button>
+             <Button onClick={() => onAction('pestControl')} variant="secondary">
+                <PhosphorIcons.WarningCircle className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.pestControl')}
+            </Button>
             <Button onClick={() => onAction('observation')} variant="secondary">
                 <PhosphorIcons.MagnifyingGlass className="w-4 h-4 mr-1"/>{t('plantsView.detailedView.journalFilters.observation')}
             </Button>

@@ -24,7 +24,6 @@ const APP_SHELL_URLS = [
   'components/views/HelpView.tsx',
   'services/storageService.ts',
   'services/strainService.ts',
-  'data/strains/index.ts',
   // All other app files will be cached on first load via the fetch handler.
 ];
 

@@ -1,6 +1,6 @@
+// --- Core Enums & Simple Types ---
+// FIX: Import React to use React.ElementType in the Command interface.
 import React from 'react';
-
-// --- Core Enums ---
 
 export enum View {
     Strains = 'Strains',
@@ -27,16 +27,16 @@ export type StrainType = 'Sativa' | 'Indica' | 'Hybrid';
 export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
 export type YieldLevel = 'Low' | 'Medium' | 'High';
 export type HeightLevel = 'Short' | 'Medium' | 'Tall';
+export type FloweringType = 'Photoperiod' | 'Autoflower';
+export type Language = 'en' | 'de';
+export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz';
+export type UiDensity = 'comfortable' | 'compact';
+export type SortKey = 'name' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'type' | 'yield';
+export type SortDirection = 'asc' | 'desc';
+export type ExportFormat = 'pdf' | 'csv' | 'json' | 'txt' | 'xml';
+export type ExportSource = 'selected' | 'all' | 'filtered' | 'favorites';
 
 // --- Strain Data ---
-
-export interface AgronomicData {
-    difficulty: DifficultyLevel;
-    yield: YieldLevel;
-    height: HeightLevel;
-    yieldDetails?: { indoor: string; outdoor: string };
-    heightDetails?: { indoor: string; outdoor: string };
-}
 
 export interface Strain {
     id: string;
@@ -44,8 +44,10 @@ export interface Strain {
     type: StrainType;
     typeDetails?: string;
     genetics?: string;
-    geneticsDetails?: { isAutoflower: boolean };
-    floweringType: 'Photoperiod' | 'Autoflower';
+    floweringType: FloweringType;
+    geneticsDetails?: {
+        isAutoflower: boolean;
+    };
     thc: number;
     cbd: number;
     thcRange?: string;
@@ -53,25 +55,39 @@ export interface Strain {
     floweringTime: number;
     floweringTimeRange?: string;
     description?: string;
-    agronomic: AgronomicData;
+    agronomic: {
+        difficulty: DifficultyLevel;
+        yield: YieldLevel;
+        height: HeightLevel;
+        yieldDetails?: {
+            indoor: string;
+            outdoor: string;
+        };
+        heightDetails?: {
+            indoor: string;
+            outdoor: string;
+        };
+    };
     aromas?: string[];
     dominantTerpenes?: string[];
 }
 
 export interface StrainTranslationData {
-    description: string;
+    description?: string;
     typeDetails?: string;
     genetics?: string;
+    // FIX: agronomic properties were incorrectly nested. This matches the structure of translation files.
     yieldDetails?: { indoor: string; outdoor: string };
     heightDetails?: { indoor: string; outdoor: string };
 }
 
-// --- Plant & Grow Data ---
+
+// --- Plant Simulation & Management ---
 
 export interface PlantVitals {
     ph: number;
     ec: number;
-    substrateMoisture: number; // 0-100
+    substrateMoisture: number; // 0-100%
 }
 
 export interface PlantEnvironment {
@@ -79,60 +95,48 @@ export interface PlantEnvironment {
     humidity: number; // %
 }
 
-export type PlantIssueName = 
-    | 'Overwatering' 
-    | 'Underwatering' 
-    | 'NutrientBurn' 
-    | 'NutrientLockout' 
-    | 'EcStress' 
-    | 'SpiderMites' 
-    | 'PowderyMildew' 
-    | 'phTooLow' 
-    | 'phTooHigh' 
-    | 'tempTooHigh' 
-    | 'tempTooLow' 
-    | 'humidityTooHigh' 
-    | 'humidityTooLow';
-
 export interface PlantProblem {
-    type: PlantIssueName;
+    type: 'overwatering' | 'underwatering' | 'nutrientBurn' | 'nutrientDeficiency' | 'phTooLow' | 'phTooHigh' | 'tempTooHigh' | 'tempTooLow' | 'humidityTooHigh' | 'humidityTooLow' | 'vpdTooLow' | 'vpdTooHigh' | 'pest';
     status: 'active' | 'resolved';
-    detectedAt: number; // timestamp
+    startedAt: number; // timestamp
     resolvedAt?: number;
-    severity: 'Low' | 'Medium' | 'High';
 }
 
 export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'SYSTEM' | 'PHOTO' | 'PEST_CONTROL' | 'ENVIRONMENT';
+export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'SCROG' | 'Defoliation' | 'SuperCropping';
 
 export interface JournalEntry {
     id: string;
     createdAt: number; // timestamp
+    completedAt?: number;
     type: JournalEntryType;
     notes: string;
-    details?: Record<string, any>;
-}
-
-export type TaskPriority = 'low' | 'medium' | 'high';
-export interface Task {
-    id: string;
-    title: string;
-    description: string;
-    isCompleted: boolean;
-    createdAt: number;
-    completedAt?: number;
-    priority: TaskPriority;
+    details?: {
+        waterAmount?: number;
+        ph?: number;
+        ec?: number;
+        nutrientDetails?: string;
+        trainingType?: TrainingType;
+        healthStatus?: 'Excellent' | 'Good' | 'Showing Issues';
+        observationTags?: string[];
+        imageId?: string;
+        imageUrl?: string;
+        photoCategory?: 'Full Plant' | 'Bud' | 'Leaf' | 'Problem' | 'Trichomes';
+        method?: string; // for pest control
+    };
 }
 
 export interface PlantHistoryEntry {
     day: number;
+    stage: PlantStage;
     height: number;
-    stressLevel: number; // 0-100
+    stressLevel: number;
     vitals: PlantVitals;
 }
 
 export interface GrowSetup {
     lightType: 'LED' | 'HPS' | 'CFL';
-    potSize: number; // in Liters
+    potSize: number; // Liters
     medium: 'Soil' | 'Coco' | 'Hydro';
     temperature: number;
     humidity: number;
@@ -140,64 +144,84 @@ export interface GrowSetup {
 }
 
 export interface PlantNode {
-  id: string;
-  position: number; // e.g. 1 for the first node above ground
-  lightExposure: number; // 0-1, how much light reaches this node
-  isTopped: boolean;
-  shoots: PlantShoot[]; // Shoots originating from this node
+    id: string;
+    type: 'node';
+    position: number; // position along the stem, 0 is base, 1 is top
+    children: (PlantBranch | PlantLeaf | PlantBud)[];
 }
 
-export interface PlantShoot {
-  id: string;
-  length: number; // length of the shoot/branch
-  nodes: PlantNode[];
-  isMainStem: boolean;
-  angle: number; // 0 = vertical, 90 = horizontal (for LST)
+export interface PlantBranch {
+    id: string;
+    type: 'branch';
+    length: number;
+    angle: number; // angle from main stem
+    nodes: PlantNode[];
+}
+
+export interface PlantLeaf {
+    id: string;
+    type: 'leaf';
+    size: number;
+    health: number; // 0-1, represents health of this specific leaf
+}
+
+export interface PlantBud {
+    id: string;
+    type: 'bud';
+    size: number;
+    maturity: number; // 0-1
+}
+
+export interface PlantStructuralModel {
+    id: string;
+    type: 'stem';
+    height: number; // in cm
+    nodes: PlantNode[];
 }
 
 export interface Plant {
     id: string;
     name: string;
     strain: Strain;
-    createdAt: number; // timestamp
-    age: number; // in days
+    age: number; // days
     stage: PlantStage;
-    height: number; // in cm
     health: number; // 0-100
+    height: number; // cm
     stressLevel: number; // 0-100
     vitals: PlantVitals;
     environment: PlantEnvironment;
     problems: PlantProblem[];
     journal: JournalEntry[];
-    tasks: Task[];
     history: PlantHistoryEntry[];
     growSetup: GrowSetup;
-    internalClock: number; // days since germination
-    hormoneLevels: {
-        florigen: number; // flowering hormone
-    };
-    daysOn1212: number;
-    daysInFlowering: number;
-    structuralModel: PlantShoot;
-    resistanceBuffs?: {
-        pest?: { ticks: number };
-        fungus?: { ticks: number };
+    tasks: Task[];
+    structuralModel: PlantStructuralModel;
+    postHarvest?: {
+        wetWeight?: number;
+        dryWeight?: number;
+        yieldPerWatt?: number;
+        qualityRating?: number;
+        dryingStartTime?: number;
+        curingStartTime?: number;
     };
 }
 
 
 // --- AI & Recommendations ---
 
-export interface AIResponse {
-    title: string;
-    content: string; // Markdown content
+export interface RecommendationItem {
+    name: string;
+    price: number;
+    rationale: string;
+    watts?: number;
 }
 
-export interface StructuredGrowTips {
-    nutrientTip: string;
-    trainingTip: string;
-    environmentalTip: string;
-    proTip: string;
+export type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'pots' | 'soil' | 'nutrients' | 'extra';
+export type Recommendation = Record<RecommendationCategory, RecommendationItem>;
+
+export interface AIResponse {
+    title: string;
+    content: string; // Markdown supported
 }
 
 export interface PlantDiagnosisResponse {
@@ -209,57 +233,65 @@ export interface PlantDiagnosisResponse {
     prevention: string;
 }
 
-export interface RecommendationItem {
-    name: string;
-    price: number;
-    rationale: string;
-    watts?: number;
+export interface StructuredGrowTips {
+    nutrientTip: string;
+    trainingTip: string;
+    environmentalTip: string;
+    proTip: string;
 }
 
-export type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'pots' | 'soil' | 'nutrients' | 'extra';
-
-export type Recommendation = Record<RecommendationCategory, RecommendationItem>;
-
-
-// --- UI & State Management ---
-
-export type NotificationType = 'success' | 'error' | 'info';
+// --- App State & UI ---
 
 export interface Notification {
     id: number;
     message: string;
-    type: NotificationType;
+    type: 'success' | 'error' | 'info';
 }
 
-export type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
+export type NotificationType = Notification['type'];
 
-export type Language = 'en' | 'de';
-export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz';
-export type UiDensity = 'comfortable' | 'compact';
-export type SortKey = 'name' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'type' | 'yield';
-export type SortDirection = 'asc' | 'desc';
+export enum CommandGroup {
+    Navigation = 'Navigation',
+    Plants = 'Plants',
+    Strains = 'Strains',
+    Knowledge = 'Knowledge',
+    Settings = 'Settings',
+    General = 'General Actions'
+}
+
+export interface Command {
+    id: string;
+    title: string;
+    subtitle?: string;
+    icon: React.ElementType;
+    action: () => void;
+    keywords?: string;
+    shortcut?: string[];
+    group: CommandGroup;
+    isHeader?: boolean;
+}
 
 export interface AppSettings {
     language: Language;
     theme: Theme;
     fontSize: 'sm' | 'base' | 'lg';
     defaultView: View;
+    onboardingCompleted: boolean;
     strainsViewSettings: {
         defaultSortKey: SortKey;
         defaultSortDirection: SortDirection;
         defaultViewMode: 'list' | 'grid';
         visibleColumns: Record<string, boolean>;
     };
-    notificationsEnabled: boolean;
     notificationSettings: {
         stageChange: boolean;
         problemDetected: boolean;
         harvestReady: boolean;
         newTask: boolean;
     };
-    onboardingCompleted: boolean;
+    notificationsEnabled: boolean;
     simulationSettings: {
-        speed: '1x' | '2x' | '5x';
+        speed: '1x' | '2x' | '4x';
         difficulty: 'easy' | 'normal' | 'hard' | 'custom';
         autoAdvance: boolean;
         autoJournaling: {
@@ -290,56 +322,16 @@ export interface AppSettings {
     uiDensity: UiDensity;
     quietHours: {
         enabled: boolean;
-        start: string;
-        end: string;
+        start: string; // "HH:MM"
+        end: string; // "HH:MM"
     };
     tts: TTSSettings;
 }
 
-export interface TTSSettings {
-    enabled: boolean;
-    rate: number;
-    pitch: number;
-    voiceName: string | null;
-}
-
-export interface SpeechQueueItem {
-    id: string;
-    text: string;
-}
-
-export interface Command {
-    id: string;
-    title: string;
-    subtitle?: string;
-    icon: React.ElementType;
-    action: () => void;
-    keywords?: string;
-    shortcut?: string[];
-    group: string;
-    isHeader?: boolean;
-}
-
-// --- Data & Storage ---
-
-export type ExportFormat = 'pdf' | 'csv' | 'json' | 'txt' | 'xml';
-export type ExportSource = 'selected' | 'all' | 'filtered' | 'favorites';
-
-export interface SavedExport {
-    id: string;
-    createdAt: number;
-    name: string;
-    source: ExportSource;
-    format: ExportFormat;
-    count: number;
-    strainIds: string[];
-    notes?: string;
-}
-
 export interface SavedSetup {
     id: string;
-    createdAt: number;
     name: string;
+    createdAt: number;
     recommendation: Recommendation;
     totalCost: number;
     sourceDetails: {
@@ -349,17 +341,28 @@ export interface SavedSetup {
     };
 }
 
-export interface StoredImageData {
+export interface SavedExport {
     id: string;
-    plantId: string;
+    name: string;
     createdAt: number;
-    data: string; // Data URL
+    source: ExportSource;
+    format: ExportFormat;
+    notes?: string;
+    count: number;
+    strainIds: string[];
 }
 
 export interface ArchivedMentorResponse extends AIResponse {
     id: string;
     createdAt: number;
     query: string;
+}
+
+export interface SavedStrainTip extends AIResponse {
+    id: string;
+    createdAt: number;
+    strainId: string;
+    strainName: string;
 }
 
 export interface ArchivedAdvisorResponse extends AIResponse {
@@ -370,13 +373,36 @@ export interface ArchivedAdvisorResponse extends AIResponse {
     query: string; // The plant data JSON
 }
 
-export interface SavedStrainTip extends AIResponse {
-    id: string;
+export interface StoredImageData {
+    id: string; // e.g., 'img-timestamp'
+    plantId: string;
     createdAt: number;
-    strainId: string;
-    strainName: string;
+    data: string; // base64 data URL
 }
 
-export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'SCROG' | 'Defoliation' | 'SuperCropping';
+export interface Task {
+    id: string;
+    title: string;
+    description: string;
+    isCompleted: boolean;
+    createdAt: number;
+    completedAt?: number;
+    priority: TaskPriority;
+    source: 'system' | 'user';
+}
 
-export type KnowledgeProgress = Record<string, string[]>; // sectionId: [itemId, itemId, ...]]
+export type TaskPriority = 'high' | 'medium' | 'low';
+export type StrainViewTab = 'all' | 'my-strains' | 'favorites' | 'exports' | 'tips';
+export type KnowledgeProgress = Record<string, string[]>; // { [sectionId]: itemId[] }
+
+export interface SpeechQueueItem {
+    id: string; // Unique ID for the element to be spoken
+    text: string;
+}
+
+export interface TTSSettings {
+    enabled: boolean;
+    rate: number;
+    pitch: number;
+    voiceName: string | null;
+}

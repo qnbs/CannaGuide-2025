@@ -27,9 +27,7 @@ const selectPlantsRecord = (state: AppState) => state.plants;
 
 export const selectActivePlants = createSelector(
   [selectPlantsRecord],
-  // FIX: Explicitly type `p` as Plant. This resolves the compiler error where `p` was inferred as `unknown`.
-  // The original null-check and type guard are redundant since Object.values on Record<string, Plant> returns Plant[].
-  (plants) => Object.values(plants).filter((p: Plant) => p.stage !== PlantStage.Finished)
+  (plants) => Object.values(plants).filter((p): p is Plant => !!p && (p as Plant).stage !== PlantStage.Finished)
 );
 
 export const selectHasAvailableSlots = createSelector(

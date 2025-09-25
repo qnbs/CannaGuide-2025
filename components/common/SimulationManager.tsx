@@ -1,57 +1,56 @@
 import React, { useEffect, useRef } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
-import { selectSettings } from '@/stores/selectors';
+import { simulationService } from '@/services/plantSimulationService';
+import { Plant, PlantStage } from '@/types';
 
 export const SimulationManager: React.FC = () => {
-    const settings = useAppStore(selectSettings);
-    const advanceSimulation = useAppStore(state => state.advanceSimulation);
-    const intervalRef = useRef<number | null>(null);
+    const activePlantIds = useAppStore(state => 
+        Object.values(state.plants)
+              .filter((p): p is Plant => !!p && (p as Plant).stage !== PlantStage.Finished)
+              .map(p => p.id)
+    );
 
-    // Time-based simulation logic
+    // Using join(',') creates a stable key for the dependency array,
+    // ensuring the effect only runs when the list of active plants changes.
+    const activePlantIdsKey = activePlantIds.join(',');
+    
+    // A ref to store the previous key, allowing comparison to find added/removed plants.
+    const prevActivePlantIdsKeyRef = useRef<string>('');
+
     useEffect(() => {
-        const runSimulation = () => {
-            if (document.hidden) return;
-            advanceSimulation();
-        };
+        // Get the set of IDs from the previous and current state
+        const prevIds = new Set(prevActivePlantIdsKeyRef.current ? prevActivePlantIdsKeyRef.current.split(',').filter(id => id) : []);
+        const currentIds = new Set(activePlantIds);
 
-        const stopInterval = () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-                intervalRef.current = null;
+        // Start simulations for any newly added plants
+        for (const id of currentIds) {
+            if (!prevIds.has(id)) {
+                console.log(`[Simulation Lifecycle] Starting simulation for plant: ${id}`);
+                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+                simulationService.startSimulation(id as string);
             }
-        };
+        }
 
-        const startInterval = () => {
-            stopInterval();
-            if (settings.simulationSettings.autoAdvance) {
-                const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed] || 5;
-                intervalRef.current = window.setInterval(runSimulation, speedInMinutes * 60 * 1000);
+        // Stop simulations for any removed or finished plants
+        for (const id of prevIds) {
+            if (!currentIds.has(id)) {
+                console.log(`[Simulation Lifecycle] Stopping simulation for plant: ${id}`);
+                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+                simulationService.stopSimulation(id as string);
             }
-        };
+        }
 
-        const handleVisibilityChange = () => {
-            if (!document.hidden) {
-                // When tab becomes visible, run a catch-up simulation immediately
-                advanceSimulation();
-                // Then restart the interval
-                startInterval();
-            } else {
-                // When tab is hidden, clear the interval to save resources
-                stopInterval();
-            }
-        };
+        // Update the ref with the current key for the next render's comparison
+        prevActivePlantIdsKeyRef.current = activePlantIdsKey;
 
-        // Run once on load to catch up
-        advanceSimulation();
-        startInterval();
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
+        // The main cleanup function for when the component unmounts.
+        // Although this component is unlikely to unmount in this app,
+        // this is a robust pattern for managing side effects.
         return () => {
-            stopInterval();
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            console.log(`[Simulation Lifecycle] Unmounting SimulationManager. Stopping all simulations.`);
+            simulationService.stopAllSimulations();
         };
-    }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, advanceSimulation]);
+    }, [activePlantIdsKey, activePlantIds]); // Depend on both the key and the array for stability and access to the latest data
 
-    return null; // This component renders nothing
+    return null; // This component does not render any UI
 };

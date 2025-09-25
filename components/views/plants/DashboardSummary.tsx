@@ -8,13 +8,12 @@ import { useAppStore } from '@/stores/useAppStore';
 import { selectGardenHealthMetrics } from '@/stores/selectors';
 
 interface GardenVitalsProps { 
-    plants: Plant[]; // Kept for checking if any plants exist for button disabling
+    plants: Plant[];
     openTasksCount: number;
     onWaterAll: () => number;
-    onAdvanceDay: () => void;
 }
 
-export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll, onAdvanceDay }) => {
+export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll }) => {
     const { t } = useTranslations();
     const { activePlantsCount, gardenHealth, avgTemp, avgHumidity } = useAppStore(selectGardenHealthMetrics);
     const addNotification = useAppStore(state => state.addNotification);
@@ -90,13 +89,9 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
                 </div>
             </div>
              <div className="mt-4 pt-4 border-t border-slate-700 flex flex-col sm:flex-row gap-2">
-                <Button onClick={handleWaterAllClick} disabled={plants.length === 0} className="flex-1" variant="secondary">
+                <Button onClick={handleWaterAllClick} disabled={plants.length === 0} className="w-full" variant="secondary">
                     <PhosphorIcons.Drop className="inline w-5 h-5 mr-1.5"/>
                     {t('plantsView.summary.waterAll')}
-                </Button>
-                <Button onClick={onAdvanceDay} disabled={plants.length === 0} className="flex-1">
-                    <PhosphorIcons.ArrowClockwise className="inline w-5 h-5 mr-1.5"/>
-                    {t('plantsView.summary.simulateNextDay')}
                 </Button>
             </div>
         </Card>

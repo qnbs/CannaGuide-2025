@@ -154,7 +154,6 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
             return;
         }
 
-        // FIX: Correctly call the export service with a generated filename. The 'exportSetups' function was missing.
         const filename = `CannaGuide_Setups_${new Date().toISOString().slice(0, 10)}`;
         exportService.exportSetups(setupsToExport, format, filename, t);
         addNotification(t('equipmentView.savedSetups.exportSuccess', { name: `${setupsToExport.length} setups` }), 'success');

@@ -63,6 +63,17 @@ export const strainsView = {
     medium: 'Medium',
     hard: 'Hard',
   },
+  strainDetail: {
+    tabs: {
+        overview: 'Overview',
+        agronomics: 'Agronomics',
+        profile: 'Profile',
+        notes: 'Notes',
+        aiTips: 'AI Tips'
+    },
+    similarStrains: 'Similar Strains',
+    noSimilar: 'No similar strains found.',
+  },
   strainModal: {
     agronomicData: 'Agronomic Data',
     difficulty: 'Difficulty',
@@ -164,6 +175,8 @@ export const strainsView = {
     strainsNotFound: 'The strains required for this export could not be found.',
     downloadingExport: 'Downloading export "{name}.{format}"...',
     deleteConfirm: 'Are you sure you want to delete this export?',
+    deleteConfirmPlural: 'Are you sure you want to delete {count} exports?',
+    deleteSuccessPlural: '{count} exports have been deleted.',
     exportRemoved: 'Export removed.',
     updateExportSuccess: 'Export "{name}" updated successfully.',
     strainsUnit: 'Strain(s)',
@@ -182,7 +195,9 @@ export const strainsView = {
     saved: 'Saved',
     updateSuccess: 'Tip updated!',
     deleteConfirm: 'Are you sure you want to delete this tip?',
+    deleteConfirmPlural: 'Are you sure you want to delete {count} tips?',
     deleteSuccess: 'Tip deleted.',
+    deleteSuccessPlural: '{count} tips have been deleted.',
     noTips: {
       title: 'No Saved Tips',
       subtitle: 'Your saved AI tips will appear here.',
@@ -229,7 +244,7 @@ export const strainsView = {
   },
   bulkActions: {
     addToFavorites: 'Add to Favorites',
-    removeFromFavorites: 'Remove Favs',
+    removeFromFavorites: 'Remove from Favorites',
     addedToFavorites: '{count} strains added to favorites.',
     removedFromFavorites: '{count} strains removed from favorites.',
   },

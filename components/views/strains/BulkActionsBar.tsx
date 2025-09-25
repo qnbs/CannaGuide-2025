@@ -7,9 +7,10 @@ import { useOutsideClick } from '@/hooks/useOutsideClick';
 interface BulkActionsBarProps {
     selectedCount: number;
     onClearSelection: () => void;
-    onExport: () => void;
-    onAddToFavorites: () => void;
-    onRemoveFromFavorites: () => void;
+    onExport?: () => void;
+    onAddToFavorites?: () => void;
+    onRemoveFromFavorites?: () => void;
+    onDelete?: () => void;
 }
 
 export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
@@ -18,6 +19,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
     onExport,
     onAddToFavorites,
     onRemoveFromFavorites,
+    onDelete,
 }) => {
     const { t } = useTranslations();
     const [isFavMenuOpen, setIsFavMenuOpen] = useState(false);
@@ -33,28 +35,39 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                     <span className="font-semibold text-slate-100">{t('strainsView.selectedCount', { count: selectedCount })}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <div className="relative" ref={favMenuRef}>
-                        <Button size="sm" variant="secondary" onClick={() => setIsFavMenuOpen(!isFavMenuOpen)}>
-                            <PhosphorIcons.Heart className="w-4 h-4 mr-1.5" />
-                            <span className="hidden sm:inline">Manage Favorites</span>
-                            <PhosphorIcons.ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isFavMenuOpen ? 'rotate-180' : ''}`} />
-                        </Button>
-                        {isFavMenuOpen && (
-                            <div className="absolute bottom-full right-0 mb-2 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-lg py-1 animate-fade-in">
-                                <button onClick={() => { onAddToFavorites(); setIsFavMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 hover:bg-slate-700">
-                                    <PhosphorIcons.Heart className="w-4 h-4 text-primary-400" /> {t('strainsView.bulkActions.addToFavorites')}
-                                </button>
-                                <button onClick={() => { onRemoveFromFavorites(); setIsFavMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 hover:bg-slate-700">
-                                     <PhosphorIcons.Heart weight="fill" className="w-4 h-4 text-red-400" /> {t('strainsView.bulkActions.removeFromFavorites')}
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                    {onAddToFavorites && onRemoveFromFavorites && (
+                        <div className="relative" ref={favMenuRef}>
+                            <Button size="sm" variant="secondary" onClick={() => setIsFavMenuOpen(!isFavMenuOpen)}>
+                                <PhosphorIcons.Heart className="w-4 h-4 mr-1.5" />
+                                <span className="hidden sm:inline">Manage Favorites</span>
+                                <PhosphorIcons.ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isFavMenuOpen ? 'rotate-180' : ''}`} />
+                            </Button>
+                            {isFavMenuOpen && (
+                                <div className="absolute bottom-full right-0 mb-2 w-56 bg-slate-800 border border-slate-700 rounded-md shadow-lg py-1 animate-fade-in">
+                                    <button onClick={() => { onAddToFavorites(); setIsFavMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 hover:bg-slate-700">
+                                        <PhosphorIcons.Heart className="w-4 h-4 text-primary-400" /> {t('strainsView.bulkActions.addToFavorites')}
+                                    </button>
+                                    <button onClick={() => { onRemoveFromFavorites(); setIsFavMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-sm flex items-center gap-2 hover:bg-slate-700">
+                                         <PhosphorIcons.Heart weight="fill" className="w-4 h-4 text-red-400" /> {t('strainsView.bulkActions.removeFromFavorites')}
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                     
-                    <Button size="sm" variant="secondary" onClick={onExport}>
-                        <PhosphorIcons.DownloadSimple className="w-4 h-4 mr-1.5" />
-                        <span className="hidden sm:inline">{t('common.export')}</span>
-                    </Button>
+                    {onExport && (
+                        <Button size="sm" variant="secondary" onClick={onExport}>
+                            <PhosphorIcons.DownloadSimple className="w-4 h-4 mr-1.5" />
+                            <span className="hidden sm:inline">{t('common.export')}</span>
+                        </Button>
+                    )}
+
+                    {onDelete && (
+                         <Button size="sm" variant="danger" onClick={onDelete}>
+                            <PhosphorIcons.TrashSimple className="w-4 h-4 mr-1.5" />
+                            <span className="hidden sm:inline">{t('common.delete')}</span>
+                        </Button>
+                    )}
                 </div>
             </div>
         </div>

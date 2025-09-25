@@ -9,6 +9,7 @@ interface StrainListProps {
     strains: Strain[];
     selectedIds: Set<string>;
     onToggleSelection: (id: string) => void;
+    onSelect: (strain: Strain) => void;
     onToggleAll: () => void;
     visibleColumns: AppSettings['strainsViewSettings']['visibleColumns'];
     isUserStrain: (id: string) => boolean;
@@ -24,7 +25,8 @@ export const StrainList: React.FC<StrainListProps> = ({
     onToggleAll, 
     sort, 
     handleSort, 
-    onToggleSelection, 
+    onToggleSelection,
+    onSelect,
     visibleColumns, 
     isUserStrain, 
     onDelete,
@@ -56,6 +58,7 @@ export const StrainList: React.FC<StrainListProps> = ({
                     strain={strain}
                     isSelected={selectedIds.has(strain.id)}
                     onToggleSelection={onToggleSelection}
+                    onSelect={onSelect}
                     visibleColumns={visibleColumns}
                     isUserStrain={isUserStrain(strain.id)}
                     onDelete={onDelete}

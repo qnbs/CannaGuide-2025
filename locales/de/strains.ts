@@ -63,6 +63,17 @@ export const strainsView = {
     medium: 'Mittel',
     hard: 'Schwer',
   },
+  strainDetail: {
+    tabs: {
+        overview: 'Übersicht',
+        agronomics: 'Agronomie',
+        profile: 'Profil',
+        notes: 'Notizen',
+        aiTips: 'KI-Tipps'
+    },
+    similarStrains: 'Ähnliche Sorten',
+    noSimilar: 'Keine ähnlichen Sorten gefunden.',
+  },
   strainModal: {
     agronomicData: 'Agronomische Daten',
     difficulty: 'Schwierigkeit',
@@ -164,6 +175,8 @@ export const strainsView = {
     strainsNotFound: 'Die für diesen Export benötigten Sorten konnten nicht gefunden werden.',
     downloadingExport: 'Export "{name}.{format}" wird heruntergeladen...',
     deleteConfirm: 'Möchtest du diesen Export wirklich löschen?',
+    deleteConfirmPlural: 'Möchtest du wirklich {count} Exporte löschen?',
+    deleteSuccessPlural: '{count} Exporte wurden gelöscht.',
     exportRemoved: 'Export entfernt.',
     updateExportSuccess: 'Export "{name}" erfolgreich aktualisiert.',
     strainsUnit: 'Sorte(n)',
@@ -182,7 +195,9 @@ export const strainsView = {
     saved: 'Gespeichert',
     updateSuccess: 'Tipp aktualisiert!',
     deleteConfirm: 'Möchtest du diesen Tipp wirklich löschen?',
+    deleteConfirmPlural: 'Möchtest du wirklich {count} Tipps löschen?',
     deleteSuccess: 'Tipp gelöscht.',
+    deleteSuccessPlural: '{count} Tipps wurden gelöscht.',
     noTips: {
       title: 'Keine gespeicherten Tipps',
       subtitle: 'Deine gespeicherten KI-Tipps erscheinen hier.',
@@ -229,8 +244,8 @@ export const strainsView = {
   },
   bulkActions: {
     addToFavorites: 'Zu Favoriten',
-    removeFromFavorites: 'Favs entfernen',
+    removeFromFavorites: 'Von Favoriten entfernen',
     addedToFavorites: '{count} Sorten zu Favoriten hinzugefügt.',
-    removedFromFavorites: '{count} Sorten von Favoriten entfernt.',
+    removedFromFavorites: '{count} Sorten aus Favoriten entfernt.',
   },
 };

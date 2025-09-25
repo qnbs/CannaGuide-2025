@@ -78,6 +78,8 @@ export const plantsView = {
         observation: 'Observation',
         system: 'System',
         photo: 'Photo',
+        pestControl: 'Pest Control',
+        environment: 'Environment',
     },
     journalNoEntries: 'No journal entries for this filter.',
     photosNoEntries: 'No photos added to the journal yet.',

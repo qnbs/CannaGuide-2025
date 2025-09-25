@@ -20,7 +20,7 @@ const strainToFormValues = (strain: Partial<Strain>) => ({
     type: strain.type || 'Hybrid',
     typeDetails: strain.typeDetails || '',
     genetics: strain.genetics || '',
-    isAutoflower: strain.geneticsDetails?.isAutoflower || false,
+    isAutoflower: strain.floweringType === 'Autoflower',
     thc: strain.thc || 20,
     cbd: strain.cbd || 1,
     thcRange: strain.thcRange || '',
@@ -116,6 +116,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
             type: values.type as StrainType,
             typeDetails: values.typeDetails,
             genetics: values.genetics,
+            // FIX: Add missing floweringType property to conform to the Strain type.
+            floweringType: values.isAutoflower ? 'Autoflower' : 'Photoperiod',
             geneticsDetails: {
                 isAutoflower: values.isAutoflower,
             },

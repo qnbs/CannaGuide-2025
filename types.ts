@@ -44,9 +44,8 @@ export interface Strain {
     type: StrainType;
     typeDetails?: string;
     genetics?: string;
-    geneticsDetails: {
-        isAutoflower: boolean;
-    };
+    geneticsDetails?: { isAutoflower: boolean };
+    floweringType: 'Photoperiod' | 'Autoflower';
     thc: number;
     cbd: number;
     thcRange?: string;
@@ -80,14 +79,30 @@ export interface PlantEnvironment {
     humidity: number; // %
 }
 
+export type PlantIssueName = 
+    | 'Overwatering' 
+    | 'Underwatering' 
+    | 'NutrientBurn' 
+    | 'NutrientLockout' 
+    | 'EcStress' 
+    | 'SpiderMites' 
+    | 'PowderyMildew' 
+    | 'phTooLow' 
+    | 'phTooHigh' 
+    | 'tempTooHigh' 
+    | 'tempTooLow' 
+    | 'humidityTooHigh' 
+    | 'humidityTooLow';
+
 export interface PlantProblem {
-    type: string; // e.g., 'Overwatering', 'NutrientBurn'
+    type: PlantIssueName;
     status: 'active' | 'resolved';
     detectedAt: number; // timestamp
     resolvedAt?: number;
+    severity: 'Low' | 'Medium' | 'High';
 }
 
-export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'SYSTEM' | 'PHOTO';
+export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'SYSTEM' | 'PHOTO' | 'PEST_CONTROL' | 'ENVIRONMENT';
 
 export interface JournalEntry {
     id: string;
@@ -164,6 +179,10 @@ export interface Plant {
     daysOn1212: number;
     daysInFlowering: number;
     structuralModel: PlantShoot;
+    resistanceBuffs?: {
+        pest?: { ticks: number };
+        fungus?: { ticks: number };
+    };
 }
 
 
@@ -360,4 +379,4 @@ export interface SavedStrainTip extends AIResponse {
 
 export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'SCROG' | 'Defoliation' | 'SuperCropping';
 
-export type KnowledgeProgress = Record<string, string[]>; // sectionId: [itemId, itemId, ...]
+export type KnowledgeProgress = Record<string, string[]>; // sectionId: [itemId, itemId, ...]]

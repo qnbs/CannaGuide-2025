@@ -78,6 +78,8 @@ export const plantsView = {
         observation: 'Beobachtung',
         system: 'System',
         photo: 'Foto',
+        pestControl: 'Schädlingsbekämpfung',
+        environment: 'Umgebung',
     },
     journalNoEntries: 'Keine Journal-Einträge für diesen Filter.',
     photosNoEntries: 'Noch keine Fotos im Journal hinzugefügt.',

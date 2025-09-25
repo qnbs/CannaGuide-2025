@@ -7,6 +7,7 @@ import { exportService } from '@/services/exportService';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
+import { BulkActionsBar } from './BulkActionsBar';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -20,6 +21,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     const addNotification = useAppStore(state => state.addNotification);
     const { t } = useTranslations();
     const [editingExport, setEditingExport] = useState<SavedExport | null>(null);
+    const [selectedIds, setSelectedIds] = useState(new Set<string>());
 
     const handleRedownload = (savedExport: SavedExport) => {
         const strainsToExport = allStrains.filter(s => savedExport.strainIds.includes(s.id));
@@ -30,104 +32,104 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
 
         const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt|xml)$/, '');
 
-        // FIX: Call the unified exportStrains method instead of non-existent specific methods.
         exportService.exportStrains(strainsToExport, savedExport.format, fileNameWithoutExt, t);
         
         addNotification(t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), 'success');
     };
     
     const handleDelete = (id: string) => {
-        if(window.confirm(t('strainsView.exportsManager.deleteConfirm'))) {
+        if (window.confirm(t('strainsView.exportsManager.deleteConfirm'))) {
             deleteExport(id);
             addNotification(t('strainsView.exportsManager.exportRemoved'), 'info');
         }
     };
 
-    const handleUpdateSave = (updated: { id: string, title: string, content: string }) => {
-        if (!editingExport) return;
-        const updatedExportData: SavedExport = {
-            ...editingExport,
-            name: updated.title,
-            notes: updated.content
-        };
-        updateExport(updatedExportData);
+    const handleBulkDelete = () => {
+         if (window.confirm(t('strainsView.exportsManager.deleteConfirmPlural', { count: selectedIds.size }))) {
+            selectedIds.forEach(id => deleteExport(id));
+            addNotification(t('strainsView.exportsManager.deleteSuccessPlural', { count: selectedIds.size }), 'success');
+            setSelectedIds(new Set());
+        }
+    };
+
+    const handleUpdate = (updated: SavedExport) => {
+        updateExport(updated);
+        addNotification(t('strainsView.exportsManager.updateExportSuccess', { name: updated.name }), 'success');
         setEditingExport(null);
-        addNotification(t('strainsView.exportsManager.updateExportSuccess', { name: updated.title }), 'success');
+    };
+    
+    const handleToggleSelection = (id: string) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+            return newSet;
+        });
     };
 
-    // FIX: Added missing 'xml' format icon as required by the ExportFormat type.
-    const formatIcons: Record<ExportFormat, React.ReactNode> = {
-        json: <PhosphorIcons.BracketsCurly />,
-        csv: <PhosphorIcons.FileCsv />,
-        pdf: <PhosphorIcons.FilePdf />,
-        txt: <PhosphorIcons.TextBolder />,
-        xml: <PhosphorIcons.CommandLine />,
+    const handleToggleAll = () => {
+        if (selectedIds.size === sortedExports.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(sortedExports.map(e => e.id)));
+        }
     };
-
+    
     const sortedExports = [...savedExports].sort((a, b) => b.createdAt - a.createdAt);
 
     return (
         <div className="mt-4">
-            {editingExport && (
-                <EditResponseModal
-                    response={{
-                        id: editingExport.id,
-                        title: editingExport.name,
-                        content: editingExport.notes || ''
-                    }}
-                    onClose={() => setEditingExport(null)}
-                    onSave={handleUpdateSave}
-                    title={t('strainsView.exportsManager.editExportTitle')}
+            {editingExport && <EditResponseModal response={{ ...editingExport, content: editingExport.notes || '' }} onClose={() => setEditingExport(null)} onSave={(updated) => handleUpdate({ ...updated, notes: updated.content, strainIds: editingExport.strainIds, count: editingExport.count })} title={t('strainsView.exportsManager.editExportTitle')} />}
+            
+            {selectedIds.size > 0 && (
+                <BulkActionsBar
+                    selectedCount={selectedIds.size}
+                    onClearSelection={() => setSelectedIds(new Set())}
+                    onDelete={handleBulkDelete}
                 />
             )}
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.tabs.exports', { count: savedExports.length })}</h3>
-                <Button onClick={onOpenExportModal}>
-                    <PhosphorIcons.PlusCircle className="w-5 h-5 mr-1" />
-                    {t('strainsView.exportsManager.createExport')}
-                </Button>
-            </div>
-            {sortedExports.length === 0 ? (
-                <Card className="text-center py-10 text-slate-500">
-                    <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                    <h3 className="font-semibold">{t('strainsView.exportsManager.noExports.title')}</h3>
-                    <p className="text-sm">{t('strainsView.exportsManager.noExports.subtitle')}</p>
-                </Card>
-            ) : (
-                <div className="space-y-3">
-                    {sortedExports.map(exp => (
-                        <Card key={exp.id} className="p-3">
-                            <div className="flex items-center justify-between gap-4">
-                                <div className="flex items-center gap-4 min-w-0">
-                                    <div className="text-primary-500 text-3xl flex-shrink-0">{formatIcons[exp.format]}</div>
-                                    <div className="min-w-0">
-                                        <p className="font-bold text-slate-100 truncate">{exp.name}.{exp.format}</p>
-                                        <p className="text-xs text-slate-400">
-                                            {new Date(exp.createdAt).toLocaleString()} | {exp.count} {t('strainsView.exportsManager.strainsUnit')} | {t('strainsView.exportsManager.sourceLabel')}: {exp.source}
-                                        </p>
+            
+            <Card>
+                <div className="flex justify-between items-center mb-4">
+                     <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.tabs.exports', { count: savedExports.length })}</h3>
+                     <Button onClick={onOpenExportModal}><PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />{t('strainsView.exportsManager.createExport')}</Button>
+                </div>
+                 {savedExports.length === 0 ? (
+                    <div className="text-center py-10 text-slate-500">
+                        <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-slate-400 mb-4" />
+                        <h3 className="font-semibold">{t('strainsView.exportsManager.noExports.title')}</h3>
+                        <p className="text-sm">{t('strainsView.exportsManager.noExports.subtitle')}</p>
+                    </div>
+                ) : (
+                     <div className="space-y-3">
+                        <div className="flex items-center gap-3 px-2 text-sm text-slate-400">
+                           <input type="checkbox" checked={selectedIds.size === sortedExports.length && sortedExports.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                            <span>{t('strainsView.selectedCount', { count: selectedIds.size })}</span>
+                        </div>
+                        {sortedExports.map(item => (
+                            <div key={item.id} className={`p-3 rounded-lg flex items-center gap-3 transition-colors ${selectedIds.has(item.id) ? 'bg-primary-900/40' : 'bg-slate-800'}`}>
+                                 <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                                <div className="flex-grow">
+                                    <p className="font-bold text-slate-100">{item.name}</p>
+                                    <div className="text-xs text-slate-400 flex items-center gap-3 flex-wrap">
+                                        <span>{new Date(item.createdAt).toLocaleString()}</span>
+                                        <span className="w-1 h-1 bg-slate-500 rounded-full"></span>
+                                        <span>{t('strainsView.exportsManager.sourceLabel')}: <span className="font-semibold text-slate-300">{item.source}</span></span>
+                                        <span className="w-1 h-1 bg-slate-500 rounded-full"></span>
+                                        <span>{item.count} {t('strainsView.exportsManager.strainsUnit')}</span>
                                     </div>
+                                    {item.notes && <p className="text-sm text-slate-300 italic mt-1">"{item.notes}"</p>}
                                 </div>
-                                <div className="flex items-center gap-2 flex-shrink-0">
-                                    <Button size="sm" variant="secondary" onClick={() => handleRedownload(exp)} aria-label={t('common.downloadAgain')}>
-                                        <PhosphorIcons.DownloadSimple className="w-4 h-4" />
-                                    </Button>
-                                    <Button size="sm" variant="secondary" onClick={() => setEditingExport(exp)} aria-label={t('common.edit')}>
-                                        <PhosphorIcons.PencilSimple className="w-4 h-4" />
-                                    </Button>
-                                    <Button size="sm" variant="danger" onClick={() => handleDelete(exp.id)} className="px-2 py-2" aria-label={t('common.delete')}>
-                                         <PhosphorIcons.TrashSimple className="w-4 h-4" />
-                                    </Button>
+                                <div className="flex items-center gap-2">
+                                     <span className="px-2 py-0.5 text-xs font-semibold bg-slate-700 text-slate-200 rounded-full">{item.format}</span>
+                                     <Button size="sm" variant="secondary" onClick={() => handleRedownload(item)}><PhosphorIcons.DownloadSimple className="w-4 h-4 mr-1"/>{t('common.downloadAgain')}</Button>
+                                     <Button size="sm" variant="secondary" onClick={() => setEditingExport(item)}><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
+                                     <Button size="sm" variant="danger" onClick={() => handleDelete(item.id)}><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
                                 </div>
                             </div>
-                             {exp.notes && (
-                                <div className="mt-3 pt-3 border-t border-slate-700/50 pl-4">
-                                    <p className="text-sm text-slate-300 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: exp.notes }} />
-                                </div>
-                            )}
-                        </Card>
-                    ))}
-                </div>
-            )}
+                        ))}
+                    </div>
+                )}
+            </Card>
         </div>
     );
 };

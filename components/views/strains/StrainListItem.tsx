@@ -12,6 +12,7 @@ interface StrainListItemProps {
     strain: Strain;
     isSelected: boolean;
     onToggleSelection: (id: string) => void;
+    onSelect: (strain: Strain) => void;
     visibleColumns: Record<string, boolean>;
     isUserStrain?: boolean;
     onDelete?: (id: string) => void;
@@ -22,6 +23,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
     strain,
     isSelected,
     onToggleSelection,
+    onSelect,
     visibleColumns,
     isUserStrain = false,
     onDelete,
@@ -54,10 +56,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
         action();
     };
 
-    const handleSelectStrain = () => {
-        window.dispatchEvent(new CustomEvent<Strain>('strainSelected', { detail: strain }));
-    };
-
     const TypeDisplay = () => {
         const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
         const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
@@ -67,11 +65,11 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
 
     return (
         <div
-            onClick={handleSelectStrain}
+            onClick={() => onSelect(strain)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    handleSelectStrain();
+                    onSelect(strain);
                 }
             }}
             role="button"
@@ -112,7 +110,15 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                 </div>
             </div>
             <div className="flex items-center justify-end px-3 py-3">
-                <div className="flex gap-1">
+                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                     <button
+                        onClick={(e) => handleActionClick(e, () => toggleFavorite(strain.id))}
+                        className={`favorite-btn-glow p-1.5 rounded-full text-slate-400 hover:text-primary-400 ${isFav ? 'is-favorite' : ''}`}
+                        aria-label={isFav ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
+                        aria-pressed={isFav}
+                    >
+                        <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className="w-4 h-4" />
+                    </button>
                     <div title={!hasAvailableSlots? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
                         <Button variant="secondary" size="sm" className={`!p-1.5 ${hasAvailableSlots? 'animate-pulse' : ''}`} onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>
                             <PhosphorIcons.Plant className="w-4 h-4" />

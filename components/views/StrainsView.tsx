@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
 import { strainService } from '@/services/strainService';
-import { Strain, StrainType, StrainViewTab } from '@/types';
+import { Strain, StrainType, StrainViewTab, SavedExport, SavedStrainTip, AIResponse } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
 import { StrainToolbar } from './strains/StrainToolbar';
@@ -38,8 +38,9 @@ export const StrainsView: React.FC = () => {
         isAddModalOpen, openAddModal, closeAddModal, isExportModalOpen, openExportModal, closeExportModal,
         userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain,
         favorites, savedExports, deleteExport, updateExport, addExport,
-        savedTips, deleteTip, updateTip,
-        settings, addNotification, addMultipleToFavorites, removeMultipleFromFavorites
+        savedTips, deleteTip, addTip, updateTip,
+        settings, addNotification, addMultipleToFavorites, removeMultipleFromFavorites,
+        selectStrain
     } = useAppStore(state => ({
         activeTab: state.strainsViewTab, setStrainsViewTab: state.setStrainsViewTab,
         setStrainsViewMode: state.setStrainsViewMode, viewMode: state.strainsViewMode,
@@ -56,23 +57,16 @@ export const StrainsView: React.FC = () => {
         favorites: state.favoriteIds, savedExports: state.savedExports,
         deleteExport: state.deleteExport, updateExport: state.updateExport, addExport: state.addExport,
         savedTips: state.savedStrainTips, deleteTip: state.deleteStrainTip,
-        updateTip: state.updateStrainTip,
+        addTip: state.addStrainTip, updateTip: state.updateStrainTip,
         settings: state.settings, addNotification: state.addNotification,
         addMultipleToFavorites: state.addMultipleToFavorites,
         removeMultipleFromFavorites: state.removeMultipleFromFavorites,
+        selectStrain: (strain: Strain) => setSelectedStrain(strain)
     }));
-
-    useEffect(() => {
-        const handleStrainSelect = (event: Event) => {
-            const customEvent = event as CustomEvent<Strain>;
-            setSelectedStrain(customEvent.detail);
-        };
-        window.addEventListener('strainSelected', handleStrainSelect);
-        return () => {
-            window.removeEventListener('strainSelected', handleStrainSelect);
-        };
-    }, []);
-
+    
+    const handleStrainSelect = (strain: Strain) => {
+        setSelectedStrain(strain);
+    };
 
     useEffect(() => {
         setIsLoading(true);
@@ -92,6 +86,19 @@ export const StrainsView: React.FC = () => {
 
     const { filteredStrains, ...filterProps } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+
+    const { allAromas, allTerpenes } = useMemo(() => {
+        const aromaSet = new Set<string>();
+        const terpeneSet = new Set<string>();
+        allStrains.forEach(strain => {
+            strain.aromas?.forEach(a => aromaSet.add(a));
+            strain.dominantTerpenes?.forEach(t => terpeneSet.add(t));
+        });
+        return {
+            allAromas: Array.from(aromaSet).sort(),
+            allTerpenes: Array.from(terpeneSet).sort(),
+        };
+    }, [allStrains]);
 
     const strainsToShow = useMemo(() => filteredStrains.slice(0, visibleCount), [filteredStrains, visibleCount]);
     
@@ -158,9 +165,19 @@ export const StrainsView: React.FC = () => {
     const handleSetTabView = useCallback((id: string) => {
         startTransition(() => { setStrainsViewTab(id as StrainViewTab); });
     }, [setStrainsViewTab]);
+    
+    const handleSaveTip = useCallback((strain: Strain, tip: AIResponse) => {
+        addTip(strain, tip);
+        addNotification(t('strainsView.tips.saveSuccess', {name: strain.name}), 'success');
+    }, [addTip, t, addNotification]);
 
     if (selectedStrain) {
-        return <StrainDetailView strain={selectedStrain} onBack={() => setSelectedStrain(null)} />;
+        return <StrainDetailView 
+            strain={selectedStrain} 
+            onBack={() => setSelectedStrain(null)} 
+            allStrains={allStrains}
+            onSaveTip={handleSaveTip}
+        />;
     }
 
     const tabs = [
@@ -198,6 +215,7 @@ export const StrainsView: React.FC = () => {
                 strains={strainsToShow} 
                 selectedIds={selectedIds}
                 onToggleSelection={toggleStrainSelection}
+                onSelect={handleStrainSelect}
                 onToggleAll={handleToggleAll}
                 sort={filterProps.sort}
                 handleSort={filterProps.handleSort}
@@ -209,6 +227,9 @@ export const StrainsView: React.FC = () => {
         ) : (
             <StrainGrid 
                 strains={strainsToShow} 
+                onSelect={handleStrainSelect}
+                selectedIds={selectedIds}
+                onToggleSelection={toggleStrainSelection}
                 isUserStrain={isUserStrain} 
                 onDelete={handleDeleteStrain}
                 isPending={isPending}
@@ -235,7 +256,7 @@ export const StrainsView: React.FC = () => {
         <div className="space-y-4 animate-fade-in">
             <AddStrainModal isOpen={isAddModalOpen} onClose={closeAddModal} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={useAppStore.getState().strainToEdit} />
             <DataExportModal isOpen={isExportModalOpen} onClose={closeExportModal} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIds.size} totalCount={filteredStrains.length} />
-            <FilterDrawer isOpen={isFilterDrawerOpen} onClose={() => setIsFilterDrawerOpen(false)} onApply={() => setIsFilterDrawerOpen(false)} onReset={filterProps.resetAllFilters} tempFilterState={filterProps.advancedFilters} setTempFilterState={filterProps.setAdvancedFilters} allAromas={[]} allTerpenes={[]} count={filteredStrains.length} />
+            <FilterDrawer isOpen={isFilterDrawerOpen} onClose={() => setIsFilterDrawerOpen(false)} onApply={() => setIsFilterDrawerOpen(false)} onReset={filterProps.resetAllFilters} tempFilterState={filterProps.advancedFilters} setTempFilterState={filterProps.setAdvancedFilters} allAromas={allAromas} allTerpenes={allTerpenes} count={filteredStrains.length} />
             
             <Card>
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={handleSetTabView} />
@@ -262,7 +283,7 @@ export const StrainsView: React.FC = () => {
                 </Card>
             )}
 
-            {selectedIds.size > 0 && (
+            {selectedIds.size > 0 && showToolbar && (
                 <BulkActionsBar
                     selectedCount={selectedIds.size}
                     onClearSelection={clearStrainSelection}

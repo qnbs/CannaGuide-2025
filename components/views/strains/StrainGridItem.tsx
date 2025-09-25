@@ -10,6 +10,9 @@ import { selectHasAvailableSlots } from '@/stores/selectors';
 
 interface StrainGridItemProps {
     strain: Strain;
+    onSelect: (strain: Strain) => void;
+    isSelected: boolean;
+    onToggleSelection: (id: string) => void;
     isUserStrain?: boolean;
     onDelete?: (id: string) => void;
     index: number;
@@ -17,6 +20,9 @@ interface StrainGridItemProps {
 
 const StrainGridItem: React.FC<StrainGridItemProps> = ({
     strain,
+    onSelect,
+    isSelected,
+    onToggleSelection,
     isUserStrain = false,
     onDelete,
     index,
@@ -44,25 +50,34 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({
         action();
     };
 
-    const handleSelectStrain = () => {
-        window.dispatchEvent(new CustomEvent<Strain>('strainSelected', { detail: strain }));
-    };
-
     return (
         <Card
-            className="flex flex-col h-full cursor-pointer group relative hover:border-primary-500/50 transition-all p-3 animate-fade-in-stagger"
+            className={`flex flex-col h-full cursor-pointer group relative transition-all p-3 animate-fade-in-stagger ${isSelected ? 'border-primary-500/80' : 'border-transparent'}`}
             style={{ animationDelay: `${Math.min(index, 10) * 20}ms` }}
-            onClick={handleSelectStrain}
+            onClick={() => onSelect(strain)}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    handleSelectStrain();
+                    onSelect(strain);
                 }
             }}
             role="button"
             tabIndex={0}
             aria-label={`View details for ${strain.name}`}
         >
+            <div
+                className={`absolute top-2 left-2 z-10 transition-opacity duration-200 ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onToggleSelection(strain.id)}
+                    className="h-5 w-5 rounded border-slate-500 bg-slate-800/80 text-primary-500 focus:ring-primary-500"
+                    aria-label={`Select ${strain.name}`}
+                />
+            </div>
+
             <div className="absolute top-2 right-2 flex gap-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                 {isUserStrain && onDelete && (
                     <div className="flex gap-1">

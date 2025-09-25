@@ -59,7 +59,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
                                         {Object.entries(entry.details).map(([key, value]) => value && !['imageUrl', 'imageId'].includes(key) && `${key}: ${value}`).filter(Boolean).join(' | ')}
                                     </p>
                                 )}
-                                 <p className="text-xs text-slate-500 mt-1">{new Date(entry.timestamp).toLocaleString()}</p>
+                                 {/* FIX: Changed 'entry.timestamp' to 'entry.createdAt' to correctly access the date property of the JournalEntry type. */}
+                                 <p className="text-xs text-slate-500 mt-1">{new Date(entry.createdAt).toLocaleString()}</p>
                             </div>
                         </li>
                     ))

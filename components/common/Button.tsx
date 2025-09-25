@@ -1,5 +1,6 @@
 import React from 'react';
 
+// Define own props to be used in the component
 type ButtonOwnProps<E extends React.ElementType> = {
     children?: React.ReactNode;
     variant?: 'primary' | 'secondary' | 'danger';
@@ -8,10 +9,12 @@ type ButtonOwnProps<E extends React.ElementType> = {
     className?: string;
 }
 
+// Combine own props with all possible props of the given element type, omitting duplicates
 type ButtonProps<E extends React.ElementType> = ButtonOwnProps<E> & Omit<React.ComponentProps<E>, keyof ButtonOwnProps<E>>;
 
 const defaultElement = 'button';
 
+// Use a generic E that extends React.ElementType, with a default of 'button'
 export const Button = <E extends React.ElementType = typeof defaultElement>({
     children,
     className,
@@ -20,10 +23,11 @@ export const Button = <E extends React.ElementType = typeof defaultElement>({
     as,
     ...props
 }: ButtonProps<E>) => {
-    // Using `any` here to resolve a complex TypeScript generic inference issue
-    // with polymorphic components. This allows `as` prop to work with different
-    // element types (like 'label' or other components) without causing type errors
-    // in various call sites across the app.
+    // The component to render is either the one passed in `as` or the default
+    // FIX: The type of `Component` can be a string (like 'button' or 'label'), which TypeScript's
+    // JSX checker doesn't directly recognize as a valid component signature when used as a variable.
+    // Casting it to `any` is a common and accepted workaround for this specific scenario with
+    // polymorphic components, allowing it to compile correctly without sacrificing type safety on the props.
     const Component: any = as || defaultElement;
 
     const baseClasses = "rounded-lg font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:saturate-50";

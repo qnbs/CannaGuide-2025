@@ -60,7 +60,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
         json: <PhosphorIcons.BracketsCurly />,
         csv: <PhosphorIcons.FileCsv />,
         pdf: <PhosphorIcons.FilePdf />,
-        txt: <PhosphorIcons.BookOpenText />,
+        txt: <PhosphorIcons.TextBolder />,
         xml: <PhosphorIcons.CommandLine />,
     };
 

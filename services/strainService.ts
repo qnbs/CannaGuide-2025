@@ -1,7 +1,5 @@
-
-
 import { Strain } from '@/types';
-import { allStrainsData } from '@/data/strains/index';
+import { allStrainsData } from '@/data/strains';
 import { dbService } from '@/services/dbService';
 
 type TFunction = (key: string, replacements?: Record<string, string | number>) => any;

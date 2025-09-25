@@ -19,7 +19,8 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     return (
         <Card
             onClick={onStart}
-            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all"
+            // FIX: Add card-interactive-glow for visual feedback on hover.
+            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all card-interactive-glow"
         >
             <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
             <h3 className="font-semibold text-slate-300">{t('plantsView.emptySlot.title')}</h3>

@@ -14,6 +14,7 @@ export const defaultSettings: AppSettings = {
   defaultExportSettings: { source: 'filtered', format: 'pdf' }, lastBackupTimestamp: undefined,
   accessibility: { reducedMotion: false, dyslexiaFont: false }, uiDensity: 'comfortable',
   quietHours: { enabled: false, start: '22:00', end: '08:00' },
+  tts: { enabled: true, rate: 1, pitch: 1, voiceName: null }
 };
 
 export interface SettingsSlice {

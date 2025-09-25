@@ -24,7 +24,6 @@ export const strains: Strain[] = [
         aromas: ['Sweet', 'Skunk', 'Earthy', 'Spicy'],
         dominantTerpenes: ['Myrcene', 'Caryophyllene'],
     },
-    // FIX: Added missing 'floweringTime', 'agronomic' and 'description' properties to satisfy the Strain type.
     {
         id: 'bacio-gelato-gelato-41',
         name: 'Bacio Gelato (Gelato #41)',
@@ -267,6 +266,7 @@ export const strains: Strain[] = [
         floweringTime: 9,
         floweringTimeRange: '8-10',
         genetics: 'Thin Mint GSC x Blueberry',
+        description: "Berry Gelato is an indica-dominant hybrid that combines the legendary genetics of Thin Mint GSC (a key part of the Gelato lineage) and the classic Blueberry. The result is a strain with a delicious flavor profile of sweet, fruity berries and a creamy, dessert-like finish. The effects typically begin with a happy and uplifting cerebral rush that melts away stress, which is gradually followed by a deeply relaxing and calming body high that soothes muscles without being completely sedating.",
         agronomic: {
             difficulty: 'Medium',
             yield: 'Medium',

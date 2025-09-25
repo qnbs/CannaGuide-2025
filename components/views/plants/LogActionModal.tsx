@@ -21,7 +21,8 @@ interface LogActionModalProps {
     plant: Plant;
     modalState: ModalState;
     setModalState: (state: ModalState | null) => void;
-    onAddJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'timestamp'>) => void;
+    // FIX: Changed Omit key from 'timestamp' to 'createdAt' to match JournalEntry type and slice definition.
+    onAddJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
 }
 
 // --- Reusable Form Components ---
@@ -159,7 +160,8 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
             case 'photo':
                 if (!imagePreview) return;
                 const imageId = `img-${Date.now()}`;
-                const imageData: StoredImageData = { id: imageId, plantId: plant.id, timestamp: Date.now(), data: imagePreview };
+                // FIX: Changed 'timestamp' to 'createdAt' to match the StoredImageData interface.
+                const imageData: StoredImageData = { id: imageId, plantId: plant.id, createdAt: Date.now(), data: imagePreview };
                 dbService.addImage(imageData);
                 details = { imageId, imageUrl: imagePreview, photoCategory: category };
                 finalNotes = finalNotes || t('plantsView.detailedView.journalFilters.photo');

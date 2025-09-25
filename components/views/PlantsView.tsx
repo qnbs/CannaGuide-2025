@@ -118,7 +118,6 @@ export const PlantsView: React.FC = () => {
                     plants={activePlants} 
                     openTasksCount={allTasks.length}
                     onWaterAll={waterAllPlants}
-                    // FIX: Pass the `onAdvanceDay` prop to `GardenVitals` to satisfy its props interface.
                     onAdvanceDay={advanceDay}
                 />
                 <TasksAndWarnings tasks={allTasks} problems={allProblems} />

@@ -1,4 +1,4 @@
-import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, JournalEntryType, TrainingType, Task, PlantProblem } from '@/types';
+import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, JournalEntryType, TrainingType, Task, PlantProblem, PlantSubstrate } from '@/types';
 // FIX: Import AppState to resolve type errors in produce() callbacks.
 import { StoreSet, StoreGet, TFunction, AppState } from '../useAppStore';
 import { produce } from 'immer';
@@ -6,32 +6,77 @@ import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 
 const PLANT_SLOTS = 3;
 
+// FIX: Overhauled createInitialPlant to provide a complete and correctly typed Plant object.
 const createInitialPlant = (strain: Strain, setup: GrowSetup, name: string): Plant => {
-    // A simplified structural model to start with
-    const initialStructuralModel = {
-        id: `stem-${Date.now()}`,
-        type: 'stem' as 'stem',
-        height: 1,
-        nodes: [],
+    const initialSubstrate: PlantSubstrate = {
+        type: setup.medium,
+        volumeLiters: setup.potSize,
+        ph: 6.5,
+        ec: 0.3,
+        moisture: 100,
+        microbeHealth: 100,
+        runoff: { ph: 6.5, ec: 0.3 },
     };
-    const initialVitals = { ph: 6.5, ec: 0.3, substrateMoisture: 100 };
+
     return {
         id: `plant-${Date.now()}`,
-        name: name,
+        name,
         strain,
-        age: 0, // days
+        age: 0,
         stage: PlantStage.Seed,
         health: 100,
-        height: 1, // cm
+        height: 1,
+        biomass: 1,
         stressLevel: 0,
-        vitals: initialVitals,
-        environment: { temperature: setup.temperature, humidity: setup.humidity },
+        vitals: {
+            transpirationRate: 0.1,
+            photosynthesisRate: 0.1,
+        },
+        substrate: initialSubstrate,
+        environment: {
+            ambientTemperature: setup.temperature - 2,
+            ambientHumidity: setup.humidity + 5,
+            co2Level: 400,
+            airExchangeRate: 150,
+            internalTemperature: setup.temperature,
+            internalHumidity: setup.humidity,
+        },
+        equipment: {
+            light: { type: setup.lightType, wattage: setup.wattage, isOn: true },
+            exhaustFan: { cfm: 100, speed: 1, isOn: true },
+        },
+        waterSource: {
+            type: 'TapWater',
+            basePh: 7.0,
+            baseEc: 0.4
+        },
+        internalClock: 0,
+        hormoneLevels: { florigen: 0 },
+        geneticModifiers: {
+            growthSpeedFactor: 1,
+            nutrientDemandFactor: 1,
+            pestResistanceFactor: 1,
+            stressToleranceFactor: 1,
+        },
+        currentChemicals: { thc: 0, cbd: 0, terpenes: {} },
+        rootSystem: { rootMass: 0.1, rootHealth: 100 },
         problems: [],
         journal: [],
-        history: [{ day: 0, stage: PlantStage.Seed, height: 1, stressLevel: 0, vitals: initialVitals }],
-        growSetup: setup,
+        history: [{
+            day: 0,
+            stage: PlantStage.Seed,
+            height: 1,
+            stressLevel: 0,
+            substrate: { ph: initialSubstrate.ph, ec: initialSubstrate.ec, moisture: initialSubstrate.moisture },
+        }],
         tasks: [],
-        structuralModel: initialStructuralModel
+        structuralModel: {
+            id: `stem-${Date.now()}`,
+            length: 1,
+            nodes: [],
+            isMainStem: true,
+            angle: 0
+        },
     };
 };
 
@@ -104,8 +149,8 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
                     }
                 }
                 
-                // Vitals change
-                plant.vitals.substrateMoisture = Math.max(0, plant.vitals.substrateMoisture - (currentStageDetails.dailyWaterRequirement / 2));
+                // FIX: Use plant.substrate.moisture instead of plant.vitals.substrateMoisture
+                plant.substrate.moisture = Math.max(0, plant.substrate.moisture - (currentStageDetails.dailyWaterRequirement / 2));
                 
                 // Growth
                 plant.height += currentStageDetails.growthRate;
@@ -116,11 +161,13 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
                     stage: plant.stage,
                     height: plant.height,
                     stressLevel: plant.stressLevel,
-                    vitals: { ...plant.vitals },
+                    // FIX: Use substrate properties for history, not vitals
+                    substrate: { ...plant.substrate },
                 });
 
                  // Simple task generation
-                 if (plant.vitals.substrateMoisture < 40 && !plant.tasks.some(t => t.title.includes('watering') && !t.isCompleted)) {
+                 // FIX: Use plant.substrate.moisture instead of plant.vitals.substrateMoisture
+                 if (plant.substrate.moisture < 40 && !plant.tasks.some(t => t.title.includes('watering') && !t.isCompleted)) {
                     plant.tasks.push({ id: `task-${Date.now()}`, title: 'plantsView.tasks.needsWatering', description: 'plantsView.tasks.needsWateringDesc', isCompleted: false, createdAt: Date.now(), priority: 'high', source: 'system' });
                 }
             });
@@ -130,9 +177,9 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         set(produce((draft: AppState) => {
             const plant = draft.plants[plantId];
             if (!plant) return;
-            // Simple logic: watering increases moisture.
-            plant.vitals.substrateMoisture = Math.min(100, plant.vitals.substrateMoisture + (amount / (plant.growSetup.potSize * 10)));
-            plant.vitals.ph = (plant.vitals.ph + ph) / 2; // Average out pH
+            // FIX: Use plant.substrate for moisture and pH, and volumeLiters for pot size calculation.
+            plant.substrate.moisture = Math.min(100, plant.substrate.moisture + (amount / (plant.substrate.volumeLiters * 10)));
+            plant.substrate.ph = (plant.substrate.ph + ph) / 2; // Average out pH
         }));
     },
     addJournalEntry: (plantId, entry) => {

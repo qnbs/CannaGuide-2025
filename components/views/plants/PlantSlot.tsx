@@ -44,9 +44,9 @@ export const PlantCard: React.FC<PlantCardProps> = ({ plant, onInspect }) => {
             </div>
 
             <div className="space-y-2">
-                <VitalBar label={t('plantsView.vitals.ph')} value={plant.vitals.ph} min={5} max={8} unit="" idealMin={stageDetails.idealVitals.ph.min} idealMax={stageDetails.idealVitals.ph.max} colorClass="bg-yellow-500" />
-                <VitalBar label={t('plantsView.vitals.ec')} value={plant.vitals.ec} min={0} max={3} unit="" idealMin={stageDetails.idealVitals.ec.min} idealMax={stageDetails.idealVitals.ec.max} colorClass="bg-orange-500" />
-                <VitalBar label={t('plantsView.vitals.moisture')} value={plant.vitals.substrateMoisture} min={0} max={100} unit="%" idealMin={40} idealMax={80} colorClass="bg-blue-500" />
+                <VitalBar label={t('plantsView.vitals.ph')} value={plant.substrate.ph} min={5} max={8} unit="" idealMin={stageDetails.idealVitals.ph.min} idealMax={stageDetails.idealVitals.ph.max} colorClass="bg-yellow-500" />
+                <VitalBar label={t('plantsView.vitals.ec')} value={plant.substrate.ec} min={0} max={3} unit="" idealMin={stageDetails.idealVitals.ec.min} idealMax={stageDetails.idealVitals.ec.max} colorClass="bg-orange-500" />
+                <VitalBar label={t('plantsView.vitals.moisture')} value={plant.substrate.moisture} min={0} max={100} unit="%" idealMin={40} idealMax={80} colorClass="bg-blue-500" />
             </div>
             
             <Button onClick={onInspect} className="w-full mt-4">

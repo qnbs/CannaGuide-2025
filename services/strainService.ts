@@ -4,6 +4,52 @@ import { dbService } from '@/services/dbService';
 
 type TFunction = (key: string, replacements?: Record<string, string | number>) => any;
 
+// A version for the static data. Increment this to force a re-cache for all users.
+const DATA_VERSION = '1.1.0'; 
+
+// Stop words to ignore during indexing
+const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with', 'i', 'you']);
+
+const tokenize = (text: string): string[] => {
+    if (!text) return [];
+    return text
+        .toLowerCase()
+        // remove punctuation
+        .replace(/[^\w\s]/g, '')
+        // split into words
+        .split(/\s+/)
+        // remove stop words and short words
+        .filter(word => word.length > 2 && !stopWords.has(word));
+};
+
+const buildSearchIndex = (strains: Strain[]): Record<string, string[]> => {
+    const index: Record<string, string[]> = {};
+
+    strains.forEach(strain => {
+        const strainId = strain.id;
+        const textToTokenize = [
+            strain.name,
+            strain.type,
+            strain.typeDetails,
+            strain.genetics,
+            strain.description,
+            ...(strain.aromas || []),
+            ...(strain.dominantTerpenes || []),
+        ].join(' ');
+        
+        const uniqueTokens = new Set(tokenize(textToTokenize));
+
+        uniqueTokens.forEach(token => {
+            if (!index[token]) {
+                index[token] = [];
+            }
+            index[token].push(strainId);
+        });
+    });
+
+    return index;
+};
+
 class StrainService {
   private strainsCache: Strain[] | null = null;
   private initializationPromise: Promise<void>;
@@ -64,13 +110,17 @@ class StrainService {
         
         let strainsToCache: Strain[] = [];
 
-        if (metadata && metadata.lang === lang && dbCount > 0) {
+        if (metadata && metadata.lang === lang && metadata.version === DATA_VERSION && dbCount > 0) {
             strainsToCache = await dbService.getAllStrains();
         } else {
-            console.log(`[StrainService] Cache miss or language change. Populating IndexedDB for language: ${lang}.`);
+            console.log(`[StrainService] Cache miss or version mismatch. Populating IndexedDB for lang: ${lang}, version: ${DATA_VERSION}.`);
             const translatedStrains = this.processAndTranslateStrains(t);
+            const searchIndex = buildSearchIndex(translatedStrains);
+            
             await dbService.addStrains(translatedStrains);
-            await dbService.setMetadata({ key: 'strain_cache_metadata', lang: lang });
+            await dbService.updateSearchIndex(searchIndex);
+            await dbService.setMetadata({ key: 'strain_cache_metadata', lang: lang, version: DATA_VERSION });
+            
             strainsToCache = translatedStrains;
         }
 
@@ -85,7 +135,7 @@ class StrainService {
   }
 
   public init(t: TFunction, lang: string): void {
-    if (this.currentLang === lang) return;
+    if (this.currentLang === lang && !this.isInitializing && this.strainsCache) return;
 
     if (this.isInitializing) {
         this.initializationPromise.then(() => this.init(t, lang));

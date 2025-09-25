@@ -9,7 +9,7 @@ export interface PlantSlice {
     advanceSimulation: () => Promise<void>;
     addJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
     completeTask: (plantId: string, taskId: string) => void;
-    waterAllPlants: () => void;
+    waterAllPlants: () => number;
     advanceDay: () => Promise<void>;
     resetPlants: () => void;
 }
@@ -23,7 +23,6 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         const emptySlotIndex = slotIndex !== undefined && plantSlots[slotIndex] === null ? slotIndex : plantSlots.findIndex(p => p === null);
 
         if (emptySlotIndex === -1) {
-            get().addNotification(t()('plantsView.notifications.allSlotsFull'), 'error');
             return false;
         }
         
@@ -41,7 +40,6 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         });
 
         get().addJournalEntry(newPlant.id, { type: 'SYSTEM', notes: t()('plantsView.journal.startGrowing', { name: newPlant.name }) });
-        get().addNotification(t()('plantsView.notifications.startSuccess', { name: newPlant.name }), 'success');
         return true;
     },
     
@@ -143,16 +141,10 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
                 get().addJournalEntry(p.id, { type: 'WATERING', notes: t()('plantsView.actionModals.defaultNotes.watering'), details: { waterAmount, ph: 6.5 }});
             }
         }
-        
-        if (wateredCount > 0) {
-            get().addNotification(t()('plantsView.notifications.waterAllSuccess', { count: wateredCount }), 'success');
-        } else {
-            get().addNotification(t()('plantsView.notifications.waterAllNone'), 'info');
-        }
+        return wateredCount;
     },
 
     resetPlants: () => {
         set({ plants: {}, plantSlots: [null, null, null], archivedAdvisorResponses: {}, selectedPlantId: null });
-        get().addNotification(t()('settingsView.data.resetPlantsSuccess'), 'success');
     },
 });

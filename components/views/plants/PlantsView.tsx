@@ -29,10 +29,11 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, advanceDay, startNewPlant } = useAppStore(state => ({
+    const { waterAllPlants, advanceDay, startNewPlant, addNotification } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
         advanceDay: state.advanceDay,
         startNewPlant: state.startNewPlant,
+        addNotification: state.addNotification,
     }));
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
@@ -62,6 +63,7 @@ export const PlantsView: React.FC = () => {
         
         const success = startNewPlant(strainForSetup, setup, selectingSlotIndex);
         if (success) {
+            addNotification(t('plantsView.notifications.startSuccess', { name: strainForSetup.name }), 'success');
             setIsSetupModalOpen(false);
             setStrainForSetup(null);
             setSelectingSlotIndex(null);

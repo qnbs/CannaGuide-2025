@@ -1,10 +1,11 @@
 import { StoredImageData, Strain } from '@/types';
 
 const DB_NAME = 'CannaGuideDB';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // Upgraded version
 const STRAINS_STORE = 'strains';
 const IMAGES_STORE = 'images';
 const METADATA_STORE = 'metadata';
+const STRAIN_SEARCH_INDEX_STORE = 'strain_search_index'; // New store for search
 
 let db: IDBDatabase;
 
@@ -18,14 +19,24 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onupgradeneeded = (event) => {
             const dbInstance = (event.target as IDBOpenDBRequest).result;
-            if (!dbInstance.objectStoreNames.contains(STRAINS_STORE)) {
-                dbInstance.createObjectStore(STRAINS_STORE, { keyPath: 'id' });
+            
+            // Initial setup for new users or cleared databases
+            if (event.oldVersion < 1) {
+                if (!dbInstance.objectStoreNames.contains(STRAINS_STORE)) {
+                    dbInstance.createObjectStore(STRAINS_STORE, { keyPath: 'id' });
+                }
+                if (!dbInstance.objectStoreNames.contains(IMAGES_STORE)) {
+                    dbInstance.createObjectStore(IMAGES_STORE, { keyPath: 'id' });
+                }
+                if (!dbInstance.objectStoreNames.contains(METADATA_STORE)) {
+                    dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' });
+                }
             }
-            if (!dbInstance.objectStoreNames.contains(IMAGES_STORE)) {
-                dbInstance.createObjectStore(IMAGES_STORE, { keyPath: 'id' });
-            }
-            if (!dbInstance.objectStoreNames.contains(METADATA_STORE)) {
-                dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' });
+            // Upgrade from version 1 to 2 for existing users
+            if (event.oldVersion < 2) {
+                if (!dbInstance.objectStoreNames.contains(STRAIN_SEARCH_INDEX_STORE)) {
+                    dbInstance.createObjectStore(STRAIN_SEARCH_INDEX_STORE, { keyPath: 'word' });
+                }
             }
         };
 
@@ -98,7 +109,7 @@ export const dbService = {
             request.onerror = () => reject(request.error);
         });
     },
-    
+
     async addImage(imageData: StoredImageData): Promise<void> {
         await openDB();
         return new Promise((resolve, reject) => {
@@ -118,4 +129,52 @@ export const dbService = {
             request.onerror = () => reject(request.error);
         });
     },
+
+    async updateSearchIndex(index: Record<string, string[]>): Promise<void> {
+        await openDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(STRAIN_SEARCH_INDEX_STORE, 'readwrite');
+            const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
+            store.clear();
+            Object.entries(index).forEach(([word, ids]) => {
+                store.put({ word, ids });
+            });
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+        });
+    },
+
+    async searchIndex(tokens: string[]): Promise<Set<string> | null> {
+        if (tokens.length === 0) return null;
+        await openDB();
+
+        const transaction = db.transaction(STRAIN_SEARCH_INDEX_STORE, 'readonly');
+        const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
+        
+        const promises = tokens.map(token => {
+            return new Promise<string[] | undefined>((resolve, reject) => {
+                const request = store.get(token);
+                request.onsuccess = () => resolve(request.result?.ids);
+                request.onerror = () => reject(request.error);
+            });
+        });
+        
+        try {
+            const results = await Promise.all(promises);
+
+            if (results.some(r => r === undefined)) {
+                return new Set(); // One token not found, so no intersection possible
+            }
+
+            const idSets = results.map(ids => new Set(ids!));
+            if (idSets.length === 0) return new Set();
+
+            // Find the intersection of all sets
+            const intersection = idSets.reduce((a, b) => new Set([...a].filter(x => b.has(x))));
+            return intersection;
+        } catch(error) {
+            console.error("Search Index error:", error);
+            return new Set(); // Return empty set on error
+        }
+    }
 };

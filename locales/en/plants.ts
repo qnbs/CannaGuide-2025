@@ -1,53 +1,71 @@
 export const plantsView = {
-  title: 'My Grow Room',
-  plantCard: {
-    day: 'Day',
-    healthy: 'Healthy',
-  },
+  title: 'My Plants',
   emptySlot: {
-    title: 'Empty Plant Slot',
-    subtitle: 'Start a new grow from the Strains section.',
-    subtitleInline: 'or click here to choose.'
+    title: 'Start a New Grow',
+    subtitle: 'Click to select a strain',
+    subtitleInline: 'and begin your cultivation journey.',
   },
   inlineSelector: {
     title: 'Select a Strain',
-    subtitle: 'Search and choose a strain to start growing.'
+    subtitle: 'Choose the genetics for your new plant.',
   },
-  archivedPlant: 'Archived Plant',
+  plantCard: {
+    day: 'Day',
+  },
   vitals: {
-    ph: 'pH Value',
-    ec: 'EC Value',
+    ph: 'pH',
+    ec: 'EC',
     moisture: 'Moisture',
   },
-  notifications: {
-    startSuccess: 'Grow for {name} started successfully!',
-    allSlotsFull: 'All grow slots are full. Finish a grow to start a new one.',
-    stageChange: 'Plant has reached the {stage} stage.',
-    harvestReady: '{name} is ready for harvest!',
-    finalYield: 'Final yield calculated: {yield}g',
-    waterAllSuccess: 'Successfully watered {count} plants.',
-    waterAllNone: 'No plants needed watering.',
+  gardenVitals: {
+    title: 'Garden Summary',
+    avgTemp: 'Avg. Temp',
+    avgHumidity: 'Avg. Humidity',
   },
-  journal: {
-    startGrowing: 'Started growing {name}',
-    problemDetected: 'Problem detected: {message}',
-    newTask: 'New task created: {title}',
+  summary: {
+    gardenHealth: 'Garden Health',
+    activeGrows: 'Active Grows',
+    openTasks: 'Open Tasks',
+    waterAll: 'Water All',
+    simulateNextDay: 'Next Day',
+  },
+  tasks: {
+    title: 'Tasks',
+    none: 'No open tasks. Your garden is happy!',
+    priority: 'Priority',
+    priorities: {
+        high: 'High',
+        medium: 'Medium',
+        low: 'Low',
+    },
+    needsWatering: 'Watering Needed',
+    needsWateringDesc: 'Substrate is getting dry.',
+  },
+  warnings: {
+    title: 'Warnings',
+    none: 'No active warnings. Everything looks good!',
+  },
+  notifications: {
+    startSuccess: 'Successfully started growing {name}!',
+    allSlotsFull: 'All plant slots are currently full.',
+    waterAllSuccess: 'Watered {count} thirsty plants.',
+    waterAllNone: 'No plants needed watering.',
   },
   setupModal: {
     title: 'Setup for {name}',
-    subtitle: 'Configure your growing environment.',
+    subtitle: 'Configure your environment for this new plant.',
     lightSource: 'Light Source',
     potSize: 'Pot Size',
-    medium: 'Growing Medium',
+    medium: 'Medium',
     mediums: {
-      soil: 'Soil',
-      coco: 'Coco',
-      hydro: 'Hydro',
+        soil: 'Soil',
+        coco: 'Coco Coir',
+        hydro: 'Hydroponics',
     },
     environment: 'Environment',
     temp: 'Temperature (°C)',
     humidity: 'Humidity (%)',
-    lightHours: 'Light Hours/Day',
+    lightHours: 'Light Hours',
     validation: {
         light: 'Light hours must be between 1 and 24.',
         temp: 'Temperature must be between 10 and 40°C.',
@@ -55,22 +73,22 @@ export const plantsView = {
     }
   },
   detailedView: {
+    tabs: {
+        overview: 'Overview',
+        journal: 'Journal',
+        tasks: 'Tasks',
+        photos: 'Photos',
+        ai: 'AI',
+        postHarvest: 'Post-Harvest'
+    },
+    lifecycle: 'Plant Lifecycle',
     vitals: 'Vitals',
-    stage: 'Stage',
+    environment: 'Environment',
+    problems: 'Problems',
+    history: 'Growth History',
     height: 'Height',
     stress: 'Stress',
-    lifecycle: 'Lifecycle',
-    history: 'History',
-    historyNoData: 'Not enough data for history chart.',
-    journal: 'Journal',
-    photos: 'Photos',
-    tasks: 'Tasks',
-    tabs: {
-      overview: 'Overview',
-      journal: 'Journal',
-      photos: 'Photos',
-      tasks: 'Tasks',
-    },
+    historyNoData: 'Not enough data to display growth history.',
     journalFilters: {
         watering: 'Watering',
         feeding: 'Feeding',
@@ -81,137 +99,83 @@ export const plantsView = {
         pestControl: 'Pest Control',
         environment: 'Environment',
     },
-    journalNoEntries: 'No journal entries for this filter.',
-    photosNoEntries: 'No photos added to the journal yet.',
+    journalNoEntries: 'No journal entries match the current filter.',
+    photosNoEntries: 'No photos have been logged for this plant yet.',
     tasksComplete: 'Complete',
-    tasksNoEntries: 'No completed tasks.',
+    tasksNoEntries: 'No completed tasks for this plant yet.',
   },
   aiAdvisor: {
-    description: 'Get an AI-powered analysis of your plant\'s current state and an actionable recommendation.',
-    archiveTitle: 'Advisor Archive',
-    archiveEmpty: 'Saved advice for this plant will appear here.',
+    archiveTitle: 'Global Advisor Archive',
+    archiveEmpty: 'No AI advisor responses have been saved yet.',
+    description: 'Get an expert-level analysis of your plant\'s current state. The AI will review vitals, environment, and recent journal entries to provide a concise recommendation.',
   },
   aiDiagnostics: {
     title: 'AI Plant Doctor',
-    description: 'Upload a picture of a leaf or problem area to get an AI-powered diagnosis.',
+    description: 'Upload a clear photo of a leaf or affected area to get an AI-powered diagnosis.',
+    dragDrop: 'Drag & drop image here',
+    prompt: 'or click to browse your files.',
     buttonLabel: 'Upload Image',
-    prompt: 'PNG, JPG, WEBP up to 10MB',
-    cameraError: 'Camera access failed. Please check permissions.',
-    capture: 'Capture',
+    capture: 'Use Camera',
+    cameraError: 'Could not access the camera. Please check permissions.',
     retake: 'Retake',
+    validation: {
+        imageOnly: 'Please upload an image file.',
+    },
+    plantContext: 'Provide Plant Context (Optional)',
+    generalContext: 'No specific plant / General diagnosis',
+    userNotes: 'Additional Notes (Optional)',
+    userNotesPlaceholder: 'e.g., "Yellow spots appeared yesterday on upper leaves."',
+    waiting: 'Awaiting Diagnosis',
+    waitingDesc: 'Upload a photo and provide context to get started.',
     confidence: 'Confidence',
     diagnosis: 'Diagnosis',
     actions: 'Immediate Actions',
     solution: 'Long-Term Solution',
     prevention: 'Prevention',
-    waiting: 'Waiting for Image...',
-    waitingDesc: 'Upload an image to start a diagnosis.',
-    dragDrop: 'Drag & drop your image here',
-    plantContext: 'Plant Context (Optional)',
-    generalContext: 'General Context / No Plant',
-    userNotes: 'Additional Notes',
-    userNotesPlaceholder: 'e.g. Affecting lower leaves, started 2 days ago...',
-    savedToJournal: 'Diagnosis saved to journal.'
-  },
-  gardenVitals: {
-      title: 'Garden Vitals',
-      avgTemp: 'Avg Temp',
-      avgHumidity: 'Avg Humidity',
-  },
-  summary: {
-    gardenHealth: 'Garden Health',
-    activeGrows: 'Active Grows',
-    openTasks: 'Open Tasks',
-    waterAll: 'Water All',
-    simulateNextDay: 'Simulate Next Day',
-  },
-  tasks: {
-      title: 'Tasks & Warnings',
-      none: 'No open tasks. Good job!',
-      priority: 'Priority',
-      priorities: {
-          low: 'Low',
-          medium: 'Medium',
-          high: 'High',
-      },
-      wateringTask: {
-          title: 'Watering Required',
-          description: 'Substrate moisture is low.'
-      },
-      trichomeTask: {
-          title: 'Check Trichomes',
-          description: 'The harvest window is approaching. Time to inspect the trichomes!'
-      }
-  },
-  warnings: {
-      title: 'Active Warnings',
-      none: 'No warnings. Everything looks good!',
+    savedToJournal: 'Diagnosis saved to plant journal.',
   },
   actionModals: {
-    logAction: 'Log Action',
-    idealRange: 'Ideal: {min} - {max}',
-    current: 'Current',
     wateringTitle: 'Log Watering',
     feedingTitle: 'Log Feeding',
     observationTitle: 'Log Observation',
     trainingTitle: 'Log Training',
     photoTitle: 'Log Photo',
-    waterAmount: 'Water Amount (ml)',
-    phValue: 'pH Value (In)',
-    ecValue: 'EC Value (In)',
-    runoffPh: 'pH Value (Runoff)',
-    runoffEc: 'EC Value (Runoff)',
-    runoff: 'Runoff (Optional)',
+    pestControlTitle: 'Log Pest Control',
+    waterAmount: 'Water Amount',
+    phValue: 'pH Value',
+    ecValue: 'EC/PPM',
     nutrientDetails: 'Nutrient Details',
-    nutrientDetailsPlaceholder: 'e.g. BioBizz Grow 2ml/L',
-    observationPlaceholder: 'What did you observe?',
+    nutrientDetailsPlaceholder: 'e.g., Grow A: 2ml, Bloom B: 1ml',
+    healthStatus: 'Health Status',
+    healthStatuses: { Excellent: 'Excellent', Good: 'Good', 'Showing Issues': 'Showing Issues' },
+    observationTags: 'Tags (comma-separated)',
+    observationTagsPlaceholder: 'e.g., yellowing, spots, vigorous growth',
+    observationPlaceholder: 'Describe what you see...',
     trainingType: 'Training Type',
     trainingTypes: {
-      topping: {
-        label: 'Topping',
-        tooltip: 'Cutting the main stem to encourage two new main shoots, creating a bushier plant.'
-      },
-      lst: {
-        label: 'LST',
-        tooltip: 'Gently bending branches down to create a wide, flat canopy for better light exposure.'
-      },
-      defoliation: {
-        label: 'Defoliation',
-        tooltip: 'Strategically removing fan leaves to improve light penetration and air circulation to lower buds.'
-      },
-      fiming: {
-        label: 'FIMing',
-        tooltip: 'A variation of topping where only part of the new shoot is removed, potentially resulting in four or more new shoots.'
-      },
-      scrog: {
-        label: 'SCROG',
-        tooltip: 'Using a screen (Screen of Green) to guide shoots horizontally, creating a perfectly even canopy.'
-      },
-      supercropping: {
-        label: 'Supercropping',
-        tooltip: 'Carefully pinching and bending stems to damage the inner tissue, promoting stronger growth and better nutrient flow.'
-      }
+        lst: { label: 'LST', tooltip: 'Low Stress Training: Bending stems to create an even canopy.' },
+        topping: { label: 'Topping', tooltip: 'Cutting the main stem to create two main colas.' },
+        defoliation: { label: 'Defoliation', tooltip: 'Removing fan leaves to improve light penetration.' },
+        fiming: { label: 'FIMing', tooltip: 'A less aggressive topping that creates multiple main colas.' },
+        scrog: { label: 'SCROG', tooltip: 'Screen of Green: Using a net to spread out the canopy.' },
+        supercropping: { label: 'Super Cropping', tooltip: 'Pinching stems to stress the plant and increase yield.' },
     },
-    photoNotes: 'Notes for photo',
     photoCategory: 'Category',
-    photoCategories: {
-      'Full Plant': 'Full Plant',
-      'Bud': 'Bud',
-      'Leaf': 'Leaf',
-      'Problem': 'Problem',
-      'Trichomes': 'Trichomes',
-    },
-    healthStatus: 'Health Status',
-    healthStatuses: {
-      'Excellent': 'Excellent',
-      'Good': 'Good',
-      'Showing Issues': 'Showing Issues',
-    },
-    observationTags: 'Tags (comma-separated)',
-    observationTagsPlaceholder: 'e.g. Pests, Deficiency',
+    photoCategories: { 'Full Plant': 'Full Plant', 'Bud': 'Bud', 'Leaf': 'Leaf', 'Problem': 'Problem Area', 'Trichomes': 'Trichomes' },
+    photoNotes: 'Photo Notes',
     defaultNotes: {
-        watering: 'Watered the plant.',
-        feeding: 'Fed the plant.',
-    }
-  }
+        watering: 'Watered until runoff.',
+        feeding: 'Fed with standard nutrient mix.',
+    },
+    pestControlMethod: 'Method',
+    pestControlMethods: {
+        neemOil: 'Neem Oil',
+        insecticidalSoap: 'Insecticidal Soap',
+        beneficialInsects: 'Beneficial Insects',
+        manualRemoval: 'Manual Removal',
+    },
+    current: 'Current',
+    idealRange: 'Ideal: {min}-{max}',
+  },
+  archivedPlant: 'Archived Plant'
 };

@@ -1,11 +1,11 @@
+
 import { Strain } from '@/types';
-import { allStrainsData } from '@/data/strains';
 import { dbService } from '@/services/dbService';
 
 type TFunction = (key: string, replacements?: Record<string, string | number>) => any;
 
 // A version for the static data. Increment this to force a re-cache for all users.
-const DATA_VERSION = '1.1.0'; 
+const DATA_VERSION = '1.2.0'; 
 
 // Stop words to ignore during indexing
 const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with', 'i', 'you']);
@@ -62,8 +62,29 @@ class StrainService {
       this.resolveInitialization = resolve;
     });
   }
+  
+  // New method to fetch strain data from static JSON files
+  private async fetchAllStrainsData(): Promise<Strain[]> {
+    const strainFiles = ['numeric', ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i))];
+    const fetchPromises = strainFiles.map(file => 
+      fetch(`/data/strains/${file}.json`)
+        .then(res => {
+          if (!res.ok) {
+            // It's okay if some files don't exist yet during migration
+            if (res.status === 404) {
+                console.warn(`Strain data file not found: ${file}.json. This may be expected during migration.`);
+                return [];
+            }
+            throw new Error(`Failed to fetch ${file}.json`);
+          }
+          return res.json();
+        })
+    );
+    const allStrainsArrays = await Promise.all(fetchPromises);
+    return allStrainsArrays.flat();
+  }
 
-  private processAndTranslateStrains(t: TFunction): Strain[] {
+  private processAndTranslateStrains(allStrainsData: Strain[], t: TFunction): Strain[] {
     const getTranslatedString = (key: string, fallback: string | undefined): string | undefined => {
         const result = t(key);
         return (typeof result === 'string' && result !== key) ? result : fallback;
@@ -110,11 +131,11 @@ class StrainService {
         
         let strainsToCache: Strain[] = [];
 
-        if (metadata && metadata.lang === lang && metadata.version === DATA_VERSION && dbCount > 0) {
-            strainsToCache = await dbService.getAllStrains();
-        } else {
-            console.log(`[StrainService] Cache miss or version mismatch. Populating IndexedDB for lang: ${lang}, version: ${DATA_VERSION}.`);
-            const translatedStrains = this.processAndTranslateStrains(t);
+        // Condition to fetch and rebuild the database
+        if (!metadata || metadata.lang !== lang || metadata.version !== DATA_VERSION || dbCount === 0) {
+            console.log(`[StrainService] Cache miss or version mismatch. Fetching data and populating IndexedDB for lang: ${lang}, version: ${DATA_VERSION}.`);
+            const rawStrainsData = await this.fetchAllStrainsData();
+            const translatedStrains = this.processAndTranslateStrains(rawStrainsData, t);
             const searchIndex = buildSearchIndex(translatedStrains);
             
             await dbService.addStrains(translatedStrains);
@@ -122,15 +143,24 @@ class StrainService {
             await dbService.setMetadata({ key: 'strain_cache_metadata', lang: lang, version: DATA_VERSION });
             
             strainsToCache = translatedStrains;
+        } else {
+             strainsToCache = await dbService.getAllStrains();
         }
 
         strainsToCache.sort((a, b) => a.name.localeCompare(b.name));
         this.strainsCache = strainsToCache;
     } catch (error) {
-        console.error("Error initializing StrainService from IndexedDB, falling back to static data:", error);
-        const translatedStrains = this.processAndTranslateStrains(t);
-        translatedStrains.sort((a, b) => a.name.localeCompare(b.name));
-        this.strainsCache = translatedStrains;
+        console.error("Error initializing StrainService from fetched/IndexedDB data, falling back to static fetch:", error);
+        // Fallback in case IndexedDB fails
+        try {
+          const rawStrainsData = await this.fetchAllStrainsData();
+          const translatedStrains = this.processAndTranslateStrains(rawStrainsData, t);
+          translatedStrains.sort((a, b) => a.name.localeCompare(b.name));
+          this.strainsCache = translatedStrains;
+        } catch (fetchError) {
+          console.error("Critical error: Could not fetch static strain data.", fetchError);
+          this.strainsCache = []; // Prevent app from crashing
+        }
     }
   }
 

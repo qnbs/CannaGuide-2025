@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useId, useMemo } from 'react';
 import { Button } from '@/components/common/Button';
-import { Plant, JournalEntry, TrainingType, PlantStage, StoredImageData } from '@/types';
+import { Plant, JournalEntry, TrainingType, PlantStage, StoredImageData, JournalEntryType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { dbService } from '@/services/dbService';
@@ -9,8 +9,10 @@ import { CameraModal } from '@/components/common/CameraModal';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { selectSettings } from '@/stores/selectors';
 import { Modal } from '@/components/common/Modal';
+import type { TFunction } from '@/stores/useAppStore';
 
-export type ModalType = 'watering' | 'feeding' | 'observation' | 'training' | 'photo' | null;
+// FIX: Added 'pestControl' to ModalType to support pest control logging, resolving an error in ActionToolbar.tsx.
+export type ModalType = 'watering' | 'feeding' | 'observation' | 'training' | 'photo' | 'pestControl' | null;
 
 export interface ModalState {
     type: NonNullable<ModalType>;
@@ -22,6 +24,10 @@ interface LogActionModalProps {
     modalState: ModalState;
     setModalState: (state: ModalState | null) => void;
     onAddJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
+    // FIX: Added missing props to satisfy the component's usage in DetailedPlantView.tsx.
+    onTopPlant: (plantId: string) => void;
+    onApplyLST: (plantId: string, shootId: string, angle: number) => void;
+    onApplyPestControl: (plantId: string, method: string) => void;
 }
 
 // --- Reusable Form Components ---
@@ -91,7 +97,7 @@ const SliderInputField: React.FC<{
 
 const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModals.defaultNotes.');
 
-export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalState, setModalState, onAddJournalEntry }) => {
+export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalState, setModalState, onAddJournalEntry, onTopPlant, onApplyLST, onApplyPestControl }) => {
     const { t } = useTranslations();
     const settings = useAppStore(selectSettings);
 
@@ -108,6 +114,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
     const [category, setCategory] = useState<'Full Plant' | 'Bud' | 'Leaf' | 'Problem' | 'Trichomes'>('Full Plant');
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
+    const [pestControlMethod, setPestControlMethod] = useState('neemOil');
     const fileInputId = useId();
 
     useEffect(() => {
@@ -130,8 +137,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
     const handleClose = () => setModalState(null);
 
     const handleConfirm = () => {
-        const typeMap: Record<string, JournalEntry['type']> = {
-            watering: 'WATERING', feeding: 'FEEDING', training: 'TRAINING', photo: 'PHOTO', observation: 'OBSERVATION',
+        // FIX: Added PEST_CONTROL to the type map.
+        const typeMap: Record<string, JournalEntryType> = {
+            watering: 'WATERING', feeding: 'FEEDING', training: 'TRAINING', photo: 'PHOTO', observation: 'OBSERVATION', pestControl: 'PEST_CONTROL',
         };
         const entryType = typeMap[modalState.type!];
         if(!entryType) return;
@@ -155,6 +163,13 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
             case 'training':
                 details = { trainingType };
                 finalNotes = finalNotes || trainingType;
+                // FIX: Apply training action to the plant state when logging the entry.
+                if (trainingType === 'Topping') {
+                    onTopPlant(plant.id);
+                } else if (trainingType === 'LST') {
+                    // Placeholder: Apply LST to the main stem. A more complex UI would allow selecting a shoot.
+                    onApplyLST(plant.id, plant.structuralModel.id, 90);
+                }
                 break;
             case 'photo':
                 if (!imagePreview) return;
@@ -163,6 +178,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
                 dbService.addImage(imageData);
                 details = { imageId, imageUrl: imagePreview, photoCategory: category };
                 finalNotes = finalNotes || t('plantsView.detailedView.journalFilters.photo');
+                break;
+            // FIX: Added logic for pest control logging and action.
+            case 'pestControl':
+                details = { method: pestControlMethod };
+                finalNotes = finalNotes || `${t(`plantsView.actionModals.pestControlMethods.${pestControlMethod}`)} applied.`;
+                onApplyPestControl(plant.id, pestControlMethod);
                 break;
         }
 
@@ -286,9 +307,29 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
                 ),
                 confirmDisabled: !imagePreview
             };
+             // FIX: Added case for the 'pestControl' modal to provide UI and functionality.
+            case 'pestControl': 
+                const pestControlOptions = ['neemOil', 'insecticidalSoap', 'beneficialInsects', 'manualRemoval'];
+                return {
+                title: t('plantsView.actionModals.pestControlTitle'),
+                body: (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.actionModals.pestControlMethod')}</label>
+                            <select value={pestControlMethod} onChange={e => setPestControlMethod(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white">
+                                {pestControlOptions.map(key => (
+                                    <option key={key} value={key}>{t(`plantsView.actionModals.pestControlMethods.${key}`)}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} />
+                    </div>
+                ),
+                confirmDisabled: false
+            };
             default: return { title: '', body: null, confirmDisabled: true };
         }
-    }, [modalState.type, t, plant, notes, waterAmount, ph, ec, nutrientDetails, healthStatus, tags, trainingType, category, imagePreview, isCameraOpen, idealVitals, fileInputId]);
+    }, [modalState.type, t, plant, notes, waterAmount, ph, ec, nutrientDetails, healthStatus, tags, trainingType, category, imagePreview, isCameraOpen, idealVitals, fileInputId, pestControlMethod, onApplyLST, onTopPlant, onApplyPestControl]);
 
     if (!modalState.type) return null;
 

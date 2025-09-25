@@ -11,3 +11,8 @@ export const STAGES_ORDER: PlantStage[] = [
     PlantStage.Curing,
     PlantStage.Finished,
 ];
+
+export const FLOWERING_STAGES: PlantStage[] = [
+    PlantStage.Flowering,
+    PlantStage.Harvest,
+];

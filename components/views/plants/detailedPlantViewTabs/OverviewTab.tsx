@@ -33,7 +33,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant, onLogAction }) 
                     {!isPostHarvest && <PlantLifecycleTimeline currentStage={plant.stage} currentAge={plant.age} />}
                     <Card>
                         <h3 className="text-xl font-bold font-display mb-4 text-primary-400">{t('plantsView.detailedView.history')}</h3>
-                        <HistoryChart history={plant.history} idealHistory={[]} idealVitalRanges={[]}/>
+                        <HistoryChart history={plant.history} />
                     </Card>
                 </div>
                 <div className="space-y-6">

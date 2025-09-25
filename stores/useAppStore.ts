@@ -64,6 +64,7 @@ export const useAppStore = create<AppState>()(
           knowledgeProgress: state.knowledgeProgress,
           strainsViewTab: state.strainsViewTab,
           strainsViewMode: state.strainsViewMode,
+          activeView: state.activeView,
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {
@@ -92,8 +93,11 @@ export const useAppStore = create<AppState>()(
                 tts: { ...defaultSettings.tts, ...rehydratedSettings.tts },
             };
             
-            state.activeView = state.settings.defaultView;
-            state.strainsViewMode = state.settings.strainsViewSettings.defaultViewMode;
+            // If activeView isn't in the rehydrated state (e.g., first time user), set it from settings.
+            // Otherwise, allow the persisted UI state to remain.
+            if (!state.activeView) {
+                state.activeView = state.settings.defaultView;
+            }
           }
         },
       }

@@ -185,9 +185,6 @@ export interface PlantShoot {
   angle: number; // 0 = vertical, 90 = horizontal
 }
 
-// FIX: Add alias for backwards compatibility where PlantStructuralModel was used.
-export type PlantStructuralModel = PlantShoot;
-
 export interface Plant {
     id: string;
     name: string;
@@ -247,7 +244,6 @@ export interface Plant {
 
 // --- AI & Recommendations ---
 
-// FIX: Define and export the GrowSetup type.
 export interface GrowSetup {
     lightType: 'LED' | 'HPS' | 'CFL';
     wattage: number;

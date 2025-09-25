@@ -10,10 +10,10 @@ import { useAppStore } from '@/stores/useAppStore';
 import { selectHasAvailableSlots } from '@/stores/selectors';
 import { StrainAiTips } from './StrainAiTips';
 import { Tabs } from '@/components/common/Tabs';
-import { StrainCompactItem } from '../plants/StrainCompactItem';
 import { InfoSection } from '@/components/common/InfoSection';
 import { AttributeDisplay } from '@/components/common/AttributeDisplay';
 import { Speakable } from '@/components/common/Speakable';
+import StrainListItem from './StrainListItem';
 
 // --- Sub-components for better structure ---
 
@@ -159,9 +159,12 @@ const SimilarStrainsSection: React.FC<{ currentStrain: Strain; onSelect: (strain
 
     return (
         <InfoSection title={t('strainsView.strainDetail.similarStrains')} icon={<PhosphorIcons.Leafy />}>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {similar.map(strain => (
-                    <StrainCompactItem key={strain.id} strain={strain} onSelect={() => onSelect(strain)} />
+                    <Card key={strain.id} className="p-2 cursor-pointer" onClick={() => onSelect(strain)}>
+                        <h4 className="font-semibold text-primary-300">{strain.name}</h4>
+                        <p className="text-xs text-slate-400">{strain.type}</p>
+                    </Card>
                 ))}
             </div>
         </InfoSection>
@@ -178,15 +181,20 @@ interface StrainDetailViewProps {
 
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {
     const { t } = useTranslations();
-    const { isFavorite, toggleFavorite, initiateGrow, selectStrain } = useAppStore(state => ({
+    const { isFavorite, toggleFavorite, initiateGrow } = useAppStore(state => ({
         isFavorite: state.favoriteIds.has(strain.id),
         toggleFavorite: state.toggleFavorite,
         initiateGrow: state.initiateGrow,
-        selectStrain: state.selectStrain,
     }));
     const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
 
     const [activeTab, setActiveTab] = useState('overview');
+    const [currentStrain, setCurrentStrain] = useState(strain);
+    
+    useEffect(() => {
+        setCurrentStrain(strain);
+        setActiveTab('overview');
+    }, [strain]);
 
     const tabs: { id: string; label: string; icon: React.ReactNode; }[] = [
         { id: 'overview', label: t('strainsView.strainDetail.tabs.overview'), icon: <PhosphorIcons.Book /> },
@@ -197,7 +205,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
     ];
     
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
-    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
+    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[currentStrain.type];
 
     return (
         <div className="animate-fade-in space-y-6">
@@ -209,18 +217,18 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
                     </Button>
                     <div className="flex items-center gap-2">
                         <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                            <Button onClick={() => initiateGrow(strain)} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <Button onClick={() => initiateGrow(currentStrain)} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                         </div>
-                        <Button variant="secondary" onClick={() => toggleFavorite(strain.id)} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
+                        <Button variant="secondary" onClick={() => toggleFavorite(currentStrain.id)} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                         </Button>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 mt-4">
-                    {TypeIcon && <TypeIcon className={`w-16 h-16 flex-shrink-0 ${typeClasses[strain.type]}`} />}
+                    {TypeIcon && <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[currentStrain.type]}`} />}
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{strain.name}</h1>
-                        <p className="text-slate-400">{strain.type} {strain.typeDetails && `- ${strain.typeDetails}`}</p>
+                        <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{currentStrain.name}</h1>
+                        <p className="text-slate-400">{currentStrain.type} {currentStrain.typeDetails && `- ${currentStrain.typeDetails}`}</p>
                     </div>
                 </div>
             </header>
@@ -228,14 +236,14 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
             
             <div className="mt-6">
-                {activeTab === 'overview' && <OverviewTab strain={strain} />}
-                {activeTab === 'agronomics' && <AgronomicsTab strain={strain} />}
-                {activeTab === 'profile' && <ProfileTab strain={strain} />}
-                {activeTab === 'notes' && <NotesTab strain={strain} />}
-                {activeTab === 'aiTips' && <StrainAiTips strain={strain} onSaveTip={onSaveTip} />}
+                {activeTab === 'overview' && <OverviewTab strain={currentStrain} />}
+                {activeTab === 'agronomics' && <AgronomicsTab strain={currentStrain} />}
+                {activeTab === 'profile' && <ProfileTab strain={currentStrain} />}
+                {activeTab === 'notes' && <NotesTab strain={currentStrain} />}
+                {activeTab === 'aiTips' && <StrainAiTips strain={currentStrain} onSaveTip={onSaveTip} />}
             </div>
             
-            <SimilarStrainsSection currentStrain={strain} onSelect={selectStrain} />
+            <SimilarStrainsSection currentStrain={currentStrain} onSelect={setCurrentStrain} />
 
         </div>
     );

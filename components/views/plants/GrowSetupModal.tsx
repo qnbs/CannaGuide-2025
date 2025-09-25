@@ -18,7 +18,6 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
       settings: state.settings,
   }));
   
-  // FIX: Initialize a complete GrowSetup object, using defaults for environment values not present in defaultGrowSetup.
   const { defaultGrowSetup } = settings;
   const [setup, setSetup] = useState<GrowSetup>({
     lightType: defaultGrowSetup.light.type,

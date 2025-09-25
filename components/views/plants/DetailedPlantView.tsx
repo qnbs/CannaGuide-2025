@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plant, AIResponse, ArchivedAdvisorResponse } from '@/types';
+import { Plant, AIResponse, ArchivedAdvisorResponse, PlantStage } from '@/types';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
@@ -45,6 +45,8 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
     const [activeTab, setActiveTab] = useState('overview');
     const [modalState, setModalState] = useState<ModalState | null>(null);
 
+    const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
+
     const tabs = [
         { id: 'overview', label: t('plantsView.detailedView.tabs.overview'), icon: <PhosphorIcons.ChartPieSlice /> },
         { id: 'journal', label: t('plantsView.detailedView.tabs.journal'), icon: <PhosphorIcons.BookOpenText /> },
@@ -52,6 +54,10 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
         { id: 'photos', label: t('plantsView.detailedView.tabs.photos'), icon: <PhosphorIcons.Camera /> },
         { id: 'ai', label: t('plantsView.detailedView.tabs.ai'), icon: <PhosphorIcons.Brain /> },
     ];
+    
+    if (isPostHarvest) {
+        tabs.push({ id: 'postHarvest', label: t('plantsView.detailedView.tabs.postHarvest'), icon: <PhosphorIcons.Archive /> });
+    }
     
     const handleAddResponse = (plantId: string, response: AIResponse, query: string) => {
         addArchivedAdvisorResponse(plantId, response, query);

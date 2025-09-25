@@ -1,35 +1,40 @@
 import React, { useState } from 'react';
-import { ExportSource, ExportFormat } from '@/types';
-import { Card } from '@/components/common/Card';
+import { ExportFormat } from '@/types';
 import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { Modal } from '@/components/common/Modal';
 
-interface ExportModalProps {
+type ExportSource = 'selected' | 'all';
+
+interface DataExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   onExport: (source: ExportSource, format: ExportFormat) => void;
+  title: string;
   selectionCount: number;
-  favoritesCount: number;
-  filteredCount: number;
   totalCount: number;
+  // This prop allows for custom source labels if needed, otherwise it uses defaults.
+  sourceLabels?: {
+      selected: string;
+      all: string;
+  }
 }
 
-export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExport, selectionCount, favoritesCount, filteredCount, totalCount }) => {
+export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, onExport, title, selectionCount, totalCount, sourceLabels }) => {
   const { t } = useTranslations();
-  const settings = useAppStore(state => state.settings);
-  const [source, setSource] = useState<ExportSource>(settings.defaultExportSettings.source);
-  const [format, setFormat] = useState<ExportFormat>(settings.defaultExportSettings.format);
-  const modalRef = useFocusTrap(isOpen);
+  const [source, setSource] = useState<ExportSource>('all');
+  const [format, setFormat] = useState<ExportFormat>('pdf');
 
-  if (!isOpen) return null;
+  const defaultSourceLabels = {
+    selected: t('strainsView.exportModal.sources.selected'),
+    all: t('strainsView.exportModal.sources.all')
+  };
+  
+  const finalSourceLabels = sourceLabels || defaultSourceLabels;
 
   const sources: { id: ExportSource; label: string; count: number; disabled: boolean }[] = [
-    { id: 'selected', label: t('strainsView.exportModal.sources.selected'), count: selectionCount, disabled: selectionCount === 0 },
-    { id: 'favorites', label: t('strainsView.exportModal.sources.favorites'), count: favoritesCount, disabled: favoritesCount === 0 },
-    { id: 'filtered', label: t('strainsView.exportModal.sources.filtered'), count: filteredCount, disabled: filteredCount === 0 },
-    { id: 'all', label: t('strainsView.exportModal.sources.all'), count: totalCount, disabled: totalCount === 0 },
+    { id: 'selected', label: finalSourceLabels.selected, count: selectionCount, disabled: selectionCount === 0 },
+    { id: 'all', label: finalSourceLabels.all, count: totalCount, disabled: totalCount === 0 },
   ];
 
   const formats: { id: ExportFormat; label: string }[] = [
@@ -37,18 +42,29 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
     { id: 'txt', label: t('strainsView.exportModal.formats.txt') },
     { id: 'csv', label: t('strainsView.exportModal.formats.csv') },
     { id: 'json', label: t('strainsView.exportModal.formats.json') },
+    { id: 'xml', label: t('strainsView.exportModal.formats.xml') },
   ];
   
   const handleExportClick = () => {
     onExport(source, format);
     onClose();
   };
+  
+  const footer = (
+    <>
+        <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+        <Button onClick={handleExportClick} disabled={(source === 'selected' && selectionCount === 0) || (source === 'all' && totalCount === 0)}>{t('common.export')}</Button>
+    </>
+  );
 
   return (
-    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={onClose}>
-      <Card ref={modalRef} className="w-full max-w-lg modal-content-animate" onClick={e => e.stopPropagation()}>
-        <h2 className="text-2xl font-bold font-display text-primary-400 mb-4">{t('strainsView.exportModal.title')}</h2>
-        
+    <Modal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={title}
+        size="lg"
+        footer={footer}
+    >
         <div className="space-y-6">
           <div>
             <h3 className="text-lg font-semibold text-slate-200 mb-2">{t('strainsView.exportModal.source')}</h3>
@@ -81,12 +97,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onExp
             </div>
           </div>
         </div>
-
-        <div className="flex justify-end gap-4 mt-8">
-          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button onClick={handleExportClick}>{t('common.export')}</Button>
-        </div>
-      </Card>
-    </div>
+    </Modal>
   );
 };

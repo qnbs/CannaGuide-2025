@@ -1,4 +1,6 @@
-export const strains = {
+import type { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "acdc": {
     "description": "Eine berühmte CBD-dominante Sorte, gezüchtet für therapeutische Zwecke ohne starke psychoaktive Wirkung. Der Name steht für 'Alternative Cannabinoid Dietary Cannabis'. Wirkt entspannend und angstlösend, während der Geist klar bleibt. Ideal bei Schmerzen und Angstzuständen."
   },
@@ -37,6 +39,13 @@ export const strains = {
   },
   "alaskan-thunder-fuck": {
     "description": "Alias: ATF. Eine legendäre Sativa aus dem Matanuska Valley in Alaska. Bekannt für einen intensiven, euphorischen und energetisierenden Rausch, der die Kreativität fördert. Das Aroma ist eine komplexe Mischung aus Kiefer, Zitrone, Menthol und Skunk."
+  },
+  "alien-cookies": {
+    "description": "Alien Cookies ist eine hoch angesehene und potente Hybride, gezüchtet von Jaws Genetics. Sie ist am besten bekannt als eine der Elternsorten des modernen Superstars Cap Junky. Diese Sorte kombiniert die süßen, erdigen und vanilligen Noten von Girl Scout Cookies mit der außerweltlichen Potenz und den einzigartigen Eigenschaften von Alien Dawg. Die Wirkung ist stark und ausgewogen, beginnend mit einem intensiven, euphorischen und zerebralen Rausch, der langsam in ein tief entspannendes und beruhigendes Körper-High übergeht. Das Aroma ist komplex und verlockend, mit einem süßen Keks- und Vanilleduft, untermalt von scharfen, erdigen und leicht chemischen Untertönen. Aufgrund ihrer Potenz ist sie am besten für erfahrene Konsumenten geeignet.",
+    "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
+    "genetics": "Girl Scout Cookies x Alien Dawg",
+    "yieldDetails": { "indoor": "Niedrig", "outdoor": "Niedrig" },
+    "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel" }
   },
   "alien-dawg": {
     "description": "Eine reine Indica, die für ihr saures, dieselartiges Aroma und ihre potente, entspannende Wirkung bekannt ist. Sie ist eine der Elternsorten von Alien Kush und bietet eine starke zerebrale Wirkung, die in eine tiefe Körperentspannung übergeht."

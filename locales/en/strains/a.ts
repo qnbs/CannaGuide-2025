@@ -1,4 +1,6 @@
-export const strains = {
+import type { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "acdc": {
     "description": "A famous CBD-dominant strain, bred for therapeutic purposes without strong psychoactive effects. The name stands for 'Alternative Cannabinoid Dietary Cannabis'. It has a relaxing and anxiolytic effect, while the mind remains clear. Ideal for pain and anxiety."
   },
@@ -37,6 +39,13 @@ export const strains = {
   },
   "alaskan-thunder-fuck": {
     "description": "Alias: ATF. A legendary Sativa from the Matanuska Valley in Alaska. Known for an intense, euphoric, and energizing high that promotes creativity. The aroma is a complex mix of pine, lemon, menthol, and skunk."
+  },
+  "alien-cookies": {
+    "description": "Alien Cookies is a highly regarded and potent hybrid bred by Jaws Genetics. It is best known as one of the parent strains of the modern superstar Cap Junky. This strain combines the sweet, earthy, and vanilla notes of Girl Scout Cookies with the otherworldly potency and unique characteristics of Alien Dawg. The effect is strong and balanced, starting with an intense, euphoric, and cerebral rush that slowly transitions into a deeply relaxing and calming body high. The aroma is complex and enticing, with a sweet cookie and vanilla scent underscored by pungent, earthy, and slightly chemical undertones. Due to its potency, it is best suited for experienced consumers.",
+    "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
+    "genetics": "Girl Scout Cookies x Alien Dawg",
+    "yieldDetails": { "indoor": "Low", "outdoor": "Low" },
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
   },
   "alien-dawg": {
     "description": "A pure Indica known for its sour, diesel-like aroma and potent, relaxing effects. It is one of the parent strains of Alien Kush and offers a strong cerebral effect that transitions into deep body relaxation."

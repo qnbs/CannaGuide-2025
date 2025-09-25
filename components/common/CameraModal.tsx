@@ -3,6 +3,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { Modal } from './Modal';
 
 interface CameraModalProps {
   isOpen: boolean;
@@ -14,7 +15,6 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   const { t } = useTranslations();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const modalRef = useFocusTrap(isOpen);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -77,13 +77,42 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   const handleRetake = () => {
     setCapturedImage(null);
     setError(null);
+    // Restart camera
+    const startCamera = async () => {
+        try {
+          const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          setStream(mediaStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = mediaStream;
+          }
+        } catch (err) {
+          setError(t('plantsView.aiDiagnostics.cameraError'));
+        }
+      };
+      startCamera();
   }
 
-  if (!isOpen) return null;
+  const footerContent = (
+    <div className="w-full flex justify-center gap-4">
+        {capturedImage ? (
+            <>
+                <Button onClick={handleRetake} variant="secondary"><PhosphorIcons.ArrowClockwise className="w-5 h-5 mr-2" />{t('plantsView.aiDiagnostics.retake')}</Button>
+                <Button onClick={handleConfirmCapture}><PhosphorIcons.CheckCircle className="w-5 h-5 mr-2" />{t('common.confirm')}</Button>
+            </>
+        ) : (
+            <Button onClick={handleCapture} disabled={!stream}><PhosphorIcons.Camera className="w-5 h-5 mr-2" />{t('plantsView.aiDiagnostics.capture')}</Button>
+        )}
+    </div>
+  );
 
   return (
-    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4" onClick={onClose} role="dialog" aria-modal="true">
-      <div ref={modalRef} className="bg-slate-900 rounded-lg shadow-xl w-full max-w-lg p-4 relative" onClick={e => e.stopPropagation()}>
+    <Modal 
+        isOpen={isOpen} 
+        onClose={onClose} 
+        size="lg" 
+        footer={footerContent}
+        containerClassName="!bg-slate-900"
+    >
         {error ? (
           <div className="text-center text-red-400 p-8">{error}</div>
         ) : (
@@ -95,20 +124,6 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
             )}
           </div>
         )}
-        <div className="mt-4 flex justify-center gap-4">
-            {capturedImage ? (
-                <>
-                    <Button onClick={handleRetake} variant="secondary"><PhosphorIcons.ArrowClockwise className="w-5 h-5 mr-2" />{t('plantsView.aiDiagnostics.retake')}</Button>
-                    <Button onClick={handleConfirmCapture}><PhosphorIcons.CheckCircle className="w-5 h-5 mr-2" />{t('common.confirm')}</Button>
-                </>
-            ) : (
-                <Button onClick={handleCapture} disabled={!stream}><PhosphorIcons.Camera className="w-5 h-5 mr-2" />{t('plantsView.aiDiagnostics.capture')}</Button>
-            )}
-        </div>
-        <button onClick={onClose} className="absolute top-2 right-2 p-2 rounded-full bg-black/30 hover:bg-black/50 text-white" aria-label={t('common.close')}>
-            <PhosphorIcons.X className="w-5 h-5" />
-        </button>
-      </div>
-    </div>
+    </Modal>
   );
 };

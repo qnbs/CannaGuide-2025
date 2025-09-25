@@ -1,191 +1,73 @@
-export const strains = {
+import type { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "tahoe-alien": {
-    "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening.",
-    "typeDetails": "Indica 60% / Sativa 40%",
-    "genetics": "Tahoe OG Kush x Alien Kush",
-    "aromas": ["Earthy", "Pine", "Lemon", "Pungent"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "~400 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening."
   },
   "tahoe-og-kush": {
-    "description": "An OG Kush phenotype known for its heavily relaxing and sedating effects. Ideal for evening use and for insomnia.",
-    "typeDetails": "Indica 60% / Sativa 40%",
-    "genetics": "OG Kush phenotype",
-    "aromas": ["Earthy", "Pine", "Lemon", "Pungent"],
-    "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "An OG Kush phenotype known for its heavily relaxing and sedating effects. Ideal for evening use and for insomnia."
   },
   "tangerine-dream": {
-    "description": "A sativa-dominant strain with a sweet, tangerine-like aroma. The effect is uplifting, creative, and pain-relieving.",
-    "typeDetails": "Sativa 60% / Indica 40%",
-    "genetics": "G13 x Afghani x Neville's A5 Haze",
-    "aromas": ["Tangerine", "Citrus", "Sweet", "Tropical"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1 m)" }
+    "description": "A sativa-dominant strain with a sweet, tangerine-like aroma. The effect is uplifting, creative, and pain-relieving."
   },
   "tangie": {
-    "description": "A Sativa strain known for its strong, sweet tangerine aroma. The effect is uplifting, creative, and energizing, ideal for daytime use.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "California Orange x Skunk #1",
-    "aromas": ["Tangerine", "Citrus", "Sweet", "Orange"],
-    "dominantTerpenes": ["Myrcene", "Terpinolene", "Pinene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
+    "description": "A Sativa strain known for its strong, sweet tangerine aroma. The effect is uplifting, creative, and energizing, ideal for daytime use."
   },
   "tangilope": {
-    "description": "A sativa-dominant strain that combines the citrus aroma of Tangie with the chocolatey flavor of Chocolope. The effect is uplifting and creative.",
-    "typeDetails": "Sativa 80% / Indica 20%",
-    "genetics": "Tangie x Chocolope",
-    "aromas": ["Chocolate", "Citrus", "Sweet", "Orange"],
-    "dominantTerpenes": ["Myrcene", "Terpinolene", "Limonene"],
-    "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.2 m)" }
+    "description": "A sativa-dominant strain that combines the citrus aroma of Tangie with the chocolatey taste of Chocolope. The effect is uplifting and creative."
+  },
+  "tegridy-og": {
+    "description": "Named after the fictional farm in the TV show \"South Park,\" Tegridy OG is a potent indica-dominant hybrid for experienced users. It typically combines classic OG Kush and Chemdawg genetics, resulting in a powerful aroma of earth, pine, and pungent diesel. The effects are strong and fast-acting, delivering a wave of cerebral euphoria that quickly transitions into a heavy, full-body relaxation that can lead to couch-lock. It's an ideal strain for evening use, stress relief, and managing pain."
+  },
+  "thai": {
+    "description": "The archetypal Sativa and genetic foundation for countless modern strains, especially the Haze family."
   },
   "thc-bomb": {
-    "description": "A potent hybrid known for its extremely high yields and high THC content. The effect is strong, relaxing, and euphoric.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Unknown cross",
-    "aromas": ["Sweet", "Fruity", "Earthy", "Skunk"],
-    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
-    "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "~700 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1 m)" }
+    "description": "A potent hybrid known for its extremely high yields and high THC content. The effect is strong, relaxing, and euphoric."
   },
   "the-og": {
-    "description": "An OG Kush phenotype with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and ideal for the evening.",
-    "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "OG Kush phenotype",
-    "aromas": ["Earthy", "Pine", "Spicy", "Pungent"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "An OG Kush phenotype with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and ideal for the evening."
   },
   "the-soap": {
-    "description": "A sativa-dominant strain with a unique floral, minty, and 'clean' aroma. The effect is uplifting, creative, and energizing.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "Animal Mints x Kush Mints",
-    "aromas": ["Floral", "Mint", "Clean", "Spicy"],
-    "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
+    "description": "A sativa-dominant strain with a unique floral, minty, and 'clean' aroma. The effect is uplifting, creative, and energizing."
   },
   "the-y": {
-    "description": "A potent hybrid with a sweet, fruity, and diesel-like aroma. The effect is strong, euphoric, and relaxing.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Unknown",
-    "aromas": ["Sweet", "Fruity", "Diesel", "Creamy"],
-    "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "A potent hybrid with a sweet, fruity, and diesel-like aroma. The effect is strong, euphoric, and relaxing."
   },
   "thin-mint-gsc": {
-    "description": "A GSC phenotype with a minty, sweet, and earthy aroma. The effect is strong, balanced between cerebral euphoria and physical relaxation.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "GSC phenotype",
-    "aromas": ["Mint", "Sweet", "Earthy", "Cookie"],
-    "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"],
-    "yieldDetails": { "indoor": "~300 g/m²", "outdoor": "~350 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "A GSC phenotype with a minty, sweet, and earthy aroma. The effect is strong, balanced between cerebral euphoria and physical relaxation."
   },
   "three-kings": {
-    "description": "A sativa-dominant strain bred from three legendary varieties. It offers a balanced, uplifting, and creative effect. The aroma is a mix of pine, earth, and diesel.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "Headband x Sour Diesel x OG Kush",
-    "aromas": ["Earthy", "Pine", "Sour", "Diesel"],
-    "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
+    "description": "A sativa-dominant strain bred from three legendary strains. It offers a balanced, uplifting, and creative effect. The aroma is a mix of pine, earth, and diesel."
   },
   "tiramisu": {
-    "description": "An indica-dominant strain with a sweet, creamy, and coffee-like aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "Wedding Cake x Gelato #45",
-    "aromas": ["Sweet", "Creamy", "Coffee", "Vanilla"],
-    "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
-    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "An indica-dominant strain with a sweet, creamy, and coffee-like aroma. The effect is strong, relaxing, and sedating."
   },
   "tom-ford-pink-kush": {
-    "description": "A potent indica-dominant strain with a sweet, floral, and earthy aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 80% / Sativa 20%",
-    "genetics": "Pink Kush x Unknown Indica",
-    "aromas": ["Sweet", "Floral", "Earthy", "Vanilla"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.3 m)" }
+    "description": "A potent indica-dominant strain with a sweet, floral, and earthy aroma. The effect is strong, relaxing, and sedating."
   },
   "trainwreck": {
-    "description": "A potent Sativa that produces a fast-acting, intense, and euphoric effect. The aroma is a mix of pine, lemon, and spicy notes.",
-    "typeDetails": "Sativa 90% / Indica 10%",
-    "genetics": "Mexican Sativa x Thai Sativa x Afghani Indica",
-    "aromas": ["Pine", "Lemon", "Spicy", "Earthy"],
-    "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"],
-    "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "~600 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 3 m)" }
+    "description": "A potent Sativa that produces a fast-acting, intense, and euphoric effect. The aroma is a mix of pine, lemon, and spicy notes."
   },
   "tres-dawg": {
-    "description": "A potent indica-dominant strain with a strong, chemical and diesel-like aroma. The effect is strong, relaxing, and long-lasting.",
-    "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "Chemdawg x Afghani #1",
-    "aromas": ["Chemical", "Diesel", "Earthy", "Pungent"],
-    "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
+    "description": "A potent indica-dominant strain with a strong, chemical, and diesel-like aroma. The effect is strong, relaxing, and long-lasting."
   },
   "triangle-mints": {
-    "description": "A balanced hybrid with a minty, earthy, and sweet aroma. The effect is strong, euphoric, and relaxing.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Triangle Kush x Animal Mints",
-    "aromas": ["Mint", "Earthy", "Sweet", "Pine"],
-    "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "A balanced hybrid with a minty, earthy, and sweet aroma. The effect is strong, euphoric, and relaxing."
   },
   "triple-og": {
-    "description": "A pure Indica with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 100%",
-    "genetics": "OG Kush x Unknown",
-    "aromas": ["Earthy", "Pine", "Spicy", "Pungent"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.3 m)" }
+    "description": "A pure Indica with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and sedating."
   },
   "tropicana-cherry": {
-    "description": "A balanced hybrid with a sweet, fruity aroma of cherries and citrus. The effect is uplifting, happy, and relaxing.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Tropicana Cookies x Cherry Cookies",
-    "aromas": ["Cherry", "Citrus", "Sweet", "Fruity"],
-    "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~500 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "A balanced hybrid with a sweet, fruity aroma of cherries and citrus. The effect is uplifting, happy, and relaxing."
   },
   "tropicana-cookies": {
-    "description": "A sativa-dominant strain with a strong orange and citrus aroma. The effect is uplifting, creative, and energizing.",
-    "typeDetails": "Sativa 70% / Indica 30%",
-    "genetics": "GSC x Tangie",
-    "aromas": ["Orange", "Citrus", "Sweet", "Tropical"],
-    "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.2 m)" }
+    "description": "A sativa-dominant strain with a strong orange and citrus aroma. The effect is uplifting, creative, and energizing."
   },
   "truffle-butter": {
-    "description": "An indica-dominant strain with a sweet, buttery, and earthy aroma. The effect is strong, relaxing, and sedating.",
-    "typeDetails": "Indica 70% / Sativa 30%",
-    "genetics": "Gelato x Chocolate Kush",
-    "aromas": ["Sweet", "Butter", "Earthy", "Nutty"],
-    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
-    "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~450 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8 m)" }
+    "description": "An indica-dominant strain with a sweet, buttery, and earthy aroma. The effect is strong, relaxing, and sedating."
   },
   "tutankhamon": {
-    "description": "An AK-47 phenotype with an extremely high THC content. The effect is strong, cerebral, and energizing. The aroma is skunky and fruity.",
-    "typeDetails": "Sativa 80% / Indica 20%",
-    "genetics": "AK-47 phenotype",
-    "aromas": ["Skunk", "Sweet", "Fruity", "Earthy"],
-    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~650 g/plant" },
-    "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.3 m)" }
+    "description": "An AK-47 phenotype with an extremely high THC content. The effect is strong, cerebral, and energizing. The aroma is skunky and fruity."
   }
-}
+};

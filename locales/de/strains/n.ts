@@ -1,20 +1,13 @@
-export const strains = {
+import type { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "northern-lights": {
-    "description": "Eine legendäre, fast reine Indica-Sorte, bekannt für ihre schnelle Blüte, hohe Harzproduktion und tief entspannende Wirkung. Ideal für den Abend und bei Schlaflosigkeit.",
-    "typeDetails": "Indica 95% / Sativa 5%",
-    "genetics": "Afghani x Thailändische Landrasse",
-    "aromas": ["Erdig", "Süß", "Kiefer", "Würzig"],
-    "dominantTerpenes": ["Myrcen", "Pinen", "Caryophyllen"],
-    "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "600-650 g/Pflanze" },
-    "heightDetails": { "indoor": "Kurz", "outdoor": "Mittel" }
+    "description": "Eine der berühmtesten Sorten aller Zeiten, eine reine Indica, die für ihre schnelle Blüte, harzigen Knospen und Widerstandsfähigkeit geschätzt wird. Sie bietet ein scharf-süßes und würziges Aroma und ein stark entspannendes Körper-High."
   },
-  "nevilles-haze": {
-    "description": "Eine hochgelobte Sativa, die für ihre extrem lange Blütezeit und ihre stark zerebrale, fast psychedelische Wirkung bekannt ist. Nur für erfahrene Anbauer und Konsumenten empfohlen.",
-    "typeDetails": "Sativa 90% / Indica 10%",
-    "genetics": "Haze x Northern Lights #5",
-    "aromas": ["Kiefer", "Erdig", "Süß", "Blumig"],
-    "dominantTerpenes": ["Terpinolen", "Myrcen", "Pinen"],
-    "yieldDetails": { "indoor": "~700 g/m²", "outdoor": "~900 g/Pflanze" },
-    "heightDetails": { "indoor": "Sehr hoch", "outdoor": "Sehr hoch" }
+  "nyc-diesel": {
+    "description": "Eine beliebte sativa-dominante Hybride, die für ihre starke, erhebende und gesprächige Wirkung bekannt ist. Sie zeichnet sich durch ein scharfes Dieselaroma aus, gemischt mit Noten von reifer Grapefruit und Limette."
+  },
+  "nuken": {
+    "description": "Eine kanadische indica-dominante Sorte mit einem süßen, erdigen und marshmallow-ähnlichen Aroma. Sie liefert ein starkes, entspannendes Körper-High, das Schmerzen und Stress lindert, ohne vollständig zu sedieren."
   }
 };

@@ -1,3 +1,4 @@
+
 export const common = {
   add: 'Add',
   all: 'All',
@@ -128,7 +129,12 @@ export const common = {
     "Hash": "Hash",
     "Incense": "Incense",
     "Licorice": "Licorice",
-    "Clean": "Clean"
+    "Clean": "Clean",
+    "Metallic": "Metallic",
+    "Sage": "Sage",
+    "Cedar": "Cedar",
+    "Eucalyptus": "Eucalyptus",
+    "Candy": "Candy"
   }
 };
 

@@ -1,20 +1,22 @@
-export const strains = {
+import type { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "qrazy-train": {
-    "description": "A complex hybrid with a grape-like, spicy aroma. The effect is strong, euphoric, and relaxing, ideal for experienced consumers.",
-    "typeDetails": "Hybrid 50% / 50%",
-    "genetics": "Querkle x Trainwreck x Trinity x Space Queen",
-    "aromas": ["Grape", "Spicy", "Sweet", "Earthy"],
-    "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
+    "description": "A complex hybrid with a grape-like, spicy aroma. The effect is strong, euphoric, and relaxing, ideal for experienced consumers."
   },
-  "queen-mother-goji": {
-    "description": "A sativa-dominant strain with a berry and cherry aroma. The effect is uplifting, creative, and energizing, ideal for daytime use.",
-    "typeDetails": "Sativa 80% / Indica 20%",
-    "genetics": "Nepali OG x Snow Lotus",
-    "aromas": ["Berry", "Cherry", "Spicy", "Earthy"],
-    "dominantTerpenes": ["Limonene", "Myrcene", "Pinene"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Tall", "outdoor": "Tall" }
+  "quantum-kush": {
+    "description": "A potent sativa-dominant strain known for its extremely high THC content. The effect is strong, cerebral, and energizing."
+  },
+  "quattro-kush": {
+    "description": "An indica-dominant strain with a strong, diesel-like, and earthy aroma. The effect is strong, relaxing, and long-lasting."
+  },
+  "queen-mother": {
+    "description": "A sativa-dominant strain with a spicy, incense-like aroma. The effect is uplifting, cerebral, and energizing."
+  },
+  "queens-sangria": {
+    "description": "A balanced hybrid with a sweet, citrusy, and grape-like aroma. The effect is relaxing, happy, and uplifting."
+  },
+  "querkle": {
+    "description": "An indica-dominant strain with a sweet grape and berry aroma. The effect is strongly relaxing and ideal for pain and insomnia."
   }
 };

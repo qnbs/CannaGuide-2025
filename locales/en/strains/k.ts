@@ -1,19 +1,17 @@
-export const strains = {
+import { StrainTranslationData } from "@/types";
+
+export const strains: Record<string, StrainTranslationData> = {
   "kush-mints": {
-    "description": "A highly potent hybrid with a complex aroma of mint and cookies. The effect is strong, balanced between cerebral euphoria and physical relaxation.",
-    "typeDetails": "Hybrid 50% / 50%",
+    "description": "Kush Mints is a perfectly balanced hybrid bred by Seed Junky Genetics, known for its extreme potency and unique flavor profile. It is a cross between the potent Animal Mints and the classic Bubba Kush. This strain offers a strong but balanced effect, encompassing both an uplifting, euphoric cerebral stimulation and a deeply relaxing, calming body high without being overly sedating. This makes it a versatile strain that can be enjoyed both during the day and in the evening. The aroma is complex and enticing, a blend of fresh mint and sweet cookies, underscored by earthy, piney, and coffee-like notes. Due to its high THC content, it is one of the parent strains for many modern high-potency hybrids like Cap Junky.",
+    "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
     "genetics": "Animal Mints x Bubba Kush",
-    "aromas": ["Mint", "Cookie", "Sweet", "Earthy"],
-    "dominantTerpenes": ["Limonene", "Caryophyllene", "Linalool"],
-    "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "~550 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.8m)" }
+    "yieldDetails": { "indoor": "~500-600 g/m²", "outdoor": "~650 g/plant" },
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
   },
   "king-louis-xiii": {
     "description": "A rare phenotype of OG Kush, known for its extremely pungent, piney, and earthy aroma. The effect is strong, sedating, and ideal for insomnia.",
     "typeDetails": "Indica 70% / Sativa 30%",
     "genetics": "OG Kush Phenotype",
-    "aromas": ["Pine", "Earthy", "Pungent", "Woody"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
     "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/plant" },
     "heightDetails": { "indoor": "Short", "outdoor": "Short (up to 1.2m)" }
   },
@@ -21,8 +19,6 @@ export const strains = {
     "description": "The first strain to be blessed by a rabbi. This award-winning Indica offers a strong, physically relaxing effect and an earthy, fruity taste.",
     "typeDetails": "Indica 100%",
     "genetics": "Unknown OG Kush offshoot",
-    "aromas": ["Earthy", "Sweet", "Fruity", "Pine"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
     "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "~700 g/plant" },
     "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2m)" }
   },
@@ -30,10 +26,11 @@ export const strains = {
     "description": "An award-winning, almost pure Sativa. It is known for its energizing, clear, and creative effect, which makes it the 'Queen of Sativas'. Ideal for daytime use.",
     "typeDetails": "Sativa 90% / Indica 10%",
     "genetics": "Unknown Sativa Hybrids",
-    "aromas": ["Spicy", "Sweet", "Earthy", "Citrus"],
-    "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"],
     "yieldDetails": { "indoor": "300-500 g/m²", "outdoor": "~600 g/plant" },
     "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 3m)" }
+  },
+  "kilimanjaro": {
+    "description": "A pure African sativa from the slopes of Mount Kilimanjaro in Kenya. It is known for its extremely energizing and almost immediate effect, which has earned it the nickname 'one-hit-wonder'. Ideal for daytime use to promote activity and creativity."
   },
   "k2": {
     "description": "An indica-dominant strain known for its fast flowering time and its dense, resinous buds. The effect is relaxing and calming."
@@ -59,4 +56,4 @@ export const strains = {
   "kush-sorbet": {
     "description": "An indica-dominant strain with a sweet, creamy, and fruity aroma. The effect is relaxing and calming, ideal for evening use."
   }
-}
+};

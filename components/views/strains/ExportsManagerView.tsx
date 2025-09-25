@@ -28,22 +28,11 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
             return;
         }
 
-        const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt)$/, '');
+        const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt|xml)$/, '');
 
-        switch (savedExport.format) {
-            case 'json':
-                exportService.exportAsJSON(strainsToExport, fileNameWithoutExt);
-                break;
-            case 'csv':
-                exportService.exportAsCSV(strainsToExport, fileNameWithoutExt, t);
-                break;
-            case 'pdf':
-                exportService.exportAsPDF(strainsToExport, fileNameWithoutExt, t);
-                break;
-            case 'txt':
-                exportService.exportAsTXT(strainsToExport, fileNameWithoutExt, t);
-                break;
-        }
+        // FIX: Call the unified exportStrains method instead of non-existent specific methods.
+        exportService.exportStrains(strainsToExport, savedExport.format, fileNameWithoutExt, t);
+        
         addNotification(t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), 'success');
     };
     
@@ -66,11 +55,13 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
         addNotification(t('strainsView.exportsManager.updateExportSuccess', { name: updated.title }), 'success');
     };
 
+    // FIX: Added missing 'xml' format icon as required by the ExportFormat type.
     const formatIcons: Record<ExportFormat, React.ReactNode> = {
         json: <PhosphorIcons.BracketsCurly />,
         csv: <PhosphorIcons.FileCsv />,
         pdf: <PhosphorIcons.FilePdf />,
         txt: <PhosphorIcons.BookOpenText />,
+        xml: <PhosphorIcons.CommandLine />,
     };
 
     const sortedExports = [...savedExports].sort((a, b) => b.createdAt - a.createdAt);

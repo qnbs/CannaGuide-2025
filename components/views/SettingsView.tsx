@@ -1,11 +1,11 @@
-import React, { useId } from 'react';
+import React, { useId, useState } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { dbService } from '@/services/dbService';
-import { Language, Theme, View, UiDensity } from '@/types';
+import { Language, Theme, View, UiDensity, ExportFormat } from '@/types';
 import { selectSettings } from '@/stores/selectors';
 
 interface SettingsViewProps {
@@ -19,7 +19,7 @@ const SettingItem: React.FC<{ label: string; description?: string; children: Rea
             <p className="font-semibold text-slate-100">{label}</p>
             {description && <p className="text-sm text-slate-400 max-w-md">{description}</p>}
         </div>
-        <div className="flex-shrink-0">{children}</div>
+        <div className="flex-shrink-0 flex items-center gap-2">{children}</div>
     </div>
 );
 
@@ -57,7 +57,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
     }));
     const isInstalled = !deferredPrompt && (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true);
     
-    const handleExportData = () => {
+    const handleExportData = (format: 'json' | 'xml') => {
         if(window.confirm(t('settingsView.data.exportConfirm'))) {
             try {
                 const appDataString = localStorage.getItem('cannaguide-2025-storage');
@@ -65,12 +65,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
 
                 const appData = JSON.parse(appDataString);
                 
-                const jsonString = JSON.stringify(appData.state, null, 2);
-                const blob = new Blob([jsonString], { type: "application/json" });
+                const dataToExport = JSON.stringify(appData.state, null, 2);
+                const blob = new Blob([dataToExport], { type: `application/${format};charset=utf-8;` });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `CannaGuide_Backup_${new Date().toISOString().slice(0, 10)}.json`;
+                a.download = `CannaGuide_Backup_${new Date().toISOString().slice(0, 10)}.${format}`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -189,7 +189,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                     <Button onClick={resetPlants} variant="secondary">{t('settingsView.data.resetPlants')}</Button>
                 </SettingItem>
                 <SettingItem label={t('settingsView.data.exportAll')} description={t('settingsView.data.exportConfirm')}>
-                    <Button onClick={handleExportData} variant="secondary">{t('common.export')}</Button>
+                    <Button onClick={() => handleExportData('json')} variant="secondary">{t('settingsView.data.exportAsJson')}</Button>
+                    <Button onClick={() => handleExportData('xml')} variant="secondary">{t('settingsView.data.exportAsXml')}</Button>
                 </SettingItem>
                 <SettingItem label={t('settingsView.data.importAll')} description={t('settingsView.data.importConfirm')}>
                     <Button as="label" htmlFor={importId} variant="secondary" className="cursor-pointer">{t('settingsView.data.importAll')}</Button>

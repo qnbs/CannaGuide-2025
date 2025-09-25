@@ -1,20 +1,43 @@
-export const strains = {
+import type { StrainTranslationData } from '@/types';
+
+export const strains: Record<string, StrainTranslationData> = {
   "og-kush": {
-    "description": "A legendary hybrid with an earthy, piney, and citrusy aroma. It is known for its balanced, strong effects that relax both the mind and body.",
-    "typeDetails": "Indica 75% / Sativa 25%",
-    "genetics": "Chemdawg x (Lemon Thai x Hindu Kush)",
-    "aromas": ["Earthy", "Pine", "Lemon", "Diesel"],
-    "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"],
-    "yieldDetails": { "indoor": "450-500 g/m²", "outdoor": "500-550 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
+    "description": "A legendary hybrid with an earthy, piney, and citrusy aroma. It is known for its balanced, strong effects that relax both the mind and body."
+  },
+  "ogkb-og-kush-breath": {
+    "description": "A legendary clone considered the backbone of many modern 'Cookies' and 'Cake' strains. Known for extremely dense, resinous buds and a complex, earthy aroma with sweet and nutty undertones. The effect is potent, starting with a cerebral rush and quickly leading to a deep, almost sedating body relaxation."
   },
   "orange-bud": {
-    "description": "A classic Skunk strain with a strong orange and citrus aroma. The effect is uplifting, happy, and energizing. Easy to grow and high-yielding.",
-    "typeDetails": "Sativa 65% / Indica 35%",
-    "genetics": "Skunk #1 Phenotype",
-    "aromas": ["Orange", "Citrus", "Sweet", "Skunk"],
-    "dominantTerpenes": ["Myrcene", "Terpinolene", "Pinene"],
-    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-    "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
+    "description": "A classic Skunk strain with a strong orange and citrus aroma. The effect is uplifting, happy, and energizing. Easy to grow and high-yielding."
+  },
+  "orange-cookies": {
+    "description": "A balanced hybrid with a sweet orange and cookie aroma. The effect is uplifting, relaxing, and happy."
+  },
+  "orange-cream-sicle": {
+    "description": "A balanced hybrid with a sweet, creamy orange aroma. The effect is uplifting and relaxing."
+  },
+  "orange-eruption": {
+    "description": "A sativa-dominant strain with a strong orange and citrus aroma. The effect is uplifting, energizing, and creative."
+  },
+  "orange-juice": {
+    "description": "A sativa-dominant strain with a sweet, fresh orange juice aroma. The effect is uplifting and energizing."
+  },
+  "orange-sherbet": {
+    "description": "A balanced hybrid with a sweet, creamy orange aroma. The effect is uplifting and relaxing."
+  },
+  "orange-velvet": {
+    "description": "A balanced hybrid with a sweet, creamy orange aroma. The effect is uplifting, relaxing, and happy."
+  },
+  "oreo-cake": {
+    "description": "An indica-dominant strain with a sweet, chocolatey, and earthy aroma. The effect is strong, relaxing, and sedating."
+  },
+  "oreoz": {
+    "description": "A potent indica-dominant strain with a chocolatey, sweet, and creamy aroma. The effect is strong, relaxing, and long-lasting."
+  },
+  "orion": {
+    "description": "An indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is relaxing and calming."
+  },
+  "ortega": {
+    "description": "A pure Indica with an earthy, spicy, and sweet aroma. The effect is strong, relaxing, and sedating."
   }
 };

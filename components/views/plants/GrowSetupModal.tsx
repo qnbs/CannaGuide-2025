@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { GrowSetup, Strain } from '@/types';
 import { Button } from '@/components/common/Button';
-import { Card } from '@/components/common/Card';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
-
+import { Modal } from '@/components/common/Modal';
 
 interface GrowSetupModalProps {
   strain: Strain;
@@ -19,7 +17,6 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
       addNotification: state.addNotification,
       settings: state.settings,
   }));
-  const modalRef = useFocusTrap(true);
   
   const [setup, setSetup] = useState<GrowSetup>(settings.defaultGrowSetup);
 
@@ -46,12 +43,22 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
       { id: 'medium', label: t('plantsView.setupModal.medium'), choices: ['Soil', 'Coco', 'Hydro'], display: s => String(t(`plantsView.setupModal.mediums.${String(s).toLowerCase()}`)) },
   ];
 
+  const footer = (
+      <>
+        <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+        <Button onClick={handleConfirm}>{t('common.confirm')} & {t('common.start')}</Button>
+      </>
+  );
+
   return (
-    <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-50 p-4 modal-overlay-animate">
-      <Card ref={modalRef} className="w-full max-w-md modal-content-animate">
-        <h2 className="text-2xl font-bold font-display text-primary-400 mb-2">{t('plantsView.setupModal.title', { name: strain.name })}</h2>
+    <Modal
+        isOpen={true}
+        onClose={onClose}
+        title={t('plantsView.setupModal.title', { name: strain.name })}
+        size="md"
+        footer={footer}
+    >
         <p className="text-accent-200/90 mb-6">{t('plantsView.setupModal.subtitle')}</p>
-        
         <div className="space-y-6">
             {options.map(opt => (
                 <div key={opt.id}>
@@ -92,12 +99,6 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                 </div>
             </div>
         </div>
-
-        <div className="flex justify-end gap-4 mt-8">
-          <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-          <Button onClick={handleConfirm}>{t('common.confirm')} & {t('common.start')}</Button>
-        </div>
-      </Card>
-    </div>
+    </Modal>
   );
 };

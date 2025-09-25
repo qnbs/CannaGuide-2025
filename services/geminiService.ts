@@ -97,6 +97,10 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
 
     try {
         const jsonStr = response.text;
+        if (!jsonStr || jsonStr.trim() === '') {
+             console.error("AI returned an empty response for equipment:", response);
+             throw new Error("ai.error.parsing");
+        }
         const result = JSON.parse(jsonStr);
         return result as Recommendation;
     } catch (e) {
@@ -128,6 +132,10 @@ const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIRespo
     
     try {
         const jsonStr = response.text;
+        if (!jsonStr || jsonStr.trim() === '') {
+             console.error("AI returned an empty response for mentor:", response);
+             throw new Error("ai.error.parsing");
+        }
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {
@@ -189,6 +197,10 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, conte
 
     try {
         const jsonStr = response.text;
+        if (!jsonStr || jsonStr.trim() === '') {
+             console.error("AI returned an empty response for diagnostics:", response);
+             throw new Error("ai.error.parsing");
+        }
         const result = JSON.parse(jsonStr);
         return result as PlantDiagnosisResponse;
     } catch (e) {
@@ -229,6 +241,10 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
 
     try {
         const jsonStr = response.text;
+        if (!jsonStr || jsonStr.trim() === '') {
+             console.error("AI returned an empty response for advisor:", response);
+             throw new Error("ai.error.parsing");
+        }
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {

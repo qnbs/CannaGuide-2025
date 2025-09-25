@@ -12,11 +12,11 @@ export enum CommandGroup {
 
 const groupOrder: CommandGroup[] = [
     CommandGroup.Navigation,
+    CommandGroup.General,
     CommandGroup.Plants,
     CommandGroup.Strains,
     CommandGroup.Knowledge,
     CommandGroup.Settings,
-    CommandGroup.General,
 ];
 
 export const groupAndSortCommands = (commands: Command[]): Command[] => {

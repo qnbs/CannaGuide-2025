@@ -179,7 +179,7 @@ export const useCommandPalette = () => {
         ];
         
         const generalActionCommands: Command[] = [];
-        if (deferredPrompt && !isInstalled) {
+        if (!isInstalled && deferredPrompt) {
             generalActionCommands.push({
                 id: 'pwa-install',
                 title: t('common.installPwa'),
@@ -188,7 +188,17 @@ export const useCommandPalette = () => {
                 action: () => { handleInstallClick(); setIsCommandPaletteOpen(false); },
                 keywords: 'install pwa application app homescreen add herunterladen installieren'
             });
+        } else if (isInstalled) {
+            generalActionCommands.push({
+                id: 'pwa-installed',
+                title: t('common.installed'),
+                group: CommandGroup.General,
+                icon: React.createElement(PhosphorIcons.CheckCircle),
+                action: () => { addNotification(t('common.installPwaSuccess'), 'info'); setIsCommandPaletteOpen(false); },
+                keywords: 'installed pwa application app'
+            });
         }
+
 
         return [...navigationCommands, ...generalActionCommands, ...plantCommands, ...strainCommands, ...tipCommands, ...settingsCommands];
     }, [t, allStrains, savedStrainTips, setActiveView, activePlants, waterAllPlants, advanceDay, settings, setSetting, setIsCommandPaletteOpen, setSelectedPlantId, deferredPrompt, handleInstallClick, isInstalled, addNotification, openAddModal, openExportModal, selectStrain]);

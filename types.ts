@@ -184,8 +184,6 @@ export interface StrainTranslationData {
   description?: string;
   typeDetails?: string;
   genetics?: string;
-  aromas?: string[];
-  dominantTerpenes?: string[];
   yieldDetails?: {
     indoor: string;
     outdoor: string;
@@ -231,7 +229,7 @@ export interface SavedSetup {
 }
 
 export type ExportSource = 'selected' | 'favorites' | 'filtered' | 'all';
-export type ExportFormat = 'pdf' | 'txt' | 'csv' | 'json';
+export type ExportFormat = 'pdf' | 'txt' | 'csv' | 'json' | 'xml';
 export interface SavedExport {
     id: SavedExportID;
     createdAt: number;

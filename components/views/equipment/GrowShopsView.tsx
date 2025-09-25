@@ -6,7 +6,6 @@ import { Button } from '@/components/common/Button';
 import { PaymentIcons } from '@/components/icons/PaymentIcons';
 
 type ShopRegion = 'europe' | 'us';
-type SortKey = 'name' | 'rating';
 
 const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = ({ shop, t, onClose }) => (
     <div className="flex flex-col h-full">
@@ -16,7 +15,7 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
                 <p className="text-sm text-slate-400">{shop.location}</p>
             </div>
             <Button size="sm" variant="secondary" onClick={onClose} className="md:hidden !p-1.5" aria-label={t('common.back')}>
-                <PhosphorIcons.ArrowLeft />
+                <PhosphorIcons.ArrowLeft className="w-5 h-5" />
             </Button>
         </div>
         <div className="flex items-center gap-2 mb-4">
@@ -61,7 +60,6 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
 export const GrowShopsView: React.FC = () => {
     const { t } = useTranslations();
     const [region, setRegion] = useState<ShopRegion>('europe');
-    const [sortKey, setSortKey] = useState<SortKey>('rating');
     const [selectedShopKey, setSelectedShopKey] = useState<string | null>(null);
 
     const allShops = useMemo(() => t('equipmentView.growShops.shops'), [t]);
@@ -72,11 +70,8 @@ export const GrowShopsView: React.FC = () => {
 
         return shopKeys
             .map(key => ({ ...allShops[key], key }))
-            .sort((a, b) => {
-                if (sortKey === 'name') return a.name.localeCompare(b.name);
-                return b.rating - a.rating;
-            });
-    }, [allShops, region, sortKey, t]);
+            .sort((a, b) => b.rating - a.rating);
+    }, [allShops, region, t]);
 
     const selectedShop = selectedShopKey ? allShops[selectedShopKey] : null;
 
@@ -84,15 +79,9 @@ export const GrowShopsView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
             <div className={`md:col-span-1 flex-col gap-4 ${selectedShop ? 'hidden md:flex' : 'flex'}`}>
                 <Card className="flex-shrink-0">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                        <div className="flex-1 flex gap-1 bg-slate-900 rounded-lg p-0.5">
-                            <button onClick={() => setRegion('europe')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-800'}`}>{t('equipmentView.growShops.region.europe')}</button>
-                            <button onClick={() => setRegion('us')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-800'}`}>{t('equipmentView.growShops.region.usa')}</button>
-                        </div>
-                        <select value={sortKey} onChange={e => setSortKey(e.target.value as SortKey)} className="bg-slate-700 border border-slate-600 rounded-lg px-3 py-1 text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-                            <option value="rating">{t('equipmentView.growShops.sortByRating')}</option>
-                            <option value="name">{t('equipmentView.growShops.sortByName')}</option>
-                        </select>
+                     <div className="flex gap-1 bg-slate-900 rounded-lg p-0.5">
+                        <button onClick={() => setRegion('europe')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-800'}`}>{t('equipmentView.growShops.region.europe')}</button>
+                        <button onClick={() => setRegion('us')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-800'}`}>{t('equipmentView.growShops.region.usa')}</button>
                     </div>
                 </Card>
                 <div className="flex-grow overflow-y-auto space-y-3 pr-2">
@@ -120,8 +109,8 @@ export const GrowShopsView: React.FC = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
                            <PhosphorIcons.Storefront className="w-16 h-16 mb-4 text-slate-400" />
-                           <h3 className="font-semibold text-lg text-slate-300">{t('equipmentView.savedSetups.noSetups.title')}</h3>
-                           <p className="text-sm">{t('equipmentView.savedSetups.noSetups.subtitle')}</p>
+                           <h3 className="font-semibold text-lg text-slate-300">{t('common.select')} a Shop</h3>
+                           <p className="text-sm">Choose a shop from the list to view its details.</p>
                         </div>
                     )}
                 </Card>

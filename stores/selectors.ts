@@ -27,6 +27,13 @@ export const selectKnowledgeProgress = (state: AppState) => state.knowledgeProgr
 export const selectFavoriteIds = (state: AppState) => state.favoriteIds;
 export const selectStrainNotes = (state: AppState) => state.strainNotes;
 
+// AI Task Selectors
+export const selectEquipmentGenerationState = (state: AppState) => state.equipmentGenerationState;
+export const selectMentorState = (state: AppState) => state.mentorState;
+export const selectAdvisorStateForPlant = (plantId: string) => (state: AppState) => state.advisorState[plantId] || { isLoading: false, response: null, error: null };
+export const selectStrainTipState = (strainId: string) => (state: AppState) => state.strainTipState[strainId] || { isLoading: false, tip: null, error: null };
+
+
 // --- DERIVED / COMPUTED SELECTORS ---
 
 /** Selects all plant objects from the record, ensuring no null/undefined values are returned. */

@@ -120,7 +120,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({
                         <PhosphorIcons.Heart weight={isFav ? 'fill' : 'regular'} className="w-4 h-4" />
                     </button>
                     <div title={!hasAvailableSlots? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
-                        <Button variant="secondary" size="sm" className={`!p-1.5 ${hasAvailableSlots? 'animate-pulse' : ''}`} onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>
+                        <Button variant="secondary" size="sm" className={`!p-1.5 ${hasAvailableSlots ? 'animate-pulse' : ''}`} onClick={(e) => handleActionClick(e, () => initiateGrow(strain))} disabled={!hasAvailableSlots}>
                             <PhosphorIcons.Plant className="w-4 h-4" />
                             <span className="sr-only">{t('strainsView.startGrowing')}</span>
                         </Button>

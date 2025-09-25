@@ -1,4 +1,3 @@
-
 import { Strain } from '@/types';
 import { dbService } from '@/services/dbService';
 
@@ -67,7 +66,7 @@ class StrainService {
   private async fetchAllStrainsData(): Promise<Strain[]> {
     const strainFiles = ['numeric', ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(97 + i))];
     const fetchPromises = strainFiles.map(file => 
-      fetch(`/data/strains/${file}.json`)
+      fetch(`data/strains/${file}.json`)
         .then(res => {
           if (!res.ok) {
             // It's okay if some files don't exist yet during migration

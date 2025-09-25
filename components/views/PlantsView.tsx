@@ -13,6 +13,7 @@ import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdviso
 import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
 import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '@/stores/selectors';
+import { AiDiagnostics } from './plants/AiDiagnostics';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -29,7 +30,6 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    // FIX: Get `advanceDay` from the store to pass to `GardenVitals`.
     const { waterAllPlants, startNewPlant, addNotification, advanceDay } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
         startNewPlant: state.startNewPlant,
@@ -53,7 +53,6 @@ export const PlantsView: React.FC = () => {
     
     const selectedPlant = useMemo(() => {
         if (!selectedPlantId) return null;
-        // Find from the most up-to-date record
         return plantsRecord[selectedPlantId] || null;
     }, [selectedPlantId, plantsRecord]);
     
@@ -111,6 +110,7 @@ export const PlantsView: React.FC = () => {
                         );
                     })}
                 </div>
+                 <AiDiagnostics />
                  <GlobalAdvisorArchiveView />
             </div>
             <div className="lg:col-span-1 space-y-6">

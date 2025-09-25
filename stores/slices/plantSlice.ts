@@ -1,12 +1,9 @@
-import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, JournalEntryType, TrainingType, Task, PlantProblem, PlantSubstrate } from '@/types';
-// FIX: Import AppState to resolve type errors in produce() callbacks.
+import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, TrainingType, Task, PlantProblem, PlantSubstrate } from '@/types';
 import { StoreSet, StoreGet, TFunction, AppState } from '../useAppStore';
-import { produce } from 'immer';
-import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { simulationService } from '@/services/plantSimulationService';
 
 const PLANT_SLOTS = 3;
 
-// FIX: Overhauled createInitialPlant to provide a complete and correctly typed Plant object.
 const createInitialPlant = (strain: Strain, setup: GrowSetup, name: string): Plant => {
     const initialSubstrate: PlantSubstrate = {
         type: setup.medium,
@@ -17,6 +14,8 @@ const createInitialPlant = (strain: Strain, setup: GrowSetup, name: string): Pla
         microbeHealth: 100,
         runoff: { ph: 6.5, ec: 0.3 },
     };
+    
+    const getRandomModifier = (min: number, max: number) => Math.random() * (max - min) + min;
 
     return {
         id: `plant-${Date.now()}`,
@@ -36,7 +35,7 @@ const createInitialPlant = (strain: Strain, setup: GrowSetup, name: string): Pla
         environment: {
             ambientTemperature: setup.temperature - 2,
             ambientHumidity: setup.humidity + 5,
-            co2Level: 400,
+            co2Level: 410,
             airExchangeRate: 150,
             internalTemperature: setup.temperature,
             internalHumidity: setup.humidity,
@@ -53,10 +52,10 @@ const createInitialPlant = (strain: Strain, setup: GrowSetup, name: string): Pla
         internalClock: 0,
         hormoneLevels: { florigen: 0 },
         geneticModifiers: {
-            growthSpeedFactor: 1,
-            nutrientDemandFactor: 1,
-            pestResistanceFactor: 1,
-            stressToleranceFactor: 1,
+            growthSpeedFactor: getRandomModifier(0.9, 1.1),
+            nutrientDemandFactor: getRandomModifier(0.9, 1.1),
+            pestResistanceFactor: getRandomModifier(0.9, 1.1),
+            stressToleranceFactor: getRandomModifier(0.9, 1.1),
         },
         currentChemicals: { thc: 0, cbd: 0, terpenes: {} },
         rootSystem: { rootMass: 0.1, rootHealth: 100 },
@@ -86,10 +85,10 @@ export interface PlantSlice {
     startNewPlant: (strain: Strain, setup: GrowSetup, slotIndex: number) => boolean;
     advanceDay: (plantId?: string) => void;
     waterPlant: (plantId: string, amount: number, ph: number) => void;
+    waterAllPlants: () => number;
     addJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
     completeTask: (plantId: string, taskId: string) => void;
     resetPlants: () => void;
-    // New actions for training and pest control
     topPlant: (plantId: string) => void;
     applyLst: (plantId: string, shootId: string, angle: number) => void;
     applyPestControl: (plantId: string, method: string) => void;
@@ -113,77 +112,53 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         }
 
         const newPlant = createInitialPlant(strain, setup, newName);
-        set(produce((draft: PlantSlice) => {
+        set((draft: AppState) => {
             draft.plants[newPlant.id] = newPlant;
             draft.plantSlots[slotIndex] = newPlant.id;
-        }));
+        });
         return true;
     },
     advanceDay: (plantId) => {
-        // This is a simplified simulation logic. A real one would be much more complex.
-        set(produce((draft: AppState) => {
+        set((draft: AppState) => {
             const plantIdsToAdvance = plantId ? [plantId] : Object.keys(draft.plants);
             
             plantIdsToAdvance.forEach(id => {
-                const plant = draft.plants[id];
-                if (!plant || plant.stage === PlantStage.Finished) return;
+                const currentPlant = draft.plants[id];
+                if (!currentPlant || currentPlant.stage === PlantStage.Finished) return;
                 
-                plant.age += 1;
-                
-                // Stage progression
-                const currentStageDetails = PLANT_STAGE_DETAILS[plant.stage];
-                const stageStartDay = plant.history.find(h => h.stage === plant.stage)?.day ?? plant.age;
-                
-                let currentStageDuration = 0;
-                for(const entry of plant.history) {
-                    if (entry.stage === plant.stage) {
-                        currentStageDuration++;
-                    }
-                }
-
-                if (currentStageDuration >= currentStageDetails.duration) {
-                    const stageOrder = Object.values(PlantStage);
-                    const currentIndex = stageOrder.indexOf(plant.stage);
-                    if (currentIndex < stageOrder.length - 1) {
-                        plant.stage = stageOrder[currentIndex + 1];
-                    }
-                }
-                
-                // FIX: Use plant.substrate.moisture instead of plant.vitals.substrateMoisture
-                plant.substrate.moisture = Math.max(0, plant.substrate.moisture - (currentStageDetails.dailyWaterRequirement / 2));
-                
-                // Growth
-                plant.height += currentStageDetails.growthRate;
-                
-                // Add history
-                plant.history.push({
-                    day: plant.age,
-                    stage: plant.stage,
-                    height: plant.height,
-                    stressLevel: plant.stressLevel,
-                    // FIX: Use substrate properties for history, not vitals
-                    substrate: { ...plant.substrate },
-                });
-
-                 // Simple task generation
-                 // FIX: Use plant.substrate.moisture instead of plant.vitals.substrateMoisture
-                 if (plant.substrate.moisture < 40 && !plant.tasks.some(t => t.title.includes('watering') && !t.isCompleted)) {
-                    plant.tasks.push({ id: `task-${Date.now()}`, title: 'plantsView.tasks.needsWatering', description: 'plantsView.tasks.needsWateringDesc', isCompleted: false, createdAt: Date.now(), priority: 'high', source: 'system' });
-                }
+                const updatedPlant = simulationService.runDailyCycle(currentPlant);
+                draft.plants[id] = updatedPlant;
             });
-        }));
+        });
     },
     waterPlant: (plantId, amount, ph) => {
-        set(produce((draft: AppState) => {
+        set((draft: AppState) => {
             const plant = draft.plants[plantId];
             if (!plant) return;
-            // FIX: Use plant.substrate for moisture and pH, and volumeLiters for pot size calculation.
             plant.substrate.moisture = Math.min(100, plant.substrate.moisture + (amount / (plant.substrate.volumeLiters * 10)));
-            plant.substrate.ph = (plant.substrate.ph + ph) / 2; // Average out pH
-        }));
+            plant.substrate.ph = (plant.substrate.ph + ph) / 2;
+        });
+    },
+    waterAllPlants: () => {
+        let wateredCount = 0;
+        const state = get();
+        const activePlants = Object.values(state.plants).filter(p => p && p.stage !== PlantStage.Finished);
+
+        activePlants.forEach(plant => {
+            if (plant && plant.substrate.moisture < 60) {
+                 get().waterPlant(plant.id, 500, 6.5); 
+                 get().addJournalEntry(plant.id, {
+                    type: 'WATERING',
+                    notes: t()('plantsView.actionModals.defaultNotes.watering'),
+                    details: { waterAmount: 500, ph: 6.5 }
+                });
+                wateredCount++;
+            }
+        });
+        return wateredCount;
     },
     addJournalEntry: (plantId, entry) => {
-        set(produce((draft: AppState) => {
+        set((draft: AppState) => {
             const plant = draft.plants[plantId];
             if (plant) {
                 const newEntry: JournalEntry = {
@@ -193,10 +168,10 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
                 };
                 plant.journal.push(newEntry);
             }
-        }));
+        });
     },
     completeTask: (plantId, taskId) => {
-        set(produce((draft: AppState) => {
+        set((draft: AppState) => {
             const plant = draft.plants[plantId];
             if (plant) {
                 const task = plant.tasks.find(t => t.id === taskId);
@@ -205,7 +180,7 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
                     task.completedAt = Date.now();
                 }
             }
-        }));
+        });
     },
     resetPlants: () => {
         set({
@@ -214,11 +189,22 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         });
     },
     topPlant: (plantId) => {
-        // Simplified logic
+        set((draft: AppState) => {
+            const plant = draft.plants[plantId];
+            if(plant) {
+                draft.plants[plantId] = simulationService.topPlant(plant);
+            }
+        });
         get().addJournalEntry(plantId, { type: 'TRAINING', notes: 'Topped the main stem.' });
     },
     applyLst: (plantId, shootId, angle) => {
-        // Simplified logic
+        set((draft: AppState) => {
+             const plant = draft.plants[plantId];
+            if (plant) {
+                const shoot = plant.structuralModel; // Simplified for now
+                if(shoot) shoot.angle = angle;
+            }
+        });
          get().addJournalEntry(plantId, { type: 'TRAINING', notes: `Applied LST to main stem at a ${angle}° angle.` });
     },
     applyPestControl: (plantId, method) => {

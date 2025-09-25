@@ -47,7 +47,6 @@ const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction)
                 const { plant } = data;
                 return [
                     { key: 'ai.loading.advisor.analyzing', params: { stage: t(`plantStages.${plant.stage}`) } },
-                    // FIX: Vitals (pH, EC) are now in plant.substrate, not plant.vitals.
                     { key: 'ai.loading.advisor.vitals', params: { ph: plant.substrate.ph.toFixed(1), ec: plant.substrate.ec.toFixed(1) } },
                     { key: 'ai.loading.advisor.problems', params: { count: plant.problems.length } },
                     { key: 'ai.loading.advisor.formulating' },

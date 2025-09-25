@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useId, useMemo } from 'react';
 import { Button } from '@/components/common/Button';
-import { Plant, JournalEntry, TrainingType, PlantStage, StoredImageData, JournalEntryType } from '@/types';
+import { Plant, JournalEntry, TrainingType, StoredImageData, JournalEntryType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { dbService } from '@/services/dbService';
@@ -11,8 +11,7 @@ import { selectSettings } from '@/stores/selectors';
 import { Modal } from '@/components/common/Modal';
 import type { TFunction } from '@/stores/useAppStore';
 
-// FIX: Added 'pestControl' to ModalType to support pest control logging, resolving an error in ActionToolbar.tsx.
-export type ModalType = 'watering' | 'feeding' | 'observation' | 'training' | 'photo' | 'pestControl' | null;
+export type ModalType = 'watering' | 'feeding' | 'observation' | 'training' | 'photo' | 'pestControl' | 'amendment' | null;
 
 export interface ModalState {
     type: NonNullable<ModalType>;
@@ -24,7 +23,6 @@ interface LogActionModalProps {
     modalState: ModalState;
     setModalState: (state: ModalState | null) => void;
     onAddJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
-    // FIX: Added missing props to satisfy the component's usage in DetailedPlantView.tsx.
     onTopPlant: (plantId: string) => void;
     onApplyLST: (plantId: string, shootId: string, angle: number) => void;
     onApplyPestControl: (plantId: string, method: string) => void;
@@ -137,7 +135,6 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
     const handleClose = () => setModalState(null);
 
     const handleConfirm = () => {
-        // FIX: Added PEST_CONTROL to the type map.
         const typeMap: Record<string, JournalEntryType> = {
             watering: 'WATERING', feeding: 'FEEDING', training: 'TRAINING', photo: 'PHOTO', observation: 'OBSERVATION', pestControl: 'PEST_CONTROL',
         };
@@ -163,11 +160,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
             case 'training':
                 details = { trainingType };
                 finalNotes = finalNotes || trainingType;
-                // FIX: Apply training action to the plant state when logging the entry.
                 if (trainingType === 'Topping') {
                     onTopPlant(plant.id);
                 } else if (trainingType === 'LST') {
-                    // Placeholder: Apply LST to the main stem. A more complex UI would allow selecting a shoot.
                     onApplyLST(plant.id, plant.structuralModel.id, 90);
                 }
                 break;
@@ -179,7 +174,6 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
                 details = { imageId, imageUrl: imagePreview, photoCategory: category };
                 finalNotes = finalNotes || t('plantsView.detailedView.journalFilters.photo');
                 break;
-            // FIX: Added logic for pest control logging and action.
             case 'pestControl':
                 details = { method: pestControlMethod };
                 finalNotes = finalNotes || `${t(`plantsView.actionModals.pestControlMethods.${pestControlMethod}`)} applied.`;
@@ -199,8 +193,8 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
                 title: t('plantsView.actionModals.wateringTitle'),
                 body: (
                     <div className="space-y-6">
-                        <SliderInputField label={t('plantsView.actionModals.waterAmount')} value={waterAmount} onChange={(e) => setWaterAmount(e.target.value)} min={100} max={plant.growSetup.potSize * 500} step={50} unit={t('common.units.ml')} />
-                        <SliderInputField label={t('plantsView.actionModals.phValue')} value={ph} onChange={(e) => setPh(e.target.value)} min={5.0} max={8.0} step={0.1} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} context={`${t('plantsView.actionModals.current')}: ${plant.vitals.ph.toFixed(1)}`} />
+                        <SliderInputField label={t('plantsView.actionModals.waterAmount')} value={waterAmount} onChange={(e) => setWaterAmount(e.target.value)} min={100} max={plant.substrate.volumeLiters * 500} step={50} unit={t('common.units.ml')} />
+                        <SliderInputField label={t('plantsView.actionModals.phValue')} value={ph} onChange={(e) => setPh(e.target.value)} min={5.0} max={8.0} step={0.1} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} context={`${t('plantsView.actionModals.current')}: ${plant.substrate.ph.toFixed(1)}`} />
                         <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} />
                     </div>
                 ),
@@ -210,7 +204,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
                 title: t('plantsView.actionModals.feedingTitle'),
                 body: (
                     <div className="space-y-6">
-                        <SliderInputField label={t('plantsView.actionModals.waterAmount')} value={waterAmount} onChange={e => setWaterAmount(e.target.value)} min={100} max={plant.growSetup.potSize * 500} step={50} unit={t('common.units.ml')} />
+                        <SliderInputField label={t('plantsView.actionModals.waterAmount')} value={waterAmount} onChange={e => setWaterAmount(e.target.value)} min={100} max={plant.substrate.volumeLiters * 500} step={50} unit={t('common.units.ml')} />
                         <SliderInputField label={t('plantsView.actionModals.phValue')} value={ph} onChange={e => setPh(e.target.value)} min={5.0} max={8.0} step={0.1} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} context={`${t('plantsView.actionModals.idealRange', {min: idealVitals.ph.min, max: idealVitals.ph.max})}`} />
                         <SliderInputField label={t('plantsView.actionModals.ecValue')} value={ec} onChange={e => setEc(e.target.value)} min={0.2} max={3.0} step={0.1} idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} context={`${t('plantsView.actionModals.idealRange', {min: idealVitals.ec.min, max: idealVitals.ec.max})}`} />
                         <InputField label={t('plantsView.actionModals.nutrientDetails')} type="text" value={nutrientDetails} onChange={e => setNutrientDetails(e.target.value)} placeholder={t('plantsView.actionModals.nutrientDetailsPlaceholder')} />
@@ -307,7 +301,6 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalStat
                 ),
                 confirmDisabled: !imagePreview
             };
-             // FIX: Added case for the 'pestControl' modal to provide UI and functionality.
             case 'pestControl': 
                 const pestControlOptions = ['neemOil', 'insecticidalSoap', 'beneficialInsects', 'manualRemoval'];
                 return {

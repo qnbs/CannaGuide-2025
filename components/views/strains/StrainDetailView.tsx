@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Strain, AIResponse } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
@@ -13,6 +13,7 @@ import { Tabs } from '@/components/common/Tabs';
 import { StrainCompactItem } from '../plants/StrainCompactItem';
 import { InfoSection } from '@/components/common/InfoSection';
 import { AttributeDisplay } from '@/components/common/AttributeDisplay';
+import { Speakable } from '@/components/common/Speakable';
 
 // --- Sub-components for better structure ---
 
@@ -47,7 +48,9 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InfoSection title={t('common.description')}>
-                <p className="text-slate-300 italic text-sm">{strain.description || 'No description available.'}</p>
+                <Speakable elementId={`strain-desc-${strain.id}`}>
+                    <p className="text-slate-300 italic text-sm">{strain.description || 'No description available.'}</p>
+                </Speakable>
             </InfoSection>
             <InfoSection title="Cannabinoid Profile">
                 <div className="space-y-2">
@@ -81,7 +84,6 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     return (
         <InfoSection title="Aroma & Terpene Profile">
             <div className="space-y-4">
-                {/* FIX: Use the 'value' prop instead of children for AttributeDisplay */}
                 <AttributeDisplay
                     label={t('strainsView.strainModal.aromas')}
                     value={
@@ -90,7 +92,6 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                         </div>
                     }
                 />
-                {/* FIX: Use the 'value' prop instead of children for AttributeDisplay */}
                 <AttributeDisplay
                     label={t('strainsView.strainModal.dominantTerpenes')}
                     value={
@@ -146,20 +147,13 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     );
 };
 
-const SimilarStrainsSection: React.FC<{ currentStrain: Strain; allStrains: Strain[] }> = ({ currentStrain, allStrains }) => {
+const SimilarStrainsSection: React.FC<{ currentStrain: Strain; onSelect: (strain: Strain) => void }> = ({ currentStrain, onSelect }) => {
     const { t } = useTranslations();
     const [similar, setSimilar] = useState<Strain[]>([]);
 
     useEffect(() => {
         strainService.getSimilarStrains(currentStrain, 4).then(setSimilar);
     }, [currentStrain]);
-    
-    // Select strain action from the store is not available here, so we just log it.
-    // In a real app this would likely navigate to the new strain's detail view.
-    const handleSelectStrain = (s: Strain) => {
-        console.log("Selected similar strain:", s.name);
-         // For demonstration, we'll just log it. A full implementation would navigate.
-    };
 
     if (similar.length === 0) return null;
 
@@ -167,7 +161,7 @@ const SimilarStrainsSection: React.FC<{ currentStrain: Strain; allStrains: Strai
         <InfoSection title={t('strainsView.strainDetail.similarStrains')} icon={<PhosphorIcons.Leafy />}>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {similar.map(strain => (
-                    <StrainCompactItem key={strain.id} strain={strain} onSelect={() => handleSelectStrain(strain)} />
+                    <StrainCompactItem key={strain.id} strain={strain} onSelect={() => onSelect(strain)} />
                 ))}
             </div>
         </InfoSection>
@@ -184,10 +178,11 @@ interface StrainDetailViewProps {
 
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {
     const { t } = useTranslations();
-    const { isFavorite, toggleFavorite, initiateGrow } = useAppStore(state => ({
+    const { isFavorite, toggleFavorite, initiateGrow, selectStrain } = useAppStore(state => ({
         isFavorite: state.favoriteIds.has(strain.id),
         toggleFavorite: state.toggleFavorite,
         initiateGrow: state.initiateGrow,
+        selectStrain: state.selectStrain,
     }));
     const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
 
@@ -240,7 +235,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
                 {activeTab === 'aiTips' && <StrainAiTips strain={strain} onSaveTip={onSaveTip} />}
             </div>
             
-            <SimilarStrainsSection currentStrain={strain} allStrains={allStrains} />
+            <SimilarStrainsSection currentStrain={strain} onSelect={selectStrain} />
 
         </div>
     );

@@ -1,5 +1,4 @@
 // --- Core Enums & Simple Types ---
-// FIX: Import React to use React.ElementType in the Command interface.
 import React from 'react';
 
 export enum View {
@@ -38,6 +37,12 @@ export type ExportSource = 'selected' | 'all' | 'filtered' | 'favorites';
 
 // --- Strain Data ---
 
+export interface StrainChemicalProfile {
+    thcPotential: [number, number];
+    cbdPotential: [number, number];
+    terpenes: Record<string, number>; // e.g. { myrcene: 0.8, limonene: 0.5 }
+}
+
 export interface Strain {
     id: string;
     name: string;
@@ -45,9 +50,6 @@ export interface Strain {
     typeDetails?: string;
     genetics?: string;
     floweringType: FloweringType;
-    geneticsDetails?: {
-        isAutoflower: boolean;
-    };
     thc: number;
     cbd: number;
     thcRange?: string;
@@ -70,13 +72,13 @@ export interface Strain {
     };
     aromas?: string[];
     dominantTerpenes?: string[];
+    chemicalProfile?: StrainChemicalProfile;
 }
 
 export interface StrainTranslationData {
     description?: string;
     typeDetails?: string;
     genetics?: string;
-    // FIX: agronomic properties were incorrectly nested. This matches the structure of translation files.
     yieldDetails?: { indoor: string; outdoor: string };
     heightDetails?: { indoor: string; outdoor: string };
 }
@@ -85,24 +87,54 @@ export interface StrainTranslationData {
 // --- Plant Simulation & Management ---
 
 export interface PlantVitals {
-    ph: number;
-    ec: number;
-    substrateMoisture: number; // 0-100%
+    // This now holds plant-specific biological metrics, not substrate metrics.
+    transpirationRate: number; // ml/hour
+    photosynthesisRate: number; // relative 0-1
 }
 
 export interface PlantEnvironment {
-    temperature: number; // Celsius
-    humidity: number; // %
+    ambientTemperature: number; // Temp outside the tent
+    ambientHumidity: number; // Humidity outside the tent
+    co2Level: number; // ppm
+    airExchangeRate: number; // m³/hour
+    // Calculated values
+    internalTemperature: number;
+    internalHumidity: number;
+}
+
+export interface PlantEquipment {
+    light: { type: 'LED' | 'HPS' | 'CFL'; wattage: number; isOn: boolean };
+    exhaustFan: { cfm: number; speed: number; isOn: boolean }; // CFM converted to m³/h
+    humidifier?: { isOn: boolean };
+    dehumidifier?: { isOn: boolean };
+}
+
+export type WaterSourceType = 'TapWater' | 'ReverseOsmosis' | 'RainWater';
+export interface WaterSource {
+    type: WaterSourceType;
+    basePh: number;
+    baseEc: number;
+}
+
+export interface PlantSubstrate {
+    type: 'Soil' | 'Coco' | 'Hydro';
+    volumeLiters: number;
+    ph: number;
+    ec: number;
+    moisture: number; // 0-100%
+    microbeHealth: number; // 0-100
+    runoff: { ph: number; ec: number; };
 }
 
 export interface PlantProblem {
-    type: 'overwatering' | 'underwatering' | 'nutrientBurn' | 'nutrientDeficiency' | 'phTooLow' | 'phTooHigh' | 'tempTooHigh' | 'tempTooLow' | 'humidityTooHigh' | 'humidityTooLow' | 'vpdTooLow' | 'vpdTooHigh' | 'pest';
+    type: 'Overwatering' | 'Underwatering' | 'NutrientBurn' | 'NutrientDeficiency' | 'pHLockout' | 'TempStress' | 'HumidityStress' | 'SpiderMites' | 'PowderyMildew' | 'RootRot';
     status: 'active' | 'resolved';
     startedAt: number; // timestamp
     resolvedAt?: number;
+    severity: 'Low' | 'Medium' | 'High';
 }
 
-export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'SYSTEM' | 'PHOTO' | 'PEST_CONTROL' | 'ENVIRONMENT';
+export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATION' | 'SYSTEM' | 'PHOTO' | 'PEST_CONTROL' | 'ENVIRONMENT' | 'AMENDMENT';
 export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'SCROG' | 'Defoliation' | 'SuperCropping';
 
 export interface JournalEntry {
@@ -116,6 +148,8 @@ export interface JournalEntry {
         ph?: number;
         ec?: number;
         nutrientDetails?: string;
+        fertilizerType?: 'Organic' | 'SaltBased';
+        amendmentType?: 'Mycorrhizae' | 'BeneficialBacteria' | 'WormCastings';
         trainingType?: TrainingType;
         healthStatus?: 'Excellent' | 'Good' | 'Showing Issues';
         observationTags?: string[];
@@ -131,53 +165,28 @@ export interface PlantHistoryEntry {
     stage: PlantStage;
     height: number;
     stressLevel: number;
-    vitals: PlantVitals;
-}
-
-export interface GrowSetup {
-    lightType: 'LED' | 'HPS' | 'CFL';
-    potSize: number; // Liters
-    medium: 'Soil' | 'Coco' | 'Hydro';
-    temperature: number;
-    humidity: number;
-    lightHours: number;
+    // Snapshot of substrate for historical charts
+    substrate: { ph: number; ec: number; moisture: number };
 }
 
 export interface PlantNode {
-    id: string;
-    type: 'node';
-    position: number; // position along the stem, 0 is base, 1 is top
-    children: (PlantBranch | PlantLeaf | PlantBud)[];
+  id: string;
+  position: number;
+  lightExposure: number; // 0-1
+  isTopped: boolean;
+  shoots: PlantShoot[];
 }
 
-export interface PlantBranch {
-    id: string;
-    type: 'branch';
-    length: number;
-    angle: number; // angle from main stem
-    nodes: PlantNode[];
+export interface PlantShoot {
+  id: string;
+  length: number; // in cm
+  nodes: PlantNode[];
+  isMainStem: boolean;
+  angle: number; // 0 = vertical, 90 = horizontal
 }
 
-export interface PlantLeaf {
-    id: string;
-    type: 'leaf';
-    size: number;
-    health: number; // 0-1, represents health of this specific leaf
-}
-
-export interface PlantBud {
-    id: string;
-    type: 'bud';
-    size: number;
-    maturity: number; // 0-1
-}
-
-export interface PlantStructuralModel {
-    id: string;
-    type: 'stem';
-    height: number; // in cm
-    nodes: PlantNode[];
-}
+// FIX: Add alias for backwards compatibility where PlantStructuralModel was used.
+export type PlantStructuralModel = PlantShoot;
 
 export interface Plant {
     id: string;
@@ -187,27 +196,67 @@ export interface Plant {
     stage: PlantStage;
     health: number; // 0-100
     height: number; // cm
+    biomass: number; // abstract total mass
     stressLevel: number; // 0-100
+    
+    // Core Simulation Properties
     vitals: PlantVitals;
+    substrate: PlantSubstrate;
     environment: PlantEnvironment;
+    equipment: PlantEquipment;
+    waterSource: WaterSource;
+    internalClock: number;
+    hormoneLevels: { florigen: number; };
+    geneticModifiers: {
+      growthSpeedFactor: number;
+      nutrientDemandFactor: number;
+      pestResistanceFactor: number;
+      stressToleranceFactor: number;
+    };
+    currentChemicals: {
+        thc: number;
+        cbd: number;
+        terpenes: Record<string, number>;
+    };
+    rootSystem: {
+      rootMass: number;
+      rootHealth: number; // 0-100
+    };
+    
+    // Management Properties
     problems: PlantProblem[];
     journal: JournalEntry[];
     history: PlantHistoryEntry[];
-    growSetup: GrowSetup;
     tasks: Task[];
-    structuralModel: PlantStructuralModel;
+    
+    // Structure & Post-Harvest
+    structuralModel: PlantShoot;
     postHarvest?: {
         wetWeight?: number;
         dryWeight?: number;
         yieldPerWatt?: number;
-        qualityRating?: number;
+        qualityRating?: number; // will be `finalQuality`
         dryingStartTime?: number;
         curingStartTime?: number;
+        isDrying?: boolean;
+        isCuring?: boolean;
+        finalQuality?: number;
     };
 }
 
 
 // --- AI & Recommendations ---
+
+// FIX: Define and export the GrowSetup type.
+export interface GrowSetup {
+    lightType: 'LED' | 'HPS' | 'CFL';
+    wattage: number;
+    potSize: number;
+    medium: PlantSubstrate['type'];
+    temperature: number;
+    humidity: number;
+    lightHours: number;
+}
 
 export interface RecommendationItem {
     name: string;
@@ -305,7 +354,7 @@ export interface AppSettings {
             environmentalStability: number;
         };
     };
-    defaultGrowSetup: GrowSetup;
+    defaultGrowSetup: Pick<PlantEquipment, 'light'> & { potSize: number, medium: PlantSubstrate['type'] };
     defaultJournalNotes: {
         watering: string;
         feeding: string;

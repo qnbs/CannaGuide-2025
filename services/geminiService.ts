@@ -47,7 +47,8 @@ const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction)
                 const { plant } = data;
                 return [
                     { key: 'ai.loading.advisor.analyzing', params: { stage: t(`plantStages.${plant.stage}`) } },
-                    { key: 'ai.loading.advisor.vitals', params: { ph: plant.vitals.ph.toFixed(1), ec: plant.vitals.ec.toFixed(1) } },
+                    // FIX: Vitals (pH, EC) are now in plant.substrate, not plant.vitals.
+                    { key: 'ai.loading.advisor.vitals', params: { ph: plant.substrate.ph.toFixed(1), ec: plant.substrate.ec.toFixed(1) } },
                     { key: 'ai.loading.advisor.problems', params: { count: plant.problems.length } },
                     { key: 'ai.loading.advisor.formulating' },
                 ];
@@ -159,7 +160,7 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, conte
             strain: context.plant.strain.name,
             age: context.plant.age,
             stage: context.plant.stage,
-            vitals: context.plant.vitals,
+            substrate: context.plant.substrate,
             environment: context.plant.environment,
             lastJournalEntries: context.plant.journal.slice(-3).map(e => `${e.type}: ${e.notes}`),
         };
@@ -213,7 +214,7 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
     const plantData = JSON.stringify({
         age: plant.age,
         stage: plant.stage,
-        vitals: plant.vitals,
+        substrate: plant.substrate,
         environment: plant.environment,
         problems: plant.problems,
         journal: plant.journal.slice(-5) // last 5 entries
@@ -323,7 +324,7 @@ const getPersonalizedTip = async (plant: Plant, strain: Strain, t: TFunction): P
         age: plant.age,
         stage: plant.stage,
         health: plant.health,
-        vitals: plant.vitals,
+        substrate: plant.substrate,
         problems: plant.problems.filter(p => p.status === 'active').map(p => p.type)
     };
 

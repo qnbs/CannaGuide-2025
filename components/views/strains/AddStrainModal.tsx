@@ -117,9 +117,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
             typeDetails: values.typeDetails,
             genetics: values.genetics,
             floweringType: values.isAutoflower ? 'Autoflower' : 'Photoperiod',
-            geneticsDetails: {
-                isAutoflower: values.isAutoflower,
-            },
             thc: parseFloat(values.thc),
             cbd: parseFloat(values.cbd || 1),
             thcRange: values.thcRange,

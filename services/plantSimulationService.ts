@@ -56,7 +56,7 @@ class PlantSimulationService {
         const baseInterval = 1000 * 60 * 5; 
         const intervalDuration = baseInterval / this.getSimulationSpeedMultiplier();
         
-        const intervalId = setInterval(tick, intervalDuration);
+        const intervalId = window.setInterval(tick, intervalDuration);
         this.intervals.set(plantId, intervalId);
     }
 

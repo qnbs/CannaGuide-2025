@@ -18,7 +18,17 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
       settings: state.settings,
   }));
   
-  const [setup, setSetup] = useState<GrowSetup>(settings.defaultGrowSetup);
+  // FIX: Initialize a complete GrowSetup object, using defaults for environment values not present in defaultGrowSetup.
+  const { defaultGrowSetup } = settings;
+  const [setup, setSetup] = useState<GrowSetup>({
+    lightType: defaultGrowSetup.light.type,
+    wattage: defaultGrowSetup.light.wattage,
+    potSize: defaultGrowSetup.potSize,
+    medium: defaultGrowSetup.medium,
+    temperature: 24,
+    humidity: 60,
+    lightHours: 18,
+  });
 
   const handleConfirm = () => {
     if (setup.lightHours < 1 || setup.lightHours > 24) {

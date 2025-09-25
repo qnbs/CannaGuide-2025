@@ -5,10 +5,10 @@ import { useTranslations } from '@/hooks/useTranslations';
 interface HistoryChartProps {
     history: PlantHistoryEntry[];
     idealHistory: PlantHistoryEntry[];
-    idealVitalRanges: any[]; // Not used in this visual, but kept for potential future use
+    idealVitalRanges: any[];
 }
 
-export const HistoryChart: React.FC<HistoryChartProps> = ({ history, idealHistory }) => {
+export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
     const { t } = useTranslations();
     
     if (!history || history.length < 2) {
@@ -19,19 +19,32 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history, idealHistor
     const height = 150;
     const padding = { top: 10, right: 10, bottom: 20, left: 25 };
 
-    const maxDay = Math.max(1, ...history.map(h => h.day), ...idealHistory.map(h => h.day));
-    const maxHeight = Math.max(10, ...history.map(h => h.height), ...idealHistory.map(h => h.height));
+    const maxDay = Math.max(1, ...history.map(h => h.day));
+    const maxHeight = Math.max(10, ...history.map(h => h.height));
 
     const scaleX = (day: number) => padding.left + (day / maxDay) * (width - padding.left - padding.right);
     const scaleY = (heightValue: number) => padding.top + (1 - heightValue / maxHeight) * (height - padding.top - padding.bottom);
     
-    const createPath = (data: PlantHistoryEntry[], dataKey: 'height' | 'stressLevel') => {
-        const maxValue = dataKey === 'height' ? maxHeight : 100;
+    const createPath = (data: PlantHistoryEntry[], dataKey: 'height' | 'stressLevel' | 'ph' | 'ec' | 'moisture') => {
+        let maxValue: number;
+        switch(dataKey) {
+            case 'height': maxValue = maxHeight; break;
+            case 'ph': maxValue = 8; break;
+            case 'ec': maxValue = 3; break;
+            default: maxValue = 100;
+        }
+
         const scale = (val: number) => padding.top + (1 - val / maxValue) * (height - padding.top - padding.bottom);
 
         return data.map((point, i) => {
             const x = scaleX(point.day);
-            const y = scale(dataKey === 'height' ? point.height : point.stressLevel);
+            let yVal;
+            if (dataKey === 'height' || dataKey === 'stressLevel') {
+                yVal = point[dataKey];
+            } else {
+                yVal = point.substrate[dataKey];
+            }
+            const y = scale(yVal);
             return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)},${y.toFixed(2)}`;
         }).join(' ');
     };
@@ -58,7 +71,6 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history, idealHistor
                     ))}
                 </g>
 
-                <path d={createPath(idealHistory, 'height')} fill="none" stroke="rgb(var(--color-primary-700))" strokeWidth="1.5" strokeDasharray="4,4" />
                 <path d={createPath(history, 'height')} fill="none" stroke="rgb(var(--color-primary-500))" strokeWidth="2" />
                 <path d={createPath(history, 'stressLevel')} fill="none" stroke="rgb(var(--color-accent-500))" strokeWidth="1.5" strokeDasharray="3,3" />
             </svg>
@@ -66,10 +78,6 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history, idealHistor
                  <span className="flex items-center gap-1.5">
                     <div className="w-2.5 h-0.5" style={{backgroundColor: 'rgb(var(--color-primary-500))'}}></div>
                     {`${t('plantsView.detailedView.height')} (${t('common.units.cm')})`}
-                </span>
-                 <span className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: 'rgb(var(--color-primary-700))'}}></div>
-                    {'Ideal'}
                 </span>
                  <span className="flex items-center gap-1.5">
                     <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: 'rgb(var(--color-accent-500))'}}></div>

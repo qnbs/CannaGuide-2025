@@ -19,7 +19,7 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     return (
         <Card
             onClick={onStart}
-            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all"
+            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all card-interactive-glow"
         >
             <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
             <h3 className="font-semibold text-slate-300">{t('plantsView.emptySlot.title')}</h3>
@@ -29,10 +29,10 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, advanceDay, startNewPlant } = useAppStore(state => ({
+    const { waterAllPlants, startNewPlant, addNotification } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
-        advanceDay: state.advanceDay,
         startNewPlant: state.startNewPlant,
+        addNotification: state.addNotification,
     }));
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
@@ -62,6 +62,7 @@ export const PlantsView: React.FC = () => {
         
         const success = startNewPlant(strainForSetup, setup, selectingSlotIndex);
         if (success) {
+            addNotification(t('plantsView.notifications.startSuccess', { name: strainForSetup.name }), 'success');
             setIsSetupModalOpen(false);
             setStrainForSetup(null);
             setSelectingSlotIndex(null);
@@ -115,7 +116,6 @@ export const PlantsView: React.FC = () => {
                     plants={activePlants} 
                     openTasksCount={allTasks.length}
                     onWaterAll={waterAllPlants}
-                    onAdvanceDay={advanceDay}
                 />
                 <TasksAndWarnings tasks={allTasks} problems={allProblems} />
             </div>

@@ -20,6 +20,7 @@ const strainToFormValues = (strain: Partial<Strain>) => ({
     type: strain.type || 'Hybrid',
     typeDetails: strain.typeDetails || '',
     genetics: strain.genetics || '',
+    isAutoflower: strain.geneticsDetails?.isAutoflower || false,
     thc: strain.thc || 20,
     cbd: strain.cbd || 1,
     thcRange: strain.thcRange || '',
@@ -115,6 +116,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
             type: values.type as StrainType,
             typeDetails: values.typeDetails,
             genetics: values.genetics,
+            geneticsDetails: {
+                isAutoflower: values.isAutoflower,
+            },
             thc: parseFloat(values.thc),
             cbd: parseFloat(values.cbd || 1),
             thcRange: values.thcRange,
@@ -168,6 +172,19 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                         <Select label={t('common.type')} value={values.type} onChange={(e) => handleChange('type', e.target.value)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
                         <Input label={t('common.typeDetails')} value={values.typeDetails} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
                         <Input label={t('common.genetics')} value={values.genetics} onChange={(e) => handleChange('genetics', e.target.value)} />
+                        <div className="flex items-center gap-2 pt-2">
+                            <input
+                                id="isAutoflower"
+                                type="checkbox"
+                                name="isAutoflower"
+                                checked={values.isAutoflower}
+                                onChange={(e) => handleChange('isAutoflower', e.target.checked)}
+                                className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"
+                            />
+                            <label htmlFor="isAutoflower" className="text-sm font-semibold text-slate-300 cursor-pointer">
+                                Autoflower
+                            </label>
+                        </div>
                     </FormSection>
 
                     <FormSection title={t('strainsView.addStrainModal.cannabinoids')}>

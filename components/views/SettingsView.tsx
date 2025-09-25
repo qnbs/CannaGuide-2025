@@ -38,6 +38,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
     const settings = useAppStore(state => state.settings);
     const setSetting = useAppStore(state => state.setSetting);
     const resetPlants = useAppStore(state => state.resetPlants);
+    const addNotification = useAppStore(state => state.addNotification);
     const voices = useAvailableVoices();
     const isInstalled = !deferredPrompt;
 
@@ -97,6 +98,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
         }
     }
     
+    const handleResetPlants = () => {
+        if (window.confirm(t('settingsView.data.resetPlantsConfirm'))) {
+            resetPlants();
+            addNotification(t('settingsView.data.resetPlantsSuccess'), 'success');
+        }
+    };
+    
     return (
         <div className="space-y-6">
             <SettingsSection title={t('settingsView.categories.general')} icon={<PhosphorIcons.Gear />}>
@@ -126,7 +134,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                     <input type="file" id="import-file" accept=".json" className="hidden" onChange={handleImportData} />
                 </SettingRow>
                  <SettingRow label={t('settingsView.data.resetPlants')}>
-                    <Button onClick={resetPlants} variant="danger">{t('settingsView.data.resetPlants')}</Button>
+                    <Button onClick={handleResetPlants} variant="danger">{t('settingsView.data.resetPlants')}</Button>
                 </SettingRow>
                 <SettingRow label={t('settingsView.data.resetAll')}>
                     <Button onClick={handleResetAll} variant="danger">{t('settingsView.data.resetAll')}</Button>

@@ -84,7 +84,7 @@ export const StrainsView: React.FC = () => {
         }
     }, [activeTab, allStrains, userStrains, favorites]);
 
-    const { filteredStrains, ...filterProps } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
+    const { filteredStrains, isSearching, ...filterProps } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
     const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
     const { allAromas, allTerpenes } = useMemo(() => {
@@ -108,18 +108,24 @@ export const StrainsView: React.FC = () => {
     }, [filterProps.searchTerm, filterProps.typeFilter, filterProps.advancedFilters, activeTab, clearStrainSelection]);
     
     const handleAddStrain = useCallback((strain: Strain) => {
-      addUserStrain(strain);
-      closeAddModal();
-    }, [addUserStrain, closeAddModal]);
+        const success = addUserStrain(strain);
+        if (success) {
+            addNotification(t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }), 'success');
+            closeAddModal();
+        } else {
+            addNotification(t('strainsView.addStrainModal.validation.duplicate', { name: strain.name }), 'error');
+        }
+    }, [addUserStrain, closeAddModal, addNotification, t]);
 
     const handleUpdateStrain = useCallback((strain: Strain) => {
-      updateUserStrain(strain);
-      closeAddModal();
-    }, [updateUserStrain, closeAddModal]);
+        updateUserStrain(strain);
+        addNotification(t('strainsView.addStrainModal.validation.updateSuccess', { name: strain.name }), 'success');
+        closeAddModal();
+    }, [updateUserStrain, closeAddModal, addNotification, t]);
     
     const handleDeleteStrain = useCallback((id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
-        if (strainToDelete && window.confirm(t('strainsView.addStrainModal.deleteConfirm', { name: strainToDelete.name }))) {
+        if (strainToDelete && window.confirm(t('strainsView.addStrainModal.validation.deleteConfirm', { name: strainToDelete.name }))) {
             deleteUserStrain(id);
         }
     }, [userStrains, deleteUserStrain, t]);
@@ -189,7 +195,7 @@ export const StrainsView: React.FC = () => {
     ];
 
     const renderContent = () => {
-        if (isLoading) {
+        if (isLoading || isSearching) {
             return viewMode === 'list' ? <SkeletonLoader variant="list" count={10} columns={settings.strainsViewSettings.visibleColumns}/> : <SkeletonLoader variant="grid" count={10}/>;
         }
         if (filteredStrains.length === 0) {

@@ -6,7 +6,11 @@ import { UISlice, createUISlice } from './slices/uiSlice';
 import { StrainsViewSlice, createStrainsViewSlice } from './slices/strainsViewSlice';
 import { AiSlice, createAiSlice } from './slices/aiSlice';
 import { PlantSlice, createPlantSlice } from './slices/plantSlice';
-import { UserContentSlice, createUserContentSlice } from './slices/userContentSlice';
+import { UserStrainsSlice, createUserStrainsSlice } from './slices/userStrainsSlice';
+import { FavoritesSlice, createFavoritesSlice } from './slices/favoritesSlice';
+import { NotesSlice, createNotesSlice } from './slices/notesSlice';
+import { SavedItemsSlice, createSavedItemsSlice } from './slices/savedItemsSlice';
+import { ArchivesSlice, createArchivesSlice } from './slices/archivesSlice';
 import { KnowledgeSlice, createKnowledgeSlice } from './slices/knowledgeSlice';
 import { TTSSlice, createTtsSlice } from './slices/ttsSlice';
 import { View } from '@/types';
@@ -15,7 +19,7 @@ export type TFunction = (key: string, params?: Record<string, any>) => string;
 let t: TFunction = (key: string) => key;
 const getT = () => t;
 
-export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserContentSlice & KnowledgeSlice & TTSSlice & AppSlice;
+export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserStrainsSlice & FavoritesSlice & NotesSlice & SavedItemsSlice & ArchivesSlice & KnowledgeSlice & TTSSlice & AppSlice;
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
 
@@ -29,11 +33,15 @@ export const useAppStore = create<AppState>()(
       immer((set, get) => ({
         init: (newT: TFunction) => { t = newT; },
         ...createSettingsSlice(set),
-        ...createUISlice(set, get, getT),
+        ...createUISlice(set, get),
         ...createStrainsViewSlice(set, get),
         ...createAiSlice(set, get, getT),
         ...createPlantSlice(set, get, getT),
-        ...createUserContentSlice(set, get),
+        ...createUserStrainsSlice(set, get),
+        ...createFavoritesSlice(set),
+        ...createNotesSlice(set),
+        ...createSavedItemsSlice(set),
+        ...createArchivesSlice(set, get),
         ...createKnowledgeSlice(set),
         ...createTtsSlice(set, get),
       })),

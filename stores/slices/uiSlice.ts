@@ -1,5 +1,5 @@
 import { View, Notification, NotificationType, Strain } from '@/types';
-import type { AppState, StoreSet, StoreGet, TFunction } from '@/stores/useAppStore';
+import type { AppState, StoreSet, StoreGet } from '@/stores/useAppStore';
 
 export interface UISlice {
     activeView: View;
@@ -25,7 +25,7 @@ export interface UISlice {
     setSelectedPlantId: (plantId: string | null) => void;
 }
 
-export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction): UISlice => ({
+export const createUISlice = (set: StoreSet, get: StoreGet): UISlice => ({
     activeView: View.Plants,
     isCommandPaletteOpen: false,
     notifications: [],
@@ -61,15 +61,13 @@ export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
     closeExportModal: () => set(state => { state.isExportModalOpen = false; }),
     
     initiateGrow: (strain) => {
-        if (get().plantSlots.some(p => p === null)) {
-            set(state => {
-                state.activeView = View.Plants;
-                state.strainForSetup = strain;
-                state.isSetupModalOpen = true;
-            });
-        } else {
-            get().addNotification(t()('plantsView.notifications.allSlotsFull'), 'error');
-        }
+        // The check for available slots is now done in the component using a selector.
+        // The component is responsible for showing the notification if no slots are available.
+        set(state => {
+            state.activeView = View.Plants;
+            state.strainForSetup = strain;
+            state.isSetupModalOpen = true;
+        });
     },
     closeGrowModal: () => set(state => {
         state.isSetupModalOpen = false;

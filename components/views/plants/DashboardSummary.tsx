@@ -10,13 +10,14 @@ import { selectGardenHealthMetrics } from '@/stores/selectors';
 interface GardenVitalsProps { 
     plants: Plant[]; // Kept for checking if any plants exist for button disabling
     openTasksCount: number;
-    onWaterAll: () => void;
+    onWaterAll: () => number;
     onAdvanceDay: () => void;
 }
 
 export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll, onAdvanceDay }) => {
     const { t } = useTranslations();
     const { activePlantsCount, gardenHealth, avgTemp, avgHumidity } = useAppStore(selectGardenHealthMetrics);
+    const addNotification = useAppStore(state => state.addNotification);
     
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
@@ -25,6 +26,15 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
     let healthColor = 'stroke-green-400';
     if (gardenHealth < 75) healthColor = 'stroke-yellow-400';
     if (gardenHealth < 50) healthColor = 'stroke-red-400';
+    
+    const handleWaterAllClick = () => {
+        const wateredCount = onWaterAll();
+        if (wateredCount > 0) {
+            addNotification(t('plantsView.notifications.waterAllSuccess', { count: wateredCount }), 'success');
+        } else {
+            addNotification(t('plantsView.notifications.waterAllNone'), 'info');
+        }
+    };
     
     return (
         <Card>
@@ -80,7 +90,7 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
                 </div>
             </div>
              <div className="mt-4 pt-4 border-t border-slate-700 flex flex-col sm:flex-row gap-2">
-                <Button onClick={onWaterAll} disabled={plants.length === 0} className="flex-1" variant="secondary">
+                <Button onClick={handleWaterAllClick} disabled={plants.length === 0} className="flex-1" variant="secondary">
                     <PhosphorIcons.Drop className="inline w-5 h-5 mr-1.5"/>
                     {t('plantsView.summary.waterAll')}
                 </Button>

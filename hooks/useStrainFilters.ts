@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback, useDeferredValue } from 'react';
+import { useState, useMemo, useCallback, useDeferredValue, useEffect } from 'react';
 import { Strain, StrainType, DifficultyLevel, YieldLevel, HeightLevel, SortKey, SortDirection, AppSettings } from '@/types';
+import { dbService } from '@/services/dbService';
 
 export interface AdvancedFilterState {
     thcRange: [number, number];
@@ -29,6 +30,14 @@ const getYieldSortValue = (yieldDetailsIndoor: string) => {
     return match ? parseInt(match[0], 10) : 0;
 };
 
+const tokenizeQuery = (query: string): string[] => {
+    return query
+        .toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .split(/\s+/)
+        .filter(word => word.length > 2); // Same logic as indexer
+};
+
 export const useStrainFilters = (
     allStrains: Strain[],
     settings: AppSettings['strainsViewSettings']
@@ -40,13 +49,30 @@ export const useStrainFilters = (
     const [sort, setSort] = useState<{ key: SortKey, direction: SortDirection }>({ key: settings.defaultSortKey, direction: settings.defaultSortDirection });
     const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>(defaultAdvancedFilters);
 
+    const [searchedIds, setSearchedIds] = useState<Set<string> | null>(null);
+    const [isSearching, setIsSearching] = useState(false);
+
+    useEffect(() => {
+        const performSearch = async () => {
+            if (deferredSearchTerm.trim()) {
+                setIsSearching(true);
+                const tokens = tokenizeQuery(deferredSearchTerm);
+                const ids = await dbService.searchIndex(tokens);
+                setSearchedIds(ids);
+                setIsSearching(false);
+            } else {
+                setSearchedIds(null); // No search term, so don't filter by IDs
+            }
+        };
+        performSearch();
+    }, [deferredSearchTerm]);
+
     const filteredStrains = useMemo(() => {
         let strains = [...allStrains];
 
         // Search term filter (using deferred value for non-blocking UI)
-        if (deferredSearchTerm) {
-            const lowerCaseSearch = deferredSearchTerm.toLowerCase();
-            strains = strains.filter(s => s.name.toLowerCase().includes(lowerCaseSearch));
+        if (searchedIds !== null) {
+            strains = strains.filter(s => searchedIds.has(s.id));
         }
 
         // Type filter
@@ -83,7 +109,7 @@ export const useStrainFilters = (
         });
 
         return strains;
-    }, [allStrains, deferredSearchTerm, typeFilter, advancedFilters, sort]);
+    }, [allStrains, searchedIds, typeFilter, advancedFilters, sort]);
 
     const handleSort = useCallback((key: SortKey) => {
         setSort(prev => ({
@@ -140,5 +166,6 @@ export const useStrainFilters = (
         resetAllFilters,
         activeFilterCount,
         isAnyFilterActive,
+        isSearching,
     };
 };

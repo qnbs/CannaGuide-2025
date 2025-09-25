@@ -37,6 +37,10 @@ export const strainsView = {
         text: 'Markiere Sorten mit einem Herz, um sie hier zu speichern.',
         button: 'Alle Sorten durchsuchen'
     },
+    noResults: {
+      title: 'Keine Sorten gefunden',
+      text: 'Keine Sorten entsprechen deinen aktuellen Filterkriterien. Versuche, deine Suche anzupassen.',
+    }
   },
   tabs: {
     allStrains: 'Alle Sorten',
@@ -99,7 +103,7 @@ export const strainsView = {
     yieldIndoorPlaceholder: 'z.B. 450 g/m²',
     yieldOutdoorPlaceholder: 'z.B. 500 g/Pflanze',
     height: 'Höhe',
-    heights: { short: 'Kurz', medium: 'Mittel', high: 'Hoch' },
+    heights: { short: 'Kurz', medium: 'Mittel', tall: 'Hoch' },
     heightIndoorPlaceholder: 'z.B. 80-120cm',
     heightOutdoorPlaceholder: 'z.B. 150-200cm',
     profile: 'Profil',
@@ -126,7 +130,7 @@ export const strainsView = {
           selected: 'Ausgewählte',
           favorites: 'Favoriten',
           filtered: 'Gefilterte',
-          all: 'Alle Sorten',
+          all: 'Alle Einträge',
       },
       format: 'Format',
       formats: {
@@ -134,8 +138,9 @@ export const strainsView = {
           txt: 'TXT',
           csv: 'CSV',
           json: 'JSON',
+          xml: 'XML',
       },
-      count: '{count} Sorten',
+      count: '{count} Einträge',
   },
   csvHeaders: {
     name: 'Name',
@@ -151,6 +156,8 @@ export const strainsView = {
     terpenes: 'Terpene',
     yieldIndoor: 'Ertrag (Indoor)',
     yieldOutdoor: 'Ertrag (Outdoor)',
+    heightIndoor: 'Höhe (Indoor)',
+    heightOutdoor: 'Höhe (Outdoor)',
     description: 'Beschreibung'
   },
   exportsManager: {

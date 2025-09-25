@@ -7,6 +7,8 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { useAppStore } from '@/stores/useAppStore';
+import { selectAdvisorStateForPlant } from '@/stores/selectors';
+import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 interface AiTabProps {
     plant: Plant;
@@ -18,11 +20,15 @@ interface AiTabProps {
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
-    const addNotification = useAppStore(state => state.addNotification);
-    const [isLoading, setIsLoading] = useState(false);
-    const [response, setResponse] = useState<AIResponse | null>(null);
+    const { addNotification, startAdvisorGeneration } = useAppStore(state => ({
+        addNotification: state.addNotification,
+        startAdvisorGeneration: state.startAdvisorGeneration,
+    }));
+    const { isLoading, response } = useAppStore(selectAdvisorStateForPlant(plant.id));
+    
     const [loadingMessage, setLoadingMessage] = useState('');
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
+    const [isCurrentResponseSaved, setIsCurrentResponseSaved] = useState(false);
 
     const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
@@ -44,19 +50,16 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
     }, [isLoading, plant, t]);
 
     const handleGetAdvice = async () => {
-        setIsLoading(true);
-        setResponse(null);
-        try {
-            const res = await geminiService.getAiPlantAdvisorResponse(plant, t);
-            setResponse(res);
-        } catch (error) {
-            console.error("AI Advisor Error:", error);
-            const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
-            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
-            setResponse({ title: t('common.error'), content: errorMessage });
-            addNotification(errorMessage, 'error');
+        setIsCurrentResponseSaved(false); // Reset save status for new response
+        startAdvisorGeneration(plant);
+    };
+
+    const handleSaveResponse = () => {
+        if (response) {
+            addResponse(plant.id, response, plantQueryData);
+            setIsCurrentResponseSaved(true);
+            addNotification(t('knowledgeView.archive.saveSuccess'), 'success');
         }
-        setIsLoading(false);
     };
     
     const sortedArchive = [...archive].sort((a, b) => b.createdAt - a.createdAt);
@@ -83,17 +86,18 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                 </Button>
 
                 <div className="mt-4">
-                    {isLoading && (
-                        <div className="text-center p-4">
-                            <p className="text-slate-400 animate-pulse">{loadingMessage}</p>
-                        </div>
-                    )}
+                    {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                     {response && !isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{response.title}</h4>
                             <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
                             <div className="text-right mt-2">
-                               <Button size="sm" variant="secondary" onClick={() => addResponse(plant.id, response, plantQueryData)}>{t('knowledgeView.archive.saveButton')}</Button>
+                               <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
+                                   {isCurrentResponseSaved ? 
+                                    <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />{t('strainsView.tips.saved')}</> :
+                                    <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />{t('knowledgeView.archive.saveButton')}</>
+                                   }
+                               </Button>
                             </div>
                         </Card>
                     )}

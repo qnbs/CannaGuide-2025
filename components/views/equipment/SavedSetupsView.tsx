@@ -1,5 +1,5 @@
 import React, { useState, useId } from 'react';
-import { SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
+import { SavedSetup, RecommendationCategory, RecommendationItem, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -7,6 +7,7 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { exportService } from '@/services/exportService';
+import { DataExportModal } from '@/components/common/DataExportModal';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
@@ -117,7 +118,14 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
     const { t } = useTranslations();
     const addNotification = useAppStore(state => state.addNotification);
     const [selectedSetup, setSelectedSetup] = useState<SavedSetup | null>(null);
+    const [selectedIds, setSelectedIds] = useState(new Set<string>());
+    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
     
+    const handleActionClick = (e: React.MouseEvent, action: () => void) => {
+        e.stopPropagation();
+        action();
+    };
+
     const handleDelete = (setup: SavedSetup) => {
         if (window.confirm(t('equipmentView.savedSetups.deleteConfirm', { name: setup.name }))) {
             deleteSetup(setup.id);
@@ -136,21 +144,20 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
         }
     };
 
-    const handleExport = (setup: SavedSetup, format: 'pdf' | 'json' | 'csv' | 'txt') => {
-        if (!window.confirm(t('equipmentView.savedSetups.exportConfirm', { name: setup.name, format: format.toUpperCase() }))) return;
-
-        try {
-            switch(format) {
-                case 'pdf': exportService.exportSetupAsPDF(setup, t); break;
-                case 'json': exportService.exportSetupAsJSON(setup); break;
-                case 'csv': exportService.exportSetupAsCSV(setup, t); break;
-                case 'txt': exportService.exportSetupAsTXT(setup, t); break;
-            }
-            addNotification(t('equipmentView.savedSetups.exportSuccess', { name: setup.name }), 'success');
-        } catch(e) {
-            addNotification(t('equipmentView.savedSetups.exportError'), 'error');
-            console.error("Export error:", e);
+    const handleBulkExport = (source: 'selected' | 'all', format: ExportFormat) => {
+        const setupsToExport = source === 'selected' 
+            ? savedSetups.filter(s => selectedIds.has(s.id))
+            : sortedSetups;
+        
+        if (setupsToExport.length === 0) {
+            addNotification(t('common.noDataToExport'), 'error');
+            return;
         }
+
+        // FIX: Correctly call the export service with a generated filename. The 'exportSetups' function was missing.
+        const filename = `CannaGuide_Setups_${new Date().toISOString().slice(0, 10)}`;
+        exportService.exportSetups(setupsToExport, format, filename, t);
+        addNotification(t('equipmentView.savedSetups.exportSuccess', { name: `${setupsToExport.length} setups` }), 'success');
     };
     
     const sortedSetups = [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
@@ -158,6 +165,23 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
     return (
         <div className="mt-6">
              {selectedSetup && <SetupDetailModal setup={selectedSetup} onClose={() => setSelectedSetup(null)} onUpdate={handleUpdate} />}
+             <DataExportModal 
+                isOpen={isExportModalOpen}
+                onClose={() => setIsExportModalOpen(false)}
+                onExport={handleBulkExport}
+                title={t('equipmentView.savedSetups.exportTitle')}
+                selectionCount={selectedIds.size}
+                totalCount={sortedSetups.length}
+            />
+
+            <div className="flex justify-between items-center mb-4">
+                 <h3 className="text-xl font-bold font-display text-primary-400">{t('equipmentView.tabs.setups')}</h3>
+                 <Button onClick={() => setIsExportModalOpen(true)} disabled={savedSetups.length === 0}>
+                     <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
+                     {t('common.export')}
+                 </Button>
+            </div>
+            
             {sortedSetups.length === 0 ? (
                 <Card className="text-center py-10 text-slate-500">
                     <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
@@ -167,29 +191,36 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
             ) : (
                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {sortedSetups.map(setup => (
-                        <Card key={setup.id} className="flex flex-col">
-                            <h3 className="font-bold text-lg text-primary-400 truncate">{setup.name}</h3>
-                            <p className="text-xs text-slate-400 mb-2">{new Date(setup.createdAt).toLocaleString()}</p>
-                            <div className="text-sm text-slate-300 flex-grow flex items-center gap-3 my-2">
-                               <span className="flex items-center gap-1" title="Area"><PhosphorIcons.Cube/> {setup.sourceDetails.area}cm</span>
-                               <span className="flex items-center gap-1" title="Style"><PhosphorIcons.Leafy/> {setup.sourceDetails.growStyle}</span>
-                               <span className="flex items-center gap-1" title="Budget"><PhosphorIcons.Drop/> {setup.sourceDetails.budget}</span>
+                        <Card key={setup.id} className="flex flex-col cursor-pointer p-0 overflow-hidden" onClick={() => setSelectedSetup(setup)}>
+                             <div className="p-3 flex-grow">
+                                <div className="flex items-start justify-between">
+                                    <h3 className="font-bold text-lg text-primary-400 truncate pr-2">{setup.name}</h3>
+                                     <input 
+                                        type="checkbox" 
+                                        checked={selectedIds.has(setup.id)}
+                                        onChange={() => setSelectedIds(prev => {
+                                            const newSet = new Set(prev);
+                                            if (newSet.has(setup.id)) newSet.delete(setup.id);
+                                            else newSet.add(setup.id);
+                                            return newSet;
+                                        })}
+                                        onClick={e => e.stopPropagation()}
+                                        className="h-5 w-5 rounded border-slate-500 bg-slate-700 text-primary-500 focus:ring-primary-500 flex-shrink-0"
+                                    />
+                                </div>
+                                <p className="text-xs text-slate-400 mb-2">{new Date(setup.createdAt).toLocaleString()}</p>
+                                <div className="text-sm text-slate-300 flex items-center gap-3 my-2">
+                                <span className="flex items-center gap-1" title="Area"><PhosphorIcons.Cube/> {setup.sourceDetails.area}cm</span>
+                                <span className="flex items-center gap-1" title="Style"><PhosphorIcons.Leafy/> {setup.sourceDetails.growStyle}</span>
+                                <span className="flex items-center gap-1" title="Budget"><PhosphorIcons.Drop/> {setup.sourceDetails.budget}</span>
+                                </div>
+                                <p className="text-2xl font-bold text-right my-3">{setup.totalCost.toFixed(2)} {t('common.units.currency_eur')}</p>
                             </div>
-                            <p className="text-2xl font-bold text-right my-3">{setup.totalCost.toFixed(2)} {t('common.units.currency_eur')}</p>
-                            <div className="flex flex-wrap gap-2 mt-auto pt-3 border-t border-slate-700">
-                                <Button size="sm" onClick={() => setSelectedSetup(setup)} className="flex-1">{t('equipmentView.savedSetups.inspect')}</Button>
-                                <details className="relative group">
-                                    <summary className="list-none">
-                                        <Button as="div" size="sm" variant="secondary" className="cursor-pointer">{t('common.export')}...</Button>
-                                    </summary>
-                                    <div className="absolute bottom-full mb-2 w-32 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 rounded-lg p-1 shadow-lg opacity-0 pointer-events-none group-open:opacity-100 group-open:pointer-events-auto transition-opacity z-10">
-                                        <button onClick={() => handleExport(setup, 'pdf')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">PDF</button>
-                                        <button onClick={() => handleExport(setup, 'txt')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">TXT</button>
-                                        <button onClick={() => handleExport(setup, 'csv')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">CSV</button>
-                                        <button onClick={() => handleExport(setup, 'json')} className="w-full text-left text-sm p-1.5 hover:bg-slate-700 rounded">JSON</button>
-                                    </div>
-                                </details>
-                                <Button size="sm" variant="danger" onClick={() => handleDelete(setup)} aria-label={t('common.deleteSetup')}>
+                            <div className="flex gap-2 mt-auto p-3 bg-slate-900/50 border-t border-slate-700">
+                                <Button size="sm" variant="secondary" className="flex-1" onClick={(e) => handleActionClick(e, () => setSelectedSetup(setup))}>
+                                     {t('common.details')}
+                                </Button>
+                                <Button size="sm" variant="danger" onClick={(e) => handleActionClick(e, () => handleDelete(setup))} aria-label={t('common.deleteSetup')}>
                                      <PhosphorIcons.TrashSimple className="w-4 h-4" />
                                 </Button>
                             </div>

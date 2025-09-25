@@ -81,7 +81,7 @@ export const equipmentView = {
     tryAgain: 'Erneut versuchen',
     saveSetup: 'Setup speichern',
     setupNamePrompt: 'Wie möchtest du dieses Setup nennen?',
-    setupSaveConfirm: 'Möchtest du das Setup als "{name}" speichern?',
+    setupSaveConfirm: 'Mötest du das Setup als "{name}" speichern?',
     setupSaveSuccess: 'Setup "{name}" erfolgreich gespeichert!',
     setupSaveError: 'Fehler beim Speichern des Setups.',
     categories: {
@@ -188,6 +188,7 @@ export const equipmentView = {
   },
   savedSetups: {
     title: 'Meine gespeicherten Setups',
+    exportTitle: 'Setups exportieren',
     noSetups: {
       title: 'Keine gespeicherten Setups',
       subtitle: 'Wenn du eine Empfehlung aus dem Konfigurator speicherst, erscheint sie hier.',
@@ -197,8 +198,7 @@ export const equipmentView = {
     deleteSuccess: 'Setup "{name}" wurde gelöscht.',
     updateSuccess: 'Setup "{name}" wurde aktualisiert.',
     updateError: 'Fehler beim Aktualisieren des Setups.',
-    exportConfirm: 'Möchtest du das Setup "{name}" wirklich als {format} exportieren?',
-    exportSuccess: 'Setup "{name}" erfolgreich exportiert.',
+    exportSuccess: '"{name}" erfolgreich exportiert.',
     exportError: 'Fehler beim Exportieren des Setups.',
     modal: {
       title: 'Setup-Details',
@@ -218,6 +218,7 @@ export const equipmentView = {
       rationale: 'Begründung',
       price: 'Preis (€)',
       item: 'Komponente',
+      category: 'Kategorie',
     }
   },
   growShops: {
@@ -242,8 +243,6 @@ export const equipmentView = {
     idealFor: 'Ideal für',
     shipping: 'Versand',
     paymentMethods: 'Zahlungsmethoden',
-    sortByName: 'Nach Name sortieren',
-    sortByRating: 'Nach Bewertung sortieren',
     noResults: 'Keine Shops für die aktuelle Auswahl gefunden.',
     region: {
       europe: 'Europa',

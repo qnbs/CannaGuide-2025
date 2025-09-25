@@ -8,6 +8,7 @@ import { BottomNav } from '@/components/navigation/BottomNav';
 import { StrainsView } from '@/components/views/StrainsView';
 import { PlantsView } from '@/components/views/plants/PlantsView';
 import { EquipmentView } from '@/components/views/EquipmentView';
+// FIX: Corrected import path for KnowledgeView to point to the new component directory structure.
 import { KnowledgeView } from '@/components/views/knowledge/KnowledgeView';
 import { SettingsView } from '@/components/views/SettingsView';
 import { HelpView } from '@/components/views/HelpView';

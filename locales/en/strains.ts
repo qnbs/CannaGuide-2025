@@ -37,6 +37,10 @@ export const strainsView = {
         text: 'Mark strains with a heart to save them here for quick access.',
         button: 'Browse All Strains'
     },
+    noResults: {
+      title: 'No Strains Found',
+      text: 'No strains matched your current filter criteria. Try adjusting your search.',
+    }
   },
   tabs: {
     allStrains: 'All Strains',
@@ -126,7 +130,7 @@ export const strainsView = {
           selected: 'Selected',
           favorites: 'Favorites',
           filtered: 'Filtered',
-          all: 'All Strains',
+          all: 'All Items',
       },
       format: 'Format',
       formats: {
@@ -134,8 +138,9 @@ export const strainsView = {
           txt: 'TXT',
           csv: 'CSV',
           json: 'JSON',
+          xml: 'XML',
       },
-      count: '{count} strains',
+      count: '{count} items',
   },
   csvHeaders: {
     name: 'Name',
@@ -151,6 +156,8 @@ export const strainsView = {
     terpenes: 'Terpenes',
     yieldIndoor: 'Yield (Indoor)',
     yieldOutdoor: 'Yield (Outdoor)',
+    heightIndoor: 'Height (Indoor)',
+    heightOutdoor: 'Height (Outdoor)',
     description: 'Description'
   },
   exportsManager: {

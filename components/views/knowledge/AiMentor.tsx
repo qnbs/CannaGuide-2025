@@ -6,23 +6,24 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { geminiService } from '@/services/geminiService';
 import { AIResponse } from '@/types';
+import { selectMentorState } from '@/stores/selectors';
+import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 export const AiMentor: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification, addResponse } = useAppStore(state => ({
-        addNotification: state.addNotification,
+    const { addResponse } = useAppStore(state => ({
         addResponse: state.addArchivedMentorResponse,
     }));
+    const { isLoading, response, lastQuery } = useAppStore(selectMentorState);
+    const startMentorGeneration = useAppStore(state => state.startMentorGeneration);
     const mentorInputId = useId();
 
     const [query, setQuery] = useState('');
-    const [aiResponse, setAiResponse] = useState<AIResponse | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
     useEffect(() => {
-        if (isLoading) {
-            const shortQuery = query.length > 20 ? query.substring(0, 20) + '...' : query;
+        if (isLoading && lastQuery) {
+            const shortQuery = lastQuery.length > 20 ? lastQuery.substring(0, 20) + '...' : lastQuery;
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'mentor', data: { query: shortQuery } }, t);
             let messageIndex = 0;
             
@@ -36,24 +37,11 @@ export const AiMentor: React.FC = () => {
 
             return () => clearInterval(intervalId);
         }
-    }, [isLoading, query, t]);
+    }, [isLoading, lastQuery, t]);
 
-    const handleAskMentor = async () => {
+    const handleAskMentor = () => {
         if (!query.trim()) return;
-
-        setIsLoading(true);
-        setAiResponse(null);
-        try {
-            const res = await geminiService.getAiMentorResponse(query, t);
-            setAiResponse(res);
-        } catch (e) {
-            console.error(e);
-            const errorMessageKey = e instanceof Error ? e.message : 'ai.error.unknown';
-            const errorMessage = t(errorMessageKey) === errorMessageKey ? t('ai.error.unknown') : t(errorMessageKey);
-            setAiResponse({ title: t('common.error'), content: errorMessage});
-            addNotification(errorMessage, 'error');
-        }
-        setIsLoading(false);
+        startMentorGeneration(query);
     };
 
     return (
@@ -79,7 +67,7 @@ export const AiMentor: React.FC = () => {
                     }}
                 />
                 {query && !isLoading && (
-                    <button onClick={() => { setQuery(''); setAiResponse(null); }} className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors" aria-label={t('common.close')}>
+                    <button onClick={() => setQuery('')} className="absolute right-3 top-3 text-slate-400 hover:text-white transition-colors" aria-label={t('common.close')}>
                         <PhosphorIcons.XCircle className="w-5 h-5"/>
                     </button>
                 )}
@@ -90,7 +78,7 @@ export const AiMentor: React.FC = () => {
                     <span className="font-semibold">{t('knowledgeView.aiMentor.examplePromptsTitle')}:</span>
                     <div className="flex flex-wrap gap-2 mt-1">
                         {(t('knowledgeView.aiMentor.examples') as string[]).map((ex, i) => (
-                            <button key={i} onClick={() => setQuery(ex)} className="text-xs bg-slate-800 hover:bg-slate-700/80 px-2 py-1 rounded-md transition-colors">{ex}</button>
+                            <button key={i} onClick={() => setQuery(ex)} className="text-xs bg-slate-800/60 hover:bg-slate-700/80 px-2 py-1 rounded-full transition-colors border border-slate-700">{ex}</button>
                         ))}
                     </div>
                 </div>
@@ -100,17 +88,14 @@ export const AiMentor: React.FC = () => {
             </div>
 
             {isLoading && (
-                <div className="text-center p-6 flex flex-col items-center">
-                    <PhosphorIcons.Brain className="w-12 h-12 text-primary-500 animate-pulse mb-3" />
-                    <p className="text-slate-400">{loadingMessage || t('knowledgeView.aiMentor.loading')}</p>
-                </div>
+                <AiLoadingIndicator loadingMessage={loadingMessage || t('knowledgeView.aiMentor.loading')} />
             )}
-            {aiResponse && !isLoading && (
+            {response && !isLoading && (
                 <Card className="mt-4 bg-slate-800 animate-fade-in">
-                    <h4 className="font-bold text-primary-300 text-lg">{aiResponse.title}</h4>
-                    <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: aiResponse.content }}></div>
+                    <h4 className="font-bold text-primary-300 text-lg">{response.title}</h4>
+                    <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: response.content }}></div>
                     <div className="text-right mt-4">
-                            <Button size="sm" variant="secondary" onClick={() => addResponse({ ...aiResponse, query })}>
+                            <Button size="sm" variant="secondary" onClick={() => addResponse({ ...response, query: lastQuery || query })}>
                             <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
                             {t('knowledgeView.archive.saveButton')}
                         </Button>

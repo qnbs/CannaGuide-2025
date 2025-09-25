@@ -38,7 +38,7 @@ interface QuickFilterState {
 }
 
 export const defaultAdvancedFilters: AdvancedFilterState = {
-    thcRange: [0, 35], cbdRange: [0, 20], floweringRange: [6, 16],
+    thcRange: [0, 35], cbdRange: [0, 25], floweringRange: [4, 20],
     selectedDifficulties: new Set(), selectedYields: new Set(), selectedHeights: new Set(),
     selectedAromas: new Set(), selectedTerpenes: new Set(),
 };
@@ -82,7 +82,7 @@ export const useStrainFilters = (
         switch (key) {
             case 'name': case 'type': valA = a[key]; valB = b[key]; break;
             case 'difficulty': valA = difficultyValues[a.agronomic.difficulty]; valB = difficultyValues[b.agronomic.difficulty]; break;
-            case 'yield': valA = yieldValues[a.agronomic.yield]; valB = yieldValues[b.agronomic.yield]; break;
+            case 'yield': valA = yieldValues[a.agronomic['yield']]; valB = yieldValues[b.agronomic['yield']]; break;
             default: valA = a[key as 'thc' | 'cbd' | 'floweringTime']; valB = b[key as 'thc' | 'cbd' | 'floweringTime'];
         }
         const comparison = String(valA).localeCompare(String(valB));

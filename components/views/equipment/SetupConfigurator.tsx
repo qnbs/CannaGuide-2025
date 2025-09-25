@@ -1,20 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { SavedSetup, Recommendation } from '@/types';
+import { SavedSetup } from '@/types';
 import { SetupResults } from '@/components/views/equipment/SetupResults';
 import { configurations } from '@/components/views/equipment/setupConfigurations';
+import { useAppStore } from '@/stores/useAppStore';
+import { selectEquipmentGenerationState } from '@/stores/selectors';
+import { geminiService } from '@/services/geminiService';
 
 interface SetupConfiguratorProps {
-    onGenerate: (promptDetails: string) => void;
-    onSaveSetup: (setup: Omit<SavedSetup, 'id' | 'createdAt'>) => void;
-    recommendation: Recommendation | null;
-    setRecommendation: (rec: Recommendation | null) => void;
-    isLoading: boolean;
-    error: string | null;
-    setError: (err: string | null) => void;
+    onSaveSetup: () => void;
 }
 
 type PlantCount = 1 | 2 | 3;
@@ -56,65 +53,76 @@ const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect })
 };
 
 
-export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ 
-    onGenerate, onSaveSetup, recommendation, setRecommendation, isLoading, error, setError
-}) => {
+export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslations();
-    const [step, setStep] = useState<1 | 2>(1);
-    const [plantCount, setPlantCount] = useState<PlantCount | null>(null);
-    const [selectedConfigKey, setSelectedConfigKey] = useState<ConfigType | null>(null);
+    const { isLoading, recommendation, error, sourceDetails } = useAppStore(selectEquipmentGenerationState);
+    const { startEquipmentGeneration, resetEquipmentGenerationState, addSetup, addNotification } = useAppStore(state => ({
+        startEquipmentGeneration: state.startEquipmentGeneration,
+        resetEquipmentGenerationState: state.resetEquipmentGenerationState,
+        addSetup: state.addSetup,
+        addNotification: state.addNotification
+    }));
 
-    const handleGenerate = () => {
-        if (!plantCount || !selectedConfigKey) return;
-        const config = configurations[plantCount][selectedConfigKey];
-        onGenerate(t(config.promptKey));
-        setStep(2);
-    };
-
-    const startOver = () => {
-        setStep(1);
-        setPlantCount(null);
-        setSelectedConfigKey(null);
-        setRecommendation(null);
-        setError(null);
-    };
+    const [plantCount, setPlantCount] = useState<PlantCount | null>(sourceDetails?.area === '60x60' || sourceDetails?.area === '80x80' ? 1 : (sourceDetails?.area === '120x60' ? 2 : (sourceDetails?.area === '100x100' || sourceDetails?.area === '120x120' ? 3 : null)));
+    const [selectedConfigKey, setSelectedConfigKey] = useState<ConfigType | null>(sourceDetails?.budget === 'low' ? 'standard' : (sourceDetails?.budget === 'medium' ? 'medium' : (sourceDetails?.budget === 'high' ? 'premium' : null)));
+    const [loadingMessage, setLoadingMessage] = useState('');
     
-    const currentConfigs = plantCount ? configurations[plantCount] : null;
-    const selectedConfigData = (plantCount && selectedConfigKey) ? configurations[plantCount][selectedConfigKey] : null;
-
-    const sourceDetails = useMemo(() => {
-        if (!plantCount || !selectedConfigKey || !selectedConfigData) {
-            return {
-                area: '60x60' as Area,
-                budget: 'low' as Budget,
-                growStyle: 'beginner' as GrowStyle
-            };
-        }
+    const derivedSourceDetails = useMemo(() => {
+        if (!plantCount || !selectedConfigKey) return null;
+        const selectedConfigData = configurations[plantCount]?.[selectedConfigKey];
+        if (!selectedConfigData) return null;
 
         const areaString = selectedConfigData.details.zelt.split(' ')[0].split('x').slice(0, 2).join('x');
         
-        const budgetMap: Record<ConfigType, Budget> = {
-            standard: 'low',
-            medium: 'medium',
-            premium: 'high',
-        };
-        
-        const growStyleMap: Record<ConfigType, GrowStyle> = {
-            standard: 'beginner',
-            medium: 'balanced',
-            premium: 'yield',
-        };
+        const budgetMap: Record<ConfigType, Budget> = { standard: 'low', medium: 'medium', premium: 'high' };
+        const growStyleMap: Record<ConfigType, GrowStyle> = { standard: 'beginner', medium: 'balanced', premium: 'yield' };
         
         return {
             area: areaString as Area,
             growStyle: growStyleMap[selectedConfigKey],
             budget: budgetMap[selectedConfigKey]
         };
-    }, [plantCount, selectedConfigData, selectedConfigKey]);
+    }, [plantCount, selectedConfigKey]);
+
+    useEffect(() => {
+        if (isLoading && plantCount && selectedConfigKey) {
+            const config = configurations[plantCount][selectedConfigKey];
+            const configName = t(config.titleKey);
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { configName } }, t);
+            let messageIndex = 0;
+            const updateLoadingMessage = () => {
+                setLoadingMessage(messages[messageIndex % messages.length]);
+                messageIndex++;
+            };
+            
+            updateLoadingMessage();
+            const intervalId = setInterval(updateLoadingMessage, 2000);
+
+            return () => clearInterval(intervalId);
+        }
+    }, [isLoading, t, plantCount, selectedConfigKey]);
+
+    const handleGenerate = () => {
+        if (!plantCount || !selectedConfigKey) return;
+        const config = configurations[plantCount][selectedConfigKey];
+        const details = derivedSourceDetails;
+        if(details) {
+            startEquipmentGeneration(t(config.promptKey), details);
+        }
+    };
+    
+     const handleSaveSetup = (setupToSave: Omit<SavedSetup, 'id' | 'createdAt'>) => {
+        addSetup(setupToSave);
+        addNotification(t('equipmentView.configurator.setupSaveSuccess', { name: setupToSave.name }), 'success');
+        onSaveSetup();
+    };
+    
+    const showResults = isLoading || recommendation || error;
+    const currentConfigs = plantCount ? configurations[plantCount] : null;
 
     return (
         <Card>
-            {step === 1 ? (
+            {!showResults ? (
                  <>
                     <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.configurator.title')}</h2>
                     <p className="text-slate-400 mb-6">{t('equipmentView.configurator.subtitleNew')}</p>
@@ -164,12 +172,11 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({
                     recommendation={recommendation}
                     isLoading={isLoading}
                     error={error}
-                    onSaveSetup={onSaveSetup}
-                    startOver={startOver}
-                    handleGenerate={() => handleGenerate()}
-                    area={sourceDetails.area}
-                    budget={sourceDetails.budget}
-                    growStyle={sourceDetails.growStyle}
+                    onSaveSetup={handleSaveSetup}
+                    startOver={resetEquipmentGenerationState}
+                    handleGenerate={handleGenerate}
+                    sourceDetails={sourceDetails!}
+                    loadingMessage={loadingMessage}
                 />
             )}
         </Card>

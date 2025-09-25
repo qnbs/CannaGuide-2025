@@ -8,6 +8,7 @@ import { geminiService } from '@/services/geminiService';
 import { Plant, PlantDiagnosisResponse } from '@/types';
 import { CameraModal } from '@/components/common/CameraModal';
 import { selectActivePlants } from '@/stores/selectors';
+import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
@@ -135,6 +136,16 @@ export const AiDiagnostics: React.FC = () => {
         addNotification(t('plantsView.aiDiagnostics.savedToJournal'), 'success');
     };
 
+    const ResultSection: React.FC<{title: string, content: string, icon: React.ReactNode}> = ({ title, content, icon }) => (
+        <Card className="bg-slate-800/50">
+            <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2 mb-2">
+                {icon}
+                {title}
+            </h4>
+            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+        </Card>
+    );
+
     return (
         <>
             <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleCameraCapture} />
@@ -152,7 +163,7 @@ export const AiDiagnostics: React.FC = () => {
                                 onDragOver={handleDragEvents}
                                 onDragEnter={handleDragEvents}
                                 onDragLeave={handleDragEvents}
-                                className={`p-6 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragOver ? 'border-primary-500 bg-primary-500/10' : 'border-slate-600 hover:border-slate-500'}`}
+                                className={`p-6 border-2 border-dashed rounded-lg text-center cursor-pointer transition-all duration-300 ${isDragOver ? 'border-primary-500 bg-primary-500/10 scale-105' : 'border-slate-600 hover:border-slate-500'}`}
                                 onClick={() => fileInputRef.current?.click()}
                             >
                                 <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2"/>
@@ -183,36 +194,36 @@ export const AiDiagnostics: React.FC = () => {
                         </div>
                     </div>
                 </Card>
-                <Card>
+                <div className="flex flex-col">
                     {isLoading ? (
-                         <div className="text-center p-8 flex flex-col items-center justify-center h-full">
-                            <p className="text-slate-400 animate-pulse">{loadingMessage}</p>
-                        </div>
+                        <Card className="flex-grow flex items-center justify-center">
+                            <AiLoadingIndicator loadingMessage={loadingMessage} />
+                        </Card>
                     ) : response ? (
-                         <div className="space-y-4">
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-xl font-bold text-primary-300">{response.problemName}</h3>
-                                <div className="flex items-center gap-2 text-sm font-semibold" title={`${response.confidence}% ${t('plantsView.aiDiagnostics.confidence')}`}>
-                                    <PhosphorIcons.CheckCircle weight="fill" className={response.confidence > 75 ? 'text-green-500' : 'text-amber-500'} />
-                                    {response.confidence}%
-                                </div>
-                            </div>
-                            <div className="prose prose-sm dark:prose-invert max-w-none space-y-3">
-                                <div><h4 className="!mb-1">{t('plantsView.aiDiagnostics.diagnosis')}</h4><div dangerouslySetInnerHTML={{ __html: response.diagnosis }} /></div>
-                                <div><h4 className="!mb-1">{t('plantsView.aiDiagnostics.actions')}</h4><div dangerouslySetInnerHTML={{ __html: response.immediateActions }} /></div>
-                                <div><h4 className="!mb-1">{t('plantsView.aiDiagnostics.solution')}</h4><div dangerouslySetInnerHTML={{ __html: response.longTermSolution }} /></div>
-                                <div><h4 className="!mb-1">{t('plantsView.aiDiagnostics.prevention')}</h4><div dangerouslySetInnerHTML={{ __html: response.prevention }} /></div>
-                            </div>
+                         <div className="space-y-4 max-h-[calc(100vh-200px)] lg:max-h-full overflow-y-auto pr-2 flex-grow">
+                             <Card className="bg-slate-800/50">
+                                <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2 mb-2">
+                                    <PhosphorIcons.MagnifyingGlass className="w-5 h-5"/> 
+                                    {response.problemName}
+                                    <span className={`ml-auto text-sm font-semibold flex items-center gap-1 ${response.confidence > 75 ? 'text-green-400' : 'text-amber-400'}`}>
+                                        {response.confidence}%
+                                    </span>
+                                </h4>
+                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.diagnosis }} />
+                             </Card>
+                             <ResultSection title={t('plantsView.aiDiagnostics.actions')} icon={<PhosphorIcons.Lightning className="w-5 h-5"/>} content={response.immediateActions} />
+                             <ResultSection title={t('plantsView.aiDiagnostics.solution')} icon={<PhosphorIcons.Wrench className="w-5 h-5"/>} content={response.longTermSolution} />
+                             <ResultSection title={t('plantsView.aiDiagnostics.prevention')} icon={<PhosphorIcons.Checks className="w-5 h-5"/>} content={response.prevention} />
                              {selectedPlantId && <Button onClick={handleSaveToJournal} variant="secondary" size="sm" className="w-full mt-4">{t('plantsView.aiDiagnostics.saveToJournal')}</Button>}
                          </div>
                     ) : (
-                         <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
+                         <Card className="flex flex-col items-center justify-center h-full text-center text-slate-500">
                              <PhosphorIcons.Brain className="w-16 h-16 mb-4 text-slate-400" />
                             <h3 className="font-semibold text-lg text-slate-300">{t('plantsView.aiDiagnostics.waiting')}</h3>
                             <p className="text-sm">{t('plantsView.aiDiagnostics.waitingDesc')}</p>
-                        </div>
+                        </Card>
                     )}
-                </Card>
+                </div>
             </div>
         </>
     );

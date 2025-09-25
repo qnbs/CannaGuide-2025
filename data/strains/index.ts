@@ -26,7 +26,6 @@ import { strains as strainsX } from './x';
 import { strains as strainsY } from './y';
 import { strains as strainsZ } from './z';
 import { strains as strainsNumeric } from './numeric';
-import { newStrains } from './new_strains';
 
 export const allStrainsData: Strain[] = [
     ...strainsNumeric,
@@ -56,5 +55,4 @@ export const allStrainsData: Strain[] = [
     ...strainsX,
     ...strainsY,
     ...strainsZ,
-    ...newStrains
 ];

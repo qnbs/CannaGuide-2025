@@ -1,176 +1,38 @@
 import React, { useState } from 'react';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
-import { ArchivedMentorResponse } from '@/types';
-import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { Tabs } from '@/components/common/Tabs';
-import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
-import { AiMentor } from '@/components/views/knowledge/AiMentor';
-import { selectKnowledgeProgress, selectArchivedMentorResponses } from '@/stores/selectors';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { GuideTab } from './GuideTab';
+import { MentorArchiveTab } from './MentorArchiveTab';
+import { AiMentor } from './AiMentor';
 
-type KnowledgeViewTab = 'guide' | 'mentor' | 'diagnostics' | 'archive';
-
-const KnowledgeStep: React.FC<{
-    phase: string;
-    title: string;
-    subtitle: string;
-    p1_title: string;
-    p1_text: string;
-    p2_title: string;
-    p2_text: string;
-    checklist: Record<string, string>;
-    proTip: string;
-    progress: string[];
-    onToggle: (itemId: string) => void;
-}> = ({ phase, title, subtitle, p1_title, p1_text, p2_title, p2_text, checklist, proTip, progress, onToggle }) => {
-    const { t } = useTranslations();
-    const [isTipVisible, setIsTipVisible] = useState(false);
-    return (
-        <Card>
-            <h2 className="text-2xl font-bold font-display text-primary-400 flex items-center gap-2">
-                <PhosphorIcons.BookOpenText className="w-7 h-7"/>
-                {title}
-            </h2>
-            <p className="text-slate-400 mb-4">{subtitle}</p>
-            <div className="space-y-4">
-                <div>
-                    <h3 className="font-semibold text-slate-100">{p1_title}</h3>
-                    <p className="text-sm text-slate-300">{p1_text}</p>
-                </div>
-                <div>
-                    <h3 className="font-semibold text-slate-100">{p2_title}</h3>
-                    <p className="text-sm text-slate-300">{p2_text}</p>
-                </div>
-                <div className="space-y-2">
-                    {Object.entries(checklist).map(([key, text]) => (
-                        <label key={key} className="flex items-center gap-3 cursor-pointer p-2 rounded-md hover:bg-slate-800/50">
-                            <input type="checkbox" checked={progress.includes(key)} onChange={() => onToggle(key)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/>
-                            <span className={`text-sm ${progress.includes(key) ? 'text-slate-400 line-through' : 'text-slate-200'}`}>{text}</span>
-                        </label>
-                    ))}
-                </div>
-                <Card className="bg-primary-900/30">
-                    <button onClick={() => setIsTipVisible(!isTipVisible)} className="font-bold text-primary-300 flex items-center gap-2">
-                        <PhosphorIcons.LightbulbFilament className="w-5 h-5"/> {t('knowledgeView.proTip.title')}
-                    </button>
-                    {isTipVisible && <p className="text-sm text-primary-300/90 mt-2 animate-fade-in">{proTip}</p>}
-                </Card>
-            </div>
-        </Card>
-    );
-}
+type KnowledgeViewTab = 'guide' | 'archive';
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
-    const progress = useAppStore(selectKnowledgeProgress);
-    const archivedResponses = useAppStore(selectArchivedMentorResponses);
-    const { toggleItem, updateResponse, deleteResponse } = useAppStore(state => ({
-        toggleItem: state.toggleKnowledgeProgressItem,
-        updateResponse: state.updateArchivedMentorResponse,
-        deleteResponse: state.deleteArchivedMentorResponse,
-    }));
-    
     const [activeTab, setActiveTab] = useState<KnowledgeViewTab>('guide');
-    const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null);
-
-    const phases = Array.from({ length: 5 }, (_, i) => `phase${i + 1}`);
-    const checklistItems = phases.flatMap(p => Object.keys(t(`knowledgeView.sections.${p}.checklist`)));
-    const completedItems = phases.reduce((acc, p) => acc + (progress[p]?.length || 0), 0);
-    const progressPercent = checklistItems.length > 0 ? (completedItems / checklistItems.length) * 100 : 0;
 
     const tabs = [
-        { id: 'guide', label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.GraduationCap /> },
-        { id: 'mentor', label: t('ai.mentor'), icon: <PhosphorIcons.Brain /> },
-        { id: 'diagnostics', label: t('ai.diagnostics'), icon: <PhosphorIcons.Sparkle /> },
-        { id: 'archive', label: t('knowledgeView.archive.title'), icon: <PhosphorIcons.Archive /> },
+        { id: 'guide', label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.BookOpenText /> },
+        { id: 'archive', label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.ArchiveBox /> },
     ];
-
-    const sortedArchive = [...archivedResponses].sort((a,b) => b.createdAt - a.createdAt);
 
     return (
         <div className="space-y-6">
-            {editingResponse && (
-                <EditResponseModal 
-                    response={editingResponse} 
-                    onClose={() => setEditingResponse(null)} 
-                    onSave={(updated) => {
-                        updateResponse(updated);
-                        setEditingResponse(null);
-                    }}
-                />
-            )}
-             <Card>
+            <div>
+                <h2 className="text-3xl font-bold font-display text-slate-100">{t('knowledgeView.title')}</h2>
+                <p className="text-slate-400 mt-1">{t('knowledgeView.subtitle')}</p>
+            </div>
+
+            <AiMentor />
+
+            <Card>
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as KnowledgeViewTab)} />
-             </Card>
-            
-            {activeTab === 'guide' && (
-                <div className="space-y-6">
-                    <Card>
-                        <h3 className="font-semibold">{t('knowledgeView.progress')}</h3>
-                        <div className="relative h-3 w-full bg-slate-700 rounded-full my-2 overflow-hidden">
-                            <div className="absolute h-full bg-primary-500 rounded-full transition-all duration-500" style={{width: `${progressPercent}%`, boxShadow: '0 0 10px rgba(var(--color-primary-500), 0.7)'}}></div>
-                        </div>
-                        <p className="text-sm text-slate-400">{t('knowledgeView.stepsCompleted', { completed: completedItems, total: checklistItems.length })}</p>
-                    </Card>
-                    
-                    <div className="space-y-6">
-                        {phases.map(p => (
-                            <KnowledgeStep
-                                key={p}
-                                phase={p}
-                                title={t(`knowledgeView.sections.${p}.title`)}
-                                subtitle={t(`knowledgeView.sections.${p}.subtitle`)}
-                                p1_title={t(`knowledgeView.sections.${p}.p1_title`)}
-                                p1_text={t(`knowledgeView.sections.${p}.p1_text`)}
-                                p2_title={t(`knowledgeView.sections.${p}.p2_title`)}
-                                p2_text={t(`knowledgeView.sections.${p}.p2_text`)}
-                                checklist={t(`knowledgeView.sections.${p}.checklist`)}
-                                proTip={t(`knowledgeView.sections.${p}.proTip`)}
-                                progress={progress[p] || []}
-                                onToggle={(itemId) => toggleItem(p, itemId)}
-                            />
-                        ))}
-                    </div>
-                </div>
-            )}
+            </Card>
 
-            {activeTab === 'mentor' && (
-                 <AiMentor />
-            )}
-            
-            {activeTab === 'diagnostics' && <AiDiagnostics />}
-
-            {activeTab === 'archive' && (
-                <Card>
-                    <div className="space-y-4">
-                    {sortedArchive.length > 0 ? (
-                        sortedArchive.map(res => (
-                            <Card key={res.id} className="bg-slate-800">
-                                <p className="text-xs text-slate-400 italic">{t('knowledgeView.archive.queryLabel')}: "{res.query}"</p>
-                                <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
-                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
-                                <div className="flex justify-end items-center gap-2 mt-2">
-                                    <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
-                                        <PhosphorIcons.PencilSimple className="w-4 h-4"/>
-                                    </Button>
-                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(res.id)} aria-label={t('common.deleteResponse')}>
-                                        <PhosphorIcons.TrashSimple className="w-4 h-4"/>
-                                    </Button>
-                                </div>
-                            </Card>
-                        ))
-                    ) : (
-                        <div className="text-center py-10 text-slate-500">
-                             <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                            <h3 className="font-semibold">{t('knowledgeView.archive.empty')}</h3>
-                        </div>
-                    )}
-                    </div>
-                </Card>
-            )}
+            {activeTab === 'guide' && <GuideTab />}
+            {activeTab === 'archive' && <MentorArchiveTab />}
         </div>
     );
 };

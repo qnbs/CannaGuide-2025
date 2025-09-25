@@ -1,12 +1,11 @@
 import React, { useEffect, useId } from 'react';
 import { Strain, StrainType, DifficultyLevel, YieldLevel, HeightLevel } from '@/types';
 import { Button } from '@/components/common/Button';
-import { Card } from '@/components/common/Card';
 import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useForm } from '@/hooks/useForm';
+import { Modal } from '@/components/common/Modal';
 
 interface AddStrainModalProps {
     isOpen: boolean;
@@ -16,7 +15,6 @@ interface AddStrainModalProps {
     strainToEdit: Strain | null;
 }
 
-// Helper to get a flat representation for the form
 const strainToFormValues = (strain: Partial<Strain>) => ({
     name: strain.name || '',
     type: strain.type || 'Hybrid',
@@ -94,7 +92,6 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: 
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStrain, onUpdateStrain, strainToEdit, ...props }) => {
     const { t } = useTranslations();
     const addNotification = useAppStore(state => state.addNotification);
-    const modalRef = useFocusTrap(isOpen);
     const isEditMode = !!strainToEdit;
 
     const validate = (values: any) => {
@@ -155,63 +152,54 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
         }
     }, [errors, addNotification]);
 
-    if (!isOpen) return null;
+    const modalTitle = isEditMode ? t('strainsView.addStrainModal.editTitle') : t('strainsView.addStrainModal.title');
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate" onClick={props.onClose}>
-            <Card ref={modalRef} className="w-full max-w-2xl modal-content-animate" onClick={(e) => e.stopPropagation()}>
-                <form onSubmit={handleSubmit} className="flex flex-col h-full">
-                    <div className="flex justify-between items-start">
-                        <h2 className="text-2xl font-bold text-primary-400 mb-4">
-                            {isEditMode ? t('strainsView.addStrainModal.editTitle') : t('strainsView.addStrainModal.title')}
-                        </h2>
-                        <button type="button" onClick={props.onClose} className="p-1 rounded-full hover:bg-slate-700" aria-label={t('common.close')}>
-                            <PhosphorIcons.X className="w-6 h-6" />
-                        </button>
-                    </div>
-                    
-                    <div className="overflow-y-auto pr-2 flex-grow" style={{maxHeight: '70vh'}}>
-                        <div className="space-y-6">
-                           <FormSection title={t('strainsView.addStrainModal.generalInfo')} defaultOpen={true}>
-                                <Input label={`${t('strainsView.addStrainModal.strainName')} *`} value={values.name} onChange={(e) => handleChange('name', e.target.value)} required />
-                                <Select label={t('common.type')} value={values.type} onChange={(e) => handleChange('type', e.target.value)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
-                                <Input label={t('common.typeDetails')} value={values.typeDetails} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
-                                <Input label={t('common.genetics')} value={values.genetics} onChange={(e) => handleChange('genetics', e.target.value)} />
-                           </FormSection>
+        <Modal
+            isOpen={isOpen}
+            onClose={props.onClose}
+            title={modalTitle}
+            size="2xl"
+        >
+            <form onSubmit={handleSubmit} id="add-strain-form" className="flex flex-col h-full">
+                <div className="space-y-6">
+                    <FormSection title={t('strainsView.addStrainModal.generalInfo')} defaultOpen={true}>
+                        <Input label={`${t('strainsView.addStrainModal.strainName')} *`} value={values.name} onChange={(e) => handleChange('name', e.target.value)} required />
+                        <Select label={t('common.type')} value={values.type} onChange={(e) => handleChange('type', e.target.value)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
+                        <Input label={t('common.typeDetails')} value={values.typeDetails} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
+                        <Input label={t('common.genetics')} value={values.genetics} onChange={(e) => handleChange('genetics', e.target.value)} />
+                    </FormSection>
 
-                           <FormSection title={t('strainsView.addStrainModal.cannabinoids')}>
-                                <Input label={`${t('strainsView.addStrainModal.thcPercent')} *`} type="number" step="0.1" value={values.thc} onChange={(e) => handleChange('thc', e.target.value)} required />
-                                <Input label={t('strainsView.addStrainModal.cbdPercent')} type="number" step="0.1" value={values.cbd} onChange={(e) => handleChange('cbd', e.target.value)} />
-                                <Input label={t('strainsView.addStrainModal.thcRange')} value={values.thcRange} onChange={(e) => handleChange('thcRange', e.target.value)} placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')} />
-                                <Input label={t('strainsView.addStrainModal.cbdRange')} value={values.cbdRange} onChange={(e) => handleChange('cbdRange', e.target.value)} placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')} />
-                           </FormSection>
+                    <FormSection title={t('strainsView.addStrainModal.cannabinoids')}>
+                        <Input label={`${t('strainsView.addStrainModal.thcPercent')} *`} type="number" step="0.1" value={values.thc} onChange={(e) => handleChange('thc', e.target.value)} required />
+                        <Input label={t('strainsView.addStrainModal.cbdPercent')} type="number" step="0.1" value={values.cbd} onChange={(e) => handleChange('cbd', e.target.value)} />
+                        <Input label={t('strainsView.addStrainModal.thcRange')} value={values.thcRange} onChange={(e) => handleChange('thcRange', e.target.value)} placeholder={t('strainsView.addStrainModal.thcRangePlaceholder')} />
+                        <Input label={t('strainsView.addStrainModal.cbdRange')} value={values.cbdRange} onChange={(e) => handleChange('cbdRange', e.target.value)} placeholder={t('strainsView.addStrainModal.cbdRangePlaceholder')} />
+                    </FormSection>
 
-                           <FormSection title={t('strainsView.addStrainModal.growData')}>
-                                <Input label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`} type="number" step="0.5" value={values.floweringTime} onChange={(e) => handleChange('floweringTime', e.target.value)} required />
-                                <Input label={t('strainsView.addStrainModal.floweringTimeRange')} value={values.floweringTimeRange} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
-                                <Select label={t('strainsView.table.level')} value={values.difficulty} onChange={(e) => handleChange('difficulty', e.target.value)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
-                                <Select label={t('strainsView.addStrainModal.yield')} value={values.yield} onChange={(e) => handleChange('yield', e.target.value)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
-                                <Select label={t('strainsView.addStrainModal.height')} value={values.height} onChange={(e) => handleChange('height', e.target.value)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
-                                <Input label={t('strainsView.strainModal.yieldIndoor')} value={values.yieldIndoor} onChange={(e) => handleChange('yieldIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}/>
-                                <Input label={t('strainsView.strainModal.yieldOutdoor')} value={values.yieldOutdoor} onChange={(e) => handleChange('yieldOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}/>
-                                <Input label={t('strainsView.strainModal.heightIndoor')} value={values.heightIndoor} onChange={(e) => handleChange('heightIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}/>
-                                <Input label={t('strainsView.strainModal.heightOutdoor')} value={values.heightOutdoor} onChange={(e) => handleChange('heightOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightOutdoorPlaceholder')}/>
-                           </FormSection>
+                    <FormSection title={t('strainsView.addStrainModal.growData')}>
+                        <Input label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`} type="number" step="0.5" value={values.floweringTime} onChange={(e) => handleChange('floweringTime', e.target.value)} required />
+                        <Input label={t('strainsView.addStrainModal.floweringTimeRange')} value={values.floweringTimeRange} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
+                        <Select label={t('strainsView.table.level')} value={values.difficulty} onChange={(e) => handleChange('difficulty', e.target.value)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
+                        <Select label={t('strainsView.addStrainModal.yield')} value={values.yield} onChange={(e) => handleChange('yield', e.target.value)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
+                        <Select label={t('strainsView.addStrainModal.height')} value={values.height} onChange={(e) => handleChange('height', e.target.value)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
+                        <Input label={t('strainsView.strainModal.yieldIndoor')} value={values.yieldIndoor} onChange={(e) => handleChange('yieldIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}/>
+                        <Input label={t('strainsView.strainModal.yieldOutdoor')} value={values.yieldOutdoor} onChange={(e) => handleChange('yieldOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}/>
+                        <Input label={t('strainsView.strainModal.heightIndoor')} value={values.heightIndoor} onChange={(e) => handleChange('heightIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}/>
+                        <Input label={t('strainsView.strainModal.heightOutdoor')} value={values.heightOutdoor} onChange={(e) => handleChange('heightOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightOutdoorPlaceholder')}/>
+                    </FormSection>
 
-                           <FormSection title={t('strainsView.addStrainModal.profile')}>
-                                <Textarea label={t('common.description')} value={values.description} onChange={(e) => handleChange('description', e.target.value)} />
-                                <Input label={t('strainsView.strainModal.aromas')} value={values.aromasString} onChange={(e) => handleChange('aromasString', e.target.value)} placeholder={t('strainsView.addStrainModal.aromasPlaceholder')} />
-                                <Input label={t('strainsView.strainModal.dominantTerpenes')} value={values.terpenesString} onChange={(e) => handleChange('terpenesString', e.target.value)} placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')} />
-                           </FormSection>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
-                        <Button type="button" variant="secondary" onClick={props.onClose}>{t('common.cancel')}</Button>
-                        <Button type="submit">{t('common.save')}</Button>
-                    </div>
-                </form>
-            </Card>
-        </div>
+                    <FormSection title={t('strainsView.addStrainModal.profile')}>
+                        <Textarea label={t('common.description')} value={values.description} onChange={(e) => handleChange('description', e.target.value)} />
+                        <Input label={t('strainsView.strainModal.aromas')} value={values.aromasString} onChange={(e) => handleChange('aromasString', e.target.value)} placeholder={t('strainsView.addStrainModal.aromasPlaceholder')} />
+                        <Input label={t('strainsView.strainModal.dominantTerpenes')} value={values.terpenesString} onChange={(e) => handleChange('terpenesString', e.target.value)} placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')} />
+                    </FormSection>
+                </div>
+                 <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
+                    <Button type="button" variant="secondary" onClick={props.onClose}>{t('common.cancel')}</Button>
+                    <Button type="submit" form="add-strain-form">{t('common.save')}</Button>
+                </div>
+            </form>
+        </Modal>
     );
 };

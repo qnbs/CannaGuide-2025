@@ -190,6 +190,7 @@ export const equipmentView = {
   },
   savedSetups: {
     title: 'My Saved Setups',
+    exportTitle: 'Export Setups',
     noSetups: {
       title: 'No Saved Setups',
       subtitle: 'When you save a recommendation from the configurator, it will appear here.',
@@ -199,8 +200,7 @@ export const equipmentView = {
     deleteSuccess: 'Setup "{name}" has been deleted.',
     updateSuccess: 'Setup "{name}" has been updated.',
     updateError: 'Error updating setup.',
-    exportConfirm: 'Are you sure you want to export the setup "{name}" as {format}?',
-    exportSuccess: 'Setup "{name}" exported successfully.',
+    exportSuccess: '"{name}" exported successfully.',
     exportError: 'Error exporting setup.',
     modal: {
       title: 'Setup Details',
@@ -220,6 +220,7 @@ export const equipmentView = {
       rationale: 'Rationale',
       price: 'Price (€)',
       item: 'Component',
+      category: 'Category',
     }
   },
   growShops: {
@@ -244,8 +245,6 @@ export const equipmentView = {
     idealFor: 'Ideal for',
     shipping: 'Shipping',
     paymentMethods: 'Payment Methods',
-    sortByName: 'Sort by Name',
-    sortByRating: 'Sort by Rating',
     noResults: 'No shops found for the current selection.',
     region: {
       europe: 'Europe',

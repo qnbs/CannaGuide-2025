@@ -130,6 +130,8 @@ export const settingsView = {
     resetAllConfirm: 'WARNUNG: Dadurch werden alle deine Pflanzen, Einstellungen, Favoriten und eigenen Sorten endgültig gelöscht. Bist du absolut sicher?',
     resetAllSuccess: 'Alle App-Daten wurden zurückgesetzt. Die App wird neu geladen.',
     exportAll: 'Alle Daten exportieren',
+    exportAsJson: 'Als JSON exportieren',
+    exportAsXml: 'Als XML exportieren',
     exportConfirm: 'Möchtest du wirklich alle deine App-Daten als Backup exportieren?',
     exportSuccess: 'Alle Daten erfolgreich exportiert!',
     exportError: 'Export fehlgeschlagen.',

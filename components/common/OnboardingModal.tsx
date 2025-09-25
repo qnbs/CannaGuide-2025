@@ -1,11 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
 import { Language } from '@/types';
-import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { Modal } from './Modal';
 
 interface OnboardingModalProps {
     onClose: () => void;
@@ -15,7 +14,6 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const [currentStep, setCurrentStep] = useState(0);
     const { t } = useTranslations();
     const setSetting = useAppStore(state => state.setSetting);
-    const modalRef = useFocusTrap(true);
 
     const steps = useMemo(() => [
         {
@@ -56,8 +54,8 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const step = currentStep > 0 ? steps[currentStep - 1] : null;
 
     return (
-        <div className="fixed inset-0 bg-slate-900/90 backdrop-blur-md flex items-center justify-center z-[999] p-4 modal-overlay-animate">
-            <Card ref={modalRef} className="w-full max-w-lg text-center modal-content-animate">
+        <Modal isOpen={true} onClose={onClose} size="lg">
+            <div className="text-center">
                 {currentStep === 0 ? (
                     <div>
                         <PhosphorIcons.Globe className="w-16 h-16 text-primary-400 mx-auto mb-4" />
@@ -88,7 +86,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                         </div>
                     </>
                 ) : null}
-            </Card>
-        </div>
+            </div>
+        </Modal>
     );
 };

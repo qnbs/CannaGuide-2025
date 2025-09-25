@@ -2,16 +2,19 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, devtools } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { SettingsSlice, createSettingsSlice, defaultSettings } from './slices/settingsSlice';
-import { DataSlice, createDataSlice } from './slices/dataSlice';
-import { UserSlice, createUserSlice } from './slices/userSlice';
 import { UISlice, createUISlice } from './slices/uiSlice';
 import { StrainsViewSlice, createStrainsViewSlice } from './slices/strainsViewSlice';
+import { AiSlice, createAiSlice } from './slices/aiSlice';
+import { PlantSlice, createPlantSlice } from './slices/plantSlice';
+import { UserContentSlice, createUserContentSlice } from './slices/userContentSlice';
+import { KnowledgeSlice, createKnowledgeSlice } from './slices/knowledgeSlice';
+import { View } from '@/types';
 
 export type TFunction = (key: string, params?: Record<string, any>) => string;
 let t: TFunction = (key: string) => key;
 const getT = () => t;
 
-export type AppState = SettingsSlice & DataSlice & UserSlice & UISlice & StrainsViewSlice & AppSlice;
+export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserContentSlice & KnowledgeSlice & AppSlice;
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
 
@@ -26,9 +29,11 @@ export const useAppStore = create<AppState>()(
         init: (newT: TFunction) => { t = newT; },
         ...createSettingsSlice(set),
         ...createUISlice(set, get, getT),
-        ...createUserSlice(set, get),
-        ...createDataSlice(set, get, getT),
         ...createStrainsViewSlice(set, get),
+        ...createAiSlice(set, get, getT),
+        ...createPlantSlice(set, get, getT),
+        ...createUserContentSlice(set, get),
+        ...createKnowledgeSlice(set),
       })),
       {
         name: 'cannaguide-2025-storage',
@@ -39,8 +44,7 @@ export const useAppStore = create<AppState>()(
           plants: state.plants,
           plantSlots: state.plantSlots,
           userStrains: state.userStrains,
-          favoriteIds: Array.from(state.favoriteIds), // Convert Set to Array for JSON serialization
-          selectedStrainIds: Array.from(state.selectedStrainIds), // Convert Set to Array
+          favoriteIds: Array.from(state.favoriteIds),
           strainNotes: state.strainNotes,
           savedExports: state.savedExports,
           savedSetups: state.savedSetups,
@@ -53,23 +57,22 @@ export const useAppStore = create<AppState>()(
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {
-            // Restore Sets from persisted Arrays
             state.favoriteIds = new Set(state.favoriteIds as unknown as string[]);
-            state.selectedStrainIds = new Set(state.selectedStrainIds as unknown as string[]);
             
-            // Set default view from potentially updated settings
             state.activeView = state.settings?.defaultView || defaultSettings.defaultView;
 
-            // Gracefully merge persisted settings with defaults to handle new settings in updates
             state.settings = {
                 ...defaultSettings,
                 ...state.settings,
                 accessibility: { ...defaultSettings.accessibility, ...state.settings.accessibility },
                 strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...state.settings.strainsViewSettings },
-                simulationSettings: { ...defaultSettings.simulationSettings, ...state.settings.simulationSettings },
+                notificationSettings: { ...defaultSettings.notificationSettings, ...state.settings.notificationSettings },
+                simulationSettings: { ...defaultSettings.simulationSettings, ...state.settings.simulationSettings, autoJournaling: { ...defaultSettings.simulationSettings.autoJournaling, ...state.settings.simulationSettings?.autoJournaling }},
+                defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...state.settings.defaultJournalNotes },
+                defaultExportSettings: { ...defaultSettings.defaultExportSettings, ...state.settings.defaultExportSettings },
+                quietHours: { ...defaultSettings.quietHours, ...state.settings.quietHours },
             };
             
-            // Initialize strains view mode from settings
             state.strainsViewMode = state.settings.strainsViewSettings.defaultViewMode;
           }
         },

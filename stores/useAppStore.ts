@@ -8,13 +8,14 @@ import { AiSlice, createAiSlice } from './slices/aiSlice';
 import { PlantSlice, createPlantSlice } from './slices/plantSlice';
 import { UserContentSlice, createUserContentSlice } from './slices/userContentSlice';
 import { KnowledgeSlice, createKnowledgeSlice } from './slices/knowledgeSlice';
+import { TTSSlice, createTtsSlice } from './slices/ttsSlice';
 import { View } from '@/types';
 
 export type TFunction = (key: string, params?: Record<string, any>) => string;
 let t: TFunction = (key: string) => key;
 const getT = () => t;
 
-export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserContentSlice & KnowledgeSlice & AppSlice;
+export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserContentSlice & KnowledgeSlice & TTSSlice & AppSlice;
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
 
@@ -34,6 +35,7 @@ export const useAppStore = create<AppState>()(
         ...createPlantSlice(set, get, getT),
         ...createUserContentSlice(set, get),
         ...createKnowledgeSlice(set),
+        ...createTtsSlice(set, get),
       })),
       {
         name: 'cannaguide-2025-storage',
@@ -59,20 +61,30 @@ export const useAppStore = create<AppState>()(
           if (state) {
             state.favoriteIds = new Set(state.favoriteIds as unknown as string[]);
             
-            state.activeView = state.settings?.defaultView || defaultSettings.defaultView;
-
+            const rehydratedSettings = state.settings || {};
+            
+            // Perform a safe, deep merge to prevent crashes from new settings properties
             state.settings = {
                 ...defaultSettings,
-                ...state.settings,
-                accessibility: { ...defaultSettings.accessibility, ...state.settings.accessibility },
-                strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...state.settings.strainsViewSettings },
-                notificationSettings: { ...defaultSettings.notificationSettings, ...state.settings.notificationSettings },
-                simulationSettings: { ...defaultSettings.simulationSettings, ...state.settings.simulationSettings, autoJournaling: { ...defaultSettings.simulationSettings.autoJournaling, ...state.settings.simulationSettings?.autoJournaling }},
-                defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...state.settings.defaultJournalNotes },
-                defaultExportSettings: { ...defaultSettings.defaultExportSettings, ...state.settings.defaultExportSettings },
-                quietHours: { ...defaultSettings.quietHours, ...state.settings.quietHours },
+                ...rehydratedSettings,
+                accessibility: { ...defaultSettings.accessibility, ...rehydratedSettings.accessibility },
+                strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...rehydratedSettings.strainsViewSettings },
+                notificationSettings: { ...defaultSettings.notificationSettings, ...rehydratedSettings.notificationSettings },
+                simulationSettings: { 
+                    ...defaultSettings.simulationSettings, 
+                    ...rehydratedSettings.simulationSettings, 
+                    autoJournaling: { 
+                        ...defaultSettings.simulationSettings.autoJournaling, 
+                        ...rehydratedSettings.simulationSettings?.autoJournaling 
+                    }
+                },
+                defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...rehydratedSettings.defaultJournalNotes },
+                defaultExportSettings: { ...defaultSettings.defaultExportSettings, ...rehydratedSettings.defaultExportSettings },
+                quietHours: { ...defaultSettings.quietHours, ...rehydratedSettings.quietHours },
+                tts: { ...defaultSettings.tts, ...rehydratedSettings.tts },
             };
             
+            state.activeView = state.settings.defaultView;
             state.strainsViewMode = state.settings.strainsViewSettings.defaultViewMode;
           }
         },

@@ -60,6 +60,7 @@ export interface PlantVitals {
     substrateMoisture: number;
     ph: number;
     ec: number;
+    nutrients: number; // 0-100 scale
 }
 
 export interface PlantEnvironment {
@@ -74,7 +75,7 @@ export type JournalEntryType = 'WATERING' | 'FEEDING' | 'TRAINING' | 'OBSERVATIO
 
 export interface JournalEntry {
     id: JournalEntryID;
-    timestamp: number;
+    createdAt: number;
     type: JournalEntryType;
     notes: string;
     details?: {
@@ -131,6 +132,7 @@ export interface Plant {
     stage: PlantStage;
     age: number; // in days
     height: number; // in cm
+    health: number; // 0-100 scale
     startedAt: number;
     lastUpdated: number;
     growSetup: GrowSetup;
@@ -288,11 +290,23 @@ export interface ArchivedAdvisorResponse extends AIResponse {
 export interface StoredImageData {
     id: ImageID;
     plantId: PlantID;
-    timestamp: number;
+    createdAt: number;
     data: string; // Base64 encoded image
 }
 
 export type SearchIndex = Record<string, StrainID[]>;
+
+// TTS Types
+export interface SpeechQueueItem {
+    id: string; // A unique ID to identify the content block being spoken
+    text: string;
+}
+export interface TTSSettings {
+    enabled: boolean;
+    rate: number;
+    pitch: number;
+    voiceName: string | null;
+}
 
 // UI & Settings types
 export type SortDirection = 'asc' | 'desc';
@@ -373,13 +387,14 @@ export interface AppSettings {
         start: string;
         end: string;
     };
+    tts: TTSSettings;
 }
 
 export interface Command {
     id: string;
     title: string;
     subtitle?: string;
-    icon: React.ReactNode;
+    icon: React.ElementType;
     action: () => void;
     keywords?: string;
     shortcut?: string[];

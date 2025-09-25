@@ -70,7 +70,6 @@ const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction)
 
 const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): Promise<Recommendation> => {
     const ai = getAiClient();
-    const prompt = `${promptDetails} ${t('ai.gemini.equipmentPromptSuffix')}`;
     
     const responseSchema = {
         type: Type.OBJECT,
@@ -88,8 +87,9 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: prompt,
+        contents: promptDetails,
         config: {
+            systemInstruction: t('ai.gemini.equipmentSystemInstruction'),
             responseMimeType: "application/json",
             responseSchema: responseSchema,
         },
@@ -169,9 +169,7 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, conte
         plantContext += `\n${t('ai.gemini.diagnosePrompt.userNotesPrefix')}: "${context.userNotes}"`;
     }
 
-    const textPart = {
-        text: `${t('ai.gemini.diagnosePrompt.base')} ${plantContext}`,
-    };
+    const textPart = { text: plantContext };
 
     const responseSchema = {
         type: Type.OBJECT,
@@ -190,6 +188,7 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, conte
         model: 'gemini-2.5-flash',
         contents: { parts: [imagePart, textPart] },
         config: {
+            systemInstruction: t('ai.gemini.diagnoseSystemInstruction'),
             responseMimeType: "application/json",
             responseSchema: responseSchema
         }
@@ -219,7 +218,6 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
         problems: plant.problems,
         journal: plant.journal.slice(-5) // last 5 entries
     });
-    const prompt = t('ai.gemini.advisorQuery', { data: plantData });
     
     const responseSchema = {
         type: Type.OBJECT,
@@ -232,8 +230,9 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: prompt,
+        contents: plantData,
         config: {
+            systemInstruction: t('ai.gemini.advisorSystemInstruction'),
             responseMimeType: "application/json",
             responseSchema: responseSchema
         }
@@ -259,7 +258,7 @@ const getStrainGrowTips = async (
     t: TFunction
 ): Promise<StructuredGrowTips> => {
     const ai = getAiClient();
-    const prompt = t('ai.gemini.strainTipsPrompt', {
+    const promptData = {
         name: strain.name,
         difficulty: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
         height: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
@@ -268,7 +267,7 @@ const getStrainGrowTips = async (
         focus: context.focus,
         stage: context.stage,
         experience: context.experience,
-    });
+    };
     
     const responseSchema = {
         type: Type.OBJECT,
@@ -283,8 +282,9 @@ const getStrainGrowTips = async (
 
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
-        contents: prompt,
+        contents: JSON.stringify(promptData),
         config: {
+            systemInstruction: t('ai.gemini.strainTipsSystemInstruction'),
             responseMimeType: "application/json",
             responseSchema: responseSchema
         }
@@ -304,6 +304,66 @@ const getStrainGrowTips = async (
     }
 };
 
+const getPersonalizedTip = async (plant: Plant, strain: Strain, t: TFunction): Promise<AIResponse> => {
+    const ai = getAiClient();
+
+    // Sanitize strain data to only include key characteristics
+    const strainContext = {
+        name: strain.name,
+        type: strain.type,
+        difficulty: strain.agronomic.difficulty,
+        height: strain.agronomic.height,
+        floweringTime: strain.floweringTime,
+        description: strain.description?.substring(0, 150) + '...' // Keep it brief
+    };
+    
+    // Sanitize plant data to only include current state
+    const plantContext = {
+        name: plant.name,
+        age: plant.age,
+        stage: plant.stage,
+        health: plant.health,
+        vitals: plant.vitals,
+        problems: plant.problems.filter(p => p.status === 'active').map(p => p.type)
+    };
+
+    const promptData = {
+        plantContext,
+        strainContext
+    };
+    
+    const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+            title: { type: Type.STRING },
+            content: { type: Type.STRING },
+        },
+        required: ['title', 'content']
+    };
+
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: JSON.stringify(promptData, null, 2),
+        config: {
+            systemInstruction: t('ai.gemini.personalizedTipSystemInstruction'),
+            responseMimeType: "application/json",
+            responseSchema
+        }
+    });
+
+    try {
+        const jsonStr = response.text;
+        if (!jsonStr || jsonStr.trim() === '') {
+             console.error("AI returned an empty response for personalized tip:", response);
+             throw new Error("ai.error.parsing");
+        }
+        return JSON.parse(jsonStr) as AIResponse;
+    } catch (e) {
+        console.error("Failed to parse AI response for personalized tip:", e, response.text);
+        throw new Error("ai.error.parsing");
+    }
+};
+
 export const geminiService = {
     getDynamicLoadingMessages,
     getEquipmentRecommendation,
@@ -311,4 +371,5 @@ export const geminiService = {
     diagnosePlantProblem,
     getAiPlantAdvisorResponse,
     getStrainGrowTips,
+    getPersonalizedTip,
 };

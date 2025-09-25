@@ -7,7 +7,7 @@ export interface PlantSlice {
     plantSlots: (string | null)[];
     startNewPlant: (strain: Strain, setup: GrowSetup, slotIndex?: number) => boolean;
     advanceSimulation: () => Promise<void>;
-    addJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'timestamp'>) => void;
+    addJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
     completeTask: (plantId: string, taskId: string) => void;
     waterAllPlants: () => void;
     advanceDay: () => Promise<void>;
@@ -30,9 +30,9 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         const now = Date.now();
         const newPlantId = `${strain.id.replace(/\s/g, '-')}-${now}`;
         const newPlant: Plant = {
-            id: newPlantId, name: strain.name, strain, stage: PlantStage.Seed, age: 0, height: 0, startedAt: now, lastUpdated: now,
-            growSetup: setup, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 }, environment: { temperature: setup.temperature, humidity: setup.humidity, light: 100 },
-            stressLevel: 0, problems: [], journal: [], tasks: [], history: [{ day: 0, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2 }, stressLevel: 0, height: 0 }],
+            id: newPlantId, name: strain.name, strain, stage: PlantStage.Seed, age: 0, height: 0, health: 100, startedAt: now, lastUpdated: now,
+            growSetup: setup, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2, nutrients: 100 }, environment: { temperature: setup.temperature, humidity: setup.humidity, light: 100 },
+            stressLevel: 0, problems: [], journal: [], tasks: [], history: [{ day: 0, vitals: { substrateMoisture: 80, ph: 6.5, ec: 0.2, nutrients: 100 }, stressLevel: 0, height: 0 }],
         };
         
         set(state => {
@@ -106,7 +106,7 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         const plant = state.plants[plantId];
         if (!plant) return;
         
-        const newEntry: JournalEntry = { ...entryData, id: `${entryData.type}-${Date.now()}`, timestamp: Date.now() };
+        const newEntry: JournalEntry = { ...entryData, id: `${entryData.type}-${Date.now()}`, createdAt: Date.now() };
         plant.journal.push(newEntry);
         
         if (entryData.type === 'WATERING') {
@@ -116,6 +116,8 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
             if(entryData.details?.ph) plant.vitals.ph = entryData.details.ph;
         }
         if (entryData.type === 'FEEDING') {
+            // Replenish nutrients on feeding. A simple model: feeding restores nutrients.
+            plant.vitals.nutrients = 100;
             if(entryData.details?.ec) plant.vitals.ec = entryData.details.ec;
             if(entryData.details?.ph) plant.vitals.ph = entryData.details.ph;
         }
@@ -150,9 +152,7 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
     },
 
     resetPlants: () => {
-        if (window.confirm(t()('settingsView.data.resetPlantsConfirm'))) {
-            set({ plants: {}, plantSlots: [null, null, null], archivedAdvisorResponses: {}, selectedPlantId: null });
-            get().addNotification(t()('settingsView.data.resetPlantsSuccess'), 'success');
-        }
+        set({ plants: {}, plantSlots: [null, null, null], archivedAdvisorResponses: {}, selectedPlantId: null });
+        get().addNotification(t()('settingsView.data.resetPlantsSuccess'), 'success');
     },
 });

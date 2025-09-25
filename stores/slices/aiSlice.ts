@@ -1,4 +1,4 @@
-import { AIResponse, Recommendation, StructuredGrowTips, Plant, Strain } from '@/types';
+import { AIResponse, Recommendation, StructuredGrowTips, Plant, Strain, PlantDiagnosisResponse } from '@/types';
 import { geminiService } from '@/services/geminiService';
 import type { AppState, StoreSet, StoreGet, TFunction } from '@/stores/useAppStore';
 
@@ -32,11 +32,19 @@ interface StrainTipState {
     error: string | null;
 }
 
+interface DiagnosticsState {
+    isLoading: boolean;
+    response: PlantDiagnosisResponse | null;
+    error: string | null;
+}
+
+
 export interface AiSlice {
     equipmentGenerationState: EquipmentGenerationState;
     mentorState: MentorState;
     advisorState: Record<string, AdvisorState>;
     strainTipState: Record<string, StrainTipState>;
+    diagnosticsState: DiagnosticsState;
 
     startEquipmentGeneration: (promptDetails: string, sourceDetails: { area: Area; budget: Budget; growStyle: GrowStyle; }) => Promise<void>;
     resetEquipmentGenerationState: () => void;
@@ -46,6 +54,8 @@ export interface AiSlice {
     startAdvisorGeneration: (plant: Plant) => Promise<void>;
     
     startStrainTipGeneration: (strain: Strain, context: { focus: string; stage: string; experience: string }) => Promise<void>;
+    
+    startDiagnostics: (base64Image: string, mimeType: string, context: { plant?: Plant, userNotes?: string }) => Promise<void>;
 }
 
 export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction): AiSlice => ({
@@ -53,6 +63,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
     mentorState: { isLoading: false, response: null, error: null, lastQuery: null },
     advisorState: {},
     strainTipState: {},
+    diagnosticsState: { isLoading: false, response: null, error: null },
 
     startEquipmentGeneration: async (promptDetails, sourceDetails) => {
         set(state => {
@@ -146,4 +157,26 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             });
         }
     },
+
+    startDiagnostics: async (base64Image, mimeType, context) => {
+        set(state => {
+            state.diagnosticsState = { isLoading: true, response: null, error: null };
+        });
+        try {
+            const res = await geminiService.diagnosePlantProblem(base64Image, mimeType, context, t());
+            set(state => {
+                state.diagnosticsState.response = res;
+            });
+        } catch (err) {
+            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
+            const errorMessage = t()(errorMessageKey) === errorMessageKey ? t()('ai.error.unknown') : t()(errorMessageKey);
+            set(state => {
+                state.diagnosticsState.error = errorMessage;
+            });
+        } finally {
+            set(state => {
+                state.diagnosticsState.isLoading = false;
+            });
+        }
+    }
 });

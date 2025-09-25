@@ -81,7 +81,6 @@ export const strains: Strain[] = [
         thcRange: '22-28%',
         cbdRange: '<1%',
         description: "A potent indica-dominant hybrid with a complex aroma profile blending notes of lemon, wood, and floral spice. It delivers a deeply relaxing and euphoric high, perfect for unwinding after a long day.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 9.5,
         floweringTimeRange: '9-10',
         agronomic: {
@@ -105,7 +104,6 @@ export const strains: Strain[] = [
         thcRange: '17-21%',
         cbdRange: '<1%',
         description: "A classic indica-dominant strain known for its high resin production, making it ideal for hash making. It offers a deeply relaxing, almost narcotic body high with a pungent, hashy, and spicy aroma.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 8,
         floweringTimeRange: '8-9',
         agronomic: {
@@ -129,7 +127,6 @@ export const strains: Strain[] = [
         thcRange: '18-24%',
         cbdRange: '<1%',
         description: "A pure sativa landrace from the volcanic soils of Hawaii. It delivers a classic sativa high: energetic, creative, and happy, perfect for daytime activities. The aroma is a sweet and tropical blend of pineapple and citrus.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 11,
         floweringTimeRange: '10-12',
         agronomic: {
@@ -153,7 +150,6 @@ export const strains: Strain[] = [
         thcRange: '18-27%',
         cbdRange: '<1%',
         description: "A legendary pure sativa strain that is the genetic backbone of countless modern hybrids. Known for its very long flowering time and a powerful, long-lasting, energetic, and almost psychedelic cerebral high. The aroma is a complex mix of spicy, incense-like, citrus, and earthy notes.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 13,
         floweringTimeRange: '12-14',
         agronomic: {
@@ -177,7 +173,6 @@ export const strains: Strain[] = [
         thcRange: '20-27%',
         cbdRange: '<1%',
         description: "Named for the sensation of pressure felt around the crown of the head, like a headband. This potent hybrid offers long-lasting relaxation and stress relief, combined with a euphoric and creative high. The aroma is a classic mix of diesel, earth, and lemon.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 9.5,
         floweringTimeRange: '9-10',
         agronomic: {
@@ -201,7 +196,6 @@ export const strains: Strain[] = [
         thcRange: '24-30%',
         cbdRange: '<1%',
         description: "A potent sativa-dominant hybrid with a strong sour, diesel, and citrus aroma. The effect is highly cerebral, energizing, and creative, making it a favorite for daytime use among experienced consumers.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 9.5,
         floweringTimeRange: '9-10',
         agronomic: {
@@ -294,7 +288,6 @@ export const strains: Strain[] = [
         thcRange: '18-22%',
         cbdRange: '<1%',
         description: "A pure indica landrace from the mountain range between Pakistan and Afghanistan. It's known for its classic heavy body high and a sweet, earthy aroma. A foundational strain for many modern hybrids.",
-        // FIX: Added missing floweringTime and floweringTimeRange properties.
         floweringTime: 8,
         floweringTimeRange: '7-9',
         agronomic: {

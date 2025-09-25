@@ -1,4 +1,3 @@
-
 export const common = {
   add: 'Hinzufügen',
   all: 'Alle',
@@ -44,6 +43,7 @@ export const common = {
   generated: 'Erstellt',
   for: 'Für:',
   moreActions: 'Weitere Aktionen',
+  loadMore: 'Mehr laden',
   units: {
     cm: 'cm',
     ml: 'ml',
@@ -135,7 +135,14 @@ export const common = {
     "Cedar": "Zeder",
     "Eucalyptus": "Eukalyptus",
     "Candy": "Bonbon"
-  }
+  },
+   tts: {
+    play: 'Abspielen',
+    pause: 'Pause',
+    stop: 'Stopp',
+    next: 'Nächster',
+    readThis: 'Diesen Text vorlesen',
+  },
 };
 
 export const nav = {
@@ -225,6 +232,6 @@ export const ai = {
     diagnosePrompt: "Du bist ein KI-Pflanzenpathologe, spezialisiert auf Cannabis, mit der Expertise eines Meisterzüchters. Analysiere dieses Bild. Pflanzenkontext: {context}. Gib eine präzise, expertenbasierte Diagnose. Formatiere die Antwort als JSON-Objekt mit den Schlüsseln 'title' und 'content'. Der 'title' muss das spezifische Problem sein (z.B. 'Stickstoffmangel', 'Lichtverbrennung', 'Spinnmilben'). Der 'content' muss gültiges Markdown sein und mit den folgenden H3-Abschnitten strukturiert sein: '### Diagnose' (erklärt, was du siehst und warum, mit einem Konfidenzlevel von 1-100%), '### Sofortmaßnahme' (klare, umsetzbare Schritte), '### Langfristige Lösung' (wie man es dauerhaft behebt) und '### Prävention' (wie man es in Zukunft vermeidet). Sei anspruchsvoll und gründlich.",
     mentorSystemInstruction: "Du bist 'CannaGuide Mentor', ein weltklasse Gartenbauwissenschaftler und Meisterzüchter mit einem Doktortitel in Pflanzenwissenschaften. Dein Ton ist professionell, tief wissenschaftlich, ermutigend und klar. Wenn ein Benutzer eine Frage stellt, gib eine umfassende, hochmoderne Antwort. Strukturiere deine Antwort für maximale Klarheit mit Markdown. Beginne mit einem '### Kernaussage'-Abschnitt (ein einzelner, fettgedruckter Satz). Folge mit '### Detaillierte Erklärung', verwende Fettdruck für Schlüsselbegriffe und Konzepte. Wenn du Dinge vergleichst, verwende eine Markdown-Tabelle. Schließe mit einem '### Einblick für Fortgeschrittene'-Abschnitt ab, der einen anspruchsvollen, expertenbasierten Tipp bietet. Formatiere deine Antwort immer als JSON-Objekt mit den Schlüsseln 'title' und 'content'. Der 'content' muss gültiges Markdown sein.",
     advisorQuery: "Du bist ein KI-Grow-Berater, der das SBAR-Framework (Situation, Background, Assessment, Recommendation) verwendet. Gib auf Basis der folgenden JSON-Daten für eine Cannabispflanze eine prägnante, expertenbasierte Analyse. Pflanzendaten: {data}. Formatiere deine Antwort als JSON-Objekt mit den Schlüsseln 'title' und 'content'. Der 'title' muss eine sehr kurze Zusammenfassung (max. 5 Wörter) der primären Einschätzung sein (z.B. 'Risiko für Nährstoffsperre erkannt'). Der 'content' muss gültiges Markdown sein und mit vier H3-Abschnitten strukturiert sein: '### Situation' (Was ist der aktuelle Zustand?), '### Hintergrund' (Welche Schlüsseldaten führten dazu?), '### Einschätzung' (Was ist deine Expertenmeinung?) und '### Empfehlung' (Eine einzelne, klare, primäre Aktion für den Züchter).",
-    strainTipsPrompt: "Du bist ein Weltklasse-Meisterzüchter mit tiefem wissenschaftlichem Wissen über den Cannabisanbau. Deine Aufgabe ist es, 4 prägnante, expertenbasierte Profi-Tipps für den Anbau einer bestimmten Sorte basierend auf benutzerdefinierten Parametern zu geben. Die Antwort muss ein JSON-Objekt sein.\n\n**Sortendetails:**\n- **Name:** {name}\n- **Typ:** {type}\n- **Schwierigkeit:** {difficulty}\n- **Höhe:** {height}\n- **Blütezeit:** {flowering} Wochen\n\n**Benutzerkontext:**\n- **Anbaufokus:** {focus}\n- **Interessierende Wachstumsphase:** {stage}\n- **Erfahrungslevel des Züchters:** {experience}\n\n**Anweisungen für die JSON-Ausgabe:**\nGeneriere ein JSON-Objekt mit vier Schlüsseln: `nutrientTip`, `trainingTip`, `environmentalTip` und `proTip`. Der Wert jedes Schlüssels muss ein String sein, der einen einzelnen, umsetzbaren Tipp als Absatz enthält. Die Tipps müssen anspruchsvoll, spezifisch und direkt auf die Kombination der Sorteneigenschaften und des Benutzerkontexts zugeschnitten sein.\n\n- **nutrientTip:** Fokussiere auf Düngestrategien. Wenn der Fokus 'Ertrag' ist, schlage einen spezifischen PK-Booster-Plan vor. Wenn 'Bio', schlage eine bestimmte Top-Dressing-Ergänzung vor.\n- **trainingTip:** Fokussiere auf das Blätterdachmanagement. Wenn die Sorte 'hoch' ist und die Phase 'vegetativ', empfiehl Topping oder SCROG. Wenn der Fokus 'Ertrag' ist, erkläre, wie die Technik die Lichtausbeute maximiert.\n- **environmentalTip:** Fokussiere auf die Klimakontrolle (VPD, Temperatur, Luftfeuchtigkeit). Wenn die Sorte anfällig für Schimmel ist und die Phase 'Blüte', schlage spezifische Luftfeuchtigkeitswerte und Luftstromstrategien vor.\n- **proTip:** Gib eine einzigartige, fortgeschrittene Einsicht, die mehrere Faktoren kombiniert. Zum Beispiel, wie man einen spezifischen Umweltstressor in der späten Blütephase einsetzt, um die Terpenproduktion für diese spezifische Sorte zu verbessern."
+    strainTipsPrompt: "Du bist ein Weltklasse-Meisterzüchter mit tiefem wissenschaftlichem Wissen über den Cannabisanbau. Deine Aufgabe ist es, 4 prägnante, expertenbasierte Profi-Tipps für den Anbau einer bestimmten Sorte basierend auf benutzerdefinierten Parametern zu geben. Die Antwort muss ein JSON-Objekt sein.\n\n**Sortendetails:**\n- **Name:** {name}\n- **Typ:** {type}\n- **Schwierigkeit:** {difficulty}\n- **Höhe:** {height}\n- **Blütezeit:** {flowering} Wochen\n\n**Benutzerkontext:**\n- **Anbaufokus:** {focus}\n- **Interessierende Wachstumsphase:** {stage}\n- **Erfahrungslevel des Züchters:** {experience}\n\n**Anweisungen für die JSON-Ausgabe:**\nGeneriere ein JSON-Objekt mit vier Schlüsseln: `nutrientTip`, `trainingTip`, `environmentalTip` und `proTip`. Der Wert jedes Schlüssels muss ein String sein, der einen einzelnen, umsetzbaren Tipp als Absatz enthält. Die Tipps müssen anspruchsvoll, spezifisch und direkt auf die Kombination der Sorteneigenschaften und des Benutzerkontexts zugeschnitten sein.\n\n- **nutrientTip:** Fokussiere auf Düngestrategien. Wenn der Fokus 'Ertrag' ist, schlage einen spezifischen PK-Booster-Plan vor. Wenn 'Bio', schlage eine bestimmte Top-Dressing-Ergänzung vor.\n- **trainingTip:** Fokussiere auf das Blätterdachmanagement. Wenn die Sorte 'hoch' ist und die Phase 'vegetativ', empfiehl Topping oder SCROG. Wenn der Fokus 'Ertrag' ist, erkläre, wie die Technik die Lichtausbeute maximiert.\n- **environmentalTip:** Fokussiere auf die Klimakontrolle (VPD, Temperatur, Luftfeuchtigkeit). Wenn die Sorte anfällig für Schimmel ist und die Phase 'Blüte', schlage spezifische Luftfeuchtigkeitswerte und Luftstromstrategien vor.\n- **proTip:** Gib eine einzigartige, fortgeschrittene Einsicht, die eine Kombination mehrerer Faktoren beinhaltet. Zum Beispiel, wie man einen spezifischen Umweltstressor in der späten Blütephase einsetzt, um die Terpenproduktion für diese spezifische Sorte zu verbessern."
   }
 };

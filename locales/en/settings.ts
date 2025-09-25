@@ -9,6 +9,7 @@ export const settingsView = {
     defaults: 'Defaults',
     data: 'Data Management',
     about: 'About',
+    tts: 'Text-to-Speech',
   },
   general: {
     title: 'General Settings',
@@ -44,6 +45,15 @@ export const settingsView = {
       comfortable: 'Comfortable',
       compact: 'Compact',
     }
+  },
+  tts: {
+    title: 'Text-to-Speech',
+    enabled: 'Enable Text-to-Speech',
+    enabledDesc: 'Adds buttons to have app content read aloud.',
+    voice: 'Voice',
+    noVoices: 'No voices available',
+    rate: 'Speech Rate',
+    pitch: 'Pitch',
   },
   strains: {
     title: 'Strains View Settings',

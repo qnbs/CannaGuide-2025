@@ -1,16 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Strain, AIResponse, StructuredGrowTips } from '@/types';
+import React, { useState, useEffect } from 'react';
+import { Strain, AIResponse } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
-import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { strainService } from '@/services/strainService';
 import { useAppStore } from '@/stores/useAppStore';
-import { selectHasAvailableSlots, selectStrainTipState } from '@/stores/selectors';
+import { selectHasAvailableSlots } from '@/stores/selectors';
 import { Modal } from '@/components/common/Modal';
-import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { StrainAiTips } from './StrainAiTips';
 
 // --- Sub-components for better structure ---
 
@@ -54,39 +53,6 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
     );
 };
 
-const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips, onSave: () => void, isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
-    const { t } = useTranslations();
-
-    const tipCategories = [
-        { key: 'nutrientTip', icon: <PhosphorIcons.Flask />, label: t('strainsView.tips.form.categories.nutrientTip') },
-        { key: 'trainingTip', icon: <PhosphorIcons.Scissors />, label: t('strainsView.tips.form.categories.trainingTip') },
-        { key: 'environmentalTip', icon: <PhosphorIcons.Fan />, label: t('strainsView.tips.form.categories.environmentalTip') },
-        { key: 'proTip', icon: <PhosphorIcons.Sparkle />, label: t('strainsView.tips.form.categories.proTip') },
-    ];
-
-    return (
-        <Card className="bg-slate-800 animate-fade-in">
-            <div className="space-y-4">
-                {tipCategories.map(cat => (
-                    <div key={cat.key}>
-                        <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
-                            {cat.icon}
-                            {cat.label}
-                        </h4>
-                        <p className="text-sm text-slate-300 pl-8">{tips[cat.key as keyof StructuredGrowTips]}</p>
-                    </div>
-                ))}
-            </div>
-            <div className="text-right mt-4">
-                <Button size="sm" variant="secondary" onClick={onSave} disabled={isSaved}>
-                    {isSaved ? <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" weight="fill" /> {t('strainsView.tips.saved')}</> : <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" /> {t('strainsView.tips.saveButton')}</>}
-                </Button>
-            </div>
-        </Card>
-    );
-};
-
-
 // --- Main Modal Component ---
 
 interface StrainDetailModalProps {
@@ -104,7 +70,6 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         updateNoteForStrain,
         initiateGrow,
         selectStrain,
-        startStrainTipGeneration,
     } = useAppStore(state => ({
         isFavorite: state.favoriteIds.has(strain.id),
         toggleFavorite: state.toggleFavorite,
@@ -113,73 +78,25 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         updateNoteForStrain: state.updateNoteForStrain,
         initiateGrow: state.initiateGrow,
         selectStrain: state.selectStrain,
-        startStrainTipGeneration: state.startStrainTipGeneration,
     }));
     const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
-    const { isLoading: isTipLoading, tip: structuredTip, error: tipError } = useAppStore(selectStrainTipState(strain.id));
     
     const [noteContent, setNoteContent] = useState('');
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [similarStrains, setSimilarStrains] = useState<Strain[]>([]);
-    const [loadingMessage, setLoadingMessage] = useState('');
-    const [isTipSaved, setIsTipSaved] = useState(false);
-    const [tipRequest, setTipRequest] = useState({
-        focus: 'overall',
-        stage: 'all',
-        experience: 'advanced'
-    });
-
+    
     useEffect(() => {
         setNoteContent(getNoteForStrain(strain.id));
         strainService.getSimilarStrains(strain).then(setSimilarStrains);
-        setIsTipSaved(false);
     }, [strain, getNoteForStrain]);
     
-     useEffect(() => {
-        if (isTipLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ 
-                useCase: 'growTips',
-                data: {
-                    strainName: strain.name,
-                    focus: t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`),
-                    stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`)
-                }
-            }, t);
-            let messageIndex = 0;
-            const updateLoadingMessage = () => {
-                setLoadingMessage(messages[messageIndex % messages.length]);
-                messageIndex++;
-            };
-            
-            updateLoadingMessage();
-            const intervalId = setInterval(updateLoadingMessage, 2000);
-            return () => clearInterval(intervalId);
-        }
-    }, [isTipLoading, t, strain.name, tipRequest]);
-
-    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
     const isFav = isFavorite;
-
-    const handleGetAiTips = async () => {
-        setIsTipSaved(false);
-        const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
-        const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
-        const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
-        startStrainTipGeneration(strain, { focus: focusText, stage: stageText, experience: experienceText });
-    };
-
-    const handleSaveTip = () => {
-        if (!structuredTip) return;
-        const title = t('strainsView.tips.getTipsFor', { name: strain.name });
-        const content = `
-            <h3>${t('strainsView.tips.form.categories.nutrientTip')}</h3><p>${structuredTip.nutrientTip}</p>
-            <h3>${t('strainsView.tips.form.categories.trainingTip')}</h3><p>${structuredTip.trainingTip}</p>
-            <h3>${t('strainsView.tips.form.categories.environmentalTip')}</h3><p>${structuredTip.environmentalTip}</p>
-            <h3>${t('strainsView.tips.form.categories.proTip')}</h3><p>${structuredTip.proTip}</p>
-        `;
-        onSaveTip(strain, { title, content });
-        setIsTipSaved(true);
+    
+    const TypeDisplay = () => {
+        const Icon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
+        if (!Icon) return <div className="w-12 h-12 flex-shrink-0 bg-slate-700 rounded-full" />;
+        return <Icon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type]}`} />;
     };
 
     const handleSaveNote = () => {
@@ -192,14 +109,14 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
         <Modal isOpen={true} onClose={closeDetailModal} size="4xl">
              <header className="flex justify-between items-start flex-shrink-0">
                 <div className="flex items-center gap-4">
-                    <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type]}`} />
+                    <TypeDisplay />
                     <div>
                         <h2 id="strain-modal-title" className="text-3xl font-bold font-display text-primary-300">{strain.name}</h2>
                         <p className="text-slate-400">{strain.type} {strain.typeDetails && `- ${strain.typeDetails}`}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                        <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
+                    <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
                         <Button onClick={() => initiateGrow(strain)} disabled={!hasAvailableSlots} className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                     </div>
                     <Button variant="secondary" onClick={() => toggleFavorite(strain.id)} aria-pressed={isFav} className="favorite-btn-glow p-2">
@@ -209,7 +126,7 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                 </div>
             </header>
             
-                <div className="sm:hidden mt-4 flex-shrink-0" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
+            <div className="sm:hidden mt-4 flex-shrink-0" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
                 <Button onClick={() => initiateGrow(strain)} disabled={!hasAvailableSlots} className="w-full">{t('strainsView.startGrowing')}</Button>
             </div>
 
@@ -219,9 +136,11 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                     <div className="space-y-6">
                         <DetailSection title={t('strainsView.strainModal.agronomicData')} icon={<PhosphorIcons.Plant />}>
-                            <DetailItem label={t('strainsView.strainModal.difficulty')}><DifficultyMeter difficulty={strain.agronomic.difficulty} /></DetailItem>
-                            <DetailItem label={t('strainsView.strainModal.yieldIndoor')}>{strain.agronomic.yieldDetails?.indoor || 'N/A'}</DetailItem>
-                            <DetailItem label={t('strainsView.strainModal.heightIndoor')}>{strain.agronomic.heightDetails?.indoor || 'N/A'}</DetailItem>
+                            <DetailItem label={t('strainsView.strainModal.difficulty')}><DifficultyMeter difficulty={strain.agronomic?.difficulty || 'Medium'} /></DetailItem>
+                            <DetailItem label={t('strainsView.strainModal.yieldIndoor')}>{strain.agronomic?.yieldDetails?.indoor || 'N/A'}</DetailItem>
+                            <DetailItem label={t('strainsView.strainModal.yieldOutdoor')}>{strain.agronomic?.yieldDetails?.outdoor || 'N/A'}</DetailItem>
+                            <DetailItem label={t('strainsView.strainModal.heightIndoor')}>{strain.agronomic?.heightDetails?.indoor || 'N/A'}</DetailItem>
+                            <DetailItem label={t('strainsView.strainModal.heightOutdoor')}>{strain.agronomic?.heightDetails?.outdoor || 'N/A'}</DetailItem>
                             <DetailItem label={t('strainsView.strainModal.floweringTime')}>{`${strain.floweringTimeRange || strain.floweringTime} ${t('common.units.weeks')}`}</DetailItem>
                         </DetailSection>
 
@@ -279,40 +198,8 @@ export const StrainDetailModal: React.FC<StrainDetailModalProps> = ({ strain, on
                     </div>
                 </DetailSection>
                 
-                <Card>
-                    <h3 className="text-lg font-bold text-primary-400 flex items-center gap-2 mb-2">{t('strainsView.tips.form.title')}</h3>
-                    <p className="text-sm text-slate-400 mb-4">{t('strainsView.tips.form.description')}</p>
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.focus')}</label>
-                                <select value={tipRequest.focus} onChange={e => setTipRequest(p => ({...p, focus: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                                    {Object.keys(t('strainsView.tips.form.focusOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.stage')}</label>
-                                <select value={tipRequest.stage} onChange={e => setTipRequest(p => ({...p, stage: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                                    {Object.keys(t('strainsView.tips.form.stageOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
-                                <select value={tipRequest.experience} onChange={e => setTipRequest(p => ({...p, experience: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                                    {Object.keys(t('strainsView.tips.form.experienceOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
-                                </select>
-                            </div>
-                        </div>
-                        <Button size="sm" onClick={handleGetAiTips} disabled={isTipLoading} className="w-full">
-                            {isTipLoading ? loadingMessage : t('strainsView.tips.form.generate')}
-                        </Button>
-                        {isTipLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                        {tipError && !isTipLoading && <div className="text-center text-sm text-red-400">{tipError}</div>}
-                        {structuredTip && !isTipLoading && (
-                            <StructuredTipDisplay tips={structuredTip} onSave={handleSaveTip} isSaved={isTipSaved} />
-                        )}
-                    </div>
-                </Card>
+                <StrainAiTips strain={strain} onSaveTip={onSaveTip} />
+
             </div>
         </Modal>
     );

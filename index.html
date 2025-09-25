@@ -14,7 +14,8 @@
     "react": "https://aistudiocdn.com/react@^19.1.1",
     "zustand": "https://aistudiocdn.com/zustand@^4.5.4",
     "i18next": "https://aistudiocdn.com/i18next@^25.5.2",
-    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/"
+    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/",
+    "reselect": "https://aistudiocdn.com/reselect@^5.1.1"
   }
 }
 </script>
@@ -306,6 +307,17 @@
        .ui-density-compact .text-xs {
         font-size: 0.7rem;
        }
+       
+      /* TTS Styles */
+      .tts-disabled .speakable-button {
+          display: none !important;
+      }
+      .speakable-highlight {
+          background-color: rgb(var(--color-primary-800) / 0.4);
+          box-shadow: inset 0 0 0 2px rgb(var(--color-primary-500));
+          border-radius: 4px;
+          transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+      }
     </style>
     <script>
       tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: { 50: 'rgb(var(--color-primary-50) / <alpha-value>)', 100: 'rgb(var(--color-primary-100) / <alpha-value>)', 200: 'rgb(var(--color-primary-200) / <alpha-value>)', 300: 'rgb(var(--color-primary-300) / <alpha-value>)', 400: 'rgb(var(--color-primary-400) / <alpha-value>)', 500: 'rgb(var(--color-primary-500) / <alpha-value>)', 600: 'rgb(var(--color-primary-600) / <alpha-value>)', 700: 'rgb(var(--color-primary-700) / <alpha-value>)', 800: 'rgb(var(--color-primary-800) / <alpha-value>)', 900: 'rgb(var(--color-primary-900) / <alpha-value>)', 950: 'rgb(var(--color-primary-950) / <alpha-value>)' }, accent: { 50: 'rgb(var(--color-accent-50) / <alpha-value>)', 100: 'rgb(var(--color-accent-100) / <alpha-value>)', 200: 'rgb(var(--color-accent-200) / <alpha-value>)', 300: 'rgb(var(--color-accent-300) / <alpha-value>)', 400: 'rgb(var(--color-accent-400) / <alpha-value>)', 500: 'rgb(var(--color-accent-500) / <alpha-value>)', 600: 'rgb(var(--color-accent-600) / <alpha-value>)', 700: 'rgb(var(--color-accent-700) / <alpha-value>)', 800: 'rgb(var(--color-accent-800) / <alpha-value>)', 900: 'rgb(var(--color-accent-900) / <alpha-value>)', 950: 'rgb(var(--color-accent-950) / <alpha-value>)' }, slate: { 50: 'rgb(var(--color-neutral-50) / <alpha-value>)', 100: 'rgb(var(--color-neutral-100) / <alpha-value>)', 200: 'rgb(var(--color-neutral-200) / <alpha-value>)', 300: 'rgb(var(--color-neutral-300) / <alpha-value>)', 400: 'rgb(var(--color-neutral-400) / <alpha-value>)', 500: 'rgb(var(--color-neutral-500) / <alpha-value>)', 600: 'rgb(var(--color-neutral-600) / <alpha-value>)', 700: 'rgb(var(--color-neutral-700) / <alpha-value>)', 800: 'rgb(var(--color-neutral-800) / <alpha-value>)', 900: 'rgb(var(--color-neutral-900) / <alpha-value>)', 950: 'rgb(var(--color-neutral-950) / <alpha-value>)' }, 'on-accent': 'rgb(var(--color-text-on-accent) / <alpha-value>)', }, fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Lexend', 'sans-serif'], mono: ['IBM Plex Mono', 'monospace'], } } }, }

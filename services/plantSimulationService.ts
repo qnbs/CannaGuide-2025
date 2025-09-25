@@ -7,7 +7,8 @@ type TFunction = (key: string, params?: Record<string, any>) => string;
 // Simulation Constants
 export const SIMULATION_CONSTANTS = {
     DAILY_WATER_CONSUMPTION: 15, // % of substrate moisture per day
-    DAILY_NUTRIENT_CONSUMPTION: 0.1, // EC points per day
+    DAILY_NUTRIENT_CONSUMPTION: 5, // points out of 100 per day
+    DAILY_EC_CONSUMPTION: 0.1, // EC points per day
     STRESS_FROM_PROBLEM: 5, // Stress points per problem per day
     STRESS_RECOVERY_RATE: 2, // Stress points recovered per day without problems
     HEIGHT_GROWTH_BASE: 0.5, // cm per day
@@ -17,6 +18,9 @@ export const SIMULATION_CONSTANTS = {
     WATER_ALL_THRESHOLD: 40, // % moisture to trigger 'Water All'
     WATER_REPLENISH_FACTOR: 100, // Multiplier for water amount to moisture %
     ML_PER_LITER: 1000,
+    NUTRIENT_DEFICIENCY_THRESHOLD: 30, // Below this, health decreases
+    HEALTH_IMPACT_FACTOR: 2, // Health points lost per day with low nutrients
+    HEALTH_RECOVERY_RATE: 1, // Health points recovered per day with sufficient nutrients
 };
 
 // Plant Stage Details
@@ -37,6 +41,23 @@ const workerCode = `
     const PLANT_STAGE_DETAILS = ${JSON.stringify(PLANT_STAGE_DETAILS)};
     const STAGES_ORDER = ${JSON.stringify(STAGES_ORDER)};
     const SIMULATION_CONSTANTS = ${JSON.stringify(SIMULATION_CONSTANTS)};
+
+    // Calculates Saturated Vapor Pressure (SVP) in kPa from temperature in Celsius
+    const calculateSVP = (temp) => 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
+
+    // Calculates Vapor Pressure Deficit (VPD) in kPa
+    const calculateVPD = (temp, rh) => {
+        const svp = calculateSVP(temp);
+        return svp * (1 - (rh / 100));
+    };
+    
+    // Calculates the ideal VPD range for a given stage
+    const getIdealVPD = (stageDetails) => {
+        const { temp, humidity } = stageDetails.idealEnv;
+        const minVPD = calculateVPD(temp.max, humidity.max);
+        const maxVPD = calculateVPD(temp.max, humidity.min);
+        return { min: minVPD, max: maxVPD };
+    };
 
     const advancePlantOneDay = (plant, settings) => {
         if (plant.stage === 'FINISHED') return { updatedPlant: plant, events: [] };
@@ -66,28 +87,41 @@ const workerCode = `
             }
         }
 
+        // Vitals update
         updatedPlant.vitals.substrateMoisture = Math.max(0, updatedPlant.vitals.substrateMoisture - SIMULATION_CONSTANTS.DAILY_WATER_CONSUMPTION);
+        updatedPlant.vitals.nutrients = Math.max(0, updatedPlant.vitals.nutrients - SIMULATION_CONSTANTS.DAILY_NUTRIENT_CONSUMPTION);
         if (updatedPlant.stage === 'VEGETATIVE' || updatedPlant.stage === 'FLOWERING') {
-            updatedPlant.vitals.ec = Math.max(0, updatedPlant.vitals.ec - SIMULATION_CONSTANTS.DAILY_NUTRIENT_CONSUMPTION);
+            updatedPlant.vitals.ec = Math.max(0, updatedPlant.vitals.ec - SIMULATION_CONSTANTS.DAILY_EC_CONSUMPTION);
         }
 
+        // Growth update
         let heightGrowth = SIMULATION_CONSTANTS.HEIGHT_GROWTH_BASE;
         if (updatedPlant.stage === 'VEGETATIVE') heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_VEG_MULTIPLIER;
         if (updatedPlant.stage === 'FLOWERING') heightGrowth *= SIMULATION_CONSTANTS.HEIGHT_GROWTH_FLOWER_MULTIPLIER;
         heightGrowth *= (1 - (updatedPlant.stressLevel * SIMULATION_CONSTANTS.HEIGHT_STRESS_IMPACT_FACTOR / 100));
+        heightGrowth *= (updatedPlant.vitals.nutrients / 100); // Growth depends on nutrients
         if (STAGES_ORDER.indexOf(updatedPlant.stage) < STAGES_ORDER.indexOf('HARVEST')) {
             updatedPlant.height = parseFloat((updatedPlant.height + heightGrowth).toFixed(2));
         }
 
-        updatedPlant.history.push({ day: updatedPlant.age, vitals: { ...updatedPlant.vitals }, stressLevel: updatedPlant.stressLevel, height: updatedPlant.height });
-        
+        // Health & Stress update
+        if (updatedPlant.vitals.nutrients < SIMULATION_CONSTANTS.NUTRIENT_DEFICIENCY_THRESHOLD) {
+            updatedPlant.health = Math.max(0, updatedPlant.health - SIMULATION_CONSTANTS.HEALTH_IMPACT_FACTOR);
+        } else {
+            updatedPlant.health = Math.min(100, updatedPlant.health + SIMULATION_CONSTANTS.HEALTH_RECOVERY_RATE);
+        }
+
         const currentStageDetails = PLANT_STAGE_DETAILS[updatedPlant.stage];
         const idealVitals = currentStageDetails.idealVitals;
+        const idealVPD = getIdealVPD(currentStageDetails);
+        const currentVPD = calculateVPD(updatedPlant.environment.temperature, updatedPlant.environment.humidity);
+        
         let stressIncrease = 0;
 
         if (updatedPlant.vitals.substrateMoisture < 20) { stressIncrease += 2; }
         if (updatedPlant.vitals.ph < idealVitals.ph.min || updatedPlant.vitals.ph > idealVitals.ph.max) { stressIncrease += 1; }
         if (updatedPlant.vitals.ec > idealVitals.ec.max * 1.2) { stressIncrease += 2; }
+        if (currentVPD < idealVPD.min || currentVPD > idealVPD.max) { stressIncrease += 3; } // VPD stress is significant
         
         if (stressIncrease > 0) {
             updatedPlant.stressLevel = Math.min(100, updatedPlant.stressLevel + stressIncrease);
@@ -95,6 +129,7 @@ const workerCode = `
             updatedPlant.stressLevel = Math.max(0, updatedPlant.stressLevel - SIMULATION_CONSTANTS.STRESS_RECOVERY_RATE);
         }
 
+        // Task generation
         const openTasks = updatedPlant.tasks.filter(t => !t.isCompleted);
         if (updatedPlant.vitals.substrateMoisture < SIMULATION_CONSTANTS.WATER_ALL_THRESHOLD && !openTasks.some(t => t.title === 'plantsView.tasks.wateringTask.title')) {
             events.push({ type: 'task', data: { title: 'plantsView.tasks.wateringTask.title', description: 'plantsView.tasks.wateringTask.description', priority: 'high' } });
@@ -102,7 +137,9 @@ const workerCode = `
         if (updatedPlant.stage === 'FLOWERING' && stageAge > stageDuration - 14 && !openTasks.some(t => t.title === 'plantsView.tasks.trichomeTask.title')) {
             events.push({ type: 'task', data: { title: 'plantsView.tasks.trichomeTask.title', description: 'plantsView.tasks.trichomeTask.description', priority: 'medium' } });
         }
-
+        
+        // Final updates
+        updatedPlant.history.push({ day: updatedPlant.age, vitals: { ...updatedPlant.vitals }, stressLevel: updatedPlant.stressLevel, height: updatedPlant.height });
         updatedPlant.lastUpdated = Date.now();
         return { updatedPlant, events };
     };
@@ -173,6 +210,7 @@ export const generateIdealHistory = (plant: Plant): { idealHistory: PlantHistory
                     ph: (details.idealVitals.ph.min + details.idealVitals.ph.max) / 2,
                     ec: (details.idealVitals.ec.min + details.idealVitals.ec.max) / 2,
                     substrateMoisture: 60,
+                    nutrients: 100,
                 }
             });
 

@@ -24,7 +24,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
         addNotification: state.addNotification,
         startAdvisorGeneration: state.startAdvisorGeneration,
     }));
-    const { isLoading, response } = useAppStore(selectAdvisorStateForPlant(plant.id));
+    const { isLoading, response, error } = useAppStore(selectAdvisorStateForPlant(plant.id));
     
     const [loadingMessage, setLoadingMessage] = useState('');
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
@@ -49,7 +49,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
         }
     }, [isLoading, plant, t]);
 
-    const handleGetAdvice = async () => {
+    const handleGetAdvice = () => {
         setIsCurrentResponseSaved(false); // Reset save status for new response
         startAdvisorGeneration(plant);
     };
@@ -91,14 +91,16 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{response.title}</h4>
                             <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
-                            <div className="text-right mt-2">
-                               <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
-                                   {isCurrentResponseSaved ? 
-                                    <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />{t('strainsView.tips.saved')}</> :
-                                    <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />{t('knowledgeView.archive.saveButton')}</>
-                                   }
-                               </Button>
-                            </div>
+                            {!error && (
+                                <div className="text-right mt-2">
+                                   <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
+                                       {isCurrentResponseSaved ? 
+                                        <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />{t('strainsView.tips.saved')}</> :
+                                        <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />{t('knowledgeView.archive.saveButton')}</>
+                                       }
+                                   </Button>
+                                </div>
+                            )}
                         </Card>
                     )}
                 </div>

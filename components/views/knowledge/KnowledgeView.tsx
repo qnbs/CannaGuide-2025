@@ -6,6 +6,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { GuideTab } from './GuideTab';
 import { MentorArchiveTab } from './MentorArchiveTab';
 import { AiMentor } from './AiMentor';
+import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
 
 type KnowledgeViewTab = 'guide' | 'archive';
 
@@ -26,6 +27,10 @@ export const KnowledgeView: React.FC = () => {
             </div>
 
             <AiMentor />
+            
+            <div className="mt-6">
+                <AiDiagnostics />
+            </div>
 
             <Card>
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as KnowledgeViewTab)} />

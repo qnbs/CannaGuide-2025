@@ -1,4 +1,3 @@
-
 export const common = {
   add: 'Add',
   all: 'All',
@@ -44,6 +43,7 @@ export const common = {
   generated: 'Generated',
   for: 'For:',
   moreActions: 'More actions',
+  loadMore: 'Load More',
   units: {
     cm: 'cm',
     ml: 'ml',
@@ -135,7 +135,14 @@ export const common = {
     "Cedar": "Cedar",
     "Eucalyptus": "Eucalyptus",
     "Candy": "Candy"
-  }
+  },
+  tts: {
+    play: 'Play',
+    pause: 'Pause',
+    stop: 'Stop',
+    next: 'Next',
+    readThis: 'Read this text',
+  },
 };
 
 export const nav = {

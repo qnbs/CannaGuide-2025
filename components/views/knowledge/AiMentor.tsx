@@ -11,11 +11,11 @@ import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 export const AiMentor: React.FC = () => {
     const { t } = useTranslations();
-    const { addResponse } = useAppStore(state => ({
+    const { addResponse, startMentorGeneration } = useAppStore(state => ({
         addResponse: state.addArchivedMentorResponse,
+        startMentorGeneration: state.startMentorGeneration,
     }));
-    const { isLoading, response, lastQuery } = useAppStore(selectMentorState);
-    const startMentorGeneration = useAppStore(state => state.startMentorGeneration);
+    const { isLoading, response, lastQuery, error } = useAppStore(selectMentorState);
     const mentorInputId = useId();
 
     const [query, setQuery] = useState('');
@@ -94,12 +94,14 @@ export const AiMentor: React.FC = () => {
                 <Card className="mt-4 bg-slate-800 animate-fade-in">
                     <h4 className="font-bold text-primary-300 text-lg">{response.title}</h4>
                     <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: response.content }}></div>
-                    <div className="text-right mt-4">
+                    {!error && (
+                        <div className="text-right mt-4">
                             <Button size="sm" variant="secondary" onClick={() => addResponse({ ...response, query: lastQuery || query })}>
                             <PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />
                             {t('knowledgeView.archive.saveButton')}
                         </Button>
-                    </div>
+                        </div>
+                    )}
                 </Card>
             )}
         </Card>

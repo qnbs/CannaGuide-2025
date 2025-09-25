@@ -9,6 +9,7 @@ export const settingsView = {
     defaults: 'Standardwerte',
     data: 'Datenverwaltung',
     about: 'Über die App',
+    tts: 'Sprachausgabe',
   },
   general: {
     title: 'Allgemeine Einstellungen',
@@ -44,6 +45,15 @@ export const settingsView = {
       comfortable: 'Komfortabel',
       compact: 'Kompakt',
     }
+  },
+   tts: {
+    title: 'Sprachausgabe',
+    enabled: 'Sprachausgabe aktivieren',
+    enabledDesc: 'Fügt Schaltflächen hinzu, um sich App-Inhalte vorlesen zu lassen.',
+    voice: 'Stimme',
+    noVoices: 'Keine Stimmen verfügbar',
+    rate: 'Sprechgeschwindigkeit',
+    pitch: 'Tonhöhe',
   },
   strains: {
     title: 'Einstellungen der Sorten-Ansicht',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View } from '@/types';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -8,8 +8,7 @@ import { BottomNav } from '@/components/navigation/BottomNav';
 import { StrainsView } from '@/components/views/StrainsView';
 import { PlantsView } from '@/components/views/plants/PlantsView';
 import { EquipmentView } from '@/components/views/EquipmentView';
-// FIX: Corrected import path for KnowledgeView to point to the new component directory structure.
-import { KnowledgeView } from '@/components/views/knowledge/KnowledgeView';
+import { KnowledgeView } from '@/components/views/KnowledgeView';
 import { SettingsView } from '@/components/views/SettingsView';
 import { HelpView } from '@/components/views/HelpView';
 import { OnboardingModal } from '@/components/common/OnboardingModal';
@@ -18,6 +17,10 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { usePwaInstall } from '@/hooks/usePwaInstall';
 import { strainService } from '@/services/strainService';
 import { selectActiveView, selectIsCommandPaletteOpen, selectNotifications, selectSettings } from '@/stores/selectors';
+import { TTSControls } from '@/components/common/TTSControls';
+import { ttsService } from '@/services/ttsService';
+import { useDocumentEffects } from '@/hooks/useDocumentEffects';
+import { SimulationManager } from '@/components/common/SimulationManager';
 
 const ToastManager: React.FC = () => {
     const notifications = useAppStore(selectNotifications);
@@ -29,12 +32,12 @@ const AppContent: React.FC = () => {
     const settings = useAppStore(selectSettings);
     const activeView = useAppStore(selectActiveView);
     const isCommandPaletteOpen = useAppStore(selectIsCommandPaletteOpen);
+    const mainContentRef = useRef<HTMLElement | null>(null);
     
-    const { setSetting, setIsCommandPaletteOpen, addNotification, advanceSimulation } = useAppStore(state => ({
+    const { setSetting, setIsCommandPaletteOpen, addNotification } = useAppStore(state => ({
         setSetting: state.setSetting,
         setIsCommandPaletteOpen: state.setIsCommandPaletteOpen,
         addNotification: state.addNotification,
-        advanceSimulation: state.advanceSimulation,
     }));
     
     const [isOnboardingOpen, setIsOnboardingOpen] = useState(!settings.onboardingCompleted);
@@ -42,16 +45,15 @@ const AppContent: React.FC = () => {
     const isOffline = useOnlineStatus();
     const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
 
+    // Centralize all document-level side effects into a custom hook for cleanliness.
+    useDocumentEffects(settings);
+
+    // Scroll to top on view change
     useEffect(() => {
-        const root = window.document.documentElement;
-        root.className = '';
-        root.classList.add('dark', `theme-${settings.theme}`);
-        if (settings.accessibility.dyslexiaFont) root.classList.add('dyslexia-font');
-        if (settings.accessibility.reducedMotion) root.classList.add('reduced-motion');
-        if (settings.uiDensity === 'compact') root.classList.add('ui-density-compact');
-        root.style.fontSize = settings.fontSize === 'sm' ? '14px' : settings.fontSize === 'lg' ? '18px' : '16px';
-        root.lang = settings.language;
-    }, [settings.theme, settings.fontSize, settings.language, settings.accessibility, settings.uiDensity]);
+        if (mainContentRef.current) {
+            mainContentRef.current.scrollTo(0, 0);
+        }
+    }, [activeView]);
 
     useEffect(() => {
         const requestPersistence = async () => {
@@ -64,20 +66,6 @@ const AppContent: React.FC = () => {
         };
         requestPersistence();
     }, []);
-
-    // Time-based simulation logic
-    useEffect(() => {
-        // Run once on load to catch up
-        advanceSimulation();
-
-        if (settings.simulationSettings.autoAdvance) {
-            const speedInMinutes = { '1x': 5, '2x': 2.5, '5x': 1, '10x': 0.5, '20x': 0.25 }[settings.simulationSettings.speed] || 5;
-            const intervalId = setInterval(() => {
-                advanceSimulation();
-            }, speedInMinutes * 60 * 1000); // Check based on simulation speed
-            return () => clearInterval(intervalId);
-        }
-    }, [settings.simulationSettings.autoAdvance, settings.simulationSettings.speed, advanceSimulation]);
     
     useEffect(() => {
         if (t) {
@@ -128,6 +116,7 @@ const AppContent: React.FC = () => {
     return (
         <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans">
             {isOnboardingOpen && <OnboardingModal onClose={handleOnboardingClose} />}
+            <SimulationManager />
             <CommandPalette 
                 isOpen={isCommandPaletteOpen}
                 onClose={() => setIsCommandPaletteOpen(false)}
@@ -139,18 +128,25 @@ const AppContent: React.FC = () => {
                 onInstallClick={handleInstallClick}
             />
             <OfflineBanner />
-            <main className="flex-grow overflow-y-auto p-4 sm:p-6">
+            <main ref={mainContentRef} className="flex-grow overflow-y-auto p-4 sm:p-6">
                 <div className="max-w-7xl mx-auto">
                     {renderView()}
                 </div>
             </main>
+             <TTSControls />
             <BottomNav />
         </div>
     );
 };
 
 export const App: React.FC = () => {
-    useAppStore();
+    // Initialize services that need access to the store
+    useEffect(() => {
+        // The service needs the store to dispatch actions on speech events.
+        // This initialization connects the service to the store instance.
+        ttsService; // This ensures the singleton instance is created and `onvoiceschanged` is set up.
+    }, []);
+
     return (
         <>
             <AppContent />

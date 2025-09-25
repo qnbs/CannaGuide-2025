@@ -1,5 +1,5 @@
 import { Strain, SavedExport, SavedSetup, ArchivedMentorResponse, AIResponse, SavedStrainTip, ArchivedAdvisorResponse } from '@/types';
-import type { StoreSet, StoreGet } from '@/stores/useAppStore';
+import type { StoreSet, StoreGet, TFunction } from '@/stores/useAppStore';
 
 export interface UserContentSlice {
     // From original userContentSlice
@@ -15,10 +15,12 @@ export interface UserContentSlice {
     strainNotes: Record<string, string>;
     isUserStrain: (strainId: string) => boolean;
     toggleFavorite: (strainId: string) => void;
+    addMultipleToFavorites: (ids: string[]) => void;
+    removeMultipleFromFavorites: (ids: string[]) => void;
     updateNoteForStrain: (strainId: string, content: string) => void;
     
     // Actions from original userContentSlice
-    addUserStrain: (strain: Strain) => void;
+    addUserStrain: (strain: Strain) => boolean;
     updateUserStrain: (strain: Strain) => void;
     deleteUserStrain: (strainId: string) => void;
     
@@ -43,7 +45,7 @@ export interface UserContentSlice {
     deleteStrainTip: (tipId: string) => void;
 }
 
-export const createUserContentSlice = (set: StoreSet, get: StoreGet): UserContentSlice => ({
+export const createUserContentSlice = (set: StoreSet, get: (t: () => TFunction) => UserContentSlice & { addNotification: (msg: string, type?: any) => void }): UserContentSlice => ({
     userStrains: [],
     savedExports: [],
     savedSetups: [],
@@ -53,25 +55,51 @@ export const createUserContentSlice = (set: StoreSet, get: StoreGet): UserConten
     favoriteIds: new Set(),
     strainNotes: {},
     
-    isUserStrain: (strainId) => get().userStrains.some(s => s.id === strainId),
+    isUserStrain: (strainId) => get(() => (key: string) => key).userStrains.some(s => s.id === strainId),
     
     toggleFavorite: (strainId) => set(state => {
-        if (state.favoriteIds.has(strainId)) {
-            state.favoriteIds.delete(strainId);
+        const newSet = new Set(state.favoriteIds);
+        if (newSet.has(strainId)) {
+            newSet.delete(strainId);
         } else {
-            state.favoriteIds.add(strainId);
+            newSet.add(strainId);
         }
+        state.favoriteIds = newSet;
+    }),
+
+    addMultipleToFavorites: (ids) => set(state => {
+        ids.forEach(id => state.favoriteIds.add(id));
+    }),
+
+    removeMultipleFromFavorites: (ids) => set(state => {
+        ids.forEach(id => state.favoriteIds.delete(id));
     }),
 
     updateNoteForStrain: (strainId, content) => set(state => {
         state.strainNotes[strainId] = content;
     }),
 
-    addUserStrain: (strain) => set(state => { state.userStrains.push(strain) }),
-    updateUserStrain: (updatedStrain) => set(state => {
-        const index = state.userStrains.findIndex(s => s.id === updatedStrain.id);
-        if (index !== -1) state.userStrains[index] = updatedStrain;
-    }),
+    addUserStrain: (strain) => {
+        const t = (get as any).getT();
+        const isDuplicate = get(t).userStrains.some(s => s.name.toLowerCase() === strain.name.toLowerCase());
+        if (isDuplicate) {
+            get(t).addNotification(t('strainsView.addStrainModal.validation.duplicate', { name: strain.name }), 'error');
+            return false;
+        }
+        set(state => { state.userStrains.push(strain) });
+        get(t).addNotification(t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }), 'success');
+        return true;
+    },
+    updateUserStrain: (updatedStrain) => {
+        set(state => {
+            const index = state.userStrains.findIndex(s => s.id === updatedStrain.id);
+            if (index !== -1) {
+                state.userStrains[index] = updatedStrain;
+            }
+        });
+        const t = (get as any).getT();
+        get(t).addNotification(t('strainsView.addStrainModal.validation.updateSuccess', { name: updatedStrain.name }), 'success');
+    },
     deleteUserStrain: (strainId) => set(state => ({ userStrains: state.userStrains.filter(s => s.id !== strainId) })),
     
     addExport: (newExport, strainIds) => {
@@ -106,7 +134,7 @@ export const createUserContentSlice = (set: StoreSet, get: StoreGet): UserConten
     deleteArchivedMentorResponse: (responseId) => set(state => ({ archivedMentorResponses: state.archivedMentorResponses.filter(r => r.id !== responseId) })),
     
     addArchivedAdvisorResponse: (plantId, response, query) => {
-        const plant = get().plants[plantId];
+        const plant = (get as any)().plants[plantId];
         if (!plant) return;
         const newResponse: ArchivedAdvisorResponse = { ...response, id: `advisor-${plantId}-${Date.now()}`, createdAt: Date.now(), plantId, plantStage: plant.stage, query };
         set(state => {

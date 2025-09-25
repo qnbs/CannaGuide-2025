@@ -226,5 +226,11 @@ export const strainsView = {
             proTip: 'Pro-Tip'
         }
     }
-  }
+  },
+  bulkActions: {
+    addToFavorites: 'Add to Favorites',
+    removeFromFavorites: 'Remove Favs',
+    addedToFavorites: '{count} strains added to favorites.',
+    removedFromFavorites: '{count} strains removed from favorites.',
+  },
 };

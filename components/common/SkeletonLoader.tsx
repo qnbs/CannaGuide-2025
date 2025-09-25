@@ -22,7 +22,6 @@ const ListSkeleton: React.FC<{columns?: Record<string, boolean>}> = ({ columns }
         {columns?.thc && <div className="hidden sm:block h-4 w-10 bg-slate-700 rounded"></div>}
         {columns?.cbd && <div className="hidden sm:block h-4 w-10 bg-slate-700 rounded"></div>}
         {columns?.floweringTime && <div className="hidden sm:block h-4 w-16 bg-slate-700 rounded"></div>}
-        {/* FIX: Use dot notation for `yield` property to avoid TS inference issues with reserved keywords. */}
         {columns?.yield && <div className="hidden md:block h-4 w-20 bg-slate-700 rounded"></div>}
         <div className="flex items-center"><div className="h-4 w-12 bg-slate-700 rounded"></div></div>
         <div className="flex gap-1 justify-end">

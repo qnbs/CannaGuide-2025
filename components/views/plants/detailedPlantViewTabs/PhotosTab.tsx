@@ -42,7 +42,8 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
             <img src={imageUrl} alt={entry.notes} className="w-full h-48 object-cover rounded-lg" loading="lazy" />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end rounded-lg">
                 <p className="text-white text-sm font-semibold">{entry.notes}</p>
-                <p className="text-white/70 text-xs">{new Date(entry.timestamp).toLocaleString()}</p>
+                {/* FIX: Changed 'entry.timestamp' to 'entry.createdAt' to correctly access the date property of the JournalEntry type. */}
+                <p className="text-white/70 text-xs">{new Date(entry.createdAt).toLocaleString()}</p>
             </div>
         </div>
     );

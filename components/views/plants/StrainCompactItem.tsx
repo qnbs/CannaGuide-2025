@@ -31,7 +31,7 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = React.memo(({
         Medium: { level: 2, color: 'text-amber-500' },
         Hard: { level: 3, color: 'text-red-500' },
     };
-    const { level, color } = difficultyMap[strain.agronomic.difficulty];
+    const { level, color } = difficultyMap[strain.agronomic?.difficulty || 'Medium'];
 
     return (
         <button
@@ -39,7 +39,11 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = React.memo(({
             className="w-full text-left p-2 rounded-lg flex items-center gap-3 transition-colors hover:bg-slate-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
             aria-label={`${t('common.select')} ${strain.name}`}
         >
-            <TypeIcon className={`w-8 h-8 flex-shrink-0 ${typeClasses[strain.type]}`} />
+            {TypeIcon ? (
+                 <TypeIcon className={`w-8 h-8 flex-shrink-0 ${typeClasses[strain.type]}`} />
+            ) : (
+                <div className="w-8 h-8 flex-shrink-0 bg-slate-700 rounded-full" />
+            )}
             <div className="flex-grow min-w-0">
                 <p className="font-semibold text-slate-100 truncate flex items-center gap-1.5">
                     {isUserStrain && <span title={t('strainsView.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
@@ -50,7 +54,7 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = React.memo(({
             </div>
             <div className="flex-shrink-0 text-right">
                 <p className="text-xs font-mono text-slate-200">{strain.thc.toFixed(1)}% THC</p>
-                <div className="flex justify-end" title={difficultyLabels[strain.agronomic.difficulty]}>
+                <div className="flex justify-end" title={difficultyLabels[strain.agronomic?.difficulty || 'Medium']}>
                     {[...Array(3)].map((_, i) => (
                         <PhosphorIcons.Cannabis key={i} className={`w-3 h-3 ${i < level ? color : 'text-slate-700'}`} />
                     ))}

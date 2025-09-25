@@ -81,16 +81,24 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     return (
         <InfoSection title="Aroma & Terpene Profile">
             <div className="space-y-4">
-                <AttributeDisplay label={t('strainsView.strainModal.aromas')}>
-                    <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                        {(strain.aromas || []).map(a => <Tag key={a}>{a}</Tag>)}
-                    </div>
-                </AttributeDisplay>
-                <AttributeDisplay label={t('strainsView.strainModal.dominantTerpenes')}>
-                    <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                        {(strain.dominantTerpenes || []).map(terp => <Tag key={terp}>{terp}</Tag>)}
-                    </div>
-                </AttributeDisplay>
+                {/* FIX: Use the 'value' prop instead of children for AttributeDisplay */}
+                <AttributeDisplay
+                    label={t('strainsView.strainModal.aromas')}
+                    value={
+                        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                            {(strain.aromas || []).map(a => <Tag key={a}>{a}</Tag>)}
+                        </div>
+                    }
+                />
+                {/* FIX: Use the 'value' prop instead of children for AttributeDisplay */}
+                <AttributeDisplay
+                    label={t('strainsView.strainModal.dominantTerpenes')}
+                    value={
+                        <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
+                            {(strain.dominantTerpenes || []).map(terp => <Tag key={terp}>{terp}</Tag>)}
+                        </div>
+                    }
+                />
             </div>
         </InfoSection>
     );

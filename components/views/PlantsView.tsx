@@ -29,10 +29,12 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, startNewPlant, addNotification } = useAppStore(state => ({
+    // FIX: Get `advanceDay` from the store to pass to `GardenVitals`.
+    const { waterAllPlants, startNewPlant, addNotification, advanceDay } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
         startNewPlant: state.startNewPlant,
         addNotification: state.addNotification,
+        advanceDay: state.advanceDay,
     }));
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
@@ -116,6 +118,8 @@ export const PlantsView: React.FC = () => {
                     plants={activePlants} 
                     openTasksCount={allTasks.length}
                     onWaterAll={waterAllPlants}
+                    // FIX: Pass the `onAdvanceDay` prop to `GardenVitals` to satisfy its props interface.
+                    onAdvanceDay={advanceDay}
                 />
                 <TasksAndWarnings tasks={allTasks} problems={allProblems} />
             </div>

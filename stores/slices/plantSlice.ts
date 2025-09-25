@@ -17,7 +17,7 @@ export interface PlantSlice {
     applyLST: (plantId: string, shootId: string, angle: number) => void;
 }
 
-const MAX_PLANTS = 6;
+const MAX_PLANTS = 3;
 const initialPlantSlots = Array(MAX_PLANTS).fill(null);
 
 // Utility to get a random number in a range

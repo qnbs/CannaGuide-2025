@@ -18,16 +18,15 @@ export const SimulationManager: React.FC = () => {
     const prevActivePlantIdsKeyRef = useRef<string>('');
 
     useEffect(() => {
-        // Get the set of IDs from the previous and current state
-        const prevIds = new Set(prevActivePlantIdsKeyRef.current ? prevActivePlantIdsKeyRef.current.split(',').filter(id => id) : []);
-        const currentIds = new Set(activePlantIds);
+        // FIX: Explicitly type the Set to <string> to ensure correct type inference for `id`.
+        const prevIds = new Set<string>(prevActivePlantIdsKeyRef.current ? prevActivePlantIdsKeyRef.current.split(',').filter(id => id) : []);
+        const currentIds = new Set<string>(activePlantIds);
 
         // Start simulations for any newly added plants
         for (const id of currentIds) {
             if (!prevIds.has(id)) {
                 console.log(`[Simulation Lifecycle] Starting simulation for plant: ${id}`);
-                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'string'.
-                simulationService.startSimulation(id as string);
+                simulationService.startSimulation(id);
             }
         }
 
@@ -35,8 +34,7 @@ export const SimulationManager: React.FC = () => {
         for (const id of prevIds) {
             if (!currentIds.has(id)) {
                 console.log(`[Simulation Lifecycle] Stopping simulation for plant: ${id}`);
-                // FIX: Argument of type 'unknown' is not assignable to parameter of type 'string'.
-                simulationService.stopSimulation(id as string);
+                simulationService.stopSimulation(id);
             }
         }
 

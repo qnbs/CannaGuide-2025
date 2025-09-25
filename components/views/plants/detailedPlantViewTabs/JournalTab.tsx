@@ -17,6 +17,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
         return journal.filter(entry => entry.type === journalFilter);
     }, [journal, journalFilter]);
     
+    // FIX: Added missing PEST_CONTROL and ENVIRONMENT icon mappings.
     const journalTypeIcons: Record<JournalEntryType, React.ReactNode> = {
         WATERING: <PhosphorIcons.Drop />,
         FEEDING: <PhosphorIcons.TestTube />,
@@ -24,8 +25,11 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
         OBSERVATION: <PhosphorIcons.MagnifyingGlass />,
         SYSTEM: <PhosphorIcons.Gear />,
         PHOTO: <PhosphorIcons.Camera />,
+        PEST_CONTROL: <PhosphorIcons.WarningCircle />,
+        ENVIRONMENT: <PhosphorIcons.Fan />,
     };
 
+    // FIX: Added missing PEST_CONTROL and ENVIRONMENT filter options.
     const journalFilterOptions: { label: string, value: JournalEntryType | 'ALL', icon: React.ReactNode }[] = [
         { label: t('common.all'), value: 'ALL', icon: <PhosphorIcons.ListChecks /> },
         { label: t('plantsView.detailedView.journalFilters.watering'), value: 'WATERING', icon: <PhosphorIcons.Drop /> },
@@ -34,6 +38,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
         { label: t('plantsView.detailedView.journalFilters.observation'), value: 'OBSERVATION', icon: <PhosphorIcons.MagnifyingGlass /> },
         { label: t('plantsView.detailedView.journalFilters.system'), value: 'SYSTEM', icon: <PhosphorIcons.Gear /> },
         { label: t('plantsView.detailedView.journalFilters.photo'), value: 'PHOTO', icon: <PhosphorIcons.Camera /> },
+        { label: t('plantsView.detailedView.journalFilters.pestControl'), value: 'PEST_CONTROL', icon: <PhosphorIcons.WarningCircle /> },
+        { label: t('plantsView.detailedView.journalFilters.environment'), value: 'ENVIRONMENT', icon: <PhosphorIcons.Fan /> },
     ];
 
     return (

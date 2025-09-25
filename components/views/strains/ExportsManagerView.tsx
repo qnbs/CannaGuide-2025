@@ -78,7 +78,14 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
 
     return (
         <div className="mt-4">
-            {editingExport && <EditResponseModal response={{ ...editingExport, content: editingExport.notes || '' }} onClose={() => setEditingExport(null)} onSave={(updated) => handleUpdate({ ...updated, notes: updated.content, strainIds: editingExport.strainIds, count: editingExport.count })} title={t('strainsView.exportsManager.editExportTitle')} />}
+            {editingExport && <EditResponseModal
+                // FIX: Map `name` to `title` for the modal, and `notes` to `content`.
+                response={{ ...editingExport, title: editingExport.name, content: editingExport.notes || '' }}
+                onClose={() => setEditingExport(null)}
+                // FIX: Reconstruct the SavedExport object on save, mapping `title` back to `name` and `content` to `notes`.
+                onSave={(updated) => handleUpdate({ ...editingExport!, name: updated.title, notes: updated.content })}
+                title={t('strainsView.exportsManager.editExportTitle')}
+            />}
             
             {selectedIds.size > 0 && (
                 <BulkActionsBar

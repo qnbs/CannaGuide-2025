@@ -11,9 +11,11 @@ interface GardenVitalsProps {
     plants: Plant[];
     openTasksCount: number;
     onWaterAll: () => number;
+    // FIX: Add onAdvanceDay to the component's props interface.
+    onAdvanceDay: () => void;
 }
 
-export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll }) => {
+export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll, onAdvanceDay }) => {
     const { t } = useTranslations();
     const { activePlantsCount, gardenHealth, avgTemp, avgHumidity } = useAppStore(selectGardenHealthMetrics);
     const addNotification = useAppStore(state => state.addNotification);
@@ -92,6 +94,11 @@ export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCou
                 <Button onClick={handleWaterAllClick} disabled={plants.length === 0} className="w-full" variant="secondary">
                     <PhosphorIcons.Drop className="inline w-5 h-5 mr-1.5"/>
                     {t('plantsView.summary.waterAll')}
+                </Button>
+                {/* FIX: Add button to trigger the advance day simulation. */}
+                <Button onClick={onAdvanceDay} disabled={plants.length === 0} className="w-full">
+                    <PhosphorIcons.SkipForward className="inline w-5 h-5 mr-1.5"/>
+                    {t('plantsView.summary.simulateNextDay')}
                 </Button>
             </div>
         </Card>

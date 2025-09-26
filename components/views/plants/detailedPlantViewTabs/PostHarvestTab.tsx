@@ -10,13 +10,13 @@ interface PostHarvestTabProps {
 
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const { t } = useTranslations();
-    const postHarvestData = plant.postHarvest || {};
+    const postHarvestData = plant.postHarvest;
 
     const stats = [
-        { label: 'Wet Weight', value: postHarvestData.wetWeight, unit: 'g', icon: <PhosphorIcons.Drop /> },
-        { label: 'Dry Weight', value: postHarvestData.dryWeight, unit: 'g', icon: <PhosphorIcons.Leafy /> },
-        { label: 'Yield per Watt', value: postHarvestData.yieldPerWatt, unit: 'g/W', icon: <PhosphorIcons.Sun /> },
-        { label: 'Quality Rating', value: postHarvestData.qualityRating, unit: '/10', icon: <PhosphorIcons.Star /> },
+        { label: 'Wet Weight', value: postHarvestData?.wetWeight, unit: 'g', icon: <PhosphorIcons.Drop /> },
+        { label: 'Dry Weight', value: postHarvestData?.dryWeight, unit: 'g', icon: <PhosphorIcons.Leafy /> },
+        { label: 'Yield per Watt', value: postHarvestData?.yieldPerWatt, unit: 'g/W', icon: <PhosphorIcons.Sun /> },
+        { label: 'Quality Rating', value: postHarvestData?.qualityRating, unit: '/10', icon: <PhosphorIcons.Star /> },
     ];
 
     return (

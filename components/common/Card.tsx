@@ -1,11 +1,11 @@
-import React, { forwardRef, useRef } from 'react';
+import React, { forwardRef, useRef, memo } from 'react';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
   className?: string;
 }
 
-export const Card = forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
+export const Card = memo(forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
   const isInteractive = !!props.onClick;
   const internalRef = useRef<HTMLDivElement | null>(null);
 
@@ -35,4 +35,4 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(({ children, className
       {children}
     </div>
   );
-});
+}));

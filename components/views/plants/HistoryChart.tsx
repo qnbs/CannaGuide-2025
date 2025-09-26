@@ -1,23 +1,26 @@
-import React, { useState } from 'react';
-import { PlantHistoryEntry } from '@/types';
+import React, { useState, useMemo } from 'react';
+import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
+import * as d3 from 'd3';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface HistoryChartProps {
     history: PlantHistoryEntry[];
+    journal: JournalEntry[];
+    plantCreatedAt: number;
 }
 
 type ChartView = 'growth' | 'substrate';
 
-type PathConfig = {
-    d: string;
-    stroke: string;
-    strokeWidth: number;
-    label: string;
-    dash: boolean;
-    opacity?: number;
+const eventTypes: JournalEntryType[] = ['WATERING', 'FEEDING', 'TRAINING'];
+const eventIcons: Record<JournalEntryType, React.ReactNode> = {
+    WATERING: <PhosphorIcons.Drop />,
+    FEEDING: <PhosphorIcons.TestTube />,
+    TRAINING: <PhosphorIcons.Scissors />,
+    PHOTO: <></>, OBSERVATION: <></>, PEST_CONTROL: <></>, SYSTEM: <></>, ENVIRONMENT: <></>, AMENDMENT: <></>,
 };
 
-export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
+export const HistoryChart: React.FC<HistoryChartProps> = ({ history, journal, plantCreatedAt }) => {
     const { t } = useTranslations();
     const [view, setView] = useState<ChartView>('growth');
     
@@ -27,48 +30,45 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
 
     const width = 300;
     const height = 150;
-    const padding = { top: 10, right: 10, bottom: 20, left: 30 };
+    const padding = { top: 10, right: 10, bottom: 30, left: 30 };
 
-    const maxDay = Math.max(1, ...history.map(h => h.day));
+    const maxDay = Math.max(1, d3.max(history, h => h.day) || 1);
+    const xScale = useMemo(() => d3.scaleLinear().domain([0, maxDay]).range([padding.left, width - padding.right]), [maxDay]);
+
+    const yDomains = useMemo(() => ({
+        height: [0, Math.max(10, d3.max(history, h => h.height) || 10)],
+        stressLevel: [0, 100],
+        ph: [5, 8],
+        ec: [0, 3],
+        moisture: [0, 100],
+    }), [history]);
+
+    const yScales = useMemo(() => ({
+        height: d3.scaleLinear().domain(yDomains.height).range([height - padding.bottom, padding.top]),
+        stressLevel: d3.scaleLinear().domain(yDomains.stressLevel).range([height - padding.bottom, padding.top]),
+        ph: d3.scaleLinear().domain(yDomains.ph).range([height - padding.bottom, padding.top]),
+        ec: d3.scaleLinear().domain(yDomains.ec).range([height - padding.bottom, padding.top]),
+        moisture: d3.scaleLinear().domain(yDomains.moisture).range([height - padding.bottom, padding.top]),
+    }), [yDomains]);
+
+    const lineGenerators = useMemo(() => ({
+        height: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.height(d.height)),
+        stressLevel: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.stressLevel(d.stressLevel)),
+        ph: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ph(d.substrate.ph)),
+        ec: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ec(d.substrate.ec)),
+        moisture: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.moisture(d.substrate.moisture)),
+    }), [xScale, yScales]);
     
-    const createPath = (dataKey: keyof PlantHistoryEntry['substrate'] | 'height' | 'stressLevel') => {
-        let dataPoints: {day: number, value: number}[] = [];
-        let maxValue: number;
+    const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);
 
-        if (dataKey === 'height' || dataKey === 'stressLevel') {
-            dataPoints = history.map(p => ({ day: p.day, value: p[dataKey] }));
-            maxValue = dataKey === 'height' ? Math.max(10, ...dataPoints.map(p => p.value)) : 100;
-        } else {
-            dataPoints = history.map(p => ({ day: p.day, value: p.substrate[dataKey] }));
-            if (dataKey === 'ph') maxValue = 8;
-            else if (dataKey === 'ec') maxValue = 3;
-            else maxValue = 100;
-        }
-
-        const scaleX = (day: number) => padding.left + (day / maxDay) * (width - padding.left - padding.right);
-        const scaleY = (val: number) => padding.top + (1 - val / maxValue) * (height - padding.top - padding.bottom);
-        
-        return dataPoints.map((point, i) => 
-            `${i === 0 ? 'M' : 'L'} ${scaleX(point.day).toFixed(2)},${scaleY(point.value).toFixed(2)}`
-        ).join(' ');
-    };
-
-    const xAxisLabelsCount = Math.min(maxDay, 5);
-    const xAxisLabels = maxDay > 0 ? Array.from({ length: xAxisLabelsCount + 1 }, (_, i) => Math.round(i * (maxDay / xAxisLabelsCount))) : [0];
-    const scaleX = (day: number) => padding.left + (day / maxDay) * (width - padding.left - padding.right);
-
-    const growthPaths: PathConfig[] = [
-        { d: createPath('height'), stroke: 'rgb(var(--color-primary-500))', strokeWidth: 2, label: `${t('plantsView.detailedView.height')} (${t('common.units.cm')})`, dash: false },
-        { d: createPath('stressLevel'), stroke: 'rgb(var(--color-accent-500))', strokeWidth: 1.5, label: `${t('plantsView.detailedView.stress')} (%)`, dash: true },
+    const paths = view === 'growth' ? [
+        { d: lineGenerators.height(history), stroke: 'rgb(var(--color-primary-500))', strokeWidth: 2, label: t('plantsView.detailedView.height'), dash: false },
+        { d: lineGenerators.stressLevel(history), stroke: 'rgb(var(--color-accent-500))', strokeWidth: 1.5, label: t('plantsView.detailedView.stress'), dash: true },
+    ] : [
+        { d: lineGenerators.ph(history), stroke: 'rgb(250, 204, 21)', strokeWidth: 2, label: 'pH', dash: false },
+        { d: lineGenerators.ec(history), stroke: 'rgb(249, 115, 22)', strokeWidth: 2, label: 'EC', dash: true },
+        { d: lineGenerators.moisture(history), stroke: 'rgb(59, 130, 246)', strokeWidth: 1.5, label: t('plantsView.vitals.moisture'), dash: false, opacity: 0.5 },
     ];
-    
-    const substratePaths: PathConfig[] = [
-        { d: createPath('ph'), stroke: 'rgb(250, 204, 21)', strokeWidth: 2, label: 'pH', dash: false },
-        { d: createPath('ec'), stroke: 'rgb(249, 115, 22)', strokeWidth: 2, label: 'EC', dash: true },
-        { d: createPath('moisture'), stroke: 'rgb(59, 130, 246)', strokeWidth: 1.5, label: `${t('plantsView.vitals.moisture')} (%)`, dash: false, opacity: 0.5 },
-    ];
-
-    const pathsToRender = view === 'growth' ? growthPaths : substratePaths;
 
     return (
         <div className="w-full h-full">
@@ -77,20 +77,41 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history }) => {
                 <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
             </div>
             <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
-                <g className="history-chart-grid opacity-50">
-                    {xAxisLabels.map(label => (
-                        <g key={`x-${label}`}>
-                            <text x={scaleX(label)} y={height - padding.bottom + 15} textAnchor="middle" className="history-chart-labels" fill="currentColor" fontSize="8">{label}</text>
+                <g className="history-chart-grid" transform={`translate(0, ${height - padding.bottom})`}>
+                    {xScale.ticks(5).map(tick => (
+                        <g key={`x-${tick}`} transform={`translate(${xScale(tick)}, 0)`}>
+                            <line y2="6" stroke="currentColor" />
+                            <text fill="currentColor" y="9" dy="0.71em" textAnchor="middle" className="history-chart-labels">{tick}</text>
                         </g>
                     ))}
                 </g>
                 
-                {pathsToRender.map((path, i) => (
-                    <path key={i} d={path.d} fill="none" stroke={path.stroke} strokeWidth={path.strokeWidth} strokeDasharray={path.dash ? '3,3' : 'none'} opacity={path.opacity ?? 1} />
+                {paths.map((path, i) => (
+                    <path key={i} d={path.d || ''} fill="none" stroke={path.stroke} strokeWidth={path.strokeWidth} strokeDasharray={path.dash ? '3,3' : 'none'} opacity={path.opacity ?? 1} />
                 ))}
+
+                {eventEntries.map(entry => {
+                    const dayOfEvent = Math.floor((entry.createdAt - plantCreatedAt) / (1000 * 3600 * 24));
+                    if (dayOfEvent < 0 || dayOfEvent > maxDay) return null;
+                    
+                    const xPos = xScale(dayOfEvent);
+                    const yPos = height - padding.bottom + 2;
+
+                    return (
+                        <g key={entry.id} transform={`translate(${xPos}, ${yPos})`} className="cursor-pointer">
+                            <title>{t(`plantsView.historyChart.events.${entry.type.toLowerCase()}`)}: {entry.notes}</title>
+                            <circle r="4" fill="rgb(var(--color-bg-component))" stroke="rgb(var(--color-border))" />
+                            <foreignObject x="-6" y="-6" width="12" height="12" className="text-slate-300">
+                                <div className="w-full h-full text-[10px] flex items-center justify-center">
+                                    {eventIcons[entry.type]}
+                                </div>
+                            </foreignObject>
+                        </g>
+                    );
+                })}
             </svg>
-             <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-xs mt-2">
-                {pathsToRender.map((path, i) => (
+            <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-xs mt-2">
+                {paths.map((path, i) => (
                     <span key={i} className="flex items-center gap-1.5">
                         {path.dash ? 
                             <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: path.stroke}}></div> :

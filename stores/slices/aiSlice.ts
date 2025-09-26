@@ -1,182 +1,170 @@
-import { AIResponse, Recommendation, StructuredGrowTips, Plant, Strain, PlantDiagnosisResponse } from '@/types';
+import { AIResponse, Plant, Recommendation, PlantDiagnosisResponse, MentorMessage, Strain, StructuredGrowTips, DeepDiveGuide } from '@/types';
+import { StoreSet, StoreGet, TFunction } from '../useAppStore';
 import { geminiService } from '@/services/geminiService';
-import type { AppState, StoreSet, StoreGet, TFunction } from '@/stores/useAppStore';
 
-type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
-type Budget = 'low' | 'medium' | 'high';
-type GrowStyle = 'beginner' | 'balanced' | 'yield';
-
-interface EquipmentGenerationState {
+export interface AiState<T> {
     isLoading: boolean;
-    recommendation: Recommendation | null;
+    response: T | null;
     error: string | null;
-    sourceDetails: { area: Area; budget: Budget; growStyle: GrowStyle; } | null;
+    sourceDetails?: any;
 }
-
-interface MentorState {
-    isLoading: boolean;
-    response: AIResponse | null;
-    error: string | null;
-    lastQuery: string | null;
-}
-
-interface AdvisorState {
-    isLoading: boolean;
-    response: AIResponse | null;
-    error: string | null;
-}
-
-interface StrainTipState {
-    isLoading: boolean;
-    tip: StructuredGrowTips | null;
-    error: string | null;
-}
-
-interface DiagnosticsState {
-    isLoading: boolean;
-    response: PlantDiagnosisResponse | null;
-    error: string | null;
-}
-
 
 export interface AiSlice {
-    equipmentGenerationState: EquipmentGenerationState;
-    mentorState: MentorState;
-    advisorState: Record<string, AdvisorState>;
-    strainTipState: Record<string, StrainTipState>;
-    diagnosticsState: DiagnosticsState;
+    equipmentGeneration: AiState<Recommendation>;
+    diagnostics: AiState<PlantDiagnosisResponse>;
+    advisorChats: Record<string, AiState<AIResponse>>;
+    mentorChats: Record<string, { history: MentorMessage[], isLoading: boolean, error: string | null }>;
+    strainTips: Record<string, AiState<StructuredGrowTips>>;
+    deepDives: Record<string, AiState<DeepDiveGuide>>;
 
-    startEquipmentGeneration: (promptDetails: string, sourceDetails: { area: Area; budget: Budget; growStyle: GrowStyle; }) => Promise<void>;
+    startEquipmentGeneration: (prompt: string, details: any) => Promise<void>;
     resetEquipmentGenerationState: () => void;
     
-    startMentorGeneration: (query: string) => Promise<void>;
+    startDiagnostics: (base64Image: string, mimeType: string, context: any) => Promise<void>;
     
     startAdvisorGeneration: (plant: Plant) => Promise<void>;
     
-    startStrainTipGeneration: (strain: Strain, context: { focus: string; stage: string; experience: string }) => Promise<void>;
+    startPlantMentorChat: (plant: Plant, query: string) => Promise<void>;
+    clearMentorChat: (plantId: string) => void;
+
+    startStrainTipGeneration: (strain: Strain, context: { focus: string, stage: string, experience: string }) => Promise<void>;
     
-    startDiagnostics: (base64Image: string, mimeType: string, context: { plant?: Plant, userNotes?: string }) => Promise<void>;
+    startDeepDiveGeneration: (topic: string, plant: Plant) => Promise<void>;
 }
 
 export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction): AiSlice => ({
-    equipmentGenerationState: { isLoading: false, recommendation: null, error: null, sourceDetails: null },
-    mentorState: { isLoading: false, response: null, error: null, lastQuery: null },
-    advisorState: {},
-    strainTipState: {},
-    diagnosticsState: { isLoading: false, response: null, error: null },
+    equipmentGeneration: { isLoading: false, response: null, error: null },
+    diagnostics: { isLoading: false, response: null, error: null },
+    advisorChats: {},
+    mentorChats: {},
+    strainTips: {},
+    deepDives: {},
 
-    startEquipmentGeneration: async (promptDetails, sourceDetails) => {
+    startEquipmentGeneration: async (prompt, details) => {
         set(state => {
-            state.equipmentGenerationState = { isLoading: true, recommendation: null, error: null, sourceDetails };
+            state.equipmentGeneration = { isLoading: true, response: null, error: null, sourceDetails: details };
         });
         try {
-            const result = await geminiService.getEquipmentRecommendation(promptDetails, t());
+            const recommendation = await geminiService.getEquipmentRecommendation(prompt, t());
             set(state => {
-                state.equipmentGenerationState.recommendation = result;
+                state.equipmentGeneration.isLoading = false;
+                state.equipmentGeneration.response = recommendation;
             });
-        } catch (err) {
-            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
-            const errorMessage = t()(errorMessageKey) === errorMessageKey ? t()('ai.error.unknown') : t()(errorMessageKey);
+        } catch (e: any) {
             set(state => {
-                state.equipmentGenerationState.error = errorMessage;
-            });
-        } finally {
-            set(state => {
-                state.equipmentGenerationState.isLoading = false;
+                state.equipmentGeneration.isLoading = false;
+                state.equipmentGeneration.error = t()(e.message || 'ai.error.unknown');
             });
         }
     },
-    resetEquipmentGenerationState: () => set(state => {
-        state.equipmentGenerationState = { isLoading: false, recommendation: null, error: null, sourceDetails: null };
-    }),
-    
-    startMentorGeneration: async (query) => {
+    resetEquipmentGenerationState: () => {
         set(state => {
-            state.mentorState = { isLoading: true, response: null, error: null, lastQuery: query };
+            state.equipmentGeneration = { isLoading: false, response: null, error: null };
+        });
+    },
+
+    startDiagnostics: async (base64Image, mimeType, context) => {
+        set(state => {
+            state.diagnostics = { isLoading: true, response: null, error: null };
         });
         try {
-            const res = await geminiService.getAiMentorResponse(query, t());
+            const diagnosis = await geminiService.diagnosePlant(base64Image, mimeType, context, t());
             set(state => {
-                state.mentorState.response = res;
+                state.diagnostics.isLoading = false;
+                state.diagnostics.response = diagnosis;
             });
-        } catch (e) {
-            const errorMessageKey = e instanceof Error ? e.message : 'ai.error.unknown';
-            const errorMessage = t()(errorMessageKey) === errorMessageKey ? t()('ai.error.unknown') : t()(errorMessageKey);
+        } catch (e: any) {
             set(state => {
-                state.mentorState.error = errorMessage;
-                state.mentorState.response = { title: t()('common.error'), content: errorMessage };
-            });
-        } finally {
-            set(state => {
-                state.mentorState.isLoading = false;
+                state.diagnostics.isLoading = false;
+                state.diagnostics.error = t()(e.message || 'ai.error.unknown');
             });
         }
     },
     
     startAdvisorGeneration: async (plant) => {
         set(state => {
-            state.advisorState[plant.id] = { isLoading: true, response: null, error: null };
+            state.advisorChats[plant.id] = { isLoading: true, response: null, error: null };
         });
         try {
-            const res = await geminiService.getAiPlantAdvisorResponse(plant, t());
+            const advice = await geminiService.getPlantAdvice(plant, t());
             set(state => {
-                state.advisorState[plant.id].response = res;
+                state.advisorChats[plant.id].isLoading = false;
+                state.advisorChats[plant.id].response = advice;
             });
-        } catch (error) {
-            const errorMessageKey = error instanceof Error ? error.message : 'ai.error.unknown';
-            const errorMessage = t()(errorMessageKey) === errorMessageKey ? t()('ai.error.unknown') : t()(errorMessageKey);
+        } catch (e: any) {
             set(state => {
-                state.advisorState[plant.id].error = errorMessage;
-                state.advisorState[plant.id].response = { title: t()('common.error'), content: errorMessage };
-            });
-        } finally {
-            set(state => {
-                state.advisorState[plant.id].isLoading = false;
-            });
-        }
-    },
-    
-    startStrainTipGeneration: async (strain, context) => {
-        set(state => {
-            state.strainTipState[strain.id] = { isLoading: true, tip: null, error: null };
-        });
-        try {
-            const result = await geminiService.getStrainGrowTips(strain, context, t());
-            set(state => {
-                state.strainTipState[strain.id].tip = result;
-            });
-        } catch (err) {
-            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
-            const errorMessage = t()(errorMessageKey) === errorMessageKey ? t()('ai.error.unknown') : t()(errorMessageKey);
-            set(state => {
-                state.strainTipState[strain.id].error = errorMessage;
-            });
-        } finally {
-            set(state => {
-                state.strainTipState[strain.id].isLoading = false;
+                state.advisorChats[plant.id].isLoading = false;
+                state.advisorChats[plant.id].error = t()(e.message || 'ai.error.unknown');
             });
         }
     },
 
-    startDiagnostics: async (base64Image, mimeType, context) => {
+    startPlantMentorChat: async (plant, query) => {
         set(state => {
-            state.diagnosticsState = { isLoading: true, response: null, error: null };
+            if (!state.mentorChats[plant.id]) {
+                state.mentorChats[plant.id] = { history: [], isLoading: false, error: null };
+            }
+            state.mentorChats[plant.id].history.push({ role: 'user', content: query });
+            state.mentorChats[plant.id].isLoading = true;
+            state.mentorChats[plant.id].error = null;
         });
         try {
-            const res = await geminiService.diagnosePlantProblem(base64Image, mimeType, context, t());
+            const response = await geminiService.getMentorResponse(plant, query, t());
             set(state => {
-                state.diagnosticsState.response = res;
+                state.mentorChats[plant.id].history.push({ role: 'model', ...response });
+                state.mentorChats[plant.id].isLoading = false;
             });
-        } catch (err) {
-            const errorMessageKey = err instanceof Error ? err.message : 'ai.error.unknown';
-            const errorMessage = t()(errorMessageKey) === errorMessageKey ? t()('ai.error.unknown') : t()(errorMessageKey);
-            set(state => {
-                state.diagnosticsState.error = errorMessage;
-            });
-        } finally {
-            set(state => {
-                state.diagnosticsState.isLoading = false;
+        } catch (e: any) {
+             set(state => {
+                const errorMessage = t()(e.message || 'ai.error.unknown');
+                state.mentorChats[plant.id].history.push({ role: 'model', title: t()('common.error'), content: errorMessage });
+                state.mentorChats[plant.id].isLoading = false;
+                state.mentorChats[plant.id].error = errorMessage;
             });
         }
-    }
+    },
+    clearMentorChat: (plantId) => {
+        set(state => {
+            if (state.mentorChats[plantId]) {
+                state.mentorChats[plantId].history = [];
+            }
+        });
+    },
+    
+    startStrainTipGeneration: async (strain, context) => {
+        set(state => {
+            state.strainTips[strain.id] = { isLoading: true, response: null, error: null };
+        });
+        try {
+            const tips = await geminiService.getStrainTips(strain, context, t());
+            set(state => {
+                state.strainTips[strain.id].isLoading = false;
+                state.strainTips[strain.id].response = tips;
+            });
+        } catch (e: any) {
+            set(state => {
+                state.strainTips[strain.id].isLoading = false;
+                state.strainTips[strain.id].error = t()(e.message || 'ai.error.unknown');
+            });
+        }
+    },
+
+    startDeepDiveGeneration: async (topic, plant) => {
+        const key = `${plant.id}-${topic}`;
+        set(state => {
+            state.deepDives[key] = { isLoading: true, response: null, error: null };
+        });
+        try {
+            const guide = await geminiService.generateDeepDive(topic, plant, t());
+            set(state => {
+                state.deepDives[key].isLoading = false;
+                state.deepDives[key].response = guide;
+            });
+        } catch (e: any) {
+            set(state => {
+                state.deepDives[key].isLoading = false;
+                state.deepDives[key].error = t()(e.message || 'ai.error.unknown');
+            });
+        }
+    },
 });

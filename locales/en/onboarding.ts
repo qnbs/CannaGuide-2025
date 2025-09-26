@@ -15,4 +15,5 @@ export const onboarding = {
     title: 'Learn & Grow',
     text: 'Follow the interactive guide to master the basics of cultivation and track your knowledge progress.',
   },
+  startGrow: "Let's Start Your First Grow!",
 };

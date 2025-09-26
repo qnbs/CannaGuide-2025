@@ -16,7 +16,8 @@
     "i18next": "https://aistudiocdn.com/i18next@^25.5.2",
     "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/",
     "reselect": "https://aistudiocdn.com/reselect@^5.1.1",
-    "immer": "https://aistudiocdn.com/immer@^10.1.3"
+    "immer": "https://aistudiocdn.com/immer@^10.1.3",
+    "d3": "https://aistudiocdn.com/d3@^7.9.0"
   }
 }
 </script>
@@ -161,11 +162,12 @@
       .history-chart-grid line,
       .history-chart-grid path {
         stroke: rgb(var(--color-border));
+        stroke-opacity: 0.5;
       }
       .history-chart-labels {
         fill: rgb(var(--color-neutral-400));
-        font-size: 8px;
-        font-family: 'Inter', sans-serif;
+        font-size: 10px;
+        font-family: 'IBM Plex Mono', monospace;
       }
       
       .offline-banner {

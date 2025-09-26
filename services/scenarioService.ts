@@ -1,0 +1,62 @@
+import { Plant, Scenario, ScenarioAction } from '@/types';
+import { simulationService } from './plantSimulationService';
+
+const scenarios: Record<string, Scenario> = {
+    'topping-vs-lst': {
+        id: 'topping-vs-lst',
+        titleKey: 'scenarios.toppingVsLst.title',
+        descriptionKey: 'scenarios.toppingVsLst.description',
+        durationDays: 14,
+        plantAModifier: { action: 'NONE', day: 1 },
+        plantBModifier: { action: 'TOP', day: 1 },
+    },
+    // Add more scenarios here
+};
+
+class ScenarioService {
+    
+    getScenarioById(id: string): Scenario | undefined {
+        return scenarios[id];
+    }
+
+    applyAction(plant: Plant, action: ScenarioAction): Plant {
+        switch (action) {
+            case 'TOP':
+                return simulationService.topPlant(plant);
+            case 'LST':
+                return simulationService.applyLst(plant);
+            case 'NONE':
+            default:
+                return plant;
+        }
+    }
+
+    async runComparisonScenario(basePlant: Plant, scenario: Scenario): Promise<{ plantA: Plant, plantB: Plant }> {
+        return new Promise(resolve => {
+            // Use setTimeout to make it non-blocking, simulating a background process
+            setTimeout(() => {
+                let plantA = simulationService.clonePlant(basePlant);
+                let plantB = simulationService.clonePlant(basePlant);
+                
+                plantA.name = `${basePlant.name} (A)`;
+                plantB.name = `${basePlant.name} (B)`;
+
+                for (let day = 1; day <= scenario.durationDays; day++) {
+                    if (day === scenario.plantAModifier.day) {
+                        plantA = this.applyAction(plantA, scenario.plantAModifier.action);
+                    }
+                     if (day === scenario.plantBModifier.day) {
+                        plantB = this.applyAction(plantB, scenario.plantBModifier.action);
+                    }
+                    
+                    plantA = simulationService.runDailyCycle(plantA);
+                    plantB = simulationService.runDailyCycle(plantB);
+                }
+                
+                resolve({ plantA, plantB });
+            }, 500); // Simulate some processing time
+        });
+    }
+}
+
+export const scenarioService = new ScenarioService();

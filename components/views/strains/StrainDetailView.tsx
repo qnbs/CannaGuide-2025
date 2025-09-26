@@ -181,10 +181,11 @@ interface StrainDetailViewProps {
 
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {
     const { t } = useTranslations();
-    const { isFavorite, toggleFavorite, initiateGrow } = useAppStore(state => ({
+    // FIX: Corrected function name from initiateGrow to initiateGrowFromStrainList
+    const { isFavorite, toggleFavorite, initiateGrowFromStrainList } = useAppStore(state => ({
         isFavorite: state.favoriteIds.has(strain.id),
         toggleFavorite: state.toggleFavorite,
-        initiateGrow: state.initiateGrow,
+        initiateGrowFromStrainList: state.initiateGrowFromStrainList,
     }));
     const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
 
@@ -217,7 +218,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
                     </Button>
                     <div className="flex items-center gap-2">
                         <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                            <Button onClick={() => initiateGrow(currentStrain)} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <Button onClick={() => initiateGrowFromStrainList(currentStrain)} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                         </div>
                         <Button variant="secondary" onClick={() => toggleFavorite(currentStrain.id)} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />

@@ -198,9 +198,9 @@ export const StrainsView: React.FC = () => {
         if (isLoading || isSearching) {
             return viewMode === 'list' ? <SkeletonLoader variant="list" count={10} columns={settings.strainsViewSettings.visibleColumns}/> : <SkeletonLoader variant="grid" count={10}/>;
         }
+        
         if (filteredStrains.length === 0) {
-            const isFiltering = filterProps.isAnyFilterActive || activeTab !== 'all';
-            if (isFiltering) {
+            if (filterProps.isAnyFilterActive) {
                  return (
                     <Card className="text-center py-10 text-slate-500">
                         <PhosphorIcons.MagnifyingGlass className="w-12 h-12 mx-auto text-slate-400 mb-4" />
@@ -212,8 +212,11 @@ export const StrainsView: React.FC = () => {
                     </Card>
                 );
             }
-            const emptyStateKey = activeTab === 'my-strains' ? 'myStrains' : 'favorites';
-            return <Card className="text-center py-10 text-slate-500"><p>{t(`strainsView.emptyStates.${emptyStateKey}.text`)}</p></Card>;
+
+            if (activeTab === 'my-strains' || activeTab === 'favorites') {
+                const emptyStateKey = activeTab === 'my-strains' ? 'myStrains' : 'favorites';
+                return <Card className="text-center py-10 text-slate-500"><p>{t(`strainsView.emptyStates.${emptyStateKey}.text`)}</p></Card>;
+            }
         }
         
         const content = viewMode === 'list' ? (

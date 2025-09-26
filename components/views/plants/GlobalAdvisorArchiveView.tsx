@@ -11,8 +11,8 @@ import { Button } from '@/components/common/Button';
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslations();
-    const archive = useAppStore(selectArchivedAdvisorResponses);
-    const activePlants = useAppStore(selectActivePlants);
+    const archive = useAppStore(state => selectArchivedAdvisorResponses(state));
+    const activePlants = useAppStore(state => selectActivePlants(state));
     const addNotification = useAppStore(state => state.addNotification);
     
     const [searchTerm, setSearchTerm] = useState('');

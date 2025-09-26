@@ -47,7 +47,7 @@ interface StrainAiTipsProps {
 
 export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
-    const { isLoading, tip, error } = useAppStore(selectStrainTipState(strain.id));
+    const { isLoading, response: tip, error } = useAppStore(selectStrainTipState(strain.id));
     const startStrainTipGeneration = useAppStore(state => state.startStrainTipGeneration);
 
     const [loadingMessage, setLoadingMessage] = useState('');

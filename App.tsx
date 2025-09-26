@@ -20,12 +20,41 @@ import { selectActiveView, selectIsCommandPaletteOpen, selectNotifications, sele
 import { TTSControls } from '@/components/common/TTSControls';
 import { ttsService } from '@/services/ttsService';
 import { useDocumentEffects } from '@/hooks/useDocumentEffects';
-import { SimulationManager } from '@/components/common/SimulationManager';
+import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 const ToastManager: React.FC = () => {
     const notifications = useAppStore(selectNotifications);
     const removeNotification = useAppStore(state => state.removeNotification);
     return <ToastContainer notifications={notifications} onClose={removeNotification} />;
+};
+
+const SimulationStatusOverlay: React.FC = () => {
+    const { t } = useTranslations();
+    const isCatchingUp = useAppStore(state => state.isCatchingUp);
+    
+    if (!isCatchingUp) return null;
+
+    return (
+        <div className="fixed inset-0 bg-slate-900/90 z-[200] flex items-center justify-center backdrop-blur-sm">
+            <AiLoadingIndicator loadingMessage={t('plantsView.syncProgress')} />
+        </div>
+    );
+};
+
+const SimulationController: React.FC = () => {
+    const initializeSimulation = useAppStore(state => state.initializeSimulation);
+    const simulationSettings = useAppStore(state => state.settings.simulationSettings);
+    const updateTimer = useAppStore(state => state._updateTimer);
+
+    useEffect(() => {
+        initializeSimulation();
+    }, [initializeSimulation]);
+    
+    useEffect(() => {
+        updateTimer();
+    }, [simulationSettings.autoAdvance, simulationSettings.speed, updateTimer]);
+
+    return null; // This component does not render UI
 };
 
 const AppContent: React.FC = () => {
@@ -45,27 +74,13 @@ const AppContent: React.FC = () => {
     const isOffline = useOnlineStatus();
     const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
 
-    // Centralize all document-level side effects into a custom hook for cleanliness.
     useDocumentEffects(settings);
 
-    // Scroll to top on view change
     useEffect(() => {
         if (mainContentRef.current) {
             mainContentRef.current.scrollTo(0, 0);
         }
     }, [activeView]);
-
-    useEffect(() => {
-        const requestPersistence = async () => {
-            if (navigator.storage && navigator.storage.persist) {
-                const isPersisted = await navigator.storage.persisted();
-                if (!isPersisted) {
-                    await navigator.storage.persist();
-                }
-            }
-        };
-        requestPersistence();
-    }, []);
     
     useEffect(() => {
         if (t) {
@@ -115,8 +130,8 @@ const AppContent: React.FC = () => {
 
     return (
         <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans">
+            <SimulationStatusOverlay />
             {isOnboardingOpen && <OnboardingModal onClose={handleOnboardingClose} />}
-            <SimulationManager />
             <CommandPalette 
                 isOpen={isCommandPaletteOpen}
                 onClose={() => setIsCommandPaletteOpen(false)}
@@ -140,17 +155,15 @@ const AppContent: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-    // Initialize services that need access to the store
     useEffect(() => {
-        // The service needs the store to dispatch actions on speech events.
-        // This initialization connects the service to the store instance.
-        ttsService; // This ensures the singleton instance is created and `onvoiceschanged` is set up.
+        ttsService;
     }, []);
 
     return (
         <>
             <AppContent />
             <ToastManager />
+            <SimulationController />
         </>
     );
 };

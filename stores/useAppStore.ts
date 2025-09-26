@@ -13,13 +13,15 @@ import { SavedItemsSlice, createSavedItemsSlice } from './slices/savedItemsSlice
 import { ArchivesSlice, createArchivesSlice } from './slices/archivesSlice';
 import { KnowledgeSlice, createKnowledgeSlice } from './slices/knowledgeSlice';
 import { TTSSlice, createTtsSlice } from './slices/ttsSlice';
-import { View } from '@/types';
+import { SimulationSlice, createSimulationSlice } from './slices/simulationSlice';
+import { View, AppSettings } from '@/types';
+import { indexedDBStorage } from './indexedDBStorage';
 
 export type TFunction = (key: string, params?: Record<string, any>) => string;
 let t: TFunction = (key: string) => key;
 const getT = () => t;
 
-export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserStrainsSlice & FavoritesSlice & NotesSlice & SavedItemsSlice & ArchivesSlice & KnowledgeSlice & TTSSlice & AppSlice;
+export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserStrainsSlice & FavoritesSlice & NotesSlice & SavedItemsSlice & ArchivesSlice & KnowledgeSlice & TTSSlice & SimulationSlice & AppSlice;
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
 
@@ -33,9 +35,11 @@ export const useAppStore = create<AppState>()(
       immer((set, get) => ({
         init: (newT: TFunction) => { t = newT; },
         ...createSettingsSlice(set),
-        ...createUISlice(set, get),
+        ...createUISlice(set, get, getT),
         ...createStrainsViewSlice(set, get),
+        // FIX: The createAiSlice function expects a function that returns TFunction, not TFunction directly.
         ...createAiSlice(set, get, getT),
+        // FIX: The createPlantSlice function expects a function that returns TFunction, not TFunction directly.
         ...createPlantSlice(set, get, getT),
         ...createUserStrainsSlice(set, get),
         ...createFavoritesSlice(set),
@@ -44,17 +48,24 @@ export const useAppStore = create<AppState>()(
         ...createArchivesSlice(set, get),
         ...createKnowledgeSlice(set),
         ...createTtsSlice(set, get),
+        ...createSimulationSlice(set, get),
       })),
       {
         name: 'cannaguide-2025-storage',
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(() => indexedDBStorage, {
+          replacer: (key, value) => {
+            if (value instanceof Set) {
+              return Array.from(value);
+            }
+            return value;
+          },
+        }),
         partialize: (state) => ({
-          // Persist only the data that should survive a page refresh
           settings: state.settings,
           plants: state.plants,
           plantSlots: state.plantSlots,
           userStrains: state.userStrains,
-          favoriteIds: Array.from(state.favoriteIds),
+          favoriteIds: state.favoriteIds,
           strainNotes: state.strainNotes,
           savedExports: state.savedExports,
           savedSetups: state.savedSetups,
@@ -65,14 +76,13 @@ export const useAppStore = create<AppState>()(
           strainsViewTab: state.strainsViewTab,
           strainsViewMode: state.strainsViewMode,
           activeView: state.activeView,
+          activeMentorPlantId: state.activeMentorPlantId,
+          lastActiveTimestamp: state.lastActiveTimestamp,
         }),
         onRehydrateStorage: () => (state) => {
           if (state) {
-            state.favoriteIds = new Set(state.favoriteIds as unknown as string[]);
+            const rehydratedSettings: Partial<AppSettings> = state.settings || {};
             
-            const rehydratedSettings = state.settings || {};
-            
-            // Perform a safe, deep merge to prevent crashes from new settings properties
             state.settings = {
                 ...defaultSettings,
                 ...rehydratedSettings,
@@ -84,7 +94,11 @@ export const useAppStore = create<AppState>()(
                     ...rehydratedSettings.simulationSettings, 
                     autoJournaling: { 
                         ...defaultSettings.simulationSettings.autoJournaling, 
-                        ...rehydratedSettings.simulationSettings?.autoJournaling 
+                        ...(rehydratedSettings.simulationSettings?.autoJournaling || {})
+                    },
+                    customDifficultyModifiers: {
+                        ...defaultSettings.simulationSettings.customDifficultyModifiers,
+                        ...(rehydratedSettings.simulationSettings?.customDifficultyModifiers || {})
                     }
                 },
                 defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...rehydratedSettings.defaultJournalNotes },
@@ -93,8 +107,10 @@ export const useAppStore = create<AppState>()(
                 tts: { ...defaultSettings.tts, ...rehydratedSettings.tts },
             };
             
-            // If activeView isn't in the rehydrated state (e.g., first time user), set it from settings.
-            // Otherwise, allow the persisted UI state to remain.
+            if (state.favoriteIds && Array.isArray(state.favoriteIds)) {
+              state.favoriteIds = new Set(state.favoriteIds);
+            }
+            
             if (!state.activeView) {
                 state.activeView = state.settings.defaultView;
             }

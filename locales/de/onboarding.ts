@@ -15,4 +15,5 @@ export const onboarding = {
     title: 'Lerne & Wachse',
     text: 'Folge der interaktiven Anleitung, um die Grundlagen des Anbaus zu meistern und deinen Wissensfortschritt zu verfolgen.',
   },
+  startGrow: 'Lass uns deinen ersten Anbau starten!',
 };

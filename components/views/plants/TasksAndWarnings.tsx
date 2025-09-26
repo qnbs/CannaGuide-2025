@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '../../common/Card';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
@@ -9,7 +9,7 @@ interface TasksAndWarningsProps {
     problems: (PlantProblem & { plantId: string, plantName: string })[],
 }
 
-export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, problems }) => {
+export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(({ tasks, problems }) => {
     const { t } = useTranslations();
     const priorityClasses: Record<TaskPriority, string> = { high: 'border-red-500/50 bg-red-500/10', medium: 'border-amber-500/50 bg-amber-500/10', low: 'border-blue-500/50 bg-blue-500/10', };
     const priorityIcons: Record<TaskPriority, { icon: React.ReactNode; color: string }> = { high: { icon: <PhosphorIcons.Lightning />, color: 'text-red-500' }, medium: { icon: <PhosphorIcons.ArrowUp />, color: 'text-amber-500' }, low: { icon: <PhosphorIcons.ArrowDown />, color: 'text-blue-500' }, };
@@ -58,4 +58,4 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = ({ tasks, probl
             </Card>
         </div>
     );
-}
+});

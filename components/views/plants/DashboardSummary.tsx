@@ -1,104 +1,46 @@
-import React from 'react';
+import React, { memo } from 'react';
+import { Plant } from '@/types';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
-import { Plant } from '../../../types';
 import { useAppStore } from '@/stores/useAppStore';
 import { selectGardenHealthMetrics } from '@/stores/selectors';
 
-interface GardenVitalsProps { 
-    plants: Plant[];
+interface GardenVitalsProps {
     openTasksCount: number;
-    onWaterAll: () => number;
-    onAdvanceDay: () => void;
+    onWaterAll: () => void;
 }
 
-export const GardenVitals: React.FC<GardenVitalsProps> = ({ plants, openTasksCount, onWaterAll, onAdvanceDay }) => {
-    const { t } = useTranslations();
-    const { activePlantsCount, gardenHealth, avgTemp, avgHumidity } = useAppStore(selectGardenHealthMetrics);
-    const addNotification = useAppStore(state => state.addNotification);
-    
-    const radius = 45;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDashoffset = circumference - (gardenHealth / 100) * circumference;
+const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = ({ icon, value, label }) => (
+    <div className="text-center">
+        <div className="text-2xl text-primary-400 mx-auto w-10 h-10 flex items-center justify-center">{icon}</div>
+        <p className="text-xl font-bold">{value}</p>
+        <p className="text-xs text-slate-400">{label}</p>
+    </div>
+);
 
-    let healthColor = 'stroke-green-400';
-    if (gardenHealth < 75) healthColor = 'stroke-yellow-400';
-    if (gardenHealth < 50) healthColor = 'stroke-red-400';
-    
-    const handleWaterAllClick = () => {
-        const wateredCount = onWaterAll();
-        if (wateredCount > 0) {
-            addNotification(t('plantsView.notifications.waterAllSuccess', { count: wateredCount }), 'success');
-        } else {
-            addNotification(t('plantsView.notifications.waterAllNone'), 'info');
-        }
-    };
-    
+export const GardenVitals: React.FC<GardenVitalsProps> = memo(({ openTasksCount, onWaterAll }) => {
+    const { t } = useTranslations();
+    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppStore(state => selectGardenHealthMetrics(state));
+    const hasActiveGrows = activePlantsCount > 0;
+
     return (
         <Card>
-            <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2 mb-4">
-                <PhosphorIcons.ChartPieSlice className="w-6 h-6"/>
-                {t('plantsView.gardenVitals.title')}
-            </h3>
-            <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col items-center justify-center">
-                     <div className="relative w-32 h-32">
-                        <svg className="w-full h-full transform -rotate-90">
-                            <circle className="text-slate-700" strokeWidth="12" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" />
-                            <circle
-                                className={`transition-all duration-500 ${healthColor}`}
-                                strokeWidth="12"
-                                strokeDasharray={circumference}
-                                style={{ strokeDashoffset }}
-                                strokeLinecap="round"
-                                stroke="currentColor"
-                                fill="transparent"
-                                r={radius}
-                                cx="64"
-                                cy="64"
-                            />
-                        </svg>
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center" style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.5))' }}>
-                            <p className="text-4xl font-bold">{gardenHealth.toFixed(0)}%</p>
-                            <p className="text-xs text-slate-300 -mt-1">{t('plantsView.summary.gardenHealth')}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-3 text-center">
-                    <div className="p-2 bg-slate-900 rounded-lg">
-                        <p className="text-2xl font-bold text-primary-400">{activePlantsCount}</p>
-                        <p className="text-xs text-slate-400">{t('plantsView.summary.activeGrows')}</p>
-                    </div>
-                    <div className="p-2 bg-slate-900 rounded-lg">
-                        <p className="text-2xl font-bold text-primary-400">{openTasksCount}</p>
-                        <p className="text-xs text-slate-400">{t('plantsView.summary.openTasks')}</p>
-                    </div>
-                </div>
-
-                <div className="col-span-2 grid grid-cols-2 gap-2 text-center">
-                    <div className="p-2 bg-slate-900 rounded-lg">
-                        <p className="text-lg font-bold">{activePlantsCount > 0 ? avgTemp.toFixed(1) : '--'}°C</p>
-                        <p className="text-xs text-slate-400">{t('plantsView.gardenVitals.avgTemp')}</p>
-                    </div>
-                    <div className="p-2 bg-slate-900 rounded-lg">
-                        <p className="text-lg font-bold">{activePlantsCount > 0 ? avgHumidity.toFixed(1) : '--'}%</p>
-                        <p className="text-xs text-slate-400">{t('plantsView.gardenVitals.avgHumidity')}</p>
-                    </div>
-                </div>
+            <h3 className="text-xl font-bold font-display text-primary-400">{t('plantsView.gardenVitals.title')}</h3>
+            <div className="grid grid-cols-4 gap-4 my-4">
+                <Stat icon={<PhosphorIcons.Heart weight="fill" />} value={`${Math.round(gardenHealth)}%`} label={t('plantsView.summary.gardenHealth')} />
+                <Stat icon={<PhosphorIcons.Plant />} value={activePlantsCount.toString()} label={t('plantsView.summary.activeGrows')} />
+                <Stat icon={<PhosphorIcons.Thermometer />} value={`${avgTemp.toFixed(1)}°`} label={t('plantsView.gardenVitals.avgTemp')} />
+                <Stat icon={<PhosphorIcons.Drop />} value={`${avgHumidity.toFixed(1)}%`} label={t('plantsView.gardenVitals.avgHumidity')} />
             </div>
-             <div className="mt-4 pt-4 border-t border-slate-700 flex flex-col sm:flex-row gap-2">
-                <Button onClick={handleWaterAllClick} disabled={plants.length === 0} className="w-full" variant="secondary">
-                    <PhosphorIcons.Drop className="inline w-5 h-5 mr-1.5"/>
-                    {t('plantsView.summary.waterAll')}
-                </Button>
-                <Button onClick={onAdvanceDay} disabled={plants.length === 0} className="w-full">
-                    <PhosphorIcons.SkipForward className="inline w-5 h-5 mr-1.5"/>
-                    {t('plantsView.summary.simulateNextDay')}
+             <div className="mt-4">
+                <Button onClick={onWaterAll} variant="secondary" disabled={!hasActiveGrows} className="w-full">
+                    <PhosphorIcons.Drop className="w-5 h-5 mr-1"/> {t('plantsView.summary.waterAll')}
                 </Button>
             </div>
         </Card>
     );
-};
+});
+
+export { GardenVitals as DashboardSummary };

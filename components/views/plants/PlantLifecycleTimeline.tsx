@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { PlantStage } from '@/types';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { STAGES_ORDER } from '@/constants';
@@ -22,7 +22,7 @@ const stageColors: Record<PlantStage, string> = {
 };
 
 
-export const PlantLifecycleTimeline: React.FC<TimelineProps> = ({ currentStage, currentAge }) => {
+export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentStage, currentAge }) => {
     const { t } = useTranslations();
     const relevantStages = STAGES_ORDER.filter(s => PLANT_STAGE_DETAILS[s].duration !== Infinity);
     const totalDuration = relevantStages.reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
@@ -67,4 +67,4 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = ({ currentStage, 
             </div>
         </div>
     );
-};
+});

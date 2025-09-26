@@ -24,15 +24,38 @@ import { selectUserStrainIds } from '@/stores/selectors';
 
 const ITEMS_PER_PAGE = 30;
 
+// This utility function is now co-located with the view that uses it, ensuring translations happen at the component level.
+const processAndTranslateStrains = (strains: Strain[], t: (key: string) => any): Strain[] => {
+    const getTranslatedString = (key: string, fallback: string | undefined): string | undefined => {
+        const result = t(key);
+        return (typeof result === 'string' && result !== key) ? result : fallback;
+    };
+    const getTranslatedObject = (key: string, fallback: object | undefined): object | undefined => {
+         const result = t(key);
+         return (typeof result === 'object' && result !== null) ? result : fallback;
+    }
+    return strains.map(strain => ({
+      ...strain,
+      description: getTranslatedString(`strainsData.${strain.id}.description`, strain.description),
+      typeDetails: getTranslatedString(`strainsData.${strain.id}.typeDetails`, strain.typeDetails),
+      genetics: getTranslatedString(`strainsData.${strain.id}.genetics`, strain.genetics),
+      agronomic: {
+        ...strain.agronomic,
+        yieldDetails: getTranslatedObject(`strainsData.${strain.id}.yieldDetails`, strain.agronomic.yieldDetails) as { indoor: string, outdoor: string },
+        heightDetails: getTranslatedObject(`strainsData.${strain.id}.heightDetails`, strain.agronomic.heightDetails) as { indoor: string, outdoor: string },
+      },
+    }));
+};
+
 export const StrainsView: React.FC = () => {
     const { t } = useTranslations();
-    const [allStrains, setAllStrains] = useState<Strain[]>([]);
+    const [baseStrains, setBaseStrains] = useState<Strain[]>([]); // Raw, untranslated data
     const [isLoading, setIsLoading] = useState(true);
     const [isPending, startTransition] = useTransition();
     const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
     const [selectedStrain, setSelectedStrain] = useState<Strain | null>(null);
 
-    // Optimized State Selection: Granular hooks prevent unnecessary re-renders.
+    // Optimized State Selection
     const activeTab = useAppStore(state => state.strainsViewTab);
     const viewMode = useAppStore(state => state.strainsViewMode);
     const selectedIds = useAppStore(state => state.selectedStrainIds);
@@ -45,7 +68,7 @@ export const StrainsView: React.FC = () => {
     const savedTips = useAppStore(state => state.savedStrainTips);
     const settings = useAppStore(state => state.settings);
     
-    // Actions are stable, so they can be retrieved from getState or individual hooks without performance penalty.
+    // Actions are stable, so they can be retrieved from getState or individual hooks.
     const {
         setStrainsViewTab, setStrainsViewMode, toggleStrainSelection, toggleAllStrainSelection,
         clearStrainSelection, openAddModal, closeAddModal, openExportModal, closeExportModal,
@@ -54,19 +77,24 @@ export const StrainsView: React.FC = () => {
         removeMultipleFromFavorites,
     } = useAppStore.getState();
     
+    // Fetch raw data once on component mount
+    useEffect(() => {
+        setIsLoading(true);
+        strainService.getAllStrains().then(strains => {
+            setBaseStrains(strains);
+            setIsLoading(false);
+        });
+    }, []);
+
+    // Memoize translated data. This re-runs only when language (`t`) changes.
+    const translatedStrains = useMemo(() => processAndTranslateStrains(baseStrains, t), [baseStrains, t]);
+    const allStrains = translatedStrains; // Use this variable throughout for consistency.
+
     const isUserStrain = useCallback((id: string) => userStrainIds.has(id), [userStrainIds]);
 
     const handleStrainSelect = (strain: Strain) => {
         setSelectedStrain(strain);
     };
-
-    useEffect(() => {
-        setIsLoading(true);
-        strainService.getAllStrains().then(strains => {
-            setAllStrains(strains);
-            setIsLoading(false);
-        });
-    }, [t]);
 
     const strainsForCurrentTab = useMemo(() => {
         switch(activeTab) {
@@ -82,7 +110,7 @@ export const StrainsView: React.FC = () => {
     const { allAromas, allTerpenes } = useMemo(() => {
         const aromaSet = new Set<string>();
         const terpeneSet = new Set<string>();
-        allStrains.forEach(strain => {
+        baseStrains.forEach(strain => { // Use baseStrains for consistent filter options
             strain.aromas?.forEach(a => aromaSet.add(a));
             strain.dominantTerpenes?.forEach(t => terpeneSet.add(t));
         });
@@ -90,7 +118,7 @@ export const StrainsView: React.FC = () => {
             allAromas: Array.from(aromaSet).sort(),
             allTerpenes: Array.from(terpeneSet).sort(),
         };
-    }, [allStrains]);
+    }, [baseStrains]);
 
     const strainsToShow = useMemo(() => filteredStrains.slice(0, visibleCount), [filteredStrains, visibleCount]);
     
@@ -295,7 +323,6 @@ export const StrainsView: React.FC = () => {
             )}
 
             {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={allStrains} onOpenExportModal={openExportModal} />}
-            {/* FIX: Pass 'updateStrainTip' function to StrainTipsView component for the 'updateTip' prop, resolving a 'Cannot find name' error. */}
             {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteStrainTip} updateTip={updateStrainTip} allStrains={allStrains} />}
             {showToolbar && renderContent()}
         </div>

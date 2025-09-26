@@ -53,14 +53,12 @@ const ArticleItem: React.FC<{ article: KnowledgeArticle }> = ({ article }) => {
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
-    // FIX: Add missing state properties to useAppStore hook.
     const { activePlants, activeMentorPlantId, setActiveMentorPlantId } = useAppStore(state => ({
         activePlants: selectActivePlants(state),
         activeMentorPlantId: state.activeMentorPlantId,
         setActiveMentorPlantId: state.setActiveMentorPlantId,
     }));
     
-    // FIX: Fix type inference for selector factory by wrapping it in a state function.
     const activeMentorPlant = useAppStore(state => selectPlantById(activeMentorPlantId)(state));
 
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(activePlants[0]?.id || null);

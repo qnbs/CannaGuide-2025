@@ -6,7 +6,7 @@ import { ToastContainer } from '@/components/common/Toast';
 import { Header } from '@/components/navigation/Header';
 import { BottomNav } from '@/components/navigation/BottomNav';
 import { StrainsView } from '@/components/views/StrainsView';
-import { PlantsView } from '@/components/views/plants/PlantsView';
+import { PlantsView } from '@/components/views/PlantsView';
 import { EquipmentView } from '@/components/views/EquipmentView';
 import { KnowledgeView } from '@/components/views/KnowledgeView';
 import { SettingsView } from '@/components/views/SettingsView';
@@ -21,6 +21,18 @@ import { TTSControls } from '@/components/common/TTSControls';
 import { ttsService } from '@/services/ttsService';
 import { useDocumentEffects } from '@/hooks/useDocumentEffects';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
+
+const LoadingGate: React.FC = () => {
+    return (
+        <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans items-center justify-center" role="status" aria-live="polite">
+            <CannabisLeafIcon className="w-24 h-24 text-primary-500 animate-pulse" />
+            <p className="mt-4 text-lg font-semibold text-slate-400">
+                Preparing your guide...
+            </p>
+        </div>
+    );
+};
 
 const ToastManager: React.FC = () => {
     const notifications = useAppStore(selectNotifications);
@@ -81,13 +93,6 @@ const AppContent: React.FC = () => {
             mainContentRef.current.scrollTo(0, 0);
         }
     }, [activeView]);
-    
-    useEffect(() => {
-        if (t) {
-            strainService.init(t, settings.language);
-            useAppStore.getState().init(t);
-        }
-    }, [t, settings.language]);
 
     useEffect(() => {
         if (isOffline) {
@@ -143,7 +148,7 @@ const AppContent: React.FC = () => {
                 onInstallClick={handleInstallClick}
             />
             <OfflineBanner />
-            <main ref={mainContentRef} className="flex-grow overflow-y-auto p-4 sm:p-6">
+            <main ref={mainContentRef} className="flex-grow overflow-y-auto p-4 sm:p-6 pb-24">
                 <div className="max-w-7xl mx-auto">
                     {renderView()}
                 </div>
@@ -155,9 +160,39 @@ const AppContent: React.FC = () => {
 };
 
 export const App: React.FC = () => {
+    const { t } = useTranslations();
+    const { isAppReady, setAppReady, init } = useAppStore(state => ({
+        isAppReady: state.isAppReady,
+        setAppReady: state.setAppReady,
+        init: state.init,
+    }));
+    
+    // Effect for updating the translation function in the store when language changes.
     useEffect(() => {
+        init(t);
+    }, [t, init]);
+
+    // Effect for one-time data initialization.
+    useEffect(() => {
+        const initializeApp = async () => {
+            setAppReady(false);
+            console.log('[AppInitializer] Starting initial app data load...');
+            await strainService.init(); // Language-agnostic data loading
+            setAppReady(true);
+            console.log('[AppInitializer] Initial app data load complete.');
+        };
+        initializeApp();
+    }, [setAppReady]);
+
+    useEffect(() => {
+        // Initialize TTS service once
         ttsService;
     }, []);
+    
+    // Render the loading gate only on the very first startup.
+    if (!isAppReady) {
+        return <LoadingGate />;
+    }
 
     return (
         <>

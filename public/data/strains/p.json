@@ -1,3 +1,4 @@
+
 [
     {
         "id": "painkiller-xl",
@@ -13,13 +14,13 @@
         "cbdRange": "~9%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine CBD-reiche Sorte mit einem ausgewogenen THC- und CBD-Gehalt. Die Wirkung ist mild, entspannend und schmerzlindernd, ohne starke Psychoaktivität.",
+        "description": "A CBD-rich strain with a balanced THC and CBD content. The effect is mild, relaxing, and pain-relieving, without strong psychoactivity.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "500-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Earthy", "Citrus", "Spicy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
@@ -38,13 +39,13 @@
         "cbdRange": "<1%",
         "floweringTime": 11,
         "floweringTimeRange": "10-12",
-        "description": "Eine reine Sativa-Landrasse aus Panama, berühmt für ihre lange Blütezeit und ihre energetisierende, zerebrale und fast psychedelische Wirkung. Ein Klassiker aus den 1960er Jahren.",
+        "description": "A pure Sativa landrace from Panama, famous for its long flowering time and its energizing, cerebral, and almost psychedelic effect. A classic from the 1960s.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "Medium",
             "height": "Tall",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Hoch", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
         },
         "aromas": ["Tropical", "Sweet", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
@@ -63,13 +64,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, tropischen Papaya-Aroma. Die Wirkung ist entspannend, beruhigend und kann zu einem 'Couch-Lock' führen.",
+        "description": "An indica-dominant strain with a sweet, tropical papaya aroma. The effect is relaxing, calming, and can lead to a 'couch-lock'.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Low",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Papaya", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
@@ -88,13 +89,13 @@
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine sativa-dominante Sorte mit einem süßen, fruchtigen Aroma von Papaya und Keksen. Die Wirkung ist erhebend, energetisierend und kreativ.",
+        "description": "A sativa-dominant strain with a sweet, fruity aroma of papaya and cookies. The effect is uplifting, energizing, and creative.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Papaya", "Sweet", "Fruity", "Cookie"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
@@ -113,13 +114,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, tropischen Aroma von Papaya und fruchtigem Punsch. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "An indica-dominant strain with a sweet, tropical aroma of papaya and fruity punch. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Papaya", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
@@ -138,13 +139,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Hybride mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist entspannend, glücklich und erhebend, ideal zum Entspannen.",
+        "description": "An indica-dominant hybrid with a sweet, fruity, and earthy aroma. The effect is relaxing, happy, and uplifting, ideal for unwinding.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Citrus", "Fruity", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
@@ -163,13 +164,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine potente Hybride mit einem süßen, fruchtigen und gasartigen Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
+        "description": "A potent hybrid with a sweet, fruity, and gassy aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Diesel", "Mint"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
@@ -188,13 +189,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine ausgewogene Hybride mit einem einzigartigen, nussigen und erdigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch.",
+        "description": "A balanced hybrid with a unique, nutty, and earthy aroma. The effect is relaxing and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Nutty", "Earthy", "Sweet", "Woody"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
@@ -213,13 +214,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, nussigen und schokoladigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "An indica-dominant strain with a sweet, nutty, and chocolatey aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Nutty", "Chocolate", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
@@ -238,13 +239,13 @@
         "cbdRange": "8-12%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine CBD-reiche indica-dominante Sorte mit einem ausgewogenen 1:1 THC:CBD-Verhältnis. Sie bietet eine milde, klare Entspannung, ideal für medizinische Anwender, die Linderung ohne starke psychoaktive Wirkung suchen.",
+        "description": "A high-CBD indica-dominant strain with a balanced 1:1 THC:CBD ratio. It offers a mild, clear-headed relaxation, ideal for medical users seeking relief without strong psychoactive effects.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Earthy", "Woody", "Sweet", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
@@ -263,13 +264,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine potente Hybride mit einem süßen, fruchtigen und chemischen Aroma. Die Wirkung ist stark, euphorisch und kreativ.",
+        "description": "A potent hybrid with a sweet, fruity, and chemical aroma. The effect is strong, euphoric, and creative.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Chemical", "Diesel"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
@@ -288,13 +289,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine potente Hybride, bekannt für ihr starkes, scharfes Aroma, das an einen Edding erinnert, mit blumigen und bonbonartigen Untertönen. Die Wirkung ist kreativ, fokussiert und entspannend, was sie zu einer einzigartigen und beliebten Wahl macht.",
+        "description": "A potent hybrid, known for its strong, pungent aroma reminiscent of a sharpie, with floral and candy undertones. The effect is creative, focused, and relaxing, making it a unique and popular choice.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Pungent", "Floral", "Candy", "Chemical"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
@@ -313,13 +314,13 @@
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine indica-dominante Hybride mit einem süßen, erdigen und kaffeeartigen Aroma. Die Wirkung ist tief entspannend und euphorisch, mit einem starken Körper-High.",
+        "description": "An indica-dominant hybrid with a sweet, earthy, and coffee-like aroma. The effect is deeply relaxing and euphoric, with a strong body high.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Short",
-            "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Kurz", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Coffee", "Vanilla", "Sweet", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
@@ -338,13 +339,13 @@
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine indica-dominante Sorte, bekannt für ihre schnelle Blütezeit und hohen Erträge. Die Wirkung ist stark, entspannend und fast psychedelisch.",
+        "description": "An indica-dominant strain known for its fast flowering time and high yields. The effect is strong, relaxing, and almost psychedelic.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Earthy", "Sweet", "Coffee", "Vanilla"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
@@ -363,13 +364,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine sativa-dominante Hybride mit einem süßen, nussigen und keksartigen Aroma. Die Wirkung ist erhebend, zerebral und kreativ, mit einer sanften Körperentspannung.",
+        "description": "A sativa-dominant hybrid with a sweet, nutty, and cookie-like aroma. The effect is uplifting, cerebral, and creative, with a gentle body relaxation.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Tall",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Hoch", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Nutty", "Cookie", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
@@ -388,13 +389,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine sativa-dominante Sorte mit einem zitrusartigen, erdigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend.",
+        "description": "A sativa-dominant strain with a citrusy, earthy aroma. The effect is uplifting, creative, and energizing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Citrus", "Earthy", "Sweet", "Pine"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
@@ -413,16 +414,16 @@
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine sativa-dominante Hybride, bekannt für ihren ausgeprägten süßen Ananasgeschmack. Die Wirkung ist energetisierend, erhebend und kreativ, ideal für den Tagesgebrauch.",
+        "description": "A sativa-dominant hybrid known for its distinct sweet pineapple flavor. The effect is energetic, uplifting, and creative, making it a great daytime strain.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pineapple", "Sweet", "Tropical", "Citrus"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+        "aromas": ["Pineapple", "Tropical", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
     },
     {
         "id": "pineapple-chunk",
@@ -433,21 +434,21 @@
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
         "thc": 25,
-        "cbd": 1.5,
+        "cbd": 1.1,
         "thcRange": "22-28%",
-        "cbdRange": "1-2%",
+        "cbdRange": "1-1.5%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine potente indica-dominante Hybride mit einem starken Ananas- und Käsearoma. Die Wirkung ist schwer, entspannend und langanhaltend und sorgt für ein starkes Körper-High.",
+        "description": "A potent indica-dominant hybrid with a strong pineapple and cheese aroma. The effect is heavy, relaxing, and long-lasting, providing a strong body buzz.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Short",
-            "yieldDetails": { "indoor": "~600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Kurz", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "600-650 g/m²", "outdoor": "700-800 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Pineapple", "Cheese", "Skunk", "Sweet"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     },
     {
         "id": "pineapple-express",
@@ -457,21 +458,21 @@
         "genetics": "Trainwreck x Hawaiian",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 21,
+        "thc": 20,
         "cbd": 1,
         "thcRange": "18-24%",
         "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "7-9",
-        "description": "Eine sativa-dominante Hybride, bekannt durch den gleichnamigen Film. Sie bietet eine langanhaltende, energetisierende Wirkung und ein süßes, tropisches Ananasaroma.",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A sativa-dominant hybrid, made famous by the movie of the same name. It offers a long-lasting, energizing effect and a sweet, tropical pineapple aroma.",
         "agronomic": {
             "difficulty": "Easy",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pineapple", "Tropical", "Sweet", "Cedar"],
+        "aromas": ["Pineapple", "Tropical", "Sweet", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     },
     {
@@ -482,22 +483,22 @@
         "genetics": "Pineapple x OG Kush",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 19.5,
+        "thc": 21,
         "cbd": 1,
-        "thcRange": "17-22%",
+        "thcRange": "19-23%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine indica-dominante Hybride mit einem süßen Ananas- und butterartigen Aroma. Die Wirkung ist entspannend und euphorisch, mit einem sanften Körper-High.",
+        "description": "An indica-dominant hybrid with a sweet pineapple and buttery aroma. The effect is relaxing and euphoric, with a gentle body buzz.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "550-650 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pineapple", "Butter", "Sweet", "Tropical"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+        "aromas": ["Pineapple", "Sweet", "Butter", "Tropical"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     },
     {
         "id": "pineapple-upside-down-cake",
@@ -513,13 +514,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine sativa-dominante Sorte mit einem süßen Ananas- und Kuchenaroma. Die Wirkung ist erhebend, energetisierend und kreativ.",
+        "description": "A sativa-dominant strain with a sweet pineapple and cake aroma. The effect is uplifting, energizing, and creative.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Pineapple", "Sweet", "Cake", "Tropical"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
@@ -529,25 +530,25 @@
         "name": "Pink Kush",
         "type": "Hybrid",
         "typeDetails": "Indica 90% / Sativa 10%",
-        "genetics": "OG Kush phenotype",
+        "genetics": "OG Kush (phenotype)",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 22,
+        "thc": 22.5,
         "cbd": 1,
-        "thcRange": "20-24%",
+        "thcRange": "20-25%",
         "cbdRange": "<1%",
         "floweringTime": 10.5,
         "floweringTimeRange": "10-11",
-        "description": "Eine indica-dominante Hybride, bekannt für ihre schönen rosa Farbtöne und ihre starke, entspannende Körperwirkung. Das Aroma ist süß, blumig und vanilleartig.",
+        "description": "An indica-dominant hybrid known for its beautiful pink hues and its strong, relaxing body effects. The aroma is sweet, floral, and vanilla-like.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Floral", "Vanilla", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     },
     {
         "id": "pink-panties",
@@ -557,69 +558,69 @@
         "genetics": "Burmese Kush x Florida Kush",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 23,
+        "thc": 24,
         "cbd": 1,
-        "thcRange": "20-26%",
+        "thcRange": "21-27%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine potente Indica-Hybride, die vor allem als Elternteil von Sherbet und Sunset Sherbet berühmt wurde. Sie bietet ein süßes, blumiges und zitrusartiges Aroma. Die Wirkung ist stark entspannend und euphorisch, ideal zum Stressabbau und zur Stimmungsaufhellung am Abend.",
+        "description": "A potent Indica hybrid made famous primarily as a parent of Sherbet and Sunset Sherbet. It offers a sweet, floral, and citrusy aroma. The effect is strongly relaxing and euphoric, ideal for stress relief and mood enhancement in the evening.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Floral", "Sweet", "Citrus", "Herbal"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Linalool"]
+        "aromas": ["Floral", "Sweet", "Citrus", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     },
     {
         "id": "pink-rozay",
         "name": "Pink Rozay",
         "type": "Hybrid",
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Lemonchello #10 x LPC #75",
+        "genetics": "Lemonchello #10 x LPC75",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 24,
+        "thc": 25,
         "cbd": 1,
-        "thcRange": "21-27%",
+        "thcRange": "22-28%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, blumigen und fruchtigen Aroma. Die Wirkung ist entspannend und euphorisch, ideal für den Abendgebrauch.",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "An indica-dominant strain with a sweet, floral, and fruity aroma. The effect is relaxing and euphoric, ideal for evening use.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "Medium",
+            "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Floral", "Fruity", "Berry"],
-        "dominantTerpenes": ["Linalool", "Limonene", "Caryophyllene"]
+        "aromas": ["Floral", "Sweet", "Fruity", "Berry"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     },
     {
         "id": "pink-runtz",
         "name": "Pink Runtz",
         "type": "Hybrid",
         "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Runtz phenotype (or Zkittlez x Gelato)",
+        "genetics": "Zkittlez x Gelato",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
         "thc": 24,
         "cbd": 1,
         "thcRange": "22-26%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Eine ausgewogene Hybride, bekannt für ihren süßen, fruchtigen und bonbonartigen Geschmack. Die Wirkung ist erhebend, euphorisch und langanhaltend, was sie zu einer beliebten Wahl macht.",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A balanced hybrid known for its sweet, fruity, and candy-like flavor. The effect is uplifting, euphoric, and long-lasting, making it a popular choice.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Candy", "Berry"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
@@ -629,32 +630,32 @@
         "name": "Pinkman Goo",
         "type": "Indica",
         "typeDetails": "Indica 100%",
-        "genetics": "Granddaddy Purple x Northern Lights #5 x Unknown",
+        "genetics": "Granddaddy Purple x Grape Ape x Northern Lights #5",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 20,
+        "thc": 18,
         "cbd": 1,
-        "thcRange": "18-22%",
+        "thcRange": "16-20%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Eine seltene Indica-Sorte, die für ihre einzigartigen, harzigen 'Goo'-Tropfen bekannt ist. Die Wirkung ist stark, entspannend und sedierend.",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A rare Indica strain known for its unique, resinous 'goo' droplets. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+        "aromas": ["Sweet", "Earthy", "Grape", "Berry"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     },
     {
         "id": "platinum-gsc",
         "name": "Platinum GSC",
         "type": "Hybrid",
         "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "OG Kush x Durban Poison x Unknown",
+        "genetics": "OG Kush x Durban Poison x an unknown strain",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
         "thc": 24,
@@ -663,15 +664,15 @@
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Ein GSC-Phänotyp, bekannt für sein frostiges Aussehen und sein süßes, erdiges Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
+        "description": "A GSC phenotype known for its frosty appearance and sweet, earthy aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Earthy", "Pungent", "Berry"],
+        "aromas": ["Sweet", "Earthy", "Pungent", "Spicy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     },
     {
@@ -688,13 +689,13 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine potente Hybride mit einem minzigen, erdigen und süßen Aroma. Die Wirkung ist stark, entspannend und euphorisch.",
+        "description": "A potent hybrid with a minty, earthy, and sweet aroma. The effect is strong, relaxing, and euphoric.",
         "agronomic": {
-            "difficulty": "Hard",
+            "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Mint", "Earthy", "Sweet", "Pine"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
@@ -704,132 +705,107 @@
         "name": "Platinum OG",
         "type": "Hybrid",
         "typeDetails": "Indica 75% / Sativa 25%",
-        "genetics": "Master Kush x OG Kush x Unknown",
+        "genetics": "Master Kush x OG Kush x an unknown strain",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
         "thc": 24,
         "cbd": 1,
-        "thcRange": "21-27%",
+        "thcRange": "22-26%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch.",
+        "description": "An indica-dominant strain with an earthy, piney aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Earthy", "Pine", "Spicy", "Pungent"],
+        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     },
     {
         "id": "point-break",
         "name": "Point Break",
         "type": "Hybrid",
-        "typeDetails": "Sativa 60% / Indica 40%",
-        "genetics": "Tropicanna Cookies x Trophy Wife",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Tropicana Cookies x Trophy Wife",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 24,
+        "thc": 25,
         "cbd": 1,
-        "thcRange": "21-27%",
+        "thcRange": "22-28%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine sativa-dominante Sorte mit einem süßen, tropischen und zitrusartigen Aroma. Die Wirkung ist erhebend, energetisierend und kreativ.",
+        "description": "A sativa-dominant strain with a sweet, tropical, and citrusy aroma. The effect is uplifting, energizing, and creative.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Sweet", "Tropical", "Citrus", "Orange"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
+        "aromas": ["Tropical", "Citrus", "Sweet", "Orange"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     },
     {
         "id": "power-plant",
         "name": "Power Plant",
         "type": "Sativa",
-        "typeDetails": "Sativa 100%",
-        "genetics": "South African Landrace",
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "South African Sativa",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 17.5,
+        "thc": 20,
         "cbd": 1,
-        "thcRange": "15-20%",
+        "thcRange": "18-22%",
         "cbdRange": "<1%",
         "floweringTime": 8,
-        "floweringTimeRange": "8",
-        "description": "Eine klassische Sativa-Landrasse aus Südafrika. Sie ist bekannt für ihre hohen Erträge und ein klares, erhebendes und energetisches High. Das Aroma ist scharf, würzig und holzig.",
+        "floweringTimeRange": "7-9",
+        "description": "A classic Sativa landrace from South Africa. It is known for its high yields and a clear, uplifting, and energetic high. The aroma is sharp, spicy, and woody.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Tall",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Hoch", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Spicy", "Woody", "Earthy", "Pepper"],
+        "aromas": ["Earthy", "Woody", "Spicy", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
     },
     {
         "id": "pre-98-bubba-kush",
         "name": "Pre-98 Bubba Kush",
-        "type": "Hybrid",
+        "type": "Indica",
         "typeDetails": "Indica 85% / Sativa 15%",
-        "genetics": "OG Kush phenotype (presumably)",
+        "genetics": "Unknown (Original Bubba Kush cut)",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 21,
+        "thc": 20,
         "cbd": 1,
-        "thcRange": "18-24%",
+        "thcRange": "18-22%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Die originale 'Bubba Kush' aus der Zeit vor 1998. Eine klassische Indica, die für ihre stark beruhigende und körperlich entspannende Wirkung bekannt ist. Das Aroma ist eine unverwechselbare Mischung aus erdigem Kaffee und süßen, haschartigen Noten. Ideal zur Linderung von Stress, Schmerzen und Schlaflosigkeit.",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "The original 'Bubba Kush' from before 1998. A classic Indica known for its powerfully calming and physically relaxing effects. The aroma is a distinctive blend of earthy coffee and sweet, hash-like notes. Ideal for relieving stress, pain, and insomnia.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
             "height": "Short",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Kurz", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Coffee", "Earthy", "Sweet", "Pungent"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+        "aromas": ["Coffee", "Earthy", "Sweet", "Hash"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     },
     {
         "id": "project-4516",
         "name": "Project 4516",
         "type": "Hybrid",
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Gelato #45 x Platinum Puff",
-        "floweringType": "Photoperiod",
-        "geneticsDetails": { "isAutoflower": false },
-        "thc": 28,
-        "cbd": 1,
-        "thcRange": "25-31%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Eine potente Hybride mit einem fruchtigen, gasartigen und leicht cremigen Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
-        },
-        "aromas": ["Fruity", "Diesel", "Creamy", "Sweet"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
-        "id": "punch-breath",
-        "name": "Punch Breath",
-        "type": "Hybrid",
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Mendo Breath x Purple Punch",
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Platinum Puff x Gelato 45",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
         "thc": 27,
@@ -838,72 +814,97 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "A potent hybrid with a fruity, gassy, and slightly creamy aroma. The effect is strong, euphoric, and relaxing.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Fruity", "Diesel", "Sweet", "Creamy"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
+    },
+    {
+        "id": "punch-breath",
+        "name": "Punch Breath",
+        "type": "Hybrid",
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Mendo Breath F2 x Purple Punch",
+        "floweringType": "Photoperiod",
+        "geneticsDetails": { "isAutoflower": false },
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "22-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "An indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+        "aromas": ["Sweet", "Fruity", "Earthy", "Grape"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
     },
     {
         "id": "punto-rojo",
         "name": "Punto Rojo",
         "type": "Sativa",
         "typeDetails": "Sativa 100%",
-        "genetics": "Kolumbianische Landrasse",
+        "genetics": "Colombian Landrace",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 20.5,
+        "thc": 18,
         "cbd": 1,
-        "thcRange": "18-23%",
+        "thcRange": "16-20%",
         "cbdRange": "<1%",
-        "floweringTime": 13,
-        "floweringTimeRange": "12-14",
-        "description": "'Roter Punkt' auf Spanisch. Eine weitere legendäre kolumbianische Landrasse, benannt nach den leuchtend roten Stempeln ihrer Blüten. Die Wirkung ist langanhaltend, stark zerebral und kann fast psychedelisch sein, was sie zu einem Favoriten für erfahrene Sativa-Liebhaber macht.",
+        "floweringTime": 12,
+        "floweringTimeRange": "11-13",
+        "description": "'Red Dot' in Spanish. Another legendary Colombian landrace, named for the bright red pistils of its flowers. The effect is long-lasting, strongly cerebral, and can be almost psychedelic, making it a favorite for experienced sativa lovers.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "Medium",
             "height": "Tall",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Hoch", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
         },
-        "aromas": ["Spicy", "Earthy", "Woody", "Herbal"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Pinene"]
+        "aromas": ["Earthy", "Spicy", "Sweet", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     },
     {
         "id": "pure-kush",
         "name": "Pure Kush",
         "type": "Hybrid",
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "OG Kush Phenotype",
+        "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "OG Kush (phenotype)",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 22,
+        "thc": 24,
         "cbd": 1,
-        "thcRange": "20-24%",
+        "thcRange": "22-26%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Ein Phänotyp von OG Kush, bekannt für seine extrem potente und sedierende Wirkung. Ideal für erfahrene Konsumenten und medizinische Anwender.",
+        "floweringTimeRange": "9",
+        "description": "An OG Kush phenotype known for its extremely potent and sedating effects. Ideal for experienced consumers and medical users.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Hard",
             "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+        "aromas": ["Earthy", "Pungent", "Skunk", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     },
     {
         "id": "purple-candy",
         "name": "Purple Candy",
         "type": "Hybrid",
-        "typeDetails": "Indica 70% / Sativa 30%",
+        "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "BC Sweet Tooth x Mendocino Purps",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
@@ -913,48 +914,48 @@
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, traubenartigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch.",
+        "description": "An indica-dominant strain with a sweet, grape-like aroma. The effect is relaxing and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Grape", "Sweet", "Berry", "Candy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+        "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     },
     {
         "id": "purple-cream",
         "name": "Purple Cream",
         "type": "Hybrid",
-        "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Blackberry Kush x Unknown",
+        "typeDetails": "Indica 90% / Sativa 10%",
+        "genetics": "Blackwater x Green Crack",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 21,
+        "thc": 23,
         "cbd": 1,
-        "thcRange": "19-23%",
+        "thcRange": "21-25%",
         "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "7-9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, cremigen und beerenartigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "An indica-dominant strain with a sweet, creamy, and berry-like aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
-            "difficulty": "Easy",
+            "difficulty": "Medium",
             "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Sweet", "Creamy", "Berry", "Vanilla"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     },
     {
         "id": "purple-diesel",
         "name": "Purple Diesel",
         "type": "Hybrid",
         "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Bubba Kush x Sour Diesel",
+        "genetics": "Pre-98 Bubba Kush x Sour Diesel",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
         "thc": 21,
@@ -963,21 +964,21 @@
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine ausgewogene Hybride, die das Beste aus beiden Welten vereint. Sie bietet das scharfe Diesel-Aroma von Sour Diesel zusammen mit den süßen Traubennoten und der entspannenden Wirkung von Kush. Die Wirkung ist sowohl erhebend und zerebral als auch körperlich beruhigend.",
+        "description": "A balanced hybrid that combines the best of both worlds. It offers the pungent diesel aroma of Sour Diesel along with the sweet grape notes and relaxing effects of Kush. The effect is both uplifting and cerebral as well as physically calming.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Diesel", "Grape", "Sweet", "Earthy"],
+        "aromas": ["Diesel", "Grape", "Sweet", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     },
     {
         "id": "purple-haze",
         "name": "Purple Haze",
-        "type": "Hybrid",
+        "type": "Sativa",
         "typeDetails": "Sativa 85% / Indica 15%",
         "genetics": "Purple Thai x Haze",
         "floweringType": "Photoperiod",
@@ -988,15 +989,15 @@
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine legendäre Sativa, berühmt gemacht durch Jimi Hendrix. Sie bietet ein verträumtes, euphorisches und kreatives High. Das Aroma ist eine Mischung aus süßen, erdigen und beerigen Noten.",
+        "description": "A legendary Sativa made famous by Jimi Hendrix. It offers a dreamy, euphoric, and creative high. The aroma is a mix of sweet, earthy, and berry notes.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Tall",
-            "yieldDetails": { "indoor": "~450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Hoch", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Sweet", "Earthy", "Berry", "Spicy"],
+        "aromas": ["Berry", "Sweet", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     },
     {
@@ -1007,19 +1008,19 @@
         "genetics": "Hindu Kush x Purple Afghani",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 22.5,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "20-25%",
+        "thcRange": "20-24%",
         "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "7-9",
-        "description": "Eine reine Indica, die für ihre tiefvioletten Farben und ihr erdiges, traubenartiges Aroma bekannt ist. Die Wirkung ist stark, körperlich entspannend und ideal bei Schmerzen und Schlaflosigkeit.",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A pure Indica known for its deep purple colors and its earthy, grape-like aroma. The effect is strong, physically relaxing, and ideal for pain and insomnia.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
             "height": "Short",
-            "yieldDetails": { "indoor": "400-450 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Kurz", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Grape", "Earthy", "Sweet", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
@@ -1038,65 +1039,90 @@
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine indica-dominante Hybride mit einem süßen Aroma von Traubenzucker und Blaubeermuffins. Die Wirkung ist ein Doppelschlag aus einem euphorischen Kopf-High, gefolgt von einer schweren Körpersedierung.",
+        "description": "An indica-dominant hybrid with a sweet aroma of grape candy and blueberry muffins. The effect is a one-two punch of a euphoric head high followed by a heavy body sedation.",
         "agronomic": {
             "difficulty": "Easy",
-            "yield": "Medium",
+            "yield": "High",
             "height": "Short",
-            "yieldDetails": { "indoor": "~500 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Kurz", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "700-800 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Grape", "Berry", "Sweet", "Vanilla"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    },
+    {
+        "id": "purple-space-cookies",
+        "name": "Purple Space Cookies",
+        "type": "Hybrid",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Durban Poison x GSC",
+        "floweringType": "Photoperiod",
+        "geneticsDetails": { "isAutoflower": false },
+        "thc": 22.5,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Purple Space Cookies is a sativa-dominant hybrid known for its sweet berry aroma and uplifting effects. Users report an energetic and euphoric high that stimulates creativity while providing pleasant physical relaxation. The complex flavor profile blends sweet, earthy notes with a hint of pine and fruit.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Berry", "Sweet", "Earthy", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     },
     {
         "id": "purple-star",
         "name": "Purple Star",
         "type": "Indica",
         "typeDetails": "Indica 100%",
-        "genetics": "Unknown Dutch strain",
+        "genetics": "Dutch strain",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 16.5,
+        "thc": 15,
         "cbd": 1,
-        "thcRange": "14-19%",
+        "thcRange": "13-17%",
         "cbdRange": "<1%",
         "floweringTime": 8,
-        "floweringTimeRange": "8",
-        "description": "Eine reine Indica aus den Niederlanden, bekannt für ihre schönen violetten Farben. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch.",
+        "floweringTimeRange": "7-9",
+        "description": "A pure Indica from the Netherlands known for its beautiful purple colors. The effect is relaxing and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Easy",
-            "yield": "Low",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Mittel", "outdoor": "N/A" }
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-120 cm" }
         },
-        "aromas": ["Earthy", "Sweet", "Spicy", "Floral"],
+        "aromas": ["Earthy", "Sweet", "Grape", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     },
     {
         "id": "purple-urkle",
         "name": "Purple Urkle",
-        "type": "Hybrid",
+        "type": "Indica",
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Mendocino Purps phenotype",
+        "genetics": "Mendocino Purps (phenotype)",
         "floweringType": "Photoperiod",
         "geneticsDetails": { "isAutoflower": false },
-        "thc": 22,
+        "thc": 21,
         "cbd": 1,
-        "thcRange": "20-24%",
+        "thcRange": "18-24%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine klassische kalifornische Indica, bekannt für ihre tiefvioletten Farben und ihr traubenartiges Aroma. Die Wirkung ist stark entspannend und ideal bei Schmerzen und Schlaflosigkeit.",
+        "description": "A classic California Indica, known for its deep purple colors and grape-like aroma. The effect is strongly relaxing and ideal for pain and insomnia.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Low",
             "height": "Short",
-            "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "N/A" },
-            "heightDetails": { "indoor": "Kurz", "outdoor": "N/A" }
+            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/plant" },
+            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-120 cm" }
         },
-        "aromas": ["Grape", "Berry", "Earthy", "Skunk"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+        "aromas": ["Grape", "Berry", "Sweet", "Skunk"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Ocimene"]
     }
 ]

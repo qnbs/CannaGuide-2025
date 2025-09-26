@@ -20,6 +20,7 @@ import { StrainTipsView } from './strains/StrainTipsView';
 import { exportService } from '@/services/exportService';
 import { Button } from '@/components/common/Button';
 import { BulkActionsBar } from './strains/BulkActionsBar';
+import { selectUserStrainIds } from '@/stores/selectors';
 
 const ITEMS_PER_PAGE = 30;
 
@@ -31,39 +32,30 @@ export const StrainsView: React.FC = () => {
     const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
     const [selectedStrain, setSelectedStrain] = useState<Strain | null>(null);
 
-    // State selection
-    const { 
-        activeTab, setStrainsViewTab, setStrainsViewMode, viewMode,
-        selectedIds, toggleStrainSelection, toggleAllStrainSelection, clearStrainSelection,
-        isAddModalOpen, openAddModal, closeAddModal, isExportModalOpen, openExportModal, closeExportModal,
-        userStrains, addUserStrain, updateUserStrain, deleteUserStrain, isUserStrain,
-        favorites, savedExports, deleteExport, updateExport, addExport,
-        savedTips, deleteTip, addTip, updateTip,
-        settings, addNotification, addMultipleToFavorites, removeMultipleFromFavorites,
-        selectStrain
-    } = useAppStore(state => ({
-        activeTab: state.strainsViewTab, setStrainsViewTab: state.setStrainsViewTab,
-        setStrainsViewMode: state.setStrainsViewMode, viewMode: state.strainsViewMode,
-        selectedIds: state.selectedStrainIds,
-        toggleStrainSelection: state.toggleStrainSelection,
-        toggleAllStrainSelection: state.toggleAllStrainSelection,
-        clearStrainSelection: state.clearStrainSelection,
-        isAddModalOpen: state.isAddModalOpen, openAddModal: state.openAddModal,
-        closeAddModal: state.closeAddModal, isExportModalOpen: state.isExportModalOpen,
-        openExportModal: state.openExportModal, closeExportModal: state.closeExportModal,
-        userStrains: state.userStrains, addUserStrain: state.addUserStrain,
-        updateUserStrain: state.updateUserStrain, deleteUserStrain: state.deleteUserStrain,
-        isUserStrain: (id: string) => state.userStrains.some(s => s.id === id),
-        favorites: state.favoriteIds, savedExports: state.savedExports,
-        deleteExport: state.deleteExport, updateExport: state.updateExport, addExport: state.addExport,
-        savedTips: state.savedStrainTips, deleteTip: state.deleteStrainTip,
-        addTip: state.addStrainTip, updateTip: state.updateStrainTip,
-        settings: state.settings, addNotification: state.addNotification,
-        addMultipleToFavorites: state.addMultipleToFavorites,
-        removeMultipleFromFavorites: state.removeMultipleFromFavorites,
-        selectStrain: (strain: Strain) => setSelectedStrain(strain)
-    }));
+    // Optimized State Selection: Granular hooks prevent unnecessary re-renders.
+    const activeTab = useAppStore(state => state.strainsViewTab);
+    const viewMode = useAppStore(state => state.strainsViewMode);
+    const selectedIds = useAppStore(state => state.selectedStrainIds);
+    const isAddModalOpen = useAppStore(state => state.isAddModalOpen);
+    const isExportModalOpen = useAppStore(state => state.isExportModalOpen);
+    const userStrains = useAppStore(state => state.userStrains);
+    const userStrainIds = useAppStore(selectUserStrainIds);
+    const favorites = useAppStore(state => state.favoriteIds);
+    const savedExports = useAppStore(state => state.savedExports);
+    const savedTips = useAppStore(state => state.savedStrainTips);
+    const settings = useAppStore(state => state.settings);
     
+    // Actions are stable, so they can be retrieved from getState or individual hooks without performance penalty.
+    const {
+        setStrainsViewTab, setStrainsViewMode, toggleStrainSelection, toggleAllStrainSelection,
+        clearStrainSelection, openAddModal, closeAddModal, openExportModal, closeExportModal,
+        addUserStrain, updateUserStrain, deleteUserStrain, deleteExport, updateExport, addExport,
+        addStrainTip, updateStrainTip, deleteStrainTip, addNotification, addMultipleToFavorites,
+        removeMultipleFromFavorites,
+    } = useAppStore.getState();
+    
+    const isUserStrain = useCallback((id: string) => userStrainIds.has(id), [userStrainIds]);
+
     const handleStrainSelect = (strain: Strain) => {
         setSelectedStrain(strain);
     };
@@ -173,9 +165,9 @@ export const StrainsView: React.FC = () => {
     }, [setStrainsViewTab]);
     
     const handleSaveTip = useCallback((strain: Strain, tip: AIResponse) => {
-        addTip(strain, tip);
+        addStrainTip(strain, tip);
         addNotification(t('strainsView.tips.saveSuccess', {name: strain.name}), 'success');
-    }, [addTip, t, addNotification]);
+    }, [addStrainTip, t, addNotification]);
 
     if (selectedStrain) {
         return <StrainDetailView 
@@ -303,7 +295,8 @@ export const StrainsView: React.FC = () => {
             )}
 
             {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={deleteExport} updateExport={updateExport} allStrains={allStrains} onOpenExportModal={openExportModal} />}
-            {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteTip} updateTip={updateTip} allStrains={allStrains} />}
+            {/* FIX: Pass 'updateStrainTip' function to StrainTipsView component for the 'updateTip' prop, resolving a 'Cannot find name' error. */}
+            {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={deleteStrainTip} updateTip={updateStrainTip} allStrains={allStrains} />}
             {showToolbar && renderContent()}
         </div>
     );

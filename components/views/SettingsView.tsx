@@ -6,7 +6,7 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { AppSettings, Language, Theme, View } from '@/types';
 import { useAvailableVoices } from '@/hooks/useAvailableVoices';
-import { storageService } from '@/services/storageService';
+import { indexedDBStorage } from '@/stores/indexedDBStorage';
 import { defaultSettings } from '@/stores/slices/settingsSlice';
 
 interface SettingsViewProps {
@@ -50,6 +50,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
             plantSlots: state.plantSlots,
             userStrains: state.userStrains,
             favoriteIds: Array.from(state.favoriteIds),
+            selectedStrainIds: Array.from(state.selectedStrainIds),
             strainNotes: state.strainNotes,
             savedExports: state.savedExports,
             savedSetups: state.savedSetups,
@@ -72,18 +73,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
         const file = event.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const importedState = JSON.parse(e.target?.result as string);
                     if (importedState.settings && importedState.userStrains) {
-                        storageService.clearAll();
-                        // This approach is simplified; a robust solution would use zustand's persistance API
-                        localStorage.setItem('cannaguide-2025-storage', JSON.stringify({ version: 0, state: importedState }));
+                        // FIX: Use the same storage as the persist middleware (IndexedDB)
+                        await indexedDBStorage.setItem('cannaguide-2025-storage', JSON.stringify({ version: 0, state: importedState }));
                         window.location.reload();
                     } else {
                        throw new Error("Invalid file format");
                     }
                 } catch (error) {
+                    addNotification(t('settingsView.data.importInvalidFile'), 'error');
                     console.error("Import failed:", error);
                 }
             };
@@ -93,8 +94,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
 
     const handleResetAll = () => {
         if(window.confirm(t('settingsView.data.resetAllConfirm'))) {
-            storageService.clearAll();
-            window.location.reload();
+            // FIX: Clear the correct storage (IndexedDB)
+            indexedDBStorage.removeItem('cannaguide-2025-storage').then(() => {
+                addNotification(t('settingsView.data.resetAllSuccess'), 'success');
+                window.location.reload();
+            });
         }
     }
     

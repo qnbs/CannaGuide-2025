@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppStore } from '@/stores/useAppStore';
-import { selectActivePlants, selectPlantById } from '@/stores/selectors';
+import { selectActivePlants, selectActiveMentorPlant } from '@/stores/selectors';
 import { Plant, KnowledgeArticle } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
@@ -53,13 +53,9 @@ const ArticleItem: React.FC<{ article: KnowledgeArticle }> = ({ article }) => {
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
-    const { activePlants, activeMentorPlantId, setActiveMentorPlantId } = useAppStore(state => ({
-        activePlants: selectActivePlants(state),
-        activeMentorPlantId: state.activeMentorPlantId,
-        setActiveMentorPlantId: state.setActiveMentorPlantId,
-    }));
-    
-    const activeMentorPlant = useAppStore(state => selectPlantById(activeMentorPlantId)(state));
+    const { setActiveMentorPlantId } = useAppStore.getState();
+    const activePlants = useAppStore(selectActivePlants);
+    const activeMentorPlant = useAppStore(selectActiveMentorPlant);
 
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(activePlants[0]?.id || null);
     const [searchTerm, setSearchTerm] = useState('');

@@ -68,7 +68,9 @@ export const useAppStore = create<AppState>()(
           },
         }),
         partialize: (state) => ({
+          // Persist settings
           settings: state.settings,
+          // Persist core user data
           plants: state.plants,
           plantSlots: state.plantSlots,
           userStrains: state.userStrains,
@@ -80,45 +82,50 @@ export const useAppStore = create<AppState>()(
           archivedAdvisorResponses: state.archivedAdvisorResponses,
           savedStrainTips: state.savedStrainTips,
           knowledgeProgress: state.knowledgeProgress,
+          // Persist some UI state for better UX on reload
+          activeView: state.activeView,
           strainsViewTab: state.strainsViewTab,
           strainsViewMode: state.strainsViewMode,
-          activeView: state.activeView,
-          activeMentorPlantId: state.activeMentorPlantId,
+          // Persist for offline catch-up logic
           lastActiveTimestamp: state.lastActiveTimestamp,
         }),
-        onRehydrateStorage: () => (state) => {
-          if (state) {
-            const rehydratedSettings: Partial<AppSettings> = state.settings || {};
-            
-            // Deep merge settings with defaults to prevent crashes on new properties
-            state.settings = {
-                ...defaultSettings,
-                ...rehydratedSettings,
-                accessibility: { ...defaultSettings.accessibility, ...rehydratedSettings.accessibility },
-                strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...rehydratedSettings.strainsViewSettings },
-                notificationSettings: { ...defaultSettings.notificationSettings, ...rehydratedSettings.notificationSettings },
-                simulationSettings: { 
-                    ...defaultSettings.simulationSettings, 
-                    ...rehydratedSettings.simulationSettings, 
-                    autoJournaling: { 
-                        ...defaultSettings.simulationSettings.autoJournaling, 
-                        ...(rehydratedSettings.simulationSettings?.autoJournaling || {})
+        merge: (persistedState, currentState) => {
+            const typedPersistedState = persistedState as Partial<AppState>;
+            const mergedState = { ...currentState, ...typedPersistedState };
+
+            // Deep merge settings to ensure new default properties are included for existing users
+            if (typedPersistedState.settings) {
+                mergedState.settings = {
+                    ...defaultSettings,
+                    ...typedPersistedState.settings,
+                    accessibility: { ...defaultSettings.accessibility, ...(typedPersistedState.settings.accessibility || {}) },
+                    strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...(typedPersistedState.settings.strainsViewSettings || {}) },
+                    notificationSettings: { ...defaultSettings.notificationSettings, ...(typedPersistedState.settings.notificationSettings || {}) },
+                    simulationSettings: { 
+                        ...defaultSettings.simulationSettings, 
+                        ...(typedPersistedState.settings.simulationSettings || {}),
+                        autoJournaling: { 
+                            ...defaultSettings.simulationSettings.autoJournaling, 
+                            ...(typedPersistedState.settings.simulationSettings?.autoJournaling || {})
+                        },
+                        customDifficultyModifiers: {
+                            ...defaultSettings.simulationSettings.customDifficultyModifiers,
+                            ...(typedPersistedState.settings.simulationSettings?.customDifficultyModifiers || {})
+                        }
                     },
-                    customDifficultyModifiers: {
-                        ...defaultSettings.simulationSettings.customDifficultyModifiers,
-                        ...(rehydratedSettings.simulationSettings?.customDifficultyModifiers || {})
-                    }
-                },
-                defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...rehydratedSettings.defaultJournalNotes },
-                defaultExportSettings: { ...defaultSettings.defaultExportSettings, ...rehydratedSettings.defaultExportSettings },
-                quietHours: { ...defaultSettings.quietHours, ...rehydratedSettings.quietHours },
-                tts: { ...defaultSettings.tts, ...rehydratedSettings.tts },
-            };
-            
-            if (!state.activeView) {
-                state.activeView = state.settings.defaultView;
+                    defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...(typedPersistedState.settings.defaultJournalNotes || {}) },
+                    defaultExportSettings: { ...defaultSettings.defaultExportSettings, ...(typedPersistedState.settings.defaultExportSettings || {}) },
+                    quietHours: { ...defaultSettings.quietHours, ...(typedPersistedState.settings.quietHours || {}) },
+                    tts: { ...defaultSettings.tts, ...(typedPersistedState.settings.tts || {}) },
+                };
             }
-          }
+
+            // Ensure activeView has a valid value after hydration
+            if (!mergedState.activeView && mergedState.settings) {
+                mergedState.activeView = mergedState.settings.defaultView;
+            }
+
+            return mergedState as AppState;
         },
       }
     ),

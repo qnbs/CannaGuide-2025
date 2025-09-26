@@ -30,6 +30,7 @@ export const selectDeepDiveState = (plantId: string, topic: string) => (state: A
 
 // Plant-related memoized selectors
 const selectPlants = (state: AppState) => state.plants;
+const selectUserStrains = (state: AppState) => state.userStrains;
 
 export const selectActivePlants = createSelector(
     selectPlants,
@@ -39,6 +40,17 @@ export const selectActivePlants = createSelector(
 export const selectPlantById = (id: string | null) => createSelector(
     selectPlants,
     (plants) => (id ? plants[id] : null)
+);
+
+export const selectActiveMentorPlant = createSelector(
+    selectPlants,
+    (state: AppState) => state.activeMentorPlantId,
+    (plants, activeMentorPlantId) => (activeMentorPlantId ? plants[activeMentorPlantId] : null)
+);
+
+export const selectUserStrainIds = createSelector(
+    selectUserStrains,
+    (userStrains) => new Set(userStrains.map(s => s.id))
 );
 
 export const selectOpenTasksSummary = createSelector(

@@ -1,5 +1,5 @@
-import { View, Strain, Notification, NotificationType, GrowSetup } from '@/types';
-import { StoreSet, StoreGet, TFunction } from '../useAppStore';
+import { View, Notification, Strain, GrowSetup, NotificationType, Language } from '@/types';
+import type { StoreSet, StoreGet, TFunction } from '../useAppStore';
 
 export interface UISlice {
     activeView: View;
@@ -8,7 +8,9 @@ export interface UISlice {
     isExportModalOpen: boolean;
     strainToEdit: Strain | null;
     notifications: Notification[];
-    
+    isAppReady: boolean;
+    onboardingStep: number;
+
     // New Grow Flow State
     initiatingGrowForSlot: number | null;
     strainForNewGrow: Strain | null;
@@ -22,26 +24,27 @@ export interface UISlice {
     // Actions
     setActiveView: (view: View) => void;
     setIsCommandPaletteOpen: (isOpen: boolean) => void;
-    
+    addNotification: (message: string, type: NotificationType) => void;
+    removeNotification: (id: number) => void;
     openAddModal: (strain?: Strain | null) => void;
     closeAddModal: () => void;
-    
     openExportModal: () => void;
     closeExportModal: () => void;
     
-    addNotification: (message: string, type: NotificationType) => void;
-    removeNotification: (id: number) => void;
-    
     // New Grow Flow Actions
-    startGrowInSlot: (slotIndex: number) => void;
     initiateGrowFromStrainList: (strain: Strain) => void;
+    startGrowInSlot: (slotIndex: number) => void;
     selectStrainForGrow: (strain: Strain) => void;
     confirmSetupAndShowConfirmation: (setup: GrowSetup) => void;
-    finalizeNewGrow: () => void;
     cancelNewGrow: () => void;
-    startFirstGrow: () => void;
+    finalizeNewGrow: () => void;
     
+    // Mentor Chat Actions
     setActiveMentorPlantId: (plantId: string | null) => void;
+
+    // App ready state
+    setAppReady: (isReady: boolean) => void;
+    setOnboardingStep: (step: number) => void;
 }
 
 export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction): UISlice => ({
@@ -51,89 +54,72 @@ export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
     isExportModalOpen: false,
     strainToEdit: null,
     notifications: [],
-    
+    isAppReady: false,
+    onboardingStep: 0,
+
+    // New Grow Flow State
     initiatingGrowForSlot: null,
     strainForNewGrow: null,
     isGrowSetupModalOpen: false,
     isConfirmationModalOpen: false,
     confirmedGrowSetup: null,
-    
+
+    // Mentor Chat State
     activeMentorPlantId: null,
 
+    // Actions
     setActiveView: (view) => set({ activeView: view }),
     setIsCommandPaletteOpen: (isOpen) => set({ isCommandPaletteOpen: isOpen }),
-
+    addNotification: (message, type) => {
+        const newNotification = { id: Date.now(), message, type };
+        set(state => ({ notifications: [...state.notifications, newNotification] }));
+    },
+    removeNotification: (id) => {
+        set(state => ({ notifications: state.notifications.filter(n => n.id !== id) }));
+    },
     openAddModal: (strain = null) => set({ isAddModalOpen: true, strainToEdit: strain }),
     closeAddModal: () => set({ isAddModalOpen: false, strainToEdit: null }),
-
     openExportModal: () => set({ isExportModalOpen: true }),
     closeExportModal: () => set({ isExportModalOpen: false }),
 
-    addNotification: (message, type) => {
-        const newNotification: Notification = { id: Date.now(), message, type };
-        set(state => ({ notifications: [...state.notifications, newNotification] }));
+    // New Grow Flow Actions
+    initiateGrowFromStrainList: (strain) => {
+        set({ strainForNewGrow: strain, activeView: View.Plants });
+        get().addNotification(t()('plantsView.inlineSelector.title'), 'info');
     },
-    removeNotification: (id) => set(state => ({
-        notifications: state.notifications.filter(n => n.id !== id)
-    })),
-    
     startGrowInSlot: (slotIndex) => {
         set({ initiatingGrowForSlot: slotIndex, strainForNewGrow: null });
     },
-    
-    initiateGrowFromStrainList: (strain) => {
-        const hasSlots = get().plantSlots.some(slot => slot === null);
-        if (!hasSlots) {
-            get().addNotification(t()('plantsView.notifications.allSlotsFull'), 'error');
-            return;
-        }
-        set({ strainForNewGrow: strain, initiatingGrowForSlot: null, activeView: View.Plants });
-    },
-
     selectStrainForGrow: (strain) => {
         set({ strainForNewGrow: strain, isGrowSetupModalOpen: true });
     },
-
     confirmSetupAndShowConfirmation: (setup) => {
+        set({ confirmedGrowSetup: setup, isGrowSetupModalOpen: false, isConfirmationModalOpen: true });
+    },
+    cancelNewGrow: () => {
         set({
+            initiatingGrowForSlot: null,
+            strainForNewGrow: null,
             isGrowSetupModalOpen: false,
-            confirmedGrowSetup: setup,
-            isConfirmationModalOpen: true,
+            isConfirmationModalOpen: false,
+            confirmedGrowSetup: null,
         });
     },
-
     finalizeNewGrow: () => {
-        const { strainForNewGrow, initiatingGrowForSlot, confirmedGrowSetup } = get();
-        if (strainForNewGrow && initiatingGrowForSlot !== null && confirmedGrowSetup) {
+        const { strainForNewGrow, confirmedGrowSetup, initiatingGrowForSlot } = get();
+        if (strainForNewGrow && confirmedGrowSetup && initiatingGrowForSlot !== null) {
             const success = get().startNewPlant(strainForNewGrow, confirmedGrowSetup, initiatingGrowForSlot);
             if (success) {
                 get().addNotification(t()('plantsView.notifications.growStarted', { name: strainForNewGrow.name }), 'success');
             }
         }
-        // Reset the entire flow state
-        set({ 
-            initiatingGrowForSlot: null, 
-            strainForNewGrow: null, 
-            isGrowSetupModalOpen: false,
-            isConfirmationModalOpen: false,
-            confirmedGrowSetup: null,
-        });
+        get().cancelNewGrow();
     },
     
-    cancelNewGrow: () => {
-        set({ 
-            initiatingGrowForSlot: null, 
-            strainForNewGrow: null, 
-            isGrowSetupModalOpen: false,
-            isConfirmationModalOpen: false,
-            confirmedGrowSetup: null,
-        });
-    },
-    
-    startFirstGrow: () => {
-        set({ activeView: View.Plants });
-        get().startGrowInSlot(0);
-    },
-    
+    // Mentor Chat Actions
     setActiveMentorPlantId: (plantId) => set({ activeMentorPlantId: plantId }),
+
+    // App ready state
+    setAppReady: (isReady) => set({ isAppReady: isReady }),
+    setOnboardingStep: (step: number) => set({ onboardingStep: step }),
 });

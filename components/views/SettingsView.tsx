@@ -77,7 +77,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                 try {
                     const importedState = JSON.parse(e.target?.result as string);
                     if (importedState.settings && importedState.userStrains) {
-                        // FIX: Use the same storage as the persist middleware (IndexedDB)
                         await indexedDBStorage.setItem('cannaguide-2025-storage', JSON.stringify({ version: 0, state: importedState }));
                         window.location.reload();
                     } else {
@@ -94,7 +93,6 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
 
     const handleResetAll = () => {
         if(window.confirm(t('settingsView.data.resetAllConfirm'))) {
-            // FIX: Clear the correct storage (IndexedDB)
             indexedDBStorage.removeItem('cannaguide-2025-storage').then(() => {
                 addNotification(t('settingsView.data.resetAllSuccess'), 'success');
                 window.location.reload();

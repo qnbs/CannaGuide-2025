@@ -300,6 +300,7 @@
         "floweringTimeRange": "8-10",
         "genetics": "Do-Si-Dos x Gelato #41",
         "floweringType": "Photoperiod",
+        "description": "Also known as 'Do-Si-Lato', Dolato is a potent Indica hybrid. It combines the earthy potency of Do-Si-Dos with the sweet, creamy aroma of Gelato. The effect is strongly relaxing and calming, making it ideal for evening use to unwind and de-stress.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -491,6 +492,7 @@
         "floweringTimeRange": "9-10",
         "genetics": "Original Glue (GG4) x Do-Si-Dos",
         "floweringType": "Photoperiod",
+        "description": "Duct Tape is a potent hybrid strain named for its glue-like and diesel aroma, complemented by notes of chocolate and earth. The effect is strong and balanced, beginning with a cerebral, creative rush that slowly transitions into an intense body relaxation without completely sedating the user.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",

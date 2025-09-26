@@ -69,33 +69,33 @@ const getDynamicLoadingMessages = (context: LoadingMessageContext, t: TFunction)
 
 
 const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): Promise<Recommendation> => {
-    const ai = getAiClient();
-    
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            tent: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-            light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING }, watts: { type: Type.NUMBER } }, required: ['name', 'price', 'rationale'] },
-            ventilation: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-            pots: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-            soil: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-            nutrients: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-            extra: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
-        },
-        required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra']
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: promptDetails,
-        config: {
-            systemInstruction: t('ai.gemini.equipmentSystemInstruction'),
-            responseMimeType: "application/json",
-            responseSchema: responseSchema,
-        },
-    });
-
     try {
+        const ai = getAiClient();
+        
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                tent: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+                light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING }, watts: { type: Type.NUMBER } }, required: ['name', 'price', 'rationale'] },
+                ventilation: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+                pots: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+                soil: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+                nutrients: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+                extra: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } }, required: ['name', 'price', 'rationale'] },
+            },
+            required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: promptDetails,
+            config: {
+                systemInstruction: t('ai.gemini.equipmentSystemInstruction'),
+                responseMimeType: "application/json",
+                responseSchema: responseSchema,
+            },
+        });
+
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for equipment:", response);
@@ -104,33 +104,36 @@ const getEquipmentRecommendation = async (promptDetails: string, t: TFunction): 
         const result = JSON.parse(jsonStr);
         return result as Recommendation;
     } catch (e) {
-        console.error("Failed to parse AI response for equipment:", e, response.text);
-        throw new Error("ai.error.parsing");
+        console.error("Error getting equipment recommendation:", e);
+        if (e instanceof Error && e.message.toLowerCase().includes('json')) {
+            throw new Error("ai.error.parsing");
+        }
+        throw new Error("ai.error.api");
     }
 };
 
 const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIResponse> => {
-    const ai = getAiClient();
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
-        },
-        required: ['title', 'content']
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: query,
-        config: {
-            systemInstruction: t('ai.gemini.mentorSystemInstruction'),
-            responseMimeType: "application/json",
-            responseSchema: responseSchema
-        }
-    });
-    
     try {
+        const ai = getAiClient();
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                content: { type: Type.STRING },
+            },
+            required: ['title', 'content']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: query,
+            config: {
+                systemInstruction: t('ai.gemini.mentorSystemInstruction'),
+                responseMimeType: "application/json",
+                responseSchema: responseSchema
+            }
+        });
+        
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for mentor:", response);
@@ -139,62 +142,65 @@ const getAiMentorResponse = async (query: string, t: TFunction): Promise<AIRespo
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {
-        console.error("Failed to parse AI response for mentor:", e, response.text);
-        throw new Error("ai.error.parsing");
+        console.error("Error getting mentor response:", e);
+        if (e instanceof Error && e.message.toLowerCase().includes('json')) {
+            throw new Error("ai.error.parsing");
+        }
+        throw new Error("ai.error.api");
     }
 };
 
 const diagnosePlantProblem = async (base64Image: string, mimeType: string, context: { plant?: Plant, userNotes?: string }, t: TFunction): Promise<PlantDiagnosisResponse> => {
-    const ai = getAiClient();
-    const imagePart = {
-        inlineData: {
-            data: base64Image,
-            mimeType: mimeType,
-        },
-    };
-
-    let plantContext = t('ai.gemini.diagnosePrompt.noPlantContext');
-    if (context.plant) {
-        const relevantData = {
-            strain: context.plant.strain.name,
-            age: context.plant.age,
-            stage: context.plant.stage,
-            substrate: context.plant.substrate,
-            environment: context.plant.environment,
-            lastJournalEntries: context.plant.journal.slice(-3).map(e => `${e.type}: ${e.notes}`),
-        };
-        plantContext = `${t('ai.gemini.diagnosePrompt.plantContextPrefix')}: ${JSON.stringify(relevantData)}`;
-    }
-    if (context.userNotes) {
-        plantContext += `\n${t('ai.gemini.diagnosePrompt.userNotesPrefix')}: "${context.userNotes}"`;
-    }
-
-    const textPart = { text: plantContext };
-
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            problemName: { type: Type.STRING, description: 'The specific name of the diagnosed plant problem.' },
-            confidence: { type: Type.NUMBER, description: 'A confidence score from 0 to 100 for the diagnosis.'},
-            diagnosis: { type: Type.STRING, description: 'Detailed diagnosis in Markdown format.' },
-            immediateActions: { type: Type.STRING, description: 'Bulleted list of immediate actions in Markdown.' },
-            longTermSolution: { type: Type.STRING, description: 'Long-term solutions in Markdown.' },
-            prevention: { type: Type.STRING, description: 'Prevention tips in Markdown.' },
-        },
-        required: ['problemName', 'confidence', 'diagnosis', 'immediateActions', 'longTermSolution', 'prevention']
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: { parts: [imagePart, textPart] },
-        config: {
-            systemInstruction: t('ai.gemini.diagnoseSystemInstruction'),
-            responseMimeType: "application/json",
-            responseSchema: responseSchema
-        }
-    });
-
     try {
+        const ai = getAiClient();
+        const imagePart = {
+            inlineData: {
+                data: base64Image,
+                mimeType: mimeType,
+            },
+        };
+
+        let plantContext = t('ai.gemini.diagnosePrompt.noPlantContext');
+        if (context.plant) {
+            const relevantData = {
+                strain: context.plant.strain.name,
+                age: context.plant.age,
+                stage: context.plant.stage,
+                substrate: context.plant.substrate,
+                environment: context.plant.environment,
+                lastJournalEntries: context.plant.journal.slice(-3).map(e => `${e.type}: ${e.notes}`),
+            };
+            plantContext = `${t('ai.gemini.diagnosePrompt.plantContextPrefix')}: ${JSON.stringify(relevantData)}`;
+        }
+        if (context.userNotes) {
+            plantContext += `\n${t('ai.gemini.diagnosePrompt.userNotesPrefix')}: "${context.userNotes}"`;
+        }
+
+        const textPart = { text: plantContext };
+
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                problemName: { type: Type.STRING, description: 'The specific name of the diagnosed plant problem.' },
+                confidence: { type: Type.NUMBER, description: 'A confidence score from 0 to 100 for the diagnosis.'},
+                diagnosis: { type: Type.STRING, description: 'Detailed diagnosis in Markdown format.' },
+                immediateActions: { type: Type.STRING, description: 'Bulleted list of immediate actions in Markdown.' },
+                longTermSolution: { type: Type.STRING, description: 'Long-term solutions in Markdown.' },
+                prevention: { type: Type.STRING, description: 'Prevention tips in Markdown.' },
+            },
+            required: ['problemName', 'confidence', 'diagnosis', 'immediateActions', 'longTermSolution', 'prevention']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: { parts: [imagePart, textPart] },
+            config: {
+                systemInstruction: t('ai.gemini.diagnoseSystemInstruction'),
+                responseMimeType: "application/json",
+                responseSchema: responseSchema
+            }
+        });
+
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for diagnostics:", response);
@@ -203,42 +209,45 @@ const diagnosePlantProblem = async (base64Image: string, mimeType: string, conte
         const result = JSON.parse(jsonStr);
         return result as PlantDiagnosisResponse;
     } catch (e) {
-        console.error("Failed to parse AI response for diagnostics:", e, response.text);
-        throw new Error("ai.error.parsing");
+        console.error("Error diagnosing plant problem:", e);
+        if (e instanceof Error && e.message.toLowerCase().includes('json')) {
+            throw new Error("ai.error.parsing");
+        }
+        throw new Error("ai.error.api");
     }
 };
 
 const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AIResponse> => {
-    const ai = getAiClient();
-    const plantData = JSON.stringify({
-        age: plant.age,
-        stage: plant.stage,
-        substrate: plant.substrate,
-        environment: plant.environment,
-        problems: plant.problems,
-        journal: plant.journal.slice(-5) // last 5 entries
-    });
-    
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
-        },
-        required: ['title', 'content']
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: plantData,
-        config: {
-            systemInstruction: t('ai.gemini.advisorSystemInstruction'),
-            responseMimeType: "application/json",
-            responseSchema: responseSchema
-        }
-    });
-
     try {
+        const ai = getAiClient();
+        const plantData = JSON.stringify({
+            age: plant.age,
+            stage: plant.stage,
+            substrate: plant.substrate,
+            environment: plant.environment,
+            problems: plant.problems,
+            journal: plant.journal.slice(-5) // last 5 entries
+        });
+        
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                content: { type: Type.STRING },
+            },
+            required: ['title', 'content']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: plantData,
+            config: {
+                systemInstruction: t('ai.gemini.advisorSystemInstruction'),
+                responseMimeType: "application/json",
+                responseSchema: responseSchema
+            }
+        });
+
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for advisor:", response);
@@ -247,8 +256,11 @@ const getAiPlantAdvisorResponse = async (plant: Plant, t: TFunction): Promise<AI
         const result = JSON.parse(jsonStr);
         return result as AIResponse;
     } catch (e) {
-        console.error("Failed to parse AI response for advisor:", e, response.text);
-        throw new Error("ai.error.parsing");
+        console.error("Error getting plant advisor response:", e);
+        if (e instanceof Error && e.message.toLowerCase().includes('json')) {
+            throw new Error("ai.error.parsing");
+        }
+        throw new Error("ai.error.api");
     }
 };
 
@@ -257,40 +269,40 @@ const getStrainGrowTips = async (
     context: { focus: string; stage: string; experience: string },
     t: TFunction
 ): Promise<StructuredGrowTips> => {
-    const ai = getAiClient();
-    const promptData = {
-        name: strain.name,
-        difficulty: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
-        height: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
-        flowering: strain.floweringTime,
-        type: strain.type,
-        focus: context.focus,
-        stage: context.stage,
-        experience: context.experience,
-    };
-    
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            nutrientTip: { type: Type.STRING, description: "A specific tip related to nutrients, feeding, or soil." },
-            trainingTip: { type: Type.STRING, description: "A specific tip related to plant training, pruning, or canopy management." },
-            environmentalTip: { type: Type.STRING, description: "A specific tip related to climate control like temperature, humidity, or VPD." },
-            proTip: { type: Type.STRING, description: "An advanced, unique tip combining multiple factors for expert growers." },
-        },
-        required: ['nutrientTip', 'trainingTip', 'environmentalTip', 'proTip']
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: JSON.stringify(promptData),
-        config: {
-            systemInstruction: t('ai.gemini.strainTipsSystemInstruction'),
-            responseMimeType: "application/json",
-            responseSchema: responseSchema
-        }
-    });
-    
     try {
+        const ai = getAiClient();
+        const promptData = {
+            name: strain.name,
+            difficulty: t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`),
+            height: t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`),
+            flowering: strain.floweringTime,
+            type: strain.type,
+            focus: context.focus,
+            stage: context.stage,
+            experience: context.experience,
+        };
+        
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                nutrientTip: { type: Type.STRING, description: "A specific tip related to nutrients, feeding, or soil." },
+                trainingTip: { type: Type.STRING, description: "A specific tip related to plant training, pruning, or canopy management." },
+                environmentalTip: { type: Type.STRING, description: "A specific tip related to climate control like temperature, humidity, or VPD." },
+                proTip: { type: Type.STRING, description: "An advanced, unique tip combining multiple factors for expert growers." },
+            },
+            required: ['nutrientTip', 'trainingTip', 'environmentalTip', 'proTip']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: JSON.stringify(promptData),
+            config: {
+                systemInstruction: t('ai.gemini.strainTipsSystemInstruction'),
+                responseMimeType: "application/json",
+                responseSchema: responseSchema
+            }
+        });
+        
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for grow tips:", response);
@@ -299,59 +311,60 @@ const getStrainGrowTips = async (
         const result = JSON.parse(jsonStr);
         return result as StructuredGrowTips;
     } catch (e) {
-        console.error("Failed to parse AI response for grow tips:", e, response.text);
-        throw new Error("ai.error.parsing");
+        console.error("Error getting strain grow tips:", e);
+        if (e instanceof Error && e.message.toLowerCase().includes('json')) {
+            throw new Error("ai.error.parsing");
+        }
+        throw new Error("ai.error.api");
     }
 };
 
 const getPersonalizedTip = async (plant: Plant, strain: Strain, t: TFunction): Promise<AIResponse> => {
-    const ai = getAiClient();
-
-    // Sanitize strain data to only include key characteristics
-    const strainContext = {
-        name: strain.name,
-        type: strain.type,
-        difficulty: strain.agronomic.difficulty,
-        height: strain.agronomic.height,
-        floweringTime: strain.floweringTime,
-        description: strain.description?.substring(0, 150) + '...' // Keep it brief
-    };
-    
-    // Sanitize plant data to only include current state
-    const plantContext = {
-        name: plant.name,
-        age: plant.age,
-        stage: plant.stage,
-        health: plant.health,
-        substrate: plant.substrate,
-        problems: plant.problems.filter(p => p.status === 'active').map(p => p.type)
-    };
-
-    const promptData = {
-        plantContext,
-        strainContext
-    };
-    
-    const responseSchema = {
-        type: Type.OBJECT,
-        properties: {
-            title: { type: Type.STRING },
-            content: { type: Type.STRING },
-        },
-        required: ['title', 'content']
-    };
-
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: JSON.stringify(promptData, null, 2),
-        config: {
-            systemInstruction: t('ai.gemini.personalizedTipSystemInstruction'),
-            responseMimeType: "application/json",
-            responseSchema
-        }
-    });
-
     try {
+        const ai = getAiClient();
+
+        const strainContext = {
+            name: strain.name,
+            type: strain.type,
+            difficulty: strain.agronomic.difficulty,
+            height: strain.agronomic.height,
+            floweringTime: strain.floweringTime,
+            description: strain.description?.substring(0, 150) + '...'
+        };
+        
+        const plantContext = {
+            name: plant.name,
+            age: plant.age,
+            stage: plant.stage,
+            health: plant.health,
+            substrate: plant.substrate,
+            problems: plant.problems.filter(p => p.status === 'active').map(p => p.type)
+        };
+
+        const promptData = {
+            plantContext,
+            strainContext
+        };
+        
+        const responseSchema = {
+            type: Type.OBJECT,
+            properties: {
+                title: { type: Type.STRING },
+                content: { type: Type.STRING },
+            },
+            required: ['title', 'content']
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: JSON.stringify(promptData, null, 2),
+            config: {
+                systemInstruction: t('ai.gemini.personalizedTipSystemInstruction'),
+                responseMimeType: "application/json",
+                responseSchema
+            }
+        });
+
         const jsonStr = response.text;
         if (!jsonStr || jsonStr.trim() === '') {
              console.error("AI returned an empty response for personalized tip:", response);
@@ -359,8 +372,11 @@ const getPersonalizedTip = async (plant: Plant, strain: Strain, t: TFunction): P
         }
         return JSON.parse(jsonStr) as AIResponse;
     } catch (e) {
-        console.error("Failed to parse AI response for personalized tip:", e, response.text);
-        throw new Error("ai.error.parsing");
+        console.error("Error getting personalized tip:", e);
+        if (e instanceof Error && e.message.toLowerCase().includes('json')) {
+            throw new Error("ai.error.parsing");
+        }
+        throw new Error("ai.error.api");
     }
 };
 

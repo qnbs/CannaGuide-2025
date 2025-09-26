@@ -31,33 +31,22 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, setSelectedPlantId } = useAppStore(state => ({
-        waterAllPlants: state.waterAllPlants,
-        setSelectedPlantId: state.setSelectedPlantId,
-    }));
+    const { t } = useTranslations();
     
-    const {
-        initiatingGrowForSlot, strainForNewGrow, isGrowSetupModalOpen, isConfirmationModalOpen,
-        startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow,
-    } = useAppStore(state => ({
-        initiatingGrowForSlot: state.initiatingGrowForSlot,
-        strainForNewGrow: state.strainForNewGrow,
-        isGrowSetupModalOpen: state.isGrowSetupModalOpen,
-        isConfirmationModalOpen: state.isConfirmationModalOpen,
-        startGrowInSlot: state.startGrowInSlot,
-        selectStrainForGrow: state.selectStrainForGrow,
-        confirmSetupAndShowConfirmation: state.confirmSetupAndShowConfirmation,
-        cancelNewGrow: state.cancelNewGrow,
-    }));
-
+    // Optimized State Selection
+    const { waterAllPlants, setSelectedPlantId, startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } = useAppStore.getState();
+    
+    const initiatingGrowForSlot = useAppStore(state => state.initiatingGrowForSlot);
+    const strainForNewGrow = useAppStore(state => state.strainForNewGrow);
+    const isGrowSetupModalOpen = useAppStore(state => state.isGrowSetupModalOpen);
+    const isConfirmationModalOpen = useAppStore(state => state.isConfirmationModalOpen);
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
-    const { t } = useTranslations();
     const selectedPlantId = useAppStore(selectSelectedPlantId);
     
-    const activePlants = useAppStore(state => selectActivePlants(state));
-    const allTasks = useAppStore(state => selectOpenTasksSummary(state));
-    const allProblems = useAppStore(state => selectActiveProblemsSummary(state));
+    const activePlants = useAppStore(selectActivePlants);
+    const allTasks = useAppStore(selectOpenTasksSummary);
+    const allProblems = useAppStore(selectActiveProblemsSummary);
     
     const selectedPlant = useMemo(() => {
         if (!selectedPlantId) return null;

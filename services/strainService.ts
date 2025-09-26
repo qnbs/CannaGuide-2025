@@ -1,6 +1,5 @@
 import { Strain } from '@/types';
 import { dbService } from '@/services/dbService';
-import { allStrainsData } from '@/data/strains';
 
 type TFunction = (key: string, replacements?: Record<string, string | number>) => any;
 
@@ -106,11 +105,43 @@ class StrainService {
     try {
         const metadata = await dbService.getMetadata('strain_cache_metadata');
         const dbCount = await dbService.getStrainsCount();
+
+        const fetchAllStrains = async (): Promise<Strain[]> => {
+            const letters = [...'abcdefghijklmnopqrstuvwxyz', 'numeric'];
+            const promises = letters.map(letter => 
+                fetch(`/data/strains/${letter}.json`)
+                    .then(res => {
+                        if (!res.ok) throw new Error(`Failed to fetch ${letter}.json`);
+                        return res.json();
+                    })
+                    .catch(e => {
+                        // It's okay if some letters don't have strains.
+                        if (e instanceof TypeError || e.message.includes('404')) {
+                            return [];
+                        }
+                        console.warn(e.message);
+                        return [];
+                    })
+            );
+            const strainArrays = await Promise.all(promises);
+            return strainArrays.flat();
+        };
+        
+        let allStrainsData: Strain[];
+        try {
+            allStrainsData = await fetchAllStrains();
+        } catch (fetchError) {
+            console.error("Failed to fetch any strain data from network. Will try to use cache if available.", fetchError);
+            allStrainsData = await dbService.getAllStrains(); // Fallback to cache if network fails
+            if (allStrainsData.length === 0) {
+                 throw new Error("Network failed and cache is empty. Cannot initialize strain data.");
+            }
+        }
         
         let strainsToCache: Strain[] = [];
 
         if (!metadata || metadata.lang !== lang || metadata.version !== DATA_VERSION || dbCount !== allStrainsData.length) {
-            console.log(`[StrainService] Cache miss or version mismatch. Re-caching bundled data for lang: ${lang}, version: ${DATA_VERSION}.`);
+            console.log(`[StrainService] Cache miss or version mismatch. Re-caching data for lang: ${lang}, version: ${DATA_VERSION}.`);
             const translatedStrains = this.processAndTranslateStrains(allStrainsData, t);
             const searchIndex = buildSearchIndex(translatedStrains);
             
@@ -126,15 +157,8 @@ class StrainService {
         strainsToCache.sort((a, b) => a.name.localeCompare(b.name));
         this.strainsCache = strainsToCache;
     } catch (error) {
-        console.error("Error initializing StrainService from bundled/IndexedDB data, falling back to static bundle:", error);
-        try {
-          const translatedStrains = this.processAndTranslateStrains(allStrainsData, t);
-          translatedStrains.sort((a, b) => a.name.localeCompare(b.name));
-          this.strainsCache = translatedStrains;
-        } catch (bundleError) {
-          console.error("Critical error: Could not process bundled strain data.", bundleError);
-          this.strainsCache = [];
-        }
+        console.error("Error initializing StrainService from network/IndexedDB:", error);
+        this.strainsCache = [];
     }
   }
 

@@ -37,9 +37,7 @@ export const useAppStore = create<AppState>()(
         ...createSettingsSlice(set),
         ...createUISlice(set, get, getT),
         ...createStrainsViewSlice(set, get),
-        // FIX: The createAiSlice function expects a function that returns TFunction, not TFunction directly.
         ...createAiSlice(set, get, getT),
-        // FIX: The createPlantSlice function expects a function that returns TFunction, not TFunction directly.
         ...createPlantSlice(set, get, getT),
         ...createUserStrainsSlice(set, get),
         ...createFavoritesSlice(set),
@@ -55,7 +53,16 @@ export const useAppStore = create<AppState>()(
         storage: createJSONStorage(() => indexedDBStorage, {
           replacer: (key, value) => {
             if (value instanceof Set) {
-              return Array.from(value);
+              return {
+                _type: 'set',
+                value: Array.from(value),
+              };
+            }
+            return value;
+          },
+          reviver: (key, value) => {
+            if (value && typeof value === 'object' && (value as any)._type === 'set') {
+              return new Set((value as any).value);
             }
             return value;
           },
@@ -83,6 +90,7 @@ export const useAppStore = create<AppState>()(
           if (state) {
             const rehydratedSettings: Partial<AppSettings> = state.settings || {};
             
+            // Deep merge settings with defaults to prevent crashes on new properties
             state.settings = {
                 ...defaultSettings,
                 ...rehydratedSettings,
@@ -106,10 +114,6 @@ export const useAppStore = create<AppState>()(
                 quietHours: { ...defaultSettings.quietHours, ...rehydratedSettings.quietHours },
                 tts: { ...defaultSettings.tts, ...rehydratedSettings.tts },
             };
-            
-            if (state.favoriteIds && Array.isArray(state.favoriteIds)) {
-              state.favoriteIds = new Set(state.favoriteIds);
-            }
             
             if (!state.activeView) {
                 state.activeView = state.settings.defaultView;

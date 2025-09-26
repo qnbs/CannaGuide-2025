@@ -1,110 +1,39 @@
 export const knowledgeView = {
-  title: 'Grow Guide',
-  subtitle: 'Your guide from preparation to harvest.',
+  title: 'Knowledge & Mentor',
+  subtitle: 'Expand your knowledge and get AI-powered advice.',
   tabs: {
     guide: 'Guide',
     archive: 'Knowledge Database'
   },
   progress: 'Your Progress',
   stepsCompleted: '{completed} of {total} steps completed',
+  hub: {
+      selectPlant: 'Select a plant',
+      todaysFocus: 'Today\'s Focus for {plantName}',
+      noRelevantArticles: 'No specific articles are relevant for {plantName} right now. Browse the full library below.',
+      browseAll: 'Browse Knowledge Base',
+      searchPlaceholder: 'Search articles...',
+      noPlants: 'Start a new grow in the Plants view to use the AI Mentor and get personalized knowledge articles here.',
+  },
   aiMentor: {
-    title: 'Ask the AI Mentor',
-    subtitle: 'Your personal horticultural scientist. Ask anything from basic questions to complex cultivation scenarios.',
+    title: 'AI Plant Mentor',
+    subtitle: 'Your personal horticultural scientist. Ask anything about a specific plant.',
+    plantContextSubtitle: 'Select a plant to give the AI Mentor context for tailored advice.',
     placeholder: 'e.g., Compare LST vs. Topping for yield...',
+    askAboutPlant: 'Ask something about {name}...',
+    startChat: 'Start Chat',
+    clearChat: 'Clear Chat',
+    startConversation: 'Start a conversation',
     button: 'Ask Mentor',
     loading: 'Consulting horticultural archives...',
     examplePromptsTitle: 'Example Prompts',
-    examples: [
-        'Explain nutrient lockout',
-        'How to increase terpene production?',
-        'Compare soil vs. hydroponics'
-    ]
-  },
-  sections: {
-    phase1: {
-      title: 'Phase 1: Preparation & Setup',
-      subtitle: 'Laying the groundwork for your success',
-      p1_title: 'The Right Space',
-      p1_text: 'Choose a discreet, clean space with access to power and fresh air. A closet, spare room, or basement is ideal. Ensure the area can be made completely light-proof for the flowering stage and has good air exchange (an intake for fresh air and an exhaust).',
-      p2_title: 'Assembling Equipment',
-      p2_text: 'Use our Setup Configurator in the "Equipment" section to generate a shopping list. Key components include a tent, light, exhaust system with a carbon filter, pots, and a timer. Don\'t forget monitoring tools like a thermometer/hygrometer and a pH/EC meter.',
-      checklist: {
-        'c1': 'Find a discreet location with a power outlet.',
-        'c2': 'Assemble the grow tent and check for light leaks.',
-        'c3': 'Install and test the lamp and ventilation system.',
-        'c4': 'Calibrate pH and EC meters if you have them.',
-        'c5': 'Set the timer for the lamp (18/6 light cycle).',
-      },
-      proTip: 'Master Vapor Pressure Deficit (VPD). It\'s the relationship between temperature and humidity that dictates how well your plant "breathes" (transpires). Keeping VPD in the optimal range for each growth stage leads to faster growth and healthier plants. Charts are available online!'
-    },
-    phase2: {
-      title: 'Phase 2: Germination & Seedling',
-      subtitle: 'The start of life (Week 1-2)',
-      p1_title: 'Germinating Seeds',
-      p1_text: 'The paper towel method is popular: place seeds between two damp paper towels on a plate and cover it. Keep them warm (22-25°C) and dark. After 2-7 days, a taproot should appear. Alternatively, you can sow directly into a starter plug or your final medium.',
-      p2_title: 'The Seedling',
-      p2_text: 'Once the taproot is 1-2 cm long, gently plant the seed about 0.5-1 cm deep in a small pot with seedling soil. The first two round leaves are cotyledons (seed leaves); the first "true" leaves will be serrated. Keep lighting gentle to prevent stretching or burning.',
-      checklist: {
-        'c1': 'Germinate the seeds successfully.',
-        'c2': 'Plant the germinated seed into a small pot or starter plug.',
-        'c3': 'Maintain high humidity (60-70%) using a humidity dome.',
-        'c4': 'Avoid overwatering and ensure good airflow.',
-        'c5': 'Gradually acclimate the seedling to stronger light.',
-      },
-      proTip: 'Watch out for "damping off," a fungal disease that causes seedlings to collapse at the soil line. Prevent it by ensuring good air circulation, avoiding overwatering, and using a sterile growing medium.'
-    },
-    phase3: {
-      title: 'Phase 3: Vegetative Stage',
-      subtitle: 'Building size and strength (Week 3-7)',
-      p1_title: 'Growth Spurt',
-      p1_text: 'In this phase, the plant focuses on growing leaves, stems, and roots, building its "solar panel" factory. It needs plenty of light (18+ hours/day) and nutrients rich in Nitrogen (N). Transplant to a larger pot when the plant\'s leaves reach the edges of its current one.',
-      p2_title: 'Training Techniques',
-      p2_text: 'Training shapes the plant to create an even canopy, ensuring all bud sites get optimal light, which dramatically increases yield. Techniques like LST (Low Stress Training) or Topping should be started when the plant has 5-6 nodes (leaf pairs).',
-      checklist: {
-        'c1': 'Transplant into the final pot as needed.',
-        'c2': 'Begin feeding with a nitrogen-rich vegetative fertilizer.',
-        'c3': 'Water regularly, allowing the medium to slightly dry out between waterings.',
-        'c4': 'Apply training techniques like LST or Topping.',
-        'c5': 'Monitor for pests and early signs of deficiencies.',
-      },
-      proTip: 'Topping (cutting the main stem) creates two main colas and a bushier plant. FIMing ("Fuck, I Missed"), a variation of topping, can produce four or more main colas and is slightly less stressful for the plant.'
-    },
-    phase4: {
-      title: 'Phase 4: Flowering Stage',
-      subtitle: 'The magic happens (Week 8+)',
-      p1_title: 'Inducing Flower',
-      p1_text: 'For photoperiod plants, switch the light cycle to 12 hours on / 12 hours off. This signals the plant to start flowering. In the first 2-3 weeks, the plant will stretch significantly, sometimes doubling in height, before focusing its energy on bud production.',
-      p2_title: 'Nutrient & Environment Shift',
-      p2_text: 'The plant\'s needs change. It now requires less Nitrogen (N) and more Phosphorus (P) and Potassium (K). Switch to a specialized bloom fertilizer. It\'s crucial to lower humidity (40-50%) to prevent bud rot (botrytis).',
-      checklist: {
-        'c1': 'Switch light cycle to 12/12.',
-        'c2': 'Switch to a bloom-specific fertilizer.',
-        'c3': 'Lower humidity and ensure excellent air circulation around the buds.',
-        'c4': 'Provide support for heavy branches (stakes, yo-yos, or nets).',
-        'c5': 'Begin flushing with plain water for the last 1-2 weeks.',
-      },
-      proTip: 'The 12-hour dark period must be *uninterrupted*. Even a small light leak from equipment or outside can stress the plant, causing it to produce male flowers (hermaphroditism) or revert to the vegetative state.'
-    },
-    phase5: {
-      title: 'Phase 5: Harvest, Drying & Curing',
-      subtitle: 'The reward for your effort',
-      p1_title: 'The Perfect Harvest Window',
-      p1_text: 'The best indicator is the trichomes (resin glands). Use a 60x loupe: Clear trichomes are immature. Milky/cloudy trichomes indicate peak THC and a more energetic high. Amber trichomes mean THC is degrading into CBN, resulting in a more sedative, body-heavy effect. Most growers harvest when it\'s mostly cloudy with about 10-20% amber.',
-      p2_title: 'Drying and Curing',
-      p2_text: 'Hang branches upside down in a dark, cool room (approx. 18-20°C, 50-60% humidity) for 7-14 days until smaller stems snap instead of bend. Then, trim the buds and place them in airtight glass jars for curing. "Burp" the jars daily for the first week to release moisture.',
-      checklist: {
-        'c1': 'Inspect trichomes to determine the perfect harvest time.',
-        'c2': 'Harvest the plant and perform a preliminary trim (wet trim).',
-        'c3': 'Dry the buds slowly in a controlled environment.',
-        'c4': 'Perform the final trim (dry trim) and place buds in jars for curing.',
-        'c5': 'Cure for at least 2-4 weeks, burping the jars regularly.',
-      },
-      proTip: 'Curing is a critical scientific process. It allows chlorophyll and sugars to break down, dramatically improving the smoothness, taste, and aroma of your final product. Use small hygrometers inside your curing jars to maintain the ideal humidity of around 62%.'
+    examplePrompts: {
+        plantSpecific: {
+            q1: 'Based on its current vitals, what\'s the most important next step for this plant?',
+            q2: 'Should I start training this plant? If so, which method?',
+            q3: 'Are there any signs of deficiency in the recent journal entries?',
+        }
     }
-  },
-  proTip: {
-    title: 'Pro Tip',
-    button: 'Reveal Tip',
   },
   archive: {
     title: 'Knowledge Database',
@@ -116,7 +45,37 @@ export const knowledgeView = {
     queryLabel: 'Your Query',
     editTitle: 'Edit Response',
     updateSuccess: 'Response updated successfully!',
-  }
+  },
+  knowledgebase: {
+    'phase1-prep': {
+      title: 'Phase 1: Preparation & Setup',
+      content: `<h3>The Right Space</h3><p>Choose a discreet, clean space with access to power and fresh air. A closet, spare room, or basement is ideal. Ensure the area can be made completely light-proof for the flowering stage and has good air exchange (an intake for fresh air and an exhaust).</p><h3>Assembling Equipment</h3><p>Use our Setup Configurator in the "Equipment" section to generate a shopping list. Key components include a tent, light, exhaust system with a carbon filter, pots, and a timer. Don't forget monitoring tools like a thermometer/hygrometer and a pH/EC meter.</p><h3>Pro Tip</h3><p>Master Vapor Pressure Deficit (VPD). It's the relationship between temperature and humidity that dictates how well your plant "breathes" (transpires). Keeping VPD in the optimal range for each growth stage leads to faster growth and healthier plants. Charts are available online!</p>`
+    },
+    'phase2-seedling': {
+      title: 'Phase 2: Germination & Seedling',
+      content: `<h3>Germinating Seeds</h3><p>The paper towel method is popular: place seeds between two damp paper towels on a plate and cover it. Keep them warm (22-25°C) and dark. After 2-7 days, a taproot should appear. Alternatively, you can sow directly into a starter plug or your final medium.</p><h3>The Seedling</h3><p>Once the taproot is 1-2 cm long, gently plant the seed about 0.5-1 cm deep in a small pot with seedling soil. The first two round leaves are cotyledons; the first "true" leaves will be serrated. Keep lighting gentle to prevent stretching or burning.</p><h3>Pro Tip</h3><p>Watch out for "damping off," a fungal disease that causes seedlings to collapse at the soil line. Prevent it by ensuring good air circulation, avoiding overwatering, and using a sterile growing medium.</p>`
+    },
+    'phase3-vegetative': {
+        title: 'Phase 3: Vegetative Stage',
+        content: `<h3>Growth Spurt</h3><p>In this phase, the plant focuses on growing leaves, stems, and roots, building its "solar panel" factory. It needs plenty of light (18+ hours/day) and nutrients rich in Nitrogen (N). Transplant to a larger pot when the plant's leaves reach the edges of its current one.</p><h3>Training Techniques</h3><p>Training shapes the plant to create an even canopy, ensuring all bud sites get optimal light, which dramatically increases yield. Techniques like LST (Low Stress Training) or Topping should be started when the plant has 5-6 nodes (leaf pairs).</p><h3>Pro Tip</h3><p>Topping (cutting the main stem) creates two main colas and a bushier plant. FIMing ("Fuck, I Missed"), a variation of topping, can produce four or more main colas and is slightly less stressful for the plant.</p>`
+    },
+    'phase4-flowering': {
+      title: 'Phase 4: Flowering Stage',
+      content: `<h3>Inducing Flower</h3><p>For photoperiod plants, switch the light cycle to 12 hours on / 12 hours off. This signals the plant to start flowering. In the first 2-3 weeks, the plant will stretch significantly, sometimes doubling in height, before focusing its energy on bud production.</p><h3>Nutrient & Environment Shift</h3><p>The plant's needs change. It now requires less Nitrogen (N) and more Phosphorus (P) and Potassium (K). Switch to a specialized bloom fertilizer. It's crucial to lower humidity (40-50%) to prevent bud rot (botrytis).</p><h3>Pro Tip</h3><p>The 12-hour dark period must be *uninterrupted*. Even a small light leak from equipment or outside can stress the plant, causing it to produce male flowers (hermaphroditism) or revert to the vegetative state.</p>`
+    },
+    'phase5-harvest': {
+      title: 'Phase 5: Harvest, Drying & Curing',
+      content: `<h3>The Perfect Harvest Window</h3><p>The best indicator is the trichomes (resin glands). Use a 60x loupe: Clear trichomes are immature. Milky/cloudy trichomes indicate peak THC and a more energetic high. Amber trichomes mean THC is degrading into CBN, resulting in a more sedative, body-heavy effect. Most growers harvest when it's mostly cloudy with about 10-20% amber.</p><h3>Drying and Curing</h3><p>Hang branches upside down in a dark, cool room (approx. 18-20°C, 50-60% humidity) for 7-14 days until smaller stems snap instead of bend. Then, trim the buds and place them in airtight glass jars for curing. "Burp" the jars daily for the first week to release moisture.</p><h3>Pro Tip</h3><p>Curing is a critical scientific process. It allows chlorophyll and sugars to break down, dramatically improving the smoothness, taste, and aroma of your final product. Use small hygrometers inside your curing jars to maintain the ideal humidity of around 62%.</p>`
+    },
+    'fix-overwatering': {
+        title: 'How to Fix Overwatering',
+        content: `<h3>Symptoms</h3><p>Droopy, heavy leaves that curl downwards, even when the soil is wet. The pot feels heavy. Growth is stunted.</p><h3>Immediate Action</h3><p>Stop watering immediately. Improve air circulation around the base of the plant. If the pot is sitting in runoff water, remove it.</p><h3>Long-Term Solution</h3><p>Allow the top 2-3 inches of soil to dry out completely before watering again. Lift the pot to feel its weight when dry vs. wet. Use pots with good drainage (fabric pots are excellent) to prevent waterlogging.</p>`
+    },
+    'fix-calcium-deficiency': {
+        title: 'How to Fix Calcium Deficiency',
+        content: `<h3>Symptoms</h3><p>Shows on newer growth first. Look for stunted, slow growth with small, crinkled, or distorted new leaves. Edges may turn brown or die off. Can also cause weak stems.</p><h3>Immediate Action</h3><p>Apply a Cal-Mag supplement. Ensure your pH is in the correct range (6.0-6.5 for soil), as pH lockout is a common cause.</p><h3>Long-Term Solution</h3><p>Regularly include a Cal-Mag supplement in your feeding schedule, especially if using RO water or growing in coco coir. Monitor pH closely.</p>`
+    },
+  },
 };
 
 export const tipOfTheDay = {

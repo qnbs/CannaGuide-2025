@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from 'react';
-import { Plant, Strain, GrowSetup } from '@/types';
+import React, { useMemo } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
-import { PlantCard } from '@/components/views/plants/PlantSlot';
+import { PlantSlot } from '@/components/views/plants/PlantSlot';
 import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
 import { TipOfTheDay } from '@/components/views/plants/TipOfTheDay';
 import { GardenVitals } from '@/components/views/plants/DashboardSummary';
@@ -12,8 +11,10 @@ import { Card } from '@/components/common/Card';
 import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
+import { GrowConfirmationModal } from '@/components/views/plants/GrowConfirmationModal';
 import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '@/stores/selectors';
-import { AiDiagnostics } from './plants/AiDiagnostics';
+import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
+import { Button } from '@/components/common/Button';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -30,83 +31,88 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, startNewPlant, addNotification, advanceDay } = useAppStore(state => ({
+    const { waterAllPlants, setSelectedPlantId } = useAppStore(state => ({
         waterAllPlants: state.waterAllPlants,
-        startNewPlant: state.startNewPlant,
-        addNotification: state.addNotification,
-        advanceDay: state.advanceDay,
+        setSelectedPlantId: state.setSelectedPlantId,
     }));
+    
+    const {
+        initiatingGrowForSlot, strainForNewGrow, isGrowSetupModalOpen, isConfirmationModalOpen,
+        startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow,
+    } = useAppStore(state => ({
+        initiatingGrowForSlot: state.initiatingGrowForSlot,
+        strainForNewGrow: state.strainForNewGrow,
+        isGrowSetupModalOpen: state.isGrowSetupModalOpen,
+        isConfirmationModalOpen: state.isConfirmationModalOpen,
+        startGrowInSlot: state.startGrowInSlot,
+        selectStrainForGrow: state.selectStrainForGrow,
+        confirmSetupAndShowConfirmation: state.confirmSetupAndShowConfirmation,
+        cancelNewGrow: state.cancelNewGrow,
+    }));
+
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
-
     const { t } = useTranslations();
     const selectedPlantId = useAppStore(selectSelectedPlantId);
-    const setSelectedPlantId = useAppStore(state => state.setSelectedPlantId);
     
-    const [selectingSlotIndex, setSelectingSlotIndex] = useState<number | null>(null);
-    const [strainForSetup, setStrainForSetup] = useState<Strain | null>(null);
-    const [isSetupModalOpen, setIsSetupModalOpen] = useState(false);
-
-    const activePlants = useAppStore(selectActivePlants);
-    const allTasks = useAppStore(selectOpenTasksSummary);
-    const allProblems = useAppStore(selectActiveProblemsSummary);
+    const activePlants = useAppStore(state => selectActivePlants(state));
+    const allTasks = useAppStore(state => selectOpenTasksSummary(state));
+    const allProblems = useAppStore(state => selectActiveProblemsSummary(state));
     
     const selectedPlant = useMemo(() => {
         if (!selectedPlantId) return null;
-        return plantsRecord[selectedPlantId] || null;
+        const plant = plantsRecord[selectedPlantId];
+        return plant ? plant : null;
     }, [selectedPlantId, plantsRecord]);
-    
-    const plants = useMemo(() => plantSlots.map(id => id ? plantsRecord[id] : null), [plantSlots, plantsRecord]);
-
-    const handleStartGrow = (setup: GrowSetup) => {
-        if (!strainForSetup || selectingSlotIndex === null) return;
-        
-        const success = startNewPlant(strainForSetup, setup, selectingSlotIndex);
-        if (success) {
-            addNotification(t('plantsView.notifications.startSuccess', { name: strainForSetup.name }), 'success');
-            setIsSetupModalOpen(false);
-            setStrainForSetup(null);
-            setSelectingSlotIndex(null);
-        }
-    };
     
     if (selectedPlant) {
         return <DetailedPlantView plant={selectedPlant} onClose={() => setSelectedPlantId(null)} />;
     }
 
+    const showGrowFromStrainBanner = strainForNewGrow && initiatingGrowForSlot === null;
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-             {isSetupModalOpen && strainForSetup && (
+            {isGrowSetupModalOpen && strainForNewGrow && (
                 <GrowSetupModal
-                    strain={strainForSetup}
-                    onClose={() => {
-                        setIsSetupModalOpen(false);
-                        setStrainForSetup(null);
-                    }}
-                    onConfirm={handleStartGrow}
+                    strain={strainForNewGrow}
+                    onClose={cancelNewGrow}
+                    onConfirm={confirmSetupAndShowConfirmation}
                 />
+            )}
+            {isConfirmationModalOpen && (
+                <GrowConfirmationModal />
             )}
 
             <div className="lg:col-span-2 space-y-6">
                 <TipOfTheDay />
+                {showGrowFromStrainBanner && (
+                    <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex-grow">
+                            <h3 className="font-bold text-primary-300">{t('plantsView.inlineSelector.title')}</h3>
+                            <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {strainForNewGrow.name}.</p>
+                        </div>
+                        <Button variant="secondary" size="sm" onClick={cancelNewGrow}>
+                            {t('common.cancel')}
+                        </Button>
+                    </Card>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {plants.map((plant, index) => {
-                        if (selectingSlotIndex === index) {
+                    {plantSlots.map((plantId, index) => {
+                        if (initiatingGrowForSlot === index) {
                             return (
                                 <InlineStrainSelector 
                                     key={`selector-${index}`}
-                                    onClose={() => setSelectingSlotIndex(null)}
-                                    onSelectStrain={(strain) => {
-                                        setStrainForSetup(strain);
-                                        setIsSetupModalOpen(true);
-                                    }}
+                                    onClose={cancelNewGrow}
+                                    onSelectStrain={selectStrainForGrow}
                                 />
                             );
                         }
+                        const plant = plantId ? plantsRecord[plantId] : null;
                         return plant ? (
-                            <PlantCard key={plant.id} plant={plant} onInspect={() => setSelectedPlantId(plant.id)} />
+                            <PlantSlot key={plant.id} plant={plant} onInspect={() => setSelectedPlantId(plant.id)} />
                         ) : (
-                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => setSelectingSlotIndex(index)} />
+                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => startGrowInSlot(index)} />
                         );
                     })}
                 </div>
@@ -115,10 +121,8 @@ export const PlantsView: React.FC = () => {
             </div>
             <div className="lg:col-span-1 space-y-6">
                 <GardenVitals 
-                    plants={activePlants} 
                     openTasksCount={allTasks.length}
                     onWaterAll={waterAllPlants}
-                    onAdvanceDay={advanceDay}
                 />
                 <TasksAndWarnings tasks={allTasks} problems={allProblems} />
             </div>

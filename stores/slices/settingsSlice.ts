@@ -8,7 +8,13 @@ export const defaultSettings: AppSettings = {
   fontSize: 'base', language: initialLang, theme: 'midnight', defaultView: View.Plants,
   strainsViewSettings: { defaultSortKey: 'name', defaultSortDirection: 'asc', defaultViewMode: 'list', visibleColumns: { type: true, thc: true, cbd: true, floweringTime: true, yield: true, difficulty: true }},
   notificationsEnabled: true, notificationSettings: { stageChange: true, problemDetected: true, harvestReady: true, newTask: true }, onboardingCompleted: false,
-  simulationSettings: { speed: '1x', difficulty: 'normal', autoAdvance: true, autoJournaling: { stageChanges: true, problems: true, tasks: true }, customDifficultyModifiers: { pestPressure: 1.0, nutrientSensitivity: 1.0, environmentalStability: 1.0 }},
+  simulationSettings: { 
+    difficulty: 'normal', 
+    autoJournaling: { stageChanges: true, problems: true, tasks: true }, 
+    customDifficultyModifiers: { pestPressure: 1.0, nutrientSensitivity: 1.0, environmentalStability: 1.0 },
+    autoAdvance: false,
+    speed: '1x'
+  },
   defaultGrowSetup: { light: { type: 'LED', wattage: 150, isOn: true }, potSize: 15, medium: 'Soil' },
   defaultJournalNotes: { watering: 'plantsView.actionModals.defaultNotes.watering', feeding: 'plantsView.actionModals.defaultNotes.feeding' },
   defaultExportSettings: { source: 'filtered', format: 'pdf' }, lastBackupTimestamp: undefined,

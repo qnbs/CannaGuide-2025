@@ -1,0 +1,148 @@
+import type { Strain } from '@/types';
+
+export const strainsK: Strain[] = [
+    {
+        "id": "k2",
+        "name": "K2",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
+        "genetics": "White Widow x Hindu Kush",
+        "floweringType": "Photoperiod",
+        "description": "An indica-dominant strain known for its fast flowering time and its dense, resinous buds. The effect is relaxing and calming.",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Short",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "550-650 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Earthy", "Spicy", "Sweet", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    },
+    {
+        "id": "kali-mist",
+        "name": "Kali Mist",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid - 90% Sativa / 10% Indica",
+        "genetics": "Unknown Sativa Hybrids",
+        "floweringType": "Photoperiod",
+        "description": "An award-winning, almost pure Sativa. It is known for its energizing, clear, and creative effect, which makes it the 'Queen of Sativas'. Ideal for daytime use.",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 11,
+        "floweringTimeRange": "10-12",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "300-500 g/m²", "outdoor": "400-600 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+        },
+        "aromas": ["Spicy", "Sweet", "Earthy", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    },
+    {
+        "id": "kandy-kush",
+        "name": "Kandy Kush",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
+        "genetics": "OG Kush x Trainwreck",
+        "floweringType": "Photoperiod",
+        "description": "An indica-dominant strain with a sweet, candy-like aroma. The effect is strong, relaxing, and euphoric.",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Sweet", "Candy", "Earthy", "Lemon"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    },
+    {
+        "id": "ketama",
+        "name": "Ketama",
+        "type": "Indica",
+        "typeDetails": "Indica - 100% Indica",
+        "genetics": "Moroccan Landrace (Chefchaouen)",
+        "floweringType": "Photoperiod",
+        "description": "A pure Indica landrace from the Ketama region of Morocco, traditionally used for making high-quality hashish. It offers a relaxing and calming effect.",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "15-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Earthy", "Hash", "Spicy", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
+    },
+    {
+        "id": "key-lime-pie",
+        "name": "Key Lime Pie",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid - 75% Indica / 25% Sativa",
+        "genetics": "GSC (phenotype)",
+        "floweringType": "Photoperiod",
+        "description": "A Girl Scout Cookies phenotype with a distinct lime and mint aroma. The effect is relaxing and euphoric, ideal for evening use.",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Lime", "Mint", "Sweet", "Earthy"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    },
+    {
+        "id": "khalifa-kush",
+        "name": "Khalifa Kush",
+        "type": "Hybrid",
+        "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
+        "genetics": "OG Kush (phenotype)",
+        "floweringType": "Photoperiod",
+        "description": "A potent indica-dominant strain developed for the rapper Wiz Khalifa. Known for its strong, lemony, and piney aroma and its relaxing, euphoric effect.",
+        "thc": 27,
+        "cbd": 2,
+        "thcRange": "24-30%",
+        "cbdRange": "<2%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Lemon", "Pine", "Earthy", "Pungent"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }
+];

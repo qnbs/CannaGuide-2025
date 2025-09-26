@@ -10,18 +10,22 @@ export interface FavoritesSlice {
 export const createFavoritesSlice = (set: StoreSet): FavoritesSlice => ({
     favoriteIds: new Set(),
     toggleFavorite: (strainId) => set(state => {
-        const newSet = new Set(state.favoriteIds);
-        if (newSet.has(strainId)) {
-            newSet.delete(strainId);
+        const newFavoriteIds = new Set(state.favoriteIds);
+        if (newFavoriteIds.has(strainId)) {
+            newFavoriteIds.delete(strainId);
         } else {
-            newSet.add(strainId);
+            newFavoriteIds.add(strainId);
         }
-        state.favoriteIds = newSet;
+        state.favoriteIds = newFavoriteIds;
     }),
     addMultipleToFavorites: (ids) => set(state => {
-        ids.forEach(id => state.favoriteIds.add(id));
+        const newSet = new Set(state.favoriteIds);
+        ids.forEach(id => newSet.add(id));
+        state.favoriteIds = newSet;
     }),
     removeMultipleFromFavorites: (ids) => set(state => {
-        ids.forEach(id => state.favoriteIds.delete(id));
+        const newSet = new Set(state.favoriteIds);
+        ids.forEach(id => newSet.delete(id));
+        state.favoriteIds = newSet;
     }),
 });

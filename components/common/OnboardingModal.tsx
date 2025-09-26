@@ -13,7 +13,10 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const { t } = useTranslations();
-    const setSetting = useAppStore(state => state.setSetting);
+    const { setSetting, startFirstGrow } = useAppStore(state => ({
+        setSetting: state.setSetting,
+        startFirstGrow: state.startFirstGrow,
+    }));
 
     const steps = useMemo(() => [
         {
@@ -47,11 +50,13 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
         if (currentStep < steps.length) {
             setCurrentStep(currentStep + 1);
         } else {
+            startFirstGrow();
             onClose();
         }
     };
     
     const step = currentStep > 0 ? steps[currentStep - 1] : null;
+    const isLastStep = currentStep === steps.length;
 
     return (
         <Modal isOpen={true} onClose={onClose} size="lg">
@@ -81,7 +86,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                                 ))}
                             </div>
                             <Button onClick={handleNext}>
-                                {currentStep < steps.length ? t('common.next') : t('common.start')}
+                                {isLastStep ? t('onboarding.startGrow') : t('common.next')}
                             </Button>
                         </div>
                     </>

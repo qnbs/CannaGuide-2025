@@ -55,7 +55,7 @@ const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect })
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslations();
-    const { isLoading, recommendation, error, sourceDetails } = useAppStore(selectEquipmentGenerationState);
+    const { isLoading, response: recommendation, error, sourceDetails } = useAppStore(selectEquipmentGenerationState);
     const { startEquipmentGeneration, resetEquipmentGenerationState, addSetup, addNotification } = useAppStore(state => ({
         startEquipmentGeneration: state.startEquipmentGeneration,
         resetEquipmentGenerationState: state.resetEquipmentGenerationState,

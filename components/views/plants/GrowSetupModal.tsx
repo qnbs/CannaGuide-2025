@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { GrowSetup, Strain } from '@/types';
+import { Strain, GrowSetup } from '@/types';
+import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
-import { Modal } from '@/components/common/Modal';
+import { selectSettings } from '@/stores/selectors';
 
 interface GrowSetupModalProps {
   strain: Strain;
@@ -11,103 +12,76 @@ interface GrowSetupModalProps {
   onConfirm: (setup: GrowSetup) => void;
 }
 
+const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
+    <div>
+        <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+        <input {...props} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+    </div>
+);
+
+const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string }> = ({ label, children, ...props }) => (
+    <div>
+        <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+        <select {...props} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+            {children}
+        </select>
+    </div>
+);
+
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
-  const { t } = useTranslations();
-  const { addNotification, settings } = useAppStore(state => ({
-      addNotification: state.addNotification,
-      settings: state.settings,
-  }));
-  
-  const { defaultGrowSetup } = settings;
-  const [setup, setSetup] = useState<GrowSetup>({
-    lightType: defaultGrowSetup.light.type,
-    wattage: defaultGrowSetup.light.wattage,
-    potSize: defaultGrowSetup.potSize,
-    medium: defaultGrowSetup.medium,
-    temperature: 24,
-    humidity: 60,
-    lightHours: 18,
-  });
+    const { t } = useTranslations();
+    const defaultSetup = useAppStore(selectSettings).defaultGrowSetup;
+    const [setup, setSetup] = useState<GrowSetup>({
+        lightType: defaultSetup.light.type,
+        wattage: defaultSetup.light.wattage,
+        potSize: defaultSetup.potSize,
+        medium: defaultSetup.medium,
+        temperature: 24,
+        humidity: 60,
+        lightHours: 18,
+    });
 
-  const handleConfirm = () => {
-    if (setup.lightHours < 1 || setup.lightHours > 24) {
-        addNotification(t('plantsView.setupModal.validation.light'), 'error');
-        return;
-    }
-     if (setup.temperature < 10 || setup.temperature > 40) {
-        addNotification(t('plantsView.setupModal.validation.temp'), 'error');
-        return;
-    }
-     if (setup.humidity < 10 || setup.humidity > 99) {
-        addNotification(t('plantsView.setupModal.validation.humidity'), 'error');
-        return;
-    }
-    onConfirm(setup);
-  };
+    const handleChange = (field: keyof GrowSetup, value: string | number) => {
+        setSetup(prev => ({ ...prev, [field]: value }));
+    };
 
-  type SetupOption = 'lightType' | 'potSize' | 'medium';
-  const options: { id: SetupOption, label: string, choices: (string|number)[], display?: (s: string|number) => string }[] = [
-      { id: 'lightType', label: t('plantsView.setupModal.lightSource'), choices: ['LED', 'HPS', 'CFL'] },
-      { id: 'potSize', label: t('plantsView.setupModal.potSize'), choices: [5, 10, 15, 30], display: s => `${s}L` },
-      { id: 'medium', label: t('plantsView.setupModal.medium'), choices: ['Soil', 'Coco', 'Hydro'], display: s => String(t(`plantsView.setupModal.mediums.${String(s).toLowerCase()}`)) },
-  ];
+    const handleConfirm = () => {
+        onConfirm(setup);
+    };
 
-  const footer = (
-      <>
-        <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-        <Button onClick={handleConfirm}>{t('common.confirm')} & {t('common.start')}</Button>
-      </>
-  );
+    const footer = (
+        <>
+            <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+            <Button onClick={handleConfirm}>{t('common.confirm')}</Button>
+        </>
+    );
 
-  return (
-    <Modal
-        isOpen={true}
-        onClose={onClose}
-        title={t('plantsView.setupModal.title', { name: strain.name })}
-        size="md"
-        footer={footer}
-    >
-        <p className="text-accent-200/90 mb-6">{t('plantsView.setupModal.subtitle')}</p>
-        <div className="space-y-6">
-            {options.map(opt => (
-                <div key={opt.id}>
-                    <label className="block text-lg font-semibold text-accent-100 mb-2">{opt.label}</label>
-                    <div className="flex gap-2">
-                    {opt.choices.map(choice => (
-                        <button
-                            key={choice}
-                            onClick={() => setSetup(s => ({ ...s, [opt.id]: choice }))}
-                            className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors ${
-                                setup[opt.id] === choice
-                                ? 'bg-primary-600 text-on-accent font-bold shadow-lg'
-                                : 'bg-accent-800 text-accent-200 hover:bg-accent-700'
-                            }`}
-                        >
-                            {opt.display ? opt.display(choice) : String(choice)}
-                        </button>
-                    ))}
-                    </div>
-              </div>
-            ))}
-        </div>
-
-        <div className="mt-6">
-            <label className="block text-lg font-semibold text-accent-100 mb-2">{t('plantsView.setupModal.environment')}</label>
-            <div className="grid grid-cols-3 gap-3">
-                <div>
-                    <label className="block text-xs font-medium text-accent-300 mb-1">{t('plantsView.setupModal.temp')}</label>
-                    <input type="number" value={setup.temperature} onChange={e => setSetup(s => ({...s, temperature: parseInt(e.target.value, 10) || 24}))} className="w-full bg-accent-900/50 border border-accent-700 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-accent-300 mb-1">{t('plantsView.setupModal.humidity')}</label>
-                    <input type="number" value={setup.humidity} onChange={e => setSetup(s => ({...s, humidity: parseInt(e.target.value, 10) || 60}))} className="w-full bg-accent-900/50 border border-accent-700 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
-                </div>
-                <div>
-                    <label className="block text-xs font-medium text-accent-300 mb-1">{t('plantsView.setupModal.lightHours')}</label>
-                    <input type="number" value={setup.lightHours} onChange={e => setSetup(s => ({...s, lightHours: parseInt(e.target.value, 10) || 18}))} className="w-full bg-accent-900/50 border border-accent-700 rounded-md px-2 py-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"/>
-                </div>
+    return (
+        <Modal 
+            isOpen={true} 
+            onClose={onClose} 
+            title={t('plantsView.setupModal.title', { name: strain.name })}
+            footer={footer}
+            size="lg"
+        >
+            <p className="text-slate-400 mb-6">{t('plantsView.setupModal.subtitle')}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Select label={t('plantsView.setupModal.lightType')} value={setup.lightType} onChange={e => handleChange('lightType', e.target.value)}>
+                    <option>LED</option>
+                    <option>HPS</option>
+                    <option>CFL</option>
+                </Select>
+                <Input label={t('plantsView.setupModal.wattage')} type="number" value={setup.wattage} onChange={e => handleChange('wattage', Number(e.target.value))} />
+                <Input label={t('plantsView.setupModal.potSize')} type="number" value={setup.potSize} onChange={e => handleChange('potSize', Number(e.target.value))} />
+                <Select label={t('plantsView.setupModal.medium')} value={setup.medium} onChange={e => handleChange('medium', e.target.value)}>
+                    <option>Soil</option>
+                    <option>Coco</option>
+                    <option>Hydro</option>
+                </Select>
+                <Input label={t('plantsView.setupModal.temperature')} type="number" value={setup.temperature} onChange={e => handleChange('temperature', Number(e.target.value))} />
+                <Input label={t('plantsView.setupModal.humidity')} type="number" value={setup.humidity} onChange={e => handleChange('humidity', Number(e.target.value))} />
+                <Input label={t('plantsView.setupModal.lightHours')} type="number" value={setup.lightHours} onChange={e => handleChange('lightHours', Number(e.target.value))} />
             </div>
-        </div>
-    </Modal>
-  );
+        </Modal>
+    );
 };

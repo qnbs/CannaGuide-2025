@@ -43,8 +43,8 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 
 export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
     const { t } = useTranslations();
-    const { initiateGrow, addNotification } = useAppStore(state => ({
-        initiateGrow: state.initiateGrow,
+    const { initiateGrowFromStrainList, addNotification } = useAppStore(state => ({
+        initiateGrowFromStrainList: state.initiateGrowFromStrainList,
         addNotification: state.addNotification,
     }));
     const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
@@ -147,7 +147,7 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
                              const strain = allStrains.find(s => s.id === tips[0].strainId);
                              return (
                                 <details key={strainName} open={true} className="group">
-                                     <summary className="list-none"><div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e) => { e.stopPropagation(); initiateGrow(strain); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>
+                                     <summary className="list-none"><div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e) => { e.stopPropagation(); initiateGrowFromStrainList(strain); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>
                                     <div className="pl-6 pt-3 space-y-3">
                                         {tips.map(tip => (<Card key={tip.id} className="bg-slate-800/50 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))}
                                     </div>

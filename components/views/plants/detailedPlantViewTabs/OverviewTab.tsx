@@ -10,6 +10,9 @@ import { PlantVisualizer } from '../PlantVisualizer';
 import { ActionToolbar } from '../ActionToolbar';
 import { ModalType } from '../LogActionModal';
 import { VPDGauge } from '../VPDGauge';
+import { RealtimeStatus } from '../RealtimeStatus';
+import { EquipmentControls } from '../EquipmentControls';
+import { useAppStore } from '@/stores/useAppStore';
 
 interface OverviewTabProps {
     plant: Plant;
@@ -19,11 +22,17 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant, onLogAction }) => {
     const { t } = useTranslations();
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
+    const isSimulationActive = useAppStore(state => state.settings.simulationSettings.autoAdvance);
 
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
     return (
         <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <RealtimeStatus createdAt={plant.createdAt} isSimulationActive={isSimulationActive} />
+                <EquipmentControls plant={plant} />
+            </div>
+
             <Card>
                 <ActionToolbar onAction={onLogAction} />
             </Card>
@@ -33,7 +42,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant, onLogAction }) 
                     {!isPostHarvest && <PlantLifecycleTimeline currentStage={plant.stage} currentAge={plant.age} />}
                     <Card>
                         <h3 className="text-xl font-bold font-display mb-4 text-primary-400">{t('plantsView.detailedView.history')}</h3>
-                        <HistoryChart history={plant.history} />
+                        <HistoryChart history={plant.history} journal={plant.journal} plantCreatedAt={plant.createdAt} />
                     </Card>
                 </div>
                 <div className="space-y-6">

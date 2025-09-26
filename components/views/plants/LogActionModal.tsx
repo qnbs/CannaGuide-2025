@@ -1,343 +1,146 @@
-import React, { useState, useEffect, useId, useMemo } from 'react';
-import { Button } from '@/components/common/Button';
-import { Plant, JournalEntry, TrainingType, StoredImageData, JournalEntryType } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { dbService } from '@/services/dbService';
+import React, { useState } from 'react';
 import { useAppStore } from '@/stores/useAppStore';
-import { CameraModal } from '@/components/common/CameraModal';
-import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
-import { selectSettings } from '@/stores/selectors';
+import { Plant, JournalEntry, TrainingType } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
+import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
-import type { TFunction } from '@/stores/useAppStore';
+import { dbService } from '@/services/dbService';
+import { CameraModal } from '@/components/common/CameraModal';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
-export type ModalType = 'watering' | 'feeding' | 'observation' | 'training' | 'photo' | 'pestControl' | 'amendment' | null;
-
-export interface ModalState {
-    type: NonNullable<ModalType>;
-    plantId: string;
-}
+export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo';
 
 interface LogActionModalProps {
     plant: Plant;
-    modalState: ModalState;
-    setModalState: (state: ModalState | null) => void;
-    onAddJournalEntry: (plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'>) => void;
-    onTopPlant: (plantId: string) => void;
-    onApplyLST: (plantId: string, shootId: string, angle: number) => void;
-    onApplyPestControl: (plantId: string, method: string) => void;
+    type: ModalType;
+    onClose: () => void;
+    onLearnMore: (topic: string) => void;
 }
 
-// --- Reusable Form Components ---
-
-const InputField: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string, unit?: string }> = ({ label, unit, ...props }) => {
-    const id = useId();
-    return (
-        <div className="flex-1 w-full">
-            <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-            <div className="relative">
-                <input id={id} {...props} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 disabled:opacity-50" />
-                {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{unit}</span>}
-            </div>
-        </div>
-    );
-};
-
-const TextareaField: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => {
-    const id = useId();
-    return (
-        <div>
-            <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-            <textarea id={id} {...props} rows={3} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500" />
-        </div>
-    );
-};
-
-const SliderInputField: React.FC<{
-    label: string, value: string, onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-    min: number, max: number, step: number, unit?: string,
-    idealMin?: number, idealMax?: number, context?: string
-}> = ({ label, value, onChange, min, max, step, unit, idealMin, idealMax, context }) => {
-    const id = useId();
-    const isIdeal = idealMin !== undefined && idealMax !== undefined && parseFloat(value) >= idealMin && parseFloat(value) <= idealMax;
-    
-    const idealMinPercent = idealMin !== undefined ? ((idealMin - min) / (max - min)) * 100 : 0;
-    const idealWidthPercent = (idealMin !== undefined && idealMax !== undefined) ? ((idealMax - idealMin) / (max - min)) * 100 : 0;
-
-    return (
-        <div className="flex-1 w-full">
-            <div className="flex justify-between items-baseline mb-1">
-                <label htmlFor={id} className="block text-sm font-semibold text-slate-300">{label}</label>
-                <span className={`font-mono text-sm ${isIdeal ? 'text-green-400' : 'text-amber-400'}`}>{value}{unit}</span>
-            </div>
-            <div className="relative h-4 flex items-center">
-                <div className="relative w-full h-1.5 bg-slate-600 rounded-full">
-                    {idealMin !== undefined && idealMax !== undefined && (
-                        <div
-                            className="absolute h-full bg-green-500/30 rounded-full"
-                            style={{ left: `${idealMinPercent}%`, width: `${idealWidthPercent}%` }}
-                            title={`Ideal Range: ${idealMin}-${idealMax}`}
-                        />
-                    )}
-                </div>
-                <input
-                    id={id} type="range" min={min} max={max} step={step} value={value}
-                    onChange={onChange}
-                    className="absolute w-full h-2 appearance-none bg-transparent cursor-pointer range-slider-input"
-                />
-            </div>
-            {context && <p className="text-xs text-slate-400 mt-1 text-right">{context}</p>}
-        </div>
-    );
-};
-
-// --- Main Modal Component ---
-
-const isDefaultNoteKey = (str: string) => str.startsWith('plantsView.actionModals.defaultNotes.');
-
-export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, modalState, setModalState, onAddJournalEntry, onTopPlant, onApplyLST, onApplyPestControl }) => {
+export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
     const { t } = useTranslations();
-    const settings = useAppStore(selectSettings);
-
-    const [notes, setNotes] = useState('');
+    const { addJournalEntry, waterPlant, settings, addNotification, topPlant, applyLst, applyPestControl } = useAppStore(state => ({
+        addJournalEntry: state.addJournalEntry,
+        waterPlant: state.waterPlant,
+        settings: state.settings,
+        addNotification: state.addNotification,
+        topPlant: state.topPlant,
+        applyLst: state.applyLst,
+        applyPestControl: state.applyPestControl,
+    }));
     
-    // Form states
-    const [waterAmount, setWaterAmount] = useState('500');
-    const [ph, setPh] = useState('6.5');
-    const [ec, setEc] = useState('1.2');
-    const [nutrientDetails, setNutrientDetails] = useState('');
-    const [healthStatus, setHealthStatus] = useState<'Excellent' | 'Good' | 'Showing Issues'>('Good');
-    const [tags, setTags] = useState('');
+    const [notes, setNotes] = useState(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '');
+    const [waterAmount, setWaterAmount] = useState(500);
+    const [ph, setPh] = useState(6.5);
+    const [ec, setEc] = useState(1.2);
     const [trainingType, setTrainingType] = useState<TrainingType>('LST');
-    const [category, setCategory] = useState<'Full Plant' | 'Bud' | 'Leaf' | 'Problem' | 'Trichomes'>('Full Plant');
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const [pestControlMethod, setPestControlMethod] = useState('neemOil');
-    const fileInputId = useId();
+    const [isCameraOpen, setIsCameraOpen] = useState(type === 'photo');
+    const [imageData, setImageData] = useState<{id: string, url: string} | null>(null);
 
-    useEffect(() => {
-        // Reset state when modal type changes
-        if (modalState.type === 'watering') {
-            const defaultNoteKey = settings.defaultJournalNotes.watering;
-            setNotes(defaultNoteKey && isDefaultNoteKey(defaultNoteKey) ? t(defaultNoteKey) : (defaultNoteKey || ''));
-        } else if (modalState.type === 'feeding') {
-            const defaultNoteKey = settings.defaultJournalNotes.feeding;
-            setNotes(defaultNoteKey && isDefaultNoteKey(defaultNoteKey) ? t(defaultNoteKey) : (defaultNoteKey || ''));
-            const lastFeeding = [...plant.journal].reverse().find(e => e.type === 'FEEDING' && e.details?.nutrientDetails);
-            if (lastFeeding?.details?.nutrientDetails) setNutrientDetails(lastFeeding.details.nutrientDetails);
-        } else {
-            setNotes('');
-        }
-        setImagePreview(null);
-    }, [modalState.type, settings.defaultJournalNotes, t, plant.journal]);
-
-
-    const handleClose = () => setModalState(null);
-
-    const handleConfirm = () => {
-        const typeMap: Record<string, JournalEntryType> = {
-            watering: 'WATERING', feeding: 'FEEDING', training: 'TRAINING', photo: 'PHOTO', observation: 'OBSERVATION', pestControl: 'PEST_CONTROL',
-        };
-        const entryType = typeMap[modalState.type!];
-        if(!entryType) return;
-        
-        let details: JournalEntry['details'] = {};
-        let finalNotes = notes.trim();
-
-        switch(modalState.type) {
+    const titleMap: Record<ModalType, string> = {
+        watering: t('plantsView.actionModals.logWatering'),
+        feeding: t('plantsView.actionModals.logFeeding'),
+        training: t('plantsView.actionModals.logTraining'),
+        pestControl: t('plantsView.actionModals.logPestControl'),
+        observation: t('plantsView.actionModals.logObservation'),
+        photo: t('plantsView.actionModals.logPhoto'),
+    };
+    
+    const handleSave = () => {
+        let entry: Omit<JournalEntry, 'id' | 'createdAt'> | null = null;
+        switch(type) {
             case 'watering':
-                details = { waterAmount: parseFloat(waterAmount) || 0, ph: parseFloat(ph) || 6.5 };
-                finalNotes = finalNotes || t('plantsView.actionModals.defaultNotes.watering');
+                waterPlant(plant.id, waterAmount, ph);
+                entry = { type: 'WATERING', notes, details: { waterAmount, ph } };
                 break;
             case 'feeding':
-                details = { waterAmount: parseFloat(waterAmount) || 0, ph: parseFloat(ph) || 6.2, ec: parseFloat(ec) || 1.2, nutrientDetails: nutrientDetails.trim() || undefined };
-                finalNotes = finalNotes || t('plantsView.actionModals.defaultNotes.feeding');
-                break;
-            case 'observation':
-                details = { healthStatus, observationTags: tags.split(',').map(tag => tag.trim()).filter(Boolean) };
-                if (!finalNotes) return;
+                entry = { type: 'FEEDING', notes, details: { waterAmount, ph, ec } };
                 break;
             case 'training':
-                details = { trainingType };
-                finalNotes = finalNotes || trainingType;
-                if (trainingType === 'Topping') {
-                    onTopPlant(plant.id);
-                } else if (trainingType === 'LST') {
-                    onApplyLST(plant.id, plant.structuralModel.id, 90);
-                }
+                if (trainingType === 'Topping') topPlant(plant.id);
+                else if (trainingType === 'LST') applyLst(plant.id);
+                entry = { type: 'TRAINING', notes, details: { trainingType } };
+                break;
+             case 'pestControl':
+                applyPestControl(plant.id, notes);
+                entry = { type: 'PEST_CONTROL', notes };
+                break;
+            case 'observation':
+                entry = { type: 'OBSERVATION', notes };
                 break;
             case 'photo':
-                if (!imagePreview) return;
-                const imageId = `img-${Date.now()}`;
-                const imageData: StoredImageData = { id: imageId, plantId: plant.id, createdAt: Date.now(), data: imagePreview };
-                dbService.addImage(imageData);
-                details = { imageId, imageUrl: imagePreview, photoCategory: category };
-                finalNotes = finalNotes || t('plantsView.detailedView.journalFilters.photo');
-                break;
-            case 'pestControl':
-                details = { method: pestControlMethod };
-                finalNotes = finalNotes || `${t(`plantsView.actionModals.pestControlMethods.${pestControlMethod}`)} applied.`;
-                onApplyPestControl(plant.id, pestControlMethod);
+                if (imageData) {
+                     entry = { type: 'PHOTO', notes, details: { imageId: imageData.id } };
+                }
                 break;
         }
-
-        onAddJournalEntry(modalState.plantId, { type: entryType, details, notes: finalNotes });
-        handleClose();
+        if (entry) {
+            addJournalEntry(plant.id, entry);
+        }
+        onClose();
+    };
+    
+    const handleCapture = async (dataUrl: string) => {
+        const imageId = `photo-${plant.id}-${Date.now()}`;
+        try {
+            await dbService.addImage({ id: imageId, data: dataUrl, createdAt: Date.now() });
+            setImageData({ id: imageId, url: dataUrl });
+            setIsCameraOpen(false);
+            if (notes.trim() === '') {
+                setNotes(`Photo on day ${plant.age}`);
+            }
+        } catch (error) {
+            console.error("Failed to save image to DB", error);
+            addNotification("Failed to save image", 'error');
+        }
     };
 
-    const idealVitals = PLANT_STAGE_DETAILS[plant.stage].idealVitals;
-
-    const modalConfig = useMemo(() => {
-        switch (modalState.type) {
-            case 'watering': return {
-                title: t('plantsView.actionModals.wateringTitle'),
-                body: (
-                    <div className="space-y-6">
-                        <SliderInputField label={t('plantsView.actionModals.waterAmount')} value={waterAmount} onChange={(e) => setWaterAmount(e.target.value)} min={100} max={plant.substrate.volumeLiters * 500} step={50} unit={t('common.units.ml')} />
-                        <SliderInputField label={t('plantsView.actionModals.phValue')} value={ph} onChange={(e) => setPh(e.target.value)} min={5.0} max={8.0} step={0.1} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} context={`${t('plantsView.actionModals.current')}: ${plant.substrate.ph.toFixed(1)}`} />
-                        <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} />
+    const handleLearnMoreClick = (topic: string) => {
+        onClose();
+        onLearnMore(topic);
+    }
+    
+    const renderContent = () => {
+        switch(type) {
+            case 'watering': return <>
+                <input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" className="w-full input-base" />
+                <input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" className="w-full input-base" />
+            </>;
+            case 'feeding': return <>
+                 <input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" className="w-full input-base" />
+                <input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" className="w-full input-base" />
+                <input type="number" value={ec} step="0.1" onChange={e => setEc(Number(e.target.value))} placeholder="EC" className="w-full input-base" />
+            </>;
+            case 'training': return <div className="flex items-end gap-2">
+                <select value={trainingType} onChange={e => setTrainingType(e.target.value as TrainingType)} className="w-full input-base">
+                    <option>LST</option><option>Topping</option><option>FIMing</option><option>Defoliation</option>
+                </select>
+                <Button variant="secondary" onClick={() => handleLearnMoreClick(trainingType)}>
+                    <PhosphorIcons.GraduationCap className="w-4 h-4 mr-1.5"/> {t('common.learnMore')}
+                </Button>
+            </div>;
+            case 'photo': return <>
+                {imageData ? (
+                    <div className="relative">
+                        <img src={imageData.url} alt="captured" className="rounded-md" />
+                        <Button size="sm" variant="danger" onClick={() => setImageData(null)} className="absolute top-2 right-2 !p-1.5"><PhosphorIcons.X/></Button>
                     </div>
-                ),
-                confirmDisabled: false
-            };
-            case 'feeding': return {
-                title: t('plantsView.actionModals.feedingTitle'),
-                body: (
-                    <div className="space-y-6">
-                        <SliderInputField label={t('plantsView.actionModals.waterAmount')} value={waterAmount} onChange={e => setWaterAmount(e.target.value)} min={100} max={plant.substrate.volumeLiters * 500} step={50} unit={t('common.units.ml')} />
-                        <SliderInputField label={t('plantsView.actionModals.phValue')} value={ph} onChange={e => setPh(e.target.value)} min={5.0} max={8.0} step={0.1} idealMin={idealVitals.ph.min} idealMax={idealVitals.ph.max} context={`${t('plantsView.actionModals.idealRange', {min: idealVitals.ph.min, max: idealVitals.ph.max})}`} />
-                        <SliderInputField label={t('plantsView.actionModals.ecValue')} value={ec} onChange={e => setEc(e.target.value)} min={0.2} max={3.0} step={0.1} idealMin={idealVitals.ec.min} idealMax={idealVitals.ec.max} context={`${t('plantsView.actionModals.idealRange', {min: idealVitals.ec.min, max: idealVitals.ec.max})}`} />
-                        <InputField label={t('plantsView.actionModals.nutrientDetails')} type="text" value={nutrientDetails} onChange={e => setNutrientDetails(e.target.value)} placeholder={t('plantsView.actionModals.nutrientDetailsPlaceholder')} />
-                        <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} />
-                    </div>
-                ),
-                confirmDisabled: false
-            };
-            case 'observation': return {
-                title: t('plantsView.actionModals.observationTitle'),
-                body: (
-                    <div className="space-y-4">
-                        <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} placeholder={t('plantsView.actionModals.observationPlaceholder')} required/>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.actionModals.healthStatus')}</label>
-                            <select value={healthStatus} onChange={e => setHealthStatus(e.target.value as any)} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white">
-                               {Object.keys(t('plantsView.actionModals.healthStatuses')).map(key => <option key={key} value={key}>{t(`plantsView.actionModals.healthStatuses.${key}`)}</option>)}
-                            </select>
-                        </div>
-                        <InputField label={t('plantsView.actionModals.observationTags')} type="text" value={tags} onChange={e => setTags(e.target.value)} placeholder={t('plantsView.actionModals.observationTagsPlaceholder')} />
-                    </div>
-                ),
-                confirmDisabled: !notes.trim()
-            };
-            case 'training': 
-                const trainingOptions: { type: TrainingType, label: string, tooltip: string }[] = 
-                    (['LST', 'Topping', 'Defoliation', 'FIMing', 'SCROG', 'SuperCropping'] as TrainingType[]).map(type => ({
-                    type,
-                    label: t(`plantsView.actionModals.trainingTypes.${type.toLowerCase()}.label`),
-                    tooltip: t(`plantsView.actionModals.trainingTypes.${type.toLowerCase()}.tooltip`),
-                }));
-                return {
-                    title: t('plantsView.actionModals.trainingTitle'),
-                    body: (
-                        <div className="space-y-4">
-                            <div>
-                                <p className="block text-sm font-semibold text-slate-300 mb-2">{t('plantsView.actionModals.trainingType')}</p>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                    {trainingOptions.map(opt => {
-                                        const isSelected = trainingType === opt.type;
-                                        return (
-                                            <div key={opt.type} className="group relative">
-                                                <button onClick={() => setTrainingType(opt.type)} className={`w-full py-2 px-2 text-sm rounded-md transition-all ${isSelected ? 'bg-primary-600 text-white font-bold ring-2 ring-primary-400' : 'bg-slate-700 hover:bg-slate-600'}`} aria-pressed={isSelected}>
-                                                    {opt.label}
-                                                </button>
-                                                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">{opt.tooltip}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} />
-                        </div>
-                    ),
-                    confirmDisabled: false
-                };
-            case 'photo': 
-                return {
-                title: t('plantsView.actionModals.photoTitle'),
-                body: (
-                    <>
-                        <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={(dataUrl) => { setImagePreview(dataUrl); setIsCameraOpen(false); }} />
-                        <div className="space-y-4">
-                            {!imagePreview ? (
-                                <div className="flex gap-2">
-                                    <input type="file" accept="image/*" onChange={e => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                            const reader = new FileReader();
-                                            reader.onloadend = () => setImagePreview(reader.result as string);
-                                            reader.readAsDataURL(file);
-                                        }
-                                    }} className="hidden" id={fileInputId}/>
-                                    <Button as="label" htmlFor={fileInputId} className="flex-1 cursor-pointer"><PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />{t('plantsView.aiDiagnostics.buttonLabel')}</Button>
-                                    <Button onClick={() => setIsCameraOpen(true)} variant="secondary" aria-label={t('plantsView.aiDiagnostics.capture')}><PhosphorIcons.Camera className="w-5 h-5"/></Button>
-                                </div>
-                            ) : (
-                                <div className="relative">
-                                    <img src={imagePreview} alt="Preview" className="rounded-lg w-full max-h-60 object-contain" />
-                                    <button onClick={() => setImagePreview(null)} className="absolute top-2 right-2 p-1.5 bg-black/50 rounded-full text-white hover:bg-black/70" aria-label={t('common.removeImage')}>
-                                        <PhosphorIcons.X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-                            <div>
-                                <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.actionModals.photoCategory')}</label>
-                                 <select value={category} onChange={e => setCategory(e.target.value as any)} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white">
-                                    {Object.keys(t('plantsView.actionModals.photoCategories')).map(key => <option key={key} value={key}>{t(`plantsView.actionModals.photoCategories.${key}`)}</option>)}
-                                </select>
-                            </div>
-                            <TextareaField label={t('plantsView.actionModals.photoNotes')} value={notes} onChange={e => setNotes(e.target.value)} />
-                        </div>
-                    </>
-                ),
-                confirmDisabled: !imagePreview
-            };
-            case 'pestControl': 
-                const pestControlOptions = ['neemOil', 'insecticidalSoap', 'beneficialInsects', 'manualRemoval'];
-                return {
-                title: t('plantsView.actionModals.pestControlTitle'),
-                body: (
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.actionModals.pestControlMethod')}</label>
-                            <select value={pestControlMethod} onChange={e => setPestControlMethod(e.target.value)} className="w-full bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white">
-                                {pestControlOptions.map(key => (
-                                    <option key={key} value={key}>{t(`plantsView.actionModals.pestControlMethods.${key}`)}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <TextareaField label={t('common.notes')} value={notes} onChange={e => setNotes(e.target.value)} />
-                    </div>
-                ),
-                confirmDisabled: false
-            };
-            default: return { title: '', body: null, confirmDisabled: true };
+                ) : <p className="text-center text-slate-400">Please capture an image.</p>}
+            </>;
+            default: return null;
         }
-    }, [modalState.type, t, plant, notes, waterAmount, ph, ec, nutrientDetails, healthStatus, tags, trainingType, category, imagePreview, isCameraOpen, idealVitals, fileInputId, pestControlMethod, onApplyLST, onTopPlant, onApplyPestControl]);
+    };
 
-    if (!modalState.type) return null;
-
-    const { title, body, confirmDisabled } = modalConfig;
-
-    const footer = (
-        <>
-            <Button variant="secondary" onClick={handleClose}>{t('common.cancel')}</Button>
-            <Button onClick={handleConfirm} disabled={confirmDisabled}>{t('common.confirm')}</Button>
-        </>
-    );
+    if (isCameraOpen && type === 'photo') {
+        return <CameraModal isOpen={isCameraOpen} onClose={onClose} onCapture={handleCapture} />;
+    }
 
     return (
-        <Modal isOpen={true} onClose={handleClose} title={title} size="md" footer={footer}>
-            {body}
+        <Modal isOpen={true} onClose={onClose} title={titleMap[type]} footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></>}>
+            <div className="space-y-4">
+                {renderContent()}
+                <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes..." className="w-full min-h-[80px] input-base" />
+            </div>
         </Modal>
     );
 };

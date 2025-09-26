@@ -1,64 +1,42 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
+import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
 import { useAppStore } from '@/stores/useAppStore';
-import { geminiService } from '@/services/geminiService';
-import { Plant, PlantDiagnosisResponse } from '@/types';
-import { CameraModal } from '@/components/common/CameraModal';
-import { selectActivePlants, selectDiagnosticsState } from '@/stores/selectors';
+import { selectDiagnosticsState, selectActivePlants } from '@/stores/selectors';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { CameraModal } from '@/components/common/CameraModal';
+
+const base64ToMimeType = (base64: string): string => {
+    const signatures: Record<string, string> = {
+      'R0lGODdh': 'image/gif',
+      'iVBORw0KGgo': 'image/png',
+      '/9j/': 'image/jpeg'
+    };
+    for (const s in signatures) {
+      if (base64.startsWith(s)) {
+        return signatures[s];
+      }
+    }
+    return 'image/jpeg'; // fallback
+};
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
-    const { addNotification, addJournalEntry, startDiagnostics } = useAppStore(state => ({
+    const { startDiagnostics, addNotification, addJournalEntry } = useAppStore(state => ({
+        startDiagnostics: state.startDiagnostics,
         addNotification: state.addNotification,
         addJournalEntry: state.addJournalEntry,
-        startDiagnostics: state.startDiagnostics,
     }));
     const { isLoading, response, error } = useAppStore(selectDiagnosticsState);
-    const activePlants = useAppStore(selectActivePlants);
-    const fileInputRef = useRef<HTMLInputElement>(null);
-    
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [loadingMessage, setLoadingMessage] = useState('');
+    const activePlants = useAppStore(state => selectActivePlants(state));
+
+    const [image, setImage] = useState<string | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const [isDragOver, setIsDragOver] = useState(false);
-    const [selectedPlantId, setSelectedPlantId] = useState<string>('');
+    const [plantContextId, setPlantContextId] = useState<string>('general');
     const [userNotes, setUserNotes] = useState('');
-
-    useEffect(() => {
-        if (error) {
-            addNotification(error, 'error');
-        }
-    }, [error, addNotification]);
-
-    useEffect(() => {
-        if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'diagnostics' }, t);
-            let messageIndex = 0;
-            const updateLoadingMessage = () => {
-                setLoadingMessage(messages[messageIndex % messages.length]);
-                messageIndex++;
-            };
-            
-            updateLoadingMessage();
-            const intervalId = setInterval(updateLoadingMessage, 2000);
-
-            return () => clearInterval(intervalId);
-        }
-    }, [isLoading, t]);
-    
-    const handleDiagnose = useCallback((imageDataUrl: string, mimeType: string) => {
-        const base64Data = imageDataUrl.split(',')[1];
-        const selectedPlant = activePlants.find(p => p.id === selectedPlantId);
-        const context = {
-            plant: selectedPlant,
-            userNotes: userNotes.trim() || undefined,
-        };
-        startDiagnostics(base64Data, mimeType, context);
-    }, [activePlants, selectedPlantId, userNotes, startDiagnostics]);
 
     const handleFile = useCallback((file: File) => {
         if (!file.type.startsWith('image/')) {
@@ -66,153 +44,101 @@ export const AiDiagnostics: React.FC = () => {
             return;
         }
         const reader = new FileReader();
-        reader.onloadend = () => {
-            const dataUrl = reader.result as string;
-            setImagePreview(dataUrl);
-            handleDiagnose(dataUrl, file.type);
-        };
+        reader.onload = () => setImage(reader.result as string);
         reader.readAsDataURL(file);
-    }, [addNotification, t, handleDiagnose]);
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) handleFile(file);
-    };
-
-    const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setIsDragOver(false);
-        if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
-            handleFile(event.dataTransfer.files[0]);
-            event.dataTransfer.clearData();
-        }
-    }, [handleFile]);
-
-    const handleDragEvents = (event: React.DragEvent<HTMLDivElement>) => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (event.type === 'dragenter' || event.type === 'dragover') {
-            setIsDragOver(true);
-        } else if (event.type === 'dragleave') {
-            setIsDragOver(false);
-        }
-    };
+    }, [addNotification, t]);
     
-    const handleCameraCapture = (dataUrl: string) => {
-        setImagePreview(dataUrl);
-        setIsCameraOpen(false);
-        handleDiagnose(dataUrl, 'image/jpeg');
+    const handleDrag = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); }, []);
+    const handleDragIn = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }, []);
+    const handleDragOut = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }, []);
+    const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) { handleFile(e.dataTransfer.files[0]); } }, [handleFile]);
+
+    const handleGetDiagnosis = () => {
+        if (!image) return;
+        const base64Data = image.split(',')[1];
+        const mimeType = base64ToMimeType(base64Data);
+        const selectedPlant = activePlants.find(p => p.id === plantContextId);
+        const context = selectedPlant ? { name: selectedPlant.name, age: selectedPlant.age, stage: selectedPlant.stage, notes: userNotes } : { notes: userNotes };
+        startDiagnostics(base64Data, mimeType, context);
     };
-    
+
     const handleSaveToJournal = () => {
-        if (!response || !selectedPlantId) return;
-        
-        const formattedNotes = `**${t('ai.diagnostics')}**: ${response.problemName} (${response.confidence}% ${t('plantsView.aiDiagnostics.confidence')})\n\n**${t('plantsView.aiDiagnostics.diagnosis')}**\n${response.diagnosis}\n\n**${t('plantsView.aiDiagnostics.actions')}**\n${response.immediateActions}`;
-        
-        addJournalEntry(selectedPlantId, {
-            type: 'OBSERVATION',
-            notes: formattedNotes,
-            details: {
-                healthStatus: 'Showing Issues',
-                observationTags: [response.problemName, 'AI Diagnosis']
-            }
-        });
-        
-        addNotification(t('plantsView.aiDiagnostics.savedToJournal'), 'success');
+        if (response && plantContextId !== 'general') {
+            const content = `
+                ### ${t('plantsView.aiDiagnostics.diagnosis')}: ${response.title} (${(response.confidence * 100).toFixed(0)}%)
+                **${t('plantsView.aiDiagnostics.actions')}:** ${response.immediateActions}
+                **${t('plantsView.aiDiagnostics.solution')}:** ${response.longTermSolution}
+            `;
+            addJournalEntry(plantContextId, { type: 'OBSERVATION', notes: `AI Diagnosis: ${response.title}`, details: { diagnosis: content } });
+            addNotification(t('plantsView.aiDiagnostics.savedToJournal'), 'success');
+        }
     };
-
-    const ResultSection: React.FC<{title: string, content: string, icon: React.ReactNode}> = ({ title, content, icon }) => (
-        <Card className="bg-slate-800/50">
-            <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2 mb-2">
-                {icon}
-                {title}
-            </h4>
-            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
-        </Card>
-    );
+    
+    const plantOptions = useMemo(() => ([
+        { id: 'general', name: t('plantsView.aiDiagnostics.generalContext') },
+        ...activePlants.map(p => ({ id: p.id, name: p.name }))
+    ]), [activePlants, t]);
 
     return (
-        <>
-            <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleCameraCapture} />
-            <Card>
-                 <h3 className="text-xl font-bold font-display text-primary-400 mb-2 flex items-center gap-2">
-                    <PhosphorIcons.TestTube className="w-6 h-6" /> {t('plantsView.aiDiagnostics.title')}
-                </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="flex flex-col">
-                        <p className="text-sm text-slate-300 mb-4">{t('plantsView.aiDiagnostics.description')}</p>
-                        
-                        <div className="space-y-4">
-                            {!imagePreview ? (
-                                <div 
-                                    onDrop={handleDrop}
-                                    onDragOver={handleDragEvents}
-                                    onDragEnter={handleDragEvents}
-                                    onDragLeave={handleDragEvents}
-                                    className={`p-6 border-2 border-dashed rounded-lg text-center cursor-pointer transition-all duration-300 ${isDragOver ? 'border-primary-500 bg-primary-500/10 scale-105' : 'border-slate-600 hover:border-slate-500'}`}
-                                    onClick={() => fileInputRef.current?.click()}
-                                >
-                                    <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2"/>
-                                    <p className="font-semibold text-slate-200">{t('plantsView.aiDiagnostics.dragDrop')}</p>
-                                    <p className="text-xs text-slate-500">{t('plantsView.aiDiagnostics.prompt')}</p>
-                                </div>
-                            ) : (
-                                 <div className="relative">
-                                    <img src={imagePreview} alt="Plant for diagnosis" className="rounded-lg w-full max-h-60 object-contain"/>
-                                     {isLoading && <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-lg"><PhosphorIcons.Sparkle className="w-12 h-12 text-primary-400 animate-pulse" /></div>}
-                                </div>
-                            )}
-                            <div className="flex gap-2">
-                                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" id="diagnostics-upload"/>
-                                <Button as="label" htmlFor="diagnostics-upload" className="flex-1 cursor-pointer"><PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />{imagePreview ? t('common.changeImage') : t('plantsView.aiDiagnostics.buttonLabel')}</Button>
-                                <Button onClick={() => setIsCameraOpen(true)} variant="secondary" aria-label={t('plantsView.aiDiagnostics.capture')}><PhosphorIcons.Camera className="w-5 h-5"/></Button>
-                            </div>
-                             <div>
-                                <label htmlFor="plant-context" className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.aiDiagnostics.plantContext')}</label>
-                                <select id="plant-context" value={selectedPlantId} onChange={e => setSelectedPlantId(e.target.value)} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white">
-                                    <option value="">{t('plantsView.aiDiagnostics.generalContext')}</option>
-                                    {activePlants.map(p => <option key={p.id} value={p.id}>{p.name} ({t(`plantStages.${p.stage}`)})</option>)}
-                                </select>
-                            </div>
-                             <div>
-                                <label htmlFor="user-notes" className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.aiDiagnostics.userNotes')}</label>
-                                <textarea id="user-notes" value={userNotes} onChange={e => setUserNotes(e.target.value)} rows={2} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white" placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')} />
-                            </div>
+        <Card>
+            {isCameraOpen && <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={(dataUrl) => { setImage(dataUrl); setIsCameraOpen(false); }} />}
+            <h3 className="text-xl font-bold font-display text-primary-400 mb-2 flex items-center gap-2">
+                <PhosphorIcons.Sparkle className="w-6 h-6" /> {t('plantsView.aiDiagnostics.title')}
+            </h3>
+            <p className="text-sm text-slate-400 mb-4">{t('plantsView.aiDiagnostics.description')}</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                    {!image ? (
+                         <div
+                            onDragEnter={handleDragIn}
+                            onDragLeave={handleDragOut}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                            className={`p-6 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${isDragging ? 'border-primary-500 bg-primary-900/20' : 'border-slate-600 hover:border-slate-500'}`}
+                            onClick={() => document.getElementById('image-upload-input')?.click()}
+                        >
+                            <PhosphorIcons.UploadSimple className="w-10 h-10 mx-auto text-slate-400 mb-2" />
+                            <p className="font-semibold text-slate-300">{t('plantsView.aiDiagnostics.dragDrop')}</p>
                         </div>
-                    </div>
-                    <div className="flex flex-col">
-                        {isLoading ? (
-                            <div className="flex-grow flex items-center justify-center">
-                                <AiLoadingIndicator loadingMessage={loadingMessage} />
-                            </div>
-                        ) : response ? (
-                             <div className="space-y-4 max-h-[calc(100vh-200px)] lg:max-h-full overflow-y-auto pr-2 flex-grow">
-                                 <Card className="bg-slate-800/50">
-                                    <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2 mb-2">
-                                        <PhosphorIcons.MagnifyingGlass className="w-5 h-5"/> 
-                                        {response.problemName}
-                                        <span className={`ml-auto text-sm font-semibold flex items-center gap-1 ${response.confidence > 75 ? 'text-green-400' : 'text-amber-400'}`}>
-                                            {response.confidence}%
-                                        </span>
-                                    </h4>
-                                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.diagnosis }} />
-                                 </Card>
-                                 <ResultSection title={t('plantsView.aiDiagnostics.actions')} icon={<PhosphorIcons.Lightning className="w-5 h-5"/>} content={response.immediateActions} />
-                                 <ResultSection title={t('plantsView.aiDiagnostics.solution')} icon={<PhosphorIcons.Wrench className="w-5 h-5"/>} content={response.longTermSolution} />
-                                 <ResultSection title={t('plantsView.aiDiagnostics.prevention')} icon={<PhosphorIcons.Checks className="w-5 h-5"/>} content={response.prevention} />
-                                 {selectedPlantId && <Button onClick={handleSaveToJournal} variant="secondary" size="sm" className="w-full mt-4">{t('plantsView.aiDiagnostics.saveToJournal')}</Button>}
-                             </div>
-                        ) : (
-                             <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
-                                 <PhosphorIcons.Brain className="w-16 h-16 mb-4 text-slate-400" />
-                                <h3 className="font-semibold text-lg text-slate-300">{t('plantsView.aiDiagnostics.waiting')}</h3>
-                                <p className="text-sm">{t('plantsView.aiDiagnostics.waitingDesc')}</p>
-                            </div>
-                        )}
-                    </div>
+                    ) : (
+                        <div className="relative">
+                            <img src={image} alt="plant preview" className="w-full h-auto rounded-lg" />
+                            <Button size="sm" variant="danger" className="absolute top-2 right-2 !p-1.5" onClick={() => setImage(null)} aria-label={t('common.removeImage')}><PhosphorIcons.X /></Button>
+                        </div>
+                    )}
+                    <input id="image-upload-input" type="file" accept="image/*" className="hidden" onChange={e => e.target.files && handleFile(e.target.files[0])} />
+                    <Button onClick={() => setIsCameraOpen(true)} variant="secondary" className="w-full"><PhosphorIcons.Camera className="w-5 h-5 mr-1.5" />{t('plantsView.aiDiagnostics.capture')}</Button>
+                    <select value={plantContextId} onChange={e => setPlantContextId(e.target.value)} className="w-full input-base" aria-label={t('plantsView.aiDiagnostics.plantContext')}>
+                        {plantOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                    <textarea value={userNotes} onChange={e => setUserNotes(e.target.value)} placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')} className="w-full input-base min-h-[60px]" />
+                    <Button onClick={handleGetDiagnosis} disabled={!image || isLoading}>{isLoading ? t('ai.generating') : t('ai.diagnostics')}</Button>
                 </div>
-            </Card>
-        </>
+                
+                <div className="min-h-[200px]">
+                    {isLoading && <AiLoadingIndicator loadingMessage={t('ai.loading.diagnostics.analyzing')} />}
+                    {error && <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">{error}</div>}
+                    {response && !isLoading && (
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-baseline">
+                                <h4 className="text-lg font-bold text-primary-300">{response.title}</h4>
+                                <span className="text-sm font-mono bg-slate-700 px-2 py-0.5 rounded">{t('plantsView.aiDiagnostics.confidence')}: {(response.confidence * 100).toFixed(0)}%</span>
+                            </div>
+                            <p className="text-sm text-slate-300"><strong className="text-slate-100">{t('plantsView.aiDiagnostics.diagnosis')}:</strong> {response.diagnosis}</p>
+                            <p className="text-sm text-slate-300"><strong className="text-slate-100">{t('plantsView.aiDiagnostics.actions')}:</strong> {response.immediateActions}</p>
+                            <p className="text-sm text-slate-300"><strong className="text-slate-100">{t('plantsView.aiDiagnostics.solution')}:</strong> {response.longTermSolution}</p>
+                            <p className="text-sm text-slate-300"><strong className="text-slate-100">{t('plantsView.aiDiagnostics.prevention')}:</strong> {response.prevention}</p>
+                            {plantContextId !== 'general' && <Button onClick={handleSaveToJournal} size="sm" variant="secondary" className="mt-2">{t('common.save')} to Journal</Button>}
+                        </div>
+                    )}
+                     {!response && !isLoading && !error && (
+                        <div className="flex items-center justify-center h-full text-center text-slate-500">
+                           <p>{t('plantsView.aiDiagnostics.waitingDesc')}</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </Card>
     );
 };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 interface VitalBarProps {
     label: string;
@@ -11,7 +11,7 @@ interface VitalBarProps {
     colorClass: string;
 }
 
-export const VitalBar: React.FC<VitalBarProps> = ({ label, value, min, max, idealMin, idealMax, unit, colorClass }) => {
+export const VitalBar: React.FC<VitalBarProps> = memo(({ label, value, min, max, idealMin, idealMax, unit, colorClass }) => {
     const valuePercent = ((value - min) / (max - min)) * 100;
     const idealMinPercent = ((idealMin - min) / (max - min)) * 100;
     const idealWidthPercent = ((idealMax - idealMin) / (max - min)) * 100;
@@ -37,4 +37,4 @@ export const VitalBar: React.FC<VitalBarProps> = ({ label, value, min, max, idea
             </div>
         </div>
     );
-};
+});

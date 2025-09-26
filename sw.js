@@ -1,4 +1,5 @@
-const CACHE_NAME = 'pwa-cache-v1.2.0'; // Updated version to force cache refresh
+const CACHE_VERSION = 'v1.2.1'; // Increase this version on each new deployment
+const CACHE_NAME = `cannaguide-cache-${CACHE_VERSION}`;
 
 // App Shell: The minimal resources needed for the app to start.
 const APP_SHELL_URLS = [

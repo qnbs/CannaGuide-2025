@@ -1,11 +1,4 @@
-const CACHE_NAME = 'pwa-cache-v1.4.0'; // Updated version to force cache refresh
-
-const STRAIN_FILE_KEYS = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    'numeric'
-];
-const STRAIN_DATA_URLS = STRAIN_FILE_KEYS.map(key => `data/strains/${key}.json`);
+const CACHE_NAME = 'pwa-cache-v1.2.0'; // Updated version to force cache refresh
 
 // App Shell: The minimal resources needed for the app to start.
 const APP_SHELL_URLS = [
@@ -38,7 +31,6 @@ const APP_SHELL_URLS = [
   'services/storageService.ts',
   'services/strainService.ts',
   'services/ttsService.ts',
-  'services/scenarioService.ts',
   // Stores
   'stores/useAppStore.ts',
   'stores/selectors.ts',
@@ -54,8 +46,6 @@ const APP_SHELL_URLS = [
   'stores/slices/ttsSlice.ts',
   'stores/slices/uiSlice.ts',
   'stores/slices/userStrainsSlice.ts',
-  'stores/slices/simulationSlice.ts',
-  'stores/indexedDBStorage.ts',
   // Components
   'components/common/AiLoadingIndicator.tsx',
   'components/common/AttributeDisplay.tsx',
@@ -70,12 +60,12 @@ const APP_SHELL_URLS = [
   'components/common/Modal.tsx',
   'components/common/OnboardingModal.tsx',
   'components/common/RangeSlider.tsx',
+  'components/common/SimulationManager.tsx',
   'components/common/SkeletonLoader.tsx',
   'components/common/Speakable.tsx',
   'components/common/TTSControls.tsx',
   'components/common/Tabs.tsx',
   'components/common/Toast.tsx',
-  'components/common/Switch.tsx',
   'components/icons/CannabisLeafIcon.tsx',
   'components/icons/PaymentIcons.tsx',
   'components/icons/PhosphorIcons.tsx',
@@ -100,15 +90,14 @@ const APP_SHELL_URLS = [
   'components/views/equipment/calculators/VentilationCalculator.tsx',
   'components/views/equipment/calculators/YieldCalculator.tsx',
   'components/views/equipment/setupConfigurations.ts',
-  'components/views/knowledge/MentorChatView.tsx',
+  'components/views/knowledge/AiMentor.tsx',
+  'components/views/knowledge/GuideTab.tsx',
+  'components/views/knowledge/MentorArchiveTab.tsx',
   'components/views/plants/ActionToolbar.tsx',
   'components/views/plants/AiDiagnostics.tsx',
-  'components/views/plants/ComparisonView.tsx',
   'components/views/plants/DashboardSummary.tsx',
   'components/views/plants/DetailedPlantView.tsx',
-  'components/views/plants/EquipmentControls.tsx',
   'components/views/plants/GlobalAdvisorArchiveView.tsx',
-  'components/views/plants/GrowConfirmationModal.tsx',
   'components/views/plants/GrowSetupModal.tsx',
   'components/views/plants/HistoryChart.tsx',
   'components/views/plants/InlineStrainSelector.tsx',
@@ -118,16 +107,15 @@ const APP_SHELL_URLS = [
   'components/views/plants/PlantVisual.tsx',
   'components/views/plants/PlantVisualizer.tsx',
   'components/views/plants/PlantsView.tsx',
-  'components/views/plants/RealtimeStatus.tsx',
   'components/views/plants/TasksAndWarnings.tsx',
   'components/views/plants/TipOfTheDay.tsx',
   'components/views/plants/VPDGauge.tsx',
   'components/views/plants/VitalBar.tsx',
-  'components/views/plants/deepDive/DeepDiveModal.tsx',
   'components/views/plants/detailedPlantViewTabs/AiTab.tsx',
   'components/views/plants/detailedPlantViewTabs/JournalTab.tsx',
   'components/views/plants/detailedPlantViewTabs/OverviewTab.tsx',
   'components/views/plants/detailedPlantViewTabs/PhotosTab.tsx',
+  'components/views/plants/detailedPlantViewTabs/PostHarvestTab.tsx',
   'components/views/plants/detailedPlantViewTabs/TasksTab.tsx',
   'components/views/strains/AddStrainModal.tsx',
   'components/views/strains/BulkActionsBar.tsx',
@@ -142,8 +130,10 @@ const APP_SHELL_URLS = [
   'components/views/strains/StrainTipsView.tsx',
   'components/views/strains/StrainToolbar.tsx',
   'components/views/strains/constants.ts',
-  // Locales & Data
+  // Locales
   'locales/index.ts',
+  'locales/de.ts',
+  'locales/en.ts',
   'locales/de/index.ts',
   'locales/en/index.ts',
   'locales/de/common.ts',
@@ -166,9 +156,9 @@ const APP_SHELL_URLS = [
   'locales/en/strains.ts',
   'locales/de/strainsData.ts',
   'locales/en/strainsData.ts',
-  'data/knowledgebase.ts',
-].concat(STRAIN_DATA_URLS);
+];
 
+// Third-party resources to cache
 const THIRD_PARTY_URLS = [
   'https://cdn.tailwindcss.com?plugins=typography',
   'https://aistudiocdn.com/react@^19.1.1',
@@ -185,12 +175,7 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('[Service Worker] Pre-caching App Shell');
-        const promises = urlsToCache.map(url => {
-          return cache.add(new Request(url, { cache: 'reload' })).catch(err => {
-            console.warn(`[Service Worker] Failed to cache ${url}:`, err);
-          });
-        });
-        return Promise.all(promises);
+        return cache.addAll(urlsToCache);
       })
       .catch(error => {
         console.error('[Service Worker] Failed to open cache or pre-cache:', error);
@@ -219,36 +204,32 @@ self.addEventListener('fetch', event => {
     return;
   }
   
-  if (event.request.url.includes('googleapis.com')) {
-    return; // Do not cache API calls
+  // Exclude strain data JSON and API calls from being cached by the service worker.
+  // Strain data is handled by IndexedDB, and API calls should not be cached.
+  if (event.request.url.includes('/data/strains/') || event.request.url.includes('googleapis.com')) {
+    return; 
   }
 
   event.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
+      const cachedResponse = await cache.match(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+
       try {
         const networkResponse = await fetch(event.request);
+        
         if (networkResponse && networkResponse.status === 200) {
-          // Cache the new resource if it's part of our cache list
-          const url = new URL(event.request.url);
-          const relativeUrl = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
-          
-          if(urlsToCache.includes(relativeUrl) || urlsToCache.includes(event.request.url)) {
-             await cache.put(event.request, networkResponse.clone());
-          }
+          await cache.put(event.request, networkResponse.clone());
         }
         return networkResponse;
       } catch (error) {
-        console.log('[Service Worker] Fetch failed, trying cache.', event.request.url);
-        const cachedResponse = await cache.match(event.request);
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+        console.error('[Service Worker] Fetch failed; returning offline fallback if available.', error);
         if (event.request.mode === 'navigate') {
             const indexPage = await cache.match('index.html');
             if (indexPage) return indexPage;
         }
-        // If nothing works, just let the browser's default fetch error happen.
-        return new Response("Network error", { status: 408, headers: { 'Content-Type': 'text/plain' }});
       }
     })
   );

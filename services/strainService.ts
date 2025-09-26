@@ -1,25 +1,24 @@
 import { Strain } from '@/types';
 import { dbService } from '@/services/dbService';
+import { allStrainsData } from '@/data/strains';
 
 type TFunction = (key: string, replacements?: Record<string, string | number>) => any;
 
-const DATA_VERSION = '1.4.0'; // Version bump to trigger re-caching with new method
+// A version for the static data. Increment this to force a re-cache for all users.
+const DATA_VERSION = '1.2.0'; 
 
-const STRAIN_FILE_KEYS = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-    'numeric'
-];
-
-
+// Stop words to ignore during indexing
 const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with', 'i', 'you']);
 
 const tokenize = (text: string): string[] => {
     if (!text) return [];
     return text
         .toLowerCase()
+        // remove punctuation
         .replace(/[^\w\s]/g, '')
+        // split into words
         .split(/\s+/)
+        // remove stop words and short words
         .filter(word => word.length > 2 && !stopWords.has(word));
 };
 
@@ -53,8 +52,16 @@ const buildSearchIndex = (strains: Strain[]): Record<string, string[]> => {
 
 class StrainService {
   private strainsCache: Strain[] | null = null;
-  private initializationPromise: Promise<void> | null = null;
+  private initializationPromise: Promise<void>;
+  private resolveInitialization: (() => void) | null = null;
+  private isInitializing: boolean = false;
   private currentLang: string | null = null;
+
+  constructor() {
+    this.initializationPromise = new Promise(resolve => {
+      this.resolveInitialization = resolve;
+    });
+  }
 
   private processAndTranslateStrains(strains: Strain[], t: TFunction): Strain[] {
     const getTranslatedString = (key: string, fallback: string | undefined): string | undefined => {
@@ -102,28 +109,14 @@ class StrainService {
         
         let strainsToCache: Strain[] = [];
 
-        if (!metadata || metadata.lang !== lang || metadata.version !== DATA_VERSION || dbCount === 0) {
-            console.log(`[StrainService] Cache miss or version mismatch. Fetching and caching data for lang: ${lang}, version: ${DATA_VERSION}.`);
-            
-            const fetchPromises = STRAIN_FILE_KEYS.map(key => 
-                fetch(`data/strains/${key}.json`)
-                    .then(res => {
-                        if (!res.ok) {
-                            throw new Error(`Failed to fetch data/strains/${key}.json: ${res.statusText}`);
-                        }
-                        return res.json();
-                    })
-            );
-            
-            const results = await Promise.all(fetchPromises);
-            const allStrainsData: Strain[] = results.flat();
-
+        if (!metadata || metadata.lang !== lang || metadata.version !== DATA_VERSION || dbCount !== allStrainsData.length) {
+            console.log(`[StrainService] Cache miss or version mismatch. Re-caching bundled data for lang: ${lang}, version: ${DATA_VERSION}.`);
             const translatedStrains = this.processAndTranslateStrains(allStrainsData, t);
             const searchIndex = buildSearchIndex(translatedStrains);
             
             await dbService.addStrains(translatedStrains);
             await dbService.updateSearchIndex(searchIndex);
-            await dbService.setMetadata({ key: 'strain_cache_metadata', lang: lang, version: DATA_VERSION, count: translatedStrains.length });
+            await dbService.setMetadata({ key: 'strain_cache_metadata', lang: lang, version: DATA_VERSION });
             
             strainsToCache = translatedStrains;
         } else {
@@ -133,36 +126,54 @@ class StrainService {
         strainsToCache.sort((a, b) => a.name.localeCompare(b.name));
         this.strainsCache = strainsToCache;
     } catch (error) {
-        console.error("Error initializing StrainService from network/IndexedDB, using fallback:", error);
-        this.strainsCache = [];
+        console.error("Error initializing StrainService from bundled/IndexedDB data, falling back to static bundle:", error);
+        try {
+          const translatedStrains = this.processAndTranslateStrains(allStrainsData, t);
+          translatedStrains.sort((a, b) => a.name.localeCompare(b.name));
+          this.strainsCache = translatedStrains;
+        } catch (bundleError) {
+          console.error("Critical error: Could not process bundled strain data.", bundleError);
+          this.strainsCache = [];
+        }
     }
   }
 
-  public init(t: TFunction, lang: string): Promise<void> {
-    if (this.initializationPromise && this.currentLang === lang) {
-      return this.initializationPromise;
+  public init(t: TFunction, lang: string): void {
+    if (this.currentLang === lang && !this.isInitializing && this.strainsCache) return;
+
+    if (this.isInitializing) {
+        this.initializationPromise.then(() => this.init(t, lang));
+        return;
     }
-    
+
+    this.isInitializing = true;
     this.currentLang = lang;
-    this.initializationPromise = this._initialize(t, lang);
-    return this.initializationPromise;
+
+    this.initializationPromise = new Promise(resolve => {
+        this.resolveInitialization = resolve;
+    });
+
+    this._initialize(t, lang).then(() => {
+        if (this.resolveInitialization) {
+            this.resolveInitialization();
+            this.resolveInitialization = null;
+        }
+        this.isInitializing = false;
+    });
   }
 
   public async getAllStrains(): Promise<Strain[]> {
-    if (!this.initializationPromise) {
-        throw new Error("StrainService not initialized. Call init() first.");
-    }
     await this.initializationPromise;
     return [...(this.strainsCache || [])];
   }
 
   public async getStrainById(id: string): Promise<Strain | undefined> {
-    await this.getAllStrains();
+    await this.initializationPromise;
     return this.strainsCache?.find(s => s.id === id);
   }
 
   public async getSimilarStrains(baseStrain: Strain, count: number = 4): Promise<Strain[]> {
-    await this.getAllStrains();
+    await this.initializationPromise;
     if (!this.strainsCache) return [];
 
     return this.strainsCache

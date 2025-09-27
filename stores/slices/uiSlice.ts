@@ -1,6 +1,7 @@
-import { View, Notification, Strain, GrowSetup, NotificationType, Language } from '@/types';
-import type { StoreSet, StoreGet } from '../useAppStore';
-import { i18nInstance } from '@/i18n';
+// FIX: Changed import paths to be relative
+import { View, Notification, Strain, GrowSetup, NotificationType, Language } from '../../types';
+import type { StoreSet, StoreGet, AppState } from '../useAppStore';
+import { i18nInstance } from '../../i18n';
 
 export interface UISlice {
     activeView: View;
@@ -69,8 +70,8 @@ export const createUISlice = (set: StoreSet, get: StoreGet): UISlice => ({
     activeMentorPlantId: null,
 
     // Actions
-    setActiveView: (view) => set({ activeView: view }),
-    setIsCommandPaletteOpen: (isOpen) => set({ isCommandPaletteOpen: isOpen }),
+    setActiveView: (view) => set(state => { state.activeView = view; }),
+    setIsCommandPaletteOpen: (isOpen) => set(state => { state.isCommandPaletteOpen = isOpen; }),
     addNotification: (message, type) => {
         const newNotification = { id: Date.now(), message, type };
         set(state => ({ notifications: [...state.notifications, newNotification] }));
@@ -78,32 +79,32 @@ export const createUISlice = (set: StoreSet, get: StoreGet): UISlice => ({
     removeNotification: (id) => {
         set(state => ({ notifications: state.notifications.filter(n => n.id !== id) }));
     },
-    openAddModal: (strain = null) => set({ isAddModalOpen: true, strainToEdit: strain }),
-    closeAddModal: () => set({ isAddModalOpen: false, strainToEdit: null }),
-    openExportModal: () => set({ isExportModalOpen: true }),
-    closeExportModal: () => set({ isExportModalOpen: false }),
+    openAddModal: (strain = null) => set(state => { state.isAddModalOpen = true; state.strainToEdit = strain; }),
+    closeAddModal: () => set(state => { state.isAddModalOpen = false; state.strainToEdit = null; }),
+    openExportModal: () => set(state => { state.isExportModalOpen = true; }),
+    closeExportModal: () => set(state => { state.isExportModalOpen = false; }),
 
     // New Grow Flow Actions
     initiateGrowFromStrainList: (strain) => {
-        set({ strainForNewGrow: strain, activeView: View.Plants });
+        set(state => { state.strainForNewGrow = strain; state.activeView = View.Plants; });
         get().addNotification(i18nInstance.t('plantsView.inlineSelector.title'), 'info');
     },
     startGrowInSlot: (slotIndex) => {
-        set({ initiatingGrowForSlot: slotIndex, strainForNewGrow: null });
+        set(state => { state.initiatingGrowForSlot = slotIndex; state.strainForNewGrow = null; });
     },
     selectStrainForGrow: (strain) => {
-        set({ strainForNewGrow: strain, isGrowSetupModalOpen: true });
+        set(state => { state.strainForNewGrow = strain; state.isGrowSetupModalOpen = true; });
     },
     confirmSetupAndShowConfirmation: (setup) => {
-        set({ confirmedGrowSetup: setup, isGrowSetupModalOpen: false, isConfirmationModalOpen: true });
+        set(state => { state.confirmedGrowSetup = setup; state.isGrowSetupModalOpen = false; state.isConfirmationModalOpen = true; });
     },
     cancelNewGrow: () => {
-        set({
-            initiatingGrowForSlot: null,
-            strainForNewGrow: null,
-            isGrowSetupModalOpen: false,
-            isConfirmationModalOpen: false,
-            confirmedGrowSetup: null,
+        set(state => {
+            state.initiatingGrowForSlot = null;
+            state.strainForNewGrow = null;
+            state.isGrowSetupModalOpen = false;
+            state.isConfirmationModalOpen = false;
+            state.confirmedGrowSetup = null;
         });
     },
     finalizeNewGrow: () => {
@@ -118,9 +119,9 @@ export const createUISlice = (set: StoreSet, get: StoreGet): UISlice => ({
     },
     
     // Mentor Chat Actions
-    setActiveMentorPlantId: (plantId) => set({ activeMentorPlantId: plantId }),
+    setActiveMentorPlantId: (plantId) => set(state => { state.activeMentorPlantId = plantId; }),
 
     // App ready state
-    setAppReady: (isReady) => set({ isAppReady: isReady }),
-    setOnboardingStep: (step: number) => set({ onboardingStep: step }),
+    setAppReady: (isReady) => set(state => { state.isAppReady = isReady; }),
+    setOnboardingStep: (step: number) => set(state => { state.onboardingStep = step; }),
 });

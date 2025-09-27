@@ -1,10 +1,11 @@
 import React from 'react';
-import { Modal } from '@/components/common/Modal';
-import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppStore } from '@/stores/useAppStore';
-import { Language } from '@/types';
+// FIX: Changed import paths to be relative
+import { Modal } from './Modal';
+import { Button } from './Button';
+import { useTranslations } from '../../hooks/useTranslations';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useAppStore } from '../../stores/useAppStore';
+import { Language } from '../../types';
 
 interface OnboardingModalProps {
     onClose: () => void;

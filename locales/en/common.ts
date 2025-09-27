@@ -50,6 +50,12 @@ export const common = {
   loadMore: 'Load More',
   learnMore: 'Learn More',
   deepDive: 'Deep Dive',
+  stage: 'Stage',
+  temperature: 'Temperature',
+  humidity: 'Humidity',
+  vpd: 'VPD',
+  co2Level: 'CO₂ Level',
+  moisture: 'Moisture',
   units: {
     cm: 'cm',
     ml: 'ml',
@@ -166,6 +172,7 @@ export const common = {
   saveFailed: 'Failed to save image',
   saveToJournal: 'Save to Journal',
   manageFavorites: 'Manage Favorites',
+  health: 'Health',
 };
 
 export const nav = {
@@ -236,6 +243,11 @@ export const ai = {
       problems: 'Assessing {count} active problems...',
       formulating: 'Formulating a recommendation...'
     },
+     proactiveDiagnosis: {
+        analyzing: 'Analyzing overall state of {plantName}...',
+        correlating: 'Correlating data points...',
+        formulatingPlan: 'Formulating treatment plan...'
+    },
     growTips: {
         analyzing: 'Analyzing {name} genetics...',
         focusing: 'Focusing on {focus}...',
@@ -261,6 +273,7 @@ export const ai = {
     diagnosePrompt: "You are an AI plant pathologist specializing in cannabis, with the expertise of a master grower. Analyze this image. Additional plant context: {context}. Provide a precise, expert-level diagnosis, a confidence level, immediate actions, long-term solutions, and prevention tips.",
     mentorSystemInstruction: "You are 'CannaGuide Mentor', a world-class horticultural scientist and master grower with a Ph.D. in Plant Science. Your tone is professional, deeply scientific, encouraging, and clear. When a user asks a question, give a comprehensive, state-of-the-art answer. Structure your response for maximum clarity using Markdown. Begin with a '### Key Takeaway' section (a single, bolded sentence). Follow with '### Detailed Explanation', using bolding for key terms and concepts. If comparing items, use a markdown table. Conclude with an '### Advanced Insight' section offering a sophisticated, expert-level tip. Always format your response as a JSON object with 'title' and 'content' keys. The 'content' must be valid Markdown.",
     advisorQuery: "You are an expert AI grow advisor using the SBAR (Situation, Background, Assessment, Recommendation) framework. Based on the following JSON data for a cannabis plant, provide a concise, expert-level analysis. Plant Data: {data}. Format your response as a JSON object with 'title' and 'content' keys. The 'title' must be a very short summary (max 5 words) of the primary assessment (e.g., 'Nutrient Lockout Risk Detected'). The 'content' must be valid Markdown structured with four H3 sections: '### Situation' (What is the current state?), '### Background' (What key data led to this?), '### Assessment' (What is your expert conclusion?), and '### Recommendation' (A single, clear, primary action for the grower).",
+    proactiveDiagnosisPrompt: "You are a master cannabis grower and plant pathologist. Analyze the full plant state provided in the JSON data below. Focus specifically on the 'problems' array. Explain the most likely root cause for these issues by correlating them with other data points (e.g., environment, substrate vitals, recent journal entries). Provide a concrete, step-by-step treatment plan. Format your response as a JSON object with 'title' and 'content' keys. The title should be a concise summary of the primary issue. The content must be valid Markdown. Plant Data: {data}",
     strainTipsPrompt: "You are a world-class master grower with deep scientific knowledge of cannabis horticulture. Your task is to provide 4 distinct, expert-level pro-tips for cultivating a specific strain based on user-defined parameters. The response must be a JSON object.\n\n**Strain Details:**\n- **Name:** {name}\n- **Type:** {type}\n- **Difficulty:** {difficulty}\n- **Height:** {height}\n- **Flowering Time:** {flowering} weeks\n\n**User Context:**\n- **Grow Focus:** {focus}\n- **Growth Stage of Interest:** {stage}\n- **Grower Experience Level:** {experience}\n\n**Instructions for JSON Output:**\nGenerate a JSON object with four keys: `nutrientTip`, `trainingTip`, `environmentalTip`, and `proTip`. Each key's value must be a string containing a single, actionable tip as a paragraph. The tips must be sophisticated, specific, and directly tailored to the combination of the strain's characteristics and the user's context.\n\n- **nutrientTip:** Focus on feeding strategies. If the focus is 'yield', suggest a specific PK booster schedule. If 'organic', suggest a specific top-dressing amendment.\n- **trainingTip:** Focus on canopy management. If the strain is 'tall' and the stage is 'vegetative', recommend topping or SCROG. If the focus is 'yield', explain how the technique maximizes light exposure.\n- **environmentalTip:** Focus on climate control (VPD, temperature, humidity). If the strain is prone to mold and the stage is 'flowering', suggest specific humidity levels and airflow strategies.\n- **proTip:** Provide a unique, advanced insight that combines multiple factors. For example, how to use a specific environmental stressor during late flower to enhance terpene production for this specific strain.",
     deepDivePrompt: "You are a world-class horticultural expert. Create a comprehensive yet beginner-friendly guide on the topic of '{topic}'. Consider the following plant context: {plantContext}. Your entire response must be exclusively formatted as a valid JSON string that adheres to the following TypeScript interface: { \"introduction\": string, \"stepByStep\": string[], \"prosAndCons\": { \"pros\": string[], \"cons\": string[] }, \"proTip\": string, \"svgIcon\": string }. The svgIcon should be the name of a relevant icon from the PhosphorIcons library (e.g., 'Scissors', 'Plant', 'Ruler')."
   }

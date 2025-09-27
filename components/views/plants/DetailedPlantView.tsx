@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
-import { Plant, Scenario } from '@/types';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslations } from '@/hooks/useTranslations';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Tabs } from '@/components/common/Tabs';
+import { Plant, PlantStage } from '../../../types';
+import { useTranslations } from '../../../hooks/useTranslations';
+import { Button } from '../../common/Button';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { Tabs } from '../../common/Tabs';
 import { OverviewTab } from './detailedPlantViewTabs/OverviewTab';
-import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { JournalTab } from './detailedPlantViewTabs/JournalTab';
 import { TasksTab } from './detailedPlantViewTabs/TasksTab';
 import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
-import { LogActionModal, ModalType } from './LogActionModal';
-import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
-import { DeepDiveModal } from './deepDive/DeepDiveModal';
-import { ComparisonView } from './ComparisonView';
+import { AiTab } from './detailedPlantViewTabs/AiTab';
+import { useAppStore } from '../../../stores/useAppStore';
+import { selectArchivedAdvisorResponsesForPlant } from '../../../stores/selectors';
+import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -23,74 +21,68 @@ interface DetailedPlantViewProps {
 export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onClose }) => {
     const { t } = useTranslations();
     const [activeTab, setActiveTab] = useState('overview');
-    const [modalType, setModalType] = useState<ModalType | null>(null);
-    const [isDeepDiveOpen, setIsDeepDiveOpen] = useState(false);
-    const [deepDiveTopic, setDeepDiveTopic] = useState<string | null>(null);
-    const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
-    const [scenarioToRun, setScenarioToRun] = useState<Scenario | null>(null);
     
-    const {
-        addArchivedAdvisorResponse,
-        updateArchivedAdvisorResponse,
+    const { 
+        archive, 
+        addArchivedAdvisorResponse, 
+        updateArchivedAdvisorResponse, 
         deleteArchivedAdvisorResponse,
-        completeTask,
+        completeTask 
     } = useAppStore(state => ({
+        archive: selectArchivedAdvisorResponsesForPlant(plant.id)(state),
         addArchivedAdvisorResponse: state.addArchivedAdvisorResponse,
         updateArchivedAdvisorResponse: state.updateArchivedAdvisorResponse,
         deleteArchivedAdvisorResponse: state.deleteArchivedAdvisorResponse,
         completeTask: state.completeTask,
     }));
-    
-    const archivedResponses = useAppStore(state => selectArchivedAdvisorResponsesForPlant(plant.id)(state));
+
+    const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
     const tabs = [
-        { id: 'overview', label: t('strainsView.strainDetail.tabs.overview'), icon: <PhosphorIcons.ChartPieSlice /> },
-        { id: 'ai', label: t('plantsView.detailedView.tabs.ai'), icon: <PhosphorIcons.Brain /> },
+        { id: 'overview', label: t('plantsView.detailedView.tabs.overview'), icon: <PhosphorIcons.ChartPieSlice /> },
+        ...(isPostHarvest ? [{ id: 'postharvest', label: t('plantsView.detailedView.tabs.postHarvest'), icon: <PhosphorIcons.ArchiveBox /> }] : []),
         { id: 'journal', label: t('plantsView.detailedView.tabs.journal'), icon: <PhosphorIcons.BookOpenText /> },
-        { id: 'tasks', label: t('plantsView.detailedView.tabs.tasks'), icon: <PhosphorIcons.Checks /> },
+        { id: 'tasks', label: t('plantsView.detailedView.tabs.tasks'), icon: <PhosphorIcons.ListChecks /> },
         { id: 'photos', label: t('plantsView.detailedView.tabs.photos'), icon: <PhosphorIcons.Camera /> },
+        { id: 'ai', label: t('plantsView.detailedView.tabs.ai'), icon: <PhosphorIcons.Sparkle /> },
     ];
     
-    const handleLogAction = (type: NonNullable<ModalType>) => {
-        setModalType(type);
-    };
-
-    const handleLearnMore = (topic: string) => {
-        setDeepDiveTopic(topic);
-        setIsDeepDiveOpen(true);
-    };
-
-    const handleRunScenario = (scenario: Scenario) => {
-        setScenarioToRun(scenario);
-        setIsDeepDiveOpen(false); // Close deep dive when starting scenario
-        setIsComparisonModalOpen(true);
+    const handleCompleteTask = (taskId: string) => {
+        completeTask(plant.id, taskId);
     };
 
     return (
-        <div className="space-y-4 animate-fade-in">
-             {modalType && <LogActionModal plant={plant} type={modalType} onClose={() => setModalType(null)} onLearnMore={handleLearnMore} />}
-             {isDeepDiveOpen && deepDiveTopic && <DeepDiveModal plant={plant} topic={deepDiveTopic} onClose={() => setIsDeepDiveOpen(false)} onRunScenario={handleRunScenario} />}
-             {isComparisonModalOpen && scenarioToRun && <ComparisonView plant={plant} scenario={scenarioToRun} onClose={() => setIsComparisonModalOpen(false)} />}
-            
-            <header className="flex items-center justify-between">
-                <Button variant="secondary" onClick={onClose}>
-                    <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
-                    {t('common.back')}
-                </Button>
-                <div>
-                    <h1 className="text-2xl font-bold font-display text-primary-300 text-right">{plant.name}</h1>
-                    <p className="text-slate-400 text-right">{plant.strain.name}</p>
+        <div className="animate-fade-in space-y-4">
+            <header>
+                <div className="flex items-center justify-between">
+                    <Button variant="secondary" onClick={onClose}>
+                        <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
+                        {t('common.back')}
+                    </Button>
+                </div>
+                <div className="mt-4">
+                    <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{plant.name}</h1>
+                    <p className="text-slate-400">{plant.strain.name} - {t('plantsView.plantCard.day')} {plant.age}</p>
                 </div>
             </header>
-
+            
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
             
-            <div className="mt-4">
-                {activeTab === 'overview' && <OverviewTab plant={plant} onLogAction={handleLogAction} />}
-                {activeTab === 'ai' && <AiTab plant={plant} archive={archivedResponses} addResponse={addArchivedAdvisorResponse} updateResponse={updateArchivedAdvisorResponse} deleteResponse={deleteArchivedAdvisorResponse} />}
+            <div className="mt-6">
+                {activeTab === 'overview' && <OverviewTab plant={plant} />}
+                {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}
-                {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={(taskId) => completeTask(plant.id, taskId)} />}
+                {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={handleCompleteTask} />}
                 {activeTab === 'photos' && <PhotosTab journal={plant.journal} />}
+                {activeTab === 'ai' && (
+                    <AiTab
+                        plant={plant}
+                        archive={archive}
+                        addResponse={addArchivedAdvisorResponse}
+                        updateResponse={updateArchivedAdvisorResponse}
+                        deleteResponse={deleteArchivedAdvisorResponse}
+                    />
+                )}
             </div>
         </div>
     );

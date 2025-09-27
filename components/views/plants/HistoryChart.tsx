@@ -1,8 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+// FIX: Changed import paths to be relative
+import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '../../../types';
+import { useTranslations } from '../../../hooks/useTranslations';
 import * as d3 from 'd3';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
 
 interface HistoryChartProps {
     history: PlantHistoryEntry[];

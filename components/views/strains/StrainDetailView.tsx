@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Strain, AIResponse } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { strainService } from '@/services/strainService';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectHasAvailableSlots } from '@/stores/selectors';
+// FIX: Changed import paths to be relative
+import { Strain, AIResponse } from '../../../types';
+import { useTranslations } from '../../../hooks/useTranslations';
+import { Card } from '../../common/Card';
+import { Button } from '../../common/Button';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
+import { strainService } from '../../../services/strainService';
+import { useAppStore } from '../../../stores/useAppStore';
+import { selectHasAvailableSlots } from '../../../stores/selectors';
 import { StrainAiTips } from './StrainAiTips';
-import { Tabs } from '@/components/common/Tabs';
-import { InfoSection } from '@/components/common/InfoSection';
-import { AttributeDisplay } from '@/components/common/AttributeDisplay';
-import { Speakable } from '@/components/common/Speakable';
+import { Tabs } from '../../common/Tabs';
+import { InfoSection } from '../../common/InfoSection';
+import { AttributeDisplay } from '../../common/AttributeDisplay';
+import { Speakable } from '../../common/Speakable';
 import StrainListItem from './StrainListItem';
 
 // --- Sub-components for better structure ---

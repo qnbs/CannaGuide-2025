@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
-import { SavedSetup } from '@/types';
-import { SetupResults } from '@/components/views/equipment/SetupResults';
-import { configurations } from '@/components/views/equipment/setupConfigurations';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectEquipmentGenerationState } from '@/stores/selectors';
-import { geminiService } from '@/services/geminiService';
+// FIX: Changed import paths to be relative
+import { Card } from '../../common/Card';
+import { Button } from '../../common/Button';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { useTranslations } from '../../../hooks/useTranslations';
+import { SavedSetup } from '../../../types';
+import { SetupResults } from './SetupResults';
+import { configurations } from './setupConfigurations';
+import { useAppStore } from '../../../stores/useAppStore';
+import { selectEquipmentGenerationState } from '../../../stores/selectors';
+import { geminiService } from '../../../services/geminiService';
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;

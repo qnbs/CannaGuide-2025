@@ -17,9 +17,9 @@ export const createStrainsViewSlice = (set: StoreSet, get: StoreGet): StrainsVie
     strainsViewMode: 'list',
     selectedStrainIds: new Set(),
     
-    setStrainsViewTab: (tab) => set({ strainsViewTab: tab }),
+    setStrainsViewTab: (tab) => set(state => { state.strainsViewTab = tab; }),
     
-    setStrainsViewMode: (mode) => set({ strainsViewMode: mode }),
+    setStrainsViewMode: (mode) => set(state => { state.strainsViewMode = mode; }),
 
     toggleStrainSelection: (id) => set(state => {
         const newSet = new Set(state.selectedStrainIds);
@@ -39,5 +39,5 @@ export const createStrainsViewSlice = (set: StoreSet, get: StoreGet): StrainsVie
         }
     }),
 
-    clearStrainSelection: () => set({ selectedStrainIds: new Set() }),
+    clearStrainSelection: () => set(state => { state.selectedStrainIds = new Set(); }),
 });

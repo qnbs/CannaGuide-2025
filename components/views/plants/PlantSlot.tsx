@@ -2,8 +2,8 @@ import React, { memo } from 'react';
 import { Plant, PlantStage } from '@/types';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
-import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
-import { PlantVisual } from './PlantVisual';
+import { PLANT_STAGE_DETAILS, simulationService } from '@/services/plantSimulationService';
+import { PlantVisualizer } from './PlantVisualizer';
 
 interface PlantSlotProps {
     plant: Plant;
@@ -25,6 +25,8 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
 
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
+    // FIX: Removed unused 'height' variable that was causing an error.
+    // The plant visualizer correctly uses the structural model instead.
 
     return (
         <Card onClick={onInspect} className="flex flex-col h-full cursor-pointer card-interactive-glow">
@@ -39,8 +41,8 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
                 </div>
             </div>
             
-            <div className="flex-grow flex items-center justify-center my-4">
-                 <PlantVisual stage={plant.stage} height={plant.height} stressLevel={plant.stressLevel} className="w-24 h-24" />
+            <div className="flex-grow flex items-center justify-center my-4 min-h-[96px]">
+                 <PlantVisualizer plant={plant} className="w-24 h-24" />
             </div>
 
             <div className="flex justify-around items-center text-slate-300 border-t border-slate-700/50 pt-3 mt-auto">

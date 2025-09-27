@@ -8,7 +8,7 @@ import { dbService } from '@/services/dbService';
 import { CameraModal } from '@/components/common/CameraModal';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
-export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo';
+export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo' | 'amendment';
 
 interface LogActionModalProps {
     plant: Plant;
@@ -19,7 +19,7 @@ interface LogActionModalProps {
 
 export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
     const { t } = useTranslations();
-    const { addJournalEntry, waterPlant, settings, addNotification, topPlant, applyLst, applyPestControl } = useAppStore(state => ({
+    const { addJournalEntry, waterPlant, settings, addNotification, topPlant, applyLst, applyPestControl, addAmendment } = useAppStore(state => ({
         addJournalEntry: state.addJournalEntry,
         waterPlant: state.waterPlant,
         settings: state.settings,
@@ -27,6 +27,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
         topPlant: state.topPlant,
         applyLst: state.applyLst,
         applyPestControl: state.applyPestControl,
+        addAmendment: state.addAmendment,
     }));
     
     const [notes, setNotes] = useState(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '');
@@ -34,6 +35,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
     const [ph, setPh] = useState(6.5);
     const [ec, setEc] = useState(1.2);
     const [trainingType, setTrainingType] = useState<TrainingType>('LST');
+    const [amendmentType, setAmendmentType] = useState('Mycorrhizae');
     const [isCameraOpen, setIsCameraOpen] = useState(type === 'photo');
     const [imageData, setImageData] = useState<{id: string, url: string} | null>(null);
 
@@ -44,6 +46,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
         pestControl: t('plantsView.actionModals.logPestControl'),
         observation: t('plantsView.actionModals.logObservation'),
         photo: t('plantsView.actionModals.logPhoto'),
+        amendment: t('plantsView.actionModals.logAmendment'),
     };
     
     const handleSave = () => {
@@ -72,6 +75,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                 if (imageData) {
                      entry = { type: 'PHOTO', notes, details: { imageId: imageData.id } };
                 }
+                break;
+            case 'amendment':
+                addAmendment(plant.id, amendmentType, notes);
                 break;
         }
         if (entry) {
@@ -119,6 +125,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                     <PhosphorIcons.GraduationCap className="w-4 h-4 mr-1.5"/> {t('common.learnMore')}
                 </Button>
             </div>;
+            case 'amendment': return <>
+                <select value={amendmentType} onChange={e => setAmendmentType(e.target.value)} className="w-full input-base">
+                    <option>Mycorrhizae</option>
+                    <option>Worm Castings</option>
+                </select>
+            </>;
             case 'photo': return <>
                 {imageData ? (
                     <div className="relative">

@@ -53,7 +53,8 @@ export const knowledgeBase: KnowledgeArticle[] = [
         contentKey: 'knowledgeView.knowledgebase.fix-overwatering.content',
         tags: ['problem', 'fix', 'overwatering', 'watering', 'roots', 'droopy'],
         triggers: {
-            activeProblems: ['Overwatering']
+            // FIX: Replaced string literal with enum member to match ProblemType.
+            activeProblems: [ProblemType.Overwatering]
         }
     },
     {
@@ -62,7 +63,8 @@ export const knowledgeBase: KnowledgeArticle[] = [
         contentKey: 'knowledgeView.knowledgebase.fix-calcium-deficiency.content',
         tags: ['problem', 'fix', 'calcium', 'deficiency', 'calmag', 'nutrients', 'ph'],
         triggers: {
-            activeProblems: ['NutrientDeficiency']
+            // FIX: Replaced string literal with enum member to match ProblemType.
+            activeProblems: [ProblemType.NutrientDeficiency]
         }
     },
 ];

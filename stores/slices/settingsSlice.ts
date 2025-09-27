@@ -1,5 +1,5 @@
-import { AppSettings, View, Language, Theme, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity, PlantSubstrate, PlantEquipment } from '@/types';
-import { AppState, StoreSet } from '@/stores/useAppStore';
+import { AppSettings, View, Language, Theme, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity, DefaultGrowSetup } from '../../types';
+import { AppState, StoreSet } from '../useAppStore';
 
 const detectedLang = navigator.language.split('-')[0];
 const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en';
@@ -15,9 +15,11 @@ export const defaultSettings: AppSettings = {
     autoAdvance: false,
     speed: '1x'
   },
-  defaultGrowSetup: { light: { type: 'LED', wattage: 150, isOn: true }, potSize: 15, medium: 'Soil' },
+  // FIX: Removed stateful `isOn` property from default configuration to match the new `DefaultGrowSetup` type.
+  defaultGrowSetup: { light: { type: 'LED', wattage: 150 }, potSize: 15, medium: 'Soil' },
   defaultJournalNotes: { watering: 'plantsView.actionModals.defaultNotes.watering', feeding: 'plantsView.actionModals.defaultNotes.feeding' },
-  defaultExportSettings: { source: 'filtered', format: 'pdf' }, lastBackupTimestamp: undefined,
+  // FIX: Changed 'filtered' to 'all' to conform to the ExportSource type.
+  defaultExportSettings: { source: 'all', format: 'pdf' }, lastBackupTimestamp: undefined,
   accessibility: { reducedMotion: false, dyslexiaFont: false }, uiDensity: 'comfortable',
   quietHours: { enabled: false, start: '22:00', end: '08:00' },
   tts: { enabled: true, rate: 1, pitch: 1, voiceName: null }

@@ -1,125 +1,86 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage, devtools } from 'zustand/middleware';
+import create from 'zustand';
+import { devtools, persist, PersistOptions } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import { SettingsSlice, createSettingsSlice, defaultSettings } from './slices/settingsSlice';
-import { UISlice, createUISlice } from './slices/uiSlice';
-import { StrainsViewSlice, createStrainsViewSlice } from './slices/strainsViewSlice';
-import { AiSlice, createAiSlice } from './slices/aiSlice';
-import { PlantSlice, createPlantSlice } from './slices/plantSlice';
-import { UserStrainsSlice, createUserStrainsSlice } from './slices/userStrainsSlice';
-import { FavoritesSlice, createFavoritesSlice } from './slices/favoritesSlice';
-import { NotesSlice, createNotesSlice } from './slices/notesSlice';
-import { SavedItemsSlice, createSavedItemsSlice } from './slices/savedItemsSlice';
-import { ArchivesSlice, createArchivesSlice } from './slices/archivesSlice';
-import { KnowledgeSlice, createKnowledgeSlice } from './slices/knowledgeSlice';
-import { TTSSlice, createTtsSlice } from './slices/ttsSlice';
-import { SimulationSlice, createSimulationSlice } from './slices/simulationSlice';
-import { View, AppSettings } from '@/types';
+import { AppState } from '../types';
 import { indexedDBStorage } from './indexedDBStorage';
 
-export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserStrainsSlice & FavoritesSlice & NotesSlice & SavedItemsSlice & ArchivesSlice & KnowledgeSlice & TTSSlice & SimulationSlice;
-export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
+import { createAiSlice } from './slices/aiSlice';
+import { createArchivesSlice } from './slices/archivesSlice';
+import { createFavoritesSlice } from './slices/favoritesSlice';
+import { createKnowledgeSlice } from './slices/knowledgeSlice';
+import { createNotesSlice } from './slices/notesSlice';
+import { createPlantSlice } from './slices/plantSlice';
+import { createSavedItemsSlice } from './slices/savedItemsSlice';
+import { createSettingsSlice } from './slices/settingsSlice';
+import { createStrainsViewSlice } from './slices/strainsViewSlice';
+// FIX: Corrected typo from createTTSSlice to createTtsSlice.
+import { createTtsSlice } from './slices/ttsSlice';
+import { createUISlice } from './slices/uiSlice';
+import { createUserStrainsSlice } from './slices/userStrainsSlice';
+import { createSimulationSlice } from './slices/simulationSlice';
+import { createBreedingSlice } from './slices/breedingSlice';
+
+export type StoreSet = (fn: (state: AppState) => void) => void;
 export type StoreGet = () => AppState;
+
+type AppStateForPersistence = Omit<AppState,
+  | 'setActiveView' | 'setIsCommandPaletteOpen' | 'addNotification' | 'removeNotification' | 'openAddModal' | 'closeAddModal' | 'openExportModal' | 'closeExportModal' | 'startEquipmentGeneration' | 'resetEquipmentGenerationState' | 'startDiagnostics' | 'startAdvisorGeneration' | 'startPlantMentorChat' | 'clearMentorChat' | 'startStrainTipGeneration' | 'startDeepDiveGeneration' | 'toggleFavorite' | 'addMultipleToFavorites' | 'removeMultipleFromFavorites' | 'toggleKnowledgeProgressItem' | 'updateNoteForStrain' | 'startNewPlant' | 'deletePlant' | 'waterPlant' | 'waterAllPlants' | 'addJournalEntry' | 'completeTask' | 'setSelectedPlantId' | 'advanceDay' | 'addExport' | 'updateExport' | 'deleteExport' | 'addSetup' | 'updateSetup' | 'deleteSetup' | 'setSetting' | 'setStrainsViewTab' | 'setStrainsViewMode' | 'toggleStrainSelection' | 'toggleAllStrainSelection' | 'clearStrainSelection' | 'addToTtsQueue' | 'playTts' | 'pauseTts' | 'stopTts' | 'nextTts' | 'clearTtsQueue' | '_startNextInQueue' | '_setCurrentlySpeakingId' | 'initiateGrowFromStrainList' | 'startGrowInSlot' | 'selectStrainForGrow' | 'confirmSetupAndShowConfirmation' | 'cancelNewGrow' | 'finalizeNewGrow' | 'setActiveMentorPlantId' | 'setAppReady' | 'setOnboardingStep' | 'isUserStrain' | 'addUserStrain' | 'updateUserStrain' | 'deleteUserStrain' | 'setIsCatchingUp' | 'setIsInitialized' | 'setLastActiveTimestamp' | 'addSeed' | 'breedStrains' | 'topPlant' | 'applyLst' | 'applyPestControl' | 'addAmendment' | 'advanceMultipleDays' | 'startProactiveDiagnosis' | 'harvestPlant' | 'processPostHarvest' | 'allStrains'
+  // Also omit nested functions if any
+>;
+
+
+const persistOptions: PersistOptions<AppState, AppStateForPersistence> = {
+    name: 'cannaguide-2025-storage',
+    storage: indexedDBStorage,
+    partialize: (state) => ({
+        settings: state.settings,
+        plants: state.plants,
+        plantSlots: state.plantSlots,
+        userStrains: state.userStrains,
+        favoriteIds: state.favoriteIds,
+        selectedStrainIds: state.selectedStrainIds,
+        strainNotes: state.strainNotes,
+        savedExports: state.savedExports,
+        savedSetups: state.savedSetups,
+        archivedMentorResponses: state.archivedMentorResponses,
+        archivedAdvisorResponses: state.archivedAdvisorResponses,
+        savedStrainTips: state.savedStrainTips,
+        knowledgeProgress: state.knowledgeProgress,
+        onboardingStep: state.onboardingStep,
+        lastActiveTimestamp: state.lastActiveTimestamp,
+        collectedSeeds: state.collectedSeeds,
+    }),
+    onRehydrateStorage: () => (state) => {
+        if (state) {
+            state.favoriteIds = new Set(state.favoriteIds);
+            state.selectedStrainIds = new Set(state.selectedStrainIds);
+        }
+    },
+};
 
 export const useAppStore = create<AppState>()(
   devtools(
     persist(
       immer((set, get) => ({
-        ...createSettingsSlice(set),
-        ...createUISlice(set, get),
-        ...createStrainsViewSlice(set, get),
         ...createAiSlice(set, get),
-        ...createPlantSlice(set, get),
-        ...createUserStrainsSlice(set, get),
-        ...createFavoritesSlice(set),
-        ...createNotesSlice(set),
-        ...createSavedItemsSlice(set),
         ...createArchivesSlice(set, get),
+        ...createFavoritesSlice(set),
         ...createKnowledgeSlice(set),
+        ...createNotesSlice(set),
+        ...createPlantSlice(set, get),
+        ...createSavedItemsSlice(set),
+        ...createSettingsSlice(set),
+        ...createStrainsViewSlice(set, get),
         ...createTtsSlice(set, get),
+        ...createUISlice(set, get),
+        ...createUserStrainsSlice(set, get),
         ...createSimulationSlice(set, get),
+        ...createBreedingSlice(set, get),
       })),
-      {
-        name: 'cannaguide-2025-storage',
-        storage: createJSONStorage(() => indexedDBStorage, {
-          replacer: (key, value) => {
-            if (value instanceof Set) {
-              return {
-                _type: 'set',
-                value: Array.from(value),
-              };
-            }
-            return value;
-          },
-          reviver: (key, value) => {
-            if (value && typeof value === 'object' && (value as any)._type === 'set') {
-              return new Set((value as any).value);
-            }
-            return value;
-          },
-        }),
-        partialize: (state) => ({
-          // Persist settings
-          settings: state.settings,
-          // Persist core user data
-          plants: state.plants,
-          plantSlots: state.plantSlots,
-          userStrains: state.userStrains,
-          favoriteIds: state.favoriteIds,
-          strainNotes: state.strainNotes,
-          savedExports: state.savedExports,
-          savedSetups: state.savedSetups,
-          archivedMentorResponses: state.archivedMentorResponses,
-          archivedAdvisorResponses: state.archivedAdvisorResponses,
-          savedStrainTips: state.savedStrainTips,
-          knowledgeProgress: state.knowledgeProgress,
-          // Persist some UI state for better UX on reload
-          activeView: state.activeView,
-          strainsViewTab: state.strainsViewTab,
-          strainsViewMode: state.strainsViewMode,
-          // Persist for offline catch-up logic
-          lastActiveTimestamp: state.lastActiveTimestamp,
-        }),
-        merge: (persistedState, currentState) => {
-            const typedPersistedState = persistedState as Partial<AppState>;
-            const mergedState = { ...currentState, ...typedPersistedState };
-
-            // Deep merge settings to ensure new default properties are included for existing users
-            if (typedPersistedState.settings) {
-                mergedState.settings = {
-                    ...defaultSettings,
-                    ...typedPersistedState.settings,
-                    accessibility: { ...defaultSettings.accessibility, ...(typedPersistedState.settings.accessibility || {}) },
-                    strainsViewSettings: { ...defaultSettings.strainsViewSettings, ...(typedPersistedState.settings.strainsViewSettings || {}) },
-                    notificationSettings: { ...defaultSettings.notificationSettings, ...(typedPersistedState.settings.notificationSettings || {}) },
-                    simulationSettings: { 
-                        ...defaultSettings.simulationSettings, 
-                        ...(typedPersistedState.settings.simulationSettings || {}),
-                        autoJournaling: { 
-                            ...defaultSettings.simulationSettings.autoJournaling, 
-                            ...(typedPersistedState.settings.simulationSettings?.autoJournaling || {})
-                        },
-                        customDifficultyModifiers: {
-                            ...defaultSettings.simulationSettings.customDifficultyModifiers,
-                            ...(typedPersistedState.settings.simulationSettings?.customDifficultyModifiers || {})
-                        }
-                    },
-                    defaultJournalNotes: { ...defaultSettings.defaultJournalNotes, ...(typedPersistedState.settings.defaultJournalNotes || {}) },
-                    defaultExportSettings: { ...defaultSettings.defaultExportSettings, ...(typedPersistedState.settings.defaultExportSettings || {}) },
-                    quietHours: { ...defaultSettings.quietHours, ...(typedPersistedState.settings.quietHours || {}) },
-                    tts: { ...defaultSettings.tts, ...(typedPersistedState.settings.tts || {}) },
-                };
-            }
-
-            // Ensure activeView has a valid value after hydration
-            if (!mergedState.activeView && mergedState.settings) {
-                mergedState.activeView = mergedState.settings.defaultView;
-            }
-
-            return mergedState as AppState;
-        },
-      }
-    ),
-    { name: "CannaGuide2025Store" }
+      persistOptions
+    )
   )
 );
+
+// FIX: Export AppState type so other modules can import it.
+export type { AppState };

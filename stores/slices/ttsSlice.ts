@@ -40,7 +40,7 @@ export const createTtsSlice = (set: StoreSet, get: StoreGet): TTSSlice => ({
         const { isTtsPaused, ttsQueue } = get();
         if (isTtsPaused) {
             ttsService.resume();
-            set({ isTtsSpeaking: true, isTtsPaused: false });
+            set(state => { state.isTtsSpeaking = true; state.isTtsPaused = false; });
         } else if (ttsQueue.length > 0) {
             get()._startNextInQueue();
         }
@@ -48,12 +48,12 @@ export const createTtsSlice = (set: StoreSet, get: StoreGet): TTSSlice => ({
 
     pauseTts: () => {
         ttsService.pause();
-        set({ isTtsSpeaking: false, isTtsPaused: true });
+        set(state => { state.isTtsSpeaking = false; state.isTtsPaused = true; });
     },
 
     stopTts: () => {
         ttsService.cancel();
-        set({ ttsQueue: [], isTtsSpeaking: false, isTtsPaused: false, currentlySpeakingId: null });
+        set(state => { state.ttsQueue = []; state.isTtsSpeaking = false; state.isTtsPaused = false; state.currentlySpeakingId = null; });
     },
 
     nextTts: () => {
@@ -61,18 +61,18 @@ export const createTtsSlice = (set: StoreSet, get: StoreGet): TTSSlice => ({
     },
 
     clearTtsQueue: () => {
-        set({ ttsQueue: [] });
+        set(state => { state.ttsQueue = []; });
     },
     
     _startNextInQueue: () => {
         const { ttsQueue, settings } = get();
         if (ttsQueue.length === 0) {
-            set({ isTtsSpeaking: false, isTtsPaused: false, currentlySpeakingId: null });
+            set(state => { state.isTtsSpeaking = false; state.isTtsPaused = false; state.currentlySpeakingId = null; });
             return;
         }
 
         const nextItem = ttsQueue[0];
-        set({ isTtsSpeaking: true, isTtsPaused: false, currentlySpeakingId: nextItem.id });
+        set(state => { state.isTtsSpeaking = true; state.isTtsPaused = false; state.currentlySpeakingId = nextItem.id; });
 
         const onEnd = () => {
             set(state => {
@@ -87,6 +87,6 @@ export const createTtsSlice = (set: StoreSet, get: StoreGet): TTSSlice => ({
     },
     
     _setCurrentlySpeakingId: (id) => {
-        set({ currentlySpeakingId: id });
+        set(state => { state.currentlySpeakingId = id; });
     },
 });

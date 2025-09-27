@@ -62,11 +62,17 @@ export const GrowShopsView: React.FC = () => {
     const [region, setRegion] = useState<ShopRegion>('europe');
     const [selectedShopKey, setSelectedShopKey] = useState<string | null>(null);
 
-    const allShops = useMemo(() => t('equipmentView.growShops.shops'), [t]);
+    const allShops = useMemo(() => t('equipmentView.growShops.shops', { returnObjects: true }) as Record<string, any>, [t]);
 
     const filteredAndSortedShops = useMemo(() => {
         const regionKey = region === 'europe' ? 'european' : 'us';
-        const shopKeys: string[] = t(`equipmentView.growShops.${regionKey}.shopKeys`);
+        const shopKeys = t(`equipmentView.growShops.${regionKey}.shopKeys`, { returnObjects: true }) as string[];
+
+        // FIX: Added a type guard to ensure `shopKeys` is an array before calling .map(), preventing the runtime error.
+        if (!Array.isArray(shopKeys)) {
+            console.error("Translation for shopKeys is not an array:", shopKeys);
+            return [];
+        }
 
         return shopKeys
             .map(key => ({ ...allShops[key], key }))

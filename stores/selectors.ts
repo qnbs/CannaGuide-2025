@@ -1,6 +1,6 @@
 import { createSelector } from 'reselect';
-import { AppState } from './useAppStore';
-import { Plant, PlantStage, Task, PlantProblem, Strain, ArchivedAdvisorResponse, DeepDiveGuide, Recommendation, PlantDiagnosisResponse, StructuredGrowTips } from '../types';
+// FIX: Import AppState directly from types.ts
+import { AppState, Plant, PlantStage, Task, PlantProblem, Strain, ArchivedAdvisorResponse, DeepDiveGuide, Recommendation, PlantDiagnosisResponse, StructuredGrowTips } from '../types';
 
 // Simple direct selectors
 export const selectSettings = (state: AppState) => state.settings;

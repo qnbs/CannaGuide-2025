@@ -48,7 +48,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
         setIsActionModalOpen(true);
     };
 
-    const isHarvestReady = plant.stage === PlantStage.Flowering && plant.age >= (PLANT_STAGE_DETAILS[PlantStage.Seedling].duration + PLANT_STAGE_DETAILS[PlantStage.Vegetative].duration + plant.strain.floweringTime * 7);
+    const floweringStartTime = PLANT_STAGE_DETAILS[PlantStage.Seedling].duration + PLANT_STAGE_DETAILS[PlantStage.Vegetative].duration;
+    const isHarvestReady = plant.stage === PlantStage.Flowering && plant.age >= (floweringStartTime + plant.strain.floweringTime * 7);
 
     return (
         <>

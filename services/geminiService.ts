@@ -23,12 +23,48 @@ const parseJsonResponse = <T>(text: string, t: TFunction): T => {
 
 const getEquipmentRecommendation = async (userPrompt: string, t: TFunction): Promise<Recommendation> => {
     const fullPrompt = `${userPrompt}\n${t('ai.gemini.equipmentPromptSuffix')}`;
+
+    const itemSchema = {
+        type: Type.OBJECT,
+        properties: {
+            name: { type: Type.STRING },
+            price: { type: Type.NUMBER },
+            rationale: { type: Type.STRING },
+        },
+        required: ['name', 'price', 'rationale']
+    };
+
+    const lightItemSchema = {
+        type: Type.OBJECT,
+        properties: {
+            name: { type: Type.STRING },
+            price: { type: Type.NUMBER },
+            rationale: { type: Type.STRING },
+            watts: { type: Type.NUMBER },
+        },
+        required: ['name', 'price', 'rationale', 'watts']
+    };
+
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: fullPrompt,
-        config: { responseMimeType: 'application/json' }
+        config: { 
+            responseMimeType: 'application/json',
+            responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                    tent: itemSchema,
+                    light: lightItemSchema,
+                    ventilation: itemSchema,
+                    pots: itemSchema,
+                    soil: itemSchema,
+                    nutrients: itemSchema,
+                    extra: itemSchema,
+                },
+                required: ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra']
+            }
+        }
     });
-    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<Recommendation>(response.text, t);
 };
 

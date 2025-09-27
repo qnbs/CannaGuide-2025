@@ -28,7 +28,7 @@ export const createBreedingSlice = (set: StoreSet, get: StoreGet): BreedingSlice
         set(state => { state.collectedSeeds.push(newSeed) });
     },
     breedStrains: (seed1Id, seed2Id, newName) => {
-        const { collectedSeeds, userStrains } = get();
+        const { collectedSeeds } = get();
         const parent1Seed = collectedSeeds.find(s => s.id === seed1Id);
         const parent2Seed = collectedSeeds.find(s => s.id === seed2Id);
 
@@ -37,8 +37,9 @@ export const createBreedingSlice = (set: StoreSet, get: StoreGet): BreedingSlice
             return;
         }
 
-        const parent1Strain = get().userStrains.find(s => s.id === parent1Seed.strainId) || get().allStrains.find(s => s.id === parent1Seed.strainId);
-        const parent2Strain = get().userStrains.find(s => s.id === parent2Seed.strainId) || get().allStrains.find(s => s.id === parent2Seed.strainId);
+        const allStrains = [...get().allStrains, ...get().userStrains];
+        const parent1Strain = allStrains.find(s => s.id === parent1Seed.strainId);
+        const parent2Strain = allStrains.find(s => s.id === parent2Seed.strainId);
 
         if (!parent1Strain || !parent2Strain) {
             console.error("Parent strains not found for breeding");

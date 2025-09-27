@@ -23,7 +23,7 @@ export const TTSControls: React.FC = () => {
     const showPlay = !isTtsSpeaking || isTtsPaused;
 
     return (
-        <div className="fixed bottom-20 right-4 z-40 flex items-center gap-2 p-2 rounded-full shadow-lg glass-pane animate-fade-in">
+        <div className="fixed bottom-[72px] right-4 z-40 flex items-center gap-2 p-2 rounded-full shadow-lg glass-pane animate-fade-in">
             {isTtsSpeaking && !isTtsPaused ? (
                 <Button variant="secondary" size="sm" className="!p-2 rounded-full" onClick={pauseTts} aria-label={t('tts.pause')}>
                     <PhosphorIcons.Pause className="w-5 h-5" />

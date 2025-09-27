@@ -30,7 +30,7 @@ export const BottomNav: React.FC = () => {
     };
     
     return (
-        <nav className="glass-pane border-t-0 fixed bottom-0 left-0 right-0 z-20">
+        <nav className="glass-pane border-t-0 flex-shrink-0 z-20">
             <div className="flex justify-around max-w-5xl mx-auto">
                 {mainNavViews.map((viewValue) => {
                     const isActive = activeView === viewValue;

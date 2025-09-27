@@ -5,17 +5,17 @@ import {
     JournalEntry,
     Task,
     PlantStage
-} from '@/types';
+} from '../../types';
 import {
     StoreSet,
     StoreGet
 } from '../useAppStore';
 import {
     simulationService
-} from '@/services/plantSimulationService';
+} from '../../services/plantSimulationService';
 import {
     i18nInstance
-} from '@/i18n';
+} from '../../i18n';
 
 export interface PlantSlice {
     plants: Record < string, Plant > ;
@@ -32,6 +32,7 @@ export interface PlantSlice {
     setSelectedPlantId: (plantId: string | null) => void;
     advanceDay: () => void;
     advanceMultipleDays: (days: number) => void;
+    resetPlants: () => void;
 
     // Direct plant manipulations
     topPlant: (plantId: string) => void;
@@ -142,6 +143,12 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet): PlantSlice => ({
         for (let i = 0; i < days; i++) {
             get().advanceDay();
         }
+    },
+    resetPlants: () => {
+        set(state => {
+            state.plants = {};
+            state.plantSlots = [null, null, null];
+        });
     },
     topPlant: (plantId) => set(state => {
         const plant = state.plants[plantId];

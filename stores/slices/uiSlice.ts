@@ -1,6 +1,5 @@
-// FIX: Changed import paths to be relative
-import { View, Notification, Strain, GrowSetup, NotificationType, Language } from '../../types';
-import type { StoreSet, StoreGet, AppState } from '../useAppStore';
+import { View, Notification, Strain, GrowSetup, NotificationType } from '../../types';
+import type { StoreSet, StoreGet } from '../useAppStore';
 import { i18nInstance } from '../../i18n';
 
 export interface UISlice {
@@ -74,10 +73,10 @@ export const createUISlice = (set: StoreSet, get: StoreGet): UISlice => ({
     setIsCommandPaletteOpen: (isOpen) => set(state => { state.isCommandPaletteOpen = isOpen; }),
     addNotification: (message, type) => {
         const newNotification = { id: Date.now(), message, type };
-        set(state => ({ notifications: [...state.notifications, newNotification] }));
+        set(state => { state.notifications.push(newNotification) });
     },
     removeNotification: (id) => {
-        set(state => ({ notifications: state.notifications.filter(n => n.id !== id) }));
+        set(state => { state.notifications = state.notifications.filter(n => n.id !== id) });
     },
     openAddModal: (strain = null) => set(state => { state.isAddModalOpen = true; state.strainToEdit = strain; }),
     closeAddModal: () => set(state => { state.isAddModalOpen = false; state.strainToEdit = null; }),

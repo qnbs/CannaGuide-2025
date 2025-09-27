@@ -1,5 +1,6 @@
-import { AppSettings, View, Language, Theme, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity, DefaultGrowSetup } from '../../types';
-import { AppState, StoreSet } from '../useAppStore';
+// FIX: Import AppState directly from types.ts
+import { AppState, AppSettings, View, Language, Theme, SortKey, SortDirection, ExportSource, ExportFormat, UiDensity, DefaultGrowSetup } from '../../types';
+import { StoreSet } from '../useAppStore';
 
 const detectedLang = navigator.language.split('-')[0];
 const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en';

@@ -1,6 +1,6 @@
-import { SpeechQueueItem } from '@/types';
-import { StoreSet, StoreGet } from '@/stores/useAppStore';
-import { ttsService } from '@/services/ttsService';
+import { SpeechQueueItem } from '../../types';
+import { StoreSet, StoreGet } from '../useAppStore';
+import { ttsService } from '../../services/ttsService';
 
 export interface TTSSlice {
     ttsQueue: SpeechQueueItem[];

@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { devtools, persist, PersistOptions } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { AppState } from '../types';
@@ -13,7 +13,6 @@ import { createPlantSlice } from './slices/plantSlice';
 import { createSavedItemsSlice } from './slices/savedItemsSlice';
 import { createSettingsSlice } from './slices/settingsSlice';
 import { createStrainsViewSlice } from './slices/strainsViewSlice';
-// FIX: Corrected typo from createTTSSlice to createTtsSlice.
 import { createTtsSlice } from './slices/ttsSlice';
 import { createUISlice } from './slices/uiSlice';
 import { createUserStrainsSlice } from './slices/userStrainsSlice';
@@ -23,10 +22,7 @@ import { createBreedingSlice } from './slices/breedingSlice';
 export type StoreSet = (fn: (state: AppState) => void) => void;
 export type StoreGet = () => AppState;
 
-type AppStateForPersistence = Omit<AppState,
-  | 'setActiveView' | 'setIsCommandPaletteOpen' | 'addNotification' | 'removeNotification' | 'openAddModal' | 'closeAddModal' | 'openExportModal' | 'closeExportModal' | 'startEquipmentGeneration' | 'resetEquipmentGenerationState' | 'startDiagnostics' | 'startAdvisorGeneration' | 'startPlantMentorChat' | 'clearMentorChat' | 'startStrainTipGeneration' | 'startDeepDiveGeneration' | 'toggleFavorite' | 'addMultipleToFavorites' | 'removeMultipleFromFavorites' | 'toggleKnowledgeProgressItem' | 'updateNoteForStrain' | 'startNewPlant' | 'deletePlant' | 'waterPlant' | 'waterAllPlants' | 'addJournalEntry' | 'completeTask' | 'setSelectedPlantId' | 'advanceDay' | 'addExport' | 'updateExport' | 'deleteExport' | 'addSetup' | 'updateSetup' | 'deleteSetup' | 'setSetting' | 'setStrainsViewTab' | 'setStrainsViewMode' | 'toggleStrainSelection' | 'toggleAllStrainSelection' | 'clearStrainSelection' | 'addToTtsQueue' | 'playTts' | 'pauseTts' | 'stopTts' | 'nextTts' | 'clearTtsQueue' | '_startNextInQueue' | '_setCurrentlySpeakingId' | 'initiateGrowFromStrainList' | 'startGrowInSlot' | 'selectStrainForGrow' | 'confirmSetupAndShowConfirmation' | 'cancelNewGrow' | 'finalizeNewGrow' | 'setActiveMentorPlantId' | 'setAppReady' | 'setOnboardingStep' | 'isUserStrain' | 'addUserStrain' | 'updateUserStrain' | 'deleteUserStrain' | 'setIsCatchingUp' | 'setIsInitialized' | 'setLastActiveTimestamp' | 'addSeed' | 'breedStrains' | 'topPlant' | 'applyLst' | 'applyPestControl' | 'addAmendment' | 'advanceMultipleDays' | 'startProactiveDiagnosis' | 'harvestPlant' | 'processPostHarvest' | 'allStrains'
-  // Also omit nested functions if any
->;
+type AppStateForPersistence = Omit<AppState, any>;
 
 
 const persistOptions: PersistOptions<AppState, AppStateForPersistence> = {
@@ -37,8 +33,8 @@ const persistOptions: PersistOptions<AppState, AppStateForPersistence> = {
         plants: state.plants,
         plantSlots: state.plantSlots,
         userStrains: state.userStrains,
-        favoriteIds: state.favoriteIds,
-        selectedStrainIds: state.selectedStrainIds,
+        favoriteIds: Array.from(state.favoriteIds),
+        selectedStrainIds: Array.from(state.selectedStrainIds),
         strainNotes: state.strainNotes,
         savedExports: state.savedExports,
         savedSetups: state.savedSetups,
@@ -52,8 +48,8 @@ const persistOptions: PersistOptions<AppState, AppStateForPersistence> = {
     }),
     onRehydrateStorage: () => (state) => {
         if (state) {
-            state.favoriteIds = new Set(state.favoriteIds);
-            state.selectedStrainIds = new Set(state.selectedStrainIds);
+            state.favoriteIds = new Set(state.favoriteIds as any);
+            state.selectedStrainIds = new Set(state.selectedStrainIds as any);
         }
     },
 };
@@ -81,6 +77,3 @@ export const useAppStore = create<AppState>()(
     )
   )
 );
-
-// FIX: Export AppState type so other modules can import it.
-export type { AppState };

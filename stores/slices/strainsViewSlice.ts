@@ -1,5 +1,5 @@
-import { StrainViewTab } from '@/types';
-import type { StoreSet, StoreGet } from '@/stores/useAppStore';
+import { StrainViewTab } from '../../types';
+import type { StoreSet, StoreGet } from '../useAppStore';
 
 export interface StrainsViewSlice {
     strainsViewTab: StrainViewTab;

@@ -1,4 +1,4 @@
-import { Plant, Scenario, ScenarioAction } from '@/types';
+import { Plant, Scenario, ScenarioAction } from '../types';
 import { simulationService } from './plantSimulationService';
 
 const scenarios: Record<string, Scenario> = {
@@ -22,9 +22,9 @@ class ScenarioService {
     applyAction(plant: Plant, action: ScenarioAction): Plant {
         switch (action) {
             case 'TOP':
-                return simulationService.topPlant(plant);
+                return simulationService.topPlant(plant).updatedPlant;
             case 'LST':
-                return simulationService.applyLst(plant);
+                return simulationService.applyLst(plant).updatedPlant;
             case 'NONE':
             default:
                 return plant;
@@ -49,8 +49,8 @@ class ScenarioService {
                         plantB = this.applyAction(plantB, scenario.plantBModifier.action);
                     }
                     
-                    plantA = simulationService.runDailyCycle(plantA);
-                    plantB = simulationService.runDailyCycle(plantB);
+                    plantA = simulationService.runDailyCycle(plantA).updatedPlant;
+                    plantB = simulationService.runDailyCycle(plantB).updatedPlant;
                 }
                 
                 resolve({ plantA, plantB });

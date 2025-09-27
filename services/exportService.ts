@@ -1,4 +1,5 @@
-import { Strain, SavedSetup, RecommendationCategory, ExportFormat, ArchivedMentorResponse, SavedStrainTip, ArchivedAdvisorResponse, RecommendationItem } from '@/types';
+// FIX: Changed import path to be relative
+import { Strain, SavedSetup, RecommendationCategory, ExportFormat, ArchivedMentorResponse, SavedStrainTip, ArchivedAdvisorResponse, RecommendationItem } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 

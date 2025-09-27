@@ -1,13 +1,14 @@
 import React from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslations } from '@/hooks/useTranslations';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { AppSettings, Language, Theme, View } from '@/types';
-import { useAvailableVoices } from '@/hooks/useAvailableVoices';
-import { indexedDBStorage } from '@/stores/indexedDBStorage';
-import { defaultSettings } from '@/stores/slices/settingsSlice';
+// FIX: Changed import paths to be relative
+import { useAppStore } from '../../stores/useAppStore';
+import { useTranslations } from '../../hooks/useTranslations';
+import { Card } from '../common/Card';
+import { Button } from '../common/Button';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { AppSettings, Language, Theme, View } from '../../types';
+import { useAvailableVoices } from '../../hooks/useAvailableVoices';
+import { indexedDBStorage } from '../../stores/indexedDBStorage';
+import { defaultSettings } from '../../stores/slices/settingsSlice';
 
 interface SettingsViewProps {
     deferredPrompt: any;

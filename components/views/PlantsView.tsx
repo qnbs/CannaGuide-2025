@@ -1,20 +1,21 @@
 import React, { useMemo } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { PlantSlot } from '@/components/views/plants/PlantSlot';
-import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
-import { TipOfTheDay } from '@/components/views/plants/TipOfTheDay';
-import { GardenVitals } from '@/components/views/plants/DashboardSummary';
-import { TasksAndWarnings } from '@/components/views/plants/TasksAndWarnings';
-import { useTranslations } from '@/hooks/useTranslations';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Card } from '@/components/common/Card';
-import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
-import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
-import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-import { GrowConfirmationModal } from '@/components/views/plants/GrowConfirmationModal';
-import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '@/stores/selectors';
-import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
-import { Button } from '@/components/common/Button';
+// FIX: Changed import paths to be relative
+import { useAppStore } from '../../stores/useAppStore';
+import { PlantSlot } from './plants/PlantSlot';
+import { DetailedPlantView } from './plants/DetailedPlantView';
+import { TipOfTheDay } from './plants/TipOfTheDay';
+import { GardenVitals } from './plants/DashboardSummary';
+import { TasksAndWarnings } from './plants/TasksAndWarnings';
+import { useTranslations } from '../../hooks/useTranslations';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { Card } from '../common/Card';
+import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
+import { InlineStrainSelector } from './plants/InlineStrainSelector';
+import { GrowSetupModal } from './plants/GrowSetupModal';
+import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
+import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '../../stores/selectors';
+import { AiDiagnostics } from './plants/AiDiagnostics';
+import { Button } from '../common/Button';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();

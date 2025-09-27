@@ -1,9 +1,10 @@
 import React from 'react';
-import { View } from '@/types';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectActiveView } from '@/stores/selectors';
+// FIX: Changed import paths to be relative
+import { View } from '../../types';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useTranslations } from '../../hooks/useTranslations';
+import { useAppStore } from '../../stores/useAppStore';
+import { selectActiveView } from '../../stores/selectors';
 
 const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,

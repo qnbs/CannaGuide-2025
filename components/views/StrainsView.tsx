@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { strainService } from '@/services/strainService';
-import { Strain, StrainType, StrainViewTab, SavedExport, SavedStrainTip, AIResponse } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
-import { Card } from '@/components/common/Card';
+// FIX: Changed import paths to be relative
+import { useAppStore } from '../../stores/useAppStore';
+import { strainService } from '../../services/strainService';
+import { Strain, StrainType, StrainViewTab, SavedExport, SavedStrainTip, AIResponse } from '../../types';
+import { useTranslations } from '../../hooks/useTranslations';
+import { Card } from '../common/Card';
 import { StrainToolbar } from './strains/StrainToolbar';
 import { StrainList } from './strains/StrainList';
 import { StrainGrid } from './strains/StrainGrid';
@@ -11,16 +12,16 @@ import { AddStrainModal } from './strains/AddStrainModal';
 import { StrainDetailView } from './strains/StrainDetailView';
 import { DataExportModal } from '../common/DataExportModal';
 import { FilterDrawer } from './strains/FilterDrawer';
-import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-import { useStrainFilters } from '@/hooks/useStrainFilters';
-import { Tabs } from '@/components/common/Tabs';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { SkeletonLoader } from '../common/SkeletonLoader';
+import { useStrainFilters } from '../../hooks/useStrainFilters';
+import { Tabs } from '../common/Tabs';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { ExportsManagerView } from './strains/ExportsManagerView';
 import { StrainTipsView } from './strains/StrainTipsView';
-import { exportService } from '@/services/exportService';
-import { Button } from '@/components/common/Button';
+import { exportService } from '../../services/exportService';
+import { Button } from '../common/Button';
 import { BulkActionsBar } from './strains/BulkActionsBar';
-import { selectUserStrainIds } from '@/stores/selectors';
+import { selectUserStrainIds } from '../../stores/selectors';
 
 const ITEMS_PER_PAGE = 30;
 

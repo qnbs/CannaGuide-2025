@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Notification, NotificationType } from '@/types';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+// FIX: Changed import paths to be relative
+import { Notification, NotificationType } from '../../types';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { useTranslations } from '../../hooks/useTranslations';
 
 interface ToastProps {
   notification: Notification;

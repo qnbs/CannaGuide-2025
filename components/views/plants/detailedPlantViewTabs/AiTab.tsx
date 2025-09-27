@@ -20,43 +20,53 @@ interface AiTabProps {
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
-    const { addNotification, startAdvisorGeneration } = useAppStore(state => ({
+    const { addNotification, startAdvisorGeneration, startProactiveDiagnosis } = useAppStore(state => ({
         addNotification: state.addNotification,
         startAdvisorGeneration: state.startAdvisorGeneration,
+        startProactiveDiagnosis: state.startProactiveDiagnosis
     }));
-    const { isLoading, response, error } = useAppStore(selectAdvisorStateForPlant(plant.id));
-    
+    const advisorState = useAppStore(selectAdvisorStateForPlant(plant.id));
+    const diagnosisState = useAppStore(state => state.proactiveDiagnosis);
+
     const [loadingMessage, setLoadingMessage] = useState('');
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
     const [isCurrentResponseSaved, setIsCurrentResponseSaved] = useState(false);
 
-    const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, vitals: plant.vitals, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
+    const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, substrate: plant.substrate, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
     useEffect(() => {
-        if (isLoading) {
+        if (advisorState.isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } }, t);
             let messageIndex = 0;
-            
-            const updateLoadingMessage = () => {
+            const intervalId = setInterval(() => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
-            };
-            
-            updateLoadingMessage();
-            const intervalId = setInterval(updateLoadingMessage, 2000);
-
+            }, 2000);
             return () => clearInterval(intervalId);
         }
-    }, [isLoading, plant, t]);
+        if(diagnosisState.isLoading) {
+             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'proactiveDiagnosis', data: { plantName: plant.name } }, t);
+            let messageIndex = 0;
+            const intervalId = setInterval(() => {
+                setLoadingMessage(messages[messageIndex % messages.length]);
+                messageIndex++;
+            }, 2000);
+            return () => clearInterval(intervalId);
+        }
+    }, [advisorState.isLoading, diagnosisState.isLoading, plant, t]);
 
     const handleGetAdvice = () => {
-        setIsCurrentResponseSaved(false); // Reset save status for new response
+        setIsCurrentResponseSaved(false);
         startAdvisorGeneration(plant);
     };
+    
+    const handleGetDiagnosis = () => {
+        startProactiveDiagnosis(plant);
+    }
 
     const handleSaveResponse = () => {
-        if (response) {
-            addResponse(plant.id, response, plantQueryData);
+        if (advisorState.response) {
+            addResponse(plant.id, advisorState.response, plantQueryData);
             setIsCurrentResponseSaved(true);
             addNotification(t('knowledgeView.archive.saveSuccess'), 'success');
         }
@@ -78,20 +88,40 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             )}
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-2 flex items-center gap-2">
-                    <PhosphorIcons.Brain className="w-6 h-6" /> {t('ai.advisor')}
+                    <PhosphorIcons.Sparkle className="w-6 h-6" /> {t('plantsView.aiAdvisor.proactiveDiagnosisTitle')}
                 </h3>
-                <p className="text-sm text-slate-400 mb-4">{t('plantsView.aiAdvisor.description')}</p>
-                <Button onClick={handleGetAdvice} disabled={isLoading} className="w-full">
-                    {isLoading ? loadingMessage : t('ai.getAdvice')}
+                <p className="text-sm text-slate-400 mb-4">{t('plantsView.aiAdvisor.proactiveDiagnosisDescription')}</p>
+                <Button onClick={handleGetDiagnosis} disabled={diagnosisState.isLoading} className="w-full">
+                    {diagnosisState.isLoading ? loadingMessage : t('plantsView.aiAdvisor.runDiagnosis')}
                 </Button>
 
                 <div className="mt-4">
-                    {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                    {response && !isLoading && (
+                    {diagnosisState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
+                    {diagnosisState.response && !diagnosisState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
-                            <h4 className="font-bold text-primary-300">{response.title}</h4>
-                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: response.content }}></div>
-                            {!error && (
+                            <h4 className="font-bold text-primary-300">{diagnosisState.response.title}</h4>
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: diagnosisState.response.content }}></div>
+                        </Card>
+                    )}
+                </div>
+            </Card>
+
+            <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-2 flex items-center gap-2">
+                    <PhosphorIcons.Brain className="w-6 h-6" /> {t('ai.advisor')}
+                </h3>
+                <p className="text-sm text-slate-400 mb-4">{t('plantsView.aiAdvisor.description')}</p>
+                <Button onClick={handleGetAdvice} disabled={advisorState.isLoading} className="w-full">
+                    {advisorState.isLoading ? loadingMessage : t('ai.getAdvice')}
+                </Button>
+
+                <div className="mt-4">
+                    {advisorState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
+                    {advisorState.response && !advisorState.isLoading && (
+                        <Card className="bg-slate-800 animate-fade-in">
+                            <h4 className="font-bold text-primary-300">{advisorState.response.title}</h4>
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: advisorState.response.content }}></div>
+                            {!advisorState.error && (
                                 <div className="text-right mt-2">
                                    <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
                                        {isCurrentResponseSaved ? 

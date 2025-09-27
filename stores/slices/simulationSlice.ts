@@ -15,7 +15,7 @@ export const createSimulationSlice = (set: StoreSet, get: StoreGet): SimulationS
     isInitialized: false,
     lastActiveTimestamp: null,
 
-    setIsCatchingUp: (isCatchingUp: boolean) => set({ isCatchingUp }),
-    setIsInitialized: (isInitialized: boolean) => set({ isInitialized }),
-    setLastActiveTimestamp: (timestamp: number | null) => set({ lastActiveTimestamp: timestamp }),
+    setIsCatchingUp: (isCatchingUp: boolean) => set(state => { state.isCatchingUp = isCatchingUp; }),
+    setIsInitialized: (isInitialized: boolean) => set(state => { state.isInitialized = isInitialized; }),
+    setLastActiveTimestamp: (timestamp: number | null) => set(state => { state.lastActiveTimestamp = timestamp; }),
 });

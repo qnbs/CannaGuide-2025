@@ -1177,4 +1177,4 @@ export const strainsB: Strain[] = [
         "aromas": ["Bubblegum", "Sweet", "Fruity", "Berry"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }
-]
+];

@@ -1,12 +1,13 @@
 import React from 'react';
-import { Strain, SortKey, AppSettings } from '@/types';
-import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
+// FIX: Changed import paths to be relative
+import { Strain, SortKey, AppSettings } from '../../../types';
+import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { Button } from '../../common/Button';
+import { useTranslations } from '../../../hooks/useTranslations';
+import { useAppStore } from '../../../stores/useAppStore';
 import { LIST_GRID_CLASS } from './constants';
-import { selectHasAvailableSlots } from '@/stores/selectors';
+import { selectHasAvailableSlots } from '../../../stores/selectors';
 
 interface StrainListItemProps {
     strain: Strain;

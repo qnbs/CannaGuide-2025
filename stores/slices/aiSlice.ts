@@ -13,6 +13,7 @@ export interface AiState<T> {
 export interface AiSlice {
     equipmentGeneration: AiState<Recommendation>;
     diagnostics: AiState<PlantDiagnosisResponse>;
+    proactiveDiagnosis: AiState<AIResponse>;
     advisorChats: Record<string, AiState<AIResponse>>;
     mentorChats: Record<string, { history: MentorMessage[], isLoading: boolean, error: string | null }>;
     strainTips: Record<string, AiState<StructuredGrowTips>>;
@@ -25,6 +26,8 @@ export interface AiSlice {
     
     startAdvisorGeneration: (plant: Plant) => Promise<void>;
     
+    startProactiveDiagnosis: (plant: Plant) => Promise<void>;
+
     startPlantMentorChat: (plant: Plant, query: string) => Promise<void>;
     clearMentorChat: (plantId: string) => void;
 
@@ -36,6 +39,7 @@ export interface AiSlice {
 export const createAiSlice = (set: StoreSet, get: StoreGet): AiSlice => ({
     equipmentGeneration: { isLoading: false, response: null, error: null },
     diagnostics: { isLoading: false, response: null, error: null },
+    proactiveDiagnosis: { isLoading: false, response: null, error: null },
     advisorChats: {},
     mentorChats: {},
     strainTips: {},
@@ -96,6 +100,24 @@ export const createAiSlice = (set: StoreSet, get: StoreGet): AiSlice => ({
             set(state => {
                 state.advisorChats[plant.id].isLoading = false;
                 state.advisorChats[plant.id].error = i18nInstance.t(e.message || 'ai.error.unknown');
+            });
+        }
+    },
+
+    startProactiveDiagnosis: async (plant) => {
+        set(state => {
+            state.proactiveDiagnosis = { isLoading: true, response: null, error: null };
+        });
+        try {
+            const diagnosis = await geminiService.getProactiveDiagnosis(plant, i18nInstance.t);
+            set(state => {
+                state.proactiveDiagnosis.isLoading = false;
+                state.proactiveDiagnosis.response = diagnosis;
+            });
+        } catch (e: any) {
+            set(state => {
+                state.proactiveDiagnosis.isLoading = false;
+                state.proactiveDiagnosis.error = i18nInstance.t(e.message || 'ai.error.unknown');
             });
         }
     },

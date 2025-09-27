@@ -3,7 +3,8 @@ import {
     GenerateContentResponse,
     Type
 } from "@google/genai";
-import { Plant, Strain, Recommendation, AIResponse, PlantDiagnosisResponse, MentorMessage, StructuredGrowTips, DeepDiveGuide } from "@/types";
+// FIX: Changed import path to be relative
+import { Plant, Strain, Recommendation, AIResponse, PlantDiagnosisResponse, MentorMessage, StructuredGrowTips, DeepDiveGuide } from "../types";
 
 type TFunction = (key: string, params?: Record<string, any>) => any;
 
@@ -72,7 +73,8 @@ const getPlantAdvice = async (plant: Plant, t: TFunction): Promise<AIResponse> =
         height: plant.height,
         health: plant.health,
         stressLevel: plant.stressLevel,
-        vitals: plant.vitals,
+        // FIX: Removed `vitals` property as it does not exist on the `Plant` type.
+        // The necessary information is already available in the `substrate` and `environment` properties.
         environment: plant.environment,
         substrate: plant.substrate,
         problems: plant.problems,
@@ -93,7 +95,20 @@ const getPlantAdvice = async (plant: Plant, t: TFunction): Promise<AIResponse> =
 
 const getMentorResponse = async (plant: Plant, query: string, t: TFunction): Promise<Omit<MentorMessage, 'role'>> => {
     const systemInstruction = t('ai.gemini.mentorSystemInstruction');
-    const fullQuery = `Plant Context: ${plant.name}, Age: ${plant.age} days, Stage: ${plant.stage}. User Query: ${query}`;
+    
+    const plantContext = JSON.stringify({
+        name: plant.name,
+        age: plant.age,
+        stage: plant.stage,
+        health: plant.health,
+        stressLevel: plant.stressLevel,
+        substrate: plant.substrate,
+        environment: plant.environment,
+        rootSystem: plant.rootSystem,
+        activeProblems: plant.problems.filter(p => p.status === 'active').map(p => p.type)
+    }, null, 2);
+
+    const fullQuery = `## Plant Context:\n\`\`\`json\n${plantContext}\n\`\`\`\n\n## User Query:\n${query}`;
     
     const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
@@ -106,6 +121,19 @@ const getMentorResponse = async (plant: Plant, query: string, t: TFunction): Pro
 
     // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<Omit<MentorMessage, 'role'>>(response.text, t);
+};
+
+const getProactiveDiagnosis = async (plant: Plant, t: TFunction): Promise<AIResponse> => {
+    const plantData = JSON.stringify(plant, null, 2);
+    const prompt = t('ai.gemini.proactiveDiagnosisPrompt', { data: plantData });
+    
+    const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: { responseMimeType: 'application/json' }
+    });
+    
+    return parseJsonResponse<AIResponse>(response.text, t);
 };
 
 const getStrainTips = async (strain: Strain, context: { focus: string, stage: string, experience: string }, t: TFunction): Promise<StructuredGrowTips> => {
@@ -142,7 +170,7 @@ const generateDeepDive = async (topic: string, plant: Plant, t: TFunction): Prom
     return parseJsonResponse<DeepDiveGuide>(response.text, t);
 };
 
-const getDynamicLoadingMessages = (context: { useCase: string, data?: any }, t: TFunction): string[] => {
+export const getDynamicLoadingMessages = (context: { useCase: string, data?: any }, t: TFunction): string[] => {
     const { useCase, data } = context;
     switch(useCase) {
         case 'equipment': return [
@@ -167,6 +195,11 @@ const getDynamicLoadingMessages = (context: { useCase: string, data?: any }, t: 
             t('ai.loading.advisor.problems', { count: data.plant.problems.filter((p: any) => p.status === 'active').length }),
             t('ai.loading.advisor.formulating')
         ];
+        case 'proactiveDiagnosis': return [
+            t('ai.loading.proactiveDiagnosis.analyzing', { name: data.plantName }),
+            t('ai.loading.proactiveDiagnosis.correlating'),
+            t('ai.loading.proactiveDiagnosis.formulatingPlan')
+        ];
         case 'growTips': return [
              t('ai.loading.growTips.analyzing', { name: data.strainName }),
              t('ai.loading.growTips.focusing', { focus: data.focus }),
@@ -188,6 +221,7 @@ export const geminiService = {
     diagnosePlant,
     getPlantAdvice,
     getMentorResponse,
+    getProactiveDiagnosis,
     getStrainTips,
     generateDeepDive,
     getDynamicLoadingMessages,

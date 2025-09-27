@@ -32,6 +32,10 @@ export const settingsView = {
     installApp: 'Install App',
     installAppDesc: 'Install CannaGuide 2025 on your device for a native-app experience, including offline access.',
   },
+  languages: {
+    en: 'English',
+    de: 'German',
+  },
   accessibility: {
     title: 'Accessibility',
     highContrast: 'High Contrast',

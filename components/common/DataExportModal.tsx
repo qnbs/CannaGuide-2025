@@ -13,13 +13,10 @@ interface DataExportModalProps {
   title: string;
   selectionCount: number;
   totalCount: number;
-  sourceLabels?: {
-      selected: string;
-      all: string;
-  }
+  translationBasePath?: string;
 }
 
-export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, onExport, title, selectionCount, totalCount, sourceLabels }) => {
+export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, onExport, title, selectionCount, totalCount, translationBasePath = 'strainsView.exportModal' }) => {
   const { t } = useTranslations();
   const [source, setSource] = useState<ExportSource>(selectionCount > 0 ? 'selected' : 'all');
   const [format, setFormat] = useState<ExportFormat>('pdf');
@@ -31,16 +28,9 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClos
     }
   }, [isOpen, selectionCount]);
 
-  const defaultSourceLabels = {
-    selected: t('strainsView.exportModal.sources.selected'),
-    all: t('strainsView.exportModal.sources.all')
-  };
-  
-  const finalSourceLabels = sourceLabels || defaultSourceLabels;
-
-  const sources: { id: ExportSource; label: string; count: number; disabled: boolean }[] = [
-    { id: 'selected', label: finalSourceLabels.selected, count: selectionCount, disabled: selectionCount === 0 },
-    { id: 'all', label: finalSourceLabels.all, count: totalCount, disabled: totalCount === 0 },
+  const sources: { id: ExportSource; count: number; disabled: boolean }[] = [
+    { id: 'selected', count: selectionCount, disabled: selectionCount === 0 },
+    { id: 'all', count: totalCount, disabled: totalCount === 0 },
   ];
 
   const formats: { id: ExportFormat; label: string }[] = [
@@ -82,8 +72,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClos
                   disabled={s.disabled}
                   className={`p-3 text-left rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${source === s.id ? 'bg-primary-600 text-white font-bold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
                 >
-                  <span className="block">{s.label}</span>
-                  <span className="text-xs">{t('strainsView.exportModal.count', { count: s.count })}</span>
+                  <span className="block">{t(`${translationBasePath}.sources.${s.id}`, { count: s.count })}</span>
                 </button>
               ))}
             </div>

@@ -120,7 +120,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                                         <span className="w-1 h-1 bg-slate-500 rounded-full"></span>
                                         <span>{t('strainsView.exportsManager.sourceLabel')}: <span className="font-semibold text-slate-300">{item.source}</span></span>
                                         <span className="w-1 h-1 bg-slate-500 rounded-full"></span>
-                                        <span>{item.count} {t('strainsView.exportsManager.strainsUnit')}</span>
+                                        <span>{t('strainsView.exportsManager.strainCount', { count: item.count })}</span>
                                     </div>
                                     {item.notes && <p className="text-sm text-slate-300 italic mt-1">"{item.notes}"</p>}
                                 </div>

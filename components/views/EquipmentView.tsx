@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { SetupConfigurator } from '@/components/views/equipment/SetupConfigurator';
 import { Calculators } from '@/components/views/equipment/Calculators';
-import { SavedSetupsView } from '@/components/views/equipment/SavedSetupsView';
+import { SavedSetupsView } from './equipment/SavedSetupsView';
 import { useAppStore } from '@/stores/useAppStore';
 import { Tabs } from '@/components/common/Tabs';
 import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';

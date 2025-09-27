@@ -50,7 +50,7 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
         </div>
         <div className="mt-4 flex-shrink-0">
              <Button as="a" href={shop.url} target="_blank" rel="noopener noreferrer" className="w-full text-center">
-                {t(`equipmentView.growShops.shops.${shop.logo}.name`)} besuchen <PhosphorIcons.ArrowSquareOut className="inline w-4 h-4 ml-1.5" />
+                {t('equipmentView.growShops.visitShop', { shopName: shop.name })} <PhosphorIcons.ArrowSquareOut className="inline w-4 h-4 ml-1.5" />
             </Button>
         </div>
     </div>
@@ -109,8 +109,8 @@ export const GrowShopsView: React.FC = () => {
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center text-slate-500">
                            <PhosphorIcons.Storefront className="w-16 h-16 mb-4 text-slate-400" />
-                           <h3 className="font-semibold text-lg text-slate-300">{t('common.select')} a Shop</h3>
-                           <p className="text-sm">Choose a shop from the list to view its details.</p>
+                           <h3 className="font-semibold text-lg text-slate-300">{t('equipmentView.growShops.selectShopTitle')}</h3>
+                           <p className="text-sm">{t('equipmentView.growShops.selectShopSubtitle')}</p>
                         </div>
                     )}
                 </Card>

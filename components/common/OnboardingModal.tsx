@@ -72,19 +72,19 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
              <Modal isOpen={true} onClose={() => handleLanguageSelect('en')} size="lg">
                  <div className="text-center p-6">
                     <h2 className="text-2xl font-bold font-display text-primary-300 mb-2">
-                        Choose Your Language / Sprache wählen
+                        {t('onboarding.languageTitle')}
                     </h2>
                     <p className="text-slate-300 mb-8">
-                        Select your preferred language to continue.
+                        {t('onboarding.languageSubtitle')}
                     </p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
                         <button onClick={() => handleLanguageSelect('de')} className="flex flex-col items-center gap-3 p-6 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all border-2 border-transparent hover:border-primary-500 w-full">
                            <GermanFlag className="w-12 h-8 rounded-sm shadow-md" />
-                           <span className="font-bold text-lg">Deutsch</span>
+                           <span className="font-bold text-lg">{t('onboarding.german')}</span>
                         </button>
                          <button onClick={() => handleLanguageSelect('en')} className="flex flex-col items-center gap-3 p-6 rounded-lg bg-slate-800 hover:bg-slate-700 transition-all border-2 border-transparent hover:border-primary-500 w-full">
                             <UKFlag className="w-12 h-8 rounded-sm shadow-md" />
-                           <span className="font-bold text-lg">English</span>
+                           <span className="font-bold text-lg">{t('onboarding.english')}</span>
                         </button>
                     </div>
                 </div>

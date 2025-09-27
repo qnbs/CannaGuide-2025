@@ -1,6 +1,7 @@
 import { Plant, Strain, GrowSetup, JournalEntry, TrainingType, PlantStage } from '@/types';
-import type { StoreSet, StoreGet, TFunction } from '@/stores/useAppStore';
+import type { StoreSet, StoreGet } from '@/stores/useAppStore';
 import { simulationService } from '@/services/plantSimulationService';
+import { i18nInstance } from '@/i18n';
 
 export interface PlantSlice {
     plants: Record<string, Plant | undefined>;
@@ -61,7 +62,7 @@ const createNewPlant = (strain: Strain, setup: GrowSetup): Plant => {
     };
 };
 
-export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunction): PlantSlice => ({
+export const createPlantSlice = (set: StoreSet, get: StoreGet): PlantSlice => ({
     plants: {},
     plantSlots: Array(3).fill(null),
     selectedPlantId: null,
@@ -99,8 +100,8 @@ export const createPlantSlice = (set: StoreSet, get: StoreGet, t: () => TFunctio
         });
         get().addNotification(
             wateredCount > 0
-                ? t()('plantsView.notifications.waterAllSuccess', { count: wateredCount })
-                : t()('plantsView.notifications.waterAllNone'),
+                ? i18nInstance.t('plantsView.notifications.waterAllSuccess', { count: wateredCount })
+                : i18nInstance.t('plantsView.notifications.waterAllNone'),
             'info'
         );
     },

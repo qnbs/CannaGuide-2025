@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from '@/App';
+import { i18nPromise } from '@/i18n';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -8,8 +9,12 @@ if (!rootElement) {
 }
 
 const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+
+// Wait for translations to load before rendering the app
+i18nPromise.then(() => {
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+});

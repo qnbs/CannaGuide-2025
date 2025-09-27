@@ -22,13 +22,16 @@ import { ttsService } from '@/services/ttsService';
 import { useDocumentEffects } from '@/hooks/useDocumentEffects';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
+import { simulationManager } from './services/SimulationManager';
+import { i18nInstance } from './i18n';
 
 const LoadingGate: React.FC = () => {
+    const { t } = useTranslations();
     return (
         <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans items-center justify-center" role="status" aria-live="polite">
             <CannabisLeafIcon className="w-24 h-24 text-primary-500 animate-pulse" />
             <p className="mt-4 text-lg font-semibold text-slate-400">
-                Preparing your guide...
+                {t('common.preparingGuide')}
             </p>
         </div>
     );
@@ -51,22 +54,6 @@ const SimulationStatusOverlay: React.FC = () => {
             <AiLoadingIndicator loadingMessage={t('plantsView.syncProgress')} />
         </div>
     );
-};
-
-const SimulationController: React.FC = () => {
-    const initializeSimulation = useAppStore(state => state.initializeSimulation);
-    const simulationSettings = useAppStore(state => state.settings.simulationSettings);
-    const updateTimer = useAppStore(state => state._updateTimer);
-
-    useEffect(() => {
-        initializeSimulation();
-    }, [initializeSimulation]);
-    
-    useEffect(() => {
-        updateTimer();
-    }, [simulationSettings.autoAdvance, simulationSettings.speed, updateTimer]);
-
-    return null; // This component does not render UI
 };
 
 const AppContent: React.FC = () => {
@@ -160,36 +147,53 @@ const AppContent: React.FC = () => {
 };
 
 export const App: React.FC = () => {
-    const { t } = useTranslations();
-    const { isAppReady, setAppReady, init } = useAppStore(state => ({
+    const { isAppReady, setAppReady } = useAppStore(state => ({
         isAppReady: state.isAppReady,
         setAppReady: state.setAppReady,
-        init: state.init,
     }));
     
-    // Effect for updating the translation function in the store when language changes.
-    useEffect(() => {
-        init(t);
-    }, [t, init]);
-
-    // Effect for one-time data initialization.
     useEffect(() => {
         const initializeApp = async () => {
             setAppReady(false);
-            console.log('[AppInitializer] Starting initial app data load...');
-            await strainService.init(); // Language-agnostic data loading
+            await strainService.init();
+            await simulationManager.initialize();
             setAppReady(true);
-            console.log('[AppInitializer] Initial app data load complete.');
         };
         initializeApp();
     }, [setAppReady]);
 
     useEffect(() => {
-        // Initialize TTS service once
-        ttsService;
+        // Initialize TTS service
+        ttsService.init();
+
+        // Subscribe to simulation setting changes
+        const unsubscribeSim = useAppStore.subscribe(
+            state => state.settings.simulationSettings,
+            () => simulationManager.update()
+        );
+
+        // Subscribe to language changes
+        const unsubscribeLang = useAppStore.subscribe(
+            state => state.settings.language,
+            (lang) => {
+                if (lang && i18nInstance.language !== lang) {
+                    i18nInstance.changeLanguage(lang);
+                }
+            }
+        );
+
+        // Perform an initial language sync after the store has been hydrated.
+        const hydratedLanguage = useAppStore.getState().settings.language;
+        if (i18nInstance.language !== hydratedLanguage) {
+            i18nInstance.changeLanguage(hydratedLanguage);
+        }
+
+        return () => {
+            unsubscribeSim();
+            unsubscribeLang();
+        };
     }, []);
     
-    // Render the loading gate only on the very first startup.
     if (!isAppReady) {
         return <LoadingGate />;
     }
@@ -198,7 +202,6 @@ export const App: React.FC = () => {
         <>
             <AppContent />
             <ToastManager />
-            <SimulationController />
         </>
     );
 };

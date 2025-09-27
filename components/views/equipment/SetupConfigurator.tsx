@@ -129,7 +129,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                     
                     <div className="space-y-6">
                         <div>
-                            <h3 className="text-xl font-semibold text-slate-200 mb-3">1. {t('equipmentView.configurator.step1TitleNew')}</h3>
+                            <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step1TitleNew')}</h3>
                             <div className="grid grid-cols-3 gap-3">
                                 {([1, 2, 3] as PlantCount[]).map(count => 
                                     <button 
@@ -150,7 +150,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
 
                         {currentConfigs && (
                             <div className="animate-fade-in">
-                                <h3 className="text-xl font-semibold text-slate-200 mb-3">2. {t('equipmentView.configurator.step2TitleNew')}</h3>
+                                <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step2TitleNew')}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                    <ConfigCard config={currentConfigs.standard} isSelected={selectedConfigKey === 'standard'} onSelect={() => setSelectedConfigKey('standard')} />
                                    <ConfigCard config={currentConfigs.medium} isSelected={selectedConfigKey === 'medium'} onSelect={() => setSelectedConfigKey('medium')} />

@@ -32,6 +32,10 @@ export const settingsView = {
     installApp: 'App installieren',
     installAppDesc: 'Installiere den CannaGuide 2025 auf deinem Gerät für ein natives App-Erlebnis, inklusive Offline-Zugriff.',
   },
+  languages: {
+    en: 'Englisch',
+    de: 'Deutsch',
+  },
   accessibility: {
     title: 'Barrierefreiheit',
     highContrast: 'Hoher Kontrast',

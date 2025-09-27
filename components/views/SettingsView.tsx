@@ -112,8 +112,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
             <SettingsSection title={t('settingsView.categories.general')} icon={<PhosphorIcons.Gear />}>
                 <SettingRow label={t('settingsView.general.language')}>
                     <select value={settings.language} onChange={e => setSetting('language', e.target.value as Language)} className="select-input">
-                        <option value="en">English</option>
-                        <option value="de">Deutsch</option>
+                        <option value="en">{t('settingsView.languages.en')}</option>
+                        <option value="de">{t('settingsView.languages.de')}</option>
                     </select>
                 </SettingRow>
                 <SettingRow label={t('settingsView.general.theme')}>

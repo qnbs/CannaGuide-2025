@@ -1,5 +1,6 @@
 import { View, Notification, Strain, GrowSetup, NotificationType, Language } from '@/types';
-import type { StoreSet, StoreGet, TFunction } from '../useAppStore';
+import type { StoreSet, StoreGet } from '../useAppStore';
+import { i18nInstance } from '@/i18n';
 
 export interface UISlice {
     activeView: View;
@@ -47,7 +48,7 @@ export interface UISlice {
     setOnboardingStep: (step: number) => void;
 }
 
-export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction): UISlice => ({
+export const createUISlice = (set: StoreSet, get: StoreGet): UISlice => ({
     activeView: View.Plants,
     isCommandPaletteOpen: false,
     isAddModalOpen: false,
@@ -85,7 +86,7 @@ export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
     // New Grow Flow Actions
     initiateGrowFromStrainList: (strain) => {
         set({ strainForNewGrow: strain, activeView: View.Plants });
-        get().addNotification(t()('plantsView.inlineSelector.title'), 'info');
+        get().addNotification(i18nInstance.t('plantsView.inlineSelector.title'), 'info');
     },
     startGrowInSlot: (slotIndex) => {
         set({ initiatingGrowForSlot: slotIndex, strainForNewGrow: null });
@@ -110,7 +111,7 @@ export const createUISlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
         if (strainForNewGrow && confirmedGrowSetup && initiatingGrowForSlot !== null) {
             const success = get().startNewPlant(strainForNewGrow, confirmedGrowSetup, initiatingGrowForSlot);
             if (success) {
-                get().addNotification(t()('plantsView.notifications.growStarted', { name: strainForNewGrow.name }), 'success');
+                get().addNotification(i18nInstance.t('plantsView.notifications.growStarted', { name: strainForNewGrow.name }), 'success');
             }
         }
         get().cancelNewGrow();

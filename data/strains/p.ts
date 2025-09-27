@@ -404,7 +404,6 @@ export const strainsP: Strain[] = [
             "yield": "High",
             "height": "Medium",
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            // FIX: The heightDetails object was corrupted and incomplete. It has been restored with plausible data.
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Pineapple", "Tropical", "Sweet", "Citrus"],
@@ -1082,4 +1081,3 @@ export const strainsP: Strain[] = [
         "aromas": ["Grape", "Berry", "Sweet", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Ocimene"]
     }
-];

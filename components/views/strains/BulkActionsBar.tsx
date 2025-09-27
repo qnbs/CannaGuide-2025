@@ -39,7 +39,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                         <div className="relative" ref={favMenuRef}>
                             <Button size="sm" variant="secondary" onClick={() => setIsFavMenuOpen(!isFavMenuOpen)}>
                                 <PhosphorIcons.Heart className="w-4 h-4 mr-1.5" />
-                                <span className="hidden sm:inline">Manage Favorites</span>
+                                <span className="hidden sm:inline">{t('common.manageFavorites')}</span>
                                 <PhosphorIcons.ChevronDown className={`w-4 h-4 ml-1 transition-transform ${isFavMenuOpen ? 'rotate-180' : ''}`} />
                             </Button>
                             {isFavMenuOpen && (

@@ -4,11 +4,17 @@ class TTSService {
     private synth: SpeechSynthesis;
     private voices: SpeechSynthesisVoice[] = [];
     private onEndCallback: (() => void) | null = null;
+    private isInitialized: boolean = false;
 
     constructor() {
         this.synth = window.speechSynthesis;
+    }
+    
+    public init() {
+        if (this.isInitialized) return;
         this.synth.onvoiceschanged = this.loadVoices.bind(this);
-        this.loadVoices();
+        this.loadVoices(); // Initial attempt
+        this.isInitialized = true;
     }
 
     private loadVoices() {
@@ -22,8 +28,6 @@ class TTSService {
 
     speak(text: string, lang: Language, onEnd: () => void, settings: TTSSettings) {
         if (this.synth.speaking) {
-            // This can happen if the 'end' event hasn't fired yet.
-            // We cancel the previous utterance to start the new one.
             this.synth.cancel();
         }
 

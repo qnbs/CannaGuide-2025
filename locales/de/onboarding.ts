@@ -1,4 +1,8 @@
 export const onboarding = {
+  languageTitle: 'Sprache wählen',
+  languageSubtitle: 'Wähle deine bevorzugte Sprache, um fortzufahren.',
+  german: 'Deutsch',
+  english: 'Englisch',
   step1: {
     title: 'Willkommen beim Grow Guide!',
     text: 'Entdecke hunderte von Sorten. Finde die perfekte Genetik für deine Bedürfnisse und speichere deine Favoriten.',

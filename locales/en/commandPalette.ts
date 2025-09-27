@@ -1,4 +1,5 @@
 
+
 export const commandPalette = {
   title: 'Command Palette',
   placeholder: 'Type a command or search...',
@@ -13,4 +14,14 @@ export const commandPalette = {
   feed: 'Feed',
   toggleLanguage: 'Switch language to: {lang}',
   toggleTheme: 'Toggle Theme',
+  goToView: 'Go to {view} view',
+  exportStrains: 'Export strains data',
+  groups: {
+    navigation: 'Navigation',
+    plants: 'Plants',
+    strains: 'Strains',
+    knowledge: 'Knowledge',
+    settings: 'Settings',
+    general: 'General Actions'
+  }
 };

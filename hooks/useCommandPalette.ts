@@ -27,7 +27,7 @@ export const useCommandPalette = () => {
         const createNavCommand = (view: View, icon: React.ElementType, keywords?: string, shortcut?: string[]): Command => ({
             id: `nav-${view}`,
             title: t(`nav.${view.toLowerCase()}`),
-            subtitle: `Go to ${view.toLowerCase()} view`,
+            subtitle: t('commandPalette.goToView', { view: view.toLowerCase() }),
             icon,
             action: () => {
                 setActiveView(view);
@@ -35,7 +35,7 @@ export const useCommandPalette = () => {
             },
             keywords,
             shortcut,
-            group: CommandGroup.Navigation,
+            group: t('commandPalette.groups.navigation'),
         });
 
         return [
@@ -56,19 +56,19 @@ export const useCommandPalette = () => {
                     setIsCommandPaletteOpen(false);
                 },
                 keywords: 'new, custom, create',
-                group: CommandGroup.Strains
+                group: t('commandPalette.groups.strains')
             },
             {
                 id: 'export-strains',
                 title: t('common.export'),
-                subtitle: 'Export strains data',
+                subtitle: t('commandPalette.exportStrains'),
                 icon: PhosphorIcons.DownloadSimple,
                 action: () => {
                     openExportModal();
                     setIsCommandPaletteOpen(false);
                 },
                 keywords: 'save, download, pdf, csv, json',
-                group: CommandGroup.Strains
+                group: t('commandPalette.groups.strains')
             },
             
             // Settings
@@ -77,7 +77,7 @@ export const useCommandPalette = () => {
                 title: t('commandPalette.toggleLanguage', { lang: locale === 'en' ? 'Deutsch' : 'English' }),
                 icon: PhosphorIcons.Globe,
                 action: () => setSetting('language', locale === 'en' ? 'de' : 'en'),
-                group: CommandGroup.Settings
+                group: t('commandPalette.groups.settings')
             },
             {
                 id: 'toggle-theme',
@@ -89,7 +89,7 @@ export const useCommandPalette = () => {
                     const nextIndex = (currentIndex + 1) % themes.length;
                     setSetting('theme', themes[nextIndex]);
                 },
-                group: CommandGroup.Settings
+                group: t('commandPalette.groups.settings')
             }
         ];
     }, [t, locale, setActiveView, setIsCommandPaletteOpen, setSetting, settings.theme, openAddModal, openExportModal]);

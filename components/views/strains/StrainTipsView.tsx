@@ -116,7 +116,7 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
     return (
         <div className="mt-4">
             {editingTip && <EditResponseModal response={editingTip} onClose={() => setEditingTip(null)} onSave={handleUpdateSave} title={t('strainsView.tips.editTipTitle')} />}
-            <DataExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} title={t('strainsView.tips.title')} selectionCount={selectedIds.size} totalCount={filteredTips.length} />
+            <DataExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} title={t('strainsView.tips.title')} selectionCount={selectedIds.size} totalCount={filteredTips.length} translationBasePath="strainsView.tips.exportModal" />
 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.tips.title')}</h3>

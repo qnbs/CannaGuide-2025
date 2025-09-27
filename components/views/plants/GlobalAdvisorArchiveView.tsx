@@ -80,6 +80,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                 title={t('plantsView.aiAdvisor.archiveTitle')}
                 selectionCount={selectedIds.size}
                 totalCount={filteredAdvice.length}
+                translationBasePath="plantsView.aiAdvisor.exportModal"
             />
             <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
                 <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">

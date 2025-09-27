@@ -1,11 +1,11 @@
 import { StoredImageData, Strain } from '@/types';
 
 const DB_NAME = 'CannaGuideDB';
-const DB_VERSION = 2; // Upgraded version
+const DB_VERSION = 3; // Upgraded version for new indices
 const STRAINS_STORE = 'strains';
 const IMAGES_STORE = 'images';
 const METADATA_STORE = 'metadata';
-const STRAIN_SEARCH_INDEX_STORE = 'strain_search_index'; // New store for search
+const STRAIN_SEARCH_INDEX_STORE = 'strain_search_index';
 
 let db: IDBDatabase;
 
@@ -19,8 +19,8 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onupgradeneeded = (event) => {
             const dbInstance = (event.target as IDBOpenDBRequest).result;
-            
-            // Initial setup for new users or cleared databases
+            const transaction = (event.target as IDBOpenDBRequest).transaction;
+
             if (event.oldVersion < 1) {
                 if (!dbInstance.objectStoreNames.contains(STRAINS_STORE)) {
                     dbInstance.createObjectStore(STRAINS_STORE, { keyPath: 'id' });
@@ -32,10 +32,28 @@ const openDB = (): Promise<IDBDatabase> => {
                     dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' });
                 }
             }
-            // Upgrade from version 1 to 2 for existing users
+            
             if (event.oldVersion < 2) {
                 if (!dbInstance.objectStoreNames.contains(STRAIN_SEARCH_INDEX_STORE)) {
                     dbInstance.createObjectStore(STRAIN_SEARCH_INDEX_STORE, { keyPath: 'word' });
+                }
+            }
+
+            if (event.oldVersion < 3) {
+                 if (transaction) {
+                    const strainStore = transaction.objectStore(STRAINS_STORE);
+                    if (!strainStore.indexNames.contains('by_type')) {
+                        strainStore.createIndex('by_type', 'type', { unique: false });
+                    }
+                    if (!strainStore.indexNames.contains('by_thc')) {
+                        strainStore.createIndex('by_thc', 'thc', { unique: false });
+                    }
+                    if (!strainStore.indexNames.contains('by_cbd')) {
+                        strainStore.createIndex('by_cbd', 'cbd', { unique: false });
+                    }
+                    if (!strainStore.indexNames.contains('by_floweringTime')) {
+                        strainStore.createIndex('by_floweringTime', 'floweringTime', { unique: false });
+                    }
                 }
             }
         };

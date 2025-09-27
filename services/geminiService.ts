@@ -27,6 +27,7 @@ const getEquipmentRecommendation = async (userPrompt: string, t: TFunction): Pro
         contents: fullPrompt,
         config: { responseMimeType: 'application/json' }
     });
+    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<Recommendation>(response.text, t);
 };
 
@@ -60,6 +61,7 @@ const diagnosePlant = async (base64Image: string, mimeType: string, context: any
         }
     });
     
+    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<PlantDiagnosisResponse>(response.text, t);
 };
 
@@ -85,6 +87,7 @@ const getPlantAdvice = async (plant: Plant, t: TFunction): Promise<AIResponse> =
         config: { responseMimeType: 'application/json' }
     });
     
+    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<AIResponse>(response.text, t);
 };
 
@@ -101,6 +104,7 @@ const getMentorResponse = async (plant: Plant, query: string, t: TFunction): Pro
         }
     });
 
+    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<Omit<MentorMessage, 'role'>>(response.text, t);
 };
 
@@ -120,6 +124,7 @@ const getStrainTips = async (strain: Strain, context: { focus: string, stage: st
         config: { responseMimeType: 'application/json' }
     });
     
+    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<StructuredGrowTips>(response.text, t);
 };
 
@@ -133,6 +138,7 @@ const generateDeepDive = async (topic: string, plant: Plant, t: TFunction): Prom
         config: { responseMimeType: 'application/json' }
     });
     
+    // FIX: Access the .text property directly to get the string output.
     return parseJsonResponse<DeepDiveGuide>(response.text, t);
 };
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Notification, NotificationType } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
 
 interface ToastProps {
   notification: Notification;
@@ -15,6 +16,7 @@ const toastIcons: Record<NotificationType, React.ReactNode> = {
 };
 
 const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
+    const { t } = useTranslations();
     const [status, setStatus] = useState('toast-entering');
 
     useEffect(() => {
@@ -42,9 +44,9 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
                 type="button"
                 className="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-slate-900 rounded-lg focus:ring-2 focus:ring-slate-300 p-1.5 hover:bg-slate-100 dark:text-slate-500 dark:hover:text-white dark:hover:bg-slate-700"
                 onClick={() => onClose(notification.id)}
-                aria-label="Close"
+                aria-label={t('common.close')}
             >
-                <span className="sr-only">Close</span>
+                <span className="sr-only">{t('common.close')}</span>
                 <PhosphorIcons.X className="w-5 h-5" />
             </button>
         </div>

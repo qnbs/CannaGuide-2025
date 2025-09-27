@@ -1,6 +1,7 @@
 import { AIResponse, Plant, Recommendation, PlantDiagnosisResponse, MentorMessage, Strain, StructuredGrowTips, DeepDiveGuide } from '@/types';
-import { StoreSet, StoreGet, TFunction } from '../useAppStore';
+import { StoreSet, StoreGet } from '../useAppStore';
 import { geminiService } from '@/services/geminiService';
+import { i18nInstance } from '@/i18n';
 
 export interface AiState<T> {
     isLoading: boolean;
@@ -32,7 +33,7 @@ export interface AiSlice {
     startDeepDiveGeneration: (topic: string, plant: Plant) => Promise<void>;
 }
 
-export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction): AiSlice => ({
+export const createAiSlice = (set: StoreSet, get: StoreGet): AiSlice => ({
     equipmentGeneration: { isLoading: false, response: null, error: null },
     diagnostics: { isLoading: false, response: null, error: null },
     advisorChats: {},
@@ -45,7 +46,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             state.equipmentGeneration = { isLoading: true, response: null, error: null, sourceDetails: details };
         });
         try {
-            const recommendation = await geminiService.getEquipmentRecommendation(prompt, t());
+            const recommendation = await geminiService.getEquipmentRecommendation(prompt, i18nInstance.t);
             set(state => {
                 state.equipmentGeneration.isLoading = false;
                 state.equipmentGeneration.response = recommendation;
@@ -53,7 +54,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
         } catch (e: any) {
             set(state => {
                 state.equipmentGeneration.isLoading = false;
-                state.equipmentGeneration.error = t()(e.message || 'ai.error.unknown');
+                state.equipmentGeneration.error = i18nInstance.t(e.message || 'ai.error.unknown');
             });
         }
     },
@@ -68,7 +69,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             state.diagnostics = { isLoading: true, response: null, error: null };
         });
         try {
-            const diagnosis = await geminiService.diagnosePlant(base64Image, mimeType, context, t());
+            const diagnosis = await geminiService.diagnosePlant(base64Image, mimeType, context, i18nInstance.t);
             set(state => {
                 state.diagnostics.isLoading = false;
                 state.diagnostics.response = diagnosis;
@@ -76,7 +77,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
         } catch (e: any) {
             set(state => {
                 state.diagnostics.isLoading = false;
-                state.diagnostics.error = t()(e.message || 'ai.error.unknown');
+                state.diagnostics.error = i18nInstance.t(e.message || 'ai.error.unknown');
             });
         }
     },
@@ -86,7 +87,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             state.advisorChats[plant.id] = { isLoading: true, response: null, error: null };
         });
         try {
-            const advice = await geminiService.getPlantAdvice(plant, t());
+            const advice = await geminiService.getPlantAdvice(plant, i18nInstance.t);
             set(state => {
                 state.advisorChats[plant.id].isLoading = false;
                 state.advisorChats[plant.id].response = advice;
@@ -94,7 +95,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
         } catch (e: any) {
             set(state => {
                 state.advisorChats[plant.id].isLoading = false;
-                state.advisorChats[plant.id].error = t()(e.message || 'ai.error.unknown');
+                state.advisorChats[plant.id].error = i18nInstance.t(e.message || 'ai.error.unknown');
             });
         }
     },
@@ -109,15 +110,15 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             state.mentorChats[plant.id].error = null;
         });
         try {
-            const response = await geminiService.getMentorResponse(plant, query, t());
+            const response = await geminiService.getMentorResponse(plant, query, i18nInstance.t);
             set(state => {
                 state.mentorChats[plant.id].history.push({ role: 'model', ...response });
                 state.mentorChats[plant.id].isLoading = false;
             });
         } catch (e: any) {
              set(state => {
-                const errorMessage = t()(e.message || 'ai.error.unknown');
-                state.mentorChats[plant.id].history.push({ role: 'model', title: t()('common.error'), content: errorMessage });
+                const errorMessage = i18nInstance.t(e.message || 'ai.error.unknown');
+                state.mentorChats[plant.id].history.push({ role: 'model', title: i18nInstance.t('common.error'), content: errorMessage });
                 state.mentorChats[plant.id].isLoading = false;
                 state.mentorChats[plant.id].error = errorMessage;
             });
@@ -136,7 +137,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             state.strainTips[strain.id] = { isLoading: true, response: null, error: null };
         });
         try {
-            const tips = await geminiService.getStrainTips(strain, context, t());
+            const tips = await geminiService.getStrainTips(strain, context, i18nInstance.t);
             set(state => {
                 state.strainTips[strain.id].isLoading = false;
                 state.strainTips[strain.id].response = tips;
@@ -144,7 +145,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
         } catch (e: any) {
             set(state => {
                 state.strainTips[strain.id].isLoading = false;
-                state.strainTips[strain.id].error = t()(e.message || 'ai.error.unknown');
+                state.strainTips[strain.id].error = i18nInstance.t(e.message || 'ai.error.unknown');
             });
         }
     },
@@ -155,7 +156,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
             state.deepDives[key] = { isLoading: true, response: null, error: null };
         });
         try {
-            const guide = await geminiService.generateDeepDive(topic, plant, t());
+            const guide = await geminiService.generateDeepDive(topic, plant, i18nInstance.t);
             set(state => {
                 state.deepDives[key].isLoading = false;
                 state.deepDives[key].response = guide;
@@ -163,7 +164,7 @@ export const createAiSlice = (set: StoreSet, get: StoreGet, t: () => TFunction):
         } catch (e: any) {
             set(state => {
                 state.deepDives[key].isLoading = false;
-                state.deepDives[key].error = t()(e.message || 'ai.error.unknown');
+                state.deepDives[key].error = i18nInstance.t(e.message || 'ai.error.unknown');
             });
         }
     },

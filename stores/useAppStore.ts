@@ -17,28 +17,19 @@ import { SimulationSlice, createSimulationSlice } from './slices/simulationSlice
 import { View, AppSettings } from '@/types';
 import { indexedDBStorage } from './indexedDBStorage';
 
-export type TFunction = (key: string, params?: Record<string, any>) => string;
-let t: TFunction = (key: string) => key;
-const getT = () => t;
-
-export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserStrainsSlice & FavoritesSlice & NotesSlice & SavedItemsSlice & ArchivesSlice & KnowledgeSlice & TTSSlice & SimulationSlice & AppSlice;
+export type AppState = SettingsSlice & UISlice & StrainsViewSlice & AiSlice & PlantSlice & UserStrainsSlice & FavoritesSlice & NotesSlice & SavedItemsSlice & ArchivesSlice & KnowledgeSlice & TTSSlice & SimulationSlice;
 export type StoreSet = (partial: AppState | Partial<AppState> | ((state: AppState) => AppState | Partial<AppState> | void), replace?: boolean | undefined) => void;
 export type StoreGet = () => AppState;
-
-interface AppSlice {
-    init: (newT: TFunction) => void;
-}
 
 export const useAppStore = create<AppState>()(
   devtools(
     persist(
       immer((set, get) => ({
-        init: (newT: TFunction) => { t = newT; },
         ...createSettingsSlice(set),
-        ...createUISlice(set, get, getT),
+        ...createUISlice(set, get),
         ...createStrainsViewSlice(set, get),
-        ...createAiSlice(set, get, getT),
-        ...createPlantSlice(set, get, getT),
+        ...createAiSlice(set, get),
+        ...createPlantSlice(set, get),
         ...createUserStrainsSlice(set, get),
         ...createFavoritesSlice(set),
         ...createNotesSlice(set),

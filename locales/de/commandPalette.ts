@@ -14,4 +14,14 @@ export const commandPalette = {
   feed: 'Düngen',
   toggleLanguage: 'Sprache umschalten auf: {lang}',
   toggleTheme: 'Thema wechseln',
+  goToView: 'Zur Ansicht {view} wechseln',
+  exportStrains: 'Sortendaten exportieren',
+  groups: {
+    navigation: 'Navigation',
+    plants: 'Pflanzen',
+    strains: 'Sorten',
+    knowledge: 'Wissen',
+    settings: 'Einstellungen',
+    general: 'Allgemeine Aktionen'
+  }
 };

@@ -65,9 +65,9 @@ export const EditResponseModal = <T extends EditableResponse>({ response, onClos
                 
                 <div className="bg-slate-800 border border-slate-600 rounded-md">
                     <div className="flex items-center gap-1 p-1 border-b border-slate-600">
-                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('bold')} className="!p-1.5" aria-label={t('common.actions')}><PhosphorIcons.TextBolder className="w-5 h-5" /></Button>
-                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('italic')} className="!p-1.5" aria-label={t('common.actions')}><PhosphorIcons.TextItalic className="w-5 h-5" /></Button>
-                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('insertUnorderedList')} className="!p-1.5" aria-label={t('common.actions')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
+                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('bold')} className="!p-1.5" aria-label={t('common.editor.bold')}><PhosphorIcons.TextBolder className="w-5 h-5" /></Button>
+                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('italic')} className="!p-1.5" aria-label={t('common.editor.italic')}><PhosphorIcons.TextItalic className="w-5 h-5" /></Button>
+                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('insertUnorderedList')} className="!p-1.5" aria-label={t('common.editor.list')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
                     </div>
                     <div
                         ref={contentRef}

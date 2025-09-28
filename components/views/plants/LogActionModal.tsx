@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plant, JournalEntry, TrainingType, JournalEntryType } from '@/types';
+import { Plant, JournalEntry, TrainingType, JournalEntryType, PhotoCategory } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
@@ -20,6 +20,13 @@ interface LogActionModalProps {
     onLearnMore: (topic: string) => void;
 }
 
+const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
+    <div>
+        <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+        <textarea {...props} className="w-full min-h-[80px] input-base" />
+    </div>
+);
+
 export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
     const { t } = useTranslations();
     const dispatch = useAppDispatch();
@@ -31,8 +38,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
     const [ec, setEc] = useState(1.2);
     const [trainingType, setTrainingType] = useState<TrainingType>('LST');
     const [amendmentType, setAmendmentType] = useState('Mycorrhizae');
-    const [isCameraOpen, setIsCameraOpen] = useState(type === 'photo');
+    const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [imageData, setImageData] = useState<{id: string, url: string} | null>(null);
+    const [details, setDetails] = useState<{ photoCategory: PhotoCategory }>({ photoCategory: PhotoCategory.FullPlant });
+
 
     const titleMap: Record<ModalType, string> = {
         watering: t('plantsView.actionModals.logWatering'),
@@ -69,7 +78,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                 break;
             case 'photo':
                 if (imageData) {
-                     entry = { type: JournalEntryType.Photo, notes, details: { imageId: imageData.id } };
+                     entry = { type: JournalEntryType.Photo, notes, details: { imageId: imageData.id, photoCategory: details.photoCategory } };
                 }
                 break;
             case 'amendment':
@@ -127,27 +136,53 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                     <option>Worm Castings</option>
                 </select>
             </>;
-            case 'photo': return <>
+            case 'photo': return <div className="space-y-4">
                 {imageData ? (
                     <div className="relative">
-                        <img src={imageData.url} alt="captured" className="rounded-md" />
+                        <img src={imageData.url} alt="Preview" className="rounded-lg w-full" />
                         <Button size="sm" variant="danger" onClick={() => setImageData(null)} className="absolute top-2 right-2 !p-1.5"><PhosphorIcons.X/></Button>
                     </div>
-                ) : <p className="text-center text-slate-400">Please capture an image.</p>}
-            </>;
+                ) : (
+                    <Button onClick={() => setIsCameraOpen(true)} variant="secondary" className="w-full">
+                        <PhosphorIcons.Camera className="w-5 h-5 mr-2" />
+                        {t('plantsView.actionModals.photo.selectImage')}
+                    </Button>
+                )}
+
+                <div>
+                    <label htmlFor="photo-category" className="block text-sm font-semibold mb-1">
+                        {t('plantsView.actionModals.photo.category')}
+                    </label>
+                    <select 
+                      id="photo-category"
+                      value={details.photoCategory}
+                      onChange={(e) => setDetails(prev => ({ ...prev, photoCategory: e.target.value as PhotoCategory }))}
+                      className="w-full select-input"
+                    >
+                      {Object.values(PhotoCategory).map(cat => (
+                          <option key={cat} value={cat}>{t(`plantsView.actionModals.photo.categories.${cat}`)}</option>
+                      ))}
+                    </select>
+                </div>
+            </div>;
             default: return null;
         }
     };
 
     if (isCameraOpen && type === 'photo') {
-        return <CameraModal isOpen={isCameraOpen} onClose={onClose} onCapture={handleCapture} />;
+        return <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleCapture} />;
     }
 
     return (
         <Modal isOpen={true} onClose={onClose} title={titleMap[type]} footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></>}>
             <div className="space-y-4">
                 {renderContent()}
-                <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes..." className="w-full min-h-[80px] input-base" />
+                 <Textarea
+                    label={t('common.notes')}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder={type === 'photo' ? t('plantsView.actionModals.photo.notesPlaceholder') : t('common.notes')}
+                />
             </div>
         </Modal>
     );

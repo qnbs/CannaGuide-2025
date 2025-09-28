@@ -179,7 +179,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                 </SettingRow>
                 <SettingRow label={t('settingsView.strains.defaultSort')}>
                     <select value={settings.strainsViewSettings.defaultSortKey} onChange={e => handleSetSetting('strainsViewSettings.defaultSortKey', e.target.value as SortKey)} className="select-input">
-                       {Object.keys(t('settingsView.strains.sortKeys', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.strains.sortKeys.${key}`)}</option>)}
+                       {/* FIX: Cast key to SortKey to resolve TypeScript error */}
+                       {Object.keys(t('settingsView.strains.sortKeys', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.strains.sortKeys.${key as SortKey}`)}</option>)}
                     </select>
                     <select value={settings.strainsViewSettings.defaultSortDirection} onChange={e => handleSetSetting('strainsViewSettings.defaultSortDirection', e.target.value as SortDirection)} className="select-input">
                        {Object.keys(t('settingsView.strains.sortDirections', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.strains.sortDirections.${key}`)}</option>)}

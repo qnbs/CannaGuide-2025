@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType } from '@/types';
+import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType } from '@/types';
 import { simulationService } from '@/services/plantSimulationService';
 import { AppSettings } from '@/types';
 
@@ -75,7 +75,7 @@ const simulationSlice = createSlice({
                     const plant = state.plants[plantId];
                     if (plant) {
                        plant.substrate.moisture = 100;
-                       plant.journal.push({id: `journal-water-all-${Date.now()}`, createdAt: Date.now(), type: 'WATERING', notes: 'Watered all plants.'});
+                       plant.journal.push({id: `journal-water-all-${Date.now()}`, createdAt: Date.now(), type: JournalEntryType.Watering, notes: 'Watered all plants.'});
                     }
                 }
             });

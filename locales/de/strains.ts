@@ -109,10 +109,10 @@ export const strainsView = {
       floweringTime: 'Blütezeit muss zwischen 4 und 20 liegen.',
       thcRange: 'Ungültiges Bereichsformat.',
       cbdRange: 'Ungültiges Bereichsformat.',
-      addSuccess: 'Sorte "{name}" erfolgreich hinzugefügt!',
-      updateSuccess: 'Sorte "{name}" erfolgreich aktualisiert!',
-      duplicate: 'Eine Sorte mit dem Namen "{name}" existiert bereits.',
-      deleteConfirm: 'Möchtest du die Sorte "{name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
+      addSuccess: 'Sorte "{{name}}" erfolgreich hinzugefügt!',
+      updateSuccess: 'Sorte "{{name}}" erfolgreich aktualisiert!',
+      duplicate: 'Eine Sorte mit dem Namen "{{name}}" existiert bereits.',
+      deleteConfirm: 'Möchtest du die Sorte "{{name}}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.',
     },
   },
   strainModal: {
@@ -176,7 +176,9 @@ export const strainsView = {
       profile: 'Profil',
       notes: 'Notizen',
       aiTips: 'KI-Tipps',
-    }
+    },
+    cannabinoidProfile: 'Cannabinoid-Profil',
+    aromaProfile: 'Aroma- & Terpenprofil',
   },
   exportsManager: {
     createExport: 'Neuen Export erstellen',
@@ -186,8 +188,8 @@ export const strainsView = {
     deleteConfirmPlural_other: 'Möchtest du {{count}} Exporte wirklich löschen?',
     deleteSuccessPlural_one: '1 Export erfolgreich gelöscht.',
     deleteSuccessPlural_other: '{{count}} Exporte erfolgreich gelöscht.',
-    updateExportSuccess: 'Export "{name}" erfolgreich aktualisiert.',
-    downloadingExport: 'Lade Export "{name}" als {format} herunter...',
+    updateExportSuccess: 'Export "{{name}}" erfolgreich aktualisiert.',
+    downloadingExport: 'Lade Export "{{name}}" als {{format}} herunter...',
     strainsNotFound: 'Einige Sorten aus diesem Export konnten nicht gefunden werden. Der Export könnte unvollständig sein.',
     sourceLabel: 'Quelle',
     strainCount_one: '1 Sorte',
@@ -201,10 +203,10 @@ export const strainsView = {
   tips: {
     title: 'Gespeicherte Anbau-Tipps',
     editTipTitle: 'Tipp bearbeiten',
-    saveSuccess: 'Tipp für {name} erfolgreich gespeichert!',
+    saveSuccess: 'Tipp für {{name}} erfolgreich gespeichert!',
     saved: 'Gespeichert',
     saveButton: 'Tipp speichern',
-    getTipsFor: 'KI-Anbau-Tipps für {name}',
+    getTipsFor: 'KI-Anbau-Tipps für {{name}}',
     searchPlaceholder: 'Tipps durchsuchen...',
     sortOptions: {
       grouped: 'Nach Sorte gruppieren',
@@ -214,7 +216,7 @@ export const strainsView = {
       title: 'Keine Tipps gespeichert',
       subtitle: 'Fordere in der Detailansicht einer Sorte KI-Tipps an und speichere sie, um sie hier zu finden.',
     },
-    noResults: 'Keine Tipps für "{term}" gefunden.',
+    noResults: 'Keine Tipps für "{{term}}" gefunden.',
     exportModal: {
         sources: {
             selected_one: '1 ausgewählter Tipp',

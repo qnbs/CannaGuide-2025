@@ -20,10 +20,10 @@ export const EquipmentView: React.FC = () => {
     const { equipmentViewTab: activeTab } = useAppSelector(selectUi);
 
     const tabs = [
-        { id: 'configurator' as EquipmentViewTab, label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.MagicWand /> },
-        { id: 'setups' as EquipmentViewTab, label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Cube /> },
-        { id: 'calculators' as EquipmentViewTab, label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
-        { id: 'grow-shops' as EquipmentViewTab, label: t('equipmentView.tabs.growShops'), icon: <PhosphorIcons.Storefront /> },
+        { id: EquipmentViewTab.Configurator, label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.MagicWand /> },
+        { id: EquipmentViewTab.Setups, label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Cube /> },
+        { id: EquipmentViewTab.Calculators, label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
+        { id: EquipmentViewTab.GrowShops, label: t('equipmentView.tabs.growShops'), icon: <PhosphorIcons.Storefront /> },
     ];
     
     return (
@@ -32,13 +32,13 @@ export const EquipmentView: React.FC = () => {
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => dispatch(setEquipmentViewTab(id as EquipmentViewTab))} />
             </Card>
 
-            {activeTab === 'configurator' && <SetupConfigurator onSaveSetup={() => dispatch(setEquipmentViewTab('setups'))} />}
+            {activeTab === EquipmentViewTab.Configurator && <SetupConfigurator onSaveSetup={() => dispatch(setEquipmentViewTab(EquipmentViewTab.Setups))} />}
             
-            {activeTab === 'calculators' && <Calculators />}
+            {activeTab === EquipmentViewTab.Calculators && <Calculators />}
             
-            {activeTab === 'setups' && <SavedSetupsView savedSetups={savedSetups} updateSetup={(setup) => dispatch(updateSetup(setup))} deleteSetup={(id) => dispatch(deleteSetup(id))} />}
+            {activeTab === EquipmentViewTab.Setups && <SavedSetupsView savedSetups={savedSetups} updateSetup={(setup) => dispatch(updateSetup(setup))} deleteSetup={(id) => dispatch(deleteSetup(id))} />}
 
-            {activeTab === 'grow-shops' && <GrowShopsView />}
+            {activeTab === EquipmentViewTab.GrowShops && <GrowShopsView />}
         </div>
     );
 };

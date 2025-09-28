@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { View } from './types';
+import { View } from '@/types';
 import { useTranslations } from './hooks/useTranslations';
 import { Header } from './components/navigation/Header';
 import { BottomNav } from './components/navigation/BottomNav';
@@ -7,7 +7,7 @@ import { OnboardingModal } from './components/common/OnboardingModal';
 import { CommandPalette } from './components/common/CommandPalette';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { usePwaInstall } from './hooks/usePwaInstall';
-import { strainService } from './services/strainService';
+import { strainService } from '@/services/strainService';
 import { TTSControls } from './components/common/TTSControls';
 import { ttsService } from './services/ttsService';
 import { useDocumentEffects } from './hooks/useDocumentEffects';
@@ -26,6 +26,7 @@ import { initializeSimulation } from './stores/slices/simulationSlice';
 import { simulationLoop } from './services/simulationLoop';
 import { setSetting } from './stores/slices/settingsSlice';
 import { ToastContainer } from './components/common/Toast';
+import { AiDiagnosticsModalContainer } from './components/views/plants/AiDiagnosticsModalContainer';
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() => import('./components/views/StrainsView').then(module => ({ default: module.StrainsView })));
@@ -124,7 +125,7 @@ const AppContent: React.FC = () => {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans">
+        <div className="flex flex-col h-screen overflow-hidden bg-slate-900 text-slate-300 font-sans">
             <SimulationStatusOverlay />
             {!onboardingCompleted && <OnboardingModal onClose={handleOnboardingClose} />}
             <CommandPalette 
@@ -133,6 +134,7 @@ const AppContent: React.FC = () => {
             />
             <LogActionModalContainer />
             <DeepDiveModalContainer />
+            <AiDiagnosticsModalContainer />
             <Header 
                 onCommandPaletteOpen={() => dispatch(setIsCommandPaletteOpen(true))}
                 deferredPrompt={deferredPrompt}

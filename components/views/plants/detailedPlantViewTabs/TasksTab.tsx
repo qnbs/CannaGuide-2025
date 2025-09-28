@@ -45,7 +45,7 @@ export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => 
                                <PhosphorIcons.CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                                <div className="flex-grow">
                                    <p className="font-semibold line-through text-slate-400">{t(task.title) || task.title}</p>
-                                   <p className="text-xs text-slate-500">Completed: {new Date(task.completedAt!).toLocaleString()}</p>
+                                   <p className="text-xs text-slate-500">{t('plantsView.detailedView.tasksCompleted', { date: new Date(task.completedAt!).toLocaleString() })}</p>
                                </div>
                            </li>
                         ))

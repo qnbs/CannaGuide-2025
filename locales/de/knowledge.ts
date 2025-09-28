@@ -1,99 +1,114 @@
 export const knowledgeView = {
-  title: 'Wissens-Hub',
-  subtitle: 'Meistere die Kunst des Anbaus mit interaktiven Anleitungen und KI-gestützter Unterstützung.',
-  tabs: {
-    mentor: 'KI-Mentor',
-    guide: 'Anleitung',
-    archive: 'Archiv',
-    breeding: 'Zuchtlabor',
-  },
-  aiMentor: {
-    title: 'Sokratischer Gärtner',
-    plantContext: 'Chatte mit dem KI-Mentor über {name}',
-    plantContextSubtitle: 'Wähle eine deiner aktiven Pflanzen aus, um kontextbezogene Ratschläge zu erhalten.',
-    inputPlaceholder: 'Stelle eine Frage zu deiner Pflanze...',
-    startChat: 'Chat starten',
-    clearChat: 'Chat löschen',
-    clearConfirm: 'Möchtest du den gesamten Chatverlauf für diese Pflanze wirklich löschen?',
-    showChart: '{chartName}-Diagramm anzeigen',
-    examplePrompts: [
-        'Was ist das größte Problem, das du siehst?',
-        'Wie kann ich meinen Ertrag basierend auf diesen Daten verbessern?',
-        'Erkläre mir meinen aktuellen VPD-Wert.',
-        'Sollte ich mit dem Training beginnen?',
-    ]
-  },
-  hub: {
-    selectPlant: 'Pflanze auswählen',
-    noPlants: 'Du hast keine aktiven Pflanzen. Starte einen Anbau, um den KI-Mentor zu nutzen.',
-    todaysFocus: 'Heutiger Fokus für {plantName}',
-    browseAll: 'Alle Anleitungen durchsuchen',
-  },
-  archive: {
-    title: 'Mentor-Archiv',
-    empty: 'Du hast noch keine Mentor-Antworten archiviert.',
-    saveButton: 'Im Archiv speichern',
-    saveSuccess: 'Antwort erfolgreich archiviert.',
-    queryLabel: 'Deine Frage',
-    editTitle: 'Antwort bearbeiten',
-  },
-  guide: {
-    progress: 'Fortschritt',
-  },
-  breeding: {
-    title: 'Zuchtlabor',
-    description: 'Kreuzte zwei deiner gesammelten Samen, um eine neue, einzigartige Sorte zu erschaffen. Die Qualität der Eltern beeinflusst das Ergebnis.',
-    noSeeds: 'Keine Samen gesammelt',
-    noSeedsDesc: 'Samen können von Pflanzen gesammelt werden, die mit außergewöhnlich hoher Qualität geerntet wurden.',
-    selectParentA: 'Elternteil A auswählen',
-    selectParentB: 'Elternteil B auswählen',
-    parentSelected: '{name} ausgewählt',
-    newStrainPlaceholder: 'Name der neuen Sorte...',
-    breedButton: 'Sorte züchten',
-    breedSuccess: 'Neue Sorte "{name}" erfolgreich gezüchtet und zu "Meine Sorten" hinzugefügt!',
-    quality: 'Qualität',
-  },
-  knowledgebase: {
-    'phase1-prep': {
-      title: 'Phase 1: Vorbereitung & Keimung',
-      content: '<h3>Vorbereitung</h3><p>Der Schlüssel zu einem erfolgreichen Grow ist eine solide Vorbereitung. Stelle sicher, dass dein Zelt sauber ist, deine Lampen auf der richtigen Höhe hängen und deine Belüftung für einen konstanten, leichten Luftaustausch sorgt.</p><h3>Keimung</h3><p>Die Keimung ist der erste Schritt im Leben deiner Pflanze. Die Papiertuch-Methode ist beliebt: Lege den Samen zwischen zwei feuchte Papiertücher und halte sie warm und dunkel. Innerhalb weniger Tage sollte die Pfahlwurzel erscheinen.</p>'
+    title: 'Wissens-Hub',
+    subtitle: 'Dein interaktiver Leitfaden für den erfolgreichen Anbau.',
+    tabs: {
+        mentor: 'KI-Mentor',
+        guide: 'Grow-Guide',
+        archive: 'Mentor-Archiv',
+        breeding: 'Zuchtlabor',
     },
-    'phase2-seedling': {
-      title: 'Phase 2: Sämling',
-      content: '<h3>Vorsicht ist geboten</h3><p>Sämlinge sind empfindlich. Sie benötigen hohe Luftfeuchtigkeit (60-70%) und moderates Licht (ca. 200-400 PPFD), um nicht zu verbrennen. Gieße sparsam um den Stängel herum, um die Wurzeln zu ermutigen, sich auszubreiten.</p>'
+    hub: {
+        selectPlant: 'Pflanze auswählen',
+        noPlants: 'Keine aktiven Pflanzen für kontextbezogene Ratschläge vorhanden. Starte einen Anbau!',
+        todaysFocus: 'Heutiger Fokus für {{plantName}}',
     },
-    'phase3-vegetative': {
-      title: 'Phase 3: Vegetatives Wachstum',
-      content: '<h3>Zeit zu wachsen!</h3><p>In dieser Phase wächst die Pflanze rasant. Erhöhe die Lichtintensität (400-600 PPFD) und beginne mit einer stickstoffreichen Düngung. Dies ist auch die ideale Zeit für Trainingstechniken wie Topping oder LST, um die Struktur der Pflanze zu formen.</p>'
+    aiMentor: {
+        title: 'KI-Mentor',
+        plantContext: 'Chatte mit dem KI-Mentor im Kontext von {{name}}',
+        plantContextSubtitle: 'Wähle eine Pflanze aus, um kontextbezogene Fragen zu stellen und Ratschläge zu erhalten.',
+        startChat: 'Chat starten',
+        inputPlaceholder: 'Frage den Mentor...',
+        clearChat: 'Chat löschen',
+        clearConfirm: 'Möchtest du den Chatverlauf für diese Pflanze wirklich löschen?',
     },
-    'phase4-flowering': {
-      title: 'Phase 4: Blüte',
-      content: '<h3>Die Blüte beginnt</h3><p>Stelle den Lichtzyklus auf 12/12 um, um die Blüte einzuleiten. Die Pflanze wird sich in den ersten Wochen strecken. Wechsle zu einem phosphor- und kaliumreichen Blütedünger (PK). Achte darauf, die Luftfeuchtigkeit zu senken (40-50%), um Schimmel zu vermeiden.</p>'
+    archive: {
+        title: 'Mentor-Archiv',
+        empty: 'Du hast noch keine Mentor-Antworten archiviert.',
+        saveButton: 'Im Archiv speichern',
+        saveSuccess: 'Antwort im Archiv gespeichert!',
+        queryLabel: 'Deine Anfrage',
+        editTitle: 'Antwort bearbeiten',
     },
-    'phase5-harvest': {
-      title: 'Phase 5: Ernte, Trocknen & Curen',
-      content: '<h3>Der letzte Schliff</h3><p>Ernte, wenn die Trichome größtenteils milchig sind. Hänge die Zweige kopfüber in einem dunklen, kühlen Raum mit guter Luftzirkulation zum Trocknen auf (ca. 7-14 Tage). Anschließend lässt du die Blüten in luftdichten Gläsern aushärten (curen), die du täglich lüftest. Dies verbessert Geschmack und Potenz erheblich.</p>'
+    breeding: {
+        title: 'Zuchtlabor',
+        description: 'Kreuze deine gesammelten Samen, um neue, einzigartige Sorten mit kombinierten Eigenschaften zu erschaffen.',
+        collectedSeeds: 'Gesammelte Samen',
+        noSeeds: 'Sammle Samen von erntereifen Pflanzen, um mit dem Züchten zu beginnen.',
+        parentA: 'Elternteil A',
+        parentB: 'Elternteil B',
+        selectSeed: 'Samen auswählen',
+        dropSeed: 'Samen hier ablegen',
+        breedButton: 'Neue Sorte züchten',
+        resultsTitle: 'Zuchtergebnis',
+        newStrainName: 'Name der neuen Sorte',
+        potentialTraits: 'Mögliche Merkmale',
+        saveStrain: 'Sorte speichern',
+        breedingSuccess: 'Neue Sorte "{{name}}" erfolgreich gezüchtet und zu "Meine Sorten" hinzugefügt!',
     },
-    'fix-overwatering': {
-      title: 'Problem: Überwässerung',
-      content: '<h3>Symptome</h3><p>Herabhängende, schlaffe Blätter, die sich schwer und "voll" anfühlen. Die Erde bleibt lange feucht.</p><h3>Lösung</h3><p>Lass die Erde vollständig austrocknen, bevor du erneut gießt. Verbessere die Drainage im Topf und sorge für gute Belüftung, um die Verdunstung zu unterstützen.</p>'
-    },
-    'fix-calcium-deficiency': {
-      title: 'Problem: Kalziummangel',
-      content: '<h3>Symptome</h3><p>Rostbraune Flecken auf den Blättern, oft auf jüngeren Blättern beginnend. Verlangsamtes Wachstum.</p><h3>Lösung</h3><p>Verwende einen Cal-Mag-Zusatz. Stelle sicher, dass der pH-Wert deines Gießwassers im korrekten Bereich liegt (ca. 6.0-6.5 für Erde), da ein falscher pH-Wert die Kalziumaufnahme blockieren kann.</p>'
+    knowledgebase: {
+        'phase1-prep': {
+            title: 'Phase 1: Vorbereitung & Ausrüstung',
+            content: `<h3>Willkommen beim Grow!</h3><p>Der Schlüssel zu einer erfolgreichen Ernte liegt in einer soliden Vorbereitung. Stelle sicher, dass deine Ausrüstung sauber und funktionsfähig ist.</p>
+                      <strong>Zelt:</strong> Überprüfe auf Lichtlecks und reinige die Innenflächen.<br>
+                      <strong>Licht:</strong> Teste deine Lampe und den Timer. Für Sämlinge, positioniere das Licht weiter entfernt als üblich.<br>
+                      <strong>Substrat & Töpfe:</strong> Wenn du Erde verwendest, feuchte sie leicht an, bevor du den Samen pflanzt. Stelle eine gute Drainage sicher.<br>
+                      <strong>Umgebung:</strong> Kalibriere deine Thermo-Hygrometer. Eine stabile Umgebung ist entscheidend.`
+        },
+        'phase2-seedling': {
+            title: 'Phase 2: Keimung & Sämling',
+            content: `<h3>Die ersten Lebenswochen</h3><p>Dies ist die empfindlichste Phase. Weniger ist oft mehr.</p>
+                      <strong>Keimung:</strong> Halte das Medium feucht, aber nicht nass. Eine hohe Luftfeuchtigkeit (70-80%) ist ideal.<br>
+                      <strong>Licht:</strong> Sämlinge benötigen nicht viel Licht. 18 Stunden Licht pro Tag sind üblich. Halte einen ausreichenden Abstand, um Verbrennungen zu vermeiden.<br>
+                      <strong>Wasser:</strong> Gieße sparsam um den Stängel herum. Der Wurzelballen ist noch sehr klein.<br>
+                      <strong>Nährstoffe:</strong> In den meisten Substraten sind für die ersten 1-2 Wochen genügend Nährstoffe vorhanden. Beginne erst mit einer sehr leichten Düngung, wenn die ersten echten Blattpaare gut entwickelt sind.`
+        },
+        'phase3-vegetative': {
+            title: 'Phase 3: Vegetatives Wachstum',
+            content: `<h3>Zeit zu wachsen!</h3><p>In dieser Phase legt deine Pflanze an Größe und Blattmasse zu. Jetzt ist die Zeit für Trainingstechniken.</p>
+                      <strong>Licht:</strong> Deine Pflanze kann jetzt mehr Licht vertragen. Passe den Abstand entsprechend an. 18 Stunden Licht sind weiterhin Standard.<br>
+                      <strong>Nährstoffe:</strong> Erhöhe langsam die Nährstoffgabe. Ein stickstoffreicher Dünger (N) ist jetzt wichtig.<br>
+                      <strong>Training:</strong> Beginne mit LST (Low Stress Training), um die Pflanze buschiger wachsen zu lassen. Topping (das Kappen der Hauptspitze) ist ebenfalls eine beliebte Methode, um mehrere Hauptblüten zu erzeugen.<br>
+                      <strong>Umgebung:</strong> Die ideale Luftfeuchtigkeit liegt jetzt bei 50-60%.`
+        },
+        'phase4-flowering': {
+            title: 'Phase 4: Blüte',
+            content: `<h3>Die Blüte beginnt</h3><p>Die spannendste Phase! Die Umstellung des Lichtzyklus leitet die Blütenproduktion ein.</p>
+                      <strong>Lichtzyklus:</strong> Schalte auf 12 Stunden Licht und 12 Stunden ununterbrochene Dunkelheit um.<br>
+                      <strong>Nährstoffe:</strong> Wechsle zu einem Blütedünger mit mehr Phosphor (P) und Kalium (K). Reduziere den Stickstoff.<br>
+                      <strong>Stretch:</strong> In den ersten 2-3 Wochen der Blüte wird die Pflanze sich stark strecken. Plane den Platz ein.<br>
+                      <strong>Luftfeuchtigkeit:</strong> Senke die Luftfeuchtigkeit auf 40-50%, um Schimmel in den dichten Blüten zu vermeiden.`
+        },
+        'phase5-harvest': {
+            title: 'Phase 5: Ernte, Trocknen & Curing',
+            content: `<h3>Der letzte Schliff</h3><p>Geduld in dieser Phase entscheidet über die Qualität des Endprodukts.</p>
+                      <strong>Erntezeitpunkt:</strong> Beobachte die Trichome mit einer Lupe. Milchig-trübe Trichome deuten auf den Höhepunkt der Potenz hin. Bernsteinfarbene Trichome geben eine eher körperlich-entspannende Wirkung.<br>
+                      <strong>Trocknen:</strong> Hänge die Zweige kopfüber in einem dunklen, kühlen Raum mit guter Luftzirkulation bei ca. 18-20°C und 55-60% Luftfeuchtigkeit auf. Dies sollte 7-14 Tage dauern.<br>
+                      <strong>Curing (Fermentierung):</strong> Lagere die trockenen Blüten in luftdichten Gläsern. Öffne die Gläser in der ersten Woche täglich für einige Minuten ("burping"), um Feuchtigkeit entweichen zu lassen. Dieser Prozess baut Chlorophyll ab und verbessert Geschmack und Aroma erheblich.`
+        },
+        'fix-overwatering': {
+            title: 'Problembehebung: Überwässerung',
+            content: `<h3>Hilfe, meine Pflanze ertrinkt!</h3><p>Überwässerung ist einer der häufigsten Anfängerfehler. Die Wurzeln ersticken und können keine Nährstoffe aufnehmen.</p>
+                      <strong>Symptome:</strong> Hängende, schlaffe Blätter, die sich aber fest und geschwollen anfühlen (im Gegensatz zu den trockenen, schlaffen Blättern bei Unterwässerung). Das Medium bleibt lange nass.<br>
+                      <strong>Sofortmaßnahmen:</strong> 1. Gießen sofort einstellen. 2. Gewicht des Topfes prüfen – erst wieder gießen, wenn er deutlich leichter ist. 3. Für gute Luftzirkulation sorgen, auch auf das Substrat gerichtet.<br>
+                      <strong>Langfristig:</strong> Verwende Töpfe mit guter Drainage (z.B. Stofftöpfe). Mische Perlit in dein Substrat, um es luftiger zu machen. Lerne, das Gewicht des Topfes als Indikator zu nutzen.`
+        },
+        'fix-calcium-deficiency': {
+            title: 'Problembehebung: Kalziummangel',
+            content: `<h3>Kalziummangel beheben</h3><p>Kalzium ist ein wichtiger Nährstoff für die Zellstruktur der Pflanze. Ein Mangel zeigt sich oft an jungen, oberen Blättern.</p>
+                      <strong>Symptome:</strong> Kleine, rostbraune Flecken auf den Blättern. Verdrehtes oder verkümmertes neues Wachstum. Schwache Stängel.<br>
+                      <strong>Ursachen:</strong> Oft nicht ein Mangel im Dünger, sondern ein falscher pH-Wert im Wurzelbereich, der die Aufnahme blockiert. Kann auch bei der Verwendung von RO-Wasser (Umkehrosmose) auftreten.<br>
+                      <strong>Lösung:</strong> 1. Überprüfe und korrigiere den pH-Wert deiner Nährlösung (Erde: 6.0-6.8, Hydro/Coco: 5.5-6.5). 2. Verwende einen Cal-Mag-Zusatz. 3. Stelle sicher, dass die Luftfeuchtigkeit nicht zu hoch ist, da dies die Transpiration und damit die Kalziumaufnahme verlangsamen kann.`
+        }
     }
-  }
 };
 
 export const tipOfTheDay = {
+    title: 'Tipp des Tages',
     tips: [
-        "Überprüfe täglich den pH-Wert deines Wassers. Er ist der Schlüssel zur Nährstoffaufnahme.",
-        "Eine gute Luftzirkulation beugt Schimmel und Schädlingen vor.",
-        "Weniger ist oft mehr, besonders bei der Düngung. Beginne mit einer geringeren Dosis als empfohlen.",
-        "Low-Stress-Training (LST) kann deinen Ertrag erheblich steigern, ohne die Pflanze zu stressen.",
-        "Beobachte die Farbe der Trichome, um den perfekten Erntezeitpunkt zu bestimmen: milchig für ein starkes High, bernsteinfarben für einen entspannenderen Effekt.",
-        "Das Aushärten (Curing) ist entscheidend für den Geschmack und die Qualität deiner Ernte. Überspringe diesen Schritt nicht!",
-        "Ein stabiles Klima ist wichtiger als hohe Temperaturen. Vermeide große Schwankungen."
-    ],
-    title: 'Tipp des Tages'
+        "Überprüfe immer den pH-Wert deines Wassers, nachdem du Nährstoffe hinzugefügt hast. Nährstoffe können den pH-Wert erheblich verändern.",
+        "Eine sanfte Brise von einem Ventilator, der auf deine Pflanzen gerichtet ist, stärkt die Stängel und beugt Schimmel vor.",
+        "Weniger ist mehr, besonders bei Nährstoffen. Es ist einfacher, einen Mangel zu beheben als einen Überschuss (Nährstoffbrand).",
+        "Beobachte die Farbe deiner Blätter. Ein sattes, gesundes Grün ist gut. Zu dunkelgrün kann auf zu viel Stickstoff hindeuten, blassgrün oder gelb auf einen Mangel.",
+        "Stofftöpfe sind eine großartige Wahl für Anfänger, da sie eine Überwässerung fast unmöglich machen und die Wurzeln mit Sauerstoff versorgen."
+    ]
 };

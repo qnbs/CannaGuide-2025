@@ -1,131 +1,93 @@
+import { allStrainsData } from '@/data/strains';
 import { Strain } from '@/types';
-import { dbService } from '@/services/dbService';
-import { allStrainsData } from '@/data/strains/index';
+import { dbService } from './dbService';
 
-const DATA_VERSION = '2.2.0'; // Updated version for new indexing strategy
-
-const stopWords = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'he', 'in', 'is', 'it', 'its', 'of', 'on', 'that', 'the', 'to', 'was', 'were', 'will', 'with', 'i', 'you']);
-
-const tokenize = (text: string): string[] => {
-    if (!text) return [];
-    return text
-        .toLowerCase()
-        .replace(/[^\w\s]/g, '')
-        .split(/\s+/)
-        .filter(word => word.length > 2 && !stopWords.has(word)); // Same logic as indexer
-};
-
-// Builds index from raw, untranslated data
-const buildSearchIndex = (strains: Strain[]): Record<string, string[]> => {
-    const index: Record<string, string[]> = {};
-    strains.forEach(strain => {
-        const strainId = strain.id;
-        const textToTokenize = [
-            strain.name,
-            strain.type,
-            strain.typeDetails,
-            strain.genetics,
-            strain.description,
-            ...(strain.aromas || []),
-            ...(strain.dominantTerpenes || []),
-        ].join(' ');
-        const uniqueTokens = new Set(tokenize(textToTokenize));
-        uniqueTokens.forEach(token => {
-            if (!index[token]) {
-                index[token] = [];
-            }
-            index[token].push(strainId);
-        });
-    });
-    return index;
-};
+const METADATA_KEY = 'strain_data_meta';
+const CURRENT_VERSION = '1.0.0';
 
 class StrainService {
-  private baseStrainsCache: Strain[] | null = null;
-  private initializationPromise: Promise<void> | null = null;
+    private allStrains: Strain[] = [];
 
-  private async rebuildCache(strains: Strain[]): Promise<void> {
-      console.log('[StrainService] Rebuilding strain cache and search index in IndexedDB.');
-      const searchIndex = buildSearchIndex(strains);
-      await dbService.addStrains(strains);
-      await dbService.updateSearchIndex(searchIndex);
-      await dbService.setMetadata({ key: 'strain_cache_metadata', version: DATA_VERSION });
-      console.log(`[StrainService] Successfully rebuilt cache with ${strains.length} strains.`);
-  }
-
-  private async _initialize(): Promise<void> {
-    try {
-        const metadata = await dbService.getMetadata('strain_cache_metadata');
-        let strainsToCache: Strain[];
-
-        // Check if a valid, populated cache exists in IndexedDB
-        if (metadata?.version === DATA_VERSION) {
-            const cachedStrains = await dbService.getAllStrains();
-            if (cachedStrains.length > 0) {
-                console.log(`[StrainService] Cache hit for version ${DATA_VERSION}. Loading ${cachedStrains.length} strains from IndexedDB.`);
-                strainsToCache = cachedStrains;
-            } else {
-                 // Version matches but DB is empty, this is a cache miss scenario
-                 console.log('[StrainService] Cache version match but DB is empty. Repopulating from source.');
-                 strainsToCache = allStrainsData;
-                 await this.rebuildCache(strainsToCache);
-            }
-        } else {
-            // Cache is old, missing, or invalid. Rebuild from source.
-            console.log(`[StrainService] Cache miss or version mismatch (found ${metadata?.version}, need ${DATA_VERSION}). Populating cache from imported data.`);
-            strainsToCache = allStrainsData;
-            await this.rebuildCache(strainsToCache);
-        }
+    async init(): Promise<void> {
+        const metadata = await dbService.getMetadata(METADATA_KEY);
+        const count = await dbService.getStrainsCount();
         
-        // Always sort the cache after loading, ensuring consistent order.
-        strainsToCache.sort((a, b) => a.name.localeCompare(b.name));
-        this.baseStrainsCache = strainsToCache;
+        if (!metadata || metadata.version !== CURRENT_VERSION || count !== allStrainsData.length) {
+            console.log('Strain data is outdated or missing. Initializing...');
+            await dbService.addStrains(allStrainsData);
+            await this.buildSearchIndex(allStrainsData);
+            await dbService.setMetadata({ key: METADATA_KEY, version: CURRENT_VERSION, timestamp: Date.now() });
+            console.log('Strain data initialized.');
+        } else {
+            console.log('Strain data is up to date.');
+        }
 
-    } catch (error) {
-        console.error('[StrainService] Critical error during IndexedDB initialization:', error);
-        // Fallback to in-memory data if DB fails
-        const fallbackData = [...allStrainsData].sort((a, b) => a.name.localeCompare(b.name));
-        this.baseStrainsCache = fallbackData;
-        console.warn('[StrainService] Using in-memory fallback data due to an error.');
+        this.allStrains = await this.getAllStrains();
     }
-  }
-
-  public init(): Promise<void> {
-    if (!this.initializationPromise) {
-        this.initializationPromise = this._initialize();
+    
+    async getAllStrains(): Promise<Strain[]> {
+        if (this.allStrains.length > 0) return this.allStrains;
+        this.allStrains = await dbService.getAllStrains();
+        return this.allStrains;
     }
-    return this.initializationPromise;
-  }
 
-  public async getAllStrains(): Promise<Strain[]> {
-    if (this.initializationPromise) {
-        await this.initializationPromise;
+    async getSimilarStrains(currentStrain: Strain, count: number): Promise<Strain[]> {
+        const strains = await this.getAllStrains();
+        if (strains.length === 0) return [];
+        
+        return strains
+            .filter(s => s.id !== currentStrain.id)
+            .map(s => ({ strain: s, score: this.calculateSimilarity(currentStrain, s) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, count)
+            .map(s => s.strain);
     }
-    return [...(this.baseStrainsCache || [])];
-  }
-
-  public async getStrainById(id: string): Promise<Strain | undefined> {
-    if (this.initializationPromise) {
-        await this.initializationPromise;
+    
+    private calculateSimilarity(s1: Strain, s2: Strain): number {
+        let score = 0;
+        if (s1.type === s2.type) score += 3;
+        const sharedAromas = (s1.aromas || []).filter(a => (s2.aromas || []).includes(a));
+        score += sharedAromas.length * 2;
+        const sharedTerpenes = (s1.dominantTerpenes || []).filter(t => (s2.dominantTerpenes || []).includes(t));
+        score += sharedTerpenes.length;
+        if (Math.abs(s1.thc - s2.thc) < 2) score += 1;
+        return score;
     }
-    return this.baseStrainsCache?.find(s => s.id === id);
-  }
+    
+    private async buildSearchIndex(strains: Strain[]): Promise<void> {
+        const index: Record<string, Set<string>> = {};
 
-  public async getSimilarStrains(baseStrain: Strain, count: number = 4): Promise<Strain[]> {
-    if (this.initializationPromise) {
-        await this.initializationPromise;
+        const tokenize = (text: string | undefined): string[] => {
+            if (!text) return [];
+            return text
+                .toLowerCase()
+                .replace(/[^\w\s]/g, '')
+                .split(/\s+/)
+                .filter(word => word.length > 2);
+        };
+        
+        strains.forEach(strain => {
+            const tokens = new Set([
+                ...tokenize(strain.name),
+                ...tokenize(strain.type),
+                ...tokenize(strain.genetics),
+                ...(strain.aromas || []).map(a => a.toLowerCase()),
+                ...(strain.dominantTerpenes || []).map(t => t.toLowerCase()),
+            ]);
+
+            tokens.forEach(token => {
+                if (!index[token]) index[token] = new Set();
+                index[token].add(strain.id);
+            });
+        });
+
+        const serializedIndex = Object.fromEntries(
+            Object.entries(index).map(([key, value]) => [key, Array.from(value)])
+        );
+        
+        await dbService.updateSearchIndex(serializedIndex);
+        console.log("Search index built.");
     }
-    if (!this.baseStrainsCache) return [];
-
-    return this.baseStrainsCache
-      .filter(s =>
-        s.id !== baseStrain.id &&
-        s.type === baseStrain.type &&
-        Math.abs(s.thc - baseStrain.thc) <= 3 &&
-        (s.dominantTerpenes && baseStrain.dominantTerpenes ? s.dominantTerpenes.some(t => baseStrain.dominantTerpenes!.includes(t)) : false)
-      )
-      .slice(0, count);
-  }
 }
 
 export const strainService = new StrainService();

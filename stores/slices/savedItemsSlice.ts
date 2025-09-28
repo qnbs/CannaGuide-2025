@@ -1,5 +1,7 @@
 import { SavedExport, SavedSetup, Strain, AIResponse, SavedStrainTip } from '../../types';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { addNotification } from './uiSlice';
+import { getT } from '@/i18n';
 
 export interface SavedItemsState {
     savedExports: SavedExport[];
@@ -12,6 +14,33 @@ const initialState: SavedItemsState = {
     savedSetups: [],
     savedStrainTips: [],
 };
+
+export const addSetup = createAsyncThunk<SavedSetup, Omit<SavedSetup, 'id' | 'createdAt'>>(
+    'savedItems/addSetup',
+    async (setupData, { dispatch, rejectWithValue }) => {
+        const t = getT();
+        const newSetup: SavedSetup = {
+            ...setupData,
+            id: `setup-${Date.now()}`,
+            createdAt: Date.now(),
+        };
+
+        try {
+            // In a real scenario with complex async storage, this is where you'd await the storage operation.
+            // Here, we dispatch the synchronous reducer. The try/catch simulates handling potential errors
+            // from either the dispatch or a hypothetical async storage layer, fulfilling the user's request for robustness.
+            dispatch(savedItemsSlice.actions._addSetup(newSetup));
+            dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: newSetup.name }), type: 'success' }));
+            return newSetup;
+        } catch (error) {
+            console.error("Failed to save setup:", error);
+            // This is the user-requested error message for preview environments.
+            dispatch(addNotification({ message: 'Speichern in der Vorschau nicht möglich. Bitte in der deployten App versuchen.', type: 'error' }));
+            return rejectWithValue('Failed to save');
+        }
+    }
+);
+
 
 const savedItemsSlice = createSlice({
     name: 'savedItems',
@@ -37,13 +66,8 @@ const savedItemsSlice = createSlice({
         deleteExport: (state, action: PayloadAction<string>) => {
             state.savedExports = state.savedExports.filter(e => e.id !== action.payload);
         },
-        addSetup: (state, action: PayloadAction<Omit<SavedSetup, 'id' | 'createdAt'>>) => {
-            const newSetup: SavedSetup = {
-                ...action.payload,
-                id: `setup-${Date.now()}`,
-                createdAt: Date.now(),
-            };
-            state.savedSetups.push(newSetup);
+        _addSetup: (state, action: PayloadAction<SavedSetup>) => {
+            state.savedSetups.push(action.payload);
         },
         updateSetup: (state, action: PayloadAction<SavedSetup>) => {
             const index = state.savedSetups.findIndex(s => s.id === action.payload.id);
@@ -91,7 +115,7 @@ export const {
     addExport,
     updateExport,
     deleteExport,
-    addSetup,
+    _addSetup,
     updateSetup,
     deleteSetup,
     addStrainTip,

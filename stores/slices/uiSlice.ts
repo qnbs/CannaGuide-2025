@@ -26,6 +26,8 @@ export interface UIState {
     equipmentViewTab: EquipmentViewTab;
     knowledgeViewTab: KnowledgeViewTab;
     activeMentorPlantId: string | null;
+    isDiagnosticsModalOpen: boolean;
+    diagnosticsPlantId: string | null;
 }
 
 const initialState: UIState = {
@@ -45,11 +47,11 @@ const initialState: UIState = {
     setupForNewGrow: null,
     isGrowSetupModalOpen: false,
     isConfirmationModalOpen: false,
-    // FIX: Use enum member for type safety.
     equipmentViewTab: EquipmentViewTab.Configurator,
-    // FIX: Use enum member for type safety.
     knowledgeViewTab: KnowledgeViewTab.Mentor,
     activeMentorPlantId: null,
+    isDiagnosticsModalOpen: false,
+    diagnosticsPlantId: null,
 };
 
 // Thunks for complex actions
@@ -133,6 +135,14 @@ const uiSlice = createSlice({
         closeDeepDiveModal: (state) => {
             state.deepDiveModal = { isOpen: false, plantId: null, topic: null };
         },
+        openDiagnosticsModal: (state, action: PayloadAction<string>) => {
+            state.isDiagnosticsModalOpen = true;
+            state.diagnosticsPlantId = action.payload;
+        },
+        closeDiagnosticsModal: (state) => {
+            state.isDiagnosticsModalOpen = false;
+            state.diagnosticsPlantId = null;
+        },
         startGrowInSlot: (state, action: PayloadAction<number>) => {
             state.initiatingGrowForSlot = action.payload;
             state.strainForNewGrow = null;
@@ -180,6 +190,8 @@ export const {
     closeActionModal,
     openDeepDiveModal,
     closeDeepDiveModal,
+    openDiagnosticsModal,
+    closeDiagnosticsModal,
     startGrowInSlot,
     selectStrainForGrow,
     confirmSetupAndShowConfirmation,

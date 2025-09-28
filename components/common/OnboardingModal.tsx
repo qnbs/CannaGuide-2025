@@ -3,7 +3,7 @@ import { Modal } from './Modal';
 import { Button } from './Button';
 import { useTranslations } from '../../hooks/useTranslations';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { Language } from '../../types';
+import { Language } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Corrected imports for Redux actions and selectors.
 import { setSetting } from '@/stores/slices/settingsSlice';

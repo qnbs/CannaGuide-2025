@@ -55,7 +55,7 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     <p className="text-slate-300 italic text-sm">{strain.description || 'No description available.'}</p>
                 </Speakable>
             </InfoSection>
-            <InfoSection title="Cannabinoid Profile">
+            <InfoSection title={t('strainsView.strainDetail.cannabinoidProfile')}>
                 <div className="space-y-2">
                     <AttributeDisplay label={t('common.genetics')} value={strain.genetics} />
                     <AttributeDisplay label={t('strainsView.table.thc')} value={strain.thcRange || `${strain.thc?.toFixed(1)}%`} />
@@ -85,7 +85,7 @@ const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslations();
     return (
-        <InfoSection title="Aroma & Terpene Profile">
+        <InfoSection title={t('strainsView.strainDetail.aromaProfile')}>
             <div className="space-y-4">
                 <AttributeDisplay
                     label={t('strainsView.strainModal.aromas')}

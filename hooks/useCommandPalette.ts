@@ -1,5 +1,6 @@
+
 import React, { useMemo } from 'react';
-import { Command, View, Theme, UiDensity, PlantStage, EquipmentViewTab, KnowledgeViewTab, AppSettings } from '@/types';
+import { Command, View, Theme, UiDensity, PlantStage, EquipmentViewTab, KnowledgeViewTab, AppSettings, StrainViewTab } from '@/types';
 import { useTranslations } from './useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
@@ -107,7 +108,7 @@ export const useCommandPalette = () => {
             title: t(titleKey),
             subtitle: t('commandPalette.subtitles.toggleNotifications', { status: settings.notificationSettings[key] ? 'On' : 'Off' }),
             icon: PhosphorIcons.BellSimple,
-            action: () => dispatch(settingsActions.setSetting({ path: `notificationSettings.${String(key)}`, value: !settings.notificationSettings[key] })),
+            action: () => dispatch(settingsActions.toggleSetting({ path: `notificationSettings.${String(key)}` })),
             group: t('commandPalette.groups.settings'),
         });
 
@@ -118,16 +119,16 @@ export const useCommandPalette = () => {
             createNavCommand(View.Knowledge, PhosphorIcons.BookOpenText, 'guide, learn, mentor, help'),
             createNavCommand(View.Settings, PhosphorIcons.Gear, 'options, config, preferences'),
             
-            { id: 'nav-my-strains', title: t('commandPalette.goToMyStrains'), subtitle: t('commandPalette.subtitles.goToMyStrains'), icon: PhosphorIcons.Star, action: () => { dispatch(uiActions.setActiveView(View.Strains)); dispatch(strainsViewActions.setStrainsViewTab('my-strains')); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'custom strains', group: t('commandPalette.groups.navigation') },
-            { id: 'nav-favorites', title: t('commandPalette.goToFavorites'), subtitle: t('commandPalette.subtitles.goToFavorites'), icon: PhosphorIcons.Heart, action: () => { dispatch(uiActions.setActiveView(View.Strains)); dispatch(strainsViewActions.setStrainsViewTab('favorites')); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'favorite strains', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-my-strains', title: t('commandPalette.goToMyStrains'), subtitle: t('commandPalette.subtitles.goToMyStrains'), icon: PhosphorIcons.Star, action: () => { dispatch(uiActions.setActiveView(View.Strains)); dispatch(strainsViewActions.setStrainsViewTab(StrainViewTab.MyStrains)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'custom strains', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-favorites', title: t('commandPalette.goToFavorites'), subtitle: t('commandPalette.subtitles.goToFavorites'), icon: PhosphorIcons.Heart, action: () => { dispatch(uiActions.setActiveView(View.Strains)); dispatch(strainsViewActions.setStrainsViewTab(StrainViewTab.Favorites)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'favorite strains', group: t('commandPalette.groups.navigation') },
             { id: 'add-strain', title: t('strainsView.addStrain'), icon: PhosphorIcons.PlusCircle, action: () => { dispatch(uiActions.openAddModal()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'new, custom, create', group: t('commandPalette.groups.strains') },
             { id: 'export-strains', title: t('common.export'), subtitle: t('commandPalette.exportStrains'), icon: PhosphorIcons.DownloadSimple, action: () => { dispatch(uiActions.openExportModal()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'save, download, pdf, csv, json', group: t('commandPalette.groups.strains') },
             
-            { id: 'nav-calculators', title: t('commandPalette.goToCalculators'), subtitle: t('commandPalette.subtitles.goToCalculators'), icon: PhosphorIcons.Calculator, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab('calculators')); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'tools ventilation light cost', group: t('commandPalette.groups.navigation') },
-            { id: 'nav-setups', title: t('commandPalette.goToSetups'), subtitle: t('commandPalette.subtitles.goToSetups'), icon: PhosphorIcons.Cube, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab('setups')); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'saved setups my setups', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-calculators', title: t('commandPalette.goToCalculators'), subtitle: t('commandPalette.subtitles.goToCalculators'), icon: PhosphorIcons.Calculator, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab(EquipmentViewTab.Calculators)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'tools ventilation light cost', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-setups', title: t('commandPalette.goToSetups'), subtitle: t('commandPalette.subtitles.goToSetups'), icon: PhosphorIcons.Cube, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab(EquipmentViewTab.Setups)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'saved setups my setups', group: t('commandPalette.groups.navigation') },
 
-            { id: 'nav-guide', title: t('commandPalette.goToGuide'), subtitle: t('commandPalette.subtitles.goToGuide'), icon: PhosphorIcons.Book, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab('guide')); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'learn tutorial basics', group: t('commandPalette.groups.navigation') },
-            { id: 'nav-breeding', title: t('commandPalette.goToBreeding'), subtitle: t('commandPalette.subtitles.goToBreeding'), icon: PhosphorIcons.TestTube, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab('breeding')); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'cross breed seeds', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-guide', title: t('commandPalette.goToGuide'), subtitle: t('commandPalette.subtitles.goToGuide'), icon: PhosphorIcons.Book, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab(KnowledgeViewTab.Guide)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'learn tutorial basics', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-breeding', title: t('commandPalette.goToBreeding'), subtitle: t('commandPalette.subtitles.goToBreeding'), icon: PhosphorIcons.TestTube, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab(KnowledgeViewTab.Breeding)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'cross breed seeds', group: t('commandPalette.groups.navigation') },
             
             ...plantCommands,
             { id: 'water-all', title: t('commandPalette.waterAllPlants'), subtitle: t('commandPalette.subtitles.waterAllPlants'), icon: PhosphorIcons.Drop, action: () => { dispatch(simulationActions.waterAllPlants()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'water all plants', group: t('commandPalette.groups.plants'), },
@@ -144,9 +145,9 @@ export const useCommandPalette = () => {
             createNotifToggle('problemDetected', 'commandPalette.toggleProblemNotifs'),
             createNotifToggle('harvestReady', 'commandPalette.toggleHarvestNotifs'),
             createNotifToggle('newTask', 'commandPalette.toggleTaskNotifs'),
-            { id: 'toggle-tts', title: t('commandPalette.toggleTts'), subtitle: t('commandPalette.subtitles.toggleTts'), icon: PhosphorIcons.SpeakerHigh, action: () => dispatch(settingsActions.setSetting({ path: 'tts.enabled', value: !settings.tts.enabled })), group: t('commandPalette.groups.settings') },
-            { id: 'toggle-dyslexia', title: t('commandPalette.toggleDyslexiaFont'), subtitle: t('commandPalette.subtitles.toggleDyslexiaFont'), icon: PhosphorIcons.TextBolder, action: () => dispatch(settingsActions.setSetting({ path: 'accessibility.dyslexiaFont', value: !settings.accessibility.dyslexiaFont })), group: t('commandPalette.groups.settings') },
-            { id: 'toggle-motion', title: t('commandPalette.toggleReducedMotion'), subtitle: t('commandPalette.subtitles.toggleReducedMotion'), icon: PhosphorIcons.GameController, action: () => dispatch(settingsActions.setSetting({ path: 'accessibility.reducedMotion', value: !settings.accessibility.reducedMotion })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-tts', title: t('commandPalette.toggleTts'), subtitle: t('commandPalette.subtitles.toggleTts'), icon: PhosphorIcons.SpeakerHigh, action: () => dispatch(settingsActions.toggleSetting({ path: 'tts.enabled' })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-dyslexia', title: t('commandPalette.toggleDyslexiaFont'), subtitle: t('commandPalette.subtitles.toggleDyslexiaFont'), icon: PhosphorIcons.TextBolder, action: () => dispatch(settingsActions.toggleSetting({ path: 'accessibility.dyslexiaFont' })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-motion', title: t('commandPalette.toggleReducedMotion'), subtitle: t('commandPalette.subtitles.toggleReducedMotion'), icon: PhosphorIcons.GameController, action: () => dispatch(settingsActions.toggleSetting({ path: 'accessibility.reducedMotion' })), group: t('commandPalette.groups.settings') },
             { id: 'set-density-compact', title: t('commandPalette.setUiDensity', { density: t('settingsView.accessibility.uiDensities.compact') }), subtitle: t('commandPalette.subtitles.setUiDensity'), icon: PhosphorIcons.ListBullets, action: () => dispatch(settingsActions.setSetting({ path: 'uiDensity', value: 'compact' as UiDensity })), group: t('commandPalette.groups.settings') },
             { id: 'set-density-comfortable', title: t('commandPalette.setUiDensity', { density: t('settingsView.accessibility.uiDensities.comfortable') }), subtitle: t('commandPalette.subtitles.setUiDensity'), icon: PhosphorIcons.GridFour, action: () => dispatch(settingsActions.setSetting({ path: 'uiDensity', value: 'comfortable' as UiDensity })), group: t('commandPalette.groups.settings') },
             

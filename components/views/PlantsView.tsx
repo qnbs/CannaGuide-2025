@@ -12,7 +12,6 @@ import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
-import { AiDiagnostics } from './plants/AiDiagnostics';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi } from '@/stores/selectors';
@@ -105,7 +104,6 @@ export const PlantsView: React.FC = () => {
                         );
                     })}
                 </div>
-                 <AiDiagnostics />
                  <GlobalAdvisorArchiveView />
             </div>
             <div className="lg:col-span-1 space-y-6">

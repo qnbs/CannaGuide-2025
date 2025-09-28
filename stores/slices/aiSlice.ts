@@ -2,6 +2,7 @@ import { AIResponse, Plant, Recommendation, PlantDiagnosisResponse, MentorMessag
 import { geminiService } from '../../services/geminiService';
 import { i18nInstance } from '../../i18n';
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { RootState } from '../store';
 
 export interface AiState<T> {
     isLoading: boolean;
@@ -31,56 +32,91 @@ const initialState: AiSliceState = {
 };
 
 // --- Async Thunks ---
-export const startEquipmentGeneration = createAsyncThunk(
+export const startEquipmentGeneration = createAsyncThunk<
+    { recommendation: Recommendation, details: any },
+    { prompt: string, details: any },
+    { state: RootState }
+>(
     'ai/startEquipmentGeneration',
-    async ({ prompt, details }: { prompt: string, details: any }) => {
-        const recommendation = await geminiService.getEquipmentRecommendation(prompt);
+    async ({ prompt, details }, { getState }) => {
+        const lang = getState().settings.settings.language;
+        const recommendation = await geminiService.getEquipmentRecommendation(prompt, lang);
         return { recommendation, details };
     }
 );
 
-export const startDiagnostics = createAsyncThunk(
+export const startDiagnostics = createAsyncThunk<
+    PlantDiagnosisResponse,
+    { base64Image: string, mimeType: string, plant: Plant, userNotes: string },
+    { state: RootState }
+>(
     'ai/startDiagnostics',
-    async ({ base64Image, mimeType, context }: { base64Image: string, mimeType: string, context: any }) => {
-        return await geminiService.diagnosePlant(base64Image, mimeType, context);
+    async ({ base64Image, mimeType, plant, userNotes }, { getState }) => {
+        const lang = getState().settings.settings.language;
+        return await geminiService.diagnosePlant(base64Image, mimeType, plant, userNotes, lang);
     }
 );
 
-export const startAdvisorGeneration = createAsyncThunk(
+export const startAdvisorGeneration = createAsyncThunk<
+    { plantId: string, advice: AIResponse },
+    Plant,
+    { state: RootState }
+>(
     'ai/startAdvisorGeneration',
-    async (plant: Plant) => {
-        const advice = await geminiService.getPlantAdvice(plant);
+    async (plant, { getState }) => {
+        const lang = getState().settings.settings.language;
+        const advice = await geminiService.getPlantAdvice(plant, lang);
         return { plantId: plant.id, advice };
     }
 );
 
-export const startProactiveDiagnosis = createAsyncThunk(
+export const startProactiveDiagnosis = createAsyncThunk<
+    AIResponse,
+    Plant,
+    { state: RootState }
+>(
     'ai/startProactiveDiagnosis',
-    async (plant: Plant) => {
-        return await geminiService.getProactiveDiagnosis(plant);
+    async (plant, { getState }) => {
+        const lang = getState().settings.settings.language;
+        return await geminiService.getProactiveDiagnosis(plant, lang);
     }
 );
 
-export const startPlantMentorChat = createAsyncThunk(
+export const startPlantMentorChat = createAsyncThunk<
+    { plantId: string, response: Omit<MentorMessage, 'role'> },
+    { plant: Plant, query: string },
+    { state: RootState }
+>(
     'ai/startPlantMentorChat',
-    async ({ plant, query }: { plant: Plant, query: string }) => {
-        const response = await geminiService.getMentorResponse(plant, query);
+    async ({ plant, query }, { getState }) => {
+        const lang = getState().settings.settings.language;
+        const response = await geminiService.getMentorResponse(plant, query, lang);
         return { plantId: plant.id, response };
     }
 );
 
-export const startStrainTipGeneration = createAsyncThunk(
+export const startStrainTipGeneration = createAsyncThunk<
+    { strainId: string, tips: StructuredGrowTips },
+    { strain: Strain, context: { focus: string, stage: string, experience: string } },
+    { state: RootState }
+>(
     'ai/startStrainTipGeneration',
-    async ({ strain, context }: { strain: Strain, context: { focus: string, stage: string, experience: string } }) => {
-        const tips = await geminiService.getStrainTips(strain, context);
+    async ({ strain, context }, { getState }) => {
+        const lang = getState().settings.settings.language;
+        const tips = await geminiService.getStrainTips(strain, context, lang);
         return { strainId: strain.id, tips };
     }
 );
 
-export const startDeepDiveGeneration = createAsyncThunk(
+export const startDeepDiveGeneration = createAsyncThunk<
+    { key: string, guide: DeepDiveGuide },
+    { topic: string, plant: Plant },
+    { state: RootState }
+>(
     'ai/startDeepDiveGeneration',
-    async ({ topic, plant }: { topic: string, plant: Plant }) => {
-        const guide = await geminiService.generateDeepDive(topic, plant);
+    async ({ topic, plant }, { getState }) => {
+        const lang = getState().settings.settings.language;
+        const guide = await geminiService.generateDeepDive(topic, plant, lang);
         return { key: `${plant.id}-${topic}`, guide };
     }
 );
@@ -92,6 +128,9 @@ const aiSlice = createSlice({
     reducers: {
         resetEquipmentGenerationState: (state) => {
             state.equipmentGeneration = { isLoading: false, response: null, error: null };
+        },
+        resetDiagnosticsState: (state) => {
+            state.diagnostics = { isLoading: false, response: null, error: null };
         },
         clearMentorChat: (state, action: PayloadAction<string>) => {
             if (state.mentorChats[action.payload]) {
@@ -203,5 +242,5 @@ const aiSlice = createSlice({
     },
 });
 
-export const { resetEquipmentGenerationState, clearMentorChat } = aiSlice.actions;
+export const { resetEquipmentGenerationState, resetDiagnosticsState, clearMentorChat } = aiSlice.actions;
 export default aiSlice.reducer;

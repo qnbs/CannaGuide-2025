@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { PlantStage } from '../../../types';
+import { PlantStage } from '@/types';
 
 interface PlantVisualProps {
     stage: PlantStage;

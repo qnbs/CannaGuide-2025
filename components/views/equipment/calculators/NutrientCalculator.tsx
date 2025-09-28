@@ -42,7 +42,7 @@ export const NutrientCalculator: React.FC = () => {
             </div>
             <Button onClick={addComponent} variant="secondary" className="w-full">
                 <PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />
-                {t('common.add')} Component
+                {t('equipmentView.calculators.nutrients.addComponent')}
             </Button>
         </CalculatorSection>
     );

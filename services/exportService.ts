@@ -1,10 +1,8 @@
-
-
-// FIX: Update import paths to be relative
-import { Strain, SavedSetup, RecommendationCategory, ExportFormat, ArchivedMentorResponse, SavedStrainTip, ArchivedAdvisorResponse, RecommendationItem } from '../types';
+// FIX: Update import paths to use alias
+import { Strain, SavedSetup, RecommendationCategory, ExportFormat, ArchivedMentorResponse, SavedStrainTip, ArchivedAdvisorResponse, RecommendationItem } from '@/types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { getT } from '../i18n';
+import { getT } from '@/i18n';
 
 // --- Private Helper Functions ---
 

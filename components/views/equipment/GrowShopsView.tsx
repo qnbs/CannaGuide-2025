@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';

@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsNumeric: Strain[] = [
     {
         "id": "1024",
         "name": "1024",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Unknown cross",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsNumeric: Strain[] = [
     {
         "id": "24k-gold",
         "name": "24k Gold",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Kosher Kush x Tangie",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsNumeric: Strain[] = [
     {
         "id": "303-og",
         "name": "303 OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Pre-98 Bubba Kush x Chemdawg",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsNumeric: Strain[] = [
     {
         "id": "501st-og",
         "name": "501st OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Skywalker OG x Rare Dankness #1",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsNumeric: Strain[] = [
     {
         "id": "707-headband",
         "name": "707 Headband",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Sour Diesel x OG Kush x Master Kush",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsNumeric: Strain[] = [
     {
         "id": "8-ball-kush",
         "name": "8 Ball Kush",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 100% Indica",
         "genetics": "Afghan Landrace",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsNumeric: Strain[] = [
     {
         "id": "9-pound-hammer",
         "name": "9 Pound Hammer",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Gooberry x Hells OG x Jack The Ripper",
         "floweringType": "Photoperiod",

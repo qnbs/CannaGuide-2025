@@ -1,5 +1,5 @@
-import React from 'react';
-import { PlantStage } from '@/types';
+import React, { memo } from 'react';
+import { PlantStage } from '../../../types';
 
 interface PlantVisualProps {
     stage: PlantStage;
@@ -8,12 +8,11 @@ interface PlantVisualProps {
     className?: string;
 }
 
-// A simple function to map a value from one range to another
 const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
   return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
 };
 
-export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, height, stressLevel, className }) => {
+export const PlantVisual: React.FC<PlantVisualProps> = memo(({ stage, height, stressLevel, className }) => {
     const health = 1 - (stressLevel / 100); // 1 = healthy, 0 = very stressed
 
     const baseColor = `rgba(74, 222, 128, ${mapRange(health, 0, 1, 0.4, 1)})`; // Fades to less vibrant green
@@ -63,4 +62,4 @@ export const PlantVisual: React.FC<PlantVisualProps> = ({ stage, height, stressL
             </g>
         </svg>
     );
-};
+});

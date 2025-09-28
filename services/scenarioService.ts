@@ -1,5 +1,6 @@
-import { Plant, Scenario, ScenarioAction } from '../types';
-import { simulationService } from './plantSimulationService';
+
+import { Plant, Scenario, ScenarioAction } from '@/types';
+import { simulationService } from '@/services/plantSimulationService';
 
 const scenarios: Record<string, Scenario> = {
     'topping-vs-lst': {

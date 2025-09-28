@@ -1,8 +1,9 @@
+
 import React, { memo } from 'react';
 import { Card } from '../../common/Card';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
-import { Task, PlantProblem, TaskPriority } from '../../../types';
+import { Task, PlantProblem, TaskPriority } from '@/types';
 
 interface TasksAndWarningsProps {
     tasks: (Task & { plantId: string, plantName: string })[],

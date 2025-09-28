@@ -2,8 +2,9 @@ import React from 'react';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
 import { Plant } from '@/types';
-import { useAppStore } from '@/stores/useAppStore';
 import { Switch } from '@/components/common/Switch';
+import { useAppDispatch } from '@/stores/store';
+import { toggleLight, toggleFan, setFanSpeed } from '@/stores/slices/simulationSlice';
 
 interface EquipmentControlsProps {
     plant: Plant;
@@ -11,11 +12,7 @@ interface EquipmentControlsProps {
 
 export const EquipmentControls: React.FC<EquipmentControlsProps> = ({ plant }) => {
     const { t } = useTranslations();
-    const { toggleLight, toggleFan, setFanSpeed } = useAppStore(state => ({
-        toggleLight: state.toggleLight,
-        toggleFan: state.toggleFan,
-        setFanSpeed: state.setFanSpeed,
-    }));
+    const dispatch = useAppDispatch();
 
     const light = plant.equipment.light;
     const fan = plant.equipment.fan;
@@ -27,12 +24,12 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = ({ plant }) =
                 <Switch 
                     label={`${t('plantsView.detailedView.controls.light')} (${light.wattage}W)`} 
                     checked={light.isOn} 
-                    onChange={() => toggleLight(plant.id)} 
+                    onChange={() => dispatch(toggleLight({ plantId: plant.id }))} 
                 />
                 <Switch 
                     label={t('plantsView.detailedView.controls.fan')} 
                     checked={fan.isOn} 
-                    onChange={() => toggleFan(plant.id)} 
+                    onChange={() => dispatch(toggleFan({ plantId: plant.id }))} 
                 />
                 <div>
                     <label htmlFor="fan-speed" className="block text-sm font-semibold text-slate-300 mb-1">
@@ -45,7 +42,7 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = ({ plant }) =
                         max="100"
                         step="10"
                         value={fan.speed}
-                        onChange={(e) => setFanSpeed(plant.id, Number(e.target.value))}
+                        onChange={(e) => dispatch(setFanSpeed({ plantId: plant.id, speed: Number(e.target.value) }))}
                         disabled={!fan.isOn}
                         className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer disabled:opacity-50"
                     />

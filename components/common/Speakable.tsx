@@ -1,8 +1,10 @@
-import React, { useRef, useEffect } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
+import React, { useRef } from 'react';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { selectCurrentlySpeakingId } from '@/stores/selectors';
 import { useTranslations } from '@/hooks/useTranslations';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+// FIX: Corrected import for Redux action.
+import { addToTtsQueue } from '@/stores/slices/ttsSlice';
 
 interface SpeakableProps {
     children: React.ReactNode;
@@ -12,8 +14,8 @@ interface SpeakableProps {
 
 export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, className }) => {
     const { t } = useTranslations();
-    const addToTtsQueue = useAppStore(state => state.addToTtsQueue);
-    const currentlySpeakingId = useAppStore(selectCurrentlySpeakingId);
+    const dispatch = useAppDispatch();
+    const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId);
     const ref = useRef<HTMLDivElement>(null);
 
     const isSpeaking = currentlySpeakingId === elementId;
@@ -23,7 +25,7 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
         if (ref.current) {
             const textToSpeak = ref.current.textContent || '';
             if (textToSpeak.trim()) {
-                addToTtsQueue({ id: elementId, text: textToSpeak });
+                dispatch(addToTtsQueue({ id: elementId, text: textToSpeak }));
             }
         }
     };

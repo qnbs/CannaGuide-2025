@@ -1,8 +1,12 @@
+
+
+
 import React, { memo } from 'react';
-import { PlantStage } from '@/types';
-import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
-import { STAGES_ORDER } from '@/constants';
-import { useTranslations } from '@/hooks/useTranslations';
+// FIX: Update import paths to be relative
+import { PlantStage } from '../../../types';
+import { PLANT_STAGE_DETAILS } from '../../../services/plantSimulationService';
+import { STAGES_ORDER } from '../../../constants';
+import { useTranslations } from '../../../hooks/useTranslations';
 
 interface TimelineProps {
     currentStage: PlantStage;

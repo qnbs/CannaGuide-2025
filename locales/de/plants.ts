@@ -26,7 +26,8 @@ export const plantsView = {
   },
   tasks: {
     title: 'Aufgaben',
-    none: 'Keine offenen Aufgaben.',
+    allDone: 'Alle Aufgaben erledigt!',
+    none: 'Momentan keine offenen Aufgaben.',
     priority: 'Priorität',
     priorities: {
         high: 'Hoch',
@@ -36,7 +37,8 @@ export const plantsView = {
   },
   warnings: {
     title: 'Warnungen',
-    none: 'Keine aktiven Probleme erkannt.',
+    allClear: 'Alles in Ordnung!',
+    none: 'Keine aktiven Probleme erkannt. Dein Garten ist gesund!',
   },
   detailedView: {
     tabs: {

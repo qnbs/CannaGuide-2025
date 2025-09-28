@@ -1,10 +1,11 @@
-import type { Strain } from '@/types';
+
+import { Strain, StrainType } from '@/types';
 
 export const strainsK: Strain[] = [
     {
         "id": "k2",
         "name": "K2",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "White Widow x Hindu Kush",
         "floweringType": "Photoperiod",
@@ -28,7 +29,7 @@ export const strainsK: Strain[] = [
     {
         "id": "kali-mist",
         "name": "Kali Mist",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 90% Sativa / 10% Indica",
         "genetics": "Unknown Sativa Hybrids",
         "floweringType": "Photoperiod",
@@ -52,7 +53,7 @@ export const strainsK: Strain[] = [
     {
         "id": "kandy-kush",
         "name": "Kandy Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "OG Kush x Trainwreck",
         "floweringType": "Photoperiod",
@@ -76,7 +77,7 @@ export const strainsK: Strain[] = [
     {
         "id": "ketama",
         "name": "Ketama",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 100% Indica",
         "genetics": "Moroccan Landrace (Chefchaouen)",
         "floweringType": "Photoperiod",
@@ -100,7 +101,7 @@ export const strainsK: Strain[] = [
     {
         "id": "key-lime-pie",
         "name": "Key Lime Pie",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Indica / 25% Sativa",
         "genetics": "GSC (phenotype)",
         "floweringType": "Photoperiod",
@@ -124,7 +125,7 @@ export const strainsK: Strain[] = [
     {
         "id": "khalifa-kush",
         "name": "Khalifa Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "OG Kush (phenotype)",
         "floweringType": "Photoperiod",
@@ -144,5 +145,77 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Earthy", "Pungent"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    },
+    {
+        "id": "king-louis-xiii",
+        "name": "King Louis XIII",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
+        "genetics": "OG Kush Phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "20-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A rare phenotype of OG Kush, known for its extremely pungent, piney, and earthy aroma. The effect is strong, sedating, and ideal for insomnia.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Earthy", "Pine", "Pungent", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    },
+    {
+        "id": "kosher-kush",
+        "name": "Kosher Kush",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica - 100% Indica",
+        "genetics": "Unknown OG Kush offshoot",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "The first strain to be blessed by a rabbi. This award-winning Indica offers a strong, physically relaxing effect and an earthy, fruity taste.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Earthy", "Fruity", "Sweet", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    },
+    {
+        "id": "kush-mints",
+        "name": "Kush Mints",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
+        "genetics": "Animal Mints x Bubba Kush",
+        "floweringType": "Photoperiod",
+        "thc": 28,
+        "cbd": 1,
+        "thcRange": "26-30%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Kush Mints is a perfectly balanced hybrid bred by Seed Junky Genetics, known for its extreme potency and unique flavor profile. It is a cross between the potent Animal Mints and the classic Bubba Kush. This strain offers a strong but balanced effect, encompassing both an uplifting, euphoric cerebral stimulation and a deeply relaxing, calming body high without being overly sedating. This makes it a versatile strain that can be enjoyed both during the day and in the evening. The aroma is complex and enticing, a blend of fresh mint and sweet cookies, underscored by earthy, piney, and coffee-like notes. Due to its high THC content, it is one of the parent strains for many modern high-potency hybrids like Cap Junky.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Mint", "Cookie", "Earthy", "Coffee"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
     }
 ];

@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Plant, Scenario } from '@/types';
-import { useAppStore } from '@/stores/useAppStore';
+// FIX: Corrected imports for Redux
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { geminiService } from '@/services/geminiService';
 import { selectDeepDiveState } from '@/stores/selectors';
+import { startDeepDiveGeneration } from '@/stores/slices/aiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
@@ -19,19 +21,24 @@ interface DeepDiveModalProps {
 
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
     const { t } = useTranslations();
-    const startDeepDiveGeneration = useAppStore(state => state.startDeepDiveGeneration);
-    const { isLoading, response, error } = useAppStore(selectDeepDiveState(plant.id, topic));
+    const dispatch = useAppDispatch();
+    const { isLoading, response, error } = useAppSelector(selectDeepDiveState(plant.id, topic));
 
     useEffect(() => {
-        if (!response && !isLoading) {
-            startDeepDiveGeneration(topic, plant);
+        if (!response && !isLoading && !error) {
+            dispatch(startDeepDiveGeneration({ topic, plant }));
         }
-    }, [plant, topic, response, isLoading, startDeepDiveGeneration]);
+    }, [plant, topic, response, isLoading, error, dispatch]);
 
-    const loadingMessage = geminiService.getDynamicLoadingMessages({
-        useCase: 'deepDive',
-        data: { topic, plantName: plant.name }
-    }, t).join(' ');
+    const loadingMessage = useMemo(() => {
+        // FIX: Corrected call to geminiService to pass a single object argument.
+        const messages = geminiService.getDynamicLoadingMessages({
+            useCase: 'deepDive',
+            data: { topic, plantName: plant.name }
+        });
+        return messages.join(' ');
+    }, [topic, plant.name, t]);
+
 
     const relevantScenario = useMemo(() => {
         if (topic === 'Topping' || topic === 'LST') {

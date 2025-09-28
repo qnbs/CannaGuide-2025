@@ -1,21 +1,23 @@
 import React, { useMemo } from 'react';
-// FIX: Changed import paths to be relative
-import { useAppStore } from '../../stores/useAppStore';
+import { useTranslations } from '@/hooks/useTranslations';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
 import { PlantSlot } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';
 import { TipOfTheDay } from './plants/TipOfTheDay';
 import { GardenVitals } from './plants/DashboardSummary';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
-import { useTranslations } from '../../hooks/useTranslations';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { Card } from '../common/Card';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
-import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '../../stores/selectors';
 import { AiDiagnostics } from './plants/AiDiagnostics';
-import { Button } from '../common/Button';
+import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectUi } from '@/stores/selectors';
+import { startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } from '@/stores/slices/uiSlice';
+import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -33,41 +35,39 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 
 export const PlantsView: React.FC = () => {
     const { t } = useTranslations();
+    const dispatch = useAppDispatch();
     
-    // Optimized State Selection
-    const { waterAllPlants, setSelectedPlantId, startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } = useAppStore.getState();
+    const { 
+        initiatingGrowForSlot,
+        strainForNewGrow,
+        isGrowSetupModalOpen,
+        isConfirmationModalOpen
+    } = useAppSelector(selectUi);
     
-    const initiatingGrowForSlot = useAppStore(state => state.initiatingGrowForSlot);
-    const strainForNewGrow = useAppStore(state => state.strainForNewGrow);
-    const isGrowSetupModalOpen = useAppStore(state => state.isGrowSetupModalOpen);
-    const isConfirmationModalOpen = useAppStore(state => state.isConfirmationModalOpen);
-    const plantSlots = useAppStore(selectPlantSlots);
-    const plantsRecord = useAppStore(state => state.plants);
-    const selectedPlantId = useAppStore(selectSelectedPlantId);
+    const { slotsWithData } = usePlantSlotsData();
+    const { tasks, problems } = useGardenSummary();
+    const selectedPlant = useSelectedPlant();
+
+    const selectedPlantId = useAppSelector(state => state.simulation.selectedPlantId);
     
-    const activePlants = useAppStore(selectActivePlants);
-    const allTasks = useAppStore(selectOpenTasksSummary);
-    const allProblems = useAppStore(selectActiveProblemsSummary);
-    
-    const selectedPlant = useMemo(() => {
+    const plantData = useMemo(() => {
         if (!selectedPlantId) return null;
-        const plant = plantsRecord[selectedPlantId];
-        return plant ? plant : null;
-    }, [selectedPlantId, plantsRecord]);
-    
-    if (selectedPlant) {
-        return <DetailedPlantView plant={selectedPlant} onClose={() => setSelectedPlantId(null)} />;
+        return slotsWithData.flat().find(p => p?.id === selectedPlantId) || null;
+    }, [selectedPlantId, slotsWithData]);
+
+    if (plantData) {
+        return <DetailedPlantView plant={plantData} onClose={() => dispatch(setSelectedPlantId(null))} />;
     }
 
     const showGrowFromStrainBanner = strainForNewGrow && initiatingGrowForSlot === null;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
             {isGrowSetupModalOpen && strainForNewGrow && (
                 <GrowSetupModal
                     strain={strainForNewGrow}
-                    onClose={cancelNewGrow}
-                    onConfirm={confirmSetupAndShowConfirmation}
+                    onClose={() => dispatch(cancelNewGrow())}
+                    onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
                 />
             )}
             {isConfirmationModalOpen && (
@@ -82,27 +82,26 @@ export const PlantsView: React.FC = () => {
                             <h3 className="font-bold text-primary-300">{t('plantsView.inlineSelector.title')}</h3>
                             <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {strainForNewGrow.name}.</p>
                         </div>
-                        <Button variant="secondary" size="sm" onClick={cancelNewGrow}>
+                        <Button variant="secondary" size="sm" onClick={() => dispatch(cancelNewGrow())}>
                             {t('common.cancel')}
                         </Button>
                     </Card>
                 )}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {plantSlots.map((plantId, index) => {
+                    {slotsWithData.map((plant, index) => {
                         if (initiatingGrowForSlot === index) {
                             return (
                                 <InlineStrainSelector 
                                     key={`selector-${index}`}
-                                    onClose={cancelNewGrow}
-                                    onSelectStrain={selectStrainForGrow}
+                                    onClose={() => dispatch(cancelNewGrow())}
+                                    onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
                                 />
                             );
                         }
-                        const plant = plantId ? plantsRecord[plantId] : null;
                         return plant ? (
-                            <PlantSlot key={plant.id} plant={plant} onInspect={() => setSelectedPlantId(plant.id)} />
+                            <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
                         ) : (
-                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => startGrowInSlot(index)} />
+                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => dispatch(startGrowInSlot(index))} />
                         );
                     })}
                 </div>
@@ -111,10 +110,9 @@ export const PlantsView: React.FC = () => {
             </div>
             <div className="lg:col-span-1 space-y-6">
                 <GardenVitals 
-                    openTasksCount={allTasks.length}
-                    onWaterAll={waterAllPlants}
+                    openTasksCount={tasks.length}
                 />
-                <TasksAndWarnings tasks={allTasks} problems={allProblems} />
+                <TasksAndWarnings tasks={tasks} problems={problems} />
             </div>
         </div>
     );

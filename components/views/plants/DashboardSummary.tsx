@@ -1,15 +1,14 @@
 import React, { memo } from 'react';
-import { Plant } from '@/types';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectGardenHealthMetrics } from '@/stores/selectors';
+import { waterAllPlants } from '@/stores/slices/simulationSlice';
 
 interface GardenVitalsProps {
     openTasksCount: number;
-    onWaterAll: () => void;
 }
 
 const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = ({ icon, value, label }) => (
@@ -20,10 +19,15 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = 
     </div>
 );
 
-export const GardenVitals: React.FC<GardenVitalsProps> = memo(({ openTasksCount, onWaterAll }) => {
+export const GardenVitals: React.FC<GardenVitalsProps> = memo(({ openTasksCount }) => {
     const { t } = useTranslations();
-    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppStore(state => selectGardenHealthMetrics(state));
+    const dispatch = useAppDispatch();
+    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppSelector(selectGardenHealthMetrics);
     const hasActiveGrows = activePlantsCount > 0;
+
+    const handleWaterAll = () => {
+        dispatch(waterAllPlants());
+    };
 
     return (
         <Card>
@@ -35,7 +39,7 @@ export const GardenVitals: React.FC<GardenVitalsProps> = memo(({ openTasksCount,
                 <Stat icon={<PhosphorIcons.Drop />} value={`${avgHumidity.toFixed(1)}%`} label={t('plantsView.gardenVitals.avgHumidity')} />
             </div>
              <div className="mt-4">
-                <Button onClick={onWaterAll} variant="secondary" disabled={!hasActiveGrows} className="w-full">
+                <Button onClick={handleWaterAll} variant="secondary" disabled={!hasActiveGrows} className="w-full">
                     <PhosphorIcons.Drop className="w-5 h-5 mr-1"/> {t('plantsView.summary.waterAll')}
                 </Button>
             </div>

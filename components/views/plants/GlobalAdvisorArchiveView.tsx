@@ -1,26 +1,32 @@
 import React, { useMemo, useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { ArchivedAdvisorResponse, ExportFormat } from '@/types';
-import { selectActivePlants, selectArchivedAdvisorResponses } from '@/stores/selectors';
+import { ArchivedAdvisorResponse, ExportFormat, Plant } from '@/types';
+import { selectArchivedAdvisorResponses } from '@/stores/selectors';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { exportService } from '@/services/exportService';
 import { Button } from '@/components/common/Button';
+import { useActivePlants } from '@/hooks/useSimulationBridge';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { addNotification } from '@/stores/slices/uiSlice';
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslations();
-    const archive = useAppStore(state => selectArchivedAdvisorResponses(state));
-    const activePlants = useAppStore(state => selectActivePlants(state));
-    const addNotification = useAppStore(state => state.addNotification);
+    const dispatch = useAppDispatch();
+    const archive = useAppSelector(selectArchivedAdvisorResponses);
+    const activePlants = useActivePlants();
     
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     const allAdvice = useMemo<(ArchivedAdvisorResponse & { plantName: string })[]>(() => {
-        const plantMap = new Map(activePlants.map(p => [p.id, p.name]));
+        const plantMap = new Map<string, string>();
+        // Also check archived plants from Zustand store if they exist in a more complex state
+        const allKnownPlants: Plant[] = [...activePlants]; // In a real scenario, you might merge with archived plants
+        
+        allKnownPlants.forEach(p => plantMap.set(p.id, p.name));
         
         return Object.values(archive)
             .flat()
@@ -64,10 +70,10 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
             : filteredAdvice;
             
         if (dataToExport.length === 0) {
-            addNotification(t('common.noDataToExport'), 'error');
+            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
             return;
         }
-        exportService.exportAdvisorArchive(dataToExport, format, `CannaGuide_Advisor_Archive_${new Date().toISOString().slice(0, 10)}`, t);
+        exportService.exportAdvisorArchive(dataToExport, format, `CannaGuide_Advisor_Archive_${new Date().toISOString().slice(0, 10)}`);
     };
 
 
@@ -111,7 +117,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                         </div>
                         {filteredAdvice.map((res) => (
                             <Card key={res.id} className="bg-slate-800/70 p-3 flex items-start gap-3">
-                                 <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="mt-1.5 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 flex-shrink-0" />
+                                 <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="mt-1.5 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
                                 <div className="flex-grow">
                                     <div className="flex justify-between items-start">
                                         <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>

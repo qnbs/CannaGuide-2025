@@ -64,6 +64,7 @@ Your complete resource for learning and problem-solving.
 *   **Interactive Grow Guide**: A guided journey through the five main phases of cultivation with visual progress tracking.
 *   **AI Mentor with CRUD Archive**: Ask general growing questions to the AI. **Save, view, edit, and delete** the responses to build your personal knowledge base.
 *   **Comprehensive Help Center**: A detailed, searchable FAQ and in-depth lexicons.
+*   **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, unique hybrid strains that are permanently added to your library.
 
 ### 5. The Control Panel (`Settings` View)
 
@@ -100,8 +101,8 @@ This project is also fully open source. Dive into the code, fork the project, or
 *   **State Management:** Zustand with Immer middleware for a minimalistic, powerful, and scalable global state. Selectors are memoized with `reselect` for optimal performance.
 *   **Styling:** Tailwind CSS (via CDN) for a utility-first design system.
 *   **Dual Persistence Strategy:**
-    *   **localStorage:** For the primary application state (settings, plant state, archives) via `zustand/middleware/persist`.
-    *   **IndexedDB:** For high-performance local storage of large, static datasets like the strain library and the full-text search index.
+    *   **IndexedDB (via `zustand/middleware/persist`):** For robust, asynchronous storage of the entire application state.
+    *   **IndexedDB (Direct):** For high-performance local storage of large, static datasets like the strain library and the full-text search index.
 *   **PWA & Offline Capability:** Service Worker implementing a robust "Cache First, then Network" strategy for a true offline-first experience.
 *   **Tooling:** `jsPDF` & `jsPDF-AutoTable` for professional PDF generation.
 
@@ -191,6 +192,7 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 *   **Interaktiver Grow-Guide**: Eine geführte Reise durch die fünf Hauptphasen des Anbaus mit visueller Fortschrittsverfolgung.
 *   **KI-Mentor mit CRUD-Archiv**: Stellen Sie allgemeine Anbaufragen an die KI. **Speichern, ansehen, bearbeiten und löschen** Sie die Antworten, um Ihre persönliche Wissensdatenbank aufzubauen.
 *   **Umfassendes Hilfecenter**: Eine detaillierte, durchsuchbare FAQ und tiefgehende Lexika.
+*   **Zuchtlabor**: Kreuzen Sie Ihre hochwertigen, gesammelten Samen, um völlig neue, einzigartige Hybrid-Sorten zu erschaffen, die dauerhaft Ihrer Bibliothek hinzugefügt werden.
 
 ### 5. Das Kontrollzentrum (`Einstellungen`-Ansicht)
 
@@ -227,8 +229,8 @@ Dieses Projekt ist zudem vollständig Open Source. Tauchen Sie in den Code ein, 
 *   **Zustandsverwaltung:** Zustand mit Immer-Middleware für eine minimalistische, leistungsstarke und skalierbare globale Zustandsverwaltung. Selektoren sind mit `reselect` für optimale Performance memoisier.
 *   **Styling:** Tailwind CSS (via CDN) für ein Utility-First-Design-System.
 *   **Duale Persistenzstrategie:**
-    *   **localStorage:** Für den primären Anwendungszustand (Einstellungen, Pflanzenzustand, Archive) über `zustand/middleware/persist`.
-    *   **IndexedDB:** Für hochperformante lokale Speicherung großer, statischer Datensätze wie die Sortenbibliothek und den Volltext-Suchindex.
+    *   **IndexedDB (via `zustand/middleware/persist`):** Für robuste, asynchrone Speicherung des gesamten Anwendungszustands.
+    *   **IndexedDB (Direkt):** Für hochperformante lokale Speicherung großer, statischer Datensätze wie die Sortenbibliothek und den Volltext-Suchindex.
 *   **PWA & Offline-Fähigkeit:** Service Worker mit einer robusten "Cache First, then Network"-Strategie für eine echte Offline-First-Erfahrung.
 *   **Werkzeuge:** `jsPDF` & `jsPDF-AutoTable` für die professionelle PDF-Erstellung.
 
@@ -249,3 +251,8 @@ Es ist keine Installation oder Einrichtung erforderlich. Die Anwendung läuft vo
 ## ⚠️ Haftungsausschluss
 
 > Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und gesetzeskonform.
+
+---
+
+### Translation Keys
+- `common.disclaimer.text`

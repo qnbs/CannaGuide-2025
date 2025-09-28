@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Seed } from '@/types';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectCollectedSeeds } from '@/stores/selectors';
+import { breedStrains } from '@/stores/slices/breedingSlice';
 
 const SeedCard: React.FC<{ seed: Seed, isSelected: boolean, onSelect: () => void }> = ({ seed, isSelected, onSelect }) => {
     const { t } = useTranslations();
@@ -23,10 +25,8 @@ const SeedCard: React.FC<{ seed: Seed, isSelected: boolean, onSelect: () => void
 
 export const BreedingView: React.FC = () => {
     const { t } = useTranslations();
-    const { collectedSeeds, breedStrains } = useAppStore(state => ({
-        collectedSeeds: state.collectedSeeds,
-        breedStrains: state.breedStrains,
-    }));
+    const dispatch = useAppDispatch();
+    const collectedSeeds = useAppSelector(selectCollectedSeeds);
 
     const [parentA, setParentA] = useState<string | null>(null);
     const [parentB, setParentB] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export const BreedingView: React.FC = () => {
 
     const handleBreed = () => {
         if (parentA && parentB && newName.trim()) {
-            breedStrains(parentA, parentB, newName.trim());
+            dispatch(breedStrains({ parentAId: parentA, parentBId: parentB, newName: newName.trim() }));
             setParentA(null);
             setParentB(null);
             setNewName('');

@@ -1,8 +1,12 @@
+
+
+
 import React, { memo } from 'react';
-import { Plant, PlantStage } from '@/types';
-import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
-import { PLANT_STAGE_DETAILS, simulationService } from '@/services/plantSimulationService';
+// FIX: Update import paths to be relative
+import { Plant, PlantStage } from '../../../types';
+import { Card } from '../../common/Card';
+import { useTranslations } from '../../../hooks/useTranslations';
+import { PLANT_STAGE_DETAILS } from '../../../services/plantSimulationService';
 import { PlantVisualizer } from './PlantVisualizer';
 
 interface PlantSlotProps {
@@ -25,9 +29,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
 
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
-    // FIX: Removed unused 'height' variable that was causing an error.
-    // The plant visualizer correctly uses the structural model instead.
-
+    
     return (
         <Card onClick={onInspect} className="flex flex-col h-full cursor-pointer card-interactive-glow">
             <div className="flex justify-between items-start">

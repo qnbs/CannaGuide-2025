@@ -5,10 +5,13 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { useAppStore } from '@/stores/useAppStore';
+// FIX: Corrected import path for selector to use the centralized `selectors.ts` file.
 import { selectHasAvailableSlots } from '@/stores/selectors';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { exportService } from '@/services/exportService';
+// FIX: Import useAppSelector to access Redux state.
+import { useAppSelector, useAppDispatch } from '@/stores/store';
+import { addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[];
@@ -43,11 +46,9 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 
 export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
     const { t } = useTranslations();
-    const { initiateGrowFromStrainList, addNotification } = useAppStore(state => ({
-        initiateGrowFromStrainList: state.initiateGrowFromStrainList,
-        addNotification: state.addNotification,
-    }));
-    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
+    const dispatch = useAppDispatch();
+    // FIX: Use `useAppSelector` for Redux state.
+    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
     const [editingTip, setEditingTip] = useState<SavedStrainTip | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -92,10 +93,11 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
     const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
         const dataToExport = source === 'selected' ? savedTips.filter(tip => selectedIds.has(tip.id)) : filteredTips;
         if (dataToExport.length === 0) {
-            addNotification(t('common.noDataToExport'), 'error');
+            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
             return;
         }
-        exportService.exportStrainTips(dataToExport, format, `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`, t);
+        // FIX: Removed extra `t` argument from exportService call.
+        exportService.exportStrainTips(dataToExport, format, `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`);
     };
 
     const sortedAndGrouped = useMemo(() => {
@@ -127,8 +129,8 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
                     </div>
                      <Button variant="secondary" onClick={() => setIsExportModalOpen(true)}><PhosphorIcons.DownloadSimple className="w-5 h-5"/></Button>
                     <div className="flex gap-1 bg-slate-800 rounded-lg p-0.5">
-                       <button onClick={() => setSortMode('grouped')} className={`p-1.5 rounded-md transition-colors ${sortMode === 'grouped' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`} aria-label={t('strainsView.tips.sortOptions.grouped')} title={t('strainsView.tips.sortOptions.grouped')}><PhosphorIcons.GridFour className="w-5 h-5" /></button>
-                       <button onClick={() => setSortMode('date')} className={`p-1.5 rounded-md transition-colors ${sortMode === 'date' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`} aria-label={t('strainsView.tips.sortOptions.date')} title={t('strainsView.tips.sortOptions.date')}><PhosphorIcons.ListBullets className="w-5 h-5" /></button>
+                       <Button variant="ghost" onClick={() => setSortMode('grouped')} className={`!p-1.5 !rounded-md ${sortMode === 'grouped' ? '!bg-slate-700 !text-primary-300' : ''}`} aria-label={t('strainsView.tips.sortOptions.grouped')} title={t('strainsView.tips.sortOptions.grouped')}><PhosphorIcons.GridFour className="w-5 h-5" /></Button>
+                       <Button variant="ghost" onClick={() => setSortMode('date')} className={`!p-1.5 !rounded-md ${sortMode === 'date' ? '!bg-slate-700 !text-primary-300' : ''}`} aria-label={t('strainsView.tips.sortOptions.date')} title={t('strainsView.tips.sortOptions.date')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
                     </div>
                 </div>
             </div>
@@ -147,15 +149,15 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
                              const strain = allStrains.find(s => s.id === tips[0].strainId);
                              return (
                                 <details key={strainName} open={true} className="group">
-                                     <summary className="list-none"><div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e) => { e.stopPropagation(); initiateGrowFromStrainList(strain); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>
+                                     <summary className="list-none"><div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>
                                     <div className="pl-6 pt-3 space-y-3">
-                                        {tips.map(tip => (<Card key={tip.id} className="bg-slate-800/50 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))}
+                                        {tips.map(tip => (<Card key={tip.id} className="bg-slate-800/50 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500"/><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))}
                                     </div>
                                 </details>
                             )
                         })
                     ) : (
-                        (sortedAndGrouped as SavedStrainTip[]).map(tip => (<Card key={tip.id} className="bg-slate-800 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"/><div className="flex-1"><p className="text-xs font-bold text-primary-300 mb-2">{tip.strainName}</p><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))
+                        (sortedAndGrouped as SavedStrainTip[]).map(tip => (<Card key={tip.id} className="bg-slate-800 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500"/><div className="flex-1"><p className="text-xs font-bold text-primary-300 mb-2">{tip.strainName}</p><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))
                     )}
                 </div>
             )}

@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { useTranslations } from '../../../hooks/useTranslations';
-import { ModalType } from './LogActionModal';
+import { ModalType } from '@/types';
 
 interface ActionToolbarProps {
     onLogAction: (type: ModalType) => void;
@@ -24,7 +24,7 @@ export const ActionToolbar: React.FC<ActionToolbarProps> = ({ onLogAction }) => 
     return (
         <div className="flex flex-wrap items-center justify-center gap-2">
             {actions.map(action => (
-                <Button key={action.type} variant="secondary" onClick={() => onLogAction(action.type as ModalType)} className="flex-1 min-w-[120px]">
+                <Button key={action.type} variant="secondary" onClick={() => onLogAction(action.type as ModalType)} className="flex-1 min-w-[120px] hyphens-auto">
                     {action.icon}
                     <span className="ml-2">{action.label}</span>
                 </Button>

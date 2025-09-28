@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-// FIX: Changed import paths to be relative
 import { Notification, NotificationType } from '../../types';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { useTranslations } from '../../hooks/useTranslations';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+// FIX: Corrected import for Redux action.
+import { removeNotification } from '@/stores/slices/uiSlice';
+import { selectNotifications } from '@/stores/selectors';
 
 interface ToastProps {
   notification: Notification;
@@ -54,14 +57,21 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
     );
 };
 
-export const ToastContainer: React.FC<{ notifications: Notification[], onClose: (id: number) => void }> = ({ notifications, onClose }) => {
+export const ToastContainer: React.FC = () => {
+    const dispatch = useAppDispatch();
+    const notifications = useAppSelector(selectNotifications);
     const container = document.getElementById('toast-container');
+
+    const handleClose = (id: number) => {
+        dispatch(removeNotification(id));
+    };
+
     if (!container) return null;
 
     return ReactDOM.createPortal(
         <>
             {notifications.map(n => (
-                <Toast key={n.id} notification={n} onClose={onClose} />
+                <Toast key={n.id} notification={n} onClose={handleClose} />
             ))}
         </>,
         container

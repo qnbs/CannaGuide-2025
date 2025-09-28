@@ -3,7 +3,8 @@ import { Plant } from '@/types';
 import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
-import { useAppStore } from '@/stores/useAppStore';
+import { useAppDispatch } from '@/stores/store';
+import { processPostHarvest as processPostHarvestAction } from '@/stores/slices/simulationSlice';
 
 interface PostHarvestTabProps {
     plant: Plant;
@@ -23,7 +24,7 @@ const ProgressBar: React.FC<{ value: number; max: number }> = ({ value, max }) =
 
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const { t } = useTranslations();
-    const { processPostHarvest } = useAppStore(state => ({ processPostHarvest: state.processPostHarvest }));
+    const dispatch = useAppDispatch();
     const postHarvestData = plant.postHarvest;
 
     if (!postHarvestData) {
@@ -31,7 +32,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     }
 
     const handleSimulateNextDay = (action: 'dry' | 'cure' | 'burp' = 'dry') => {
-        processPostHarvest(plant.id, action);
+        dispatch(processPostHarvestAction({ plantId: plant.id, action }));
     };
 
     return (

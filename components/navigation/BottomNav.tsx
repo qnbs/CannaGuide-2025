@@ -1,10 +1,11 @@
 import React from 'react';
-// FIX: Changed import paths to be relative
-import { View } from '../../types';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { useTranslations } from '../../hooks/useTranslations';
-import { useAppStore } from '../../stores/useAppStore';
-import { selectActiveView } from '../../stores/selectors';
+import { View } from '@/types';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+// FIX: Corrected import to get the action creator from the uiSlice.
+import { setActiveView } from '@/stores/slices/uiSlice';
+import { selectActiveView } from '@/stores/selectors';
 
 const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,
@@ -17,8 +18,8 @@ const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Kn
 
 export const BottomNav: React.FC = () => {
     const { t } = useTranslations();
-    const activeView = useAppStore(selectActiveView);
-    const setActiveView = useAppStore(state => state.setActiveView);
+    const dispatch = useAppDispatch();
+    const activeView = useAppSelector(selectActiveView);
 
     const navLabels: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
@@ -37,7 +38,7 @@ export const BottomNav: React.FC = () => {
                     return (
                         <button
                             key={viewValue}
-                            onClick={() => setActiveView(viewValue)}
+                            onClick={() => dispatch(setActiveView(viewValue))}
                             className={`relative flex flex-col items-center justify-center w-full py-2 transition-all duration-300 rounded-lg ${
                                 isActive ? 'text-primary-300 bg-primary-500/10' : 'text-slate-400 hover:text-primary-300 hover:bg-slate-700/50'
                             }`}

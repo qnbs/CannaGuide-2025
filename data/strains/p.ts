@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsP: Strain[] = [
     {
         "id": "painkiller-xl",
         "name": "Painkiller XL",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 75% / Indica 25%",
         "genetics": "Respect #13 x Juanita la Lagrimosa",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsP: Strain[] = [
     {
         "id": "panama-red",
         "name": "Panama Red",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa 100%",
         "genetics": "Panamanian Landrace",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsP: Strain[] = [
     {
         "id": "papaya",
         "name": "Papaya",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Citral #13 x Ice #2",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsP: Strain[] = [
     {
         "id": "papaya-cookies",
         "name": "Papaya Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Papaya x Platinum Cookies",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsP: Strain[] = [
     {
         "id": "papaya-punch",
         "name": "Papaya Punch",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Papaya x Purple Punch",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsP: Strain[] = [
     {
         "id": "paris-og",
         "name": "Paris OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Headband x Lemon OG",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pave-runtz",
         "name": "Pave Runtz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Paris OG x The Menthol",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsP: Strain[] = [
     {
         "id": "peanut-butter-breath",
         "name": "Peanut Butter Breath",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Do-Si-Dos x Mendo Breath F2",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsP: Strain[] = [
     {
         "id": "peanut-butter-souffle",
         "name": "Peanut Butter Soufflé",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Do-Si-Dos x Lava Cake",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pennywise",
         "name": "Pennywise",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Harlequin x Jack the Ripper",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsP: Strain[] = [
     {
         "id": "permanent-chimera",
         "name": "Permanent Chimera",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Permanent Marker x Chimera",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsP: Strain[] = [
     {
         "id": "permanent-marker",
         "name": "Permanent Marker",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Biscotti x Jealousy x Sherbet BX",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsP: Strain[] = [
     {
         "id": "peyote-cookies",
         "name": "Peyote Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 95% / Sativa 5%",
         "genetics": "Peyote Purple x Cookies Kush",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsP: Strain[] = [
     {
         "id": "peyote-critical",
         "name": "Peyote Critical",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "Peyote Purple x Critical Kush",
         "floweringType": "Photoperiod",
@@ -340,7 +340,7 @@ export const strainsP: Strain[] = [
     {
         "id": "phantom-cookies",
         "name": "Phantom Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 65% / Indica 35%",
         "genetics": "GSC x Cherry Pie",
         "floweringType": "Photoperiod",
@@ -364,7 +364,7 @@ export const strainsP: Strain[] = [
     {
         "id": "phantom-og",
         "name": "Phantom OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 55% / Indica 45%",
         "genetics": "OG Kush x Phantom Cookies",
         "floweringType": "Photoperiod",
@@ -388,7 +388,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pineapple",
         "name": "Pineapple",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Ed Rosenthal Super Bud phenotype",
         "floweringType": "Photoperiod",
@@ -412,7 +412,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pineapple-chunk",
         "name": "Pineapple Chunk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Pineapple x Skunk #1 x Cheese",
         "floweringType": "Photoperiod",
@@ -436,7 +436,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pineapple-express",
         "name": "Pineapple Express",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "Trainwreck x Hawaiian",
         "floweringType": "Photoperiod",
@@ -460,7 +460,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pineapple-kush",
         "name": "Pineapple Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Pineapple x OG Kush",
         "floweringType": "Photoperiod",
@@ -484,7 +484,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pineapple-upside-down-cake",
         "name": "Pineapple Upside Down Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "Pineapple Trainwreck x Cookie Monster",
         "floweringType": "Photoperiod",
@@ -508,7 +508,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pink-kush",
         "name": "Pink Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "OG Kush (phenotype)",
         "floweringType": "Photoperiod",
@@ -532,7 +532,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pink-panties",
         "name": "Pink Panties",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Burmese Kush x Florida Kush",
         "floweringType": "Photoperiod",
@@ -556,7 +556,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pink-rozay",
         "name": "Pink Rozay",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Lemonchello #10 x LPC75",
         "floweringType": "Photoperiod",
@@ -580,7 +580,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pink-runtz",
         "name": "Pink Runtz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Zkittlez x Gelato",
         "floweringType": "Photoperiod",
@@ -604,7 +604,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pinkman-goo",
         "name": "Pinkman Goo",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Granddaddy Purple x Grape Ape x Northern Lights #5",
         "floweringType": "Photoperiod",
@@ -628,7 +628,7 @@ export const strainsP: Strain[] = [
     {
         "id": "platinum-gsc",
         "name": "Platinum GSC",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "OG Kush x Durban Poison x an unknown strain",
         "floweringType": "Photoperiod",
@@ -652,7 +652,7 @@ export const strainsP: Strain[] = [
     {
         "id": "platinum-kush-mints",
         "name": "Platinum Kush Mints",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Platinum OG Kush x Kush Mints",
         "floweringType": "Photoperiod",
@@ -676,7 +676,7 @@ export const strainsP: Strain[] = [
     {
         "id": "platinum-og",
         "name": "Platinum OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 75% / Sativa 25%",
         "genetics": "Master Kush x OG Kush x an unknown strain",
         "floweringType": "Photoperiod",
@@ -700,7 +700,7 @@ export const strainsP: Strain[] = [
     {
         "id": "point-break",
         "name": "Point Break",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Tropicana Cookies x Trophy Wife",
         "floweringType": "Photoperiod",
@@ -724,7 +724,7 @@ export const strainsP: Strain[] = [
     {
         "id": "power-plant",
         "name": "Power Plant",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "South African Sativa",
         "floweringType": "Photoperiod",
@@ -748,7 +748,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pre-98-bubba-kush",
         "name": "Pre-98 Bubba Kush",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 85% / Sativa 15%",
         "genetics": "Unknown (Original Bubba Kush cut)",
         "floweringType": "Photoperiod",
@@ -772,7 +772,7 @@ export const strainsP: Strain[] = [
     {
         "id": "project-4516",
         "name": "Project 4516",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Platinum Puff x Gelato 45",
         "floweringType": "Photoperiod",
@@ -796,7 +796,7 @@ export const strainsP: Strain[] = [
     {
         "id": "punch-breath",
         "name": "Punch Breath",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Mendo Breath F2 x Purple Punch",
         "floweringType": "Photoperiod",
@@ -820,7 +820,7 @@ export const strainsP: Strain[] = [
     {
         "id": "punto-rojo",
         "name": "Punto Rojo",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa 100%",
         "genetics": "Colombian Landrace",
         "floweringType": "Photoperiod",
@@ -844,7 +844,7 @@ export const strainsP: Strain[] = [
     {
         "id": "pure-kush",
         "name": "Pure Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 85% / Sativa 15%",
         "genetics": "OG Kush (phenotype)",
         "floweringType": "Photoperiod",
@@ -868,7 +868,7 @@ export const strainsP: Strain[] = [
     {
         "id": "purple-candy",
         "name": "Purple Candy",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "BC Sweet Tooth x Mendocino Purps",
         "floweringType": "Photoperiod",
@@ -892,7 +892,7 @@ export const strainsP: Strain[] = [
     {
         "id": "purple-cream",
         "name": "Purple Cream",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "Blackwater x Green Crack",
         "floweringType": "Photoperiod",
@@ -916,7 +916,7 @@ export const strainsP: Strain[] = [
     {
         "id": "purple-diesel",
         "name": "Purple Diesel",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Pre-98 Bubba Kush x Sour Diesel",
         "floweringType": "Photoperiod",
@@ -940,7 +940,7 @@ export const strainsP: Strain[] = [
     {
         "id": "purple-haze",
         "name": "Purple Haze",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa 85% / Indica 15%",
         "genetics": "Purple Thai x Haze",
         "floweringType": "Photoperiod",
@@ -964,7 +964,7 @@ export const strainsP: Strain[] = [
     {
         "id": "purple-kush",
         "name": "Purple Kush",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Hindu Kush x Purple Afghani",
         "floweringType": "Photoperiod",
@@ -988,7 +988,7 @@ export const strainsP: Strain[] = [
     {
         "id": "purple-punch",
         "name": "Purple Punch",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Larry OG x Granddaddy Purple",
         "floweringType": "Photoperiod",
@@ -998,86 +998,15 @@ export const strainsP: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Purple Punch is an extremely popular Indica-dominant strain known for its delicious aroma and potent, relaxing effects. It is a cross between two Californian classics: Larry OG and Granddaddy Purple. The effect is often described as a 'one-two punch': it starts with a strong, euphoric head high that quickly transitions into a deeply relaxing and sedating body high, effectively relieving stress and pain. This makes it an ideal strain for the evening or for treating insomnia. The aroma is distinctively sweet and fruity, reminiscent of grape candy, blueberry muffins, and vanilla. The buds are often dense, with purple hues and a thick layer of frosty trichomes.",
+        "description": "An indica-dominant hybrid with a sweet aroma of grape candy and blueberry muffins. The effect is a one-two punch of a euphoric head high followed by heavy body sedation.",
         "agronomic": {
             "difficulty": "Easy",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Short",
-            "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "700-800 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Grape", "Berry", "Sweet", "Vanilla"],
+        "aromas": ["Grape", "Sweet", "Berry", "Vanilla"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
-        "id": "purple-space-cookies",
-        "name": "Purple Space Cookies",
-        "type": "Hybrid",
-        "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Durban Poison x GSC",
-        "floweringType": "Photoperiod",
-        "thc": 22.5,
-        "cbd": 1,
-        "thcRange": "20-25%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Purple Space Cookies is a sativa-dominant hybrid known for its sweet berry aroma and uplifting effects. Users report an energetic and euphoric high that stimulates creativity while providing pleasant physical relaxation. The complex flavor profile blends sweet, earthy notes with a hint of pine and fruit.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Berry", "Sweet", "Earthy", "Pine"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
-        "id": "purple-star",
-        "name": "Purple Star",
-        "type": "Indica",
-        "typeDetails": "Indica 100%",
-        "genetics": "Dutch strain",
-        "floweringType": "Photoperiod",
-        "thc": 15,
-        "cbd": 1,
-        "thcRange": "13-17%",
-        "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "7-9",
-        "description": "A pure Indica from the Netherlands known for its beautiful purple colors. The effect is relaxing and calming, ideal for evening use.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Short",
-            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
-            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-120 cm" }
-        },
-        "aromas": ["Earthy", "Sweet", "Grape", "Berry"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
-        "id": "purple-urkle",
-        "name": "Purple Urkle",
-        "type": "Indica",
-        "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Mendocino Purps (phenotype)",
-        "floweringType": "Photoperiod",
-        "thc": 21,
-        "cbd": 1,
-        "thcRange": "18-24%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "A classic California Indica, known for its deep purple colors and grape-like aroma. The effect is strongly relaxing and ideal for pain and insomnia.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Low",
-            "height": "Short",
-            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/plant" },
-            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-120 cm" }
-        },
-        "aromas": ["Grape", "Berry", "Sweet", "Skunk"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Ocimene"]
     }
+];

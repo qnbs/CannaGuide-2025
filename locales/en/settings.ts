@@ -68,6 +68,7 @@ export const settingsView = {
       grid: 'Grid',
     },
     visibleColumns: 'Visible Columns (List View)',
+    visibleColumnsDesc: 'Choose which data columns to display in the list view.',
     columns: {
         type: 'Type',
         thc: 'THC',
@@ -83,6 +84,7 @@ export const settingsView = {
       floweringTime: 'Flowering Time',
       difficulty: 'Difficulty',
       type: 'Type',
+      yield: 'Yield',
     },
     sortDirections: {
       asc: 'Ascending',

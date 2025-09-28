@@ -16,6 +16,10 @@ export const strainsView = {
   selectedCount_one: '1 selected',
   selectedCount_other: '{{count}} selected',
   toggleView: 'Toggle View',
+  viewModes: {
+    list: 'List',
+    grid: 'Grid',
+  },
   difficulty: {
     easy: 'Easy',
     medium: 'Medium',
@@ -39,15 +43,27 @@ export const strainsView = {
     tips_one: '1 Tip',
     tips_other: '{{count}} Tips',
   },
+  filters: {
+    thcMax: 'THC',
+    cbdMax: 'CBD',
+    floweringTime: 'Flowering Time',
+    yield: 'Yield',
+    aromas: 'Aromas',
+    terpenes: 'Terpenes',
+    difficulty: 'Difficulty',
+    height: 'Height',
+  },
   emptyStates: {
     noResults: {
       title: 'No Results Found',
       text: 'Your filter and search settings did not match any strains. Try loosening or resetting the filters.',
     },
     myStrains: {
+      title: 'No Custom Strains',
       text: 'You haven\'t added any custom strains yet. Click "Add Strain" to get started.',
     },
     favorites: {
+      title: 'No Favorites',
       text: 'You haven\'t marked any favorites yet. Click the heart icon on a strain to add it here.',
     },
   },
@@ -83,6 +99,10 @@ export const strainsView = {
     },
     aromasPlaceholder: 'Comma-separated, e.g., Earthy, Pine',
     terpenesPlaceholder: 'Comma-separated, e.g., Myrcene',
+    yieldIndoorPlaceholder: 'e.g., 450-550 g/m²',
+    yieldOutdoorPlaceholder: 'e.g., 500-600 g/plant',
+    heightIndoorPlaceholder: 'e.g., 100-150 cm',
+    heightOutdoorPlaceholder: 'e.g., 150-200 cm',
     validation: {
       name: 'Name is required.',
       thc: 'THC must be between 0 and 50.',

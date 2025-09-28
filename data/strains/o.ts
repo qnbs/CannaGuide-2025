@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsO: Strain[] = [
     {
         "id": "og-kush",
         "name": "OG Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 75% / Sativa 25%",
         "genetics": "Chemdawg x (Lemon Thai x Hindu Kush)",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsO: Strain[] = [
     {
         "id": "ogkb-og-kush-breath",
         "name": "OGKB (OG Kush Breath)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "GSC phenotype (presumably)",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-bud",
         "name": "Orange Bud",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 65% / Indica 35%",
         "genetics": "Skunk #1 Phenotype",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-cookies",
         "name": "Orange Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Orange Juice x GSC",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-cream-sicle",
         "name": "Orange Cream Sicle",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Orange Crush x Juicy Fruit",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-eruption",
         "name": "Orange Eruption",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Unknown",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-juice",
         "name": "Orange Juice",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "California Orange x Skunk #1",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-sherbet",
         "name": "Orange Sherbet",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Orange Cream x Purple Urkle x Cherry Pie",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orange-velvet",
         "name": "Orange Velvet",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% Sativa / 50% Indica",
         "genetics": "Unknown",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsO: Strain[] = [
     {
         "id": "oreo-cake",
         "name": "Oreo Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Wedding Cake x Cookies and Cream",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsO: Strain[] = [
     {
         "id": "oreoz",
         "name": "Oreoz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Cookies and Cream x Secret Weapon",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsO: Strain[] = [
     {
         "id": "original-glue",
         "name": "Original Glue",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Chem's Sister x Sour Dubb x Chocolate Diesel",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsO: Strain[] = [
     {
         "id": "orion",
         "name": "Orion",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Blue Mammoth Auto x Blue Dream",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsO: Strain[] = [
     {
         "id": "ortega",
         "name": "Ortega",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Northern Lights #1 x Northern Lights #5",
         "floweringType": "Photoperiod",

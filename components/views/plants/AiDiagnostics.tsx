@@ -3,10 +3,16 @@ import { Card } from '@/components/common/Card';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectDiagnosticsState, selectActivePlants } from '@/stores/selectors';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CameraModal } from '@/components/common/CameraModal';
+import { useActivePlants } from '@/hooks/useSimulationBridge';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectDiagnosticsState } from '@/stores/selectors';
+// FIX: Corrected imports for Redux actions.
+import { startDiagnostics } from '@/stores/slices/aiSlice';
+import { addNotification } from '@/stores/slices/uiSlice';
+import { addJournalEntry } from '@/stores/slices/simulationSlice';
+
 
 const base64ToMimeType = (base64: string): string => {
     const signatures: Record<string, string> = {
@@ -24,13 +30,9 @@ const base64ToMimeType = (base64: string): string => {
 
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslations();
-    const { startDiagnostics, addNotification, addJournalEntry } = useAppStore(state => ({
-        startDiagnostics: state.startDiagnostics,
-        addNotification: state.addNotification,
-        addJournalEntry: state.addJournalEntry,
-    }));
-    const { isLoading, response, error } = useAppStore(selectDiagnosticsState);
-    const activePlants = useAppStore(state => selectActivePlants(state));
+    const dispatch = useAppDispatch();
+    const { isLoading, response, error } = useAppSelector(selectDiagnosticsState);
+    const activePlants = useActivePlants();
 
     const [image, setImage] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
@@ -40,13 +42,13 @@ export const AiDiagnostics: React.FC = () => {
 
     const handleFile = useCallback((file: File) => {
         if (!file.type.startsWith('image/')) {
-            addNotification(t('plantsView.aiDiagnostics.validation.imageOnly'), 'error');
+            dispatch(addNotification({ message: t('plantsView.aiDiagnostics.validation.imageOnly'), type: 'error' }));
             return;
         }
         const reader = new FileReader();
         reader.onload = () => setImage(reader.result as string);
         reader.readAsDataURL(file);
-    }, [addNotification, t]);
+    }, [dispatch, t]);
     
     const handleDrag = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); }, []);
     const handleDragIn = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }, []);
@@ -59,7 +61,7 @@ export const AiDiagnostics: React.FC = () => {
         const mimeType = base64ToMimeType(base64Data);
         const selectedPlant = activePlants.find(p => p.id === plantContextId);
         const context = selectedPlant ? { name: selectedPlant.name, age: selectedPlant.age, stage: selectedPlant.stage, notes: userNotes } : { notes: userNotes };
-        startDiagnostics(base64Data, mimeType, context);
+        dispatch(startDiagnostics({ base64Image: base64Data, mimeType, context }));
     };
 
     const handleSaveToJournal = () => {
@@ -69,8 +71,8 @@ export const AiDiagnostics: React.FC = () => {
                 **${t('plantsView.aiDiagnostics.actions')}:** ${response.immediateActions}
                 **${t('plantsView.aiDiagnostics.solution')}:** ${response.longTermSolution}
             `;
-            addJournalEntry(plantContextId, { type: 'OBSERVATION', notes: `AI Diagnosis: ${response.title}`, details: { diagnosis: content } });
-            addNotification(t('plantsView.aiDiagnostics.savedToJournal'), 'success');
+            dispatch(addJournalEntry({ plantId: plantContextId, entry: { type: 'OBSERVATION', notes: `AI Diagnosis: ${response.title}`, details: { diagnosis: content } }}));
+            dispatch(addNotification({ message: t('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
         }
     };
     

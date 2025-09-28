@@ -1,10 +1,11 @@
-import type { Strain } from '@/types';
+
+import { Strain, StrainType } from '@/types';
 
 export const strainsQ: Strain[] = [
     {
         "id": "qrazy-train",
         "name": "Qrazy Train",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Querkle x Trainwreck x Trinity x Space Queen",
         "floweringType": "Photoperiod",
@@ -14,7 +15,7 @@ export const strainsQ: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine komplexe Hybride mit einem traubenartigen, würzigen Aroma. Die Wirkung ist stark, euphorisch und entspannend, ideal für erfahrene Konsumenten.",
+        "description": "A complex hybrid with a grape-like, spicy aroma. The effect is strong, euphoric, and relaxing, ideal for experienced consumers.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -28,7 +29,7 @@ export const strainsQ: Strain[] = [
     {
         "id": "quantum-kush",
         "name": "Quantum Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 75% / Indica 25%",
         "genetics": "Sweet Irish Kush x Timewreck",
         "floweringType": "Photoperiod",
@@ -38,7 +39,7 @@ export const strainsQ: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine potente sativa-dominante Sorte, bekannt für ihren extrem hohen THC-Gehalt. Die Wirkung ist stark, zerebral und energetisierend.",
+        "description": "A potent sativa-dominant strain, known for its extremely high THC content. The effect is strong, cerebral, and energizing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -52,7 +53,7 @@ export const strainsQ: Strain[] = [
     {
         "id": "quattro-kush",
         "name": "Quattro Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "707 Headband x Triangle Kush x SFV OG Kush",
         "floweringType": "Photoperiod",
@@ -62,7 +63,7 @@ export const strainsQ: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine indica-dominante Sorte mit einem starken, dieselartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend.",
+        "description": "An indica-dominant strain with a strong, diesel-like, and earthy aroma. The effect is strong, relaxing, and long-lasting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -76,7 +77,7 @@ export const strainsQ: Strain[] = [
     {
         "id": "queen-mother",
         "name": "Queen Mother",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 75% / Indica 25%",
         "genetics": "La Reunion x Congo",
         "floweringType": "Photoperiod",
@@ -86,7 +87,7 @@ export const strainsQ: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10,
         "floweringTimeRange": "10",
-        "description": "Eine sativa-dominante Sorte mit einem würzigen, weihrauchartigen Aroma. Die Wirkung ist erhebend, zerebral und energetisierend.",
+        "description": "A sativa-dominant strain with a spicy, incense-like aroma. The effect is uplifting, cerebral, and energizing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -100,7 +101,7 @@ export const strainsQ: Strain[] = [
     {
         "id": "queens-sangria",
         "name": "Queen's Sangria",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Mimosa x Royal Kush",
         "floweringType": "Photoperiod",
@@ -110,7 +111,7 @@ export const strainsQ: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10,
         "floweringTimeRange": "10",
-        "description": "Eine ausgewogene Hybride mit einem süßen, zitrusartigen und traubenartigen Aroma. Die Wirkung ist entspannend, glücklich und erhebend.",
+        "description": "A balanced hybrid with a sweet, citrusy, and grape-like aroma. The effect is relaxing, happy, and uplifting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -124,7 +125,7 @@ export const strainsQ: Strain[] = [
     {
         "id": "querkle",
         "name": "Querkle",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Urkle x Space Queen",
         "floweringType": "Photoperiod",
@@ -134,7 +135,7 @@ export const strainsQ: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine indica-dominante Sorte mit einem süßen Trauben- und Beerenaroma. Die Wirkung ist stark entspannend und ideal bei Schmerzen und Schlaflosigkeit.",
+        "description": "An indica-dominant strain with a sweet grape and berry aroma. The effect is strongly relaxing and ideal for pain and insomnia.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",

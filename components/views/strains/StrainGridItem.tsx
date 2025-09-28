@@ -1,12 +1,14 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Strain } from '@/types';
-import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectHasAvailableSlots } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
+import { toggleFavorite } from '@/stores/slices/favoritesSlice';
+import { openAddModal, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -20,13 +22,10 @@ interface StrainGridItemProps {
 
 const StrainGridItem: React.FC<StrainGridItemProps> = ({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index }) => {
     const { t } = useTranslations();
-    const { toggleFavorite, isFavorite, openAddModal, initiateGrowFromStrainList } = useAppStore(state => ({
-        toggleFavorite: state.toggleFavorite,
-        isFavorite: state.favoriteIds.has(strain.id),
-        openAddModal: state.openAddModal,
-        initiateGrowFromStrainList: state.initiateGrowFromStrainList,
-    }));
-    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
+    const dispatch = useAppDispatch();
+    const favoriteIds = useAppSelector(selectFavoriteIds);
+    const isFavorite = favoriteIds.has(strain.id);
+    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
     const typeClasses: Record<string, string> = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
@@ -54,10 +53,10 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({ strain, onSelect, isSel
                 </div>
             </div>
             <div className="p-2 bg-slate-900/50 border-t border-slate-700/50 flex gap-1 justify-center">
-                <Button variant="secondary" onClick={(e) => { e.stopPropagation(); toggleFavorite(strain.id); }} aria-pressed={isFavorite} className={`favorite-btn-glow !p-1.5 ${isFavorite ? 'is-favorite' : ''}`}><PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" /></Button>
-                <Button onClick={(e) => { e.stopPropagation(); initiateGrowFromStrainList(strain); }} disabled={!hasAvailableSlots} size="sm" className="!p-1.5" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><PhosphorIcons.Plant className="w-4 h-4" /></Button>
+                <Button variant="secondary" onClick={(e) => { e.stopPropagation(); dispatch(toggleFavorite(strain.id)); }} aria-pressed={isFavorite} className={`favorite-btn-glow !p-1.5 ${isFavorite ? 'is-favorite' : ''}`}><PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" /></Button>
+                <Button onClick={(e) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots} size="sm" className="!p-1.5" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><PhosphorIcons.Plant className="w-4 h-4" /></Button>
                 {isUserStrain && (<>
-                    <Button variant="secondary" onClick={(e) => {e.stopPropagation(); openAddModal(strain)}} size="sm" className="!p-1.5"><PhosphorIcons.PencilSimple className="w-4 h-4" /></Button>
+                    <Button variant="secondary" onClick={(e) => {e.stopPropagation(); dispatch(openAddModal(strain))}} size="sm" className="!p-1.5"><PhosphorIcons.PencilSimple className="w-4 h-4" /></Button>
                     <Button variant="danger" onClick={(e) => {e.stopPropagation(); onDelete(strain.id)}} size="sm" className="!p-1.5"><PhosphorIcons.TrashSimple className="w-4 h-4" /></Button>
                 </>)}
             </div>
@@ -65,4 +64,4 @@ const StrainGridItem: React.FC<StrainGridItemProps> = ({ strain, onSelect, isSel
     );
 };
 
-export default StrainGridItem;
+export default memo(StrainGridItem);

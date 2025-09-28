@@ -1,61 +1,96 @@
-import { ArchivedMentorResponse, AIResponse, SavedStrainTip, ArchivedAdvisorResponse, Strain } from '@/types';
-import type { StoreSet, StoreGet } from '@/stores/useAppStore';
+import { ArchivedAdvisorResponse, ArchivedMentorResponse, AIResponse, Plant } from '@/types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface ArchivesSlice {
+export interface ArchivesState {
     archivedMentorResponses: ArchivedMentorResponse[];
     archivedAdvisorResponses: Record<string, ArchivedAdvisorResponse[]>;
-    savedStrainTips: SavedStrainTip[];
-    addArchivedMentorResponse: (response: Omit<ArchivedMentorResponse, 'id' | 'createdAt'>) => void;
-    updateArchivedMentorResponse: (updatedResponse: ArchivedMentorResponse) => void;
-    deleteArchivedMentorResponse: (responseId: string) => void;
-    addArchivedAdvisorResponse: (plantId: string, response: AIResponse, query: string) => void;
-    updateArchivedAdvisorResponse: (updatedResponse: ArchivedAdvisorResponse) => void;
-    deleteArchivedAdvisorResponse: (plantId: string, responseId: string) => void;
-    addStrainTip: (strain: Strain, tip: AIResponse) => void;
-    updateStrainTip: (updatedTip: SavedStrainTip) => void;
-    deleteStrainTip: (tipId: string) => void;
 }
 
-export const createArchivesSlice = (set: StoreSet, get: StoreGet): ArchivesSlice => ({
+const initialState: ArchivesState = {
     archivedMentorResponses: [],
     archivedAdvisorResponses: {},
-    savedStrainTips: [],
-    addArchivedMentorResponse: (response) => {
-        const newResponse: ArchivedMentorResponse = { ...response, id: `mentor-${Date.now()}`, createdAt: Date.now() };
-        set(state => { state.archivedMentorResponses.push(newResponse) });
+};
+
+const archivesSlice = createSlice({
+    name: 'archives',
+    initialState,
+    reducers: {
+        addArchivedMentorResponse: (state, action: PayloadAction<Omit<ArchivedMentorResponse, 'id' | 'createdAt'>>) => {
+            const response = action.payload;
+            if (!response || typeof response.title !== 'string' || !response.title.trim() || typeof response.content !== 'string' || !response.content.trim()) {
+                console.error('[ArchivesSlice] Attempted to add an invalid mentor response. Data was discarded.', response);
+                return;
+            }
+            const newResponse: ArchivedMentorResponse = {
+                ...response,
+                id: `mentor-${Date.now()}`,
+                createdAt: Date.now(),
+            };
+            state.archivedMentorResponses.push(newResponse);
+        },
+        updateArchivedMentorResponse: (state, action: PayloadAction<ArchivedMentorResponse>) => {
+            const index = state.archivedMentorResponses.findIndex(r => r.id === action.payload.id);
+            if (index !== -1) {
+                state.archivedMentorResponses[index] = action.payload;
+            }
+        },
+        deleteArchivedMentorResponse: (state, action: PayloadAction<string>) => {
+            state.archivedMentorResponses = state.archivedMentorResponses.filter(r => r.id !== action.payload);
+        },
+        addArchivedAdvisorResponse: (state, action: PayloadAction<{ plant: Plant, response: AIResponse, query: string }>) => {
+            const { plant, response, query } = action.payload;
+            if (!plant || !response || typeof response.title !== 'string' || !response.title.trim() || typeof response.content !== 'string' || !response.content.trim()) {
+                 console.error('[ArchivesSlice] Attempted to add an invalid advisor response. Data was discarded.', { plant, response });
+                return;
+            }
+            const newResponse: ArchivedAdvisorResponse = {
+                ...response,
+                id: `advisor-${plant.id}-${Date.now()}`,
+                createdAt: Date.now(),
+                plantId: plant.id,
+                plantStage: plant.stage,
+                query: query,
+            };
+            if (!state.archivedAdvisorResponses[plant.id]) {
+                state.archivedAdvisorResponses[plant.id] = [];
+            }
+            state.archivedAdvisorResponses[plant.id].push(newResponse);
+        },
+        updateArchivedAdvisorResponse: (state, action: PayloadAction<ArchivedAdvisorResponse>) => {
+            const updatedResponse = action.payload;
+            const plantArchive = state.archivedAdvisorResponses[updatedResponse.plantId];
+            if (plantArchive) {
+                const index = plantArchive.findIndex(r => r.id === updatedResponse.id);
+                if (index !== -1) {
+                    plantArchive[index] = updatedResponse;
+                }
+            }
+        },
+        deleteArchivedAdvisorResponse: (state, action: PayloadAction<{plantId: string, responseId: string}>) => {
+            const { plantId, responseId } = action.payload;
+            const plantArchive = state.archivedAdvisorResponses[plantId];
+            if (plantArchive) {
+                state.archivedAdvisorResponses[plantId] = plantArchive.filter(r => r.id !== responseId);
+            }
+        },
+        setArchivedMentorResponses: (state, action: PayloadAction<ArchivedMentorResponse[]>) => {
+            state.archivedMentorResponses = action.payload;
+        },
+        setArchivedAdvisorResponses: (state, action: PayloadAction<Record<string, ArchivedAdvisorResponse[]>>) => {
+            state.archivedAdvisorResponses = action.payload;
+        },
     },
-    updateArchivedMentorResponse: (updatedResponse) => set(state => {
-        const index = state.archivedMentorResponses.findIndex(r => r.id === updatedResponse.id);
-        if (index !== -1) state.archivedMentorResponses[index] = updatedResponse;
-    }),
-    deleteArchivedMentorResponse: (responseId) => set(state => ({ archivedMentorResponses: state.archivedMentorResponses.filter(r => r.id !== responseId) })),
-    addArchivedAdvisorResponse: (plantId, response, query) => {
-        const plant = get().plants[plantId];
-        if (!plant) return;
-        const newResponse: ArchivedAdvisorResponse = { ...response, id: `advisor-${plantId}-${Date.now()}`, createdAt: Date.now(), plantId, plantStage: plant.stage, query };
-        set(state => {
-            if (!state.archivedAdvisorResponses[plantId]) state.archivedAdvisorResponses[plantId] = [];
-            state.archivedAdvisorResponses[plantId].push(newResponse);
-        });
-    },
-    updateArchivedAdvisorResponse: (updatedResponse) => set(state => {
-        const { plantId } = updatedResponse;
-        const archive = state.archivedAdvisorResponses[plantId];
-        if (!archive) return;
-        const index = archive.findIndex(r => r.id === updatedResponse.id);
-        if (index !== -1) archive[index] = updatedResponse;
-    }),
-    deleteArchivedAdvisorResponse: (plantId, responseId) => set(state => {
-        const archive = state.archivedAdvisorResponses[plantId];
-        if (archive) state.archivedAdvisorResponses[plantId] = archive.filter(r => r.id !== responseId);
-    }),
-    addStrainTip: (strain, tip) => {
-        const newTip: SavedStrainTip = { ...tip, id: `tip-${strain.id}-${Date.now()}`, createdAt: Date.now(), strainId: strain.id, strainName: strain.name };
-        set(state => { state.savedStrainTips.push(newTip) });
-    },
-    updateStrainTip: (updatedTip) => set(state => {
-        const index = state.savedStrainTips.findIndex(t => t.id === updatedTip.id);
-        if (index !== -1) state.savedStrainTips[index] = updatedTip;
-    }),
-    deleteStrainTip: (tipId) => set(state => ({ savedStrainTips: state.savedStrainTips.filter(t => t.id !== tipId) })),
 });
+
+export const {
+    addArchivedMentorResponse,
+    updateArchivedMentorResponse,
+    deleteArchivedMentorResponse,
+    addArchivedAdvisorResponse,
+    updateArchivedAdvisorResponse,
+    deleteArchivedAdvisorResponse,
+    setArchivedMentorResponses,
+    setArchivedAdvisorResponses,
+} = archivesSlice.actions;
+
+export default archivesSlice.reducer;

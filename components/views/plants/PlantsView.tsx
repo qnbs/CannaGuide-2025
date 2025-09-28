@@ -1,20 +1,21 @@
 import React, { useMemo } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { PlantSlot } from '@/components/views/plants/PlantSlot';
-import { DetailedPlantView } from '@/components/views/plants/DetailedPlantView';
-import { TipOfTheDay } from '@/components/views/plants/TipOfTheDay';
-import { GardenVitals } from '@/components/views/plants/DashboardSummary';
-import { TasksAndWarnings } from '@/components/views/plants/TasksAndWarnings';
-import { useTranslations } from '@/hooks/useTranslations';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Card } from '@/components/common/Card';
-import { GlobalAdvisorArchiveView } from '@/components/views/plants/GlobalAdvisorArchiveView';
-import { InlineStrainSelector } from '@/components/views/plants/InlineStrainSelector';
-import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal';
-import { GrowConfirmationModal } from '@/components/views/plants/GrowConfirmationModal';
-import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '@/stores/selectors';
-import { AiDiagnostics } from '@/components/views/plants/AiDiagnostics';
-import { Button } from '@/components/common/Button';
+// FIX: Changed import paths to be relative
+import { useAppStore } from '../../stores/useAppStore';
+import { PlantSlot } from './plants/PlantSlot';
+import { DetailedPlantView } from './plants/DetailedPlantView';
+import { TipOfTheDay } from './plants/TipOfTheDay';
+import { GardenVitals } from './plants/DashboardSummary';
+import { TasksAndWarnings } from './plants/TasksAndWarnings';
+import { useTranslations } from '../../hooks/useTranslations';
+import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { Card } from '../../common/Card';
+import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
+import { InlineStrainSelector } from './plants/InlineStrainSelector';
+import { GrowSetupModal } from './plants/GrowSetupModal';
+import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
+import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '../../stores/slices/plantSlice';
+import { AiDiagnostics } from './plants/AiDiagnostics';
+import { Button } from '../../common/Button';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslations();
@@ -31,33 +32,22 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { waterAllPlants, setSelectedPlantId } = useAppStore(state => ({
-        waterAllPlants: state.waterAllPlants,
-        setSelectedPlantId: state.setSelectedPlantId,
-    }));
+    const { t } = useTranslations();
     
-    const {
-        initiatingGrowForSlot, strainForNewGrow, isGrowSetupModalOpen, isConfirmationModalOpen,
-        startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow,
-    } = useAppStore(state => ({
-        initiatingGrowForSlot: state.initiatingGrowForSlot,
-        strainForNewGrow: state.strainForNewGrow,
-        isGrowSetupModalOpen: state.isGrowSetupModalOpen,
-        isConfirmationModalOpen: state.isConfirmationModalOpen,
-        startGrowInSlot: state.startGrowInSlot,
-        selectStrainForGrow: state.selectStrainForGrow,
-        confirmSetupAndShowConfirmation: state.confirmSetupAndShowConfirmation,
-        cancelNewGrow: state.cancelNewGrow,
-    }));
-
+    // Optimized State Selection
+    const { waterAllPlants, setSelectedPlantId, startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } = useAppStore.getState();
+    
+    const initiatingGrowForSlot = useAppStore(state => state.initiatingGrowForSlot);
+    const strainForNewGrow = useAppStore(state => state.strainForNewGrow);
+    const isGrowSetupModalOpen = useAppStore(state => state.isGrowSetupModalOpen);
+    const isConfirmationModalOpen = useAppStore(state => state.isConfirmationModalOpen);
     const plantSlots = useAppStore(selectPlantSlots);
     const plantsRecord = useAppStore(state => state.plants);
-    const { t } = useTranslations();
     const selectedPlantId = useAppStore(selectSelectedPlantId);
     
-    const activePlants = useAppStore(state => selectActivePlants(state));
-    const allTasks = useAppStore(state => selectOpenTasksSummary(state));
-    const allProblems = useAppStore(state => selectActiveProblemsSummary(state));
+    const activePlants = useAppStore(selectActivePlants);
+    const allTasks = useAppStore(selectOpenTasksSummary);
+    const allProblems = useAppStore(selectActiveProblemsSummary);
     
     const selectedPlant = useMemo(() => {
         if (!selectedPlantId) return null;

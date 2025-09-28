@@ -26,8 +26,8 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
     const favMenuRef = useOutsideClick<HTMLDivElement>(() => setIsFavMenuOpen(false));
 
     return (
-        <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl z-20">
-            <div className="glass-pane rounded-lg p-2 flex items-center justify-between gap-2 shadow-2xl animate-slide-in-up">
+        <div className="fixed bottom-[72px] left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-2xl z-20 animate-slide-in-up">
+            <div className="glass-pane rounded-lg p-2 flex items-center justify-between gap-2 shadow-2xl">
                 <div className="flex items-center gap-3">
                     <button onClick={onClearSelection} className="p-2 rounded-full hover:bg-slate-700 transition-colors" aria-label={t('strainsView.clearSelection')}>
                         <PhosphorIcons.X className="w-5 h-5 text-slate-300" />

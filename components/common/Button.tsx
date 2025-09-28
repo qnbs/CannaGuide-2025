@@ -3,7 +3,7 @@ import React from 'react';
 // Define own props to be used in the component
 type ButtonOwnProps<E extends React.ElementType> = {
     children?: React.ReactNode;
-    variant?: 'primary' | 'secondary' | 'danger';
+    variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
     size?: 'sm' | 'base' | 'lg';
     as?: E;
     className?: string;
@@ -23,7 +23,12 @@ export const Button = <E extends React.ElementType = typeof defaultElement>({
     as,
     ...props
 }: ButtonProps<E>) => {
-    // The component to render is either the one passed in `as` or the default
+    // The component to render is either the one passed in `as` or the default.
+    // The use of 'any' here is a deliberate and controlled type assertion.
+    // This is a widely recognized pattern for creating polymorphic components in React with TypeScript.
+    // It allows the 'Button' to be rendered as any valid HTML element (e.g., 'a', 'div')
+    // while correctly inheriting and type-checking the props of that element,
+    // which would be lost with a more restrictive type.
     const Component: any = as || defaultElement;
 
     const baseClasses = "rounded-lg font-semibold transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:saturate-50";
@@ -32,6 +37,7 @@ export const Button = <E extends React.ElementType = typeof defaultElement>({
         primary: "bg-primary-500 hover:bg-primary-400 focus-visible:ring-primary-400 text-on-accent font-bold shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/30",
         secondary: "bg-slate-700 hover:bg-slate-600 focus-visible:ring-primary-500 text-slate-100 border border-slate-600",
         danger: "bg-red-600 hover:bg-red-700 focus-visible:ring-red-500 text-white",
+        ghost: "bg-transparent hover:bg-slate-700 focus-visible:ring-primary-500 text-slate-300 hover:text-primary-300",
     };
     
     const sizeClasses = {

@@ -4,10 +4,11 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { exportService } from '@/services/exportService';
-import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { BulkActionsBar } from './BulkActionsBar';
+import { useAppDispatch } from '@/stores/store';
+import { addNotification } from '@/stores/slices/uiSlice';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -18,7 +19,7 @@ interface ExportsManagerViewProps {
 }
 
 export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, deleteExport, updateExport, allStrains, onOpenExportModal }) => {
-    const addNotification = useAppStore(state => state.addNotification);
+    const dispatch = useAppDispatch();
     const { t } = useTranslations();
     const [editingExport, setEditingExport] = useState<SavedExport | null>(null);
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
@@ -26,35 +27,33 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     const handleRedownload = (savedExport: SavedExport) => {
         const strainsToExport = allStrains.filter(s => savedExport.strainIds.includes(s.id));
         if (strainsToExport.length === 0) {
-            addNotification(t('strainsView.exportsManager.strainsNotFound'), 'error');
+            dispatch(addNotification({ message: t('strainsView.exportsManager.strainsNotFound'), type: 'error' }));
             return;
         }
 
         const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt|xml)$/, '');
-
-        exportService.exportStrains(strainsToExport, savedExport.format, fileNameWithoutExt, t);
-        
-        addNotification(t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), 'success');
+        exportService.exportStrains(strainsToExport, savedExport.format, fileNameWithoutExt);
+        dispatch(addNotification({ message: t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), type: 'success' }));
     };
     
     const handleDelete = (id: string) => {
         if (window.confirm(t('strainsView.exportsManager.deleteConfirm'))) {
             deleteExport(id);
-            addNotification(t('strainsView.exportsManager.exportRemoved'), 'info');
+            dispatch(addNotification({ message: t('strainsView.exportsManager.exportRemoved'), type: 'info' }));
         }
     };
 
     const handleBulkDelete = () => {
          if (window.confirm(t('strainsView.exportsManager.deleteConfirmPlural', { count: selectedIds.size }))) {
             selectedIds.forEach(id => deleteExport(id));
-            addNotification(t('strainsView.exportsManager.deleteSuccessPlural', { count: selectedIds.size }), 'success');
+            dispatch(addNotification({ message: t('strainsView.exportsManager.deleteSuccessPlural', { count: selectedIds.size }), type: 'success' }));
             setSelectedIds(new Set());
         }
     };
 
     const handleUpdate = (updated: SavedExport) => {
         updateExport(updated);
-        addNotification(t('strainsView.exportsManager.updateExportSuccess', { name: updated.name }), 'success');
+        dispatch(addNotification({ message: t('strainsView.exportsManager.updateExportSuccess', { name: updated.name }), type: 'success' }));
         setEditingExport(null);
     };
     
@@ -77,7 +76,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     const sortedExports = [...savedExports].sort((a, b) => b.createdAt - a.createdAt);
 
     return (
-        <div className="mt-4">
+        <div className="mt-4 animate-fade-in">
             {editingExport && <EditResponseModal
                 response={{ ...editingExport, title: editingExport.name, content: editingExport.notes || '' }}
                 onClose={() => setEditingExport(null)}
@@ -112,7 +111,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                         </div>
                         {sortedExports.map(item => (
                             <div key={item.id} className={`p-3 rounded-lg flex items-center gap-3 transition-colors ${selectedIds.has(item.id) ? 'bg-primary-900/40' : 'bg-slate-800'}`}>
-                                 <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                                 <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
                                 <div className="flex-grow">
                                     <p className="font-bold text-slate-100">{item.name}</p>
                                     <div className="text-xs text-slate-400 flex items-center gap-3 flex-wrap">

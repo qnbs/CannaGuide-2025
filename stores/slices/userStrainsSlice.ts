@@ -1,32 +1,38 @@
-import { Strain } from '@/types';
-import type { StoreSet, StoreGet } from '@/stores/useAppStore';
+import { Strain } from '../../types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface UserStrainsSlice {
+export interface UserStrainsState {
     userStrains: Strain[];
-    isUserStrain: (strainId: string) => boolean;
-    addUserStrain: (strain: Strain) => boolean; // returns success status
-    updateUserStrain: (strain: Strain) => void;
-    deleteUserStrain: (strainId: string) => void;
 }
 
-export const createUserStrainsSlice = (set: StoreSet, get: StoreGet): UserStrainsSlice => ({
+const initialState: UserStrainsState = {
     userStrains: [],
-    isUserStrain: (strainId) => get().userStrains.some(s => s.id === strainId),
-    addUserStrain: (strain) => {
-        const isDuplicate = get().userStrains.some(s => s.name.toLowerCase() === strain.name.toLowerCase());
-        if (isDuplicate) {
-            return false; // Signal failure to the component
-        }
-        set(state => { state.userStrains.push(strain) });
-        return true; // Signal success
-    },
-    updateUserStrain: (updatedStrain) => {
-        set(state => {
-            const index = state.userStrains.findIndex(s => s.id === updatedStrain.id);
+};
+
+const userStrainsSlice = createSlice({
+    name: 'userStrains',
+    initialState,
+    reducers: {
+        addUserStrain: (state, action: PayloadAction<Strain>) => {
+            // Logic for preventing duplicates should be handled in the component or a thunk
+            state.userStrains.push(action.payload);
+        },
+        updateUserStrain: (state, action: PayloadAction<Strain>) => {
+            const index = state.userStrains.findIndex(s => s.id === action.payload.id);
             if (index !== -1) {
-                state.userStrains[index] = updatedStrain;
+                state.userStrains[index] = action.payload;
             }
-        });
-    },
-    deleteUserStrain: (strainId) => set(state => ({ userStrains: state.userStrains.filter(s => s.id !== strainId) })),
+        },
+        deleteUserStrain: (state, action: PayloadAction<string>) => {
+            state.userStrains = state.userStrains.filter(s => s.id !== action.payload);
+        },
+         // For migration purposes
+        setUserStrains: (state, action: PayloadAction<Strain[]>) => {
+            state.userStrains = action.payload;
+        }
+    }
 });
+
+
+export const { addUserStrain, updateUserStrain, deleteUserStrain, setUserStrains } = userStrainsSlice.actions;
+export default userStrainsSlice.reducer;

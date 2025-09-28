@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsY: Strain[] = [
     {
         "id": "ya-hemi",
         "name": "Ya Hemi",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Melonatta x Project 4516",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsY: Strain[] = [
     {
         "id": "yeti-og",
         "name": "Yeti OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "OG Kush x an unknown strain",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsY: Strain[] = [
     {
         "id": "yumboldt",
         "name": "Yumboldt",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 100% Indica",
         "genetics": "Humboldt County, CA Landrace",
         "floweringType": "Photoperiod",

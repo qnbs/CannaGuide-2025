@@ -18,28 +18,28 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
     }, [journal, journalFilter]);
     
     const journalTypeIcons: Record<JournalEntryType, React.ReactNode> = {
-        WATERING: <PhosphorIcons.Drop />,
-        FEEDING: <PhosphorIcons.TestTube />,
-        TRAINING: <PhosphorIcons.Scissors />,
-        OBSERVATION: <PhosphorIcons.MagnifyingGlass />,
-        SYSTEM: <PhosphorIcons.Gear />,
-        PHOTO: <PhosphorIcons.Camera />,
-        PEST_CONTROL: <PhosphorIcons.WarningCircle />,
-        ENVIRONMENT: <PhosphorIcons.Fan />,
-        AMENDMENT: <PhosphorIcons.Flask />,
+        [JournalEntryType.Watering]: <PhosphorIcons.Drop />,
+        [JournalEntryType.Feeding]: <PhosphorIcons.TestTube />,
+        [JournalEntryType.Training]: <PhosphorIcons.Scissors />,
+        [JournalEntryType.Observation]: <PhosphorIcons.MagnifyingGlass />,
+        [JournalEntryType.System]: <PhosphorIcons.Gear />,
+        [JournalEntryType.Photo]: <PhosphorIcons.Camera />,
+        [JournalEntryType.PestControl]: <PhosphorIcons.WarningCircle />,
+        [JournalEntryType.Environment]: <PhosphorIcons.Fan />,
+        [JournalEntryType.Amendment]: <PhosphorIcons.Flask />,
     };
 
     const journalFilterOptions: { label: string, value: JournalEntryType | 'ALL', icon: React.ReactNode }[] = [
         { label: t('common.all'), value: 'ALL', icon: <PhosphorIcons.ListChecks /> },
-        { label: t('plantsView.detailedView.journalFilters.watering'), value: 'WATERING', icon: <PhosphorIcons.Drop /> },
-        { label: t('plantsView.detailedView.journalFilters.feeding'), value: 'FEEDING', icon: <PhosphorIcons.TestTube /> },
-        { label: t('plantsView.detailedView.journalFilters.training'), value: 'TRAINING', icon: <PhosphorIcons.Scissors /> },
-        { label: t('plantsView.detailedView.journalFilters.observation'), value: 'OBSERVATION', icon: <PhosphorIcons.MagnifyingGlass /> },
-        { label: t('plantsView.detailedView.journalFilters.pestControl'), value: 'PEST_CONTROL', icon: <PhosphorIcons.WarningCircle /> },
-        { label: t('plantsView.detailedView.journalFilters.amendment'), value: 'AMENDMENT', icon: <PhosphorIcons.Flask /> },
-        { label: t('plantsView.detailedView.journalFilters.system'), value: 'SYSTEM', icon: <PhosphorIcons.Gear /> },
-        { label: t('plantsView.detailedView.journalFilters.photo'), value: 'PHOTO', icon: <PhosphorIcons.Camera /> },
-        { label: t('plantsView.detailedView.journalFilters.environment'), value: 'ENVIRONMENT', icon: <PhosphorIcons.Fan /> },
+        { label: t('plantsView.detailedView.journalFilters.watering'), value: JournalEntryType.Watering, icon: <PhosphorIcons.Drop /> },
+        { label: t('plantsView.detailedView.journalFilters.feeding'), value: JournalEntryType.Feeding, icon: <PhosphorIcons.TestTube /> },
+        { label: t('plantsView.detailedView.journalFilters.training'), value: JournalEntryType.Training, icon: <PhosphorIcons.Scissors /> },
+        { label: t('plantsView.detailedView.journalFilters.observation'), value: JournalEntryType.Observation, icon: <PhosphorIcons.MagnifyingGlass /> },
+        { label: t('plantsView.detailedView.journalFilters.pestControl'), value: JournalEntryType.PestControl, icon: <PhosphorIcons.WarningCircle /> },
+        { label: t('plantsView.detailedView.journalFilters.amendment'), value: JournalEntryType.Amendment, icon: <PhosphorIcons.Flask /> },
+        { label: t('plantsView.detailedView.journalFilters.system'), value: JournalEntryType.System, icon: <PhosphorIcons.Gear /> },
+        { label: t('plantsView.detailedView.journalFilters.photo'), value: JournalEntryType.Photo, icon: <PhosphorIcons.Camera /> },
+        { label: t('plantsView.detailedView.journalFilters.environment'), value: JournalEntryType.Environment, icon: <PhosphorIcons.Fan /> },
     ];
 
     return (

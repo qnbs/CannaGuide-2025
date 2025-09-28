@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsC: Strain[] = [
     {
         "id": "cactus-breath",
         "name": "Cactus Breath",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Cactus x Mendo Breath",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cactus-cooler",
         "name": "Cactus Cooler",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Blue Dream x OG Kush",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cake-bomb",
         "name": "Cake Bomb",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Do-Si-Dos x PCS1",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cali-o-california-orange",
         "name": "Cali-O (California Orange)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "California Orange (phenotype)",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsC: Strain[] = [
     {
         "id": "candy-jack",
         "name": "Candy Jack",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Jack Herer x Skunk #1",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsC: Strain[] = [
     {
         "id": "candyland",
         "name": "Candyland",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Sativa / 25% Indica",
         "genetics": "Granddaddy Purple x Bay Platinum Cookies",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cannalope-haze",
         "name": "Cannalope Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 95% Sativa / 5% Indica",
         "genetics": "Haze Brothers x Mexican Landrace",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cannatonic",
         "name": "Cannatonic",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica (CBD Dominant)",
         "genetics": "MK Ultra x G13 Haze",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cap-junky",
         "name": "Cap Junky",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Alien Cookies x Kush Mints #11",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsC: Strain[] = [
     {
         "id": "captain-morgan",
         "name": "Captain Morgan",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Blueberry x Gupta Kush",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsC: Strain[] = [
     {
         "id": "captains-cake",
         "name": "Captain's Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "GSC x White Fire Alien OG",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsC: Strain[] = [
     {
         "id": "carbon-fiber",
         "name": "Carbon Fiber",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Grape Pie x Biscotti x Cookies and Cream",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsC: Strain[] = [
     {
         "id": "caramelo",
         "name": "Caramelo",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Lavender x Lavender",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsC: Strain[] = [
     {
         "id": "casey-jones",
         "name": "Casey Jones",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Trainwreck x Sour Diesel x Thai",
         "floweringType": "Photoperiod",
@@ -340,7 +340,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cat-piss",
         "name": "Cat Piss",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Super Silver Haze (phenotype)",
         "floweringType": "Photoperiod",
@@ -364,7 +364,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cataract-kush",
         "name": "Cataract Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 99% Indica / 1% Sativa",
         "genetics": "LA Confidential x OG Kush",
         "floweringType": "Photoperiod",
@@ -388,7 +388,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cbd-critical-cure-girl-time",
         "name": "CBD Critical Cure (Girl Time)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa (CBD Dominant)",
         "genetics": "Critical Kush x Shanti Baba's CBD Enhanced Strain",
         "floweringType": "Photoperiod",
@@ -412,7 +412,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cbd-therapy",
         "name": "CBD Therapy",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica (CBD Dominant)",
         "genetics": "Unknown CBD-rich cross",
         "floweringType": "Photoperiod",
@@ -436,7 +436,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cereal-a-la-mode",
         "name": "Cereal a la Mode",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Cereal Milk x Georgia Pie",
         "floweringType": "Photoperiod",
@@ -460,7 +460,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cereal-milk",
         "name": "Cereal Milk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "(GSC x Cherry Pie) x Snowman",
         "floweringType": "Photoperiod",
@@ -484,7 +484,7 @@ export const strainsC: Strain[] = [
     {
         "id": "charlie-sheen",
         "name": "Charlie Sheen",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "OG Kush x Green Crack x Blue Dream",
         "floweringType": "Photoperiod",
@@ -508,7 +508,7 @@ export const strainsC: Strain[] = [
     {
         "id": "charlottes-web",
         "name": "Charlottes Web",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica (CBD Dominant)",
         "genetics": "Unknown Hemp Strain",
         "floweringType": "Photoperiod",
@@ -532,7 +532,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cheese",
         "name": "Cheese",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Skunk #1 (phenotype)",
         "floweringType": "Photoperiod",
@@ -556,7 +556,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cheese-haze",
         "name": "Cheese Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Cheese x Haze",
         "floweringType": "Photoperiod",
@@ -580,7 +580,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cheesecake",
         "name": "Cheesecake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Cheese x unknown strain",
         "floweringType": "Photoperiod",
@@ -604,7 +604,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cheetah-piss",
         "name": "Cheetah Piss",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Lemonnade x Gelato 42 x London Poundcake 97",
         "floweringType": "Photoperiod",
@@ -628,7 +628,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chem-sis",
         "name": "Chem Sis",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Chemdawg (phenotype)",
         "floweringType": "Photoperiod",
@@ -652,7 +652,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chemdawg",
         "name": "Chemdawg",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 55% Indica / 45% Sativa",
         "genetics": "Unknown (presumed Nepalese Sativa x Thai Sativa)",
         "floweringType": "Photoperiod",
@@ -676,7 +676,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chemdawg-91",
         "name": "Chemdawg 91",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Chemdawg (phenotype)",
         "floweringType": "Photoperiod",
@@ -700,7 +700,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chemdog-millionaire",
         "name": "Chemdog Millionaire",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Chemdawg x Gupta Kush",
         "floweringType": "Photoperiod",
@@ -724,7 +724,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cherry-ak-47",
         "name": "Cherry AK-47",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "AK-47 (cherry phenotype)",
         "floweringType": "Photoperiod",
@@ -748,7 +748,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cherry-pie",
         "name": "Cherry Pie",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Granddaddy Purple x Durban Poison",
         "floweringType": "Photoperiod",
@@ -772,7 +772,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chiquita-banana",
         "name": "Chiquita Banana",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "OG Kush x Banana",
         "floweringType": "Photoperiod",
@@ -796,7 +796,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chocolate-thai",
         "name": "Chocolate Thai",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Thai Landrace",
         "floweringType": "Photoperiod",
@@ -820,7 +820,7 @@ export const strainsC: Strain[] = [
     {
         "id": "chocolope",
         "name": "Chocolope",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 95% Sativa / 5% Indica",
         "genetics": "Chocolate Thai x Cannalope Haze",
         "floweringType": "Photoperiod",
@@ -844,7 +844,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cinderella-99",
         "name": "Cinderella 99",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Sativa / 15% Indica",
         "genetics": "Jack Herer x Shiva Skunk",
         "floweringType": "Photoperiod",
@@ -868,7 +868,7 @@ export const strainsC: Strain[] = [
     {
         "id": "citradelic-sunset",
         "name": "Citradelic Sunset",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Ghost Train Haze x Mandarin Sunset",
         "floweringType": "Photoperiod",
@@ -892,7 +892,7 @@ export const strainsC: Strain[] = [
     {
         "id": "colombian-gold",
         "name": "Colombian Gold",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Colombian Landrace",
         "floweringType": "Photoperiod",
@@ -916,7 +916,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cosmic-charlie",
         "name": "Cosmic Charlie",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "LSD x Green Crack",
         "floweringType": "Photoperiod",
@@ -940,7 +940,7 @@ export const strainsC: Strain[] = [
     {
         "id": "colt-45",
         "name": "Colt 45",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Unknown",
         "floweringType": "Photoperiod",
@@ -964,7 +964,7 @@ export const strainsC: Strain[] = [
     {
         "id": "congo",
         "name": "Congo",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Congo Pointe Noire x (Congo #3 x Bangi Haze)",
         "floweringType": "Photoperiod",
@@ -988,7 +988,7 @@ export const strainsC: Strain[] = [
     {
         "id": "cookies-and-cream",
         "name": "Cookies and Cream",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "GSC x Starfighter",
         "floweringType": "Photoperiod",
@@ -1012,7 +1012,7 @@ export const strainsC: Strain[] = [
     {
         "id": "critical-mass",
         "name": "Critical Mass",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Afghani x Skunk #1",
         "floweringType": "Photoperiod",
@@ -1033,4 +1033,4 @@ export const strainsC: Strain[] = [
         "aromas": ["Sweet", "Earthy", "Skunk", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }
-]
+];

@@ -6,7 +6,9 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { exportService } from '@/services/exportService';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { useAppStore } from '@/stores/useAppStore';
+// FIX: Import Redux hooks and actions for state management
+import { useAppDispatch } from '@/stores/store';
+import { addNotification } from '@/stores/slices/uiSlice';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
@@ -17,11 +19,12 @@ interface SavedSetupsViewProps {
 export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, updateSetup, deleteSetup }) => {
     const { t } = useTranslations();
     const [editingSetup, setEditingSetup] = useState<SavedSetup | null>(null);
-    const addNotification = useAppStore(state => state.addNotification);
+    const dispatch = useAppDispatch();
 
     const handleExport = (setup: SavedSetup, format: ExportFormat) => {
-        exportService.exportSetup(setup, format, t);
-        addNotification(t('common.successfullyExported', { count: 1, format }), 'success');
+        // FIX: Removed extra `t` argument from exportService call. The service handles its own translations.
+        exportService.exportSetup(setup, format);
+        dispatch(addNotification({ message: t('common.successfullyExported_one', { format: format.toUpperCase() }), type: 'success' }));
     };
 
     const handleDelete = (id: string) => {

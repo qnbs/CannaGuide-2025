@@ -1,21 +1,33 @@
 import { KnowledgeProgress } from '@/types';
-import type { StoreSet } from '@/stores/useAppStore';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export interface KnowledgeSlice {
+export interface KnowledgeState {
     knowledgeProgress: KnowledgeProgress;
-    toggleKnowledgeProgressItem: (sectionId: string, itemId: string) => void;
 }
 
-export const createKnowledgeSlice = (set: StoreSet): KnowledgeSlice => ({
+const initialState: KnowledgeState = {
     knowledgeProgress: {},
-    toggleKnowledgeProgressItem: (sectionId, itemId) => set(state => {
-        const progress = state.knowledgeProgress[sectionId] || [];
-        const index = progress.indexOf(itemId);
-        if (index > -1) {
-            progress.splice(index, 1);
-        } else {
-            progress.push(itemId);
+};
+
+const knowledgeSlice = createSlice({
+    name: 'knowledge',
+    initialState,
+    reducers: {
+        updateKnowledgeProgress: (state, action: PayloadAction<{ sectionId: string, itemId: string }>) => {
+            const { sectionId, itemId } = action.payload;
+            if (!state.knowledgeProgress[sectionId]) {
+                state.knowledgeProgress[sectionId] = [];
+            }
+            if (!state.knowledgeProgress[sectionId].includes(itemId)) {
+                state.knowledgeProgress[sectionId].push(itemId);
+            }
+        },
+        // For migration
+        setKnowledgeProgress: (state, action: PayloadAction<KnowledgeProgress>) => {
+            state.knowledgeProgress = action.payload;
         }
-        state.knowledgeProgress[sectionId] = progress;
-    }),
+    },
 });
+
+export const { updateKnowledgeProgress, setKnowledgeProgress } = knowledgeSlice.actions;
+export default knowledgeSlice.reducer;

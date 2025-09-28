@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsI: Strain[] = [
     {
         "id": "ice",
         "name": "Ice",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Afghani x Northern Lights x Skunk #1",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsI: Strain[] = [
     {
         "id": "ice-cream-cake",
         "name": "Ice Cream Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Indica / 25% Sativa",
         "genetics": "Wedding Cake x Gelato #33",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsI: Strain[] = [
     {
         "id": "ice-cream-man",
         "name": "Ice Cream Man",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Jet Fuel Gelato x Legend Orange Apricot F2",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsI: Strain[] = [
     {
         "id": "imperial-lion",
         "name": "Imperial Lion",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica (CBD Dominant)",
         "genetics": "ACDC x Erdpurt x T1",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsI: Strain[] = [
     {
         "id": "incredible-bulk",
         "name": "Incredible Bulk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Big Bud x Super Skunk x Green Spirit",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsI: Strain[] = [
     {
         "id": "indiana-bubblegum",
         "name": "Indiana Bubblegum",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Bubble Gum (original phenotype)",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsI: Strain[] = [
     {
         "id": "indigo-berry-kush",
         "name": "Indigo Berry Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "So G Kush x Blue Monster",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsI: Strain[] = [
     {
         "id": "island-pink-kush",
         "name": "Island Pink Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "floweringType": "Photoperiod",
         "thc": 26.5,
@@ -196,7 +196,7 @@ export const strainsI: Strain[] = [
     {
         "id": "island-sweet-skunk",
         "name": "Island Sweet Skunk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Skunk #1 (phenotype)",
         "floweringType": "Photoperiod",

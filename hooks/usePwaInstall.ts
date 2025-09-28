@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useAppDispatch } from '../stores/store';
+import { useTranslations } from './useTranslations';
+import { addNotification } from '../stores/slices/uiSlice';
 
 export const usePwaInstall = () => {
-    const addNotification = useAppStore(state => state.addNotification);
+    const dispatch = useAppDispatch();
     const { t } = useTranslations();
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [isInstalled, setIsInstalled] = useState(false);
@@ -33,7 +34,7 @@ export const usePwaInstall = () => {
         const appInstalledHandler = () => {
             setDeferredPrompt(null);
             setIsInstalled(true);
-            addNotification(t('common.installPwaSuccess'), 'success');
+            dispatch(addNotification({ message: t('common.installPwaSuccess'), type: 'success' }));
         };
         window.addEventListener('appinstalled', appInstalledHandler);
 
@@ -41,7 +42,7 @@ export const usePwaInstall = () => {
             window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
             window.removeEventListener('appinstalled', appInstalledHandler);
         };
-    }, [t, addNotification]);
+    }, [t, dispatch]);
 
     const handleInstallClick = useCallback(async () => {
         if (deferredPrompt) {
@@ -50,11 +51,11 @@ export const usePwaInstall = () => {
             if (outcome === 'accepted') {
                 // The 'appinstalled' event will handle the success notification.
             } else {
-                addNotification(t('common.installPwaDismissed'), 'info');
+                dispatch(addNotification({ message: t('common.installPwaDismissed'), type: 'info' }));
             }
             setDeferredPrompt(null);
         }
-    }, [deferredPrompt, addNotification, t]);
+    }, [deferredPrompt, dispatch, t]);
 
     return { deferredPrompt, handleInstallClick, isInstalled };
 };

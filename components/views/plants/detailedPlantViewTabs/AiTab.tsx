@@ -6,27 +6,26 @@ import { geminiService } from '@/services/geminiService';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectAdvisorStateForPlant } from '@/stores/selectors';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectAdvisorStateForPlant, selectProactiveDiagnosisState } from '@/stores/selectors';
+import { addNotification } from '@/stores/slices/uiSlice';
+import { startAdvisorGeneration, startProactiveDiagnosis } from '@/stores/slices/aiSlice';
 
 interface AiTabProps {
     plant: Plant;
     archive: ArchivedAdvisorResponse[];
-    addResponse: (plantId: string, response: AIResponse, query: string) => void;
+    addResponse: (plant: Plant, response: AIResponse, query: string) => void;
     updateResponse: (updatedResponse: ArchivedAdvisorResponse) => void;
     deleteResponse: (plantId: string, responseId: string) => void;
 }
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
     const { t } = useTranslations();
-    const { addNotification, startAdvisorGeneration, startProactiveDiagnosis } = useAppStore(state => ({
-        addNotification: state.addNotification,
-        startAdvisorGeneration: state.startAdvisorGeneration,
-        startProactiveDiagnosis: state.startProactiveDiagnosis
-    }));
-    const advisorState = useAppStore(selectAdvisorStateForPlant(plant.id));
-    const diagnosisState = useAppStore(state => state.proactiveDiagnosis);
+    const dispatch = useAppDispatch();
+    
+    const advisorState = useAppSelector(selectAdvisorStateForPlant(plant.id));
+    const diagnosisState = useAppSelector(selectProactiveDiagnosisState);
 
     const [loadingMessage, setLoadingMessage] = useState('');
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
@@ -36,7 +35,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     useEffect(() => {
         if (advisorState.isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plant } }, t);
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plantName: plant.name } });
             let messageIndex = 0;
             const intervalId = setInterval(() => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
@@ -45,7 +44,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             return () => clearInterval(intervalId);
         }
         if(diagnosisState.isLoading) {
-             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'proactiveDiagnosis', data: { plantName: plant.name } }, t);
+             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'proactiveDiagnosis', data: { plantName: plant.name } });
             let messageIndex = 0;
             const intervalId = setInterval(() => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
@@ -57,18 +56,18 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     const handleGetAdvice = () => {
         setIsCurrentResponseSaved(false);
-        startAdvisorGeneration(plant);
+        dispatch(startAdvisorGeneration(plant));
     };
     
     const handleGetDiagnosis = () => {
-        startProactiveDiagnosis(plant);
+        dispatch(startProactiveDiagnosis(plant));
     }
 
     const handleSaveResponse = () => {
         if (advisorState.response) {
-            addResponse(plant.id, advisorState.response, plantQueryData);
+            addResponse(plant, advisorState.response, plantQueryData);
             setIsCurrentResponseSaved(true);
-            addNotification(t('knowledgeView.archive.saveSuccess'), 'success');
+            dispatch(addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }));
         }
     };
     

@@ -1,17 +1,19 @@
-import React, { useState, useMemo } from 'react';
-import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppStore } from '@/stores/useAppStore';
-import { selectActivePlants, selectPlantById } from '@/stores/selectors';
-import { Plant, KnowledgeArticle } from '@/types';
-import { knowledgeBase } from '@/data/knowledgebase';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Card } from '../common/Card';
+import { useTranslations } from '../../hooks/useTranslations';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { Plant, KnowledgeArticle, KnowledgeViewTab } from '../../types';
+import { knowledgeBase } from '../../data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
-import { Button } from '@/components/common/Button';
-import { Tabs } from '@/components/common/Tabs';
+import { Button } from '../common/Button';
+import { Tabs } from '../common/Tabs';
 import { GuideTab } from './knowledge/GuideTab';
 import { MentorArchiveTab } from './knowledge/MentorArchiveTab';
 import { BreedingView } from './knowledge/BreedingView';
+import { useActivePlants, usePlantById } from '@/hooks/useSimulationBridge';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectUi } from '@/stores/selectors';
+import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
     return knowledgeBase.filter(article => {
@@ -37,16 +39,21 @@ const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
 
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslations();
-    const [activeTab, setActiveTab] = useState('mentor');
-    const { activePlants, activeMentorPlantId, setActiveMentorPlantId } = useAppStore(state => ({
-        activePlants: selectActivePlants(state),
-        activeMentorPlantId: state.activeMentorPlantId,
-        setActiveMentorPlantId: state.setActiveMentorPlantId,
-    }));
+    const dispatch = useAppDispatch();
+    const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
     
-    const activeMentorPlant = useAppStore(state => selectPlantById(activeMentorPlantId)(state));
+    const activePlants = useActivePlants();
+    const activeMentorPlant = usePlantById(activeMentorPlantId);
 
-    const [selectedPlantId, setSelectedPlantId] = useState<string | null>(activePlants[0]?.id || null);
+    const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+    
+    useEffect(() => {
+        if (activePlants.length > 0 && (!selectedPlantId || !activePlants.some(p => p.id === selectedPlantId))) {
+            setSelectedPlantId(activePlants[0].id);
+        } else if (activePlants.length === 0) {
+            setSelectedPlantId(null);
+        }
+    }, [activePlants, selectedPlantId]);
     
     const selectedPlantForHub = useMemo(() => activePlants.find(p => p.id === selectedPlantId), [activePlants, selectedPlantId]);
     
@@ -56,14 +63,14 @@ export const KnowledgeView: React.FC = () => {
     }, [selectedPlantForHub]);
     
     if (activeMentorPlant) {
-        return <MentorChatView plant={activeMentorPlant} onClose={() => setActiveMentorPlantId(null)} />;
+        return <MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} />;
     }
 
     const tabs = [
-        { id: 'mentor', label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
-        { id: 'guide', label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
-        { id: 'archive', label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
-        { id: 'breeding', label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
+        { id: 'mentor' as KnowledgeViewTab, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
+        { id: 'guide' as KnowledgeViewTab, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
+        { id: 'archive' as KnowledgeViewTab, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
+        { id: 'breeding' as KnowledgeViewTab, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
     ];
 
     const renderContent = () => {
@@ -80,10 +87,10 @@ export const KnowledgeView: React.FC = () => {
                          {activePlants.length > 0 ? (
                             <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-800/50 p-3 rounded-lg">
                                 <label htmlFor="mentor-plant-selector" className="text-sm font-semibold text-slate-300 flex-shrink-0">{t('knowledgeView.hub.selectPlant')}:</label>
-                                <select id="mentor-plant-selector" value={selectedPlantId || ''} onChange={e => setSelectedPlantId(e.target.value)} className="w-full sm:flex-grow bg-slate-700 border border-slate-600 rounded-md px-3 py-2 text-white">
+                                <select id="mentor-plant-selector" value={selectedPlantId || ''} onChange={e => setSelectedPlantId(e.target.value)} className="w-full sm:flex-grow select-input">
                                     {activePlants.map(p => <option key={p.id} value={p.id}>{p.name} ({t(`plantStages.${p.stage}`)})</option>)}
                                 </select>
-                                <Button onClick={() => setActiveMentorPlantId(selectedPlantId)} disabled={!selectedPlantId} className="w-full sm:w-auto">
+                                <Button onClick={() => dispatch(setActiveMentorPlantId(selectedPlantId))} disabled={!selectedPlantId} className="w-full sm:w-auto">
                                    {t('knowledgeView.aiMentor.startChat')} <PhosphorIcons.ArrowRight className="w-4 h-4 ml-1.5" />
                                 </Button>
                             </div>
@@ -100,7 +107,7 @@ export const KnowledgeView: React.FC = () => {
                     </Card>
                 );
             case 'guide':
-                return <GuideTab />;
+                return <GuideTab articles={knowledgeBase} />;
             case 'archive':
                 return <MentorArchiveTab />;
             case 'breeding':
@@ -119,7 +126,7 @@ export const KnowledgeView: React.FC = () => {
             </div>
             
             <Card>
-                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => setActiveTab(id as string)} />
+                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => dispatch(setKnowledgeViewTab(id as KnowledgeViewTab))} />
             </Card>
 
             {renderContent()}

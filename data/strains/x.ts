@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsX: Strain[] = [
     {
         "id": "xanadu",
         "name": "Xanadu",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Unknown",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsX: Strain[] = [
     {
         "id": "xeno",
         "name": "Xeno",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Kush Mints x Zkittlez",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsX: Strain[] = [
     {
         "id": "xj-13",
         "name": "XJ-13",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Jack Herer x G13 Haze",
         "floweringType": "Photoperiod",

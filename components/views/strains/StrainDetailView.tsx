@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
-// FIX: Changed import paths to be relative
-import { Strain, AIResponse } from '../../../types';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
-import { strainService } from '../../../services/strainService';
-import { useAppStore } from '../../../stores/useAppStore';
-import { selectHasAvailableSlots } from '../../../stores/selectors';
+import { Strain, AIResponse } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { strainService } from '@/services/strainService';
+// FIX: Corrected imports for Redux
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
+import { toggleFavorite } from '@/stores/slices/favoritesSlice';
+import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
+import { updateNote } from '@/stores/slices/notesSlice';
 import { StrainAiTips } from './StrainAiTips';
-import { Tabs } from '../../common/Tabs';
-import { InfoSection } from '../../common/InfoSection';
-import { AttributeDisplay } from '../../common/AttributeDisplay';
-import { Speakable } from '../../common/Speakable';
-import StrainListItem from './StrainListItem';
+import { Tabs } from '@/components/common/Tabs';
+import { InfoSection } from '@/components/common/InfoSection';
+import { AttributeDisplay } from '@/components/common/AttributeDisplay';
+import { Speakable } from '@/components/common/Speakable';
 
 // --- Sub-components for better structure ---
 
@@ -108,22 +110,19 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 
 const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslations();
-    const { getNoteForStrain, updateNoteForStrain, addNotification } = useAppStore(state => ({
-        getNoteForStrain: (id: string) => state.strainNotes[id] || '',
-        updateNoteForStrain: state.updateNoteForStrain,
-        addNotification: state.addNotification,
-    }));
+    const dispatch = useAppDispatch();
+    const note = useAppSelector(state => state.notes.strainNotes[strain.id] || '');
+    
     const [noteContent, setNoteContent] = useState('');
     const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
-        setNoteContent(getNoteForStrain(strain.id));
-    }, [strain, getNoteForStrain]);
+        setNoteContent(note);
+    }, [strain, note]);
 
     const handleSaveNote = () => {
-        updateNoteForStrain(strain.id, noteContent);
+        dispatch(updateNote({ strainId: strain.id, note: noteContent }));
         setIsEditing(false);
-        addNotification(t('strainsView.strainModal.saveNotes'), 'success');
     };
 
     return (
@@ -139,7 +138,7 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                 />
                 {isEditing && (
                     <div className="text-right mt-2 flex gap-2 justify-end">
-                        <Button size="sm" variant="secondary" onClick={() => { setIsEditing(false); setNoteContent(getNoteForStrain(strain.id)); }}>{t('common.cancel')}</Button>
+                        <Button size="sm" variant="secondary" onClick={() => { setIsEditing(false); setNoteContent(note); }}>{t('common.cancel')}</Button>
                         <Button size="sm" onClick={handleSaveNote}>{t('strainsView.strainModal.saveNotes')}</Button>
                     </div>
                 )}
@@ -182,13 +181,10 @@ interface StrainDetailViewProps {
 
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {
     const { t } = useTranslations();
-    // FIX: Corrected function name from initiateGrow to initiateGrowFromStrainList
-    const { isFavorite, toggleFavorite, initiateGrowFromStrainList } = useAppStore(state => ({
-        isFavorite: state.favoriteIds.has(strain.id),
-        toggleFavorite: state.toggleFavorite,
-        initiateGrowFromStrainList: state.initiateGrowFromStrainList,
-    }));
-    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
+    const dispatch = useAppDispatch();
+    const favoriteIds = useAppSelector(selectFavoriteIds);
+    const isFavorite = favoriteIds.has(strain.id);
+    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
     const [activeTab, setActiveTab] = useState('overview');
     const [currentStrain, setCurrentStrain] = useState(strain);
@@ -219,9 +215,9 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
                     </Button>
                     <div className="flex items-center gap-2">
                         <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                            <Button onClick={() => initiateGrowFromStrainList(currentStrain)} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <Button onClick={() => dispatch(initiateGrowFromStrainList(currentStrain))} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                         </div>
-                        <Button variant="secondary" onClick={() => toggleFavorite(currentStrain.id)} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
+                        <Button variant="secondary" onClick={() => dispatch(toggleFavorite(currentStrain.id))} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                         </Button>
                     </div>

@@ -1,5 +1,4 @@
 import React, { useState, useMemo } from 'react';
-// FIX: Changed import paths to be relative
 import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '../../../types';
 import { useTranslations } from '../../../hooks/useTranslations';
 import * as d3 from 'd3';
@@ -13,12 +12,17 @@ interface HistoryChartProps {
 
 type ChartView = 'growth' | 'substrate';
 
-const eventTypes: JournalEntryType[] = ['WATERING', 'FEEDING', 'TRAINING'];
+const eventTypes: JournalEntryType[] = [JournalEntryType.Watering, JournalEntryType.Feeding, JournalEntryType.Training];
 const eventIcons: Record<JournalEntryType, React.ReactNode> = {
-    WATERING: <PhosphorIcons.Drop />,
-    FEEDING: <PhosphorIcons.TestTube />,
-    TRAINING: <PhosphorIcons.Scissors />,
-    PHOTO: <></>, OBSERVATION: <></>, PEST_CONTROL: <></>, SYSTEM: <></>, ENVIRONMENT: <></>, AMENDMENT: <></>,
+    [JournalEntryType.Watering]: <PhosphorIcons.Drop />,
+    [JournalEntryType.Feeding]: <PhosphorIcons.TestTube />,
+    [JournalEntryType.Training]: <PhosphorIcons.Scissors />,
+    [JournalEntryType.Photo]: <></>,
+    [JournalEntryType.Observation]: <></>,
+    [JournalEntryType.PestControl]: <></>,
+    [JournalEntryType.System]: <></>,
+    [JournalEntryType.Environment]: <></>,
+    [JournalEntryType.Amendment]: <></>,
 };
 
 export const HistoryChart: React.FC<HistoryChartProps> = ({ history, journal, plantCreatedAt }) => {

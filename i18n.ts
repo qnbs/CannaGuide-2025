@@ -1,8 +1,16 @@
+
 import i18next from 'i18next';
-import { de, en } from '@/locales';
+import { de, en } from './locales';
 
 // Create a direct instance of i18next
 export const i18nInstance = i18next.createInstance();
+
+/**
+ * Provides a global accessor to the translation function (`t`) from the initialized i18next instance.
+ * This is the single source of truth for translations outside of React components (e.g., in services, stores).
+ * @returns The translation function.
+ */
+export const getT = () => i18nInstance.t;
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
 const detectedLang = navigator.language.split('-')[0];
@@ -20,6 +28,3 @@ export const i18nPromise = i18nInstance.init({
         escapeValue: false, // React already handles escaping
     },
 });
-
-// The subscription logic will be moved to a component like App.tsx
-// to ensure the store is initialized before subscribing.

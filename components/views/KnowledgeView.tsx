@@ -2,8 +2,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '../common/Card';
 import { useTranslations } from '../../hooks/useTranslations';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { Plant, KnowledgeArticle, KnowledgeViewTab } from '../../types';
-import { knowledgeBase } from '../../data/knowledgebase';
+// FIX: Corrected import paths
+import { Plant, KnowledgeArticle, KnowledgeViewTab } from '@/types';
+import { knowledgeBase } from '@/data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
 import { Button } from '../common/Button';
 import { Tabs } from '../common/Tabs';
@@ -67,15 +68,15 @@ export const KnowledgeView: React.FC = () => {
     }
 
     const tabs = [
-        { id: 'mentor' as KnowledgeViewTab, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
-        { id: 'guide' as KnowledgeViewTab, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
-        { id: 'archive' as KnowledgeViewTab, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
-        { id: 'breeding' as KnowledgeViewTab, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
+        { id: KnowledgeViewTab.Mentor, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
+        { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
+        { id: KnowledgeViewTab.Archive, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
+        { id: KnowledgeViewTab.Breeding, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
     ];
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'mentor':
+            case KnowledgeViewTab.Mentor:
                  return (
                     <Card>
                         <div className="mb-4">
@@ -106,11 +107,11 @@ export const KnowledgeView: React.FC = () => {
                         )}
                     </Card>
                 );
-            case 'guide':
+            case KnowledgeViewTab.Guide:
                 return <GuideTab articles={knowledgeBase} />;
-            case 'archive':
+            case KnowledgeViewTab.Archive:
                 return <MentorArchiveTab />;
-            case 'breeding':
+            case KnowledgeViewTab.Breeding:
                 return <BreedingView />;
             default:
                 return null;

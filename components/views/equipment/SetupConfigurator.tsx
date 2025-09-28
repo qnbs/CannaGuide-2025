@@ -11,7 +11,6 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectEquipmentGenerationState } from '@/stores/selectors';
 import { startEquipmentGeneration, resetEquipmentGenerationState } from '@/stores/slices/aiSlice';
 import { addSetup } from '@/stores/slices/savedItemsSlice';
-import { addNotification } from '@/stores/slices/uiSlice';
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;
@@ -106,9 +105,15 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     };
     
      const handleSaveSetup = (setupToSave: Omit<SavedSetup, 'id' | 'createdAt'>) => {
-        dispatch(addSetup(setupToSave));
-        dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: setupToSave.name }), type: 'success' }));
-        onSaveSetup();
+        dispatch(addSetup(setupToSave))
+            .unwrap()
+            .then(() => {
+                onSaveSetup();
+            })
+            .catch((err) => {
+                // Error notification is handled within the thunk, so we just log here.
+                console.error("Save setup failed:", err);
+            });
     };
     
     const showResults = isLoading || recommendation || error;

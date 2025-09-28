@@ -45,8 +45,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                  <Card>
                     <h3 className="text-xl font-bold font-display text-primary-400 mb-3">{t('plantsView.detailedView.substrateAndRoots')}</h3>
                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <VitalBar value={plant.substrate.ph} min={5.8} max={6.8} label="pH" highlightId="ph-vital" />
-                        <VitalBar value={plant.substrate.ec} min={0.8} max={1.8} label="EC" highlightId="ec-vital" />
+                        <VitalBar value={plant.substrate.ph} min={5.8} max={6.8} label={t('plantsView.vitals.ph')} highlightId="ph-vital" />
+                        <VitalBar value={plant.substrate.ec} min={0.8} max={1.8} label={t('plantsView.vitals.ec')} highlightId="ec-vital" />
                         <VitalBar value={plant.substrate.moisture} min={20} max={80} label={t('plantsView.vitals.moisture')} unit="%" highlightId="moisture-vital" />
                         <VitalBar value={plant.rootSystem.health} min={80} max={100} label={t('plantsView.detailedView.rootHealth')} unit="%" highlightId="root-health-vital" />
                     </div>

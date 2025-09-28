@@ -1,305 +1,231 @@
 export const equipmentView = {
   tabs: {
-    configurator: 'AI Configurator',
-    calculators: 'Calculators',
+    configurator: 'Setup Configurator',
     setups: 'My Setups',
+    calculators: 'Calculators',
     growShops: 'Grow Shops',
   },
   configurator: {
-    title: 'AI Setup Configurator',
-    subtitle: 'Answer a few questions and let our AI recommend the perfect equipment for your needs.',
-    subtitleNew: 'Get a tailored equipment recommendation based on your planned number of plants and style.',
-    step1Title: 'Grow Area & Budget',
-    step1TitleNew: '1. How many plants are you planning to grow?',
-    step2Title: 'Grow Style',
-    step2TitleNew: '2. Choose your configuration style',
-    area: 'Area',
-    areas: {
-      '60x60': 'Small (60x60 cm)',
-      '80x80': 'Medium (80x80 cm)',
-      '100x100': 'Large (100x100 cm)',
-      '120x60': 'Rectangle (120x60 cm)',
-      '120x120': 'XL (120x120 cm)',
-    },
+    title: 'AI Equipment Configurator',
+    subtitleNew: 'Answer two simple questions to get a complete, AI-generated equipment recommendation for your grow.',
+    step1TitleNew: '1. How many plants do you want to grow?',
     plantCount_one: '1 Plant',
     plantCount_other: '{{count}} Plants',
-    budget: 'Budget',
-    budgets: {
-      low: 'Value',
-      medium: 'Balanced',
-      high: 'Premium',
-    },
-    style: 'Grow Style',
-    styles: {
-      beginner: 'Beginner Friendly',
-      balanced: 'Balanced',
-      yield: 'Yield Maximization',
-    },
+    step2TitleNew: '2. Choose your configuration style',
     generate: 'Generate Setup',
-    resultsTitle: 'Your Custom Setup Recommendation',
-    resultsSubtitle: 'For: {area} area, {budget} budget, {style} style',
-    categories: {
-      tent: 'Tent',
-      light: 'Lighting',
-      ventilation: 'Ventilation',
-      pots: 'Pots',
-      soil: 'Soil/Medium',
-      nutrients: 'Nutrients',
-      extra: 'Extras',
-    },
+    setupSaveSuccess: 'Setup "{{name}}" saved successfully!',
+    resultsTitle: 'Your AI-Generated Setup',
+    resultsSubtitle: 'For: {{area}} area, with a focus on {{style}} and a {{budget}} budget.',
     total: 'Total Cost',
-    costBreakdown: 'Cost Breakdown',
+    error: 'An error occurred while generating your setup.',
     tryAgain: 'Try Again',
-    startOver: 'Start Over',
     saveSetup: 'Save Setup',
-    setupNamePrompt: 'What would you like to name this setup?',
-    setupSaveSuccess: 'Setup "{name}" saved successfully!',
+    startOver: 'Start Over',
+    costBreakdown: 'Cost Breakdown',
+    setupNamePrompt: 'Enter a name for this setup:',
+    budgets: {
+      low: 'value',
+      medium: 'balanced',
+      high: 'premium',
+    },
+    styles: {
+      beginner: 'ease of use',
+      balanced: 'a balance of quality and yield',
+      yield: 'maximizing yield',
+    },
     setupNameBudgets: {
       low: 'Value',
       medium: 'Balanced',
       high: 'Premium',
     },
-    setups: {
-      '1': {
-        standard: {
-          title: 'Starter Solo',
-          description: 'A budget-friendly, simple setup perfect for a first-time single-plant grow.',
-          prompt: 'Create a beginner-friendly, value-for-money grow setup for a single cannabis plant in a 60x60cm space.'
-        },
-        medium: {
-          title: 'Balanced Soloist',
-          description: 'A quality setup focusing on efficiency and yield for a single plant.',
-          prompt: 'Create a balanced grow setup for a single cannabis plant in an 80x80cm space.'
-        },
-        premium: {
-          title: 'Boutique Single',
-          description: 'A high-end setup for maximizing quality and control over a single showcase plant.',
-          prompt: 'Create a premium grow setup for a single cannabis plant in a 60x60cm space, focusing on highest quality and yield.'
-        }
-      },
-      '2': {
-        standard: {
-          title: 'Efficient Duo',
-          description: 'A solid setup for growing two plants with a good balance of cost and performance.',
-          prompt: 'Create a beginner-friendly, value-for-money grow setup for two cannabis plants in an 80x80cm or 120x60cm space.'
-        },
-        medium: {
-          title: 'Dynamic Duo',
-          description: 'An optimized setup for two plants, aimed at higher yields and better quality.',
-          prompt: 'Create a balanced grow setup for two cannabis plants in a 100x100cm space.'
-        },
-        premium: {
-          title: 'High-Tech Twins',
-          description: 'The ultimate setup for two plants, using state-of-the-art tech for maximum results.',
-          prompt: 'Create a premium grow setup for two cannabis plants in an 80x80cm or 120x60cm space, focusing on maximum quality and yield.'
-        }
-      },
-      '3': {
-        standard: {
-          title: 'Productive Trio',
-          description: 'A cost-effective setup designed to maximize the yield of three plants.',
-          prompt: 'Create a beginner-friendly, value-for-money grow setup for three cannabis plants in a 100x100cm space.'
-        },
-        medium: {
-          title: 'Power Trio',
-          description: 'A powerful setup for three plants, combining advanced components for impressive harvests.',
-          prompt: 'Create a balanced grow setup for three cannabis plants in a 120x120cm space.'
-        },
-        premium: {
-          title: 'Commercial-Grade',
-          description: 'A professional-level setup for three plants, designed for maximum yields, quality, and automation.',
-          prompt: 'Create a premium, commercial-style grow setup for three cannabis plants in a 120x120cm space, focusing on maximum quality and yield.'
-        }
-      }
+    categories: {
+      tent: 'Grow Tent',
+      light: 'Lighting',
+      ventilation: 'Ventilation',
+      pots: 'Pots & Saucers',
+      soil: 'Medium/Substrate',
+      nutrients: 'Nutrients',
+      extra: 'Extras & Monitoring',
     },
     details: {
       zelt: 'Tent',
       beleuchtung: 'Light',
       abluft: 'Exhaust',
       toepfe: 'Pots',
-      medium: 'Medium'
+      medium: 'Medium',
     },
-    error: 'Error generating recommendation.'
+    setups: {
+      '1': {
+        standard: {
+          title: 'Value Starter',
+          description: 'A cost-effective, no-frills setup perfect for beginners to learn the basics.',
+          prompt: 'Create a value-focused, budget-friendly, complete cannabis grow setup for one plant in a 60x60cm tent.',
+        },
+        medium: {
+          title: 'Balanced Solo',
+          description: 'A quality setup with upgraded components for better results and more control.',
+          prompt: 'Create a balanced, high-quality, complete cannabis grow setup for one plant in an 80x80cm tent.',
+        },
+        premium: {
+          title: 'Premium Boutique',
+          description: 'A top-of-the-line setup for a single plant, focused on maximizing quality and yield with the best tech.',
+          prompt: 'Create a premium, top-of-the-line, complete cannabis grow setup for one high-quality plant in a 60x60cm tent, focusing on quality and using coco coir.',
+        },
+      },
+      '2': {
+        standard: {
+          title: 'Value Duo',
+          description: 'An efficient setup for two plants, balancing cost with enough space and power.',
+          prompt: 'Create a value-focused, budget-friendly, complete cannabis grow setup for two plants in a 120x60cm tent.',
+        },
+        medium: {
+          title: 'Balanced Duo',
+          description: 'A solid setup for two plants, offering good quality components for consistent results.',
+          prompt: 'Create a balanced, high-quality, complete cannabis grow setup for two plants in a 100x100cm tent.',
+        },
+        premium: {
+          title: 'Premium Pair',
+          description: 'A high-end configuration for two plants, designed for connoisseurs seeking top-shelf results.',
+          prompt: 'Create a premium, top-of-the-line, complete cannabis grow setup for two high-quality plants in a 120x60cm tent, using a coco/perlite mix.',
+        },
+      },
+      '3': {
+        standard: {
+          title: 'Value Trio',
+          description: 'A spacious and budget-conscious setup for growers wanting to manage three plants.',
+          prompt: 'Create a value-focused, budget-friendly, complete cannabis grow setup for three plants in a 100x100cm tent.',
+        },
+        medium: {
+          title: 'Balanced Trio',
+          description: 'A robust setup for three plants, with quality lighting and ventilation for a healthy environment.',
+          prompt: 'Create a balanced, high-quality, complete cannabis grow setup for three plants in a 120x120cm tent.',
+        },
+        premium: {
+          title: 'Premium Harvest',
+          description: 'A no-compromise, professional-grade setup for three plants, aimed at achieving maximum yield and quality.',
+          prompt: 'Create a premium, professional-grade, complete cannabis grow setup for three large plants in a 120x120cm tent, focusing on maximum yield and quality.',
+        },
+      },
+    },
+  },
+  savedSetups: {
+    exportTitle: 'Saved Setups',
+    noSetups: {
+      title: 'No Saved Setups',
+      subtitle: 'Use the configurator to generate and save your first setup!',
+    },
+    deleteConfirm: 'Are you sure you want to delete this setup?',
+    editTitle: 'Edit Setup Name',
+    pdfReport: {
+      setup: 'Setup Report',
+      createdAt: 'Created At',
+      item: 'Item',
+      product: 'Product',
+      rationale: 'Rationale',
+      price: 'Price (€)',
+      category: 'Category',
+    }
   },
   calculators: {
-    title: 'Calculators',
+    yes: 'Yes',
+    no: 'No',
     ventilation: {
-      title: 'Exhaust Fan Calculator',
-      description: 'Calculate the required power of your exhaust fan (in m³/h) to maintain an optimal environment.',
-      width: 'Tent Width',
-      depth: 'Tent Depth',
-      height: 'Tent Height',
-      lightWattage: 'Light Wattage (LED)',
-      lightWattageTooltip: 'The heat from your light is a major factor. Enter the actual power draw of your LED light here.',
-      carbonFilter: 'Using a carbon filter?',
-      carbonFilterTooltip: 'A filter increases air resistance and requires about 25-40% more power from the fan.',
+      title: 'Ventilation Calculator',
+      description: 'Calculate the required exhaust fan power (m³/h) for your grow space.',
+      width: 'Width',
+      depth: 'Depth',
+      height: 'Height',
+      lightWattage: 'Light Wattage',
+      lightWattageTooltip: 'The heat from your light is a major factor in ventilation needs.',
+      carbonFilter: 'Using a Carbon Filter?',
+      carbonFilterTooltip: 'Carbon filters restrict airflow, requiring a more powerful fan (approx. +35%).',
       result: 'Recommended Fan Power',
     },
     light: {
-      title: 'Lighting Calculator',
-      description: 'Estimate the required LED light wattage for your grow area and the current stage of your plant.',
+      title: 'Light Calculator',
+      description: 'Estimate the required LED wattage for your grow area based on the growth stage.',
       width: 'Area Width',
       depth: 'Area Depth',
       stage: 'Growth Stage',
       result: 'Recommended LED Wattage',
-      ppfdTooltip: 'PPFD (Photosynthetic Photon Flux Density) measures the amount of usable light reaching your plants.',
-      dliTooltip: 'DLI (Daily Light Integral) is the total amount of usable light your plants receive over a 24-hour period.'
+      ppfdTooltip: 'PPFD (Photosynthetic Photon Flux Density) is the amount of light that actually reaches your plants.',
+      dliTooltip: 'DLI (Daily Light Integral) is the total amount of light your plants receive per day.',
     },
     cost: {
       title: 'Electricity Cost Calculator',
-      description: 'Estimate the electricity cost of your grow per day, week, month, and for a typical 90-day cycle.',
+      description: 'Estimate the running costs of your equipment.',
       lightPower: 'Light Power',
       lightHours: 'Light Hours',
       fanPower: 'Fan Power',
       fanHours: 'Fan Hours',
-      otherPower: 'Other Appliances',
-      price: 'Electricity Price',
-      daily: 'Daily',
-      weekly: 'Weekly',
-      monthly: 'Monthly',
-      cycle: 'Per Cycle',
-      cycleSub: '(approx. 90 days)',
+      otherPower: 'Other Equipment',
+      price: 'Price per kWh',
+      daily: 'Daily Cost',
+      weekly: 'Weekly Cost',
+      monthly: 'Monthly Cost',
+      cycle: '90-Day Cycle',
+      cycleSub: '(approx.)',
     },
     nutrients: {
-      title: 'Nutrient Calculator',
-      description: 'Calculate the required amount of each nutrient component for your water reservoir.',
-      reservoir: 'Water Reservoir Size',
+      title: 'Nutrient Mix Calculator',
+      description: 'Calculate the amount of each nutrient component for your reservoir size.',
+      reservoir: 'Reservoir Size',
       component: 'Component',
       dose: 'Dose',
       totalFor: 'Total for',
-      componentName: 'Comp. {count}',
       addComponent: 'Add Component',
     },
     converter: {
       title: 'EC / PPM Converter',
-      description: 'Convert between EC (Electrical Conductivity) and PPM (Parts Per Million) on different scales.',
-      resultInfo: 'Change one value to automatically convert the others.',
-      ec: 'EC (mS/cm)',
-      ppm500: 'PPM (500 Scale)',
-      ppm700: 'PPM (700 Scale)'
+      description: 'Convert between Electrical Conductivity (EC) and Parts Per Million (PPM) using different scales.',
+      resultInfo: 'Values are rounded for simplicity.',
     },
     yield: {
-      title: 'Yield Calculator',
-      description: 'Get a rough estimate of your potential yield based on your light wattage and experience.',
-      wattage: 'LED Wattage',
-      level: 'Experience Level',
-      levels: {
-        beginner: 'Beginner',
-        advanced: 'Advanced',
-        expert: 'Expert',
-      },
-      training: 'Training Technique',
-      trainings: {
-        none: 'None',
-        lst: 'LST (Low Stress Training)',
-        scrog: 'SCROG (Screen of Green)',
-      },
+      title: 'Yield Estimator',
+      description: 'Get a rough estimate of your potential yield based on light wattage and efficiency.',
+      lightWattage: 'Light Wattage',
+      efficiency: 'Efficiency (g/W)',
+      efficiencyTooltip: 'Beginner: 0.8-1.0, Advanced: 1.0-1.5, Expert: 1.5+',
       result: 'Estimated Yield',
-      efficiency: 'Efficiency',
-    },
-    yes: 'Yes',
-    no: 'No',
-  },
-  savedSetups: {
-    title: 'Saved Setups',
-    noSetups: {
-      title: 'No Setups Saved',
-      subtitle: 'Use the AI Configurator to create and save your first setup.',
-    },
-    deleteConfirm: 'Are you sure you want to delete this setup?',
-    editTitle: 'Edit Setup',
-    pdfReport: {
-      setup: 'Setup Report',
-      createdAt: 'Created At',
-      item: 'Component',
-      product: 'Product',
-      rationale: 'Rationale',
-      price: 'Price',
-      category: 'Category',
-    },
-    exportTitle: 'Saved Setups Export',
+      range: 'Range: {{low}}g - {{high}}g',
+      levels: {
+        '0': 'Beginner',
+        '1': 'Advanced',
+        '2': 'Expert'
+      },
+      techniques: {
+        '0': 'No Training',
+        '1': 'LST (Low-Stress Training)',
+        '2': 'Topping / Main-Lining',
+        '3': 'SCROG (Screen of Green)'
+      },
+    }
   },
   growShops: {
-    title: 'Recommended Grow Shops',
-    strengths: 'Strengths',
-    shipping: 'Shipping',
-    paymentMethods: 'Payment Methods',
     region: {
       europe: 'Europe',
       usa: 'USA',
     },
-    european: {
-      title: 'Top Grow Shops in Europe',
-      shopKeys: ['grow-guru', 'grow-shop-24', 'growmart'],
-    },
+    selectShopTitle: 'Select a Shop',
+    selectShopSubtitle: 'Choose a recommended grow shop from the list to see more details.',
+    strengths: 'Strengths',
+    shipping: 'Shipping',
+    paymentMethods: 'Payment Methods',
+    visitShop: 'Visit {{shopName}}',
+
     us: {
-      title: 'Top Grow Shops in the USA',
-      shopKeys: ['grow-generation', 'hydrobuilder', 'htg-supply'],
+        shopKeys: ['growGeneration', 'hydrobuilder', 'amazonGrow']
+    },
+    european: {
+        shopKeys: ['growmart', 'zamnesia', 'royalQueen']
     },
     shops: {
-      'grow-guru': {
-        name: 'Grow Guru',
-        location: 'Germany',
-        rating: 4.8,
-        description: 'A highly-rated German shop known for its excellent selection of high-quality brands like Sanlight and Lumatek, and for its fast, discreet shipping.',
-        strengths: ['Excellent customer service', 'Great selection of premium brands', 'Fast shipping across Europe'],
-        shipping: 'Europe-wide',
-        paymentMethods: ['credit_card', 'paypal', 'bank_transfer'],
-        url: 'https://www.grow-guru.com/',
-      },
-      'grow-shop-24': {
-        name: 'Grow-Shop24',
-        location: 'Germany',
-        rating: 4.6,
-        description: 'Offers a wide range of products for all budgets, from entry-level kits to professional equipment. Known for competitive pricing and frequent sales.',
-        strengths: ['Good value for money', 'Wide assortment', 'Regular discount campaigns'],
-        shipping: 'Europe-wide',
-        paymentMethods: ['credit_card', 'paypal', 'bank_transfer'],
-        url: 'https://www.grow-shop24.de/',
-      },
-      'growmart': {
-        name: 'Growmart',
-        location: 'Germany',
-        rating: 4.7,
-        description: 'An established shop with a strong focus on sustainability and organic growing. They offer a great selection of organic fertilizers and soils.',
-        strengths: ['Focus on organic & sustainable products', 'Very informative website & blog', 'Good selection of complete kits'],
-        shipping: 'Europe-wide',
-        paymentMethods: ['credit_card', 'paypal', 'bank_transfer'],
-        url: 'https://www.growmart.de/',
-      },
-      'grow-generation': {
-        name: 'GrowGeneration',
-        location: 'USA',
-        rating: 4.9,
-        description: 'One of the largest hydroponic retailers in the US, with brick-and-mortar stores and a massive online shop. Carries all major brands and caters to everything from hobby to commercial scale.',
-        strengths: ['Huge selection', 'Physical store locations', 'Commercial-scale solutions available'],
-        shipping: 'USA',
-        paymentMethods: ['credit_card', 'paypal'],
-        url: 'https://growgeneration.com/',
-      },
-      'hydrobuilder': {
-        name: 'Hydrobuilder',
-        location: 'USA',
-        rating: 4.8,
-        description: 'An online superstore for grow equipment, known for its excellent customer service and detailed product information. Often runs package deals and free shipping offers.',
-        strengths: ['Stellar customer service', 'Free shipping on many items', 'Comprehensive product guides'],
-        shipping: 'USA',
-        paymentMethods: ['credit_card', 'paypal', 'crypto'],
-        url: 'https://hydrobuilder.com/',
-      },
-      'htg-supply': {
-        name: 'HTG Supply',
-        location: 'USA',
-        rating: 4.7,
-        description: 'HTG Supply is known for its wide range of house-brand products, which offer a cost-effective alternative to more expensive brands. They also have physical locations on the East Coast.',
-        strengths: ['Great selection of in-house brands', 'Competitive pricing', 'Helpful and knowledgeable staff'],
-        shipping: 'USA',
-        paymentMethods: ['credit_card', 'paypal'],
-        url: 'https://www.htgsupply.com/',
-      },
-    },
-    selectShopTitle: 'Select a Shop',
-    selectShopSubtitle: 'Choose a shop from the list to view its details.',
-    visitShop: 'Visit {shopName}',
+        growGeneration: { name: 'GrowGeneration', location: 'USA (nationwide)', rating: 4.6, url: 'https://growgeneration.com/', description: 'One of the largest hydroponic retail chains in the US.', strengths: ['Physical stores', 'Commercial solutions', 'Large inventory'], shipping: 'USA only', paymentMethods: ['credit_card', 'paypal'] },
+        hydrobuilder: { name: 'Hydrobuilder', location: 'USA', rating: 4.7, url: 'https://hydrobuilder.com/', description: 'Large online retailer with a wide selection.', strengths: ['Complete grow kits', 'Good prices', 'US-based customer service'], shipping: 'USA only', paymentMethods: ['credit_card', 'paypal', 'crypto'] },
+        amazonGrow: { name: 'Amazon', location: 'Online', rating: 4.2, url: 'https://www.amazon.com/', description: 'Offers a selection of basic equipment for beginners.', strengths: ['Fast shipping (Prime)', 'Easy returns', 'Wide selection of beginner products'], shipping: 'Worldwide', paymentMethods: ['credit_card', 'paypal'] },
+        growmart: { name: 'Growmart', location: 'Germany', rating: 4.8, url: 'https://www.growmart.de/', description: 'Leading German online shop with a large selection.', strengths: ['Large selection', 'Fast shipping', 'Good customer service'], shipping: 'EU-wide', paymentMethods: ['credit_card', 'paypal', 'bank_transfer'] },
+        zamnesia: { name: 'Zamnesia', location: 'Netherlands', rating: 4.7, url: 'https://www.zamnesia.com/', description: 'Well-known Dutch head and grow shop.', strengths: ['Seeds & equipment', 'Discreet shipping', 'Large community'], shipping: 'Worldwide', paymentMethods: ['credit_card', 'paypal', 'bank_transfer', 'crypto'] },
+        royalQueen: { name: 'Royal Queen Seeds', location: 'Spain', rating: 4.9, url: 'https://www.royalqueenseeds.com/', description: 'Seed bank that also offers high-quality equipment.', strengths: ['Award-winning genetics', 'High-quality accessories', 'Guides'], shipping: 'EU-wide', paymentMethods: ['credit_card', 'bank_transfer', 'crypto'] }
+    }
   }
 };

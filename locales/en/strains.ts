@@ -109,10 +109,10 @@ export const strainsView = {
       floweringTime: 'Flowering time must be between 4 and 20.',
       thcRange: 'Invalid range format.',
       cbdRange: 'Invalid range format.',
-      addSuccess: 'Successfully added strain "{name}"!',
-      updateSuccess: 'Successfully updated strain "{name}"!',
-      duplicate: 'A strain with the name "{name}" already exists.',
-      deleteConfirm: 'Are you sure you want to delete the strain "{name}"? This action cannot be undone.',
+      addSuccess: 'Successfully added strain "{{name}}"!',
+      updateSuccess: 'Successfully updated strain "{{name}}"!',
+      duplicate: 'A strain with the name "{{name}}" already exists.',
+      deleteConfirm: 'Are you sure you want to delete the strain "{{name}}"? This action cannot be undone.',
     },
   },
   strainModal: {
@@ -176,7 +176,9 @@ export const strainsView = {
       profile: 'Profile',
       notes: 'Notes',
       aiTips: 'AI Tips',
-    }
+    },
+    cannabinoidProfile: 'Cannabinoid Profile',
+    aromaProfile: 'Aroma & Terpene Profile',
   },
   exportsManager: {
     createExport: 'Create New Export',
@@ -186,8 +188,8 @@ export const strainsView = {
     deleteConfirmPlural_other: 'Are you sure you want to delete {{count}} exports?',
     deleteSuccessPlural_one: 'Successfully deleted 1 export.',
     deleteSuccessPlural_other: 'Successfully deleted {{count}} exports.',
-    updateExportSuccess: 'Successfully updated export "{name}".',
-    downloadingExport: 'Downloading export "{name}" as {format}...',
+    updateExportSuccess: 'Successfully updated export "{{name}}".',
+    downloadingExport: 'Downloading export "{{name}}" as {{format}}...',
     strainsNotFound: 'Some strains from this export could not be found. The export may be incomplete.',
     sourceLabel: 'Source',
     strainCount_one: '1 strain',
@@ -201,10 +203,10 @@ export const strainsView = {
   tips: {
     title: 'Saved Grow Tips',
     editTipTitle: 'Edit Tip',
-    saveSuccess: 'Successfully saved tip for {name}!',
+    saveSuccess: 'Successfully saved tip for {{name}}!',
     saved: 'Saved',
     saveButton: 'Save Tip',
-    getTipsFor: 'AI Grow Tips for {name}',
+    getTipsFor: 'AI Grow Tips for {{name}}',
     searchPlaceholder: 'Search tips...',
     sortOptions: {
       grouped: 'Group by Strain',
@@ -214,7 +216,7 @@ export const strainsView = {
       title: 'No Saved Tips',
       subtitle: 'Request AI tips from a strain\'s detail view and save them to find them here.',
     },
-    noResults: 'No tips found for "{term}".',
+    noResults: 'No tips found for "{{term}}".',
     exportModal: {
         sources: {
             selected_one: '1 selected tip',

@@ -14,7 +14,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
 import { completeTask } from '@/stores/slices/simulationSlice';
 import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
-import { openActionModal } from '@/stores/slices/uiSlice';
+import { openActionModal, openDiagnosticsModal } from '@/stores/slices/uiSlice';
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -46,6 +46,10 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
                     <Button variant="secondary" onClick={onClose}>
                         <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
                         {t('common.back')}
+                    </Button>
+                     <Button onClick={() => dispatch(openDiagnosticsModal(plant.id))}>
+                        <PhosphorIcons.Sparkle className="w-5 h-5 mr-2" />
+                        {t('plantsView.aiDiagnostics.diagnoseProblem')}
                     </Button>
                 </div>
                 <div className="mt-4">

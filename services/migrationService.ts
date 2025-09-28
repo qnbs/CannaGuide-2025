@@ -1,5 +1,5 @@
 import { store } from '../stores/store';
-import { ArchivedMentorResponse, ArchivedAdvisorResponse } from '../types';
+import { ArchivedMentorResponse, ArchivedAdvisorResponse } from '@/types';
 import { setArchivedMentorResponses, setArchivedAdvisorResponses } from '../stores/slices/archivesSlice';
 
 /**

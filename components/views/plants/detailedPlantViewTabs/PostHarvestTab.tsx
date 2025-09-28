@@ -1,91 +1,93 @@
 import React from 'react';
-import { Plant } from '@/types';
-import { Card } from '@/components/common/Card';
+import { Plant, PlantStage } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
+import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/stores/store';
-import { processPostHarvest as processPostHarvestAction } from '@/stores/slices/simulationSlice';
+import { processPostHarvest } from '@/stores/slices/simulationSlice';
+import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 
 interface PostHarvestTabProps {
     plant: Plant;
 }
 
-const ProgressBar: React.FC<{ value: number; max: number }> = ({ value, max }) => {
-    const percentage = Math.min(100, (value / max) * 100);
-    return (
-        <div className="w-full bg-slate-700 rounded-full h-4">
-            <div
-                className="bg-primary-500 h-4 rounded-full transition-all duration-500"
-                style={{ width: `${percentage}%` }}
-            ></div>
+const ProgressBar: React.FC<{ label: string; progress: number }> = ({ label, progress }) => (
+    <div>
+        <div className="flex justify-between mb-1">
+            <span className="text-base font-medium text-slate-300">{label}</span>
+            <span className="text-sm font-medium text-slate-300">{progress.toFixed(0)}%</span>
         </div>
-    );
-};
+        <div className="w-full bg-slate-700 rounded-full h-2.5">
+            <div className="bg-primary-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+        </div>
+    </div>
+);
 
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const { t } = useTranslations();
     const dispatch = useAppDispatch();
     const postHarvestData = plant.postHarvest;
+    const isFinished = plant.stage === PlantStage.Finished;
 
     if (!postHarvestData) {
         return <Card><p>{t('common.error')}</p></Card>;
     }
 
-    const handleSimulateNextDay = (action: 'dry' | 'cure' | 'burp' = 'dry') => {
-        dispatch(processPostHarvestAction({ plantId: plant.id, action }));
-    };
+    const dryingProgress = (postHarvestData.currentDryDay / PLANT_STAGE_DETAILS[PlantStage.Drying].duration) * 100;
+    const curingProgress = (postHarvestData.currentCureDay / PLANT_STAGE_DETAILS[PlantStage.Curing].duration) * 100;
 
     return (
-        <div className="space-y-6">
-            <Card>
-                <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.title')}</h3>
-                
+        <Card>
+            <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.title')}</h3>
+            
+            {isFinished ? (
+                 <div className="text-center p-8 bg-slate-800 rounded-lg">
+                    <h4 className="text-2xl font-bold text-green-400">{t('plantsView.postHarvest.processComplete')}</h4>
+                    <p className="text-lg mt-2">{t('plantsView.postHarvest.finalQuality')}: <span className="font-bold">{postHarvestData.finalQuality.toFixed(1)}/100</span></p>
+                </div>
+            ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Drying Section */}
-                    <div className={`space-y-4 p-4 rounded-lg ${plant.stage === 'DRYING' ? 'bg-slate-800' : 'bg-slate-800/50 opacity-60'}`}>
-                        <h4 className="font-bold text-lg">{t('plantsView.postHarvest.drying')}</h4>
-                        <div>
-                            <div className="flex justify-between items-baseline mb-1">
-                                <span className="text-sm font-semibold">{t('plantsView.postHarvest.dryingProgress')}</span>
-                                <span className="text-sm">{t('plantsView.postHarvest.days_other', { count: postHarvestData.currentDryDay })} / 10</span>
-                            </div>
-                            <ProgressBar value={postHarvestData.currentDryDay} max={10} />
-                        </div>
-                         <Button onClick={() => handleSimulateNextDay('dry')} disabled={plant.stage !== 'DRYING'} className="w-full">
+                    <div className={`p-4 rounded-lg ${plant.stage === PlantStage.Drying ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}>
+                        <h4 className="font-bold text-lg text-slate-100 mb-3">{t('plantsView.postHarvest.drying')}</h4>
+                        <ProgressBar label={t('plantsView.postHarvest.dryingProgress')} progress={dryingProgress} />
+                        <p className="text-sm text-slate-400 mt-2">{t('plantsView.postHarvest.day')} {postHarvestData.currentDryDay} / {PLANT_STAGE_DETAILS[PlantStage.Drying].duration}</p>
+                        <Button
+                            size="sm"
+                            className="w-full mt-4"
+                            onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'dry' }))}
+                            disabled={plant.stage !== PlantStage.Drying}
+                        >
                             {t('plantsView.postHarvest.simulateNextDay')}
                         </Button>
                     </div>
 
-                    {/* Curing Section */}
-                     <div className={`space-y-4 p-4 rounded-lg ${plant.stage === 'CURING' ? 'bg-slate-800' : 'bg-slate-800/50 opacity-60'}`}>
-                        <h4 className="font-bold text-lg">{t('plantsView.postHarvest.curing')}</h4>
-                        <div>
-                           <div className="flex justify-between items-baseline mb-1">
-                                <span className="text-sm font-semibold">{t('plantsView.postHarvest.curingProgress')}</span>
-                                <span className="text-sm">{t('plantsView.postHarvest.days_other', { count: postHarvestData.currentCureDay })} / 21</span>
-                            </div>
-                             <ProgressBar value={postHarvestData.currentCureDay} max={21} />
-                        </div>
-                        <div className="flex justify-between items-center bg-slate-700/50 p-2 rounded-md">
-                            <span className="text-sm font-semibold">{t('plantsView.postHarvest.jarHumidity')}:</span>
-                            <span className="font-mono font-bold">{postHarvestData.jarHumidity.toFixed(1)}%</span>
-                        </div>
-                         <div className="flex gap-2">
-                             <Button onClick={() => handleSimulateNextDay('cure')} disabled={plant.stage !== 'CURING'} className="w-full">
-                                {t('plantsView.postHarvest.simulateNextDay')}
-                            </Button>
-                            <Button onClick={() => handleSimulateNextDay('burp')} disabled={plant.stage !== 'CURING'} variant="secondary" className="w-full">
+                    <div className={`p-4 rounded-lg ${plant.stage === PlantStage.Curing ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}>
+                        <h4 className="font-bold text-lg text-slate-100 mb-3">{t('plantsView.postHarvest.curing')}</h4>
+                        <ProgressBar label={t('plantsView.postHarvest.curingProgress')} progress={curingProgress} />
+                        <p className="text-sm text-slate-400 mt-2">{t('plantsView.postHarvest.day')} {postHarvestData.currentCureDay} / {PLANT_STAGE_DETAILS[PlantStage.Curing].duration}</p>
+                        <p className="text-sm text-slate-300 mt-2">{t('plantsView.postHarvest.jarHumidity')}: <span className="font-bold">{postHarvestData.jarHumidity.toFixed(1)}%</span></p>
+                        <div className="flex gap-2 mt-4">
+                             <Button
+                                size="sm"
+                                variant="secondary"
+                                className="flex-1"
+                                onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'burp' }))}
+                                disabled={plant.stage !== PlantStage.Curing}
+                            >
                                 {t('plantsView.postHarvest.burpJars')}
                             </Button>
-                         </div>
+                            <Button
+                                size="sm"
+                                className="flex-1"
+                                onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'cure' }))}
+                                disabled={plant.stage !== PlantStage.Curing}
+                            >
+                                {t('plantsView.postHarvest.simulateNextDay')}
+                            </Button>
+                        </div>
                     </div>
                 </div>
-
-                 <div className="mt-6 text-center">
-                    <p className="text-slate-400 uppercase text-sm font-semibold">{t('plantsView.postHarvest.finalQuality')}</p>
-                    <p className="text-5xl font-bold text-primary-300 my-2">{postHarvestData.finalQuality.toFixed(1)} <span className="text-3xl">%</span></p>
-                </div>
-            </Card>
-        </div>
+            )}
+        </Card>
     );
 };

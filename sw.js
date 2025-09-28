@@ -1,4 +1,6 @@
-const CACHE_VERSION = 'v1.3.0'; // Increase this version on each new deployment
+// CACHE_VERSION muss bei jeder neuen Bereitstellung erhöht werden, um das 'activate'-Ereignis auszulösen
+// und sicherzustellen, dass Benutzer die neueste Version der App erhalten.
+const CACHE_VERSION = 'v1.4.0';
 const CACHE_NAME = `cannaguide-cache-${CACHE_VERSION}`;
 
 // App Shell: The minimal resources needed for the app to start.
@@ -194,10 +196,9 @@ self.addEventListener('activate', event => {
             return caches.delete(cacheName);
           }
         })
-      );
+      ).then(() => self.clients.claim()); // Take control of all clients immediately
     })
   );
-  return self.clients.claim();
 });
 
 self.addEventListener('fetch', event => {

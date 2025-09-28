@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '../../../types';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
 import * as d3 from 'd3';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface HistoryChartProps {
     history: PlantHistoryEntry[];

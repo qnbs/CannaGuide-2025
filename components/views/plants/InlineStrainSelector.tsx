@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useTranslations } from '@/hooks/useTranslations';
@@ -7,23 +7,67 @@ import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors';
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 
 interface InlineStrainSelectorProps {
   onClose: () => void;
   onSelectStrain: (strain: Strain) => void;
 }
 
-const StrainCompactItem: React.FC<{ strain: Strain; onClick: () => void }> = ({ strain, onClick }) => {
-    const isUserStrain = useAppSelector(selectUserStrains).some(s => s.id === strain.id);
+const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }> = ({ difficulty }) => {
+    const { t } = useTranslations();
+    const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 };
+    const level = difficultyMap[difficulty] || 2;
+    const color = { Easy: 'text-green-400', Medium: 'text-amber-400', Hard: 'text-red-400'}[difficulty];
+    return (
+        <div className="flex gap-0.5 items-center" title={t(`strainsView.difficulty.${difficulty.toLowerCase()}`)}>
+            {[...Array(3)].map((_, i) => (
+                <PhosphorIcons.Cannabis key={i} weight="fill" className={`w-4 h-4 ${i < level ? color : 'text-slate-600'}`} />
+            ))}
+        </div>
+    );
+};
+
+const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }> = ({ strain, onClick }) => {
+    const { t } = useTranslations();
+    const userStrains = useAppSelector(selectUserStrains);
+    const isUserStrain = userStrains.some(s => s.id === strain.id);
+
+    const typeClasses: Record<string, string> = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
+    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
+
     return (
         <button
             onClick={onClick}
-            className="w-full text-left p-2 rounded-md hover:bg-slate-700/50 transition-colors flex items-center gap-3"
+            className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 border border-transparent hover:border-slate-600"
         >
-            {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+            <div className="flex-shrink-0">
+                {TypeIcon && <TypeIcon className={`w-10 h-10 ${typeClasses[strain.type]}`} />}
+            </div>
+
             <div className="flex-grow min-w-0">
-                <p className="font-semibold text-slate-100 truncate">{strain.name}</p>
-                <p className="text-xs text-slate-400">{strain.type}</p>
+                <div className="flex items-center gap-2">
+                    {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+                    <p className="font-bold text-slate-100 truncate">{strain.name}</p>
+                </div>
+                <div className="grid grid-cols-3 gap-x-4 text-xs text-slate-400 mt-1">
+                    <div className="flex items-center gap-1" title="THC">
+                        <PhosphorIcons.Lightning className="w-3 h-3 text-red-400" />
+                        <span>{strain.thc?.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex items-center gap-1" title="CBD">
+                        <PhosphorIcons.Drop className="w-3 h-3 text-blue-400" />
+                        <span>{strain.cbd?.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex items-center gap-1" title={t('strainsView.table.flowering')}>
+                        <PhosphorIcons.ArrowClockwise className="w-3 h-3 text-slate-400" />
+                        <span>{strain.floweringTimeRange || strain.floweringTime} {t('common.units.weeks')}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div className="flex-shrink-0">
+                <DifficultyMeter difficulty={strain.agronomic.difficulty} />
             </div>
         </button>
     );
@@ -81,7 +125,6 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({ onCl
                     <PhosphorIcons.X className="w-5 h-5" />
                 </button>
             </div>
-            <p className="text-sm text-slate-400 mb-4 flex-shrink-0">{t('plantsView.inlineSelector.subtitle')}</p>
             <div className="relative mb-4 flex-shrink-0">
                 <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                 <input
@@ -99,7 +142,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({ onCl
                 ) : (
                     <div className="space-y-1">
                         {filteredStrains.map(strain => (
-                            <StrainCompactItem key={strain.id} strain={strain} onClick={() => onSelectStrain(strain)} />
+                            <DetailedStrainSelectItem key={strain.id} strain={strain} onClick={() => onSelectStrain(strain)} />
                         ))}
                          {filteredStrains.length === 0 && (
                             <div className="text-center py-4 text-slate-500 text-sm">

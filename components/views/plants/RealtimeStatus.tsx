@@ -38,10 +38,10 @@ export const RealtimeStatus: React.FC<RealtimeStatusProps> = ({ createdAt, isSim
                     <span className="text-2xl text-slate-300">{String(duration.seconds).padStart(2, '0')}</span>
                 </div>
                 <div className="flex justify-center gap-x-6 text-xs text-slate-400 mt-1">
-                    <span>{t('common.days')}</span>
-                    <span>{t('common.hours')}</span>
-                    <span>{t('common.minutes')}</span>
-                    <span>{t('common.seconds')}</span>
+                    <span>{t('common.units.days')}</span>
+                    <span>{t('common.units.hours')}</span>
+                    <span>{t('common.units.minutes')}</span>
+                    <span>{t('common.units.seconds')}</span>
                 </div>
             </div>
             {isSimulationActive && (

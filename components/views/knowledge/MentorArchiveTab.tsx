@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -12,6 +13,7 @@ import { selectArchivedMentorResponses } from '@/stores/selectors';
 // FIX: Corrected imports for Redux actions.
 import { updateArchivedMentorResponse, deleteArchivedMentorResponse } from '@/stores/slices/archivesSlice';
 import { addNotification } from '@/stores/slices/uiSlice';
+import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
 // FIX: Add props interface to allow passing data for testing.
 interface MentorArchiveTabProps {
@@ -30,6 +32,15 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+
+    // Defensive check to prevent rendering with invalid data structure
+    if (!Array.isArray(archivedResponses)) {
+        return (
+            <Card>
+                <SkeletonLoader count={3} />
+            </Card>
+        );
+    }
 
     const sortedArchive = useMemo(() => 
         [...(archivedResponses || [])].sort((a,b) => b.createdAt - a.createdAt),

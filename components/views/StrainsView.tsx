@@ -94,8 +94,8 @@ export const StrainsView: React.FC = () => {
 
     const strainsForCurrentTab = useMemo(() => {
         switch(activeTab) {
-            case 'my-strains': return userStrains;
-            case 'favorites': return allStrains.filter(s => favorites.has(s.id));
+            case StrainViewTab.MyStrains: return userStrains;
+            case StrainViewTab.Favorites: return allStrains.filter(s => favorites.has(s.id));
             default: return allStrains;
         }
     }, [activeTab, allStrains, userStrains, favorites]);
@@ -123,15 +123,16 @@ export const StrainsView: React.FC = () => {
         dispatch(clearStrainSelection());
     }, [filterProps.searchTerm, filterProps.typeFilter, filterProps.advancedFilters, activeTab, dispatch]);
     
+    // FIX: Corrected the logic for adding a new strain to prevent duplicates.
     const handleAddStrain = useCallback((strain: Strain) => {
-        const success = dispatch(addUserStrain(strain));
-        if (success) {
-            dispatch(addNotification({ message: t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }), type: 'success' }));
-            dispatch(closeAddModal());
-        } else {
+        if (userStrains.some(s => s.name.toLowerCase() === strain.name.toLowerCase())) {
             dispatch(addNotification({ message: t('strainsView.addStrainModal.validation.duplicate', { name: strain.name }), type: 'error' }));
+            return;
         }
-    }, [dispatch, t]);
+        dispatch(addUserStrain(strain));
+        dispatch(addNotification({ message: t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }), type: 'success' }));
+        dispatch(closeAddModal());
+    }, [dispatch, t, userStrains]);
 
     const handleUpdateStrain = useCallback((strain: Strain) => {
         dispatch(updateUserStrain(strain));
@@ -203,11 +204,11 @@ export const StrainsView: React.FC = () => {
     }
 
     const tabs = [
-        { id: 'all' as StrainViewTab, label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
-        { id: 'my-strains' as StrainViewTab, label: t('strainsView.tabs.myStrains'), icon: <PhosphorIcons.Star /> },
-        { id: 'favorites' as StrainViewTab, label: t('strainsView.tabs.favorites'), icon: <PhosphorIcons.Heart /> },
-        { id: 'exports' as StrainViewTab, label: t('strainsView.tabs.exports', { count: savedExports.length }), icon: <PhosphorIcons.DownloadSimple /> },
-        { id: 'tips' as StrainViewTab, label: t('strainsView.tabs.tips', { count: savedTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
+        { id: StrainViewTab.All, label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
+        { id: StrainViewTab.MyStrains, label: t('strainsView.tabs.myStrains'), icon: <PhosphorIcons.Star /> },
+        { id: StrainViewTab.Favorites, label: t('strainsView.tabs.favorites'), icon: <PhosphorIcons.Heart /> },
+        { id: StrainViewTab.Exports, label: t('strainsView.tabs.exports', { count: savedExports.length }), icon: <PhosphorIcons.DownloadSimple /> },
+        { id: StrainViewTab.Tips, label: t('strainsView.tabs.tips', { count: savedTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
     ];
 
     const renderContent = () => {
@@ -229,8 +230,8 @@ export const StrainsView: React.FC = () => {
                 );
             }
 
-            if (activeTab === 'my-strains' || activeTab === 'favorites') {
-                const emptyStateKey = activeTab === 'my-strains' ? 'myStrains' : 'favorites';
+            if (activeTab === StrainViewTab.MyStrains || activeTab === StrainViewTab.Favorites) {
+                const emptyStateKey = activeTab === StrainViewTab.MyStrains ? 'myStrains' : 'favorites';
                 return <Card className="text-center py-10 text-slate-500"><p>{t(`strainsView.emptyStates.${emptyStateKey}.text`)}</p></Card>;
             }
         }
@@ -275,7 +276,7 @@ export const StrainsView: React.FC = () => {
         );
     };
 
-    const showToolbar = activeTab === 'all' || activeTab === 'my-strains' || activeTab === 'favorites';
+    const showToolbar = activeTab === StrainViewTab.All || activeTab === StrainViewTab.MyStrains || activeTab === StrainViewTab.Favorites;
 
     return (
         <div className="space-y-4 animate-fade-in">
@@ -318,8 +319,8 @@ export const StrainsView: React.FC = () => {
                 />
             )}
 
-            {activeTab === 'exports' && <ExportsManagerView savedExports={savedExports} deleteExport={(id) => dispatch(deleteExport(id))} updateExport={(exp) => dispatch(updateExport(exp))} allStrains={allStrains} onOpenExportModal={() => dispatch(openExportModal())} />}
-            {activeTab === 'tips' && <StrainTipsView savedTips={savedTips} deleteTip={(id) => dispatch(deleteStrainTip(id))} updateTip={(tip) => dispatch(updateStrainTip(tip))} allStrains={allStrains} />}
+            {activeTab === StrainViewTab.Exports && <ExportsManagerView savedExports={savedExports} deleteExport={(id) => dispatch(deleteExport(id))} updateExport={(exp) => dispatch(updateExport(exp))} allStrains={allStrains} onOpenExportModal={() => dispatch(openExportModal())} />}
+            {activeTab === StrainViewTab.Tips && <StrainTipsView savedTips={savedTips} deleteTip={(id) => dispatch(deleteStrainTip(id))} updateTip={(tip) => dispatch(updateStrainTip(tip))} allStrains={allStrains} />}
             {showToolbar && renderContent()}
         </div>
     );

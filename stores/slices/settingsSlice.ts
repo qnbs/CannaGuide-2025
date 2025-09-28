@@ -105,9 +105,21 @@ const settingsSlice = createSlice({
             }
             currentLevel[keys[keys.length - 1]] = value;
         },
+        toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
+            const { path } = action.payload;
+            const keys = path.split('.');
+            let currentLevel: any = state.settings;
+            for (let i = 0; i < keys.length - 1; i++) {
+                currentLevel = currentLevel[keys[i]];
+            }
+            const finalKey = keys[keys.length - 1];
+            if (typeof currentLevel[finalKey] === 'boolean') {
+                currentLevel[finalKey] = !currentLevel[finalKey];
+            }
+        },
     }
 });
 
-export const { setSetting, setSettings } = settingsSlice.actions;
+export const { setSetting, setSettings, toggleSetting } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

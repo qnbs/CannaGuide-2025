@@ -1,4 +1,3 @@
-
 import { StrainViewTab } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -21,6 +20,7 @@ const strainsViewSlice = createSlice({
     reducers: {
         setStrainsViewTab: (state, action: PayloadAction<StrainViewTab>) => {
             state.strainsViewTab = action.payload;
+            state.selectedStrainIds = []; // Clear selection when changing tabs
         },
         setStrainsViewMode: (state, action: PayloadAction<'list' | 'grid'>) => {
             state.strainsViewMode = action.payload;
@@ -38,9 +38,13 @@ const strainsViewSlice = createSlice({
         toggleAllStrainSelection: (state, action: PayloadAction<{ ids: string[], areAllCurrentlySelected: boolean }>) => {
             const { ids, areAllCurrentlySelected } = action.payload;
             if (areAllCurrentlySelected) {
-                state.selectedStrainIds = [];
+                 const currentSelection = new Set(state.selectedStrainIds);
+                 ids.forEach(id => currentSelection.delete(id));
+                 state.selectedStrainIds = Array.from(currentSelection);
             } else {
-                state.selectedStrainIds = ids;
+                const newSelection = new Set(state.selectedStrainIds);
+                ids.forEach(id => newSelection.add(id));
+                state.selectedStrainIds = Array.from(newSelection);
             }
         },
         clearStrainSelection: (state) => {

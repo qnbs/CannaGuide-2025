@@ -1,7 +1,7 @@
 
 
-// FIX: Changed import path to be relative
-import { PlantStage } from './types';
+// FIX: Changed import path to use alias
+import { PlantStage } from '@/types';
 
 export const STAGES_ORDER: PlantStage[] = [
     PlantStage.Seed,

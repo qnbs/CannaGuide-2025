@@ -36,7 +36,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
             useCase: 'deepDive',
             data: { topic, plantName: plant.name }
         });
-        return messages.join(' ');
+        return messages[Math.floor(Math.random() * messages.length)];
     }, [topic, plant.name, t]);
 
 

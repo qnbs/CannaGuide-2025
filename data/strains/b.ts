@@ -1,10 +1,11 @@
 import type { Strain } from '@/types';
+import { StrainType } from '@/types';
 
 export const strainsB: Strain[] = [
     {
         "id": "b-52",
         "name": "B-52",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Skunk #1 x Big Bud",
         "floweringType": "Photoperiod",
@@ -28,7 +29,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bacio-gelato-gelato-41",
         "name": "Bacio Gelato (Gelato #41)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "floweringType": "Photoperiod",
         "thc": 25,
@@ -52,7 +53,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bahama-mama",
         "name": "Bahama Mama",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Tropicana Cookies x Black Banana",
         "floweringType": "Photoperiod",
@@ -76,7 +77,7 @@ export const strainsB: Strain[] = [
     {
         "id": "banana-kush",
         "name": "Banana Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Ghost OG x Skunk Haze",
         "floweringType": "Photoperiod",
@@ -100,7 +101,7 @@ export const strainsB: Strain[] = [
     {
         "id": "banana-og",
         "name": "Banana OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "OG Kush x Banana",
         "floweringType": "Photoperiod",
@@ -124,7 +125,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bay-platinum-cookies",
         "name": "Bay Platinum Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Bay 11 x Platinum Cookies",
         "floweringType": "Photoperiod",
@@ -148,7 +149,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bc-bud",
         "name": "BC Bud",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
         "genetics": "Unknown (often associated with Skunk variations)",
         "floweringType": "Photoperiod",
@@ -172,7 +173,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bedica-talea",
         "name": "Bedica (Talea)",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 100% Indica",
         "genetics": "Unknown (likely an Indica strain)",
         "floweringType": "Photoperiod",
@@ -196,7 +197,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bediol-elida",
         "name": "Bediol (Elida)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica (CBD Dominant)",
         "genetics": "Unknown (likely a Haze variety)",
         "floweringType": "Photoperiod",
@@ -220,7 +221,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bedrocan-afina",
         "name": "Bedrocan (Afina)",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Jack Herer phenotype",
         "floweringType": "Photoperiod",
@@ -244,7 +245,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bedrolite-rensina",
         "name": "Bedrolite (Rensina)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica (CBD Dominant)",
         "genetics": "Unknown (CBD-rich variety)",
         "floweringType": "Photoperiod",
@@ -268,7 +269,7 @@ export const strainsB: Strain[] = [
     {
         "id": "berry-gelato",
         "name": "Berry Gelato",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "floweringType": "Photoperiod",
         "thc": 23,
@@ -292,7 +293,7 @@ export const strainsB: Strain[] = [
     {
         "id": "big-bud",
         "name": "Big Bud",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Indica / 15% Sativa",
         "genetics": "Afghani x Northern Lights x Skunk #1",
         "floweringType": "Photoperiod",
@@ -316,7 +317,7 @@ export const strainsB: Strain[] = [
     {
         "id": "birthday-cake-kush",
         "name": "Birthday Cake Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "GSC x Cherry Pie",
         "floweringType": "Photoperiod",
@@ -340,7 +341,7 @@ export const strainsB: Strain[] = [
     {
         "id": "biscotti",
         "name": "Biscotti",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Gelato #25 x GSC x South Florida OG",
         "floweringType": "Photoperiod",
@@ -364,7 +365,7 @@ export const strainsB: Strain[] = [
     {
         "id": "biscotti-mintz",
         "name": "Biscotti Mintz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Biscotti x Kush Mints",
         "floweringType": "Photoperiod",
@@ -388,7 +389,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-beauty",
         "name": "Black Beauty",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Unknown (Landrace Sativa phenotype)",
         "floweringType": "Photoperiod",
@@ -412,7 +413,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-cherry-soda",
         "name": "Black Cherry Soda",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Black Dahlia x Ace of Spades (or others)",
         "floweringType": "Photoperiod",
@@ -436,7 +437,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-dahlia",
         "name": "Black Dahlia",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Black Cherry Soda x Querkle",
         "floweringType": "Photoperiod",
@@ -460,7 +461,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-domina",
         "name": "Black Domina",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 95% Indica / 5% Sativa",
         "genetics": "Afghani x Ortega x Northern Lights x Hash Plant",
         "floweringType": "Photoperiod",
@@ -484,7 +485,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-jack",
         "name": "Black Jack",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Black Domina x Jack Herer",
         "floweringType": "Photoperiod",
@@ -508,7 +509,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-runtz",
         "name": "Black Runtz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Zkittlez x Gelato (dark phenotype)",
         "floweringType": "Photoperiod",
@@ -532,7 +533,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-tuna",
         "name": "Black Tuna",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Herijuana x Lamb's Bread",
         "floweringType": "Photoperiod",
@@ -556,7 +557,7 @@ export const strainsB: Strain[] = [
     {
         "id": "black-widow",
         "name": "Black Widow",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Brazilian Sativa x South Indian Indica",
         "floweringType": "Photoperiod",
@@ -580,7 +581,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blackberry",
         "name": "Blackberry",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Black Domina x Raspberry Cough",
         "floweringType": "Photoperiod",
@@ -604,7 +605,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blackberry-kush",
         "name": "Blackberry Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Afghani x Blackberry",
         "floweringType": "Photoperiod",
@@ -628,7 +629,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blackwater",
         "name": "Blackwater",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 90% Indica / 10% Sativa",
         "genetics": "Mendo Purps x SFV OG Kush",
         "floweringType": "Photoperiod",
@@ -652,7 +653,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-cheese",
         "name": "Blue Cheese",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Blueberry x UK Cheese",
         "floweringType": "Photoperiod",
@@ -676,7 +677,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-cookies",
         "name": "Blue Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 90% Indica / 10% Sativa",
         "genetics": "GSC x Blueberry",
         "floweringType": "Photoperiod",
@@ -700,7 +701,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-diamond",
         "name": "Blue Diamond",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 90% Indica / 10% Sativa",
         "genetics": "Diamond OG x Blue Dream",
         "floweringType": "Photoperiod",
@@ -724,7 +725,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-dream",
         "name": "Blue Dream",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Blueberry x Haze",
         "floweringType": "Photoperiod",
@@ -748,7 +749,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-dream-cbd",
         "name": "Blue Dream CBD",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica (CBD Dominant)",
         "genetics": "Blue Dream x California Orange CBD",
         "floweringType": "Photoperiod",
@@ -772,7 +773,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-dream-matic",
         "name": "Blue Dream Matic",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Sativa / 25% Indica (Autoflower)",
         "genetics": "Blue Dream x Ruderalis",
         "floweringType": "Autoflower",
@@ -796,7 +797,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-gelato-41",
         "name": "Blue Gelato 41",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Blueberry x Thin Mint GSC x Sunset Sherbet",
         "floweringType": "Photoperiod",
@@ -820,7 +821,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-hawaiian",
         "name": "Blue Hawaiian",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Blueberry x Hawaiian Sativa",
         "floweringType": "Photoperiod",
@@ -844,7 +845,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-magoo",
         "name": "Blue Magoo",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Indica / 15% Sativa",
         "genetics": "DJ Short Blueberry x Major League Bud (Williams Wonder)",
         "floweringType": "Photoperiod",
@@ -868,7 +869,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-power",
         "name": "Blue Power",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "The Power x Master Kush x Blue Moonshine x Sour Double",
         "floweringType": "Photoperiod",
@@ -892,7 +893,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-walker",
         "name": "Blue Walker",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Skywalker x Blueberry",
         "floweringType": "Photoperiod",
@@ -916,7 +917,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blue-zushi",
         "name": "Blue Zushi",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Zkittlez x Kush Mints",
         "floweringType": "Photoperiod",
@@ -940,7 +941,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blueberry",
         "name": "Blueberry",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 80% Indica / 20% Sativa",
         "genetics": "Afghani x Thai",
         "floweringType": "Photoperiod",
@@ -964,7 +965,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blueberry-haze",
         "name": "Blueberry Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Blueberry x Haze",
         "floweringType": "Photoperiod",
@@ -988,7 +989,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blueberry-og",
         "name": "Blueberry OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Blueberry x OG Kush",
         "floweringType": "Photoperiod",
@@ -1012,7 +1013,7 @@ export const strainsB: Strain[] = [
     {
         "id": "blueberry-yum-yum",
         "name": "Blueberry Yum Yum",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Blueberry x Durban Poison",
         "floweringType": "Photoperiod",
@@ -1036,7 +1037,7 @@ export const strainsB: Strain[] = [
     {
         "id": "booger",
         "name": "Booger",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Bubba Kush x Strawberry Cough",
         "floweringType": "Photoperiod",
@@ -1060,7 +1061,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bruce-banger",
         "name": "Bruce Banger",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Bruce Banner x Strawberry Diesel",
         "floweringType": "Photoperiod",
@@ -1084,7 +1085,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bruce-banner",
         "name": "Bruce Banner",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "OG Kush x Strawberry Diesel",
         "floweringType": "Photoperiod",
@@ -1108,7 +1109,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bubba-fett",
         "name": "Bubba Fett",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Indica / 15% Sativa",
         "genetics": "Stardawg x Pre-98 Bubba Kush",
         "floweringType": "Photoperiod",
@@ -1132,7 +1133,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bubba-kush",
         "name": "Bubba Kush",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 80% Indica / 20% Sativa",
         "genetics": "OG Kush x Unknown Indica",
         "floweringType": "Photoperiod",
@@ -1156,7 +1157,7 @@ export const strainsB: Strain[] = [
     {
         "id": "bubble-gum",
         "name": "Bubble Gum",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Indiana Bubblegum",
         "floweringType": "Photoperiod",

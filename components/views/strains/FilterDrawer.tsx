@@ -64,30 +64,30 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                 <section aria-labelledby="cannabinoids-filter-title">
                     <FilterSection title={t('strainsView.addStrainModal.cannabinoids')}>
                         <h3 id="cannabinoids-filter-title" className="sr-only">{t('strainsView.addStrainModal.cannabinoids')}</h3>
-                        <RangeSlider label={t('strainsView.thcMax')} min={0} max={35} step={1} value={tempFilterState.thcRange} onChange={val => setTempFilterState(prev => ({...prev, thcRange: val}))} unit=" %" color="primary"/>
-                        <RangeSlider label={t('strainsView.cbdMax')} min={0} max={20} step={1} value={tempFilterState.cbdRange} onChange={val => setTempFilterState(prev => ({...prev, cbdRange: val}))} unit=" %" color="green" />
+                        <RangeSlider label={t('strainsView.filters.thcMax')} min={0} max={35} step={1} value={tempFilterState.thcRange} onChange={val => setTempFilterState(prev => ({...prev, thcRange: val}))} unit=" %" color="primary"/>
+                        <RangeSlider label={t('strainsView.filters.cbdMax')} min={0} max={20} step={1} value={tempFilterState.cbdRange} onChange={val => setTempFilterState(prev => ({...prev, cbdRange: val}))} unit=" %" color="green" />
                     </FilterSection>
                 </section>
 
                 <section aria-labelledby="growdata-filter-title">
                     <FilterSection title={t('strainsView.addStrainModal.growData')}>
                         <h3 id="growdata-filter-title" className="sr-only">{t('strainsView.addStrainModal.growData')}</h3>
-                        <RangeSlider label={t('strainsView.floweringTime')} min={4} max={20} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState(prev => ({...prev, floweringRange: val}))} unit={` ${t('strainsView.weeks')}`} color="blue"/>
+                        <RangeSlider label={t('strainsView.filters.floweringTime')} min={4} max={20} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState(prev => ({...prev, floweringRange: val}))} unit={` ${t('strainsView.weeks')}`} color="blue"/>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.level')}</h4>
+                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.difficulty')}</h4>
                                 <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
                                     {(['Easy', 'Medium', 'Hard'] as DifficultyLevel[]).map(d => (<button key={d} onClick={() => handleToggleSet('selectedDifficulties', d)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedDifficulties.has(d) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`}>{difficultyLabels[d]}</button>))}
                                 </div>
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.yield')}</h4>
+                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.yield')}</h4>
                                 <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
                                     {(['Low', 'Medium', 'High'] as YieldLevel[]).map(y => (<button key={y} onClick={() => handleToggleSet('selectedYields', y)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedYields.has(y) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`}>{yieldLabels[y]}</button>))}
                                 </div>
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.height')}</h4>
+                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.height')}</h4>
                                 <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
                                     {(['Short', 'Medium', 'Tall'] as HeightLevel[]).map(h => (<button key={h} onClick={() => handleToggleSet('selectedHeights', h)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedHeights.has(h) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`}>{heightLabels[h]}</button>))}
                                 </div>
@@ -101,12 +101,12 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                         <h3 id="profile-filter-title" className="sr-only">{t('strainsView.addStrainModal.profile')}</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.terpenes')}</h4>
-                                <div className="max-h-32 overflow-y-auto space-y-1 pr-2 flex flex-wrap gap-2">{allTerpenes.map(terpene => (<button key={terpene} onClick={() => handleToggleSet('selectedTerpenes', terpene)} className={`px-3 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.has(terpene) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{terpene}</button>))}</div>
+                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.terpenes')}</h4>
+                                <div className="max-h-32 overflow-y-auto space-y-1 pr-2 flex flex-wrap gap-2">{allTerpenes.map(terpene => (<button key={terpene} onClick={() => handleToggleSet('selectedTerpenes', terpene)} className={`px-3 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.has(terpene) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{t(`common.terpenes.${terpene}`, terpene)}</button>))}</div>
                             </div>
                             <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.aromas')}</h4>
-                                <div className="max-h-32 overflow-y-auto space-y-1 pr-2 flex flex-wrap gap-2">{allAromas.map(aroma => (<button key={aroma} onClick={() => handleToggleSet('selectedAromas', aroma)} className={`px-3 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.has(aroma) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{aroma}</button>))}</div>
+                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.aromas')}</h4>
+                                <div className="max-h-32 overflow-y-auto space-y-1 pr-2 flex flex-wrap gap-2">{allAromas.map(aroma => (<button key={aroma} onClick={() => handleToggleSet('selectedAromas', aroma)} className={`px-3 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.has(aroma) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{t(`common.aromas.${aroma}`, aroma)}</button>))}</div>
                             </div>
                         </div>
                     </FilterSection>

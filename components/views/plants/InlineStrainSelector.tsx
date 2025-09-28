@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Strain } from '@/types';
-import { useAppStore } from '@/stores/useAppStore';
+import { useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors';
 
 interface InlineStrainSelectorProps {
   onClose: () => void;
@@ -13,7 +14,7 @@ interface InlineStrainSelectorProps {
 }
 
 const StrainCompactItem: React.FC<{ strain: Strain; onClick: () => void }> = ({ strain, onClick }) => {
-    const isUserStrain = useAppStore(state => state.userStrains.some(s => s.id === strain.id));
+    const isUserStrain = useAppSelector(selectUserStrains).some(s => s.id === strain.id);
     return (
         <button
             onClick={onClick}
@@ -33,8 +34,8 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({ onCl
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const userStrains = useAppStore(state => state.userStrains);
-    const favorites = useAppStore(state => state.favoriteIds);
+    const userStrains = useAppSelector(selectUserStrains);
+    const favorites = useAppSelector(selectFavoriteIds);
 
     useEffect(() => {
         strainService.getAllStrains().then(strains => {

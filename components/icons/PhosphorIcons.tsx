@@ -90,6 +90,7 @@ const PaintBrush: React.FC<IconProps> = memo(({ className }) => <IconBase classN
 const PaperPlaneTilt: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M223,48.3a16,16,0,0,0-19.1-3.3L33,101.8a15.9,15.9,0,0,0,0,29.3l85.6,26.8,26.8,85.6a15.9,15.9,0,0,0,29.3,0L226.3,67.4A16,16,0,0,0,223,48.3ZM128,211.5l-21.8-69.8-69.8-21.8L208,64Z"/></IconBase>);
 const Pause: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M80,48a16,16,0,0,0-16,16V192a16,16,0,0,0,32,0V64A16,16,0,0,0,80,48Zm96,0a16,16,0,0,0-16,16V192a16,16,0,0,0,32,0V64A16,16,0,0,0,176,48Z"/></IconBase>);
 const PencilSimple: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M227.3,73.4,182.6,28.7a16,16,0,0,0-22.6,0L36.8,152,28.7,182.6a16,16,0,0,0,5.7,15.7,15.8,15.8,0,0,0,15.7,5.7L80,200.8,203.2,77.6a16,16,0,0,0,0-22.6ZM76.7,180,48,169.3l88-88,28.7,28.7Z"/></IconBase>);
+const Person: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M234.3,214.3,202,176a8,8,0,0,0-13.3,4.9l-11.4,45.4a8.1,8.1,0,0,1-7.8,6.7H86.5a8.1,8.1,0,0,1-7.8-6.7L67.3,180.9A8,8,0,0,0,54,176l-32.3,38.3a8,8,0,0,0,11.3,11.4L64.7,194a8.1,8.1,0,0,0,7.8-6.7l11.4-45.4a8,8,0,0,1,13.3-4.9l16,21.3a8.1,8.1,0,0,0,13.4,0l16-21.3a8,8,0,0,1,13.3,4.9l11.4,45.4a8.1,8.1,0,0,0,7.8,6.7l31.7,3.9a8,8,0,0,0,11.3-11.4ZM128,120a40,40,0,1,0-40-40A40,40,0,0,0,128,120Zm0-64a24,24,0,1,1-24,24A24,24,0,0,1,128,56Z"/></IconBase>);
 const Plant: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M218.3,115.7C203.1,105.3,160,88,160,40a8,8,0,0,0-16,0c0,16.4-15.6,29.9-30.3,40.3-15.1,10.7-33,21.8-33.7,46.9a8,8,0,0,0,8,8c32,0,32,16,32,16v8a8,8,0,0,0,16,0v-8s0-16,32-16c3.6,0,6.7.7,9.6,2a8,8,0,0,0,9.9-5.9C191,141.4,228.6,122.9,218.3,115.7ZM38.3,115.7C23.1,105.3,80,88,80,40a8,8,0,0,1,16,0c0,16.4,15.6,29.9,30.3,40.3,15.1,10.7,33,21.8,33.7,46.9a8,8,0,0,1-8,8c-32,0-32,16-32,16v8a8,8,0,0,1-16,0v-8s0-16-32-16c-3.6,0-6.7.7-9.6,2a8,8,0,0,1-9.9-5.9C39,141.4,2.6,122.9,38.3,115.7Z"/></IconBase>);
 const Play: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M240,128a15.8,15.8,0,0,1-7.8,13.7L87.8,225.7A16,16,0,0,1,64,212V44a16,16,0,0,1,23.8-13.7l144.4,84A15.8,15.8,0,0,1,240,128Z"/></IconBase>);
 const PlusCircle: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M128,24A104,104,0,1,0,232,128,104.2,104.2,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-88a8,8,0,0,1-8,8H136v24a8,8,0,0,1-16,0V136H96a8,8,0,0,1,0-16h24V96a8,8,0,0,1,16,0v24h24A8,8,0,0,1,168,128Z"/></IconBase>);
@@ -169,6 +170,7 @@ export const PhosphorIcons = {
     PaperPlaneTilt,
     Pause,
     PencilSimple,
+    Person,
     Plant,
     Play,
     PlusCircle,

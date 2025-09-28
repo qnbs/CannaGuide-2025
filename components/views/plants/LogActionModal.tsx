@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { Plant, JournalEntry, TrainingType } from '@/types';
+import { Plant, JournalEntry, TrainingType, JournalEntryType } from '@/types';
 import { useTranslations } from '@/hooks/useTranslations';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { dbService } from '@/services/dbService';
 import { CameraModal } from '@/components/common/CameraModal';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectSettings } from '@/stores/selectors';
+import { addNotification } from '@/stores/slices/uiSlice';
+import { waterPlant, topPlant, applyLst, addJournalEntry, applyPestControl } from '@/stores/slices/simulationSlice';
 
 export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo' | 'amendment';
 
@@ -19,18 +22,10 @@ interface LogActionModalProps {
 
 export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
     const { t } = useTranslations();
-    const { addJournalEntry, waterPlant, settings, addNotification, topPlant, applyLst, applyPestControl, addAmendment } = useAppStore(state => ({
-        addJournalEntry: state.addJournalEntry,
-        waterPlant: state.waterPlant,
-        settings: state.settings,
-        addNotification: state.addNotification,
-        topPlant: state.topPlant,
-        applyLst: state.applyLst,
-        applyPestControl: state.applyPestControl,
-        addAmendment: state.addAmendment,
-    }));
+    const dispatch = useAppDispatch();
+    const settings = useAppSelector(selectSettings);
     
-    const [notes, setNotes] = useState(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '');
+    const [notes, setNotes] = useState(t(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '') || '');
     const [waterAmount, setWaterAmount] = useState(500);
     const [ph, setPh] = useState(6.5);
     const [ec, setEc] = useState(1.2);
@@ -53,35 +48,36 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
         let entry: Omit<JournalEntry, 'id' | 'createdAt'> | null = null;
         switch(type) {
             case 'watering':
-                waterPlant(plant.id, waterAmount, ph);
-                entry = { type: 'WATERING', notes, details: { waterAmount, ph } };
+                dispatch(waterPlant({ plantId: plant.id, amount: waterAmount, ph }));
+                entry = { type: JournalEntryType.Watering, notes, details: { waterAmount, ph } };
                 break;
             case 'feeding':
-                entry = { type: 'FEEDING', notes, details: { waterAmount, ph, ec } };
+                dispatch(waterPlant({ plantId: plant.id, amount: waterAmount, ph, ec }));
+                entry = { type: JournalEntryType.Feeding, notes, details: { waterAmount, ph, ec } };
                 break;
             case 'training':
-                if (trainingType === 'Topping') topPlant(plant.id);
-                else if (trainingType === 'LST') applyLst(plant.id);
-                entry = { type: 'TRAINING', notes, details: { trainingType } };
+                if (trainingType === 'Topping') dispatch(topPlant({ plantId: plant.id }));
+                else if (trainingType === 'LST') dispatch(applyLst({ plantId: plant.id }));
+                entry = { type: JournalEntryType.Training, notes, details: { trainingType } };
                 break;
              case 'pestControl':
-                applyPestControl(plant.id, notes);
-                entry = { type: 'PEST_CONTROL', notes };
+                dispatch(applyPestControl({ plantId: plant.id, notes }));
+                entry = { type: JournalEntryType.PestControl, notes };
                 break;
             case 'observation':
-                entry = { type: 'OBSERVATION', notes };
+                entry = { type: JournalEntryType.Observation, notes };
                 break;
             case 'photo':
                 if (imageData) {
-                     entry = { type: 'PHOTO', notes, details: { imageId: imageData.id } };
+                     entry = { type: JournalEntryType.Photo, notes, details: { imageId: imageData.id } };
                 }
                 break;
             case 'amendment':
-                addAmendment(plant.id, amendmentType, notes);
+                entry = { type: JournalEntryType.Amendment, notes, details: { amendmentType } };
                 break;
         }
         if (entry) {
-            addJournalEntry(plant.id, entry);
+            dispatch(addJournalEntry({ plantId: plant.id, entry }));
         }
         onClose();
     };
@@ -97,7 +93,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
             }
         } catch (error) {
             console.error("Failed to save image to DB", error);
-            addNotification("Failed to save image", 'error');
+            dispatch(addNotification({ message: "Failed to save image", type: 'error' }));
         }
     };
 
@@ -118,7 +114,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                 <input type="number" value={ec} step="0.1" onChange={e => setEc(Number(e.target.value))} placeholder="EC" className="w-full input-base" />
             </>;
             case 'training': return <div className="flex items-end gap-2">
-                <select value={trainingType} onChange={e => setTrainingType(e.target.value as TrainingType)} className="w-full input-base">
+                <select value={trainingType} onChange={e => setTrainingType(e.target.value as TrainingType)} className="w-full select-input">
                     <option>LST</option><option>Topping</option><option>FIMing</option><option>Defoliation</option>
                 </select>
                 <Button variant="secondary" onClick={() => handleLearnMoreClick(trainingType)}>
@@ -126,7 +122,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                 </Button>
             </div>;
             case 'amendment': return <>
-                <select value={amendmentType} onChange={e => setAmendmentType(e.target.value)} className="w-full input-base">
+                <select value={amendmentType} onChange={e => setAmendmentType(e.target.value)} className="w-full select-input">
                     <option>Mycorrhizae</option>
                     <option>Worm Castings</option>
                 </select>

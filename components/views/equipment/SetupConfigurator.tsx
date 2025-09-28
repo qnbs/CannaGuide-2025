@@ -1,15 +1,17 @@
 import React, { useState, useMemo, useEffect } from 'react';
-// FIX: Changed import paths to be relative
-import { Card } from '../../common/Card';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { SavedSetup } from '../../../types';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslations } from '@/hooks/useTranslations';
+import { SavedSetup } from '@/types';
 import { SetupResults } from './SetupResults';
 import { configurations } from './setupConfigurations';
-import { useAppStore } from '../../../stores/useAppStore';
-import { selectEquipmentGenerationState } from '../../../stores/selectors';
-import { geminiService } from '../../../services/geminiService';
+import { geminiService } from '@/services/geminiService';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectEquipmentGenerationState } from '@/stores/selectors';
+import { startEquipmentGeneration, resetEquipmentGenerationState } from '@/stores/slices/aiSlice';
+import { addSetup } from '@/stores/slices/savedItemsSlice';
+import { addNotification } from '@/stores/slices/uiSlice';
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;
@@ -56,16 +58,11 @@ const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect })
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslations();
-    const { isLoading, response: recommendation, error, sourceDetails } = useAppStore(selectEquipmentGenerationState);
-    const { startEquipmentGeneration, resetEquipmentGenerationState, addSetup, addNotification } = useAppStore(state => ({
-        startEquipmentGeneration: state.startEquipmentGeneration,
-        resetEquipmentGenerationState: state.resetEquipmentGenerationState,
-        addSetup: state.addSetup,
-        addNotification: state.addNotification
-    }));
+    const dispatch = useAppDispatch();
+    const { isLoading, response: recommendation, error, sourceDetails } = useAppSelector(selectEquipmentGenerationState);
 
-    const [plantCount, setPlantCount] = useState<PlantCount | null>(sourceDetails?.area === '60x60' || sourceDetails?.area === '80x80' ? 1 : (sourceDetails?.area === '120x60' ? 2 : (sourceDetails?.area === '100x100' || sourceDetails?.area === '120x120' ? 3 : null)));
-    const [selectedConfigKey, setSelectedConfigKey] = useState<ConfigType | null>(sourceDetails?.budget === 'low' ? 'standard' : (sourceDetails?.budget === 'medium' ? 'medium' : (sourceDetails?.budget === 'high' ? 'premium' : null)));
+    const [plantCount, setPlantCount] = useState<PlantCount | null>(null);
+    const [selectedConfigKey, setSelectedConfigKey] = useState<ConfigType | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');
     
     const derivedSourceDetails = useMemo(() => {
@@ -73,23 +70,19 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
         const selectedConfigData = configurations[plantCount]?.[selectedConfigKey];
         if (!selectedConfigData) return null;
 
-        const areaString = selectedConfigData.details.zelt.split(' ')[0].split('x').slice(0, 2).join('x');
+        const areaString = (selectedConfigData.details.zelt.split(' ')[0].split('x').slice(0, 2).join('x')) as Area;
         
         const budgetMap: Record<ConfigType, Budget> = { standard: 'low', medium: 'medium', premium: 'high' };
         const growStyleMap: Record<ConfigType, GrowStyle> = { standard: 'beginner', medium: 'balanced', premium: 'yield' };
         
-        return {
-            area: areaString as Area,
-            growStyle: growStyleMap[selectedConfigKey],
-            budget: budgetMap[selectedConfigKey]
-        };
+        return { area: areaString, growStyle: growStyleMap[selectedConfigKey], budget: budgetMap[selectedConfigKey] };
     }, [plantCount, selectedConfigKey]);
 
     useEffect(() => {
         if (isLoading && plantCount && selectedConfigKey) {
             const config = configurations[plantCount][selectedConfigKey];
             const configName = t(config.titleKey);
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { configName } }, t);
+            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { configName } });
             let messageIndex = 0;
             const updateLoadingMessage = () => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
@@ -108,13 +101,13 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
         const config = configurations[plantCount][selectedConfigKey];
         const details = derivedSourceDetails;
         if(details) {
-            startEquipmentGeneration(t(config.promptKey), details);
+            dispatch(startEquipmentGeneration({ prompt: t(config.promptKey), details }));
         }
     };
     
      const handleSaveSetup = (setupToSave: Omit<SavedSetup, 'id' | 'createdAt'>) => {
-        addSetup(setupToSave);
-        addNotification(t('equipmentView.configurator.setupSaveSuccess', { name: setupToSave.name }), 'success');
+        dispatch(addSetup(setupToSave));
+        dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: setupToSave.name }), type: 'success' }));
         onSaveSetup();
     };
     
@@ -174,7 +167,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                     isLoading={isLoading}
                     error={error}
                     onSaveSetup={handleSaveSetup}
-                    startOver={resetEquipmentGenerationState}
+                    startOver={() => dispatch(resetEquipmentGenerationState())}
                     handleGenerate={handleGenerate}
                     sourceDetails={sourceDetails!}
                     loadingMessage={loadingMessage}

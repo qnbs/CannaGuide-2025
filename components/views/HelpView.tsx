@@ -17,7 +17,7 @@ const FAQSection: React.FC<{ title: string; faqs: { q: string; a: string }[] }> 
   <Card>
     <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{title}</h3>
     <div className="space-y-3">
-      {faqs.map((faq, index) => (
+      {(faqs || []).map((faq, index) => (
         <FAQItem key={index} question={faq.q} answer={faq.a} />
       ))}
     </div>
@@ -28,7 +28,7 @@ export const HelpView: React.FC = () => {
   const { t } = useTranslations();
 
   // The translation file returns an object of sections, so we can map over it.
-  const sections = t('helpView.sections') || {};
+  const sections = t('helpView.sections', { returnObjects: true }) || {};
 
   return (
     <div className="space-y-6">
@@ -37,9 +37,13 @@ export const HelpView: React.FC = () => {
         <p className="text-slate-400 mt-1">{t('helpView.subtitle')}</p>
       </div>
       
-      {Object.entries(sections).map(([key, sectionData]: [string, any]) => (
-        <FAQSection key={key} title={sectionData.title} faqs={sectionData.faqs} />
-      ))}
+      {Object.entries(sections).map(([key, sectionData]: [string, any]) => {
+        // Robustness check: Ensure sectionData is a valid object with a title before rendering.
+        if (sectionData && typeof sectionData === 'object' && sectionData.title) {
+          return <FAQSection key={key} title={sectionData.title} faqs={sectionData.faqs} />;
+        }
+        return null;
+      })}
     </div>
   );
 };

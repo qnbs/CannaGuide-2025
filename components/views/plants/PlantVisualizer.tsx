@@ -1,67 +1,63 @@
-import React from 'react';
-import { Plant, StructuralModel } from '../../../types';
+import React, { memo } from 'react';
+import { Plant, PlantStage } from '@/types';
 
 interface PlantVisualizerProps {
     plant: Plant;
     className?: string;
 }
 
-const SHOOT_WIDTH = 2; // Base width for shoots
-
-// A simple function to map a value from one range to another
-const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number) => {
+const mapRange = (value: number, inMin: number, inMax: number, outMin: number, outMax: number): number => {
     return ((value - inMin) * (outMax - outMin)) / (inMax - inMin) + outMin;
 };
 
-const renderStructuralModel = (model: StructuralModel, health: number) => {
-    const healthFactor = health / 100;
-    const baseColor = `rgba(74, 222, 128, ${mapRange(healthFactor, 0, 1, 0.4, 1)})`; // Fades to less vibrant green
-    const stemColor = `rgba(139, 92, 246, ${mapRange(healthFactor, 0, 1, 0.5, 1)})`; // Purple stem
+export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, className }) => {
+    const { stage, height, stressLevel } = plant;
+    const health = 1 - (stressLevel / 100);
 
-    const elements: React.ReactNode[] = [];
-    const nodePositions: { x: number, y: number }[] = [];
-    let currentY = 0;
+    const baseColor = `rgba(74, 222, 128, ${mapRange(health, 0, 1, 0.4, 1)})`;
+    const stemColor = `rgba(139, 92, 246, ${mapRange(health, 0, 1, 0.5, 1)})`;
 
-    // First, calculate node positions based on main stem shoots
-    model.nodes.forEach((node, index) => {
-        const mainShoot = model.shoots.find(s => s.nodeIndex === index && s.isMain);
-        if (mainShoot) {
-            currentY += mainShoot.length;
-        }
-        nodePositions.push({ x: 0, y: -currentY });
-    });
+    const stageScale = {
+        [PlantStage.Seed]: 0.1,
+        [PlantStage.Germination]: 0.15,
+        [PlantStage.Seedling]: 0.25,
+        [PlantStage.Vegetative]: Math.min(1, 0.3 + (height / 80)),
+        [PlantStage.Flowering]: 1,
+        [PlantStage.Harvest]: 1,
+        [PlantStage.Drying]: 0.9,
+        [PlantStage.Curing]: 0.9,
+        [PlantStage.Finished]: 0.9,
+    }[stage];
 
-    model.shoots.forEach((shoot, index) => {
-        const startNodePos = nodePositions[shoot.nodeIndex] || { x: 0, y: 0 };
-        const endX = startNodePos.x + Math.sin(shoot.angle * (Math.PI / 180)) * shoot.length;
-        const endY = startNodePos.y - Math.cos(shoot.angle * (Math.PI / 180)) * shoot.length;
-        
-        elements.push(
-            <line
-                key={`shoot-${shoot.id}`}
-                x1={startNodePos.x}
-                y1={startNodePos.y}
-                x2={endX}
-                y2={endY}
-                stroke={shoot.isMain ? stemColor : baseColor}
-                strokeWidth={SHOOT_WIDTH}
-                strokeLinecap="round"
-            />
-        );
-    });
+    const showBuds = [PlantStage.Flowering, PlantStage.Harvest].includes(stage);
+    const budColor = `rgba(192, 132, 252, ${stage === PlantStage.Harvest ? 1 : 0.8})`;
 
-    return elements;
-};
+    const stem = <path d="M12 22 V2" stroke={stemColor} strokeWidth="1.5" strokeLinecap="round" />;
+    
+    const leaves = [
+        <path key="l1" d="M12 18 C 8 18, 4 16, 2 12" stroke={baseColor} fill="none" strokeWidth="1.5" strokeLinecap="round" />,
+        <path key="r1" d="M12 18 C 16 18, 20 16, 22 12" stroke={baseColor} fill="none" strokeWidth="1.5" strokeLinecap="round" />,
+        <path key="l2" d="M12 14 C 7 14, 3 12, 1 7" stroke={baseColor} fill="none" strokeWidth="1.5" strokeLinecap="round" />,
+        <path key="r2" d="M12 14 C 17 14, 21 12, 23 7" stroke={baseColor} fill="none" strokeWidth="1.5" strokeLinecap="round" />,
+        <path key="l3" d="M12 10 C 8 10, 5 8, 3 4" stroke={baseColor} fill="none" strokeWidth="1.5" strokeLinecap="round" />,
+        <path key="r3" d="M12 10 C 16 10, 19 8, 21 4" stroke={baseColor} fill="none" strokeWidth="1.5" strokeLinecap="round" />,
+    ];
 
-
-export const PlantVisualizer: React.FC<PlantVisualizerProps> = ({ plant, className }) => {
-     const height = plant.structuralModel.shoots.reduce((max, shoot) => Math.max(max, shoot.length), 5);
+    const buds = [
+        <circle key="b1" cx="12" cy="2" r="2" fill={budColor} />,
+        <circle key="b2" cx="10" cy="5" r="1.5" fill={budColor} />,
+        <circle key="b3" cx="14" cy="5" r="1.5" fill={budColor} />,
+        <circle key="b4" cx="8" cy="9" r="1.5" fill={budColor} />,
+        <circle key="b5" cx="16" cy="9" r="1.5" fill={budColor} />,
+    ];
 
     return (
-        <div className={`relative flex flex-col items-center justify-center ${className}`}>
-             <svg viewBox={`-50 -${height * 1.1} 100 ${height * 1.1}`} className="w-full h-full">
-                {renderStructuralModel(plant.structuralModel, plant.health)}
-            </svg>
-        </div>
+        <svg viewBox="0 0 24 24" className={className} style={{ transition: 'transform 0.5s ease' }}>
+            <g transform={`scale(${stageScale}) translate(0, ${24 - 24 * stageScale})`}>
+                {stem}
+                {leaves}
+                {showBuds && buds}
+            </g>
+        </svg>
     );
-};
+});

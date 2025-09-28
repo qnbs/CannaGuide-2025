@@ -1,92 +1,99 @@
-import { SpeechQueueItem } from '../../types';
-import { StoreSet, StoreGet } from '../useAppStore';
-import { ttsService } from '../../services/ttsService';
 
-export interface TTSSlice {
+import { SpeechQueueItem, TTSSettings } from '@/types';
+import { ttsService } from '../../services/ttsService';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { RootState } from '../store';
+
+export interface TtsState {
     ttsQueue: SpeechQueueItem[];
     isTtsSpeaking: boolean;
     isTtsPaused: boolean;
     currentlySpeakingId: string | null;
-
-    addToTtsQueue: (item: SpeechQueueItem) => void;
-    playTts: () => void;
-    pauseTts: () => void;
-    stopTts: () => void;
-    nextTts: () => void;
-    clearTtsQueue: () => void;
-    _startNextInQueue: () => void;
-    _setCurrentlySpeakingId: (id: string | null) => void;
 }
 
-export const createTtsSlice = (set: StoreSet, get: StoreGet): TTSSlice => ({
+const initialState: TtsState = {
     ttsQueue: [],
     isTtsSpeaking: false,
     isTtsPaused: false,
     currentlySpeakingId: null,
+};
 
-    addToTtsQueue: (item) => {
-        set(state => {
-            // Avoid adding duplicate text blocks
-            if (!state.ttsQueue.some(queued => queued.id === item.id)) {
-                state.ttsQueue.push(item);
-            }
-        });
-        if (!get().isTtsSpeaking) {
-            get().playTts();
-        }
-    },
+// Thunk for starting the next item in the queue
+const startNextInQueue = createAsyncThunk<void, void, { state: RootState }>(
+    'tts/startNextInQueue',
+    (_, { getState, dispatch }) => {
+        const state = getState().tts;
+        const settings = getState().settings.settings;
 
-    playTts: () => {
-        const { isTtsPaused, ttsQueue } = get();
-        if (isTtsPaused) {
-            ttsService.resume();
-            set(state => { state.isTtsSpeaking = true; state.isTtsPaused = false; });
-        } else if (ttsQueue.length > 0) {
-            get()._startNextInQueue();
-        }
-    },
-
-    pauseTts: () => {
-        ttsService.pause();
-        set(state => { state.isTtsSpeaking = false; state.isTtsPaused = true; });
-    },
-
-    stopTts: () => {
-        ttsService.cancel();
-        set(state => { state.ttsQueue = []; state.isTtsSpeaking = false; state.isTtsPaused = false; state.currentlySpeakingId = null; });
-    },
-
-    nextTts: () => {
-        ttsService.cancel(); // This will trigger the 'onend' event, which calls _startNextInQueue
-    },
-
-    clearTtsQueue: () => {
-        set(state => { state.ttsQueue = []; });
-    },
-    
-    _startNextInQueue: () => {
-        const { ttsQueue, settings } = get();
-        if (ttsQueue.length === 0) {
-            set(state => { state.isTtsSpeaking = false; state.isTtsPaused = false; state.currentlySpeakingId = null; });
+        if (state.ttsQueue.length === 0) {
+            dispatch(ttsSlice.actions._setSpeakingState({ isSpeaking: false, isPaused: false, id: null }));
             return;
         }
 
-        const nextItem = ttsQueue[0];
-        set(state => { state.isTtsSpeaking = true; state.isTtsPaused = false; state.currentlySpeakingId = nextItem.id; });
+        const nextItem = state.ttsQueue[0];
+        dispatch(ttsSlice.actions._setSpeakingState({ isSpeaking: true, isPaused: false, id: nextItem.id }));
 
         const onEnd = () => {
-            set(state => {
-                // Remove the item that just finished
-                state.ttsQueue.shift();
-            });
-            // Immediately try to start the next one
-            get()._startNextInQueue();
+            dispatch(ttsSlice.actions._itemFinished());
+            dispatch(startNextInQueue());
         };
 
         ttsService.speak(nextItem.text, settings.language, onEnd, settings.tts);
-    },
-    
-    _setCurrentlySpeakingId: (id) => {
-        set(state => { state.currentlySpeakingId = id; });
-    },
+    }
+);
+
+export const playTts = createAsyncThunk<void, void, { state: RootState }>(
+    'tts/play',
+    (_, { getState, dispatch }) => {
+        const { isTtsPaused, ttsQueue } = getState().tts;
+        if (isTtsPaused) {
+            ttsService.resume();
+            dispatch(ttsSlice.actions._setSpeakingState({ isSpeaking: true, isPaused: false, id: getState().tts.currentlySpeakingId }));
+        } else if (ttsQueue.length > 0) {
+            dispatch(startNextInQueue());
+        }
+    }
+);
+
+export const nextTts = createAsyncThunk<void, void, { state: RootState }>(
+    'tts/next',
+    (_, { dispatch }) => {
+        ttsService.cancel();
+    }
+);
+
+
+const ttsSlice = createSlice({
+    name: 'tts',
+    initialState,
+    reducers: {
+        addToTtsQueue: (state, action: PayloadAction<SpeechQueueItem>) => {
+            if (!state.ttsQueue.some(queued => queued.id === action.payload.id)) {
+                state.ttsQueue.push(action.payload);
+            }
+        },
+        pauseTts: (state) => {
+            ttsService.pause();
+            state.isTtsSpeaking = false;
+            state.isTtsPaused = true;
+        },
+        stopTts: (state) => {
+            ttsService.cancel();
+            state.ttsQueue = [];
+            state.isTtsSpeaking = false;
+            state.isTtsPaused = false;
+            state.currentlySpeakingId = null;
+        },
+        _setSpeakingState: (state, action: PayloadAction<{ isSpeaking: boolean, isPaused: boolean, id: string | null }>) => {
+            state.isTtsSpeaking = action.payload.isSpeaking;
+            state.isTtsPaused = action.payload.isPaused;
+            state.currentlySpeakingId = action.payload.id;
+        },
+        _itemFinished: (state) => {
+            state.ttsQueue.shift();
+        }
+    }
 });
+
+export const { addToTtsQueue, pauseTts, stopTts } = ttsSlice.actions;
+export default ttsSlice.reducer;

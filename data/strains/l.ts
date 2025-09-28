@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsL: Strain[] = [
     {
         "id": "la-cake",
         "name": "LA Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Gorilla Glue #4 x LA Kush",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsL: Strain[] = [
     {
         "id": "la-confidential",
         "name": "LA Confidential",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 95% / Sativa 5%",
         "genetics": "Afghani x California Indica",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsL: Strain[] = [
     {
         "id": "la-kush",
         "name": "LA Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "OG Kush x Abusive OG",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lambs-bread",
         "name": "Lamb's Bread",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 95% / Indica 5%",
         "genetics": "Jamaican Landrace",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsL: Strain[] = [
     {
         "id": "larry-bird",
         "name": "Larry Bird",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "GSC x Blue Power",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsL: Strain[] = [
     {
         "id": "larry-og",
         "name": "Larry OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 50% / Sativa 50%",
         "genetics": "OG Kush x SFV OG",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lava-cake",
         "name": "Lava Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Thin Mint GSC x Grape Pie",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lavender",
         "name": "Lavender",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Super Skunk x Big Skunk Korean x Afghani Hawaiian",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lebanese",
         "name": "Lebanese",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Lebanese Landrace",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsL: Strain[] = [
     {
         "id": "legend-orange-apricot",
         "name": "Legend Orange Apricot",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Legend OG x Orange Apricot",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lemon-berry",
         "name": "Lemon Berry",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "Dabney Blue x Lemon Thai",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lemon-cherry-gelato",
         "name": "Lemon Cherry Gelato",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Sunset Sherbet x GSC x Unknown",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lemon-haze",
         "name": "Lemon Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Lemon Skunk x Silver Haze",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lemon-pepper",
         "name": "Lemon Pepper",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Lemon Cooler x Lemon Pebbles",
         "floweringType": "Photoperiod",
@@ -340,7 +340,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lemon-thai",
         "name": "Lemon Thai",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Thai Sativa x Hawaiian Sativa",
         "floweringType": "Photoperiod",
@@ -364,7 +364,7 @@ export const strainsL: Strain[] = [
     {
         "id": "lemon-tree",
         "name": "Lemon Tree",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Lemon Skunk x Sour Diesel",
         "floweringType": "Photoperiod",
@@ -372,8 +372,8 @@ export const strainsL: Strain[] = [
         "cbd": 1,
         "thcRange": "22-28%",
         "cbdRange": "<1%",
-        "floweringTime": 10,
-        "floweringTimeRange": "9-11",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
         "description": "A balanced hybrid with a strong, fresh lemon aroma. The effect is uplifting, relaxing, and happy, ideal for all-day use.",
         "agronomic": {
             "difficulty": "Medium",
@@ -382,22 +382,22 @@ export const strainsL: Strain[] = [
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Lemon", "Citrus", "Diesel", "Sour"],
+        "aromas": ["Lemon", "Citrus", "Sour", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     },
     {
         "id": "lemonchello",
         "name": "Lemonchello",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "The Original Lemonnade x Cherry Pie",
         "floweringType": "Photoperiod",
-        "thc": 20,
+        "thc": 18.5,
         "cbd": 1,
-        "thcRange": "18-22%",
+        "thcRange": "16-21%",
         "cbdRange": "<1%",
-        "floweringTime": 10,
-        "floweringTimeRange": "9-11",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
         "description": "A sativa-dominant strain with a sweet, lemony aroma reminiscent of the Italian liqueur. The effect is uplifting, social, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
@@ -406,20 +406,20 @@ export const strainsL: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Lemon", "Citrus", "Sweet", "Cherry"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+        "aromas": ["Lemon", "Cherry", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
     },
     {
         "id": "liberty-haze",
         "name": "Liberty Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 60% Sativa / 40% Indica",
         "genetics": "G13 x Chemdawg 91",
         "floweringType": "Photoperiod",
         "thc": 25,
-        "cbd": 1,
+        "cbd": 1.3,
         "thcRange": "22-28%",
-        "cbdRange": "<1%",
+        "cbdRange": "1-2%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
         "description": "A Cannabis Cup winner from Barney's Farm. This fast-flowering hybrid offers a long-lasting, euphoric, and uplifting effect. The aroma is a mix of pine and lime.",
@@ -436,16 +436,16 @@ export const strainsL: Strain[] = [
     {
         "id": "london-pound-cake",
         "name": "London Pound Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Sunset Sherbet x Unknown Indica",
         "floweringType": "Photoperiod",
-        "thc": 25,
+        "thc": 28,
         "cbd": 1,
-        "thcRange": "22-28%",
+        "thcRange": "26-30%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 10.5,
+        "floweringTimeRange": "10-11",
         "description": "An indica-dominant strain with a sweet, berry-like, and grape-like aroma. The effect is strong, relaxing, and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Medium",
@@ -454,22 +454,22 @@ export const strainsL: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Berry", "Grape", "Citrus"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+        "aromas": ["Berry", "Grape", "Sweet", "Vanilla"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     },
     {
         "id": "lowryder",
         "name": "Lowryder",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50% (Autoflower)",
         "genetics": "Northern Lights #2 x William's Wonder x Ruderalis",
         "floweringType": "Autoflower",
-        "thc": 15,
+        "thc": 13,
         "cbd": 1,
-        "thcRange": "12-18%",
+        "thcRange": "10-16%",
         "cbdRange": "<1%",
-        "floweringTime": 6,
-        "floweringTimeRange": "5-7",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9 (Lifecycle)",
         "description": "The original autoflowering strain that revolutionized the world of cannabis cultivation. It is small, fast, and discreet, with a mild, relaxing effect.",
         "agronomic": {
             "difficulty": "Easy",
@@ -478,18 +478,18 @@ export const strainsL: Strain[] = [
             "yieldDetails": { "indoor": "150-250 g/m²", "outdoor": "50-100 g/plant" },
             "heightDetails": { "indoor": "40-60 cm", "outdoor": "50-70 cm" }
         },
-        "aromas": ["Earthy", "Pine", "Spicy"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+        "aromas": ["Earthy", "Pine", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     },
     {
         "id": "lsd",
         "name": "LSD",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Mazar-I-Sharif x Skunk #1",
         "floweringType": "Photoperiod",
         "thc": 24,
-        "cbd": 1.5,
+        "cbd": 1.2,
         "thcRange": "20-28%",
         "cbdRange": "1-2%",
         "floweringTime": 9,

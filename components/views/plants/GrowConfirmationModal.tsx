@@ -1,28 +1,26 @@
 import React from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
-import { useAppStore } from '@/stores/useAppStore';
 import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useAppDispatch } from '@/stores/store';
+import { finalizeNewGrow, cancelNewGrow } from '@/stores/slices/uiSlice';
 
 export const GrowConfirmationModal: React.FC = () => {
     const { t } = useTranslations();
-    const { finalizeNewGrow, cancelNewGrow } = useAppStore(state => ({
-        finalizeNewGrow: state.finalizeNewGrow,
-        cancelNewGrow: state.cancelNewGrow,
-    }));
+    const dispatch = useAppDispatch();
 
     const footer = (
         <>
-            <Button variant="secondary" onClick={cancelNewGrow}>{t('common.cancel')}</Button>
-            <Button onClick={finalizeNewGrow}>{t('plantsView.confirmationModal.confirmButton')}</Button>
+            <Button variant="secondary" onClick={() => dispatch(cancelNewGrow())}>{t('common.cancel')}</Button>
+            <Button onClick={() => dispatch(finalizeNewGrow())}>{t('plantsView.confirmationModal.confirmButton')}</Button>
         </>
     );
 
     return (
         <Modal 
             isOpen={true} 
-            onClose={cancelNewGrow} 
+            onClose={() => dispatch(cancelNewGrow())} 
             title={t('plantsView.confirmationModal.title')}
             footer={footer}
             size="lg"

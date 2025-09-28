@@ -3,20 +3,20 @@ import React, { useId } from 'react';
 interface SwitchProps {
   checked: boolean;
   onChange: (checked: boolean) => void;
-  label: string;
+  label?: string; // Made label optional
+  'aria-label'?: string;
 }
 
-export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label }) => {
+export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, 'aria-label': ariaLabel }) => {
   const id = useId();
   return (
-    <div className="flex items-center justify-between">
-      <label htmlFor={id} className="text-sm font-semibold text-slate-300 cursor-pointer">
-        {label}
-      </label>
+    <div className="flex items-center">
+      {label && <label htmlFor={id} className="text-sm font-semibold text-slate-300 cursor-pointer mr-3">{label}</label>}
       <button
         id={id}
         role="switch"
         aria-checked={checked}
+        aria-label={ariaLabel || label}
         onClick={() => onChange(!checked)}
         className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
           checked ? 'bg-primary-500' : 'bg-slate-600'

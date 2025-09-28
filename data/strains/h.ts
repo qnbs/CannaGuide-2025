@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsH: Strain[] = [
     {
         "id": "han-solo-burger",
         "name": "Han Solo Burger",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "GMO Cookies x Larry OG",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsH: Strain[] = [
     {
         "id": "harle-tsu",
         "name": "Harle-Tsu",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica (CBD Dominant)",
         "genetics": "Harlequin x Sour Tsunami",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsH: Strain[] = [
     {
         "id": "harlequin",
         "name": "Harlequin",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Sativa / 25% Indica (CBD Dominant)",
         "genetics": "Colombian Gold x Nepali Indica x Thai x Swiss Landrace",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsH: Strain[] = [
     {
         "id": "hash-burger",
         "name": "Hash Burger",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Han-Solo Hash Plant x Double Burger",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsH: Strain[] = [
     {
         "id": "hash-plant",
         "name": "Hash Plant",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Afghani x Northern Lights",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsH: Strain[] = [
     {
         "id": "hawaiian-sativa",
         "name": "Hawaiian Sativa",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Hawaiian Landrace",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsH: Strain[] = [
     {
         "id": "haze",
         "name": "Haze",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "A mix of multiple landrace Sativas (e.g., Colombian, Mexican, Thai)",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsH: Strain[] = [
     {
         "id": "headband",
         "name": "Headband",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "OG Kush x Sour Diesel",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsH: Strain[] = [
     {
         "id": "headbanger",
         "name": "Headbanger",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Biker Kush x Sour Diesel",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsH: Strain[] = [
     {
         "id": "hellcat",
         "name": "Hellcat",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Wildcat x Cheetah Piss",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsH: Strain[] = [
     {
         "id": "hells-og",
         "name": "Hell's OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "OG Kush x Blackberry",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsH: Strain[] = [
     {
         "id": "herijuana",
         "name": "Herijuana",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Indica / 15% Sativa",
         "genetics": "Petrolia Headstash x Killer New Haven",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsH: Strain[] = [
     {
         "id": "hindu-kush",
         "name": "Hindu Kush",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 100% Indica",
         "genetics": "Hindu Kush Landrace",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsH: Strain[] = [
     {
         "id": "horchata",
         "name": "Horchata",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Mochi Gelato x Jet Fuel Gelato",
         "floweringType": "Photoperiod",

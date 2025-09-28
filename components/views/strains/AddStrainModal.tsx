@@ -1,11 +1,12 @@
 import React, { useEffect, useId } from 'react';
 import { Strain, StrainType, DifficultyLevel, YieldLevel, HeightLevel } from '@/types';
 import { Button } from '@/components/common/Button';
-import { useAppStore } from '@/stores/useAppStore';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
 import { useForm } from '@/hooks/useForm';
 import { Modal } from '@/components/common/Modal';
+import { useAppDispatch } from '@/stores/store';
+import { addNotification } from '@/stores/slices/uiSlice';
 
 interface AddStrainModalProps {
     isOpen: boolean;
@@ -92,7 +93,7 @@ const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: 
 
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStrain, onUpdateStrain, strainToEdit, ...props }) => {
     const { t } = useTranslations();
-    const addNotification = useAppStore(state => state.addNotification);
+    const dispatch = useAppDispatch();
     const isEditMode = !!strainToEdit;
 
     const validate = (values: any) => {
@@ -150,9 +151,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
 
     useEffect(() => {
         if (Object.keys(errors).length > 0) {
-            addNotification(Object.values(errors).join(' '), 'error');
+            dispatch(addNotification({ message: Object.values(errors).join(' '), type: 'error' }));
         }
-    }, [errors, addNotification]);
+    }, [errors, dispatch]);
 
     const modalTitle = isEditMode ? t('strainsView.addStrainModal.editTitle') : t('strainsView.addStrainModal.title');
 

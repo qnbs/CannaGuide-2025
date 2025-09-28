@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsW: Strain[] = [
     {
         "id": "wappa",
         "name": "Wappa",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Sweet Skunk",
         "floweringType": "Photoperiod",
@@ -14,7 +14,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine indica-dominante Hybride mit einem süßen, fruchtigen und skunkigen Aroma. Die Wirkung ist stark, entspannend und glücklich, ideal für den Abend.",
+        "description": "An indica-dominant hybrid with a sweet, fruity, and skunky aroma. The effect is strong, relaxing, and happy, ideal for the evening.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -28,7 +28,7 @@ export const strainsW: Strain[] = [
     {
         "id": "wedding-cake",
         "name": "Wedding Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Triangle Kush x Animal Mints",
         "floweringType": "Photoperiod",
@@ -38,7 +38,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Hybride mit einem süßen, vanilleartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und euphorisch, ideal für den Abend.",
+        "description": "An indica-dominant hybrid with a sweet, vanilla-like, and earthy aroma. The effect is strong, relaxing, and euphoric, ideal for the evening.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -52,7 +52,7 @@ export const strainsW: Strain[] = [
     {
         "id": "wedding-crasher",
         "name": "Wedding Crasher",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Wedding Cake x Purple Punch",
         "floweringType": "Photoperiod",
@@ -62,7 +62,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10,
         "floweringTimeRange": "9-11",
-        "description": "Eine sativa-dominante Hybride mit einem süßen, traubenartigen und vanilleartigen Aroma. Die Wirkung ist erhebend, kreativ und gesellig.",
+        "description": "A sativa-dominant hybrid with a sweet, grape-like, and vanilla-like aroma. The effect is uplifting, creative, and social.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -76,7 +76,7 @@ export const strainsW: Strain[] = [
     {
         "id": "white-castle",
         "name": "White Castle",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "White Widow x Ice",
         "floweringType": "Photoperiod",
@@ -86,7 +86,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine indica-dominante Hybride mit einem erdigen, süßen und erdbeerartigen Aroma. Die Wirkung ist entspannend und beruhigend.",
+        "description": "An indica-dominant hybrid with an earthy, sweet, and strawberry-like aroma. The effect is relaxing and calming.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -100,7 +100,7 @@ export const strainsW: Strain[] = [
     {
         "id": "white-dawg",
         "name": "White Dawg",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "The White x Chemdawg",
         "floweringType": "Photoperiod",
@@ -110,7 +110,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine ausgewogene Hybride mit einem starken, dieselartigen und erdigen Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
+        "description": "A balanced hybrid with a strong, diesel-like, and earthy aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -124,7 +124,7 @@ export const strainsW: Strain[] = [
     {
         "id": "white-rhino",
         "name": "White Rhino",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "White Widow x North American Indica",
         "floweringType": "Photoperiod",
@@ -134,7 +134,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine potente indica-dominante Hybride mit einem erdigen, holzigen und süßen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "A potent indica-dominant hybrid with an earthy, woody, and sweet aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -148,7 +148,7 @@ export const strainsW: Strain[] = [
     {
         "id": "white-runtz",
         "name": "White Runtz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Gelato x Zkittlez",
         "floweringType": "Photoperiod",
@@ -158,7 +158,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Ein Phänotyp von Runtz, der für seine extrem frostige Erscheinung mit einer dicken Schicht weißer Trichome bekannt ist. Das Aroma ist süß und fruchtig, wie Bonbons. Die Wirkung ist stark, langanhaltend und ausgewogen zwischen euphorischer Stimulation und entspannender Ruhe.",
+        "description": "A phenotype of Runtz, known for its extremely frosty appearance with a thick coat of white trichomes. The aroma is sweet and fruity, like candy. The effect is strong, long-lasting, and balanced between euphoric stimulation and relaxing calm.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -172,7 +172,7 @@ export const strainsW: Strain[] = [
     {
         "id": "white-widow",
         "name": "White Widow",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 60% Sativa / 40% Indica",
         "genetics": "Brazilian Sativa Landrace x South Indian Indica",
         "floweringType": "Photoperiod",
@@ -182,7 +182,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine der berühmtesten Sorten weltweit. Eine ausgewogene Hybride mit einem erdigen, holzigen und würzigen Aroma. Die Wirkung ist stark, euphorisch und energetisierend.",
+        "description": "One of the most famous strains worldwide. A balanced hybrid with an earthy, woody, and spicy aroma. The effect is strong, euphoric, and energizing.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -196,7 +196,7 @@ export const strainsW: Strain[] = [
     {
         "id": "whitewalker-og",
         "name": "Whitewalker OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "The White x SFV OG Kush",
         "floweringType": "Photoperiod",
@@ -206,7 +206,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine potente indica-dominante Sorte mit einem erdigen, kiefernartigen und dieselartigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "A potent indica-dominant strain with an earthy, piney, and diesel-like aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -220,7 +220,7 @@ export const strainsW: Strain[] = [
     {
         "id": "wifi-og",
         "name": "WiFi OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "The White x Fire OG",
         "floweringType": "Photoperiod",
@@ -230,7 +230,7 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10,
         "floweringTimeRange": "9-11",
-        "description": "Eine sativa-dominante Hybride mit einem erdigen, scharfen und sauren Aroma. Die Wirkung ist erhebend, kreativ und energetisierend.",
+        "description": "A sativa-dominant hybrid with an earthy, pungent, and sour aroma. The effect is uplifting, creative, and energizing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -244,9 +244,9 @@ export const strainsW: Strain[] = [
     {
         "id": "wonder-woman",
         "name": "Wonder Woman",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Ice x Unknown Sorte",
+        "genetics": "Ice x Top 44",
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
@@ -254,39 +254,39 @@ export const strainsW: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine sativa-dominante Sorte, bekannt für ihre extrem hohen Erträge und ihr süßes, skunkiges Aroma. Die Wirkung ist erhebend und kreativ.",
+        "description": "A sativa-dominant strain known for its extremely high yields and sweet, skunky aroma. The effect is uplifting and creative.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Tall",
-            "yieldDetails": { "indoor": "600-1000 g/m²", "outdoor": "800-1000 g/plant" },
+            "yieldDetails": { "indoor": "600-1000 g/m²", "outdoor": "700-800 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Sweet", "Skunk", "Fruity", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+        "aromas": ["Skunk", "Sweet", "Earthy", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     },
     {
         "id": "wu-5",
-        "name": "Wu-5",
-        "type": "Hybrid",
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Unknown CBD-rich Sorte",
+        "name": "WU-5",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica (CBD Dominant)",
+        "genetics": "Harle-Tsu x OG Kush",
         "floweringType": "Photoperiod",
-        "thc": 1,
-        "cbd": 14,
-        "thcRange": "<1%",
-        "cbdRange": "12-16%",
+        "thc": 10,
+        "cbd": 13,
+        "thcRange": "8-12%",
+        "cbdRange": "11-15%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine CBD-reiche Sorte mit einem erdigen, kräuterartigen und süßen Aroma. Die Wirkung ist mild, klar und funktional, ideal für medizinische Anwender.",
+        "description": "A CBD-rich strain with an earthy, herbal, and sweet aroma. The effect is mild, clear, and functional, ideal for medical users.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Earthy", "Herbal", "Sweet", "Pine"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Bisabolol"]
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     }
 ];

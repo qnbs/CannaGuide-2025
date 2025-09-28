@@ -1,17 +1,20 @@
 import React, { useState } from 'react';
-import { Plant, PlantStage } from '../../../types';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { Button } from '../../common/Button';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { Tabs } from '../../common/Tabs';
+import { Plant, PlantStage } from '@/types';
+import { useTranslations } from '@/hooks/useTranslations';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Tabs } from '@/components/common/Tabs';
 import { OverviewTab } from './detailedPlantViewTabs/OverviewTab';
 import { JournalTab } from './detailedPlantViewTabs/JournalTab';
 import { TasksTab } from './detailedPlantViewTabs/TasksTab';
 import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
 import { AiTab } from './detailedPlantViewTabs/AiTab';
-import { useAppStore } from '../../../stores/useAppStore';
-import { selectArchivedAdvisorResponsesForPlant } from '../../../stores/selectors';
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
+import { completeTask } from '@/stores/slices/simulationSlice';
+import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
+import { openActionModal } from '@/stores/slices/uiSlice';
 
 interface DetailedPlantViewProps {
     plant: Plant;
@@ -20,21 +23,10 @@ interface DetailedPlantViewProps {
 
 export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onClose }) => {
     const { t } = useTranslations();
+    const dispatch = useAppDispatch();
     const [activeTab, setActiveTab] = useState('overview');
     
-    const { 
-        archive, 
-        addArchivedAdvisorResponse, 
-        updateArchivedAdvisorResponse, 
-        deleteArchivedAdvisorResponse,
-        completeTask 
-    } = useAppStore(state => ({
-        archive: selectArchivedAdvisorResponsesForPlant(plant.id)(state),
-        addArchivedAdvisorResponse: state.addArchivedAdvisorResponse,
-        updateArchivedAdvisorResponse: state.updateArchivedAdvisorResponse,
-        deleteArchivedAdvisorResponse: state.deleteArchivedAdvisorResponse,
-        completeTask: state.completeTask,
-    }));
+    const archive = useAppSelector(selectArchivedAdvisorResponsesForPlant(plant.id));
 
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
@@ -47,10 +39,6 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
         { id: 'ai', label: t('plantsView.detailedView.tabs.ai'), icon: <PhosphorIcons.Sparkle /> },
     ];
     
-    const handleCompleteTask = (taskId: string) => {
-        completeTask(plant.id, taskId);
-    };
-
     return (
         <div className="animate-fade-in space-y-4">
             <header>
@@ -72,15 +60,15 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}
-                {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={handleCompleteTask} />}
+                {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={(taskId) => dispatch(completeTask({ plantId: plant.id, taskId }))} />}
                 {activeTab === 'photos' && <PhotosTab journal={plant.journal} />}
                 {activeTab === 'ai' && (
                     <AiTab
                         plant={plant}
                         archive={archive}
-                        addResponse={addArchivedAdvisorResponse}
-                        updateResponse={updateArchivedAdvisorResponse}
-                        deleteResponse={deleteArchivedAdvisorResponse}
+                        addResponse={(p, res, query) => dispatch(addArchivedAdvisorResponse({ plant: p, response: res, query }))}
+                        updateResponse={(res) => dispatch(updateArchivedAdvisorResponse(res))}
+                        deleteResponse={(plantId, resId) => dispatch(deleteArchivedAdvisorResponse({ plantId, responseId: resId }))}
                     />
                 )}
             </div>

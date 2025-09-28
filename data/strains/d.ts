@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsD: Strain[] = [
     {
         "id": "dance-world",
         "name": "Dance World",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Sativa / 25% Indica (CBD Dominant)",
         "genetics": "Dance Hall x Juanita la Lagrimosa",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsD: Strain[] = [
     {
         "id": "darth-vader-og",
         "name": "Darth Vader OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "SFV OG Kush x Larry OG",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsD: Strain[] = [
     {
         "id": "deadhead-og",
         "name": "Deadhead OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Chemdawg 91 x SFV OG Kush",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsD: Strain[] = [
     {
         "id": "death-bubba",
         "name": "Death Bubba",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Bubba Kush (phenotype)",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsD: Strain[] = [
     {
         "id": "death-star",
         "name": "Death Star",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Indica / 25% Sativa",
         "genetics": "Sensi Star x Sour Diesel",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsD: Strain[] = [
     {
         "id": "diablo-og",
         "name": "Diablo OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Grapefruit x Blueberry x South African Sativa",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsD: Strain[] = [
     {
         "id": "diamond-og",
         "name": "Diamond OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Indica / 25% Sativa",
         "genetics": "Unknown OG Kush cross",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsD: Strain[] = [
     {
         "id": "diesel",
         "name": "Diesel",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Afghani x Mexican Sativa",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsD: Strain[] = [
     {
         "id": "divine-gelato",
         "name": "Divine Gelato",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Gelato #33 x OG Kush Breath",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsD: Strain[] = [
     {
         "id": "do-si-dos",
         "name": "Do-Si-Dos",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "OGKB (OG Kush Breath) x Face Off OG",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsD: Strain[] = [
     {
         "id": "do-si-woah",
         "name": "Do-Si-Woah",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Indica / 25% Sativa",
         "genetics": "Do-Si-Dos x RBx4",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dogwalker-og",
         "name": "Dogwalker OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Albert Walker OG x Chemdawg 91",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dolato",
         "name": "Dolato",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "thc": 24.5,
         "cbd": 1,
@@ -316,7 +316,7 @@ export const strainsD: Strain[] = [
     {
         "id": "donkey-butter",
         "name": "Donkey Butter",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Grease Monkey x Triple OG",
         "floweringType": "Photoperiod",
@@ -340,7 +340,7 @@ export const strainsD: Strain[] = [
     {
         "id": "donny-burger",
         "name": "Donny Burger",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "GMO Cookies x Han-Solo Burger",
         "floweringType": "Photoperiod",
@@ -364,7 +364,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dosi-cake",
         "name": "Dosi-Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Do-Si-Dos x Wedding Cake",
         "floweringType": "Photoperiod",
@@ -388,7 +388,7 @@ export const strainsD: Strain[] = [
     {
         "id": "double-dream",
         "name": "Double Dream",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Blue Dream x Dream Star",
         "floweringType": "Photoperiod",
@@ -412,7 +412,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dr-grinspoon",
         "name": "Dr. Grinspoon",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Heirloom Sativa",
         "floweringType": "Photoperiod",
@@ -436,7 +436,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dream-queen",
         "name": "Dream Queen",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Sativa / 15% Indica",
         "genetics": "Blue Dream x Space Queen",
         "floweringType": "Photoperiod",
@@ -460,7 +460,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dream-star",
         "name": "Dream Star",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Blue Dream x Stardawg",
         "floweringType": "Photoperiod",
@@ -484,7 +484,7 @@ export const strainsD: Strain[] = [
     {
         "id": "duct-tape",
         "name": "Duct Tape",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "thc": 25.5,
         "cbd": 1,
@@ -508,7 +508,7 @@ export const strainsD: Strain[] = [
     {
         "id": "ducksfoot",
         "name": "DucksFoot",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Australian Sativa",
         "floweringType": "Photoperiod",
@@ -532,7 +532,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dumpster",
         "name": "Dumpster",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Northern Lights #5 x G-13",
         "floweringType": "Photoperiod",
@@ -556,7 +556,7 @@ export const strainsD: Strain[] = [
     {
         "id": "durban-poison",
         "name": "Durban Poison",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "South African Landrace",
         "floweringType": "Photoperiod",
@@ -580,7 +580,7 @@ export const strainsD: Strain[] = [
     {
         "id": "dutch-treat",
         "name": "Dutch Treat",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Unknown (possibly Haze x Northern Lights)",
         "floweringType": "Photoperiod",
@@ -601,4 +601,4 @@ export const strainsD: Strain[] = [
         "aromas": ["Eucalyptus", "Pine", "Sweet", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
     }
-]
+];

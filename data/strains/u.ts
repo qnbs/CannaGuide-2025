@@ -1,10 +1,11 @@
-import type { Strain } from '@/types';
+
+import { Strain, StrainType } from '@/types';
 
 export const strainsU: Strain[] = [
     {
         "id": "uk-cheese",
         "name": "UK Cheese",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Skunk #1 Phenotype",
         "floweringType": "Photoperiod",
@@ -28,7 +29,7 @@ export const strainsU: Strain[] = [
     {
         "id": "unicorn-poop",
         "name": "Unicorn Poop",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "GMO Cookies x Sophisticated Lady",
         "floweringType": "Photoperiod",

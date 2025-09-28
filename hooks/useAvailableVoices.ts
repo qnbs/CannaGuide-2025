@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
 import { ttsService } from '@/services/ttsService';
 import { selectLanguage } from '@/stores/selectors';
+import { useAppSelector } from '@/stores/store';
 
 export const useAvailableVoices = () => {
-    const language = useAppStore(selectLanguage);
+    const language = useAppSelector(selectLanguage);
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
     useEffect(() => {

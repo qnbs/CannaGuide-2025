@@ -16,6 +16,10 @@ export const strainsView = {
   selectedCount_one: '1 ausgewählt',
   selectedCount_other: '{{count}} ausgewählt',
   toggleView: 'Ansicht umschalten',
+  viewModes: {
+    list: 'Liste',
+    grid: 'Raster',
+  },
   difficulty: {
     easy: 'Leicht',
     medium: 'Mittel',
@@ -39,15 +43,27 @@ export const strainsView = {
     tips_one: '1 Tipp',
     tips_other: '{{count}} Tipps',
   },
+  filters: {
+    thcMax: 'THC',
+    cbdMax: 'CBD',
+    floweringTime: 'Blütezeit',
+    yield: 'Ertrag',
+    aromas: 'Aromen',
+    terpenes: 'Terpene',
+    difficulty: 'Schwierigkeit',
+    height: 'Höhe',
+  },
   emptyStates: {
     noResults: {
       title: 'Keine Ergebnisse gefunden',
       text: 'Deine Filter- und Sucheinstellungen ergaben keine Treffer. Versuche, die Filter zu lockern oder zurückzusetzen.',
     },
     myStrains: {
+      title: 'Keine eigenen Sorten',
       text: 'Du hast noch keine eigenen Sorten hinzugefügt. Klicke auf "Sorte hinzufügen", um zu beginnen.',
     },
     favorites: {
+      title: 'Keine Favoriten',
       text: 'Du hast noch keine Favoriten markiert. Klicke auf das Herz-Symbol bei einer Sorte, um sie hier hinzuzufügen.',
     },
   },
@@ -83,6 +99,10 @@ export const strainsView = {
     },
     aromasPlaceholder: 'Durch Komma getrennt, z.B. Erdig, Kiefer',
     terpenesPlaceholder: 'Durch Komma getrennt, z.B. Myrcen',
+    yieldIndoorPlaceholder: 'z.B. 450-550 g/m²',
+    yieldOutdoorPlaceholder: 'z.B. 500-600 g/Pflanze',
+    heightIndoorPlaceholder: 'z.B. 100-150 cm',
+    heightOutdoorPlaceholder: 'z.B. 150-200 cm',
     validation: {
       name: 'Name ist erforderlich.',
       thc: 'THC muss zwischen 0 und 50 liegen.',

@@ -68,6 +68,7 @@ export const settingsView = {
       grid: 'Raster',
     },
     visibleColumns: 'Sichtbare Spalten (Listenansicht)',
+    visibleColumnsDesc: 'Wähle aus, welche Daten in der Listenansicht angezeigt werden sollen.',
     columns: {
         type: 'Typ',
         thc: 'THC',
@@ -83,6 +84,7 @@ export const settingsView = {
       floweringTime: 'Blütezeit',
       difficulty: 'Schwierigkeit',
       type: 'Typ',
+      yield: 'Ertrag',
     },
     sortDirections: {
       asc: 'Aufsteigend',

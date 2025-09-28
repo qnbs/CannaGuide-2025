@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsF: Strain[] = [
     {
         "id": "face-off-og",
         "name": "Face Off OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "OG Kush (phenotype)",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsF: Strain[] = [
     {
         "id": "fat-banana",
         "name": "Fat Banana",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "OG Kush x Chiquita Banana",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsF: Strain[] = [
     {
         "id": "fire-og",
         "name": "Fire OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "OG Kush x SFV OG Kush",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsF: Strain[] = [
     {
         "id": "forbidden-fruit",
         "name": "Forbidden Fruit",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Cherry Pie x Tangie",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsF: Strain[] = [
     {
         "id": "freakshow",
         "name": "Freakshow",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa - 90% Sativa / 10% Indica",
         "genetics": "Unknown (Unique Bx4 Landrace)",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsF: Strain[] = [
     {
         "id": "french-toast",
         "name": "French Toast",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Paris OG x Face Off OG Bx2",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsF: Strain[] = [
     {
         "id": "frisian-dew",
         "name": "Frisian Dew",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Super Skunk x Purple Star",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsF: Strain[] = [
     {
         "id": "frisian-duck",
         "name": "Frisian Duck",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Frisian Dew x DucksFoot",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsF: Strain[] = [
     {
         "id": "frosted-guava",
         "name": "Frosted Guava",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Guava x Frosted Skywalker",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsF: Strain[] = [
     {
         "id": "fruity-pebbles-og",
         "name": "Fruity Pebbles OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 55% Indica / 45% Sativa",
         "genetics": "Green Ribbon x Granddaddy Purple x Tahoe Alien",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsF: Strain[] = [
     {
         "id": "future-1",
         "name": "Future #1",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Gorilla Glue #4 x Starfighter F2",
         "floweringType": "Photoperiod",

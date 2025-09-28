@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsE: Strain[] = [
     {
         "id": "early-maroc",
         "name": "Early Maroc",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 90% Sativa / 10% Indica",
         "genetics": "Moroccan Landrace",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsE: Strain[] = [
     {
         "id": "early-pearl",
         "name": "Early Pearl",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 75% Sativa / 25% Indica",
         "genetics": "Early Girl x Pollyanna",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsE: Strain[] = [
     {
         "id": "early-skunk",
         "name": "Early Skunk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 65% Indica / 35% Sativa",
         "genetics": "Skunk #1 x Early Pearl",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsE: Strain[] = [
     {
         "id": "ed-rosenthal-super-bud",
         "name": "Ed Rosenthal Super Bud",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Afghani x Hindu Kush x Mexican Sativa x Thai Sativa x African Sativa",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsE: Strain[] = [
     {
         "id": "el-chapo-og",
         "name": "El Chapo OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Face Off OG x SFV OG x OG Kush",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsE: Strain[] = [
     {
         "id": "electric-lemon-g",
         "name": "Electric Lemon G",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "G13 x Northern Lights #5",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsE: Strain[] = [
     {
         "id": "eleven-roses",
         "name": "Eleven Roses",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 100% Indica",
         "genetics": "Appalachian Kush x Sugar Black Rose",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsE: Strain[] = [
     {
         "id": "elmers-glue",
         "name": "Elmer's Glue",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Gorilla Glue #4 x White Widow",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsE: Strain[] = [
     {
         "id": "emergen-c",
         "name": "Emergen-C",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Orange Push Pop x Sunset Sherbet",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsE: Strain[] = [
     {
         "id": "emperor-cookies",
         "name": "Emperor Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Emperor OG x Girl Scout Cookies",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsE: Strain[] = [
     {
         "id": "ewok",
         "name": "Ewok",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Albert Walker OG x Tahoe Alien",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsE: Strain[] = [
     {
         "id": "exodus-cheese",
         "name": "Exodus Cheese",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Skunk #1 (phenotype)",
         "floweringType": "Photoperiod",

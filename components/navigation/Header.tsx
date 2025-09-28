@@ -4,8 +4,9 @@ import { useTranslations } from '@/hooks/useTranslations';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon';
 import { Button } from '../common/Button';
-import { useAppStore } from '@/stores/useAppStore';
+import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectActiveView } from '@/stores/selectors';
+import { setActiveView, setIsCommandPaletteOpen } from '@/stores/slices/uiSlice';
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void;
@@ -14,11 +15,12 @@ interface HeaderProps {
     onInstallClick: () => void;
 }
 
+
 export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPrompt, isInstalled, onInstallClick }) => {
     const { t } = useTranslations();
-    const activeView = useAppStore(selectActiveView);
-    const setActiveView = useAppStore(state => state.setActiveView);
-
+    const dispatch = useAppDispatch();
+    const activeView = useAppSelector(selectActiveView);
+    
     const viewTitles: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
         [View.Plants]: t('nav.plants'),
@@ -35,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPr
         <header className="glass-pane sticky top-0 z-30 flex-shrink-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
-                    <button onClick={() => setActiveView(View.Plants)} className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1">
+                    <button onClick={() => dispatch(setActiveView(View.Plants))} className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1">
                         <CannabisLeafIcon className="w-8 h-8 flex-shrink-0" />
                         <div className="flex items-baseline gap-2">
                             <h1 className="text-xl font-bold font-display text-slate-100 hidden sm:block">
@@ -62,14 +64,14 @@ export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPr
                                 <span className="hidden sm:inline">{isInstalled ? t('common.installed') : t('common.installPwa')}</span>
                             </Button>
                         )}
-                         <button onClick={onCommandPaletteOpen} aria-label={t('commandPalette.open')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300 flex items-center gap-2 border border-slate-700">
+                         <button onClick={() => dispatch(setIsCommandPaletteOpen(true))} aria-label={t('commandPalette.open')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300 flex items-center gap-2 border border-slate-700">
                              <PhosphorIcons.CommandLine className="w-5 h-5" />
                              <span className="text-xs font-mono hidden md:inline"><kbd>⌘</kbd> <kbd>K</kbd></span>
                         </button>
-                        <button onClick={() => setActiveView(View.Settings)} aria-label={t('nav.settings')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
+                        <button onClick={() => dispatch(setActiveView(View.Settings))} aria-label={t('nav.settings')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
                             <PhosphorIcons.Gear className="w-6 h-6" />
                         </button>
-                         <button onClick={() => setActiveView(View.Help)} aria-label={t('nav.help')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
+                         <button onClick={() => dispatch(setActiveView(View.Help))} aria-label={t('nav.help')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
                             <PhosphorIcons.Question className="w-6 h-6" />
                         </button>
                     </div>

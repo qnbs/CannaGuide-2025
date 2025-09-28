@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v1.2.1'; // Increase this version on each new deployment
+const CACHE_VERSION = 'v1.3.0'; // Increase this version on each new deployment
 const CACHE_NAME = `cannaguide-cache-${CACHE_VERSION}`;
 
 // App Shell: The minimal resources needed for the app to start.

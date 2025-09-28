@@ -5,8 +5,10 @@ import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppStore } from '@/stores/useAppStore';
+// FIX: Import Redux hooks and actions/selectors
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectStrainTipState } from '@/stores/selectors';
+import { startStrainTipGeneration } from '@/stores/slices/aiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
@@ -47,8 +49,8 @@ interface StrainAiTipsProps {
 
 export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslations();
-    const { isLoading, response: tip, error } = useAppStore(selectStrainTipState(strain.id));
-    const startStrainTipGeneration = useAppStore(state => state.startStrainTipGeneration);
+    const dispatch = useAppDispatch();
+    const { isLoading, response: tip, error } = useAppSelector(selectStrainTipState(strain.id));
 
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isTipSaved, setIsTipSaved] = useState(false);
@@ -64,6 +66,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
     
     useEffect(() => {
         if (isLoading) {
+            // FIX: Corrected call to geminiService to pass a single object argument.
             const messages = geminiService.getDynamicLoadingMessages({ 
                 useCase: 'growTips',
                 data: {
@@ -71,7 +74,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
                     focus: t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`),
                     stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`)
                 }
-            }, t);
+            });
             let messageIndex = 0;
             const updateLoadingMessage = () => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
@@ -89,7 +92,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
         const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
         const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
         const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
-        startStrainTipGeneration(strain, { focus: focusText, stage: stageText, experience: experienceText });
+        dispatch(startStrainTipGeneration({strain, context: { focus: focusText, stage: stageText, experience: experienceText }}));
     };
 
     const handleSaveTip = () => {
@@ -114,19 +117,19 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
                     <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.focus')}</label>
                         <select value={tipRequest.focus} onChange={e => setTipRequest(p => ({...p, focus: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                            {Object.keys(t('strainsView.tips.form.focusOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
+                            {Object.keys(t('strainsView.tips.form.focusOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.stage')}</label>
                         <select value={tipRequest.stage} onChange={e => setTipRequest(p => ({...p, stage: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                            {Object.keys(t('strainsView.tips.form.stageOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
+                            {Object.keys(t('strainsView.tips.form.stageOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
                         </select>
                     </div>
                     <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
                         <select value={tipRequest.experience} onChange={e => setTipRequest(p => ({...p, experience: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                            {Object.keys(t('strainsView.tips.form.experienceOptions')).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
+                            {Object.keys(t('strainsView.tips.form.experienceOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
                         </select>
                     </div>
                 </div>

@@ -3,21 +3,28 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslations } from '@/hooks/useTranslations';
-import { useAppStore } from '@/stores/useAppStore';
 import { ArchivedMentorResponse, ExportFormat } from '@/types';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { selectArchivedMentorResponses } from '@/stores/selectors';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { exportService } from '@/services/exportService';
+import { useAppSelector, useAppDispatch } from '@/stores/store';
+import { selectArchivedMentorResponses } from '@/stores/selectors';
+// FIX: Corrected imports for Redux actions.
+import { updateArchivedMentorResponse, deleteArchivedMentorResponse } from '@/stores/slices/archivesSlice';
+import { addNotification } from '@/stores/slices/uiSlice';
 
-export const MentorArchiveTab: React.FC = () => {
+// FIX: Add props interface to allow passing data for testing.
+interface MentorArchiveTabProps {
+    archivedResponses?: ArchivedMentorResponse[];
+}
+
+export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResponses: propsResponses }) => {
     const { t } = useTranslations();
-    const archivedResponses = useAppStore(selectArchivedMentorResponses);
-    const { updateResponse, deleteResponse, addNotification } = useAppStore(state => ({
-        updateResponse: state.updateArchivedMentorResponse,
-        deleteResponse: state.deleteArchivedMentorResponse,
-        addNotification: state.addNotification,
-    }));
+    const dispatch = useAppDispatch();
+    const storeResponses = useAppSelector(selectArchivedMentorResponses);
+    // FIX: Use props if available, otherwise fall back to store.
+    const archivedResponses = propsResponses || storeResponses;
+
 
     const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -25,16 +32,18 @@ export const MentorArchiveTab: React.FC = () => {
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
     const sortedArchive = useMemo(() => 
-        [...archivedResponses].sort((a,b) => b.createdAt - a.createdAt),
+        [...(archivedResponses || [])].sort((a,b) => b.createdAt - a.createdAt),
     [archivedResponses]);
 
     const filteredArchive = useMemo(() => {
-        if (!searchTerm) return sortedArchive;
+        const cleanArchive = sortedArchive.filter(res => res && typeof res === 'object');
+        if (!searchTerm) return cleanArchive;
+
         const lowerCaseSearch = searchTerm.toLowerCase();
-        return sortedArchive.filter(res => 
-            res.title.toLowerCase().includes(lowerCaseSearch) ||
-            res.query.toLowerCase().includes(lowerCaseSearch) ||
-            res.content.toLowerCase().includes(lowerCaseSearch)
+        return cleanArchive.filter(res => 
+            (res.title || '').toLowerCase().includes(lowerCaseSearch) ||
+            (res.query || '').toLowerCase().includes(lowerCaseSearch) ||
+            (res.content || '').toLowerCase().includes(lowerCaseSearch)
         );
     }, [sortedArchive, searchTerm]);
 
@@ -60,11 +69,20 @@ export const MentorArchiveTab: React.FC = () => {
             ? archivedResponses.filter(res => selectedIds.has(res.id))
             : filteredArchive;
         if (dataToExport.length === 0) {
-            addNotification(t('common.noDataToExport'), 'error');
+            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
             return;
         }
-        exportService.exportMentorArchive(dataToExport, format, `CannaGuide_Mentor_Archive_${new Date().toISOString().slice(0, 10)}`, t);
+        exportService.exportMentorArchive(dataToExport, format, `CannaGuide_Mentor_Archive_${new Date().toISOString().slice(0, 10)}`);
     };
+
+    const handleUpdate = (response: ArchivedMentorResponse) => {
+        dispatch(updateArchivedMentorResponse(response));
+        setEditingResponse(null);
+    }
+    
+    const handleDelete = (id: string) => {
+        dispatch(deleteArchivedMentorResponse(id));
+    }
 
     return (
         <Card>
@@ -72,10 +90,7 @@ export const MentorArchiveTab: React.FC = () => {
                 <EditResponseModal 
                     response={editingResponse} 
                     onClose={() => setEditingResponse(null)} 
-                    onSave={(updated) => {
-                        updateResponse(updated);
-                        setEditingResponse(null);
-                    }}
+                    onSave={handleUpdate}
                 />
             )}
              <DataExportModal 
@@ -111,18 +126,20 @@ export const MentorArchiveTab: React.FC = () => {
                             <label className="text-sm text-slate-400">{t('strainsView.selectedCount', { count: selectedIds.size })}</label>
                         </div>
                          {filteredArchive.map(res => (
-                            <Card key={res.id} className="bg-slate-800/70 p-3 flex items-start gap-3">
-                                 <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="mt-1.5 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 flex-shrink-0" />
-                                <div className="flex-grow">
-                                    <p className="text-xs text-slate-400 italic">{t('knowledgeView.archive.queryLabel')}: "{res.query}"</p>
-                                    <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
-                                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
-                                    <div className="flex justify-end items-center gap-2 mt-2">
-                                        <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
-                                        <Button size="sm" variant="danger" onClick={() => deleteResponse(res.id)} aria-label={t('common.deleteResponse')}><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
+                            (res && res.title) && (
+                                <Card key={res.id} className="bg-slate-800/70 p-3 flex items-start gap-3">
+                                    <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="mt-1.5 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
+                                    <div className="flex-grow">
+                                        <p className="text-xs text-slate-400 italic">{t('knowledgeView.archive.queryLabel')}: "{res.query}"</p>
+                                        <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
+                                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
+                                        <div className="flex justify-end items-center gap-2 mt-2">
+                                            <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
+                                            <Button size="sm" variant="danger" onClick={() => handleDelete(res.id)} aria-label={t('common.deleteResponse')}><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
+                                        </div>
                                     </div>
-                                </div>
-                            </Card>
+                                </Card>
+                            )
                         ))}
                     </>
                 ) : (

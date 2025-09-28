@@ -1,4 +1,7 @@
-import type { Strain } from '@/types';
+
+
+// FIX: Update import paths to be relative
+import type { Strain } from '../../types';
 import { strainsA } from './a';
 import { strainsB } from './b';
 import { strainsC } from './c';

@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsJ: Strain[] = [
     {
         "id": "jack-frost",
         "name": "Jack Frost",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Jack Herer x White Widow x Northern Lights #5",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jack-herer",
         "name": "Jack Herer",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 55% Sativa / 45% Indica",
         "genetics": "Haze x (Northern Lights #5 x Shiva Skunk)",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jack-the-ripper",
         "name": "Jack The Ripper",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Jack's Cleaner x Space Queen",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jager",
         "name": "Jager",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "Unknown Hindu Kush Landrace",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jamaican-pearl",
         "name": "Jamaican Pearl",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 85% Sativa / 15% Indica",
         "genetics": "Marley's Collie x Early Pearl",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jealousy",
         "name": "Jealousy",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Sherbert Bx1 x Gelato #41",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jealousy-pie",
         "name": "Jealousy Pie",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Jealousy x Grape Pie",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jealousy-z",
         "name": "Jealousy Z",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Jealousy x Zkittlez",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jedi-kush",
         "name": "Jedi Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
         "genetics": "Death Star x SFV OG Kush",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jenny-kush",
         "name": "Jenny Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Amnesia Haze x Rare Dankness #2",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jesus-og",
         "name": "Jesus OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Jack's Cleaner x Hell's OG",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsJ: Strain[] = [
     {
         "id": "jet-fuel",
         "name": "Jet Fuel",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Aspen OG x High Country Diesel",
         "floweringType": "Photoperiod",
@@ -292,17 +292,17 @@ export const strainsJ: Strain[] = [
     {
         "id": "jillybean",
         "name": "Jillybean",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Orange Velvet x Space Queen",
         "floweringType": "Photoperiod",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
         "description": "A balanced hybrid with a sweet, fruity aroma of oranges and mangoes. The effect is uplifting, happy, and creative.",
         "thc": 18,
         "cbd": 1,
         "thcRange": "15-22%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",

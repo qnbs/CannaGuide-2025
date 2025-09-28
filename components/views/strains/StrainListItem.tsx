@@ -1,13 +1,15 @@
-import React from 'react';
-// FIX: Changed import paths to be relative
-import { Strain, SortKey, AppSettings } from '../../../types';
+import React, { memo } from 'react';
+import { Strain, SortKey, AppSettings } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { Button } from '../../common/Button';
-import { useTranslations } from '../../../hooks/useTranslations';
-import { useAppStore } from '../../../stores/useAppStore';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Button } from '@/components/common/Button';
+import { useTranslations } from '@/hooks/useTranslations';
 import { LIST_GRID_CLASS } from './constants';
-import { selectHasAvailableSlots } from '../../../stores/selectors';
+import { usePlantSlotsData } from '@/hooks/useSimulationBridge';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectFavoriteIds } from '@/stores/selectors';
+import { toggleFavorite } from '@/stores/slices/favoritesSlice';
+import { openAddModal, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -32,15 +34,12 @@ const DifficultyBar: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }>
     );
 };
 
-const StrainListItem: React.FC<StrainListItemProps> = ({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index }) => {
+const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index }) => {
     const { t } = useTranslations();
-    const { toggleFavorite, isFavorite, openAddModal, initiateGrowFromStrainList } = useAppStore(state => ({
-        toggleFavorite: state.toggleFavorite,
-        isFavorite: state.favoriteIds.has(strain.id),
-        openAddModal: state.openAddModal,
-        initiateGrowFromStrainList: state.initiateGrowFromStrainList,
-    }));
-    const hasAvailableSlots = useAppStore(selectHasAvailableSlots);
+    const dispatch = useAppDispatch();
+    const favoriteIds = useAppSelector(selectFavoriteIds);
+    const isFavorite = favoriteIds.has(strain.id);
+    const { hasAvailable: hasAvailableSlots } = usePlantSlotsData();
 
     const typeClasses: Record<string, string> = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
@@ -52,7 +51,7 @@ const StrainListItem: React.FC<StrainListItemProps> = ({ strain, isSelected, onT
     
     const handleEditClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        openAddModal(strain);
+        dispatch(openAddModal(strain));
     };
     
     const animationDelay = `${Math.min(index * 50, 500)}ms`;
@@ -87,10 +86,10 @@ const StrainListItem: React.FC<StrainListItemProps> = ({ strain, isSelected, onT
                 <span className="hidden sm:inline">{t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)}</span>
             </div>
             <div className="flex gap-1 justify-end items-center">
-                <Button variant="secondary" onClick={(e) => { e.stopPropagation(); toggleFavorite(strain.id); }} aria-pressed={isFavorite} className={`favorite-btn-glow !p-1.5 ${isFavorite ? 'is-favorite' : ''}`}>
+                <Button variant="secondary" onClick={(e) => { e.stopPropagation(); dispatch(toggleFavorite(strain.id)); }} aria-pressed={isFavorite} className={`favorite-btn-glow !p-1.5 ${isFavorite ? 'is-favorite' : ''}`}>
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
                 </Button>
-                <Button onClick={(e) => { e.stopPropagation(); initiateGrowFromStrainList(strain); }} disabled={!hasAvailableSlots} size="sm" className="!p-1.5" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
+                <Button onClick={(e) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots} size="sm" className="!p-1.5" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}>
                     <PhosphorIcons.Plant className="w-4 h-4" />
                 </Button>
                 {isUserStrain && (
@@ -102,6 +101,6 @@ const StrainListItem: React.FC<StrainListItemProps> = ({ strain, isSelected, onT
             </div>
         </div>
     );
-};
+});
 
 export default StrainListItem;

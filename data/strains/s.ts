@@ -1,10 +1,11 @@
-import type { Strain } from '@/types';
+
+import { Strain, StrainType } from '@/types';
 
 export const strainsS: Strain[] = [
     {
         "id": "s-a-g-e",
         "name": "S.A.G.E.",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Haze x Afghani",
         "floweringType": "Photoperiod",
@@ -14,7 +15,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10.5,
         "floweringTimeRange": "10-11",
-        "description": "Eine sativa-dominante Sorte mit einem würzigen, salbeiartigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend, ideal für den Tagesgebrauch.",
+        "description": "A sativa-dominant strain with a spicy, sage-like aroma. The effect is uplifting, creative, and energizing, ideal for daytime use.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "Medium",
@@ -28,7 +29,7 @@ export const strainsS: Strain[] = [
     {
         "id": "scotty-2-hotty",
         "name": "Scotty 2 Hotty",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Biscotti x Rainbow Chip",
         "floweringType": "Photoperiod",
@@ -38,7 +39,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen und leicht dieselartigen Aroma. Die Wirkung ist entspannend, glücklich und erhebend.",
+        "description": "An indica-dominant strain with a sweet, fruity, and slightly diesel-like aroma. The effect is relaxing, happy, and uplifting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -52,7 +53,7 @@ export const strainsS: Strain[] = [
     {
         "id": "scouts-honor",
         "name": "Scout's Honor",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "OGKB x OG Kush x Cherry Pie",
         "floweringType": "Photoperiod",
@@ -62,7 +63,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, erdigen und kirschartigen Aroma. Die Wirkung ist stark, entspannend und beruhigend.",
+        "description": "An indica-dominant strain with a sweet, earthy, and cherry-like aroma. The effect is strong, relaxing, and calming.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -76,7 +77,7 @@ export const strainsS: Strain[] = [
     {
         "id": "secret-cookies",
         "name": "Secret Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Cherry Pie x GSC",
         "floweringType": "Photoperiod",
@@ -86,7 +87,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine ausgewogene Hybride mit einem süßen, keksartigen und kirschartigen Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
+        "description": "A balanced hybrid with a sweet, cookie-like, and cherry-like aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -100,7 +101,7 @@ export const strainsS: Strain[] = [
     {
         "id": "secret-weapon",
         "name": "Secret Weapon",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Cheese Quake x White Widow",
         "floweringType": "Photoperiod",
@@ -110,7 +111,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen und leicht käsigen Aroma. Die Wirkung ist entspannend und erhebend, ideal für den späten Nachmittag.",
+        "description": "A balanced hybrid with a sweet, fruity, and slightly cheesy aroma. The effect is relaxing and uplifting, ideal for the late afternoon.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -124,7 +125,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sensi-star",
         "name": "Sensi Star",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "Unknown Afghani cross",
         "floweringType": "Photoperiod",
@@ -134,7 +135,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine legendäre Indica-Sorte mit einem zitrusartigen, metallischen und erdigen Aroma. Die Wirkung ist stark, körperlich entspannend und fast narkotisch.",
+        "description": "A legendary Indica strain with a citrusy, metallic, and earthy aroma. The effect is strong, physically relaxing, and almost narcotic.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -148,7 +149,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sfv-og",
         "name": "SFV OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "OG Kush phenotype (San Fernando Valley)",
         "floweringType": "Photoperiod",
@@ -158,7 +159,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Ein OG-Kush-Phänotyp aus dem San Fernando Valley. Bekannt für sein erdiges, kiefernartiges und zitrusartiges Aroma und eine erhebende, kreative Wirkung.",
+        "description": "An OG Kush phenotype from the San Fernando Valley. Known for its earthy, piney, and citrusy aroma and an uplifting, creative effect.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -172,7 +173,7 @@ export const strainsS: Strain[] = [
     {
         "id": "shaman",
         "name": "Shaman",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 87.5% / Indica 12.5%",
         "genetics": "Purple #1 x Skunk",
         "floweringType": "Photoperiod",
@@ -182,7 +183,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine robuste Sativa, die für den Anbau im Freien entwickelt wurde. Sie ist schimmelresistent und entwickelt schöne violette Farben. Die Wirkung ist erhebend und klar.",
+        "description": "A robust Sativa developed for outdoor cultivation. It is mold-resistant and develops beautiful purple colors. The effect is uplifting and clear.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -196,7 +197,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sherbet",
         "name": "Sherbet",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 85% / Sativa 15%",
         "genetics": "GSC x Pink Panties",
         "floweringType": "Photoperiod",
@@ -206,7 +207,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine indica-dominante Hybride mit einem süßen, cremigen und fruchtigen Aroma. Die Wirkung ist entspannend, glücklich und stressabbauend.",
+        "description": "An indica-dominant hybrid with a sweet, creamy, and fruity aroma. The effect is relaxing, happy, and stress-relieving.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -220,7 +221,7 @@ export const strainsS: Strain[] = [
     {
         "id": "shiva-skunk",
         "name": "Shiva Skunk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 85% / Sativa 15%",
         "genetics": "Northern Lights #5 x Skunk #1",
         "floweringType": "Photoperiod",
@@ -230,7 +231,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine potente Indica, benannt nach dem Hindu-Gott. Sie kombiniert die besten Eigenschaften ihrer Eltern und bietet eine stark entspannende Wirkung.",
+        "description": "A potent Indica named after the Hindu god. It combines the best qualities of its parents and offers a strongly relaxing effect.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -244,7 +245,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sinmint-cookies",
         "name": "SinMint Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "GSC (Forum Cut) x Blue Power",
         "floweringType": "Photoperiod",
@@ -254,7 +255,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem minzigen, keksartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und beruhigend.",
+        "description": "An indica-dominant strain with a minty, cookie-like, and earthy aroma. The effect is strong, relaxing, and calming.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -268,7 +269,7 @@ export const strainsS: Strain[] = [
     {
         "id": "skunk-1",
         "name": "Skunk #1",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 65% / Sativa 35%",
         "genetics": "Afghani x Acapulco Gold x Colombian Gold",
         "floweringType": "Photoperiod",
@@ -278,7 +279,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine der einflussreichsten Sorten aller Zeiten. Bekannt für ihr scharfes, skunkiges Aroma und ihre ausgewogene, starke Wirkung. Grundlage für unzählige moderne Hybriden.",
+        "description": "One of the most influential strains of all time. Known for its pungent, skunky aroma and its balanced, strong effect. The foundation for countless modern hybrids.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -292,7 +293,7 @@ export const strainsS: Strain[] = [
     {
         "id": "skywalker",
         "name": "Skywalker",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Blueberry x Mazar i Sharif",
         "floweringType": "Photoperiod",
@@ -302,7 +303,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen und beerenartigen Aroma. Die Wirkung ist entspannend, glücklich und erhebend.",
+        "description": "A balanced hybrid with a sweet, fruity, and berry-like aroma. The effect is relaxing, happy, and uplifting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -316,7 +317,7 @@ export const strainsS: Strain[] = [
     {
         "id": "skywalker-og",
         "name": "Skywalker OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 85% / Sativa 15%",
         "genetics": "Skywalker x OG Kush",
         "floweringType": "Photoperiod",
@@ -326,7 +327,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine potente indica-dominante Sorte mit einem erdigen, kiefernartigen und dieselartigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "A potent indica-dominant strain with an earthy, piney, and diesel-like aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -340,7 +341,7 @@ export const strainsS: Strain[] = [
     {
         "id": "slurricane",
         "name": "Slurricane",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Do-Si-Dos x Purple Punch",
         "floweringType": "Photoperiod",
@@ -350,7 +351,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen Aroma von Beeren und Trauben. Die Wirkung ist stark, entspannend und beruhigend.",
+        "description": "An indica-dominant strain with a sweet, fruity aroma of berries and grapes. The effect is strong, relaxing, and calming.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -364,7 +365,7 @@ export const strainsS: Strain[] = [
     {
         "id": "slurty3",
         "name": "Slurty3",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Slurricane x Gelato 33",
         "floweringType": "Photoperiod",
@@ -374,7 +375,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine potente indica-dominante Sorte mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend.",
+        "description": "A potent indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is strong, relaxing, and long-lasting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -388,7 +389,7 @@ export const strainsS: Strain[] = [
     {
         "id": "snoops-dream",
         "name": "Snoop's Dream",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Blue Dream x Master Kush",
         "floweringType": "Photoperiod",
@@ -398,7 +399,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, beerenartigen und vanilleartigen Aroma. Die Wirkung ist entspannend und euphorisch.",
+        "description": "An indica-dominant strain with a sweet, berry-like, and vanilla-like aroma. The effect is relaxing and euphoric.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -412,7 +413,7 @@ export const strainsS: Strain[] = [
     {
         "id": "snowman",
         "name": "Snowman",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "GSC phenotype",
         "floweringType": "Photoperiod",
@@ -422,7 +423,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Ein GSC-Phänotyp mit einem süßen, vanilleartigen und dieselartigen Aroma. Die Wirkung ist erhebend, euphorisch und kreativ.",
+        "description": "A GSC phenotype with a sweet, vanilla-like, and diesel-like aroma. The effect is uplifting, euphoric, and creative.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -436,7 +437,7 @@ export const strainsS: Strain[] = [
     {
         "id": "somango",
         "name": "Somango",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 75% / Sativa 25%",
         "genetics": "Jack Herer x Super Skunk x Big Skunk Korean",
         "floweringType": "Photoperiod",
@@ -446,7 +447,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, tropischen Mango-Aroma. Die Wirkung ist erhebend, kreativ und entspannend.",
+        "description": "An indica-dominant strain with a sweet, tropical mango aroma. The effect is uplifting, creative, and relaxing.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -460,7 +461,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sour-apple",
         "name": "Sour Apple",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Sour Diesel x Cinderella 99",
         "floweringType": "Photoperiod",
@@ -470,7 +471,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine sativa-dominante Sorte mit einem sauren Apfel- und Diesel-Aroma. Die Wirkung ist erhebend, energetisierend und kreativ.",
+        "description": "A sativa-dominant strain with a sour apple and diesel aroma. The effect is uplifting, energizing, and creative.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -484,7 +485,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sour-diesel",
         "name": "Sour Diesel",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "Chemdawg x Super Skunk",
         "floweringType": "Photoperiod",
@@ -494,7 +495,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10.5,
         "floweringTimeRange": "10-11",
-        "description": "Eine legendäre Sativa, bekannt für ihr scharfes, dieselartiges Aroma. Sie bietet eine schnell einsetzende, energetisierende und traumhafte zerebrale Wirkung, die sie zu einem Favoriten für den Tagesgebrauch macht.",
+        "description": "A legendary Sativa known for its pungent, diesel-like aroma. It offers a fast-acting, energizing, and dreamy cerebral effect, making it a favorite for daytime use.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -508,7 +509,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sour-dubble",
         "name": "Sour Dubble",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Sour Diesel x Sour Bubble",
         "floweringType": "Photoperiod",
@@ -518,7 +519,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Eine ausgewogene Hybride mit einem sauren, fruchtigen und dieselartigen Aroma. Die Wirkung ist stark, euphorisch und entspannend.",
+        "description": "A balanced hybrid with a sour, fruity, and diesel-like aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -532,7 +533,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sour-kush",
         "name": "Sour Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "OG Kush x Sour Diesel",
         "floweringType": "Photoperiod",
@@ -542,7 +543,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine ausgewogene Hybride mit einem sauren, dieselartigen und erdigen Aroma. Die Wirkung ist stark, ausgewogen zwischen zerebraler Euphorie und körperlicher Entspannung.",
+        "description": "A balanced hybrid with a sour, diesel-like, and earthy aroma. The effect is strong, balanced between cerebral euphoria and physical relaxation.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -556,7 +557,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sour-tangie",
         "name": "Sour Tangie",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Sour Diesel x Tangie",
         "floweringType": "Photoperiod",
@@ -566,7 +567,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine sativa-dominante Sorte mit einem starken Zitrus- und Orangenaroma. Die Wirkung ist erhebend, kreativ und energetisierend.",
+        "description": "A sativa-dominant strain with a strong citrus and orange aroma. The effect is uplifting, creative, and energizing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -580,7 +581,7 @@ export const strainsS: Strain[] = [
     {
         "id": "south-florida-og",
         "name": "South Florida OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Chemdawg x (Lemon Thai x Hindu Kush)",
         "floweringType": "Photoperiod",
@@ -590,7 +591,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine potente indica-dominante Sorte mit einem erdigen, kiefernartigen und scharfen Aroma. Die Wirkung ist stark, entspannend und langanhaltend.",
+        "description": "A potent indica-dominant strain with an earthy, piney, and pungent aroma. The effect is strong, relaxing, and long-lasting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -604,7 +605,7 @@ export const strainsS: Strain[] = [
     {
         "id": "space-cake",
         "name": "Space Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 65% / Sativa 35%",
         "genetics": "GSC Forum Cut x Snow Lotus",
         "floweringType": "Photoperiod",
@@ -614,7 +615,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine indica-dominante Sorte mit einem süßen, cremigen und erdigen Aroma. Die Wirkung ist stark, entspannend und euphorisch.",
+        "description": "An indica-dominant strain with a sweet, creamy, and earthy aroma. The effect is strong, relaxing, and euphoric.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -628,7 +629,7 @@ export const strainsS: Strain[] = [
     {
         "id": "space-queen",
         "name": "Space Queen",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Romulan x Cinderella 99",
         "floweringType": "Photoperiod",
@@ -638,7 +639,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen und ananasartigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend.",
+        "description": "A balanced hybrid with a sweet, fruity, and pineapple-like aroma. The effect is uplifting, creative, and energizing.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -652,7 +653,7 @@ export const strainsS: Strain[] = [
     {
         "id": "stardawg",
         "name": "Stardawg",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "Chemdawg 4 x Tres Dawg",
         "floweringType": "Photoperiod",
@@ -662,7 +663,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Eine sativa-dominante Sorte mit einem starken, chemischen und dieselartigen Aroma. Die Wirkung ist erhebend, euphorisch und kreativ.",
+        "description": "A sativa-dominant strain with a strong, chemical, and diesel-like aroma. The effect is uplifting, euphoric, and creative.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -676,7 +677,7 @@ export const strainsS: Strain[] = [
     {
         "id": "strawberry-banana",
         "name": "Strawberry Banana",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Banana Kush x Bubble Gum",
         "floweringType": "Photoperiod",
@@ -686,7 +687,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen Aroma von Erdbeeren und Bananen. Die Wirkung ist stark, entspannend und glücklich.",
+        "description": "An indica-dominant strain with a sweet, fruity aroma of strawberries and bananas. The effect is strong, relaxing, and happy.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -700,7 +701,7 @@ export const strainsS: Strain[] = [
     {
         "id": "strawberry-cough",
         "name": "Strawberry Cough",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Haze x Strawberry Fields",
         "floweringType": "Photoperiod",
@@ -710,7 +711,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine Sativa-Sorte, die für ihr süßes Erdbeeraroma und ihre erhebende, zerebrale Wirkung bekannt ist, die oft zum Nachdenken anregt. Ideal für soziale Anlässe.",
+        "description": "A Sativa strain known for its sweet strawberry aroma and its uplifting, cerebral effect that often encourages contemplation. Ideal for social occasions.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -724,7 +725,7 @@ export const strainsS: Strain[] = [
     {
         "id": "strawberry-gary",
         "name": "Strawberry Gary",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Gary Payton x Red Pop",
         "floweringType": "Photoperiod",
@@ -734,7 +735,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen Erdbeeraroma. Die Wirkung ist entspannend, glücklich und erhebend.",
+        "description": "A balanced hybrid with a sweet, fruity strawberry aroma. The effect is relaxing, happy, and uplifting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -748,7 +749,7 @@ export const strainsS: Strain[] = [
     {
         "id": "strawberry-kush",
         "name": "Strawberry Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Strawberry Cough x OG Kush",
         "floweringType": "Photoperiod",
@@ -758,7 +759,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
-        "description": "Eine indica-dominante Sorte mit einem süßen Erdbeeraroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch.",
+        "description": "An indica-dominant strain with a sweet strawberry aroma. The effect is relaxing and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -772,7 +773,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sugar-black-rose",
         "name": "Sugar Black Rose",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Critical Mass x Black Domina",
         "floweringType": "Photoperiod",
@@ -782,7 +783,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 7.5,
         "floweringTimeRange": "7-8",
-        "description": "Eine indica-dominante Sorte mit einem süßen, fruchtigen und blumigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "An indica-dominant strain with a sweet, fruity, and floral aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -796,7 +797,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sundae-driver",
         "name": "Sundae Driver",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Fruity Pebbles OG x Grape Pie",
         "floweringType": "Photoperiod",
@@ -806,7 +807,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Eine ausgewogene Hybride mit einem süßen, cremigen und fruchtigen Aroma. Die Wirkung ist entspannend, glücklich und stressabbauend.",
+        "description": "A balanced hybrid with a sweet, creamy, and fruity aroma. The effect is relaxing, happy, and stress-relieving.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Low",
@@ -820,7 +821,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sunset-sherbet",
         "name": "Sunset Sherbet",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 85% / Sativa 15%",
         "genetics": "GSC x Pink Panties",
         "floweringType": "Photoperiod",
@@ -830,7 +831,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine indica-dominante Hybride mit einem süßen, fruchtigen und cremigen Aroma. Die Wirkung ist entspannend, glücklich und erhebend.",
+        "description": "An indica-dominant hybrid with a sweet, fruity, and creamy aroma. The effect is relaxing, happy, and uplifting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Low",
@@ -844,7 +845,7 @@ export const strainsS: Strain[] = [
     {
         "id": "super-critical",
         "name": "Super Critical",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Big Bud x Skunk #1 x White Widow",
         "floweringType": "Photoperiod",
@@ -854,7 +855,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "8",
-        "description": "Eine indica-dominante Sorte, die für ihre extrem hohen Erträge und ihre schnelle Blütezeit bekannt ist. Die Wirkung ist stark, entspannend und sedierend.",
+        "description": "An indica-dominant strain known for its extremely high yields and fast flowering time. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -868,7 +869,7 @@ export const strainsS: Strain[] = [
     {
         "id": "super-lemon-haze",
         "name": "Super Lemon Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Lemon Skunk x Super Silver Haze",
         "floweringType": "Photoperiod",
@@ -878,7 +879,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10,
         "floweringTimeRange": "9-11",
-        "description": "Eine mehrfache Cannabis-Cup-Gewinnerin, die für ihr intensives Zitronenaroma und ihre energetisierende, kreative Wirkung bekannt ist. Eine klassische Sativa für den Tagesgebrauch.",
+        "description": "A multiple Cannabis Cup winner known for its intense lemon aroma and its energizing, creative effect. A classic Sativa for daytime use.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -892,7 +893,7 @@ export const strainsS: Strain[] = [
     {
         "id": "super-silver-haze",
         "name": "Super Silver Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Skunk x Northern Lights x Haze",
         "floweringType": "Photoperiod",
@@ -902,7 +903,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 10.5,
         "floweringTimeRange": "10-11",
-        "description": "Eine preisgekrönte Sativa mit einem würzigen, zitrusartigen und erdigen Aroma. Die Wirkung ist erhebend, energetisierend und langanhaltend.",
+        "description": "An award-winning Sativa with a spicy, citrusy, and earthy aroma. The effect is uplifting, energizing, and long-lasting.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -916,7 +917,7 @@ export const strainsS: Strain[] = [
     {
         "id": "super-skunk",
         "name": "Super Skunk",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Skunk #1 x Afghani",
         "floweringType": "Photoperiod",
@@ -926,7 +927,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine Weiterentwicklung von Skunk #1, die für ihr noch intensiveres Skunk-Aroma und ihre starke, entspannende Wirkung bekannt ist.",
+        "description": "A further development of Skunk #1, known for its even more intense skunk aroma and its strong, relaxing effect.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
@@ -940,7 +941,7 @@ export const strainsS: Strain[] = [
     {
         "id": "swazi-gold",
         "name": "Swazi Gold",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa 100%",
         "genetics": "Afrikanische Landrasse (Eswatini)",
         "floweringType": "Photoperiod",
@@ -950,7 +951,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 11,
         "floweringTimeRange": "10-12",
-        "description": "Eine robuste und harzige Sativa-Landrasse aus Eswatini (ehemals Swasiland) in Südafrika. Sie ist bekannt für ihre widerstandsfähige Natur und eine stark erhebende, energetische und glückliche Wirkung. Das Aroma ist süß und tropisch, oft mit Noten von Mango.",
+        "description": "A robust and resinous Sativa landrace from Eswatini (formerly Swaziland) in Southern Africa. It is known for its resilient nature and a strongly uplifting, energetic, and happy effect. The aroma is sweet and tropical, often with notes of mango.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -964,7 +965,7 @@ export const strainsS: Strain[] = [
     {
         "id": "sweet-tooth",
         "name": "Sweet Tooth",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Afghani x Nepali x Hawaiian",
         "floweringType": "Photoperiod",
@@ -974,7 +975,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "Eine indica-dominante Sorte mit einem süßen, beerenartigen und fruchtigen Aroma. Die Wirkung ist entspannend und glücklich.",
+        "description": "An indica-dominant strain with a sweet, berry-like, and fruity aroma. The effect is relaxing and happy.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",

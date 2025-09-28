@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsN: Strain[] = [
     {
         "id": "northern-lights",
         "name": "Northern Lights",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica - 95% Indica / 5% Sativa",
         "genetics": "Afghani x Thai Landrace",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsN: Strain[] = [
     {
         "id": "nyc-diesel",
         "name": "NYC Diesel",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica",
         "genetics": "Sour Diesel x (Afghani x Hawaiian)",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsN: Strain[] = [
     {
         "id": "nuken",
         "name": "Nuken",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
         "genetics": "God Bud x Kish",
         "floweringType": "Photoperiod",

@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsM: Strain[] = [
     {
         "id": "mac",
         "name": "MAC (Miracle Alien Cookies)",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Alien Cookies F2 x (Colombian x Starfighter)",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mac-1",
         "name": "Mac 1",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "MAC (clone-only cut)",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsM: Strain[] = [
     {
         "id": "malawi-gold",
         "name": "Malawi Gold",
-        "type": "Sativa",
+        "type": StrainType.Sativa,
         "typeDetails": "Sativa 100%",
         "genetics": "Malawian Landrace",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mandarin-cookies",
         "name": "Mandarin Cookies",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Forum Cut Cookies x Mandarin Sunset",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mandarin-zkittlez",
         "name": "Mandarin Zkittlez",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Mandarin Sunset x California Black Rose",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mango-kush",
         "name": "Mango Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 65% / Sativa 35%",
         "genetics": "Mango x Hindu Kush",
         "floweringType": "Photoperiod",
@@ -148,7 +148,7 @@ export const strainsM: Strain[] = [
     {
         "id": "marathon-og",
         "name": "Marathon OG",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "OG Kush phenotype",
         "floweringType": "Photoperiod",
@@ -172,7 +172,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mars-og",
         "name": "Mars OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Mars x OG",
         "floweringType": "Photoperiod",
@@ -196,7 +196,7 @@ export const strainsM: Strain[] = [
     {
         "id": "martian",
         "name": "Martian",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Martian Mean Green x The Original",
         "floweringType": "Photoperiod",
@@ -220,7 +220,7 @@ export const strainsM: Strain[] = [
     {
         "id": "master-kush",
         "name": "Master Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "Hindu Kush x Skunk #1",
         "floweringType": "Photoperiod",
@@ -244,7 +244,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mataro-blue",
         "name": "Mataro Blue",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Black Domina x Mazar i Sharif x Blue Monster",
         "floweringType": "Photoperiod",
@@ -268,7 +268,7 @@ export const strainsM: Strain[] = [
     {
         "id": "maui-haze",
         "name": "Maui Haze",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Hawaiian Sativa x Haze",
         "floweringType": "Photoperiod",
@@ -292,7 +292,7 @@ export const strainsM: Strain[] = [
     {
         "id": "maui-wowie",
         "name": "Maui Wowie",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Hawaiian Landrace",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mazar-sharif",
         "name": "Mazar | Sharif",
-        "type": "Indica",
+        "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Afghan Landrace (Mazar-i-Sharif)",
         "floweringType": "Photoperiod",
@@ -340,7 +340,7 @@ export const strainsM: Strain[] = [
     {
         "id": "meat-breath",
         "name": "Meat Breath",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Mendo Breath x Meatloaf",
         "floweringType": "Photoperiod",
@@ -364,7 +364,7 @@ export const strainsM: Strain[] = [
     {
         "id": "melonade-runtz",
         "name": "Melonade Runtz",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Melonade x Runtz",
         "floweringType": "Photoperiod",
@@ -388,7 +388,7 @@ export const strainsM: Strain[] = [
     {
         "id": "melonatta",
         "name": "Melonatta",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Watermelon Zkittlez x Lemon Tree",
         "floweringType": "Photoperiod",
@@ -412,7 +412,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mendo-breath",
         "name": "Mendo Breath",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "OGKB x Mendo Montage",
         "floweringType": "Photoperiod",
@@ -436,7 +436,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mendo-purps",
         "name": "Mendo Purps",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "North American Indica Landrace",
         "floweringType": "Photoperiod",
@@ -460,7 +460,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mimosa",
         "name": "Mimosa",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Clementine x Purple Punch",
         "floweringType": "Photoperiod",
@@ -484,7 +484,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mint-chocolate-chip",
         "name": "Mint Chocolate Chip",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "SinMint Cookies x Green Ribbon BX",
         "floweringType": "Photoperiod",
@@ -508,7 +508,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mk-ultra",
         "name": "MK Ultra",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "G13 x OG Kush",
         "floweringType": "Photoperiod",
@@ -532,7 +532,7 @@ export const strainsM: Strain[] = [
     {
         "id": "moby-dick",
         "name": "Moby Dick",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 75% / Indica 25%",
         "genetics": "Haze x White Widow",
         "floweringType": "Photoperiod",
@@ -556,7 +556,7 @@ export const strainsM: Strain[] = [
     {
         "id": "mochi-gelato",
         "name": "Mochi Gelato",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Sunset Sherbet x Thin Mint GSC",
         "floweringType": "Photoperiod",

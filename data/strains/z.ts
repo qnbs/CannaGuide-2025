@@ -1,10 +1,10 @@
-import type { Strain } from '@/types';
+import { Strain, StrainType } from '@/types';
 
 export const strainsZ: Strain[] = [
     {
         "id": "zashimi",
         "name": "Zashimi",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Zkittlez x (Gelato 41 x Sherb Bx1)",
         "floweringType": "Photoperiod",
@@ -28,7 +28,7 @@ export const strainsZ: Strain[] = [
     {
         "id": "zen",
         "name": "Zen",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica (CBD Dominant)",
         "genetics": "Medicine Man x an unknown CBD-rich strain",
         "floweringType": "Photoperiod",
@@ -52,7 +52,7 @@ export const strainsZ: Strain[] = [
     {
         "id": "zkittlez",
         "name": "Zkittlez",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Grape Ape x Grapefruit x Unknown Strain",
         "floweringType": "Photoperiod",
@@ -76,7 +76,7 @@ export const strainsZ: Strain[] = [
     {
         "id": "zkittlez-cake",
         "name": "Zkittlez Cake",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Zkittlez x Wedding Cake",
         "floweringType": "Photoperiod",
@@ -100,7 +100,7 @@ export const strainsZ: Strain[] = [
     {
         "id": "zoap",
         "name": "Zoap",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "(Rainbow Sherbet x Pink Guava) x F2 Pheno 21",
         "floweringType": "Photoperiod",
@@ -124,7 +124,7 @@ export const strainsZ: Strain[] = [
     {
         "id": "zour-apples",
         "name": "Zour Apples",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
         "genetics": "Jack Herer x Ethos Glue",
         "floweringType": "Photoperiod",

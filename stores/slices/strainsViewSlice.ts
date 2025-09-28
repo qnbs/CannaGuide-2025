@@ -1,43 +1,60 @@
-import { StrainViewTab } from '../../types';
-import type { StoreSet, StoreGet } from '../useAppStore';
 
-export interface StrainsViewSlice {
+import { StrainViewTab } from '@/types';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+export interface StrainsViewState {
     strainsViewTab: StrainViewTab;
     strainsViewMode: 'list' | 'grid';
-    selectedStrainIds: Set<string>;
-    setStrainsViewTab: (tab: StrainViewTab) => void;
-    setStrainsViewMode: (mode: 'list' | 'grid') => void;
-    toggleStrainSelection: (id: string) => void;
-    toggleAllStrainSelection: (ids: string[], areAllCurrentlySelected: boolean) => void;
-    clearStrainSelection: () => void;
+    selectedStrainIds: string[];
 }
 
-export const createStrainsViewSlice = (set: StoreSet, get: StoreGet): StrainsViewSlice => ({
-    strainsViewTab: 'all',
+const initialState: StrainsViewState = {
+    // FIX: Use enum member for type safety.
+    strainsViewTab: StrainViewTab.All,
     strainsViewMode: 'list',
-    selectedStrainIds: new Set(),
-    
-    setStrainsViewTab: (tab) => set(state => { state.strainsViewTab = tab; }),
-    
-    setStrainsViewMode: (mode) => set(state => { state.strainsViewMode = mode; }),
+    selectedStrainIds: [],
+};
 
-    toggleStrainSelection: (id) => set(state => {
-        const newSet = new Set(state.selectedStrainIds);
-        if (newSet.has(id)) {
-            newSet.delete(id);
-        } else {
-            newSet.add(id);
-        }
-        state.selectedStrainIds = newSet;
-    }),
-
-    toggleAllStrainSelection: (ids, areAllCurrentlySelected) => set(state => {
-        if (areAllCurrentlySelected) {
-            state.selectedStrainIds = new Set();
-        } else {
-            state.selectedStrainIds = new Set(ids);
-        }
-    }),
-
-    clearStrainSelection: () => set(state => { state.selectedStrainIds = new Set(); }),
+const strainsViewSlice = createSlice({
+    name: 'strainsView',
+    initialState,
+    reducers: {
+        setStrainsViewTab: (state, action: PayloadAction<StrainViewTab>) => {
+            state.strainsViewTab = action.payload;
+        },
+        setStrainsViewMode: (state, action: PayloadAction<'list' | 'grid'>) => {
+            state.strainsViewMode = action.payload;
+        },
+        toggleStrainSelection: (state, action: PayloadAction<string>) => {
+            const id = action.payload;
+            const set = new Set(state.selectedStrainIds);
+            if (set.has(id)) {
+                set.delete(id);
+            } else {
+                set.add(id);
+            }
+            state.selectedStrainIds = Array.from(set);
+        },
+        toggleAllStrainSelection: (state, action: PayloadAction<{ ids: string[], areAllCurrentlySelected: boolean }>) => {
+            const { ids, areAllCurrentlySelected } = action.payload;
+            if (areAllCurrentlySelected) {
+                state.selectedStrainIds = [];
+            } else {
+                state.selectedStrainIds = ids;
+            }
+        },
+        clearStrainSelection: (state) => {
+            state.selectedStrainIds = [];
+        },
+    },
 });
+
+export const {
+    setStrainsViewTab,
+    setStrainsViewMode,
+    toggleStrainSelection,
+    toggleAllStrainSelection,
+    clearStrainSelection,
+} = strainsViewSlice.actions;
+
+export default strainsViewSlice.reducer;

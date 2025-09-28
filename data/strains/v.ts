@@ -1,10 +1,11 @@
-import type { Strain } from '@/types';
+
+import { Strain, StrainType } from '@/types';
 
 export const strainsV: Strain[] = [
     {
         "id": "v-kush",
         "name": "V-Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "SFV OG Kush x Unknown",
         "floweringType": "Photoperiod",
@@ -28,7 +29,7 @@ export const strainsV: Strain[] = [
     {
         "id": "vader-og",
         "name": "Vader OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "SFV OG Kush x Larry OG",
         "floweringType": "Photoperiod",
@@ -52,7 +53,7 @@ export const strainsV: Strain[] = [
     {
         "id": "vanilla-kush",
         "name": "Vanilla Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Kashmir x Afghani",
         "floweringType": "Photoperiod",
@@ -76,7 +77,7 @@ export const strainsV: Strain[] = [
     {
         "id": "velvet-glove",
         "name": "Velvet Glove",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "GMO Cookies x Nookies",
         "floweringType": "Photoperiod",
@@ -100,7 +101,7 @@ export const strainsV: Strain[] = [
     {
         "id": "venom-og",
         "name": "Venom OG",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Poison OG x Rare Dankness #1",
         "floweringType": "Photoperiod",
@@ -124,7 +125,7 @@ export const strainsV: Strain[] = [
     {
         "id": "violator-kush",
         "name": "Violator Kush",
-        "type": "Hybrid",
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Hindu Kush x Malana",
         "floweringType": "Photoperiod",

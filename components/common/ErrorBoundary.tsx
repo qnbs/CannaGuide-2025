@@ -12,7 +12,9 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Refactored to use a constructor for state initialization to resolve a type error where 'this.props' was not being found on the component instance. This makes the component's state and props context explicit.
+  // FIX: Reverted to using a constructor for state initialization and calling super(props).
+  // This is the most robust way to ensure `this.props` is correctly initialized,
+  // resolving the type error where 'props' was not found on the component instance.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };

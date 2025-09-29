@@ -43,7 +43,7 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
     const sortedSetups = [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
 
     return (
-        <Card>
+        <div>
             {editingSetup && (
                 <EditResponseModal
                     response={{ ...editingSetup, title: editingSetup.name, content: '' }}
@@ -87,6 +87,6 @@ export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, u
                     ))}
                 </div>
             )}
-        </Card>
+        </div>
     );
 };

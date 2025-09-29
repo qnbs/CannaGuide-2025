@@ -29,13 +29,13 @@ export const EquipmentView: React.FC = () => {
     const renderContent = () => {
         switch (activeTab) {
             case EquipmentViewTab.Configurator:
-                return <Card><SetupConfigurator onSaveSetup={() => dispatch(setEquipmentViewTab(EquipmentViewTab.Setups))} /></Card>;
+                return <SetupConfigurator onSaveSetup={() => dispatch(setEquipmentViewTab(EquipmentViewTab.Setups))} />;
             case EquipmentViewTab.Calculators:
-                return <Card><Calculators /></Card>;
+                return <Calculators />;
             case EquipmentViewTab.Setups:
                 return <SavedSetupsView savedSetups={savedSetups} updateSetup={(setup) => dispatch(updateSetup(setup))} deleteSetup={(id) => dispatch(deleteSetup(id))} />;
             case EquipmentViewTab.GrowShops:
-                return <Card><GrowShopsView /></Card>;
+                return <GrowShopsView />;
             default:
                 return null;
         }
@@ -47,7 +47,9 @@ export const EquipmentView: React.FC = () => {
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => dispatch(setEquipmentViewTab(id as EquipmentViewTab))} />
             </Card>
 
-            {renderContent()}
+            <Card>
+                {renderContent()}
+            </Card>
         </div>
     );
 };

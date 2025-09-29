@@ -11,10 +11,10 @@
   "description": "Dein KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.",
   "icons": [
     {
-      "src": "icon.svg",
+      "src": "pwa-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "icon-192.png",

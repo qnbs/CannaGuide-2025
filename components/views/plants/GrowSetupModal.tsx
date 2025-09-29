@@ -57,7 +57,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
     onConfirm(setup);
   };
   
-  const potSizes = [5, 11, 18, 25, 35];
+  const potSizes = [5, 11, 15, 25, 35];
   const lightCycles = [
       { hours: 18, label: t('plantsView.setupModal.cycles.veg') },
       { hours: 12, label: t('plantsView.setupModal.cycles.flower'), disabled: !isPhotoperiod },

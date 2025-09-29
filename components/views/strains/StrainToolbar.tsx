@@ -15,7 +15,7 @@ interface StrainToolbarProps {
     onAdd: () => void;
     showFavorites: boolean;
     onToggleFavorites: () => void;
-    typeFilter: Set<StrainType>;
+    typeFilter: StrainType[];
     onToggleTypeFilter: (type: StrainType) => void;
     onOpenDrawer: () => void;
     activeFilterCount: number;

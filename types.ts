@@ -527,11 +527,11 @@ export interface AdvancedFilterState {
     thcRange: [number, number];
     cbdRange: [number, number];
     floweringRange: [number, number];
-    selectedDifficulties: Set<DifficultyLevel>;
-    selectedYields: Set<YieldLevel>;
-    selectedHeights: Set<HeightLevel>;
-    selectedAromas: Set<string>;
-    selectedTerpenes: Set<string>;
+    selectedDifficulties: DifficultyLevel[];
+    selectedYields: YieldLevel[];
+    selectedHeights: HeightLevel[];
+    selectedAromas: string[];
+    selectedTerpenes: string[];
 }
 
 export interface StrainTranslationData {

@@ -1,74 +1,44 @@
-const CACHE_VERSION = 'v1.5.0'; // Erhöhe diese Version bei jeder Änderung
-const CACHE_NAME = `cannaguide-cache-${CACHE_VERSION}`;
-// Nur die absolut notwendigen Dateien für den Start der App-Shell
-const APP_SHELL_URLS = [
-  './',
-  './index.html',
-  './index.tsx',
-  './App.tsx',
-  './manifest.json',
-  './types.ts'
-];
+const CACHE_NAME = 'cannaguide-v2-stable';
 
+// Install-Event: Sofort aktivieren, ohne auf Caching zu warten.
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('[Service Worker] Pre-caching App Shell');
-        return cache.addAll(APP_SHELL_URLS);
-      })
-      .catch(error => {
-        console.error('[Service Worker] Pre-caching failed:', error);
-      })
-  );
+  console.log('[Service Worker] Install Event - Skipping wait...');
+  event.waitUntil(self.skipWaiting());
 });
 
+// Activate-Event: Alte Caches löschen und Kontrolle übernehmen.
 self.addEventListener('activate', event => {
+  console.log('[Service Worker] Activate Event - Clearing old caches...');
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[Service Worker] Clearing old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  return self.clients.claim();
 });
 
+// Fetch-Event: "Network-First"-Strategie.
 self.addEventListener('fetch', event => {
-  if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
-    return;
-  }
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request)
-      .then(cachedResponse => {
-        // Cache hit - return response
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-
-        // Network fetch
-        return fetch(event.request).then(
-          (networkResponse) => {
-            // Check if we received a valid response
-            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-              return networkResponse;
-            }
-
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return networkResponse;
-          }
-        );
+    fetch(event.request)
+      .then(networkResponse => {
+        // Wenn erfolgreich, speichere eine Kopie im Cache für Offline-Nutzung
+        const responseToCache = networkResponse.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseToCache);
+        });
+        return networkResponse;
+      })
+      .catch(() => {
+        // Wenn das Netzwerk fehlschlägt, versuche, aus dem Cache zu antworten
+        return caches.match(event.request);
       })
   );
 });

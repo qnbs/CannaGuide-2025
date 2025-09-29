@@ -31,7 +31,6 @@ export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPr
     };
 
     const currentTitle = viewTitles[activeView];
-    const showInstallButton = !!deferredPrompt || isInstalled;
     
     return (
         <header className="glass-pane sticky top-0 z-30 flex-shrink-0">
@@ -48,20 +47,16 @@ export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPr
                         </div>
                     </button>
                     <div className="flex items-center gap-2">
-                        {showInstallButton && (
+                        {deferredPrompt && !isInstalled && (
                              <Button 
                                 onClick={onInstallClick} 
                                 size="sm" 
-                                className="flex items-center gap-1.5"
-                                disabled={isInstalled}
-                                variant={isInstalled ? 'secondary' : 'primary'}
-                                title={isInstalled ? t('common.installPwaSuccess') : t('common.installPwa')}
+                                className="flex items-center gap-1.5 animate-pulse-glow"
+                                variant={'primary'}
+                                title={t('common.installPwa')}
                             >
-                                {isInstalled ? 
-                                    <PhosphorIcons.CheckCircle weight="fill" className="w-4 h-4"/> : 
-                                    <PhosphorIcons.DownloadSimple className="w-4 h-4"/>
-                                }
-                                <span className="hidden sm:inline">{isInstalled ? t('common.installed') : t('common.installPwa')}</span>
+                                <PhosphorIcons.DownloadSimple className="w-4 h-4"/>
+                                <span className="hidden sm:inline">{t('common.installPwa')}</span>
                             </Button>
                         )}
                          <button onClick={() => dispatch(setIsCommandPaletteOpen(true))} aria-label={t('commandPalette.open')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">

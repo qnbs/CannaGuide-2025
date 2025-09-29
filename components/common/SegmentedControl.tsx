@@ -2,7 +2,7 @@ import React from 'react';
 
 interface SegmentedControlProps<T extends string> {
   options: { value: T; label: string; icon?: React.ReactNode }[];
-  value: Set<T>;
+  value: T[];
   onToggle: (value: T) => void;
   className?: string;
 }
@@ -11,7 +11,7 @@ export function SegmentedControl<T extends string>({ options, value, onToggle, c
   return (
     <div className={`flex items-center bg-slate-800/60 border border-slate-700/80 rounded-lg p-0.5 ${className}`} role="group">
       {options.map((option) => {
-        const isActive = value.has(option.value);
+        const isActive = value.includes(option.value);
         return (
           <button
             key={option.value}

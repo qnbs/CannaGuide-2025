@@ -59,7 +59,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
 
     if (step === 0) {
         return (
-            <Modal isOpen={true} onClose={() => {}} title="Choose your language / Sprache wählen">
+            <Modal isOpen={true} onClose={() => {}} title="Choose your language / Sprache wählen" showCloseButton={false}>
                 <div className="text-center">
                     <p className="text-slate-400 mb-6">Select your preferred language / Wähle deine bevorzugte Sprache</p>
                     <div className="flex gap-4">
@@ -95,7 +95,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     );
     
     return (
-        <Modal isOpen={true} onClose={isLastStep ? onClose : () => {}} footer={footer}>
+        <Modal isOpen={true} onClose={isLastStep ? onClose : () => {}} footer={footer} showCloseButton={false}>
             <div className="text-center p-4">
                 <div className="mb-4">{currentStepContent.icon}</div>
                 <h3 className="text-2xl font-bold font-display text-slate-100 mb-2">{currentStepContent.title}</h3>

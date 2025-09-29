@@ -27,6 +27,7 @@ import { initializeSimulation } from './stores/slices/simulationSlice';
 import { setSetting } from './stores/slices/settingsSlice';
 import { ToastContainer } from './components/common/Toast';
 import { AiDiagnosticsModalContainer } from './components/views/plants/AiDiagnosticsModalContainer';
+import { SaveSetupModalContainer } from './components/views/equipment/SaveSetupModalContainer';
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() => import('./components/views/StrainsView').then(module => ({ default: module.StrainsView })));
@@ -122,6 +123,7 @@ const AppContent: React.FC = () => {
             <LogActionModalContainer />
             <DeepDiveModalContainer />
             <AiDiagnosticsModalContainer />
+            <SaveSetupModalContainer />
             <Header 
                 onCommandPaletteOpen={() => dispatch(setIsCommandPaletteOpen(true))}
                 deferredPrompt={deferredPrompt}

@@ -110,8 +110,31 @@ export const useCommandPalette = () => {
         const nextThemeIndex = (currentThemeIndex + 1) % themes.length;
         const nextTheme = themes[nextThemeIndex];
 
-        const newLang = settings.language === 'en' ? 'de' : 'en';
         const newDensity: UiDensity = settings.uiDensity === 'comfortable' ? 'compact' : 'comfortable';
+
+        const languageCommands: Command[] = [];
+        if (settings.language !== 'de') {
+            languageCommands.push({
+                id: 'lang-de',
+                title: t('commandPalette.switchToGerman'),
+                subtitle: t('commandPalette.subtitles.switchTo'),
+                icon: PhosphorIcons.Globe,
+                action: () => dispatch(settingsActions.setSetting({ path: 'language', value: 'de' })),
+                group: t('commandPalette.groups.settings'),
+                keywords: 'german deutsch sprache'
+            });
+        }
+        if (settings.language !== 'en') {
+            languageCommands.push({
+                id: 'lang-en',
+                title: t('commandPalette.switchToEnglish'),
+                subtitle: t('commandPalette.subtitles.switchTo'),
+                icon: PhosphorIcons.Globe,
+                action: () => dispatch(settingsActions.setSetting({ path: 'language', value: 'en' })),
+                group: t('commandPalette.groups.settings'),
+                keywords: 'english englisch language'
+            });
+        }
 
         const createNotifToggle = (key: keyof AppSettings['notificationSettings'], titleKey: string): Command => ({
             id: `toggle-notif-${String(key)}`,
@@ -149,7 +172,7 @@ export const useCommandPalette = () => {
                 keywords: `new plant grow slot ${slot + 1}`, group: t('commandPalette.groups.plants'),
             })),
             
-            { id: 'toggle-language', title: t('commandPalette.toggleLanguage', { lang: newLang === 'de' ? 'Deutsch' : 'English' }), subtitle: t('commandPalette.subtitles.switchTo'), icon: PhosphorIcons.Globe, action: () => dispatch(settingsActions.setSetting({ path: 'language', value: newLang })), group: t('commandPalette.groups.settings') },
+            ...languageCommands,
             { id: 'toggle-theme', title: t('commandPalette.toggleTheme'), subtitle: `${t('common.next')}: ${t(`settingsView.general.themes.${nextTheme}`)}`, icon: PhosphorIcons.PaintBrush, action: () => dispatch(settingsActions.setSetting({ path: 'theme', value: nextTheme })), group: t('commandPalette.groups.settings') },
             createNotifToggle('stageChange', 'commandPalette.toggleStageChangeNotifs'),
             createNotifToggle('problemDetected', 'commandPalette.toggleProblemNotifs'),

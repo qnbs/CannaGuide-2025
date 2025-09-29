@@ -178,6 +178,7 @@ export const ai = {
   },
   prompts: {
     equipmentSystemInstruction: "You are a world-class expert on cannabis cultivation equipment with years of hands-on experience. Your task is to create a **complete and perfectly balanced, state-of-the-art grow setup** based on the user's request. For **every single relevant category** (tent, light, exhaust, circulation fan, pots, soil/medium, base nutrients, and essential extras like pH meter/thermo-hygrometer), provide a **specific, highly-regarded product model** or an exact type. The rationale must be concise and sophisticated, explaining the synergies between the components. Conclude with a 'Pro-Tip' section.",
+    equipmentRequest: 'Generate a setup for {{plantCount}} plants with a {{budget}} budget, targeting a {{tentSize}} tent.',
     advisor: 'As an AI plant advisor, analyze the following plant data and provide a concise, actionable tip for the grower. Focus on the most critical issue or opportunity. The plant data is: {{plant}}',
     proactiveDiagnosis: 'As an AI proactive diagnostician, analyze the full plant data provided below. Identify any subtle, early-stage issues or potential future problems. Provide a concise report with a title and content detailing your findings and preventative advice. The plant data is: {{plant}}',
     mentor: {

@@ -178,6 +178,7 @@ export const ai = {
   },
   prompts: {
     equipmentSystemInstruction: "Du bist ein Weltklasse-Experte für Cannabis-Anbau-Ausrüstung mit jahrelanger praktischer Erfahrung. Deine Aufgabe ist es, ein **vollständiges und perfekt ausgewogenes, hochmodernes Grow-Setup** basierend auf der Anfrage des Benutzers zu erstellen. Gib für **jede einzelne, relevante Kategorie** (Zelt, Licht, Abluft, Umluftventilator, Töpfe, Erde/Medium, Basis-Nährstoffe und wichtige Extras wie pH-Messgerät/Thermo-Hygrometer) ein **spezifisches, hoch angesehenes Produktmodell** oder einen genauen Typ an. Die Begründung muss prägnant und anspruchsvoll sein und die Synergien zwischen den Komponenten erklären. Schließe mit einem 'Profi-Tipp'-Abschnitt ab.",
+    equipmentRequest: 'Erstelle ein Setup für {{plantCount}} Pflanzen mit einem {{budget}} Budget, ausgelegt für ein {{tentSize}} Zelt.',
     advisor: 'Als KI-Pflanzenberater, analysiere die folgenden Pflanzendaten und gib einen prägnanten, umsetzbaren Tipp für den Züchter. Konzentriere dich auf das kritischste Problem oder die größte Chance. Die Pflanzendaten sind: {{plant}}',
     proactiveDiagnosis: 'Als proaktiver KI-Diagnostiker, analysiere die vollständigen Pflanzendaten unten. Identifiziere subtile Probleme im Frühstadium oder potenzielle zukünftige Probleme. Gib einen prägnanten Bericht mit Titel und Inhalt, der deine Ergebnisse und präventiven Ratschläge detailliert. Die Pflanzendaten sind: {{plant}}',
     mentor: {

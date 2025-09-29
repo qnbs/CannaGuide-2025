@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab } from '@/types';
+import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab, SavedSetup } from '@/types';
 import { RootState } from '../store';
 import { getT } from '@/i18n';
 
@@ -27,6 +27,8 @@ export interface UIState {
     activeMentorPlantId: string | null;
     isDiagnosticsModalOpen: boolean;
     diagnosticsPlantId: string | null;
+    isSaveSetupModalOpen: boolean;
+    setupToSave: Omit<SavedSetup, 'id' | 'createdAt' | 'name'> | null;
 }
 
 const initialState: UIState = {
@@ -51,6 +53,8 @@ const initialState: UIState = {
     activeMentorPlantId: null,
     isDiagnosticsModalOpen: false,
     diagnosticsPlantId: null,
+    isSaveSetupModalOpen: false,
+    setupToSave: null,
 };
 
 // Thunks for complex actions
@@ -156,7 +160,15 @@ const uiSlice = createSlice({
         },
         setActiveMentorPlantId: (state, action: PayloadAction<string | null>) => {
             state.activeMentorPlantId = action.payload;
-        }
+        },
+        openSaveSetupModal: (state, action: PayloadAction<Omit<SavedSetup, 'id' | 'createdAt' | 'name'>>) => {
+            state.isSaveSetupModalOpen = true;
+            state.setupToSave = action.payload;
+        },
+        closeSaveSetupModal: (state) => {
+            state.isSaveSetupModalOpen = false;
+            state.setupToSave = null;
+        },
     },
 });
 
@@ -183,7 +195,9 @@ export const {
     cancelNewGrow,
     setEquipmentViewTab,
     setKnowledgeViewTab,
-    setActiveMentorPlantId
+    setActiveMentorPlantId,
+    openSaveSetupModal,
+    closeSaveSetupModal,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

@@ -12,11 +12,10 @@ interface State {
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Initialized state in the constructor and bound the event handler to ensure the correct `this` context, resolving errors related to `this.state` and `this.props` being undefined.
+  // FIX: Refactored to use a constructor for state initialization to resolve a type error where 'this.props' was not being found on the component instance. This makes the component's state and props context explicit.
   constructor(props: Props) {
     super(props);
     this.state = { hasError: false };
-    this.handleReload = this.handleReload.bind(this);
   }
 
   public static getDerivedStateFromError(_: Error): State {
@@ -29,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  private handleReload() {
+  private handleReload = () => {
     window.location.reload();
   }
 

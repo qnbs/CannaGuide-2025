@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
@@ -18,6 +18,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
+import { SkeletonLoader } from '../common/SkeletonLoader';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslation();
@@ -33,10 +34,40 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     );
 };
 
+const PlantSlotsSkeleton: React.FC = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {[...Array(3)].map((_, i) => (
+            <Card key={i} className="flex flex-col h-full skeleton-pulse">
+                <div className="flex justify-between items-start">
+                    <div className="space-y-2">
+                        <div className="h-4 w-24 bg-slate-700 rounded"></div>
+                        <div className="h-3 w-16 bg-slate-700 rounded"></div>
+                    </div>
+                    <div className="h-4 w-12 bg-slate-700 rounded-full"></div>
+                </div>
+                <div className="flex-grow flex items-center justify-center my-4 min-h-[96px]">
+                    <div className="w-24 h-24 bg-slate-700 rounded-full"></div>
+                </div>
+                <div className="flex justify-around items-center border-t border-slate-700/50 pt-3 mt-auto">
+                    <div className="h-4 w-8 bg-slate-700 rounded"></div>
+                    <div className="h-4 w-8 bg-slate-700 rounded"></div>
+                    <div className="h-4 w-8 bg-slate-700 rounded"></div>
+                </div>
+            </Card>
+        ))}
+    </div>
+);
+
 export const PlantsView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const [isLoading, setIsLoading] = useState(true);
     
+    useEffect(() => {
+        const timer = setTimeout(() => setIsLoading(false), 300);
+        return () => clearTimeout(timer);
+    }, []);
+
     const { 
         initiatingGrowForSlot,
         strainForNewGrow,
@@ -87,24 +118,28 @@ export const PlantsView: React.FC = () => {
                         </Button>
                     </Card>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {slotsWithData.map((plant, index) => {
-                        if (initiatingGrowForSlot === index) {
-                            return (
-                                <InlineStrainSelector 
-                                    key={`selector-${index}`}
-                                    onClose={() => dispatch(cancelNewGrow())}
-                                    onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
-                                />
+                {isLoading ? (
+                    <PlantSlotsSkeleton />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                        {slotsWithData.map((plant, index) => {
+                            if (initiatingGrowForSlot === index) {
+                                return (
+                                    <InlineStrainSelector 
+                                        key={`selector-${index}`}
+                                        onClose={() => dispatch(cancelNewGrow())}
+                                        onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
+                                    />
+                                );
+                            }
+                            return plant ? (
+                                <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
+                            ) : (
+                                <EmptyPlantSlot key={`empty-${index}`} onStart={() => dispatch(startGrowInSlot(index))} />
                             );
-                        }
-                        return plant ? (
-                            <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
-                        ) : (
-                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => dispatch(startGrowInSlot(index))} />
-                        );
-                    })}
-                </div>
+                        })}
+                    </div>
+                )}
                  <GlobalAdvisorArchiveView />
             </div>
             <div className="lg:col-span-1 space-y-6">

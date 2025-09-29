@@ -3,87 +3,63 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
-// FIX: Corrected import path for types to use the '@/' alias.
-import { SavedSetup } from '@/types';
-import { SetupResults } from './SetupResults';
-import { configurations } from './setupConfigurations';
+import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '@/types';
 import { geminiService } from '@/services/geminiService';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectEquipmentGenerationState } from '@/stores/selectors';
 import { startEquipmentGeneration, resetEquipmentGenerationState } from '@/stores/slices/aiSlice';
 import { addSetup } from '@/stores/slices/savedItemsSlice';
+import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+
+const RationaleModal: React.FC<{ category: string, rationale: string, onClose: () => void }> = ({ category, rationale, onClose }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <Card className="w-full max-w-md" onClick={e => e.stopPropagation()}>
+                <h3 className="text-lg font-bold text-primary-400 mb-2">{t('common.why')} {category}?</h3>
+                <p className="text-sm text-slate-300">{rationale}</p>
+                <div className="text-right mt-4">
+                    <Button onClick={onClose}>{t('common.close')}</Button>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;
 }
 
-type PlantCount = 1 | 2 | 3;
-type ConfigType = 'standard' | 'medium' | 'premium';
-
-type Area = '60x60' | '80x80' | '100x100' | '120x60' | '120x120';
-type Budget = 'low' | 'medium' | 'high';
-type GrowStyle = 'beginner' | 'balanced' | 'yield';
-
-interface ConfigCardProps {
-    config: any;
-    isSelected: boolean;
-    onSelect: () => void;
-}
-
-const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect }) => {
-    const { t } = useTranslation();
-    return (
-        <button
-            onClick={onSelect}
-            className={`p-4 text-left rounded-lg border-2 h-full flex flex-col transition-all duration-200 ${
-                isSelected 
-                ? 'bg-primary-900/50 border-primary-500 scale-105 shadow-lg' 
-                : 'bg-slate-800 border-slate-700 hover:border-slate-500'
-            }`}
-        >
-            <h4 className="font-bold text-primary-300">{t(config.titleKey)}</h4>
-            <p className="text-xs text-slate-400 mb-3 flex-grow">{t(config.descriptionKey)}</p>
-            <ul className="text-xs space-y-1 text-slate-300">
-                {Object.entries(config.details).map(([key, value]) => (
-                     <li key={key} className="flex items-start gap-1.5">
-                        <span className="font-semibold">{t(`equipmentView.configurator.details.${key}`)}:</span>
-                        <span>{value as string}</span>
-                     </li>
-                ))}
-            </ul>
-        </button>
-    );
-};
-
+type Step = 1 | 2;
+type PlantCount = '1' | '2-3' | '4+';
+type Budget = 'value' | 'balanced' | 'premium';
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { isLoading, response: recommendation, error, sourceDetails } = useAppSelector(selectEquipmentGenerationState);
+    const { isLoading, response: recommendation, error } = useAppSelector(selectEquipmentGenerationState);
 
+    const [step, setStep] = useState<Step>(1);
     const [plantCount, setPlantCount] = useState<PlantCount | null>(null);
-    const [selectedConfigKey, setSelectedConfigKey] = useState<ConfigType | null>(null);
+    const [budget, setBudget] = useState<Budget | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');
-    
-    const derivedSourceDetails = useMemo(() => {
-        if (!plantCount || !selectedConfigKey) return null;
-        const selectedConfigData = configurations[plantCount]?.[selectedConfigKey];
-        if (!selectedConfigData) return null;
+    const [rationale, setRationale] = useState<{ category: string; text: string } | null>(null);
 
-        const areaString = (selectedConfigData.details.zelt.split(' ')[0].split('x').slice(0, 2).join('x')) as Area;
-        
-        const budgetMap: Record<ConfigType, Budget> = { standard: 'low', medium: 'medium', premium: 'high' };
-        const growStyleMap: Record<ConfigType, GrowStyle> = { standard: 'beginner', medium: 'balanced', premium: 'yield' };
-        
-        return { area: areaString, growStyle: growStyleMap[selectedConfigKey], budget: budgetMap[selectedConfigKey] };
-    }, [plantCount, selectedConfigKey]);
+    const sourceDetails = useMemo(() => {
+        if (!plantCount || !budget) return null;
+        return {
+            plants: plantCount,
+            budget: budget
+        };
+    }, [plantCount, budget]);
 
     useEffect(() => {
-        if (isLoading && plantCount && selectedConfigKey) {
-            const config = configurations[plantCount][selectedConfigKey];
-            const configName = t(config.titleKey);
-            const messages = geminiService.getDynamicLoadingMessages({ useCase: 'equipment', data: { configName } });
+        if (isLoading && sourceDetails) {
+            const messages = geminiService.getDynamicLoadingMessages({
+                useCase: 'equipment',
+                data: { configName: `${t(`equipmentView.configurator.budgets.${sourceDetails.budget}`)} for ${sourceDetails.plants} plants` }
+            });
             let messageIndex = 0;
             const updateLoadingMessage = () => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
@@ -91,95 +67,206 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             };
             
             updateLoadingMessage();
-            const intervalId = setInterval(updateLoadingMessage, 2000);
+            const intervalId = setInterval(updateLoadingMessage, 2500);
 
             return () => clearInterval(intervalId);
         }
-    }, [isLoading, t, plantCount, selectedConfigKey]);
-
+    }, [isLoading, t, sourceDetails]);
+    
     const handleGenerate = () => {
-        if (!plantCount || !selectedConfigKey) return;
-        const config = configurations[plantCount][selectedConfigKey];
-        const details = derivedSourceDetails;
-        if(details) {
-            dispatch(startEquipmentGeneration({ prompt: t(config.promptKey), details }));
+        if (!plantCount || !budget) return;
+
+        const tentSizes: Record<PlantCount, string> = { '1': '60x60cm', '2-3': '100x100cm', '4+': '120x120cm' };
+        const tentSize = tentSizes[plantCount];
+        
+        const prompt = t('ai.prompts.equipmentSystemInstruction', {
+            plantCount,
+            budget,
+            tentSize
+        });
+
+        dispatch(startEquipmentGeneration({ prompt, details: { plantCount, budget } }));
+    };
+
+    const handleSaveSetup = () => {
+        if (!recommendation || !sourceDetails) return;
+
+        const totalCost = (Object.values(recommendation) as (RecommendationItem | string)[]).reduce((sum, item) => {
+            if (typeof item === 'object' && item.price) {
+                return sum + item.price;
+            }
+            return sum;
+        }, 0);
+        
+        const setupName = `${t(`equipmentView.configurator.budgets.${sourceDetails.budget}`)} - ${sourceDetails.plants} ${sourceDetails.plants === '1' ? 'Plant' : 'Plants'}`;
+        const name = window.prompt(t('equipmentView.configurator.setupNamePrompt'), setupName);
+
+        if (name && recommendation) {
+            const setupToSave: Omit<SavedSetup, 'id' | 'createdAt'> = {
+                name,
+                recommendation,
+                totalCost,
+                sourceDetails: {
+                    area: '',
+                    budget: sourceDetails.budget,
+                    growStyle: '',
+                }
+            };
+            
+            dispatch(addSetup(setupToSave))
+                .unwrap()
+                .then(() => {
+                    onSaveSetup();
+                })
+                .catch((err) => {
+                    console.error("Save setup failed from component:", err);
+                });
         }
     };
-    
-     const handleSaveSetup = (setupToSave: Omit<SavedSetup, 'id' | 'createdAt'>) => {
-        dispatch(addSetup(setupToSave))
-            .unwrap()
-            .then(() => {
-                onSaveSetup();
-            })
-            .catch((err) => {
-                // Error notification is handled within the thunk, so we just log here.
-                console.error("Save setup failed:", err);
-            });
-    };
-    
-    const showResults = isLoading || recommendation || error;
-    const currentConfigs = plantCount ? configurations[plantCount] : null;
 
-    return (
-        <Card>
-            {!showResults ? (
-                 <>
-                    <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.configurator.title')}</h2>
-                    <p className="text-slate-400 mb-6">{t('equipmentView.configurator.subtitleNew')}</p>
-                    
-                    <div className="space-y-6">
-                        <div>
-                            <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step1TitleNew')}</h3>
-                            <div className="grid grid-cols-3 gap-3">
-                                {([1, 2, 3] as PlantCount[]).map(count => 
-                                    <button 
-                                        key={count} 
-                                        onClick={() => { setPlantCount(count); setSelectedConfigKey(null); }}
-                                        className={`p-4 text-center rounded-lg border-2 transition-colors ${plantCount === count ? 'bg-primary-900/50 border-primary-500' : 'bg-slate-800 border-transparent hover:border-slate-500'}`}
-                                    >
-                                        <div className="flex justify-center items-center h-8 mb-1">
-                                            {Array.from({ length: count }).map((_, i) => (
-                                                <PhosphorIcons.Plant key={i} className="w-8 h-8 text-primary-500"/>
-                                            ))}
+    const resetFlow = () => {
+        setStep(1);
+        setPlantCount(null);
+        setBudget(null);
+        dispatch(resetEquipmentGenerationState());
+    };
+
+    const showResults = isLoading || recommendation || error;
+    
+    const plantOptions: { value: PlantCount, label: string, icon: React.ReactNode }[] = [
+        { value: '1', label: t('equipmentView.configurator.plantCount_one'), icon: <PhosphorIcons.Plant className="w-8 h-8" /> },
+        // FIX: The `count` option for i18next pluralization must be a number. Use a separate key for string interpolation.
+        { value: '2-3', label: t('equipmentView.configurator.plantCount_other', { count: 2, range: '2-3' }), icon: <><PhosphorIcons.Plant className="w-8 h-8" /><PhosphorIcons.Plant className="w-8 h-8" /></> },
+        // FIX: The `count` option for i18next pluralization must be a number. Use a separate key for string interpolation.
+        { value: '4+', label: t('equipmentView.configurator.plantCount_other', { count: 4, range: '4+' }), icon: <><PhosphorIcons.Plant className="w-8 h-8" /><PhosphorIcons.Plant className="w-8 h-8" /><PhosphorIcons.Plant className="w-8 h-8" /></> },
+    ];
+    
+    const budgetOptions: { value: Budget, label: string, description: string, icon: React.ReactNode }[] = [
+        { value: 'value', label: t('equipmentView.configurator.budgets.value'), description: t('equipmentView.configurator.budgetDescriptions.value'), icon: <PhosphorIcons.ChartPieSlice /> },
+        { value: 'balanced', label: t('equipmentView.configurator.budgets.balanced'), description: t('equipmentView.configurator.budgetDescriptions.balanced'), icon: <PhosphorIcons.Cube /> },
+        { value: 'premium', label: t('equipmentView.configurator.budgets.premium'), description: t('equipmentView.configurator.budgetDescriptions.premium'), icon: <PhosphorIcons.Sparkle /> },
+    ];
+
+    if (showResults) {
+        const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'circulationFan', 'pots', 'soil', 'nutrients', 'extra'];
+        
+        return (
+            <div className="animate-fade-in">
+                {rationale && <RationaleModal category={rationale.category} rationale={rationale.text} onClose={() => setRationale(null)} />}
+                {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
+                {error && (
+                     <div className="text-center p-8">
+                        <PhosphorIcons.XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                        <p className="text-red-400">{t('equipmentView.configurator.error')}</p>
+                        <p className="text-sm text-slate-400 mb-4">{error}</p>
+                        <Button onClick={handleGenerate}>{t('equipmentView.configurator.tryAgain')}</Button>
+                    </div>
+                )}
+                {recommendation && !isLoading && (
+                    <>
+                        <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.configurator.resultsTitle')}</h2>
+                        <p className="text-slate-400 mb-4 text-sm">{t('equipmentView.configurator.resultsSubtitleNew', {
+                            plants: plantCount,
+                            budget: t(`equipmentView.configurator.budgets.${budget || 'value'}`),
+                        })}</p>
+                        
+                         <div className="space-y-3">
+                            {categoryOrder.map(key => {
+                                const item = recommendation[key as RecommendationCategory];
+                                if (!item || typeof item !== 'object' || !item.name) return null;
+                                const categoryLabel = t(`equipmentView.configurator.categories.${key}`);
+                                return (
+                                    <Card key={key} className="p-3 bg-slate-800/50">
+                                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                                            <div>
+                                                <h4 className="font-bold text-slate-100">{categoryLabel}</h4>
+                                                <p className="text-sm text-primary-300">{item.name} {item.watts && `(${item.watts}W)`}</p>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono font-semibold">{item.price ? item.price.toFixed(2) : 'N/A'} {t('common.units.currency_eur')}</span>
+                                                <Button size="sm" variant="secondary" onClick={() => setRationale({ category: categoryLabel, text: item.rationale })}>{t('common.why')}</Button>
+                                            </div>
                                         </div>
-                                        <span className="font-bold">{t('equipmentView.configurator.plantCount', { count })}</span>
-                                    </button>
-                                )}
+                                    </Card>
+                                );
+                            })}
+                        </div>
+                        
+                        {recommendation.proTip && (
+                             <Card key="proTip" className="p-3 bg-primary-900/30 mt-4">
+                                <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
+                                    <PhosphorIcons.Sparkle /> {t('strainsView.tips.form.categories.proTip')}
+                                </h4>
+                                <p className="text-sm text-slate-300">{recommendation.proTip}</p>
+                            </Card>
+                        )}
+
+                        <div className="mt-6 pt-4 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
+                             <div className="text-2xl font-bold">
+                                <span>{t('equipmentView.configurator.total')}: </span>
+                                <span className="text-primary-400">{
+                                    (Object.values(recommendation) as (RecommendationItem | string)[])
+                                        .reduce((sum, item) => typeof item === 'object' && item.price ? sum + item.price : sum, 0)
+                                        .toFixed(2)
+                                } {t('common.units.currency_eur')}</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="secondary" onClick={resetFlow}>{t('equipmentView.configurator.startOver')}</Button>
+                                <Button onClick={handleSaveSetup}>{t('equipmentView.configurator.saveSetup')}</Button>
                             </div>
                         </div>
-
-                        {currentConfigs && (
-                            <div className="animate-fade-in">
-                                <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step2TitleNew')}</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                   <ConfigCard config={currentConfigs.standard} isSelected={selectedConfigKey === 'standard'} onSelect={() => setSelectedConfigKey('standard')} />
-                                   <ConfigCard config={currentConfigs.medium} isSelected={selectedConfigKey === 'medium'} onSelect={() => setSelectedConfigKey('medium')} />
-                                   <ConfigCard config={currentConfigs.premium} isSelected={selectedConfigKey === 'premium'} onSelect={() => setSelectedConfigKey('premium')} />
-                                </div>
-                            </div>
-                        )}
+                    </>
+                )}
+            </div>
+        );
+    }
+    
+    return (
+        <div> 
+            <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.configurator.title')}</h2>
+            <p className="text-slate-400 mb-6">{t('equipmentView.configurator.subtitleNew')}</p>
+            
+            {step === 1 && (
+                <div className="animate-fade-in">
+                    <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step1TitleNew')}</h3>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {plantOptions.map(opt => (
+                             <button key={opt.value} onClick={() => { setPlantCount(opt.value); setStep(2); }}
+                                className={`p-4 text-center rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${plantCount === opt.value ? 'bg-primary-900/50 border-primary-500 scale-105' : 'bg-slate-800 border-slate-700 hover:border-slate-500'}`}>
+                                <div className="flex justify-center items-center h-10 mb-2 text-primary-400">{opt.icon}</div>
+                                <span className="font-bold text-lg">{opt.label}</span>
+                            </button>
+                        ))}
                     </div>
-
+                </div>
+            )}
+            
+            {step === 2 && plantCount && (
+                <div className="animate-fade-in">
+                    <button onClick={() => setStep(1)} className="text-sm flex items-center gap-1 text-slate-400 hover:text-primary-300 mb-4">
+                        <PhosphorIcons.ArrowLeft /> {t('common.back')}
+                    </button>
+                    <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step2TitleNew')}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {budgetOptions.map(opt => (
+                            <button key={opt.value} onClick={() => setBudget(opt.value)}
+                                className={`p-4 text-left rounded-lg border-2 h-full flex flex-col transition-all duration-300 transform hover:scale-105 ${budget === opt.value ? 'bg-primary-900/50 border-primary-500 scale-105 shadow-lg' : 'bg-slate-800 border-slate-700 hover:border-slate-500'}`}>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="text-primary-400">{opt.icon}</div>
+                                    <h4 className="font-bold text-slate-100">{opt.label}</h4>
+                                </div>
+                                <p className="text-xs text-slate-400 flex-grow">{opt.description}</p>
+                            </button>
+                        ))}
+                    </div>
                     <div className="flex justify-end mt-8">
-                         <Button onClick={handleGenerate} disabled={!plantCount || !selectedConfigKey}>
+                         <Button onClick={handleGenerate} disabled={!budget}>
                             <PhosphorIcons.Sparkle className="inline w-5 h-5 mr-2" />
                             {t('equipmentView.configurator.generate')}
                         </Button>
                     </div>
-                 </>
-            ) : (
-                <SetupResults
-                    recommendation={recommendation}
-                    isLoading={isLoading}
-                    error={error}
-                    onSaveSetup={handleSaveSetup}
-                    startOver={() => dispatch(resetEquipmentGenerationState())}
-                    handleGenerate={handleGenerate}
-                    sourceDetails={sourceDetails!}
-                    loadingMessage={loadingMessage}
-                />
+                </div>
             )}
-        </Card>
+        </div>
     );
 };

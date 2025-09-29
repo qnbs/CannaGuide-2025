@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Command, View, Theme, UiDensity, PlantStage, EquipmentViewTab, KnowledgeViewTab, AppSettings, StrainViewTab } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { groupAndSortCommands } from '@/services/commandService';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectActivePlants, selectSettings } from '@/stores/selectors';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
@@ -73,6 +72,18 @@ export const useCommandPalette = () => {
                     },
                     keywords: `plant ${plant.name} feed log nutrients`,
                     group: t('commandPalette.groups.plants'),
+                },
+                {
+                    id: `plant-observe-${plant.id}`,
+                    title: t('commandPalette.logObservation', { plantName: plant.name }),
+                    subtitle: t('commandPalette.subtitles.logObservation'),
+                    icon: PhosphorIcons.MagnifyingGlass,
+                    action: () => {
+                        dispatch(uiActions.openActionModal({ plantId: plant.id, type: 'observation' }));
+                        dispatch(uiActions.setIsCommandPaletteOpen(false));
+                    },
+                    keywords: `plant ${plant.name} observe note log`,
+                    group: t('commandPalette.groups.plants'),
                 }
             ];
 
@@ -120,14 +131,15 @@ export const useCommandPalette = () => {
             
             { id: 'nav-my-strains', title: t('commandPalette.goToMyStrains'), subtitle: t('commandPalette.subtitles.goToMyStrains'), icon: PhosphorIcons.Star, action: () => { dispatch(uiActions.setActiveView(View.Strains)); dispatch(strainsViewActions.setStrainsViewTab(StrainViewTab.MyStrains)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'custom strains', group: t('commandPalette.groups.navigation') },
             { id: 'nav-favorites', title: t('commandPalette.goToFavorites'), subtitle: t('commandPalette.subtitles.goToFavorites'), icon: PhosphorIcons.Heart, action: () => { dispatch(uiActions.setActiveView(View.Strains)); dispatch(strainsViewActions.setStrainsViewTab(StrainViewTab.Favorites)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'favorite strains', group: t('commandPalette.groups.navigation') },
-            { id: 'add-strain', title: t('strainsView.addStrain'), icon: PhosphorIcons.PlusCircle, action: () => { dispatch(uiActions.openAddModal()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'new, custom, create', group: t('commandPalette.groups.strains') },
-            { id: 'export-strains', title: t('common.export'), subtitle: t('commandPalette.exportStrains'), icon: PhosphorIcons.DownloadSimple, action: () => { dispatch(uiActions.openExportModal()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'save, download, pdf, csv, json', group: t('commandPalette.groups.strains') },
-            
             { id: 'nav-calculators', title: t('commandPalette.goToCalculators'), subtitle: t('commandPalette.subtitles.goToCalculators'), icon: PhosphorIcons.Calculator, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab(EquipmentViewTab.Calculators)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'tools ventilation light cost', group: t('commandPalette.groups.navigation') },
             { id: 'nav-setups', title: t('commandPalette.goToSetups'), subtitle: t('commandPalette.subtitles.goToSetups'), icon: PhosphorIcons.Cube, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab(EquipmentViewTab.Setups)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'saved setups my setups', group: t('commandPalette.groups.navigation') },
-
+            { id: 'nav-grow-shops', title: t('commandPalette.goToGrowShops'), subtitle: t('commandPalette.subtitles.goToGrowShops'), icon: PhosphorIcons.Storefront, action: () => { dispatch(uiActions.setActiveView(View.Equipment)); dispatch(uiActions.setEquipmentViewTab(EquipmentViewTab.GrowShops)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'shops stores equipment', group: t('commandPalette.groups.navigation') },
             { id: 'nav-guide', title: t('commandPalette.goToGuide'), subtitle: t('commandPalette.subtitles.goToGuide'), icon: PhosphorIcons.Book, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab(KnowledgeViewTab.Guide)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'learn tutorial basics', group: t('commandPalette.groups.navigation') },
+            { id: 'nav-archive', title: t('commandPalette.goToArchive'), subtitle: t('commandPalette.subtitles.goToArchive'), icon: PhosphorIcons.Archive, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab(KnowledgeViewTab.Archive)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'saved mentor responses', group: t('commandPalette.groups.navigation') },
             { id: 'nav-breeding', title: t('commandPalette.goToBreeding'), subtitle: t('commandPalette.subtitles.goToBreeding'), icon: PhosphorIcons.TestTube, action: () => { dispatch(uiActions.setActiveView(View.Knowledge)); dispatch(uiActions.setKnowledgeViewTab(KnowledgeViewTab.Breeding)); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'cross breed seeds', group: t('commandPalette.groups.navigation') },
+            
+            { id: 'add-strain', title: t('strainsView.addStrain'), icon: PhosphorIcons.PlusCircle, action: () => { dispatch(uiActions.openAddModal()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'new, custom, create', group: t('commandPalette.groups.strains') },
+            { id: 'export-strains', title: t('common.export'), subtitle: t('commandPalette.exportStrains'), icon: PhosphorIcons.DownloadSimple, action: () => { dispatch(uiActions.openExportModal()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'save, download, pdf, csv, json', group: t('commandPalette.groups.strains') },
             
             ...plantCommands,
             { id: 'water-all', title: t('commandPalette.waterAllPlants'), subtitle: t('commandPalette.subtitles.waterAllPlants'), icon: PhosphorIcons.Drop, action: () => { dispatch(simulationActions.waterAllPlants()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, keywords: 'water all plants', group: t('commandPalette.groups.plants'), },

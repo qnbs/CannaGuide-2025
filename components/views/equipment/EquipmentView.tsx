@@ -9,7 +9,6 @@ import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EquipmentViewTab } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-// FIX: Corrected imports to use selectors and actions from Redux slices.
 import { selectSavedSetups, selectUi } from '@/stores/selectors';
 import { setEquipmentViewTab } from '@/stores/slices/uiSlice';
 import { updateSetup, deleteSetup } from '@/stores/slices/savedItemsSlice';
@@ -21,11 +20,26 @@ export const EquipmentView: React.FC = () => {
     const { equipmentViewTab: activeTab } = useAppSelector(selectUi);
 
     const tabs = [
-        { id: 'configurator', label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.MagicWand /> },
-        { id: 'setups', label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Cube /> },
-        { id: 'calculators', label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
-        { id: 'grow-shops', label: t('equipmentView.tabs.growShops'), icon: <PhosphorIcons.Storefront /> },
+        { id: EquipmentViewTab.Configurator, label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.MagicWand /> },
+        { id: EquipmentViewTab.Setups, label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.Cube /> },
+        { id: EquipmentViewTab.Calculators, label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
+        { id: EquipmentViewTab.GrowShops, label: t('equipmentView.tabs.growShops'), icon: <PhosphorIcons.Storefront /> },
     ];
+
+    const renderContent = () => {
+        switch(activeTab) {
+            case EquipmentViewTab.Configurator:
+                return <SetupConfigurator onSaveSetup={() => dispatch(setEquipmentViewTab(EquipmentViewTab.Setups))} />;
+            case EquipmentViewTab.Calculators:
+                return <Calculators />;
+            case EquipmentViewTab.Setups:
+                return <SavedSetupsView savedSetups={savedSetups} updateSetup={(setup) => dispatch(updateSetup(setup))} deleteSetup={(id) => dispatch(deleteSetup(id))} />;
+            case EquipmentViewTab.GrowShops:
+                return <GrowShopsView />;
+            default:
+                return null;
+        }
+    }
     
     return (
         <div className="space-y-6">
@@ -33,13 +47,9 @@ export const EquipmentView: React.FC = () => {
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => dispatch(setEquipmentViewTab(id as EquipmentViewTab))} />
             </Card>
 
-            {activeTab === 'configurator' && <SetupConfigurator onSaveSetup={() => dispatch(setEquipmentViewTab('setups'))} />}
-            
-            {activeTab === 'calculators' && <Calculators />}
-            
-            {activeTab === 'setups' && <SavedSetupsView savedSetups={savedSetups} updateSetup={(setup) => dispatch(updateSetup(setup))} deleteSetup={(id) => dispatch(deleteSetup(id))} />}
-
-            {activeTab === 'grow-shops' && <GrowShopsView />}
+            <Card>
+                {renderContent()}
+            </Card>
         </div>
     );
 };

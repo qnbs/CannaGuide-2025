@@ -10,12 +10,14 @@ export const equipmentView = {
     subtitleNew: 'Beantworte zwei einfache Fragen, um eine komplette, KI-generierte Ausrüstungsempfehlung für deinen Grow zu erhalten.',
     step1TitleNew: '1. Wie viele Pflanzen möchtest du anbauen?',
     plantCount_one: '1 Pflanze',
-    plantCount_other: '{{count}} Pflanzen',
+    // FIX: Changed interpolation key from 'count' to 'range' to allow passing a string for display while still using the numeric 'count' for pluralization.
+    plantCount_other: '{{range}} Pflanzen',
     step2TitleNew: '2. Wähle deinen Konfigurationsstil',
     generate: 'Setup generieren',
     setupSaveSuccess: 'Setup "{{name}}" erfolgreich gespeichert!',
     resultsTitle: 'Dein KI-generiertes Setup',
     resultsSubtitle: 'Für: {{area}} Fläche, mit Fokus auf {{style}} und einem {{budget}} Budget.',
+    resultsSubtitleNew: 'Für: {{plants}} Pflanzen, mit einem {{budget}} Budget.',
     total: 'Gesamtkosten',
     error: 'Bei der Generierung deines Setups ist ein Fehler aufgetreten.',
     tryAgain: 'Erneut versuchen',
@@ -24,9 +26,14 @@ export const equipmentView = {
     costBreakdown: 'Kostenaufschlüsselung',
     setupNamePrompt: 'Gib einen Namen für dieses Setup ein:',
     budgets: {
-      low: 'Preis/Leistung',
-      medium: 'Ausgewogen',
-      high: 'Premium',
+      value: 'Preis/Leistung',
+      balanced: 'Ausgewogen',
+      premium: 'Premium',
+    },
+    budgetDescriptions: {
+        value: 'Fokus auf das Wesentliche mit zuverlässiger, kostengünstiger Ausrüstung.',
+        balanced: 'Eine Mischung aus hochwertigen und preiswerten Komponenten für ein optimales Gleichgewicht.',
+        premium: 'Keine Kompromisse. Die beste verfügbare Technologie für maximale Qualität und Ertrag.'
     },
     styles: {
       beginner: 'einfache Handhabung',
@@ -34,9 +41,9 @@ export const equipmentView = {
       yield: 'Ertragsmaximierung',
     },
     setupNameBudgets: {
-        low: 'Preis/Leistung',
-        medium: 'Ausgewogen',
-        high: 'Premium',
+        value: 'Preis/Leistung',
+        balanced: 'Ausgewogen',
+        premium: 'Premium',
     },
     categories: {
       tent: 'Growbox',
@@ -54,59 +61,6 @@ export const equipmentView = {
       abluft: 'Abluft',
       toepfe: 'Töpfe',
       medium: 'Medium',
-    },
-    setups: {
-      '1': {
-        standard: {
-          title: 'Preis-Leistungs-Starter',
-          description: 'Ein kostengünstiges, schnörkelloses Setup, perfekt für Anfänger, um die Grundlagen zu lernen.',
-          prompt: 'Erstelle ein preis-leistungs-orientiertes, budgetfreundliches, komplettes Cannabis-Anbau-Setup für eine Pflanze in einem 60x60cm Zelt.',
-        },
-        medium: {
-          title: 'Ausgewogenes Solo',
-          description: 'Ein qualitativ hochwertiges Setup mit verbesserten Komponenten für bessere Ergebnisse und mehr Kontrolle.',
-          prompt: 'Erstelle ein ausgewogenes, hochwertiges, komplettes Cannabis-Anbau-Setup für eine Pflanze in einem 80x80cm Zelt.',
-        },
-        premium: {
-          title: 'Premium Boutique',
-          description: 'Ein Spitzen-Setup für eine einzelne Pflanze, das auf die Maximierung von Qualität und Ertrag mit der besten Technologie ausgerichtet ist.',
-          prompt: 'Erstelle ein erstklassiges, Spitzen-Setup für eine hochwertige Pflanze in einem 60x60cm Zelt, das auf Qualität ausgerichtet ist und Kokosfasern verwendet.',
-        },
-      },
-      '2': {
-        standard: {
-          title: 'Preis-Leistungs-Duo',
-          description: 'Ein effizientes Setup für zwei Pflanzen, das Kosten mit ausreichend Platz und Leistung in Einklang bringt.',
-          prompt: 'Erstelle ein preis-leistungs-orientiertes, budgetfreundliches, komplettes Cannabis-Anbau-Setup für zwei Pflanzen in einem 120x60cm Zelt.',
-        },
-        medium: {
-          title: 'Ausgewogenes Duo',
-          description: 'Ein solides Setup für zwei Pflanzen, das qualitativ gute Komponenten für konstante Ergebnisse bietet.',
-          prompt: 'Erstelle ein ausgewogenes, hochwertiges, komplettes Cannabis-Anbau-Setup für zwei Pflanzen in einem 100x100cm Zelt.',
-        },
-        premium: {
-          title: 'Premium-Paar',
-          description: 'Eine High-End-Konfiguration für zwei Pflanzen, entwickelt für Kenner, die erstklassige Ergebnisse anstreben.',
-          prompt: 'Erstelle ein erstklassiges, Spitzen-Setup für zwei hochwertige Pflanzen in einem 120x60cm Zelt, das eine Kokos/Perlit-Mischung verwendet.',
-        },
-      },
-      '3': {
-        standard: {
-          title: 'Preis-Leistungs-Trio',
-          description: 'Ein geräumiges und budgetbewusstes Setup für Züchter, die drei Pflanzen verwalten möchten.',
-          prompt: 'Erstelle ein preis-leistungs-orientiertes, budgetfreundliches, komplettes Cannabis-Anbau-Setup für drei Pflanzen in einem 100x100cm Zelt.',
-        },
-        medium: {
-          title: 'Ausgewogenes Trio',
-          description: 'Ein robustes Setup für drei Pflanzen, mit hochwertiger Beleuchtung und Belüftung für eine gesunde Umgebung.',
-          prompt: 'Erstelle ein ausgewogenes, hochwertiges, komplettes Cannabis-Anbau-Setup für drei Pflanzen in einem 120x120cm Zelt.',
-        },
-        premium: {
-          title: 'Premium-Ernte',
-          description: 'Ein kompromissloses, professionelles Setup für drei Pflanzen, das auf maximalen Ertrag und Qualität abzielt.',
-          prompt: 'Erstelle ein erstklassiges, professionelles, komplettes Cannabis-Anbau-Setup für drei große Pflanzen in einem 120x120cm Zelt, das auf maximalen Ertrag und Qualität ausgerichtet ist.',
-        },
-      },
     },
   },
   savedSetups: {

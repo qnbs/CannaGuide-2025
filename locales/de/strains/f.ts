@@ -13,6 +13,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "forbidden-fruit": {
     "description": "Eine indica-dominante Sorte mit einem exotischen, fruchtigen Aroma von Kirschen, Passionsfrucht und Zitrusfrüchten. Die Wirkung ist stark, entspannend und euphorisch.",
   },
+  "frankenstein": {
+    "description": "Eine indica-dominante Sorte mit einem erdigen, zitrusartigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch."
+  },
   "freakshow": {
     "description": "Eine einzigartige Sorte, die für ihre ungewöhnliche, farnartige Blattstruktur bekannt ist. Die Wirkung ist erhebend, kreativ und energetisierend. Ideal für den Tagesgebrauch.",
   },
@@ -31,7 +34,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "fruity-pebbles-og": {
     "description": "Eine Hybride, die für ihr süßes, fruchtiges Aroma bekannt ist, das an die gleichnamigen Frühstücksflocken erinnert. Die Wirkung ist stark, euphorisch und entspannend.",
   },
-  "future": {
+  "future-1": {
     "description": "Eine extrem potente Hybride, die für ihren extrem hohen THC-Gehalt bekannt ist. Die Wirkung ist stark, psychedelisch und langanhaltend, nur für erfahrene Konsumenten empfohlen.",
   }
 };

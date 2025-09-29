@@ -13,8 +13,11 @@ export const strains: Record<string, StrainTranslationData> = {
   "forbidden-fruit": {
     "description": "An indica-dominant strain with an exotic, fruity aroma of cherry, passionfruit, and citrus. The effect is strong, relaxing, and euphoric.",
   },
+  "frankenstein": {
+    "description": "An indica-dominant strain with an earthy, citrusy aroma. The effect is strong, relaxing, and sedating, ideal for evening use."
+  },
   "freakshow": {
-    "description": "A unique strain known for its unusual, fern-like leaf structure. The effect is uplifting, creative, and energizing. Ideal for daytime use.",
+    "description": "A unique strain bred by Humboldt Seed Co., known for its unusual, fern-like leaf structure that makes it a 'stealth' plant. The effect is uplifting, creative, and energizing, ideal for daytime use.",
   },
   "french-toast": {
     "description": "An indica-dominant strain with a sweet, buttery, and slightly spicy aroma. The effect is relaxing and calming, ideal for evening use.",
@@ -31,7 +34,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "fruity-pebbles-og": {
     "description": "A hybrid known for its sweet, fruity aroma reminiscent of the breakfast cereal of the same name. The effect is strong, euphoric, and relaxing.",
   },
-  "future": {
+  "future-1": {
     "description": "An extremely potent hybrid known for its incredibly high THC content. The effect is strong, psychedelic, and long-lasting, recommended only for experienced consumers.",
   }
 };

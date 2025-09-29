@@ -98,6 +98,30 @@ export const strainsF: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     },
     {
+        "id": "frankenstein",
+        "name": "Frankenstein",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush x an unknown strain",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "An indica-dominant strain with an earthy, citrusy aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Earthy", "Citrus", "Sweet", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    },
+    {
         "id": "freakshow",
         "name": "Freakshow",
         "type": StrainType.Sativa,

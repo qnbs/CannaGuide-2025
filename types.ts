@@ -1,3 +1,6 @@
+// FIX: Import React to resolve 'Cannot find namespace React' error for React.ElementType.
+import React from 'react';
+
 // This file was created to define all the shared types for the application.
 
 // --- Enums ---

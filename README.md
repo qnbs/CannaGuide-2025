@@ -1,22 +1,29 @@
+<!-- 
+This README file supports two languages.
+- English version is first.
+- Deutsche Version (German version) follows below.
+-->
+
 # 🌿 CannaGuide 2025 (English)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
+[![Contributors](https://img.shields.io/github/contributors/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/graphs/contributors)
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
 CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire cannabis cultivation lifecycle. Engineered for both novice enthusiasts and master growers, this state-of-the-art **Progressive Web App (PWA)** guides you from seed selection to a perfectly cured harvest. Simulate grows with an advanced VPD-based engine, explore a vast library of over 480 strains, diagnose plant issues with a photo, plan equipment with Gemini-powered intelligence, and master your craft with an interactive, data-driven guide.
+
+![CannaGuide 2025 Dashboard](https://raw.githubusercontent.com/qnbs/CannaGuide-2025/main/docs/screenshots/dashboard-view.png)
 
 ---
 
 ## Table of Contents
 
 - [🚀 Key Features](#-key-features)
-  - [1. The Strain Encyclopedia (`Strains` View)](#1-the-strain-encyclopedia-strains-view)
-  - [2. The Grow Room (`Plants` View)](#2-the-grow-room-plants-view)
-  - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view)
-  - [4. The Library (`Knowledge` & `Help` Views)](#4-the-library-knowledge--help-views)
-  - [5. The Control Panel (`Settings` View)](#5-the-control-panel-settings-view)
-  - [6. Platform-Wide Features](#6-platform-wide-features)
+- [💻 Technical Deep Dive](#-technical-deep-dive)
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
-- [💻 Advanced Technical Architecture](#-advanced-technical-architecture)
+- [🤝 Contributing](#-contributing)
 - [🏁 Getting Started](#-getting-started)
 - [⚠️ Disclaimer](#️-disclaimer)
 - [Deutsche Version](#-cannaguide-2025-deutsch)
@@ -25,67 +32,60 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 
 ## 🚀 Key Features
 
-### 1. The Strain Encyclopedia (`Strains` View)
+### 1. The Grow Room (`Plants` View)
+Your command center for managing and simulating up to three simultaneous grows.
 
+*   **Ultra-Realistic Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model.
+*   **AI-Powered Diagnostics**: Upload a photo of your plant to get an instant AI-based diagnosis and recommended solutions.
+*   **AI Plant Advisor**: Get proactive, data-driven advice from Gemini AI. All recommendations can be archived with full **CRUD** functionality.
+*   **Comprehensive Logging**: Track every action from watering to pest control in a detailed, filterable journal for each plant.
+
+![CannaGuide 2025 Strain View](https://raw.githubusercontent.com/qnbs/CannaGuide-2025/main/docs/screenshots/strains-view.png)
+
+### 2. The Strain Encyclopedia (`Strains` View)
 Your central knowledge hub, designed for deep exploration with **offline-first** access.
 
 *   **Vast Library**: Access detailed information on **over 480 cannabis strains**.
-*   **High-Performance Search**: Instantly find strains by name, genetics, or aroma, powered by an **IndexedDB-based full-text search index**.
-*   **Comprehensive Filtering & Sorting**: Precisely narrow your search with multi-select filters and sortable columns.
-*   **Your Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
-*   **AI Grow Tips with Archive**: Generate unique, AI-powered cultivation advice for any strain and manage it in a dedicated "Tips" archive with full **CRUD** functionality.
-*   **Professional Exporting & Management**: Export filtered or selected strain data as **PDF**, **CSV**, **TXT**, **JSON**, or **XML**. Manage all past exports in the "Exports" tab, also with full **CRUD** support.
-*   **Dual View Modes & Bulk Actions**: Switch between a detailed list and a visual grid. Select multiple strains at once to export or add/remove from favorites.
+*   **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search and advanced multi-select filters.
+*   **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
+*   **AI Grow Tips**: Generate unique, AI-powered cultivation advice for any strain and manage it in a dedicated "Tips" archive.
 
-### 2. The Grow Room (`Plants` View)
-
-Your command center for managing and simulating up to three simultaneous grows.
-
-*   **State-of-the-Art Simulation Engine**: Experience a realistic simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model.
-*   **AI-Powered Diagnostics**: Upload a photo of your plant to get an instant AI-based diagnosis and recommended solutions.
-*   **AI Plant Advisor with Full CRUD Archive**: Get proactive, data-driven advice from Gemini AI. **Save, view, edit, and delete** recommendations to build a unique history of AI-guided care.
-*   **Global Advisor Archive**: A dedicated dashboard view that aggregates and makes searchable all saved AI advisor responses from all your plants.
-*   **Detailed Plant View**: Dive deep into a single plant with tabs for **Overview**, **Journal**, **Tasks**, **Photos**, and **AI interactions**.
-*   **Interactive Dashboard**: Manage your plants in three slots. Each `PlantCard` displays a dynamic visual representation and real-time vitals.
-
-### 3. The Workshop (`Equipment` View)
-
-Plan and optimize your real-world grow setup with powerful, AI-driven tools.
-
-*   **AI Setup Configurator**: Generate a complete, customized equipment list based on plant count and growing style.
-*   **Saved Setups with Full CRUD & Export**: **Save, edit, delete**, and **export** your generated setups in various formats.
-*   **Essential Calculators**: A suite of tools for fine-tuning: Ventilation, Lighting, Nutrients, Cost, EC/PPM Converter, and a Yield Estimator.
-*   **Curated Grow Shops**: A list of reputable online grow shops in Europe and the USA.
-
-### 4. The Library (`Knowledge` & `Help` Views)
-
+### 3. The Library (`Knowledge` & `Help` Views)
 Your complete resource for learning and problem-solving.
 
-*   **Interactive Grow Guide**: A guided journey through the five main phases of cultivation with visual progress tracking.
-*   **AI Mentor with CRUD Archive**: Ask general growing questions to the AI. **Save, view, edit, and delete** the responses to build your personal knowledge base.
-*   **Comprehensive Help Center**: A detailed, searchable FAQ and in-depth lexicons.
-*   **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, unique hybrid strains that are permanently added to your library.
+*   **Context-Aware AI Mentor**: Ask growing questions to the AI Mentor, which leverages your active plant's data for tailored advice. All conversations are archived with full **CRUD** support.
+*   **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, unique hybrid strains that are permanently added to your personal library.
+*   **Interactive Sandbox**: Run "what-if" scenarios, like comparing Topping vs. LST on a clone of your plant, to visualize the impact of different training techniques over an accelerated 14-day simulation.
 
-### 5. The Control Panel (`Settings` View)
+![CannaGuide 2025 Mentor View](https://raw.githubusercontent.com/qnbs/CannaGuide-2025/main/docs/screenshots/mentor-view.png)
 
-Customize the app to your preferences and manage your data with full control.
-
-*   **Deep Personalization**: Adjust language (EN/DE), theme (5 options), font size, and UI density.
-*   **Advanced Accessibility**: Enable a **Dyslexia-Friendly Font**, **Reduced Motion**, or **Text-to-Speech (TTS)** functionality.
-*   **Complete Data Sovereignty**: Export *all* your app data (plants, settings, archives) to a single JSON file for **backup**. Import it later to **restore** your state.
-
-### 6. Platform-Wide Features
-
+### 4. Platform-Wide Features
+*   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
 *   **Command Palette (`Cmd/Ctrl + K`)**: A power-user tool for instant, click-free navigation and actions.
-*   **Offline-First PWA**: Thanks to a robust Service Worker, the app is installable and works completely offline, including access to all data and AI archives.
-*   **Text-to-Speech (TTS) Integration**: Have descriptions, guides, and AI responses read aloud for a hands-free, accessible experience.
-*   **Seamless PWA Installation**: A non-intrusive in-app install prompt for a native-like experience.
+*   **Complete Data Sovereignty**: Export *all* your app data (plants, settings, archives) to a single JSON file for **backup**. Import it later to **restore** your state.
+*   **Advanced Accessibility**: Features a **Dyslexia-Friendly Font**, **Reduced Motion**, and integrated **Text-to-Speech (TTS)** functionality.
+
+---
+
+## 💻 Technical Deep Dive
+
+CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed for performance and offline-first reliability.
+
+*   **Core Framework**: **React 19 & TypeScript** provide a modern, type-safe, and performant user interface.
+*   **State Management**: **Redux Toolkit** serves as the single source of truth for the entire application state. All data, from plant vitals to UI settings, is managed centrally, ensuring predictable state transitions and easy debugging.
+*   **AI Integration**: **Google Gemini API (`@google/genai`)** powers all intelligent features, using the `gemini-2.5-flash` model for its speed and ability to deliver structured JSON output.
+*   **Asynchronous Simulation**: The complex plant growth simulation runs in a **Web Worker (`simulation.worker.ts`)**, ensuring the main UI thread remains responsive and smooth, even during intensive background calculations.
+*   **Data Persistence**: A robust **dual IndexedDB strategy** ensures data integrity and offline availability.
+    *   The entire Redux state is persisted to IndexedDB via middleware, providing seamless state hydration.
+    *   Large static assets, like the strain library and full-text search index, are managed in a separate IndexedDB database for optimal performance.
+*   **PWA & Offline Capability**: A **Service Worker (`sw.js`)** implements a "Cache First, then Network" strategy, making the application fully installable and functional without an internet connection.
+*   **Styling**: **Tailwind CSS** enables a rapid, utility-first approach to building a consistent and responsive design system.
 
 ---
 
 ## 🤖 Development with AI Studio & Open Source
 
-This application was developed entirely with **Google's AI Studio**. The entire process, from the initial project to implementing complex features, was driven by iterative prompts in natural language.
+This application was developed entirely with **Google's AI Studio**. The entire process, from the initial project scaffolding to implementing complex features like the Redux state management and the Web Worker simulation, was driven by iterative prompts in natural language.
 
 This project is also fully open source. Dive into the code, fork the project, or contribute on GitHub. See firsthand how natural language can build sophisticated applications.
 
@@ -94,17 +94,19 @@ This project is also fully open source. Dive into the code, fork the project, or
 
 ---
 
-## 💻 Advanced Technical Architecture
+## 🤝 Contributing
 
-*   **Core:** React 19 & TypeScript for a modern, type-safe, and performant user interface.
-*   **AI Integration:** Google Gemini API (`@google/genai`) using the `gemini-2.5-flash` model for fast, structured JSON output that powers all AI features.
-*   **State Management:** Zustand with Immer middleware for a minimalistic, powerful, and scalable global state. Selectors are memoized with `reselect` for optimal performance.
-*   **Styling:** Tailwind CSS (via CDN) for a utility-first design system.
-*   **Dual Persistence Strategy:**
-    *   **IndexedDB (via `zustand/middleware/persist`):** For robust, asynchronous storage of the entire application state.
-    *   **IndexedDB (Direct):** For high-performance local storage of large, static datasets like the strain library and the full-text search index.
-*   **PWA & Offline Capability:** Service Worker implementing a robust "Cache First, then Network" strategy for a true offline-first experience.
-*   **Tooling:** `jsPDF` & `jsPDF-AutoTable` for professional PDF generation.
+We welcome contributions from the community! Whether you want to fix a bug, add a new feature, or improve translations, your help is appreciated.
+
+1.  **Reporting Issues**: If you find a bug or have an idea, please [open an issue](https://github.com/qnbs/CannaGuide-2025/issues) on GitHub first to discuss it.
+2.  **Making Changes**:
+    *   Fork the repository.
+    *   Create a new branch for your feature or bugfix (`git checkout -b feature/my-new-feature`).
+    *   Commit your changes (`git commit -am 'Add some feature'`).
+    *   Push to the branch (`git push origin feature/my-new-feature`).
+    *   Create a new Pull Request.
+
+Please follow the existing code style and ensure your changes are well-documented.
 
 ---
 
@@ -112,11 +114,11 @@ This project is also fully open source. Dive into the code, fork the project, or
 
 No installation or setup is required. The application runs entirely in your web browser.
 
-1.  **Discover Strains:** Start in the **Strains** view. Use the search and filters to find a strain and save it as a favorite.
-2.  **Start Growing:** From an empty slot on the **Plants** dashboard, click "Start a New Grow," select a strain, and configure your setup.
-3.  **Manage Plants:** The **Plants** dashboard is your command center. The simulation progresses automatically if enabled. Click on a plant to check its detailed status and log actions.
-4.  **Learn & Plan:** Use the **Knowledge** and **Equipment** views to deepen your understanding and plan your real-world setup.
-5.  **Use the Command Palette:** For the fastest access, press `Cmd/Ctrl + K` to navigate or perform actions instantly.
+1.  **Onboarding**: On first launch, you'll be guided through a quick tutorial to set your preferred language.
+2.  **Discover Strains**: Start in the **Strains** view. Use the search and filters to find a strain and save it as a favorite.
+3.  **Start Growing**: Navigate to the **Plants** dashboard. From an empty slot, click "Start New Grow," select a strain, and configure your setup.
+4.  **Manage Your Grow**: The **Plants** dashboard is your command center. Log actions like watering and feeding, check on your plant's vitals, and get advice from the AI.
+5.  **Use the Command Palette**: For the fastest access, press `Cmd/Ctrl + K` to navigate or perform actions instantly.
 
 ---
 
@@ -129,91 +131,85 @@ No installation or setup is required. The application runs entirely in your web 
 
 # 🌿 CannaGuide 2025 (Deutsch)
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
+[![Contributors](https://img.shields.io/github/contributors/qnbs/CannaGuide-2025)](https://github.com/qnbs/CannaGuide-2025/graphs/contributors)
+
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 
 CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Cannabisanbaus. Entwickelt für sowohl neugierige Einsteiger als auch für erfahrene Meisterzüchter, führt Sie diese hochmoderne **Progressive Web App (PWA)** von der Samenauswahl bis zur perfekt ausgehärteten Ernte. Simulieren Sie Anbauvorgänge mit einer fortschrittlichen VPD-basierten Engine, erkunden Sie eine Bibliothek mit über 480 Sorten, diagnostizieren Sie Pflanzenprobleme per Foto, planen Sie Ihre Ausrüstung mit Gemini-gestützter Intelligenz und meistern Sie Ihr Handwerk mit einem interaktiven, datengesteuerten Leitfaden.
+
+![CannaGuide 2025 Dashboard](https://raw.githubusercontent.com/qnbs/CannaGuide-2025/main/docs/screenshots/dashboard-view.png)
 
 ---
 
 ## Inhaltsverzeichnis
 
-- [🚀 Hauptfunktionen](#-hauptfunktionen)
-  - [1. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)](#1-die-sorten-enzyklopädie-sorten-ansicht)
-  - [2. Der Grow Room (`Pflanzen`-Ansicht)](#2-der-grow-room-pflanzen-ansicht)
-  - [3. Die Werkstatt (`Ausrüstung`-Ansicht)](#3-die-werkstatt-ausrüstung-ansicht)
-  - [4. Die Bibliothek (`Wissen` & `Hilfe`-Ansichten)](#4-die-bibliothek-wissen--hilfe-ansichten)
-  - [5. Das Kontrollzentrum (`Einstellungen`-Ansicht)](#5-das-kontrollzentrum-einstellungen-ansicht)
-  - [6. Plattformweite Funktionen](#6-plattformweite-funktionen)
+- [🚀 Hauptfunktionen](#-hauptfunktionen-1)
+- [💻 Technischer Deep Dive](#-technischer-deep-dive)
 - [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
-- [💻 Fortschrittliche Technische Architektur](#-fortschrittliche-technische-architektur)
-- [🏁 Erste Schritte](#-erste-schritte)
+- [🤝 Mitwirken (Contributing)](#-mitwirken-contributing)
+- [🏁 Erste Schritte](#-erste-schritte-1)
 - [⚠️ Haftungsausschluss](#️-haftungsausschluss-1)
 
 ---
 
 ## 🚀 Hauptfunktionen
 
-### 1. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)
+### 1. Der Grow Room (`Pflanzen`-Ansicht)
+Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Grows.
 
+*   **Ultrarealistische Simulations-Engine**: Erleben Sie eine hochmoderne Simulation, die auf **VPD (Dampfdruckdefizit)**, Biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
+*   **KI-gestützte Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose und empfohlene Lösungen zu erhalten.
+*   **KI-Pflanzenberater**: Erhalten Sie proaktive, datengestützte Ratschläge von Gemini AI. Alle Empfehlungen können mit voller **CRUD**-Funktionalität archiviert werden.
+*   **Umfassendes Journaling**: Verfolgen Sie jede Aktion von der Bewässerung bis zur Schädlingsbekämpfung in einem detaillierten, filterbaren Journal für jede Pflanze.
+
+![CannaGuide 2025 Sorten-Ansicht](https://raw.githubusercontent.com/qnbs/CannaGuide-2025/main/docs/screenshots/strains-view.png)
+
+### 2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)
 Ihre zentrale Wissensbibliothek, konzipiert für tiefgehende Erkundungen mit **Offline-First**-Zugriff.
 
 *   **Riesige Bibliothek**: Zugriff auf detaillierte Informationen zu **über 480 Cannabissorten**.
-*   **Hochleistungs-Volltextsuche**: Finden Sie Sorten sofort nach Name, Genetik oder Aroma dank eines **IndexedDB-gestützten** Suchindex.
-*   **Umfassende Filter & Sortierung**: Grenzen Sie Ihre Suche mit Mehrfachauswahl-Filtern und sortierbaren Spalten präzise ein.
-*   **Ihre persönliche Sorten-Sammlung**: Profitieren Sie von voller **CRUD-Funktionalität (Erstellen, Lesen, Aktualisieren, Löschen)**, um Ihre eigenen Sorten hinzuzufügen und zu verwalten.
-*   **KI-Anbau-Tipps mit Archiv**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte und verwalten Sie diese in einem dedizierten "Tipps"-Archiv mit voller **CRUD**-Funktionalität.
-*   **Professioneller Export & Management**: Exportieren Sie gefilterte oder ausgewählte Sortendaten als **PDF**, **CSV**, **TXT**, **JSON** oder **XML**. Verwalten Sie alle Exporte im "Exporte"-Tab, ebenfalls mit voller **CRUD**-Unterstützung.
-*   **Duale Ansichtsmodi & Massenaktionen**: Wechseln Sie zwischen einer detaillierten Liste und einem visuellen Raster. Wählen Sie mehrere Sorten gleichzeitig aus, um sie zu exportieren oder zu den Favoriten hinzuzufügen/zu entfernen.
+*   **Hochleistungs-Suche & Filterung**: Finden Sie Sorten sofort mit einer IndexedDB-gestützten Volltextsuche und erweiterten Mehrfachauswahl-Filtern.
+*   **Persönliche Sorten-Sammlung**: Profitieren Sie von voller **CRUD-Funktionalität (Erstellen, Lesen, Aktualisieren, Löschen)**, um Ihre eigenen Sorten hinzuzufügen und zu verwalten.
+*   **KI-Anbau-Tipps**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte und verwalten Sie diese in einem dedizierten "Tipps"-Archiv.
 
-### 2. Der Grow Room (`Pflanzen`-Ansicht)
-
-Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Grows.
-
-*   **Hochmoderne Simulations-Engine**: Erleben Sie eine realistische Simulation, die auf **VPD (Dampfdruckdefizit)**, Biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
-*   **KI-gestützte Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose und empfohlene Lösungen zu erhalten.
-*   **KI-Pflanzenberater mit vollem CRUD-Archiv**: Erhalten Sie proaktive, datengestützte Ratschläge von Gemini AI. **Speichern, ansehen, bearbeiten und löschen** Sie Empfehlungen, um eine einzigartige Historie der KI-geführten Pflege aufzubauen.
-*   **Globales Berater-Archiv**: Eine dedizierte Ansicht auf dem Haupt-Dashboard, die alle gespeicherten KI-Berater-Antworten von all Ihren Pflanzen aggregiert und durchsuchbar macht.
-*   **Detaillierte Pflanzenansicht**: Tauchen Sie tief in eine einzelne Pflanze ein, mit Reitern für **Übersicht**, **Tagebuch**, **Aufgaben**, **Fotos** und **KI-Interaktionen**.
-*   **Interaktives Dashboard**: Verwalten Sie Ihre Pflanzen in drei Slots. Jede `Pflanzenkarte` zeigt eine dynamische visuelle Darstellung und Echtzeit-Vitalwerte.
-
-### 3. Die Werkstatt (`Ausrüstung`-Ansicht)
-
-Planen und optimieren Sie Ihr reales Grow-Setup mit leistungsstarken, KI-gestützten Werkzeugen.
-
-*   **KI-Setup-Konfigurator**: Generieren Sie eine komplette, individualisierte Ausrüstungsliste basierend auf Pflanzenanzahl und Anbaustil.
-*   **Gespeicherte Setups mit voller CRUD & Export**: **Speichern, bearbeiten, löschen** und **exportieren** Sie Ihre generierten Setups in verschiedenen Formaten.
-*   **Essentielle Rechner**: Eine Suite von Werkzeugen zur Feinabstimmung: Belüftung, Beleuchtung, Nährstoffe, Kosten, EC/PPM-Umrechner und ein Ertragsschätzer.
-*   **Kuratierte Grow-Shops**: Eine Liste von seriösen Online-Grow-Shops in Europa und den USA.
-
-### 4. Die Bibliothek (`Wissen` & `Hilfe`-Ansichten)
-
+### 3. Die Bibliothek (`Wissen` & `Hilfe`-Ansichten)
 Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
-*   **Interaktiver Grow-Guide**: Eine geführte Reise durch die fünf Hauptphasen des Anbaus mit visueller Fortschrittsverfolgung.
-*   **KI-Mentor mit CRUD-Archiv**: Stellen Sie allgemeine Anbaufragen an die KI. **Speichern, ansehen, bearbeiten und löschen** Sie die Antworten, um Ihre persönliche Wissensdatenbank aufzubauen.
-*   **Umfassendes Hilfecenter**: Eine detaillierte, durchsuchbare FAQ und tiefgehende Lexika.
-*   **Zuchtlabor**: Kreuzen Sie Ihre hochwertigen, gesammelten Samen, um völlig neue, einzigartige Hybrid-Sorten zu erschaffen, die dauerhaft Ihrer Bibliothek hinzugefügt werden.
+*   **Kontextsensitiver KI-Mentor**: Stellen Sie dem KI-Mentor Anbaufragen, der die Daten Ihrer aktiven Pflanze für maßgeschneiderte Ratschläge nutzt. Alle Konversationen werden mit voller **CRUD**-Unterstützung archiviert.
+*   **Zuchtlabor**: Kreuzen Sie Ihre hochwertigen, gesammelten Samen, um völlig neue, einzigartige Hybrid-Sorten zu erschaffen, die dauerhaft Ihrer persönlichen Bibliothek hinzugefügt werden.
+*   **Interaktive Sandbox**: Führen Sie "Was-wäre-wenn"-Szenarien durch, wie z.B. den Vergleich von Topping vs. LST an einem Klon Ihrer Pflanze, um die Auswirkungen verschiedener Trainingstechniken über eine beschleunigte 14-tägige Simulation zu visualisieren.
 
-### 5. Das Kontrollzentrum (`Einstellungen`-Ansicht)
+![CannaGuide 2025 Mentor-Ansicht](https://raw.githubusercontent.com/qnbs/CannaGuide-2025/main/docs/screenshots/mentor-view.png)
 
-Passen Sie die App an Ihre Vorlieben an und verwalten Sie Ihre Daten mit voller Kontrolle.
-
-*   **Tiefgreifende Personalisierung**: Passen Sie Sprache (DE/EN), Thema (5 Optionen), Schriftgröße und UI-Dichte an.
-*   **Erweiterte Barrierefreiheit**: Aktivieren Sie eine **Legastheniker-freundliche Schriftart**, **Reduzierte Bewegung** oder die **Text-to-Speech (TTS)**-Funktionalität.
-*   **Vollständige Datenhoheit**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Archive) in eine einzige JSON-Datei für ein **Backup**. Importieren Sie diese später, um Ihren Zustand wiederherzustellen.
-
-### 6. Plattformweite Funktionen
-
+### 4. Plattformweite Funktionen
+*   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich des Zugriffs auf alle Daten und KI-Archive.
 *   **Befehlspalette (`Cmd/Strg + K`)**: Ein Power-User-Tool für sofortige Navigation und Aktionen ohne Klicks.
-*   **Offline-First PWA**: Dank eines robusten Service Workers ist die App installierbar und funktioniert vollständig offline, einschließlich des Zugriffs auf alle Daten und KI-Archive.
-*   **Text-to-Speech (TTS) Integration**: Lassen Sie sich Beschreibungen, Anleitungen und KI-Antworten vorlesen – für eine barrierefreie Nutzung ohne Hände.
-*   **Nahtlose PWA-Installation**: Eine unaufdringliche Installationsaufforderung in der App für ein natives Erlebnis.
+*   **Vollständige Datenhoheit**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Archive) in eine einzige JSON-Datei für ein **Backup**. Importieren Sie diese später, um Ihren Zustand wiederherzustellen.
+*   **Erweiterte Barrierefreiheit**: Bietet eine **Legastheniker-freundliche Schriftart**, **Reduzierte Bewegung** und integrierte **Text-to-Speech (TTS)**-Funktionalität.
+
+---
+
+## 💻 Technischer Deep Dive
+
+CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Technologie-Stack, der für Leistung und Offline-First-Zuverlässigkeit konzipiert ist.
+
+*   **Kern-Framework**: **React 19 & TypeScript** bieten eine moderne, typsichere und performante Benutzeroberfläche.
+*   **Zustandsverwaltung**: **Redux Toolkit** dient als die alleinige "Source of Truth" für den gesamten Anwendungszustand. Alle Daten, von Pflanzenvitalwerten bis zu UI-Einstellungen, werden zentral verwaltet, was vorhersagbare Zustandsübergänge und einfaches Debugging gewährleistet.
+*   **KI-Integration**: Die **Google Gemini API (`@google/genai`)** treibt alle intelligenten Funktionen an und verwendet das `gemini-2.5-flash`-Modell wegen seiner Geschwindigkeit und Fähigkeit, strukturierte JSON-Ausgaben zu liefern.
+*   **Asynchrone Simulation**: Die komplexe Pflanzenwachstumssimulation läuft in einem **Web Worker (`simulation.worker.ts`)**, wodurch der Haupt-UI-Thread auch bei intensiven Hintergrundberechnungen reaktionsschnell und flüssig bleibt.
+*   **Datenpersistenz**: Eine robuste **duale IndexedDB-Strategie** gewährleistet Datenintegrität und Offline-Verfügbarkeit.
+    *   Der gesamte Redux-Zustand wird über Middleware in IndexedDB persistiert, was eine nahtlose Zustandshydrierung ermöglicht.
+    *   Große statische Daten, wie die Sortenbibliothek und der Volltext-Suchindex, werden für optimale Leistung in einer separaten IndexedDB-Datenbank verwaltet.
+*   **PWA & Offline-Fähigkeit**: Ein **Service Worker (`sw.js`)** implementiert eine "Cache First, then Network"-Strategie, wodurch die Anwendung vollständig installierbar und ohne Internetverbindung funktionsfähig ist.
+*   **Styling**: **Tailwind CSS** ermöglicht einen schnellen, Utility-First-Ansatz zum Aufbau eines konsistenten und responsiven Designsystems.
 
 ---
 
 ## 🤖 Entwicklung mit AI Studio & Open Source
 
-Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt. Der gesamte Prozess, vom initialen Projekt bis zur Implementierung komplexer Features, wurde durch iterative Befehle in natürlicher Sprache gesteuert.
+Diese Anwendung wurde vollständig mit **Googles AI Studio** entwickelt. Der gesamte Prozess, vom initialen Projekt-Setup bis zur Implementierung komplexer Features wie der Redux-Zustandsverwaltung und der Web-Worker-Simulation, wurde durch iterative Befehle in natürlicher Sprache gesteuert.
 
 Dieses Projekt ist zudem vollständig Open Source. Tauchen Sie in den Code ein, forken Sie das Projekt oder tragen Sie auf GitHub bei. Sehen Sie aus erster Hand, wie natürliche Sprache anspruchsvolle Anwendungen erstellen kann.
 
@@ -222,17 +218,19 @@ Dieses Projekt ist zudem vollständig Open Source. Tauchen Sie in den Code ein, 
 
 ---
 
-## 💻 Fortschrittliche Technische Architektur
+## 🤝 Mitwirken (Contributing)
 
-*   **Kerntechnologie:** React 19 & TypeScript für eine moderne, typsichere und performante Benutzeroberfläche.
-*   **KI-Integration:** Google Gemini API (`@google/genai`) mit dem Modell `gemini-2.5-flash` für schnelle, strukturierte JSON-Ausgaben, die alle KI-Funktionen antreiben.
-*   **Zustandsverwaltung:** Zustand mit Immer-Middleware für eine minimalistische, leistungsstarke und skalierbare globale Zustandsverwaltung. Selektoren sind mit `reselect` für optimale Performance memoisier.
-*   **Styling:** Tailwind CSS (via CDN) für ein Utility-First-Design-System.
-*   **Duale Persistenzstrategie:**
-    *   **IndexedDB (via `zustand/middleware/persist`):** Für robuste, asynchrone Speicherung des gesamten Anwendungszustands.
-    *   **IndexedDB (Direkt):** Für hochperformante lokale Speicherung großer, statischer Datensätze wie die Sortenbibliothek und den Volltext-Suchindex.
-*   **PWA & Offline-Fähigkeit:** Service Worker mit einer robusten "Cache First, then Network"-Strategie für eine echte Offline-First-Erfahrung.
-*   **Werkzeuge:** `jsPDF` & `jsPDF-AutoTable` für die professionelle PDF-Erstellung.
+Wir freuen uns über Beiträge aus der Community! Ob Sie einen Fehler beheben, eine neue Funktion hinzufügen oder Übersetzungen verbessern möchten – Ihre Hilfe ist willkommen.
+
+1.  **Probleme melden**: Wenn Sie einen Fehler finden oder eine Idee haben, [öffnen Sie bitte zuerst ein Issue](https://github.com/qnbs/CannaGuide-2025/issues) auf GitHub, um es zu diskutieren.
+2.  **Änderungen vornehmen**:
+    *   Forken Sie das Repository.
+    *   Erstellen Sie einen neuen Branch für Ihr Feature oder Ihre Fehlerbehebung (`git checkout -b feature/mein-neues-feature`).
+    *   Committen Sie Ihre Änderungen (`git commit -am 'Füge ein Feature hinzu'`).
+    *   Pushen Sie den Branch (`git push origin feature/mein-neues-feature`).
+    *   Erstellen Sie einen neuen Pull Request.
+
+Bitte halten Sie sich an den bestehenden Code-Stil und stellen Sie sicher, dass Ihre Änderungen gut dokumentiert sind.
 
 ---
 
@@ -240,19 +238,14 @@ Dieses Projekt ist zudem vollständig Open Source. Tauchen Sie in den Code ein, 
 
 Es ist keine Installation oder Einrichtung erforderlich. Die Anwendung läuft vollständig in Ihrem Webbrowser.
 
-1.  **Sorten entdecken:** Beginnen Sie in der **Sorten**-Ansicht. Nutzen Sie die Suche und Filter, um eine Sorte zu finden, und speichern Sie sie als Favorit.
-2.  **Anbau starten:** Klicken Sie in einem leeren Slot im **Pflanzen**-Dashboard auf "Neuen Anbau starten", wählen Sie eine Sorte und konfigurieren Sie Ihr Setup.
-3.  **Pflanzen verwalten:** Das **Pflanzen**-Dashboard ist Ihre Kommandozentrale. Die Simulation schreitet automatisch voran, wenn aktiviert. Klicken Sie auf eine Pflanze, um ihren detaillierten Status zu überprüfen und Aktionen zu protokollieren.
-4.  **Lernen & Planen:** Nutzen Sie die Ansichten **Wissen** und **Ausrüstung**, um Ihr Verständnis zu vertiefen und Ihr reales Setup zu planen.
-5.  **Befehlspalette nutzen:** Für den schnellsten Zugriff drücken Sie `Cmd/Strg + K`, um sofort zu navigieren oder Aktionen auszuführen.
+1.  **Onboarding**: Beim ersten Start werden Sie durch ein kurzes Tutorial geführt, um Ihre bevorzugte Sprache einzustellen.
+2.  **Sorten entdecken**: Beginnen Sie in der **Sorten**-Ansicht. Nutzen Sie die Suche und Filter, um eine Sorte zu finden, und speichern Sie sie als Favorit.
+3.  **Anbau starten**: Navigieren Sie zum **Pflanzen**-Dashboard. Klicken Sie in einem leeren Slot auf "Neuen Anbau starten", wählen Sie eine Sorte und konfigurieren Sie Ihr Setup.
+4.  **Ihren Grow verwalten**: Das **Pflanzen**-Dashboard ist Ihre Kommandozentrale. Protokollieren Sie Aktionen wie Gießen und Düngen, überprüfen Sie die Vitalwerte Ihrer Pflanze und holen Sie sich Rat von der KI.
+5.  **Befehlspalette nutzen**: Für den schnellsten Zugriff drücken Sie `Cmd/Strg + K`, um sofort zu navigieren oder Aktionen auszuführen.
 
 ---
 
 ## ⚠️ Haftungsausschluss
 
 > Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und gesetzeskonform.
-
----
-
-### Translation Keys
-- `common.disclaimer.text`

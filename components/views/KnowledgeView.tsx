@@ -1,8 +1,7 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '../common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-// FIX: Corrected import paths
 import { Plant, KnowledgeArticle, KnowledgeViewTab } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
@@ -12,11 +11,11 @@ import { GuideTab } from './knowledge/GuideTab';
 import { MentorArchiveTab } from './knowledge/MentorArchiveTab';
 import { BreedingView } from './knowledge/BreedingView';
 import { useActivePlants, usePlantById } from '@/hooks/useSimulationBridge';
-// FIX: Corrected import paths
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectUi } from '@/stores/selectors';
+import { selectUi, selectSandboxState } from '@/stores/selectors';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
 import { SandboxView } from './knowledge/SandboxView';
+import { SkeletonLoader } from '../common/SkeletonLoader';
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
     return knowledgeBase.filter(article => {
@@ -44,6 +43,9 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
+    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
+
+    const [isTabLoading, startTabTransition] = useTransition();
     
     const activePlants = useActivePlants();
     const activeMentorPlant = usePlantById(activeMentorPlantId);
@@ -69,6 +71,12 @@ export const KnowledgeView: React.FC = () => {
         return <MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} />;
     }
 
+    const handleSetTab = (id: string) => {
+        startTabTransition(() => {
+            dispatch(setKnowledgeViewTab(id as KnowledgeViewTab));
+        });
+    };
+
     const tabs = [
         { id: KnowledgeViewTab.Mentor, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
         { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
@@ -78,6 +86,10 @@ export const KnowledgeView: React.FC = () => {
     ];
 
     const renderContent = () => {
+        if (isTabLoading) {
+            return <Card><SkeletonLoader count={4} /></Card>;
+        }
+
         switch (activeTab) {
             case KnowledgeViewTab.Mentor:
                  return (
@@ -111,13 +123,17 @@ export const KnowledgeView: React.FC = () => {
                     </Card>
                 );
             case KnowledgeViewTab.Guide:
-                return <GuideTab articles={knowledgeBase} />;
+                return <Card><GuideTab articles={knowledgeBase} /></Card>;
             case KnowledgeViewTab.Archive:
                 return <MentorArchiveTab />;
             case KnowledgeViewTab.Breeding:
                 return <BreedingView />;
             case KnowledgeViewTab.Sandbox:
-                return <SandboxView />;
+                return (
+                    <Card>
+                        {isSandboxLoading ? <SkeletonLoader count={3} /> : <SandboxView />}
+                    </Card>
+                );
             default:
                 return null;
         }
@@ -126,13 +142,13 @@ export const KnowledgeView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <div>
+            <Card>
                 <h2 className="text-3xl font-bold font-display text-slate-100">{t('knowledgeView.title')}</h2>
                 <p className="text-slate-400 mt-1">{t('knowledgeView.subtitle')}</p>
-            </div>
+            </Card>
             
             <Card>
-                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={(id) => dispatch(setKnowledgeViewTab(id as KnowledgeViewTab))} />
+                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={handleSetTab} />
             </Card>
 
             {renderContent()}

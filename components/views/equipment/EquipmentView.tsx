@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { SetupConfigurator } from '@/components/views/equipment/SetupConfigurator';
 import { Calculators } from '@/components/views/equipment/Calculators';
-import { SavedSetupsView } from './SavedSetupsView';
+import { SavedSetupsView } from '@/components/views/equipment/SavedSetupsView';
 import { Tabs } from '@/components/common/Tabs';
 import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';

@@ -1,121 +1,17 @@
-import React, { useMemo } from 'react';
-// FIX: Changed import paths to be relative
-import { useAppStore } from '../../stores/useAppStore';
-import { PlantSlot } from './plants/PlantSlot';
-import { DetailedPlantView } from './plants/DetailedPlantView';
-import { TipOfTheDay } from './plants/TipOfTheDay';
-import { GardenVitals } from './plants/DashboardSummary';
-import { TasksAndWarnings } from './plants/TasksAndWarnings';
-import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { Card } from '../../common/Card';
-import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
-import { InlineStrainSelector } from './plants/InlineStrainSelector';
-import { GrowSetupModal } from './plants/GrowSetupModal';
-import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
-import { selectActivePlants, selectOpenTasksSummary, selectActiveProblemsSummary, selectSelectedPlantId, selectPlantSlots } from '../../stores/slices/plantSlice';
-import { AiDiagnostics } from './plants/AiDiagnostics';
-import { Button } from '../../common/Button';
-
-const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
-    const { t } = useTranslation();
-    return (
-        <Card
-            onClick={onStart}
-            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all card-interactive-glow"
-        >
-            <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
-            <h3 className="font-semibold text-slate-300">{t('plantsView.emptySlot.title')}</h3>
-            <p className="text-sm text-slate-500">{t('plantsView.emptySlot.subtitle')} <span className="hidden md:inline">{t('plantsView.emptySlot.subtitleInline')}</span></p>
-        </Card>
-    );
-};
+/**
+ * @deprecated This file is obsolete and should not be used.
+ * The correct and current implementation for the Plants View is located at `components/views/PlantsView.tsx`.
+ * This file has been deprecated as part of the migration from Zustand to Redux and to resolve architectural inconsistencies.
+ */
+import React from 'react';
 
 export const PlantsView: React.FC = () => {
-    const { t } = useTranslation();
-    
-    // Optimized State Selection
-    const { waterAllPlants, setSelectedPlantId, startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } = useAppStore.getState();
-    
-    const initiatingGrowForSlot = useAppStore(state => state.initiatingGrowForSlot);
-    const strainForNewGrow = useAppStore(state => state.strainForNewGrow);
-    const isGrowSetupModalOpen = useAppStore(state => state.isGrowSetupModalOpen);
-    const isConfirmationModalOpen = useAppStore(state => state.isConfirmationModalOpen);
-    const plantSlots = useAppStore(selectPlantSlots);
-    const plantsRecord = useAppStore(state => state.plants);
-    const selectedPlantId = useAppStore(selectSelectedPlantId);
-    
-    const activePlants = useAppStore(selectActivePlants);
-    const allTasks = useAppStore(selectOpenTasksSummary);
-    const allProblems = useAppStore(selectActiveProblemsSummary);
-    
-    const selectedPlant = useMemo(() => {
-        if (!selectedPlantId) return null;
-        const plant = plantsRecord[selectedPlantId];
-        return plant ? plant : null;
-    }, [selectedPlantId, plantsRecord]);
-    
-    if (selectedPlant) {
-        return <DetailedPlantView plant={selectedPlant} onClose={() => setSelectedPlantId(null)} />;
-    }
-
-    const showGrowFromStrainBanner = strainForNewGrow && initiatingGrowForSlot === null;
-
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {isGrowSetupModalOpen && strainForNewGrow && (
-                <GrowSetupModal
-                    strain={strainForNewGrow}
-                    onClose={cancelNewGrow}
-                    onConfirm={confirmSetupAndShowConfirmation}
-                />
-            )}
-            {isConfirmationModalOpen && (
-                <GrowConfirmationModal />
-            )}
-
-            <div className="lg:col-span-2 space-y-6">
-                <TipOfTheDay />
-                {showGrowFromStrainBanner && (
-                    <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="flex-grow">
-                            <h3 className="font-bold text-primary-300">{t('plantsView.inlineSelector.title')}</h3>
-                            <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {strainForNewGrow.name}.</p>
-                        </div>
-                        <Button variant="secondary" size="sm" onClick={cancelNewGrow}>
-                            {t('common.cancel')}
-                        </Button>
-                    </Card>
-                )}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {plantSlots.map((plantId, index) => {
-                        if (initiatingGrowForSlot === index) {
-                            return (
-                                <InlineStrainSelector 
-                                    key={`selector-${index}`}
-                                    onClose={cancelNewGrow}
-                                    onSelectStrain={selectStrainForGrow}
-                                />
-                            );
-                        }
-                        const plant = plantId ? plantsRecord[plantId] : null;
-                        return plant ? (
-                            <PlantSlot key={plant.id} plant={plant} onInspect={() => setSelectedPlantId(plant.id)} />
-                        ) : (
-                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => startGrowInSlot(index)} />
-                        );
-                    })}
-                </div>
-                 <AiDiagnostics />
-                 <GlobalAdvisorArchiveView />
-            </div>
-            <div className="lg:col-span-1 space-y-6">
-                <GardenVitals 
-                    openTasksCount={allTasks.length}
-                    onWaterAll={waterAllPlants}
-                />
-                <TasksAndWarnings tasks={allTasks} problems={allProblems} />
-            </div>
+        <div className="p-4 bg-red-900/20 border border-red-500 rounded-lg text-red-300">
+            <p className="font-bold">Deprecated Component</p>
+            <p className="text-sm">This file (`components/views/plants/PlantsView.tsx`) is deprecated. Please use `components/views/PlantsView.tsx` instead.</p>
         </div>
     );
 };
+
+export default PlantsView;

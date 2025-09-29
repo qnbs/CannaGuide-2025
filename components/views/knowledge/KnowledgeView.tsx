@@ -1,13 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Card } from '../common/Card';
+import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 // FIX: Corrected import paths
 import { Plant, KnowledgeArticle, KnowledgeViewTab } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
-import { Button } from '../common/Button';
-import { Tabs } from '../common/Tabs';
+import { Button } from '@/components/common/Button';
+import { Tabs } from '@/components/common/Tabs';
 import { GuideTab } from './knowledge/GuideTab';
 import { MentorArchiveTab } from './knowledge/MentorArchiveTab';
 import { BreedingView } from './knowledge/BreedingView';

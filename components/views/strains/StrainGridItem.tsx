@@ -1,16 +1,10 @@
 import React, { memo } from 'react';
-// FIX: Corrected import path for types to use the '@/' alias.
-import { Strain } from '@/types';
-import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Button } from '@/components/common/Button';
+import { Strain, StrainType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
-import { toggleFavorite } from '@/stores/slices/favoritesSlice';
-import { openAddModal, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { Button } from '@/components/common/Button';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -22,48 +16,54 @@ interface StrainGridItemProps {
     index: number;
 }
 
-const StrainGridItem: React.FC<StrainGridItemProps> = ({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index }) => {
+const typeIcons: Record<StrainType, React.ReactNode> = {
+    [StrainType.Sativa]: <SativaIcon className="w-10 h-10 text-amber-400" />,
+    [StrainType.Indica]: <IndicaIcon className="w-10 h-10 text-indigo-400" />,
+    [StrainType.Hybrid]: <HybridIcon className="w-10 h-10 text-blue-400" />,
+};
+
+const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index }) => {
     const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const favoriteIds = useAppSelector(selectFavoriteIds);
-    const isFavorite = favoriteIds.has(strain.id);
-    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
-
-    const typeClasses: Record<string, string> = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
-    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type];
-
-    const animationDelay = `${Math.min(index * 30, 500)}ms`;
 
     return (
-        <Card className="flex flex-col text-center p-0 overflow-hidden animate-fade-in-stagger" style={{ animationDelay }}>
-            <div className="absolute top-2 right-2 z-10">
+        <Card 
+            className={`flex flex-col h-full text-center relative cursor-pointer ${isSelected ? 'ring-2 ring-primary-500' : ''}`}
+            onClick={() => onSelect(strain)}
+            style={{ animationDelay: `${index * 20}ms` }}
+        >
+            <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
                 <input
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => onToggleSelection(strain.id)}
-                    onClick={(e) => e.stopPropagation()}
-                    className="h-5 w-5 rounded border-slate-500 bg-slate-800/50 text-primary-500 focus:ring-primary-500"
+                    className="h-4 w-4 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500"
+                    aria-label={`Select ${strain.name}`}
                 />
+                 {isUserStrain && (
+                    <Button variant="danger" size="sm" className="!p-1" onClick={() => onDelete(strain.id)}>
+                        <PhosphorIcons.TrashSimple className="w-3 h-3" />
+                    </Button>
+                )}
             </div>
-            <div onClick={() => onSelect(strain)} className="flex-grow p-3 cursor-pointer">
-                {TypeIcon && <TypeIcon className={`w-12 h-12 mx-auto mb-2 ${typeClasses[strain.type]}`} />}
-                <h3 className="font-bold text-slate-100 truncate">{strain.name}</h3>
-                <p className="text-xs text-slate-400 mb-2">{strain.type}</p>
-                <div className="flex justify-center gap-3 text-xs font-mono">
-                    <span>THC {strain.thc}%</span>
-                    <span>CBD {strain.cbd}%</span>
+            
+            {isUserStrain && <PhosphorIcons.Star weight="fill" className="absolute top-2 left-2 w-4 h-4 text-amber-400" title={t('strainsView.tabs.myStrains')} />}
+
+            <div className="mx-auto mb-2">
+                {typeIcons[strain.type]}
+            </div>
+
+            <h3 className="font-bold text-slate-100 truncate">{strain.name}</h3>
+            <p className="text-xs text-slate-400 mb-2">{strain.type}</p>
+
+            <div className="mt-auto text-xs grid grid-cols-2 gap-x-2 gap-y-1 font-mono">
+                <div className="bg-slate-700/50 rounded p-1">THC: {strain.thc?.toFixed(1)}%</div>
+                <div className="bg-slate-700/50 rounded p-1">CBD: {strain.cbd?.toFixed(1)}%</div>
+                <div className="bg-slate-700/50 rounded p-1 col-span-2">
+                    {strain.floweringTimeRange || strain.floweringTime} {t('common.units.weeks')}
                 </div>
-            </div>
-            <div className="p-2 bg-slate-900/50 border-t border-slate-700/50 flex gap-1 justify-center">
-                <Button variant="secondary" onClick={(e) => { e.stopPropagation(); dispatch(toggleFavorite(strain.id)); }} aria-pressed={isFavorite} className={`favorite-btn-glow !p-1.5 ${isFavorite ? 'is-favorite' : ''}`}><PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" /></Button>
-                <Button onClick={(e) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots} size="sm" className="!p-1.5" title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><PhosphorIcons.Plant className="w-4 h-4" /></Button>
-                {isUserStrain && (<>
-                    <Button variant="secondary" onClick={(e) => {e.stopPropagation(); dispatch(openAddModal(strain))}} size="sm" className="!p-1.5"><PhosphorIcons.PencilSimple className="w-4 h-4" /></Button>
-                    <Button variant="danger" onClick={(e) => {e.stopPropagation(); onDelete(strain.id)}} size="sm" className="!p-1.5"><PhosphorIcons.TrashSimple className="w-4 h-4" /></Button>
-                </>)}
             </div>
         </Card>
     );
-};
+});
 
-export default memo(StrainGridItem);
+export default StrainGridItem;

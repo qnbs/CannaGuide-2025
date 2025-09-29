@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from '@/types';
+import { View, BeforeInstallPromptEvent } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon';
@@ -10,7 +10,7 @@ import { setActiveView, setIsCommandPaletteOpen } from '@/stores/slices/uiSlice'
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void;
-    deferredPrompt: any;
+    deferredPrompt: BeforeInstallPromptEvent | null;
     isInstalled: boolean;
     onInstallClick: () => void;
 }
@@ -64,15 +64,14 @@ export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPr
                                 <span className="hidden sm:inline">{isInstalled ? t('common.installed') : t('common.installPwa')}</span>
                             </Button>
                         )}
-                         <button onClick={() => dispatch(setIsCommandPaletteOpen(true))} aria-label={t('commandPalette.open')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300 flex items-center gap-2 border border-slate-700">
-                             <PhosphorIcons.CommandLine className="w-5 h-5" />
-                             <span className="text-xs font-mono hidden md:inline"><kbd>⌘</kbd> <kbd>K</kbd></span>
-                        </button>
-                        <button onClick={() => dispatch(setActiveView(View.Settings))} aria-label={t('nav.settings')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
-                            <PhosphorIcons.Gear className="w-6 h-6" />
+                         <button onClick={() => dispatch(setIsCommandPaletteOpen(true))} aria-label={t('commandPalette.open')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
+                             <PhosphorIcons.DotsThreeVertical className="w-6 h-6" />
                         </button>
                          <button onClick={() => dispatch(setActiveView(View.Help))} aria-label={t('nav.help')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
                             <PhosphorIcons.Question className="w-6 h-6" />
+                        </button>
+                        <button onClick={() => dispatch(setActiveView(View.Settings))} aria-label={t('nav.settings')} className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300">
+                            <PhosphorIcons.Gear className="w-6 h-6" />
                         </button>
                     </div>
                 </div>

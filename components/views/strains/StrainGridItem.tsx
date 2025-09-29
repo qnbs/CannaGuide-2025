@@ -1,10 +1,12 @@
 import React, { memo } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { Strain } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
 import { toggleFavorite } from '@/stores/slices/favoritesSlice';
@@ -21,7 +23,7 @@ interface StrainGridItemProps {
 }
 
 const StrainGridItem: React.FC<StrainGridItemProps> = ({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const favoriteIds = useAppSelector(selectFavoriteIds);
     const isFavorite = favoriteIds.has(strain.id);

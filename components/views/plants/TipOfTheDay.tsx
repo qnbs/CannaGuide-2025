@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 
 export const TipOfTheDay: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [tip, setTip] = useState('');
 
     const allTips = useMemo(() => {

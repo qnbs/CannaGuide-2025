@@ -1,6 +1,6 @@
-// CACHE_VERSION muss bei jeder neuen Bereitstellung erhöht werden, um das 'activate'-Ereignis auszulösen
-// und sicherzustellen, dass Benutzer die neueste Version der App erhalten.
-const CACHE_VERSION = 'v1.4.0';
+// CACHE_VERSION must be incremented with each new deployment to trigger the 'activate' event
+// and ensure users get the latest version of the app.
+const CACHE_VERSION = 'v1.5.0';
 const CACHE_NAME = `cannaguide-cache-${CACHE_VERSION}`;
 
 // App Shell: The minimal resources needed for the app to start.
@@ -161,8 +161,8 @@ const APP_SHELL_URLS = [
   'locales/en/strainsData.ts',
 ];
 
-// Third-party resources to cache
-const THIRD_PARTY_URLS = [
+// Third-party resources to cache using a stale-while-revalidate strategy.
+const SWR_URLS = [
   'https://cdn.tailwindcss.com?plugins=typography',
   'https://aistudiocdn.com/react@^19.1.1',
   'https://aistudiocdn.com/react-dom@^19.1.1',
@@ -171,7 +171,7 @@ const THIRD_PARTY_URLS = [
   'https://aistudiocdn.com/jspdf-autotable@^3.8.2',
 ];
 
-const urlsToCache = [...APP_SHELL_URLS, ...THIRD_PARTY_URLS];
+const urlsToCache = [...APP_SHELL_URLS, ...SWR_URLS];
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -201,38 +201,55 @@ self.addEventListener('activate', event => {
   );
 });
 
+const staleWhileRevalidate = (event) => {
+    return caches.open(CACHE_NAME).then(cache => {
+        return cache.match(event.request).then(cachedResponse => {
+            const networkFetch = fetch(event.request).then(networkResponse => {
+                if (networkResponse.ok) {
+                    cache.put(event.request, networkResponse.clone());
+                }
+                return networkResponse;
+            }).catch(err => {
+                console.warn('[Service Worker] Fetch failed for SWR:', err);
+            });
+
+            return cachedResponse || networkFetch;
+        });
+    });
+};
+
+const cacheFirst = (event) => {
+    return caches.match(event.request).then(cachedResponse => {
+        return cachedResponse || fetch(event.request).then(networkResponse => {
+            if (networkResponse.ok) {
+                return caches.open(CACHE_NAME).then(cache => {
+                    cache.put(event.request, networkResponse.clone());
+                    return networkResponse;
+                });
+            }
+            return networkResponse;
+        });
+    });
+};
+
+
 self.addEventListener('fetch', event => {
+  // Ignore non-GET requests and chrome extensions
   if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
     return;
   }
   
-  // Exclude strain data JSON and API calls from being cached by the service worker.
-  // Strain data is handled by IndexedDB, and API calls should not be cached.
+  // Exclude strain data JSON and API calls from being cached.
   if (event.request.url.includes('/data/strains/') || event.request.url.includes('googleapis.com')) {
-    return; 
+    return; // Let the browser handle it (network only)
   }
 
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const cachedResponse = await cache.match(event.request);
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      try {
-        const networkResponse = await fetch(event.request);
-        
-        if (networkResponse && networkResponse.status === 200) {
-          await cache.put(event.request, networkResponse.clone());
-        }
-        return networkResponse;
-      } catch (error) {
-        console.error('[Service Worker] Fetch failed; returning offline fallback if available.', error);
-        if (event.request.mode === 'navigate') {
-            const indexPage = await cache.match('index.html');
-            if (indexPage) return indexPage;
-        }
-      }
-    })
-  );
+  const requestUrl = new URL(event.request.url);
+  
+  // Use Stale-While-Revalidate for third-party assets
+  if (SWR_URLS.some(url => requestUrl.href.startsWith(url))) {
+      event.respondWith(staleWhileRevalidate(event));
+  } else { // Use Cache-First for the App Shell
+      event.respondWith(cacheFirst(event));
+  }
 });

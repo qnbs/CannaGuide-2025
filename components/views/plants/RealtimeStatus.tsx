@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import React, { useState, useEffect, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 
 interface RealtimeStatusProps {
@@ -16,8 +16,8 @@ const formatDuration = (milliseconds: number) => {
     return { days, hours, minutes, seconds };
 };
 
-export const RealtimeStatus: React.FC<RealtimeStatusProps> = ({ createdAt, isSimulationActive }) => {
-    const { t } = useTranslations();
+export const RealtimeStatus: React.FC<RealtimeStatusProps> = memo(({ createdAt, isSimulationActive }) => {
+    const { t } = useTranslation();
     const [duration, setDuration] = useState(formatDuration(Date.now() - createdAt));
 
     useEffect(() => {
@@ -55,4 +55,4 @@ export const RealtimeStatus: React.FC<RealtimeStatusProps> = ({ createdAt, isSim
             )}
         </Card>
     );
-};
+});

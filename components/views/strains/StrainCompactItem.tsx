@@ -3,7 +3,7 @@ import { Strain } from '@/types';
 // FIX: Replace Zustand store with Redux hooks and selectors
 import { useAppSelector } from '@/stores/store';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { selectUserStrains } from '@/stores/selectors';
 
 interface StrainCompactItemProps {
@@ -12,7 +12,7 @@ interface StrainCompactItemProps {
 }
 
 export const StrainCompactItem: React.FC<StrainCompactItemProps> = memo(({ strain, onClick }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const userStrains = useAppSelector(selectUserStrains);
     const isUserStrain = userStrains.some(s => s.id === strain.id);
 

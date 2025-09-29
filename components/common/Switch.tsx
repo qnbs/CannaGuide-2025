@@ -1,4 +1,4 @@
-import React, { useId } from 'react';
+import React, { useId, memo } from 'react';
 
 interface SwitchProps {
   checked: boolean;
@@ -7,7 +7,7 @@ interface SwitchProps {
   'aria-label'?: string;
 }
 
-export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, 'aria-label': ariaLabel }) => {
+export const Switch: React.FC<SwitchProps> = memo(({ checked, onChange, label, 'aria-label': ariaLabel }) => {
   const id = useId();
   return (
     <div className="flex items-center">
@@ -31,4 +31,4 @@ export const Switch: React.FC<SwitchProps> = ({ checked, onChange, label, 'aria-
       </button>
     </div>
   );
-};
+});

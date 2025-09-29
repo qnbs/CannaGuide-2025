@@ -4,7 +4,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { exportService } from '@/services/exportService';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { BulkActionsBar } from './BulkActionsBar';
 import { useAppDispatch } from '@/stores/store';
@@ -20,7 +20,7 @@ interface ExportsManagerViewProps {
 
 export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, deleteExport, updateExport, allStrains, onOpenExportModal }) => {
     const dispatch = useAppDispatch();
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [editingExport, setEditingExport] = useState<SavedExport | null>(null);
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
 

@@ -4,20 +4,20 @@ export const onboarding = {
   german: 'Deutsch',
   english: 'Englisch',
   step1: {
-    title: 'Willkommen beim Grow Guide!',
-    text: 'Entdecke hunderte von Sorten. Finde die perfekte Genetik für deine Bedürfnisse und speichere deine Favoriten.',
+    title: '🧬 Sorten-Enzyklopädie',
+    text: 'Entdecke über 480 Sorten mit detaillierten Filtern oder füge deine eigenen hinzu. Erhalte KI-gestützte Anbau-Tipps.'
   },
   step2: {
-    title: 'Verfolge deine Pflanzen',
-    text: 'Starte einen virtuellen Anbau, verfolge das Wachstum deiner Pflanzen, protokolliere Maßnahmen und reagiere auf ihre Bedürfnisse.',
+    title: '🌿 Der Digitale Grow Room',
+    text: 'Verwalte bis zu drei Pflanzen in einer ultrarealistischen Echtzeit-Simulation. Greife ein, protokolliere alles und beobachte sie wachsen.'
   },
   step3: {
-    title: 'Plane deine Ausrüstung',
-    text: 'Nutze den Setup-Konfigurator und praktische Rechner, um deine ideale Ausrüstung zu finden, egal ob Anfänger oder Profi.',
+    title: '🛠️ Die Werkstatt',
+    text: 'Plane dein perfektes Setup mit dem KI-Konfigurator, nutze präzise Rechner und speichere deine Ausrüstung für zukünftige Projekte.'
   },
   step4: {
-    title: 'Lerne & Wachse',
-    text: 'Folge der interaktiven Anleitung, um die Grundlagen des Anbaus zu meistern und deinen Wissensfortschritt zu verfolgen.',
+    title: '🧠 Das Wissenszentrum',
+    text: 'Lerne mit dem interaktiven Guide, frage den KI-Mentor um Rat und nutze die Lexika, um dein Wissen zu vertiefen.'
   },
   startGrow: 'Lass uns deinen ersten Anbau starten!',
 };

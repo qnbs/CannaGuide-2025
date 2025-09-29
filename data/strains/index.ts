@@ -1,7 +1,8 @@
 
 
-// FIX: Update import paths to be relative
-import type { Strain } from '../../types';
+
+// FIX: Corrected import path for Strain type to use the '@/' alias.
+import type { Strain } from '@/types';
 import { strainsA } from './a';
 import { strainsB } from './b';
 import { strainsC } from './c';

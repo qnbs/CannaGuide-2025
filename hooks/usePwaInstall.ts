@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAppDispatch } from '../stores/store';
-import { useTranslations } from './useTranslations';
+import { useTranslation } from 'react-i18next';
 import { addNotification } from '../stores/slices/uiSlice';
+import { BeforeInstallPromptEvent } from '@/types';
 
 export const usePwaInstall = () => {
     const dispatch = useAppDispatch();
-    const { t } = useTranslations();
-    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const { t } = useTranslation();
+    const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
     const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
@@ -26,7 +27,7 @@ export const usePwaInstall = () => {
             if (checkInstalledStatus()) {
                 return;
             }
-            setDeferredPrompt(e);
+            setDeferredPrompt(e as BeforeInstallPromptEvent);
         };
 
         window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);

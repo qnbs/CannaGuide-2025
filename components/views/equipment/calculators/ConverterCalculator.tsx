@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input } from './common';
 
 export const ConverterCalculator: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [values, setValues] = useState({ ec: 1.2, ppm500: 600, ppm700: 840 });
 
     const handleECChange = (ec: number) => {

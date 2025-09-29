@@ -36,6 +36,7 @@ export const common = {
   noDataToExport: 'No data available to export for the current selection.',
   successfullyExported_one: 'Successfully exported as {{format}}.',
   successfullyExported_other: 'Successfully exported {{count}} items as {{format}}.',
+  saveErrorPreview: 'Saving is not possible in the preview. Please try in the deployed app.',
   disclaimer: {
     title: 'Disclaimer',
     text: 'This application is intended for educational and tracking purposes in regions where cannabis cultivation is legal. Always adhere to your local laws and regulations.'
@@ -175,7 +176,7 @@ export const ai = {
     unknown: 'An unknown AI error occurred.'
   },
   prompts: {
-    equipmentSystemInstruction: 'You are an expert cannabis cultivator providing equipment recommendations. Respond only in JSON format, strictly adhering to the provided schema. Ensure every category is filled. Prices should be in EUR.',
+    equipmentSystemInstruction: "You are a world-class expert on cannabis cultivation equipment with years of hands-on experience. Your task is to create a **complete and perfectly balanced, state-of-the-art grow setup** based on the user's request. For **every single relevant category** (tent, light, exhaust, circulation fan, pots, soil/medium, base nutrients, and essential extras like pH meter/thermo-hygrometer), provide a **specific, highly-regarded product model** or an exact type. The rationale must be concise and sophisticated, explaining the synergies between the components. Conclude with a 'Pro-Tip' section.",
     advisor: 'As an AI plant advisor, analyze the following plant data and provide a concise, actionable tip for the grower. Focus on the most critical issue or opportunity. The plant data is: {{plant}}',
     proactiveDiagnosis: 'As an AI proactive diagnostician, analyze the full plant data provided below. Identify any subtle, early-stage issues or potential future problems. Provide a concise report with a title and content detailing your findings and preventative advice. The plant data is: {{plant}}',
     mentor: {

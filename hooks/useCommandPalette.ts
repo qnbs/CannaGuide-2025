@@ -1,8 +1,8 @@
-
 import React, { useMemo } from 'react';
 import { Command, View, Theme, UiDensity, PlantStage, EquipmentViewTab, KnowledgeViewTab, AppSettings, StrainViewTab } from '@/types';
-import { useTranslations } from './useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { groupAndSortCommands } from '@/services/commandService';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectActivePlants, selectSettings } from '@/stores/selectors';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
@@ -12,7 +12,7 @@ import * as strainsViewActions from '@/stores/slices/strainsViewSlice';
 import * as simulationActions from '@/stores/slices/simulationSlice';
 
 export const useCommandPalette = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     
     const activePlants = useAppSelector(selectActivePlants);
@@ -93,16 +93,15 @@ export const useCommandPalette = () => {
 
             return commands;
         });
-
-        const themeCommands: Command[] = (Object.keys(t('settingsView.general.themes', { returnObjects: true })) as Theme[]).map(themeKey => ({
-            id: `set-theme-${themeKey}`,
-            title: t('commandPalette.setTheme', { themeName: t(`settingsView.general.themes.${themeKey}`) }),
-            subtitle: t('commandPalette.subtitles.setTheme'),
-            icon: PhosphorIcons.PaintBrush,
-            action: () => dispatch(settingsActions.setSetting({ path: 'theme', value: themeKey })),
-            group: t('commandPalette.groups.settings')
-        }));
         
+        const themes: Theme[] = ['midnight', 'forest', 'purpleHaze', 'desertSky', 'roseQuartz'];
+        const currentThemeIndex = themes.indexOf(settings.theme);
+        const nextThemeIndex = (currentThemeIndex + 1) % themes.length;
+        const nextTheme = themes[nextThemeIndex];
+
+        const newLang = settings.language === 'en' ? 'de' : 'en';
+        const newDensity: UiDensity = settings.uiDensity === 'comfortable' ? 'compact' : 'comfortable';
+
         const createNotifToggle = (key: keyof AppSettings['notificationSettings'], titleKey: string): Command => ({
             id: `toggle-notif-${String(key)}`,
             title: t(titleKey),
@@ -137,19 +136,17 @@ export const useCommandPalette = () => {
                 action: () => { dispatch(uiActions.setActiveView(View.Plants)); dispatch(uiActions.startGrowInSlot(slot)); dispatch(uiActions.setIsCommandPaletteOpen(false)); },
                 keywords: `new plant grow slot ${slot + 1}`, group: t('commandPalette.groups.plants'),
             })),
-
-            { id: 'set-language-de', title: t('commandPalette.switchToGerman'), subtitle: t('commandPalette.subtitles.switchTo'), icon: PhosphorIcons.Globe, action: () => dispatch(settingsActions.setSetting({ path: 'language', value: 'de' })), group: t('commandPalette.groups.settings'), keywords: 'deutsch german' },
-            { id: 'set-language-en', title: t('commandPalette.switchToEnglish'), subtitle: t('commandPalette.subtitles.switchTo'), icon: PhosphorIcons.Globe, action: () => dispatch(settingsActions.setSetting({ path: 'language', value: 'en' })), group: t('commandPalette.groups.settings'), keywords: 'englisch english' },
-            ...themeCommands,
+            
+            { id: 'toggle-language', title: t('commandPalette.toggleLanguage', { lang: newLang === 'de' ? 'Deutsch' : 'English' }), subtitle: t('commandPalette.subtitles.switchTo'), icon: PhosphorIcons.Globe, action: () => dispatch(settingsActions.setSetting({ path: 'language', value: newLang })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-theme', title: t('commandPalette.toggleTheme'), subtitle: `${t('common.next')}: ${t(`settingsView.general.themes.${nextTheme}`)}`, icon: PhosphorIcons.PaintBrush, action: () => dispatch(settingsActions.setSetting({ path: 'theme', value: nextTheme })), group: t('commandPalette.groups.settings') },
             createNotifToggle('stageChange', 'commandPalette.toggleStageChangeNotifs'),
             createNotifToggle('problemDetected', 'commandPalette.toggleProblemNotifs'),
             createNotifToggle('harvestReady', 'commandPalette.toggleHarvestNotifs'),
             createNotifToggle('newTask', 'commandPalette.toggleTaskNotifs'),
-            { id: 'toggle-tts', title: t('commandPalette.toggleTts'), subtitle: t('commandPalette.subtitles.toggleTts'), icon: PhosphorIcons.SpeakerHigh, action: () => dispatch(settingsActions.toggleSetting({ path: 'tts.enabled' })), group: t('commandPalette.groups.settings') },
-            { id: 'toggle-dyslexia', title: t('commandPalette.toggleDyslexiaFont'), subtitle: t('commandPalette.subtitles.toggleDyslexiaFont'), icon: PhosphorIcons.TextBolder, action: () => dispatch(settingsActions.toggleSetting({ path: 'accessibility.dyslexiaFont' })), group: t('commandPalette.groups.settings') },
-            { id: 'toggle-motion', title: t('commandPalette.toggleReducedMotion'), subtitle: t('commandPalette.subtitles.toggleReducedMotion'), icon: PhosphorIcons.GameController, action: () => dispatch(settingsActions.toggleSetting({ path: 'accessibility.reducedMotion' })), group: t('commandPalette.groups.settings') },
-            { id: 'set-density-compact', title: t('commandPalette.setUiDensity', { density: t('settingsView.accessibility.uiDensities.compact') }), subtitle: t('commandPalette.subtitles.setUiDensity'), icon: PhosphorIcons.ListBullets, action: () => dispatch(settingsActions.setSetting({ path: 'uiDensity', value: 'compact' as UiDensity })), group: t('commandPalette.groups.settings') },
-            { id: 'set-density-comfortable', title: t('commandPalette.setUiDensity', { density: t('settingsView.accessibility.uiDensities.comfortable') }), subtitle: t('commandPalette.subtitles.setUiDensity'), icon: PhosphorIcons.GridFour, action: () => dispatch(settingsActions.setSetting({ path: 'uiDensity', value: 'comfortable' as UiDensity })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-tts', title: t('commandPalette.toggleTts'), subtitle: t('commandPalette.subtitles.status', { status: settings.tts.enabled ? 'On' : 'Off' }), icon: PhosphorIcons.SpeakerHigh, action: () => dispatch(settingsActions.toggleSetting({ path: 'tts.enabled' })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-dyslexia', title: t('commandPalette.toggleDyslexiaFont'), subtitle: t('commandPalette.subtitles.status', { status: settings.accessibility.dyslexiaFont ? 'On' : 'Off' }), icon: PhosphorIcons.TextBolder, action: () => dispatch(settingsActions.toggleSetting({ path: 'accessibility.dyslexiaFont' })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-motion', title: t('commandPalette.toggleReducedMotion'), subtitle: t('commandPalette.subtitles.status', { status: settings.accessibility.reducedMotion ? 'On' : 'Off' }), icon: PhosphorIcons.GameController, action: () => dispatch(settingsActions.toggleSetting({ path: 'accessibility.reducedMotion' })), group: t('commandPalette.groups.settings') },
+            { id: 'toggle-ui-density', title: t('commandPalette.toggleUiDensity'), subtitle: `${t('common.next')}: ${t(`settingsView.accessibility.uiDensities.${newDensity}`)}`, icon: PhosphorIcons.ListBullets, action: () => dispatch(settingsActions.setSetting({ path: 'uiDensity', value: newDensity })), group: t('commandPalette.groups.settings') },
             
             { id: 'export-all', title: t('commandPalette.exportAllData'), subtitle: t('commandPalette.subtitles.exportAllData'), icon: PhosphorIcons.Archive, action: () => { dispatch(settingsActions.exportAllData()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, group: t('commandPalette.groups.data'), },
             { id: 'reset-plants', title: t('commandPalette.resetAllPlants'), subtitle: t('commandPalette.subtitles.resetAllPlants'), icon: PhosphorIcons.WarningCircle, action: () => { dispatch(simulationActions.resetPlants()); dispatch(uiActions.setIsCommandPaletteOpen(false)); }, group: t('commandPalette.groups.data'), }

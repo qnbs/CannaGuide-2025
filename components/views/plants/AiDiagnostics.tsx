@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
@@ -29,7 +29,7 @@ const base64ToMimeType = (base64: string): string => {
 };
 
 export const AiDiagnostics: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { isLoading, response, error } = useAppSelector(selectDiagnosticsState);
     const activePlants = useActivePlants();

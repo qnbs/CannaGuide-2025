@@ -10,7 +10,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "master-kush": {
     "description": "Eine beliebte Indica-Sorte aus Amsterdam, die dafür bekannt ist, eine Ganzkörperentspannung ohne den geistig betäubenden Effekt vieler Indicas zu bieten. Sie hat einen dezenten erdigen, zitrusartigen Geruch mit einem Hauch von Weihrauch."
   },
-  "mazar-i-sharif": {
+  "mazar-sharif": {
     "description": "Eine legendäre Indica-Landrasse aus dem Norden Afghanistans, bekannt für ihre hohe Harzproduktion, was sie ideal für Haschisch macht. Die Wirkung ist stark sedierend und entspannend."
   },
   "mimosa": {

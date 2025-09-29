@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { ArchivedAdvisorResponse, ExportFormat, Plant } from '@/types';
 import { selectArchivedAdvisorResponses } from '@/stores/selectors';
@@ -12,7 +13,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const archive = useAppSelector(selectArchivedAdvisorResponses);
     const activePlants = useActivePlants();

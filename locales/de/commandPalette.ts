@@ -12,6 +12,9 @@ export const commandPalette = {
   feed: 'Düngen',
   goToView: 'Zur Ansicht {{view}} wechseln',
   exportStrains: 'Sortendaten exportieren',
+  toggleLanguage: 'Sprache umschalten auf: {{lang}}',
+  toggleTheme: 'Thema wechseln',
+  toggleUiDensity: 'UI-Dichte umschalten',
   groups: {
     navigation: 'Navigation',
     plants: 'Pflanzen',
@@ -75,5 +78,6 @@ export const commandPalette = {
     waterAllPlants: 'Protokolliere einen Gießvorgang für alle aktiven Pflanzen',
     startGrowSlot: 'Beginne eine neue Pflanze in einem leeren Slot',
     toggleNotifications: 'Aktueller Status: {{status}}',
+    status: 'Status: {{status}}',
   }
 };

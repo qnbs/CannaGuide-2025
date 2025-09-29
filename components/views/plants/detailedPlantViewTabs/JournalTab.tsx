@@ -2,14 +2,14 @@ import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { JournalEntry, JournalEntryType } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 
 interface JournalTabProps {
     journal: JournalEntry[];
 }
 
 export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [journalFilter, setJournalFilter] = useState<JournalEntryType | 'ALL'>('ALL');
 
     const filteredJournal = useMemo(() => {

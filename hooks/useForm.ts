@@ -20,7 +20,7 @@ export const useForm = <T extends Record<string, any>>({
     const [values, setValues] = useState<T>(initialValues);
     const [errors, setErrors] = useState<ValidationErrors<T>>({});
 
-    const handleChange = useCallback((field: keyof T, value: any) => {
+    const handleChange = useCallback((field: keyof T, value: T[keyof T]) => {
         setValues(prev => ({ ...prev, [field]: value }));
     }, []);
 

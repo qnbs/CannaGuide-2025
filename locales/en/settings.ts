@@ -101,17 +101,22 @@ export const settingsView = {
       logProblems: 'Log detected problems',
       logTasks: 'Log created tasks',
       speed: 'Simulation Speed',
-      difficulty: 'Difficulty',
-      difficulties: {
-        easy: 'Easy',
-        normal: 'Normal',
-        hard: 'Hard',
-        custom: 'Custom',
+      simulationProfile: {
+        title: 'Simulation Profile',
+        description: 'Select a profile to quickly adjust simulation parameters.',
+        profiles: {
+          beginner: 'Beginner',
+          expert: 'Expert',
+          experimental: 'Experimental',
+          custom: 'Custom',
+        }
       },
-      customDifficulty: 'Custom Difficulty',
       pestPressure: 'Pest Pressure',
+      pestPressureDesc: 'Affects the likelihood of pest-related problems.',
       nutrientSensitivity: 'Nutrient Sensitivity',
+      nutrientSensitivityDesc: 'Affects how strongly the plant reacts to over/under-feeding.',
       environmentalStability: 'Environmental Stability',
+      environmentalStabilityDesc: 'Affects how much the environment (temp/humidity) fluctuates.',
   },
   notifications: {
       title: 'Notifications',
@@ -156,6 +161,18 @@ export const settingsView = {
     importSuccess: 'Data imported successfully! The app will now reload.',
     importError: 'Error importing data',
     importInvalidFile: 'Invalid CannaGuide 2025 backup file.',
+    clearArchives: 'Clear AI Archives',
+    clearArchivesDesc: 'Deletes all saved responses from the AI Mentor and Advisor.',
+    clearArchivesConfirm: 'Are you sure you want to delete all your saved AI responses?',
+    clearArchivesSuccess: 'All AI archives have been cleared.',
+    storageUsage: 'Storage Usage',
+    storageBreakdown: {
+        plants: 'Plant Data & Journals',
+        images: 'Saved Photos',
+        archives: 'AI Archives',
+        customStrains: 'Custom Strains',
+        savedItems: 'Saved Items',
+    }
   },
   about: {
       title: 'About the App',

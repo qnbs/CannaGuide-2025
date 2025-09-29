@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useEffect } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { Plant, PlantStage } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Tabs } from '@/components/common/Tabs';
@@ -10,9 +11,10 @@ import { TasksTab } from './detailedPlantViewTabs/TasksTab';
 import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
 import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
-import { completeTask } from '@/stores/slices/simulationSlice';
+import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice';
 import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
 import { openActionModal, openDiagnosticsModal } from '@/stores/slices/uiSlice';
 
@@ -21,12 +23,16 @@ interface DetailedPlantViewProps {
     onClose: () => void;
 }
 
-export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onClose }) => {
-    const { t } = useTranslations();
+export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant, onClose }) => {
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [activeTab, setActiveTab] = useState('overview');
     
     const archive = useAppSelector(selectArchivedAdvisorResponsesForPlant(plant.id));
+
+    useEffect(() => {
+        dispatch(updatePlantToNow(plant.id));
+    }, [plant.id, dispatch]);
 
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
@@ -78,4 +84,4 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = ({ plant, onC
             </div>
         </div>
     );
-};
+});

@@ -36,6 +36,7 @@ export const common = {
   noDataToExport: 'Keine Daten für die aktuelle Auswahl zum Exportieren vorhanden.',
   successfullyExported_one: 'Erfolgreich als {{format}} exportiert.',
   successfullyExported_other: '{{count}} Einträge erfolgreich als {{format}} exportiert.',
+  saveErrorPreview: 'Speichern in der Vorschau nicht möglich. Bitte in der deployten App versuchen.',
   disclaimer: {
     title: 'Haftungsausschluss',
     text: 'Diese Anwendung ist für Bildungs- und Tracking-Zwecke in Regionen gedacht, in denen der Cannabisanbau legal ist. Halte dich immer an deine lokalen Gesetze und Vorschriften.'
@@ -175,7 +176,7 @@ export const ai = {
     unknown: 'Ein unbekannter KI-Fehler ist aufgetreten.'
   },
   prompts: {
-    equipmentSystemInstruction: 'Du bist ein Experte für Cannabisanbau und gibst Ausrüstungsempfehlungen. Antworte nur im JSON-Format und halte dich strikt an das vorgegebene Schema. Stelle sicher, dass jede Kategorie ausgefüllt ist. Preise sollten in EUR sein.',
+    equipmentSystemInstruction: "Du bist ein Weltklasse-Experte für Cannabis-Anbau-Ausrüstung mit jahrelanger praktischer Erfahrung. Deine Aufgabe ist es, ein **vollständiges und perfekt ausgewogenes, hochmodernes Grow-Setup** basierend auf der Anfrage des Benutzers zu erstellen. Gib für **jede einzelne, relevante Kategorie** (Zelt, Licht, Abluft, Umluftventilator, Töpfe, Erde/Medium, Basis-Nährstoffe und wichtige Extras wie pH-Messgerät/Thermo-Hygrometer) ein **spezifisches, hoch angesehenes Produktmodell** oder einen genauen Typ an. Die Begründung muss prägnant und anspruchsvoll sein und die Synergien zwischen den Komponenten erklären. Schließe mit einem 'Profi-Tipp'-Abschnitt ab.",
     advisor: 'Als KI-Pflanzenberater, analysiere die folgenden Pflanzendaten und gib einen prägnanten, umsetzbaren Tipp für den Züchter. Konzentriere dich auf das kritischste Problem oder die größte Chance. Die Pflanzendaten sind: {{plant}}',
     proactiveDiagnosis: 'Als proaktiver KI-Diagnostiker, analysiere die vollständigen Pflanzendaten unten. Identifiziere subtile Probleme im Frühstadium oder potenzielle zukünftige Probleme. Gib einen prägnanten Bericht mit Titel und Inhalt, der deine Ergebnisse und präventiven Ratschläge detailliert. Die Pflanzendaten sind: {{plant}}',
     mentor: {

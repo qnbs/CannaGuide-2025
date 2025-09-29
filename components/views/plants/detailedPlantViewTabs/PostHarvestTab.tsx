@@ -1,6 +1,7 @@
 import React from 'react';
 import { Plant, PlantStage } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/stores/store';
@@ -24,7 +25,7 @@ const ProgressBar: React.FC<{ label: string; progress: number }> = ({ label, pro
 );
 
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const postHarvestData = plant.postHarvest;
     const isFinished = plant.stage === PlantStage.Finished;

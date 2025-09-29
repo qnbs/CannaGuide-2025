@@ -3,7 +3,7 @@ import { Modal } from '@/components/common/Modal';
 import { Plant, Scenario } from '@/types';
 // FIX: Corrected imports for Redux
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { geminiService } from '@/services/geminiService';
 import { selectDeepDiveState } from '@/stores/selectors';
@@ -20,7 +20,7 @@ interface DeepDiveModalProps {
 }
 
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { isLoading, response, error } = useAppSelector(selectDeepDiveState(plant.id, topic));
 

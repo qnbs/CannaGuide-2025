@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import React, { useMemo, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface VPDGaugeProps {
   temperature: number; // in Celsius
@@ -11,8 +11,8 @@ const calculateSVP = (temp: number): number => {
   return 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
 };
 
-export const VPDGauge: React.FC<VPDGaugeProps> = ({ temperature, humidity }) => {
-    const { t } = useTranslations();
+export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }) => {
+    const { t } = useTranslation();
     
     const vpd = useMemo(() => {
         const svp = calculateSVP(temperature);
@@ -72,4 +72,4 @@ export const VPDGauge: React.FC<VPDGaugeProps> = ({ temperature, humidity }) => 
             <p className={`text-sm font-semibold mt-2 ${statusColor}`}>{status}</p>
         </div>
     );
-};
+});

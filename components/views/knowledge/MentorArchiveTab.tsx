@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { ArchivedMentorResponse, ExportFormat } from '@/types';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { DataExportModal } from '@/components/common/DataExportModal';
@@ -21,7 +21,7 @@ interface MentorArchiveTabProps {
 }
 
 export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResponses: propsResponses }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const storeResponses = useAppSelector(selectArchivedMentorResponses);
     // FIX: Use props if available, otherwise fall back to store.
@@ -99,9 +99,11 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
         <Card>
             {editingResponse && (
                 <EditResponseModal 
-                    response={editingResponse} 
+                    // FIX: Ensure title is a string to match EditableResponse type.
+                    response={{ ...editingResponse, title: editingResponse.title || '' }} 
                     onClose={() => setEditingResponse(null)} 
-                    onSave={handleUpdate}
+                    // FIX: Pass the fully typed response to the update action.
+                    onSave={(updated) => handleUpdate({ ...editingResponse, ...updated })}
                 />
             )}
              <DataExportModal 

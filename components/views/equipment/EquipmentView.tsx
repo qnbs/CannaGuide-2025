@@ -1,9 +1,9 @@
 import React from 'react';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { SetupConfigurator } from '@/components/views/equipment/SetupConfigurator';
 import { Calculators } from '@/components/views/equipment/Calculators';
-import { SavedSetupsView } from './equipment/SavedSetupsView';
+import { SavedSetupsView } from './SavedSetupsView';
 import { Tabs } from '@/components/common/Tabs';
 import { GrowShopsView } from '@/components/views/equipment/GrowShopsView';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -15,7 +15,7 @@ import { setEquipmentViewTab } from '@/stores/slices/uiSlice';
 import { updateSetup, deleteSetup } from '@/stores/slices/savedItemsSlice';
 
 export const EquipmentView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const savedSetups = useAppSelector(selectSavedSetups);
     const { equipmentViewTab: activeTab } = useAppSelector(selectUi);

@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input } from './common';
 
 export const CostCalculator: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [inputs, setInputs] = useState({ lightPower: 300, lightHours: 12, fanPower: 40, fanHours: 24, otherPower: 20, price: 0.30 });
 
     const handleChange = (field: keyof typeof inputs, value: string) => {

@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 // FIX: Update import paths to use alias
 import { Plant, PlantStage } from '@/types';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { PlantVisualizer } from './PlantVisualizer';
 
@@ -22,7 +22,7 @@ const VitalSign: React.FC<{ value: number; idealMin: number; idealMax: number; l
 };
 
 export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
 
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);

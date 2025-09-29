@@ -1,10 +1,10 @@
 import React from 'react';
-import { DifficultyLevel, YieldLevel, HeightLevel } from '@/types';
+// FIX: Import AdvancedFilterState from the types file.
+import { DifficultyLevel, YieldLevel, HeightLevel, AdvancedFilterState } from '@/types';
 import { Button } from '@/components/common/Button';
 import { RangeSlider } from '@/components/common/RangeSlider';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { AdvancedFilterState } from '@/hooks/useStrainFilters';
 import { Drawer } from '@/components/common/Drawer';
 
 interface FilterDrawerProps {
@@ -32,7 +32,7 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({
 );
 
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
     const yieldLabels: Record<YieldLevel, string> = { Low: t('strainsView.addStrainModal.yields.low'), Medium: t('strainsView.addStrainModal.yields.medium'), High: t('strainsView.addStrainModal.yields.high') };
@@ -77,37 +77,59 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.difficulty')}</h4>
                                 <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
-                                    {(['Easy', 'Medium', 'Hard'] as DifficultyLevel[]).map(d => (<button key={d} onClick={() => handleToggleSet('selectedDifficulties', d)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedDifficulties.has(d) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`}>{difficultyLabels[d]}</button>))}
+                                    {(['Easy', 'Medium', 'Hard'] as DifficultyLevel[]).map(d => (
+                                        <button key={d} onClick={() => handleToggleSet('selectedDifficulties', d)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedDifficulties.has(d) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>
+                                            {difficultyLabels[d]}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.yield')}</h4>
                                 <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
-                                    {(['Low', 'Medium', 'High'] as YieldLevel[]).map(y => (<button key={y} onClick={() => handleToggleSet('selectedYields', y)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedYields.has(y) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`}>{yieldLabels[y]}</button>))}
+                                    {(['Low', 'Medium', 'High'] as YieldLevel[]).map(y => (
+                                        <button key={y} onClick={() => handleToggleSet('selectedYields', y)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedYields.has(y) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>
+                                            {yieldLabels[y]}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
-                            <div>
+                             <div>
                                 <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.height')}</h4>
                                 <div className="flex flex-col sm:flex-row gap-1 bg-slate-800 rounded-lg p-0.5">
-                                    {(['Short', 'Medium', 'Tall'] as HeightLevel[]).map(h => (<button key={h} onClick={() => handleToggleSet('selectedHeights', h)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedHeights.has(h) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-600'}`}>{heightLabels[h]}</button>))}
+                                    {(['Short', 'Medium', 'Tall'] as HeightLevel[]).map(h => (
+                                        <button key={h} onClick={() => handleToggleSet('selectedHeights', h)} className={`flex-1 px-2 py-1 text-sm rounded-md transition-colors ${tempFilterState.selectedHeights.has(h) ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>
+                                            {heightLabels[h]}
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         </div>
                     </FilterSection>
                 </section>
-
+                 
                 <section aria-labelledby="profile-filter-title">
-                    <FilterSection title={t('strainsView.addStrainModal.profile')}>
+                     <FilterSection title={t('strainsView.filters.aromas')}>
                         <h3 id="profile-filter-title" className="sr-only">{t('strainsView.addStrainModal.profile')}</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.terpenes')}</h4>
-                                <div className="max-h-32 overflow-y-auto space-y-1 pr-2 flex flex-wrap gap-2">{allTerpenes.map(terpene => (<button key={terpene} onClick={() => handleToggleSet('selectedTerpenes', terpene)} className={`px-3 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.has(terpene) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{t(`common.terpenes.${terpene}`, terpene)}</button>))}</div>
-                            </div>
-                            <div>
-                                <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.aromas')}</h4>
-                                <div className="max-h-32 overflow-y-auto space-y-1 pr-2 flex flex-wrap gap-2">{allAromas.map(aroma => (<button key={aroma} onClick={() => handleToggleSet('selectedAromas', aroma)} className={`px-3 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.has(aroma) ? 'bg-primary-600 text-white font-semibold' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}>{t(`common.aromas.${aroma}`, aroma)}</button>))}</div>
-                            </div>
+                        <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
+                            {allAromas.map(aroma => (
+                                <button key={aroma} onClick={() => handleToggleSet('selectedAromas', aroma)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.has(aroma) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
+                                    {t(`common.aromas.${aroma}`, aroma)}
+                                </button>
+                            ))}
+                        </div>
+                    </FilterSection>
+                </section>
+
+                 <section aria-labelledby="terpenes-filter-title">
+                     <FilterSection title={t('strainsView.filters.terpenes')}>
+                        <h3 id="terpenes-filter-title" className="sr-only">{t('strainsView.filters.terpenes')}</h3>
+                        <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
+                            {allTerpenes.map(terpene => (
+                                <button key={terpene} onClick={() => handleToggleSet('selectedTerpenes', terpene)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.has(terpene) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
+                                     {t(`common.terpenes.${terpene}`, terpene)}
+                                </button>
+                            ))}
                         </div>
                     </FilterSection>
                 </section>

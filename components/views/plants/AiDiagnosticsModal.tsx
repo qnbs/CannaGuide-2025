@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
@@ -14,6 +14,7 @@ import { addJournalEntry } from '@/stores/slices/simulationSlice';
 import { Card } from '@/components/common/Card';
 import { geminiService } from '@/services/geminiService';
 import { dbService } from '@/services/dbService';
+import { Input, Select } from '@/components/ui/ThemePrimitives';
 
 
 const base64ToMimeType = (base64: string): string => {
@@ -37,7 +38,7 @@ interface DiagnosisResultProps {
 }
 
 const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ response, plantId, image }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
     const handleSaveToJournal = async () => {
@@ -127,7 +128,7 @@ interface AiDiagnosticsModalProps {
 }
 
 export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, onClose }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { isLoading, response, error } = useAppSelector(selectDiagnosticsState);
 
@@ -211,8 +212,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
                              <div className="space-y-2">
                                  <h4 className="font-semibold text-slate-100">{t('plantsView.aiDiagnostics.stepContextTitle')}</h4>
                                  <p className="text-sm text-slate-400">{t('plantsView.aiDiagnostics.stepContextDesc')}</p>
-                                <textarea value={userNotes} onChange={e => setUserNotes(e.target.value)} placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')} className="w-full input-base min-h-[120px]" />
-                                 <Button onClick={handleGetDiagnosis} disabled={isLoading} className="w-full">{t('ai.diagnostics')}</Button>
+                                <Input as="textarea" value={userNotes} onChange={e => setUserNotes(e.target.value)} placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')} className="min-h-[120px]" />
+                                <Button onClick={handleGetDiagnosis} disabled={isLoading} className="w-full">{t('ai.diagnostics')}</Button>
                             </div>
                         </div>
                     )}

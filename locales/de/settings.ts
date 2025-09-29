@@ -101,17 +101,22 @@ export const settingsView = {
       logProblems: 'Erkannte Probleme protokollieren',
       logTasks: 'Erstellte Aufgaben protokollieren',
       speed: 'Simulationsgeschwindigkeit',
-      difficulty: 'Schwierigkeitsgrad',
-      difficulties: {
-        easy: 'Leicht',
-        normal: 'Normal',
-        hard: 'Schwer',
-        custom: 'Benutzerdefiniert',
+      simulationProfile: {
+        title: 'Simulationsprofil',
+        description: 'Wähle ein Profil, um die Simulationsparameter schnell anzupassen.',
+        profiles: {
+          beginner: 'Anfänger',
+          expert: 'Experte',
+          experimental: 'Experimentell',
+          custom: 'Benutzerdefiniert',
+        }
       },
-      customDifficulty: 'Benutzerdefinierte Schwierigkeit',
       pestPressure: 'Schädlingsdruck',
+      pestPressureDesc: 'Beeinflusst die Wahrscheinlichkeit von Schädlingsproblemen.',
       nutrientSensitivity: 'Nährstoffempfindlichkeit',
+      nutrientSensitivityDesc: 'Beeinflusst, wie stark die Pflanze auf Über- oder Unterdüngung reagiert.',
       environmentalStability: 'Umweltstabilität',
+      environmentalStabilityDesc: 'Beeinflusst, wie stark die Umgebung (Temp/Feuchte) schwankt.',
   },
   notifications: {
     title: 'Benachrichtigungen',
@@ -156,6 +161,18 @@ export const settingsView = {
     importSuccess: 'Daten erfolgreich importiert! Die App wird neu geladen.',
     importError: 'Fehler beim Importieren der Daten',
     importInvalidFile: 'Ungültige CannaGuide 2025 Backup-Datei.',
+    clearArchives: 'KI-Archive leeren',
+    clearArchivesDesc: 'Löscht alle gespeicherten Antworten vom KI-Mentor und -Berater.',
+    clearArchivesConfirm: 'Möchtest du wirklich alle deine gespeicherten KI-Antworten löschen?',
+    clearArchivesSuccess: 'Alle KI-Archive wurden geleert.',
+    storageUsage: 'Speichernutzung',
+    storageBreakdown: {
+        plants: 'Pflanzendaten & Journale',
+        images: 'Gespeicherte Fotos',
+        archives: 'KI-Archive',
+        customStrains: 'Eigene Sorten',
+        savedItems: 'Gespeicherte Items',
+    }
   },
    about: {
       title: 'Über die App',

@@ -2,11 +2,13 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { SavedSetup } from '@/types';
 import { SetupResults } from './SetupResults';
 import { configurations } from './setupConfigurations';
 import { geminiService } from '@/services/geminiService';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectEquipmentGenerationState } from '@/stores/selectors';
 import { startEquipmentGeneration, resetEquipmentGenerationState } from '@/stores/slices/aiSlice';
@@ -30,7 +32,7 @@ interface ConfigCardProps {
 }
 
 const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <button
             onClick={onSelect}
@@ -56,7 +58,7 @@ const ConfigCard: React.FC<ConfigCardProps> = ({ config, isSelected, onSelect })
 
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { isLoading, response: recommendation, error, sourceDetails } = useAppSelector(selectEquipmentGenerationState);
 

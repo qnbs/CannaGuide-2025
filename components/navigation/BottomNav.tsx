@@ -1,7 +1,9 @@
 import React from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { View } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Corrected import to get the action creator from the uiSlice.
 import { setActiveView } from '@/stores/slices/uiSlice';
@@ -17,7 +19,7 @@ const navIcons: Record<string, React.ReactNode> = {
 const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Knowledge];
 
 export const BottomNav: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const activeView = useAppSelector(selectActiveView);
 

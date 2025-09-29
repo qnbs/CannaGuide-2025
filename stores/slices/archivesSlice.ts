@@ -73,6 +73,10 @@ const archivesSlice = createSlice({
                 state.archivedAdvisorResponses[plantId] = plantArchive.filter(r => r.id !== responseId);
             }
         },
+        clearArchives: (state) => {
+            state.archivedMentorResponses = [];
+            state.archivedAdvisorResponses = {};
+        },
         setArchivedMentorResponses: (state, action: PayloadAction<ArchivedMentorResponse[]>) => {
             state.archivedMentorResponses = action.payload;
         },
@@ -89,6 +93,7 @@ export const {
     addArchivedAdvisorResponse,
     updateArchivedAdvisorResponse,
     deleteArchivedAdvisorResponse,
+    clearArchives,
     setArchivedMentorResponses,
     setArchivedAdvisorResponses,
 } = archivesSlice.actions;

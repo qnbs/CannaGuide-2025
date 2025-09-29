@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input, ResultDisplay } from './common';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 export const VentilationCalculator: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [dimensions, setDimensions] = useState({ width: 80, depth: 80, height: 180 });
     const [wattage, setWattage] = useState(150);
     const [hasFilter, setHasFilter] = useState(true);

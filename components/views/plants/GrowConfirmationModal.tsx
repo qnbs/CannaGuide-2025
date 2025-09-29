@@ -1,19 +1,24 @@
 import React from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppDispatch } from '@/stores/store';
-import { finalizeNewGrow, cancelNewGrow } from '@/stores/slices/uiSlice';
+import { cancelNewGrow } from '@/stores/slices/uiSlice';
+import { startNewPlant } from '@/stores/slices/simulationSlice';
 
 export const GrowConfirmationModal: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
+
+    const handleConfirm = () => {
+        dispatch(startNewPlant());
+    };
 
     const footer = (
         <>
             <Button variant="secondary" onClick={() => dispatch(cancelNewGrow())}>{t('common.cancel')}</Button>
-            <Button onClick={() => dispatch(finalizeNewGrow())}>{t('plantsView.confirmationModal.confirmButton')}</Button>
+            <Button onClick={handleConfirm}>{t('plantsView.confirmationModal.confirmButton')}</Button>
         </>
     );
 

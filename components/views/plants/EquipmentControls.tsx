@@ -1,5 +1,5 @@
-import React from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import React, { memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Plant } from '@/types';
 import { Switch } from '@/components/common/Switch';
@@ -10,8 +10,8 @@ interface EquipmentControlsProps {
     plant: Plant;
 }
 
-export const EquipmentControls: React.FC<EquipmentControlsProps> = ({ plant }) => {
-    const { t } = useTranslations();
+export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant }) => {
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
     const light = plant.equipment.light;
@@ -50,4 +50,4 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = ({ plant }) =
             </div>
         </Card>
     );
-};
+});

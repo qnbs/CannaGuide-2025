@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 
 // Define own props to be used in the component
 type ButtonOwnProps<E extends React.ElementType> = {
@@ -15,7 +15,7 @@ type ButtonProps<E extends React.ElementType> = ButtonOwnProps<E> & Omit<React.C
 const defaultElement = 'button';
 
 // Use a generic E that extends React.ElementType, with a default of 'button'
-export const Button = <E extends React.ElementType = typeof defaultElement>({
+const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
     children,
     className,
     variant = 'primary',
@@ -23,7 +23,6 @@ export const Button = <E extends React.ElementType = typeof defaultElement>({
     as,
     ...props
 }: ButtonProps<E>) => {
-    // The component to render is either the one passed in `as` or the default.
     // The use of 'any' here is a deliberate and controlled type assertion.
     // This is a widely recognized pattern for creating polymorphic components in React with TypeScript.
     // It allows the 'Button' to be rendered as any valid HTML element (e.g., 'a', 'div')
@@ -52,3 +51,5 @@ export const Button = <E extends React.ElementType = typeof defaultElement>({
         </Component>
     );
 };
+
+export const Button = memo(ButtonComponent);

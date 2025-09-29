@@ -1,6 +1,6 @@
 import React from 'react';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { selectTtsState } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
@@ -8,7 +8,7 @@ import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { playTts, pauseTts, stopTts, nextTts } from '@/stores/slices/ttsSlice';
 
 export const TTSControls: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { isTtsSpeaking, isTtsPaused, ttsQueue } = useAppSelector(selectTtsState);
     const ttsEnabled = useAppSelector(state => state.settings.settings.tts.enabled);

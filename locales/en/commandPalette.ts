@@ -12,6 +12,9 @@ export const commandPalette = {
   feed: 'Feed',
   goToView: 'Go to {{view}} view',
   exportStrains: 'Export strains data',
+  toggleLanguage: 'Switch language to: {{lang}}',
+  toggleTheme: 'Cycle Theme',
+  toggleUiDensity: 'Toggle UI Density',
   groups: {
     navigation: 'Navigation',
     plants: 'Plants',
@@ -75,5 +78,6 @@ export const commandPalette = {
     waterAllPlants: 'Log a watering event for all active plants',
     startGrowSlot: 'Begin a new plant in an empty slot',
     toggleNotifications: 'Current status: {{status}}',
+    status: 'Status: {{status}}',
   }
 };

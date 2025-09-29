@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Plant, JournalEntry, TrainingType, JournalEntryType, PhotoCategory } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { dbService } from '@/services/dbService';
@@ -10,6 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { waterPlant, topPlant, applyLst, addJournalEntry, applyPestControl } from '@/stores/slices/simulationSlice';
+import { Input, Select } from '@/components/ui/ThemePrimitives';
 
 export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo' | 'amendment';
 
@@ -23,12 +24,12 @@ interface LogActionModalProps {
 const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
     <div>
         <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-        <textarea {...props} className="w-full min-h-[80px] input-base" />
+        <Input as="textarea" {...props} className="min-h-[80px]" />
     </div>
 );
 
 export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const settings = useAppSelector(selectSettings);
     
@@ -114,27 +115,42 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
     const renderContent = () => {
         switch(type) {
             case 'watering': return <>
-                <input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" className="w-full input-base" />
-                <input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" className="w-full input-base" />
+                <Input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" />
+                <Input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" />
             </>;
             case 'feeding': return <>
-                 <input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" className="w-full input-base" />
-                <input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" className="w-full input-base" />
-                <input type="number" value={ec} step="0.1" onChange={e => setEc(Number(e.target.value))} placeholder="EC" className="w-full input-base" />
+                <Input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" />
+                <Input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" />
+                <Input type="number" value={ec} step="0.1" onChange={e => setEc(Number(e.target.value))} placeholder="EC" />
             </>;
             case 'training': return <div className="flex items-end gap-2">
-                <select value={trainingType} onChange={e => setTrainingType(e.target.value as TrainingType)} className="w-full select-input">
-                    <option>LST</option><option>Topping</option><option>FIMing</option><option>Defoliation</option>
-                </select>
+                <div className="flex-grow">
+                     <label className="block text-sm font-semibold text-slate-300 mb-1">{t('common.type')}</label>
+                     <Select
+                        value={trainingType}
+                        onChange={e => setTrainingType(e.target.value as TrainingType)}
+                        options={[
+                            { value: 'LST', label: 'LST' },
+                            { value: 'Topping', label: 'Topping' },
+                            { value: 'FIMing', label: 'FIMing' },
+                            { value: 'Defoliation', label: 'Defoliation' },
+                        ]}
+                    />
+                </div>
                 <Button variant="secondary" onClick={() => handleLearnMoreClick(trainingType)}>
                     <PhosphorIcons.GraduationCap className="w-4 h-4 mr-1.5"/> {t('common.learnMore')}
                 </Button>
             </div>;
             case 'amendment': return <>
-                <select value={amendmentType} onChange={e => setAmendmentType(e.target.value)} className="w-full select-input">
-                    <option>Mycorrhizae</option>
-                    <option>Worm Castings</option>
-                </select>
+                <label className="block text-sm font-semibold text-slate-300 mb-1">{t('common.type')}</label>
+                <Select
+                    value={amendmentType}
+                    onChange={e => setAmendmentType(e.target.value)}
+                    options={[
+                        { value: 'Mycorrhizae', label: 'Mycorrhizae' },
+                        { value: 'Worm Castings', label: 'Worm Castings' },
+                    ]}
+                />
             </>;
             case 'photo': return <div className="space-y-4">
                 {imageData ? (
@@ -153,16 +169,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                     <label htmlFor="photo-category" className="block text-sm font-semibold mb-1">
                         {t('plantsView.actionModals.photo.category')}
                     </label>
-                    <select 
+                    <Select 
                       id="photo-category"
                       value={details.photoCategory}
                       onChange={(e) => setDetails(prev => ({ ...prev, photoCategory: e.target.value as PhotoCategory }))}
-                      className="w-full select-input"
-                    >
-                      {Object.values(PhotoCategory).map(cat => (
-                          <option key={cat} value={cat}>{t(`plantsView.actionModals.photo.categories.${cat}`)}</option>
-                      ))}
-                    </select>
+                      options={Object.values(PhotoCategory).map(cat => ({ value: cat, label: t(`plantsView.actionModals.photo.categories.${cat}`) }))}
+                    />
                 </div>
             </div>;
             default: return null;

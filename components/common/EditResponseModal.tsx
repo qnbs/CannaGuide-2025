@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Modal } from './Modal';
 
@@ -18,7 +18,7 @@ interface EditResponseModalProps<T extends EditableResponse> {
 }
 
 export const EditResponseModal = <T extends EditableResponse>({ response, onClose, onSave, title: customTitle }: EditResponseModalProps<T>) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [title, setTitle] = useState(response.title);
     const [content, setContent] = useState(response.content);
     const contentRef = useRef<HTMLDivElement>(null);

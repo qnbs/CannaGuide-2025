@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { Strain, StrainViewTab, AIResponse } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { StrainToolbar } from './strains/StrainToolbar';
 import { StrainList } from './strains/StrainList';
@@ -10,6 +11,7 @@ import { StrainDetailView } from './strains/StrainDetailView';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { FilterDrawer } from './strains/FilterDrawer';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+// FIX: Corrected import path for hook to use the '@/' alias.
 import { useStrainFilters } from '@/hooks/useStrainFilters';
 import { Tabs } from '@/components/common/Tabs';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -18,6 +20,7 @@ import { StrainTipsView } from './strains/StrainTipsView';
 import { Button } from '@/components/common/Button';
 import { BulkActionsBar } from './strains/BulkActionsBar';
 
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectStrainsView, selectUserStrains, selectFavoriteIds, selectSavedExports, selectSavedStrainTips, selectSettings, selectUserStrainIds } from '@/stores/selectors';
 import { setStrainsViewTab, setStrainsViewMode, toggleStrainSelection, toggleAllStrainSelection, clearStrainSelection } from '@/stores/slices/strainsViewSlice';
@@ -36,7 +39,7 @@ const processAndTranslateStrains = (strains: Strain[], t: (key: string, options?
         return (typeof result === 'string' && result !== key) ? result : fallback;
     };
     const getTranslatedObject = (key: string, fallback: object | undefined): object | undefined => {
-         const result = t(key);
+         const result = t(key, { returnObjects: true });
          return (typeof result === 'object' && result !== null) ? result : fallback;
     }
     return strains.map(strain => ({
@@ -53,7 +56,7 @@ const processAndTranslateStrains = (strains: Strain[], t: (key: string, options?
 };
 
 export const StrainsView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
     const [baseStrains, setBaseStrains] = useState<Strain[]>([]);
@@ -93,6 +96,7 @@ export const StrainsView: React.FC = () => {
     const handleStrainSelect = (strain: Strain) => setSelectedStrain(strain);
 
     const strainsForCurrentTab = useMemo(() => {
+        // FIX: Changed case statements to use enum members for type safety.
         switch(activeTab) {
             case StrainViewTab.MyStrains: return userStrains;
             case StrainViewTab.Favorites: return allStrains.filter(s => favorites.has(s.id));

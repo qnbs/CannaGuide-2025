@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Strain, StrainType } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
@@ -15,7 +15,7 @@ interface InlineStrainSelectorProps {
 }
 
 const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }> = ({ difficulty }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 };
     const level = difficultyMap[difficulty] || 2;
     const color = { Easy: 'text-green-400', Medium: 'text-amber-400', Hard: 'text-red-400'}[difficulty];
@@ -29,7 +29,7 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 };
 
 const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }> = ({ strain, onClick }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const userStrains = useAppSelector(selectUserStrains);
     const isUserStrain = userStrains.some(s => s.id === strain.id);
 
@@ -74,7 +74,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
 };
 
 export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({ onClose, onSelectStrain }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');

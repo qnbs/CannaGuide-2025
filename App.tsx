@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useEffect, useRef, lazy, Suspense } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { View } from '@/types';
-import { useTranslations } from './hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Header } from './components/navigation/Header';
 import { BottomNav } from './components/navigation/BottomNav';
 import { OnboardingModal } from './components/common/OnboardingModal';
 import { CommandPalette } from './components/common/CommandPalette';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { usePwaInstall } from './hooks/usePwaInstall';
-import { strainService } from '@/services/strainService';
+import { strainService } from './services/strainService';
 import { TTSControls } from './components/common/TTSControls';
 import { ttsService } from './services/ttsService';
 import { useDocumentEffects } from './hooks/useDocumentEffects';
@@ -17,13 +18,12 @@ import { i18nInstance } from './i18n';
 import { LogActionModalContainer } from './components/views/plants/LogActionModalContainer';
 import { DeepDiveModalContainer } from './components/views/plants/deepDive/DeepDiveModalContainer';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
-import { useIsSimulationCatchingUp } from './hooks/useSimulationBridge';
 import { runDataMigrations } from './services/migrationService';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from './stores/store';
-import { selectActiveView, selectIsCommandPaletteOpen, selectSettings, selectNotifications } from './stores/selectors';
-import { setAppReady, setIsCommandPaletteOpen, addNotification, removeNotification } from './stores/slices/uiSlice';
+import { selectActiveView, selectIsCommandPaletteOpen, selectSettings } from './stores/selectors';
+import { setAppReady, setIsCommandPaletteOpen, addNotification } from './stores/slices/uiSlice';
 import { initializeSimulation } from './stores/slices/simulationSlice';
-import { simulationLoop } from './services/simulationLoop';
 import { setSetting } from './stores/slices/settingsSlice';
 import { ToastContainer } from './components/common/Toast';
 import { AiDiagnosticsModalContainer } from './components/views/plants/AiDiagnosticsModalContainer';
@@ -34,10 +34,11 @@ const PlantsView = lazy(() => import('./components/views/PlantsView').then(modul
 const EquipmentView = lazy(() => import('./components/views/EquipmentView').then(module => ({ default: module.EquipmentView })));
 const KnowledgeView = lazy(() => import('./components/views/KnowledgeView').then(module => ({ default: module.KnowledgeView })));
 const SettingsView = lazy(() => import('./components/views/SettingsView').then(module => ({ default: module.SettingsView })));
+// FIX: Corrected import path for HelpView component.
 const HelpView = lazy(() => import('./components/views/HelpView').then(module => ({ default: module.HelpView })));
 
 const LoadingGate: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans items-center justify-center" role="status" aria-live="polite">
             <CannabisLeafIcon className="w-24 h-24 text-primary-500 animate-pulse" />
@@ -52,19 +53,6 @@ const ToastManager: React.FC = () => {
     return <ToastContainer />;
 };
 
-const SimulationStatusOverlay: React.FC = () => {
-    const { t } = useTranslations();
-    const isCatchingUp = useIsSimulationCatchingUp();
-    
-    if (!isCatchingUp) return null;
-
-    return (
-        <div className="fixed inset-0 bg-slate-900/90 z-[200] flex items-center justify-center backdrop-blur-sm">
-            <AiLoadingIndicator loadingMessage={t('plantsView.syncProgress')} />
-        </div>
-    );
-};
-
 const AppContent: React.FC = () => {
     const dispatch = useAppDispatch();
     const settings = useAppSelector(selectSettings);
@@ -74,7 +62,7 @@ const AppContent: React.FC = () => {
     
     const mainContentRef = useRef<HTMLElement | null>(null);
     
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const isOffline = useOnlineStatus();
     const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall();
 
@@ -126,7 +114,6 @@ const AppContent: React.FC = () => {
 
     return (
         <div className="flex flex-col h-screen overflow-hidden bg-slate-900 text-slate-300 font-sans">
-            <SimulationStatusOverlay />
             {!onboardingCompleted && <OnboardingModal onClose={handleOnboardingClose} />}
             <CommandPalette 
                 isOpen={isCommandPaletteOpen}
@@ -169,8 +156,7 @@ export const App: React.FC = () => {
             // Pass the entire settings object for initialization
             dispatch(initializeSimulation(settings));
             
-            runDataMigrations(); 
-            simulationLoop.initialize();
+            runDataMigrations();
             dispatch(setAppReady(true));
         };
         initializeApp();

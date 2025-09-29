@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon';
 import { Button } from '../common/Button';
@@ -17,7 +17,7 @@ interface HeaderProps {
 
 
 export const Header: React.FC<HeaderProps> = ({ onCommandPaletteOpen, deferredPrompt, isInstalled, onInstallClick }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const activeView = useAppSelector(selectActiveView);
     

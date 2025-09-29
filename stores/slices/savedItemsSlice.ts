@@ -26,13 +26,13 @@ export const addSetup = createAsyncThunk<SavedSetup, Omit<SavedSetup, 'id' | 'cr
         };
 
         try {
-            dispatch(savedItemsSlice.actions._addSetup(newSetup));
+            // This will be synchronous, but createAsyncThunk pattern is useful for consistency
             dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: newSetup.name }), type: 'success' }));
-            return newSetup;
+            return newSetup; // This becomes the fulfilled action payload
         } catch (error) {
-            console.error("Failed to save setup:", error);
-            dispatch(addNotification({ message: t('common.saveErrorPreview'), type: 'error' }));
-            return rejectWithValue('Failed to save');
+            const message = error instanceof Error ? error.message : 'Failed to save setup';
+            dispatch(addNotification({ message, type: 'error' }));
+            return rejectWithValue(message);
         }
     }
 );
@@ -61,9 +61,6 @@ const savedItemsSlice = createSlice({
         },
         deleteExport: (state, action: PayloadAction<string>) => {
             state.savedExports = state.savedExports.filter(e => e.id !== action.payload);
-        },
-        _addSetup: (state, action: PayloadAction<SavedSetup>) => {
-            state.savedSetups.push(action.payload);
         },
         updateSetup: (state, action: PayloadAction<SavedSetup>) => {
             const index = state.savedSetups.findIndex(s => s.id === action.payload.id);
@@ -105,13 +102,17 @@ const savedItemsSlice = createSlice({
             state.savedStrainTips = action.payload;
         },
     },
+    extraReducers: (builder) => {
+        builder.addCase(addSetup.fulfilled, (state, action) => {
+            state.savedSetups.push(action.payload);
+        });
+    }
 });
 
 export const {
     addExport,
     updateExport,
     deleteExport,
-    _addSetup,
     updateSetup,
     deleteSetup,
     addStrainTip,

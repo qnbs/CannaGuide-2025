@@ -519,15 +519,8 @@ export interface SandboxState {
 }
 
 export interface LexiconEntry {
-    term: string;
-    definition: string;
-    category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General';
-    details?: {
-        alsoKnownAs?: string;
-        boilingPoint?: string;
-        aromas?: string[];
-        moleculeImage?: string;
-    };
+  key: string; // Eindeutiger Schlüssel, z.B. 'thc'
+  category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General';
 }
 
 export interface AdvancedFilterState {

@@ -8,31 +8,15 @@ import { geminiService } from '@/services/geminiService';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectEquipmentGenerationState } from '@/stores/selectors';
 import { startEquipmentGeneration, resetEquipmentGenerationState } from '@/stores/slices/aiSlice';
-import { addSetup } from '@/stores/slices/savedItemsSlice';
+import { openSaveSetupModal } from '@/stores/slices/uiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
-
-const RationaleModal: React.FC<{ category: string, rationale: string, onClose: () => void }> = ({ category, rationale, onClose }) => {
-    const { t } = useTranslation();
-    return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <Card className="w-full max-w-md" onClick={e => e.stopPropagation()}>
-                <h3 className="text-lg font-bold text-primary-400 mb-2">{t('common.why')} {category}?</h3>
-                <p className="text-sm text-slate-300">{rationale}</p>
-                <div className="text-right mt-4">
-                    <Button onClick={onClose}>{t('common.close')}</Button>
-                </div>
-            </Card>
-        </div>
-    );
-};
-
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;
 }
 
 type Step = 1 | 2;
-type PlantCount = '1' | '2-3' | '4+';
+type PlantCount = '1' | '2-3';
 type Budget = 'value' | 'balanced' | 'premium';
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
@@ -44,7 +28,6 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     const [plantCount, setPlantCount] = useState<PlantCount | null>(null);
     const [budget, setBudget] = useState<Budget | null>(null);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [rationale, setRationale] = useState<{ category: string; text: string } | null>(null);
 
     const sourceDetails = useMemo(() => {
         if (!plantCount || !budget) return null;
@@ -76,12 +59,12 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     const handleGenerate = () => {
         if (!plantCount || !budget) return;
 
-        const tentSizes: Record<PlantCount, string> = { '1': '60x60cm', '2-3': '100x100cm', '4+': '120x120cm' };
+        const tentSizes: Record<PlantCount, string> = { '1': '60x60cm', '2-3': '100x100cm' };
         const tentSize = tentSizes[plantCount];
         
-        const prompt = t('ai.prompts.equipmentSystemInstruction', {
+        const prompt = t('ai.prompts.equipmentRequest', {
             plantCount,
-            budget,
+            budget: t(`equipmentView.configurator.budgets.${budget}`),
             tentSize
         });
 
@@ -98,30 +81,15 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             return sum;
         }, 0);
         
-        const setupName = `${t(`equipmentView.configurator.budgets.${sourceDetails.budget}`)} - ${sourceDetails.plants} ${sourceDetails.plants === '1' ? 'Plant' : 'Plants'}`;
-        const name = window.prompt(t('equipmentView.configurator.setupNamePrompt'), setupName);
-
-        if (name && recommendation) {
-            const setupToSave: Omit<SavedSetup, 'id' | 'createdAt'> = {
-                name,
-                recommendation,
-                totalCost,
-                sourceDetails: {
-                    area: '',
-                    budget: sourceDetails.budget,
-                    growStyle: '',
-                }
-            };
-            
-            dispatch(addSetup(setupToSave))
-                .unwrap()
-                .then(() => {
-                    onSaveSetup();
-                })
-                .catch((err) => {
-                    console.error("Save setup failed from component:", err);
-                });
-        }
+        dispatch(openSaveSetupModal({
+            recommendation,
+            totalCost,
+            sourceDetails: {
+                area: '',
+                budget: sourceDetails.budget,
+                growStyle: '',
+            }
+        }));
     };
 
     const resetFlow = () => {
@@ -135,10 +103,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     
     const plantOptions: { value: PlantCount, label: string, icon: React.ReactNode }[] = [
         { value: '1', label: t('equipmentView.configurator.plantCount_one'), icon: <PhosphorIcons.Plant className="w-8 h-8" /> },
-        // FIX: The `count` option for i18next pluralization must be a number. Use a separate key for string interpolation.
         { value: '2-3', label: t('equipmentView.configurator.plantCount_other', { count: 2, range: '2-3' }), icon: <><PhosphorIcons.Plant className="w-8 h-8" /><PhosphorIcons.Plant className="w-8 h-8" /></> },
-        // FIX: The `count` option for i18next pluralization must be a number. Use a separate key for string interpolation.
-        { value: '4+', label: t('equipmentView.configurator.plantCount_other', { count: 4, range: '4+' }), icon: <><PhosphorIcons.Plant className="w-8 h-8" /><PhosphorIcons.Plant className="w-8 h-8" /><PhosphorIcons.Plant className="w-8 h-8" /></> },
     ];
     
     const budgetOptions: { value: Budget, label: string, description: string, icon: React.ReactNode }[] = [
@@ -152,7 +117,6 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
         
         return (
             <div className="animate-fade-in">
-                {rationale && <RationaleModal category={rationale.category} rationale={rationale.text} onClose={() => setRationale(null)} />}
                 {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                 {error && (
                      <div className="text-center p-8">
@@ -181,10 +145,6 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                                             <div>
                                                 <h4 className="font-bold text-slate-100">{categoryLabel}</h4>
                                                 <p className="text-sm text-primary-300">{item.name} {item.watts && `(${item.watts}W)`}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-mono font-semibold">{item.price ? item.price.toFixed(2) : 'N/A'} {t('common.units.currency_eur')}</span>
-                                                <Button size="sm" variant="secondary" onClick={() => setRationale({ category: categoryLabel, text: item.rationale })}>{t('common.why')}</Button>
                                             </div>
                                         </div>
                                     </Card>
@@ -229,7 +189,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             {step === 1 && (
                 <div className="animate-fade-in">
                     <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step1TitleNew')}</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {plantOptions.map(opt => (
                              <button key={opt.value} onClick={() => { setPlantCount(opt.value); setStep(2); }}
                                 className={`p-4 text-center rounded-lg border-2 transition-all duration-300 transform hover:scale-105 ${plantCount === opt.value ? 'bg-primary-900/50 border-primary-500 scale-105' : 'bg-slate-800 border-slate-700 hover:border-slate-500'}`}>

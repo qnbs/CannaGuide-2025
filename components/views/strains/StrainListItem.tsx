@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Strain, StrainType, AppSettings } from '@/types';
+import { Strain, StrainType, AppSettings, DifficultyLevel } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
@@ -29,15 +29,20 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-blue-400',
 };
 
+const DifficultyMeter: React.FC<{ difficulty: DifficultyLevel }> = ({ difficulty }) => {
+    const level = { 'Easy': 1, 'Medium': 2, 'Hard': 3 }[difficulty];
+    return (
+        <div className="flex items-center gap-1">
+            {[...Array(3)].map((_, i) => (
+                <div key={i} className={`h-3 w-1.5 rounded-sm ${i < level ? 'bg-primary-400' : 'bg-slate-600'}`} />
+            ))}
+        </div>
+    );
+};
+
 
 const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index }) => {
     const { t } = useTranslation();
-
-    const difficultyMap: Record<string, { color: string, icon: React.ReactNode }> = {
-        Easy: { color: 'text-green-400', icon: <PhosphorIcons.Leafy /> },
-        Medium: { color: 'text-amber-400', icon: <PhosphorIcons.Plant /> },
-        Hard: { color: 'text-red-400', icon: <PhosphorIcons.GameController /> },
-    };
     
     return (
         <div 
@@ -45,7 +50,7 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
         >
-            <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center" onClick={(e) => e.stopPropagation()}>
                 <input
                     type="checkbox"
                     checked={isSelected}
@@ -66,6 +71,10 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
                         <PhosphorIcons.Lightning weight="fill" className="w-3 h-3 text-red-400" />
                         <span>{strain.thc?.toFixed(1)}%</span>
                     </div>
+                     <div className="flex items-center gap-1" title="CBD">
+                        <PhosphorIcons.Drop weight="fill" className="w-3 h-3 text-blue-400" />
+                        <span>{strain.cbd?.toFixed(1)}%</span>
+                    </div>
                     <div className="flex items-center gap-1" title={t('strainsView.table.flowering')}>
                         <PhosphorIcons.ArrowClockwise className="w-3 h-3" />
                         <span>{strain.floweringTimeRange || strain.floweringTime}{t('common.units.weeks').substring(0,1)}</span>
@@ -73,20 +82,19 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
                 </div>
             </div>
 
-            {visibleColumns.type && <div className="hidden sm:flex items-center justify-center" title={strain.type}>{typeIcons[strain.type]}</div>}
+            {visibleColumns.type && <div className="hidden sm:flex items-center" title={strain.type}>{typeIcons[strain.type]}</div>}
             {visibleColumns.thc && <div className="hidden sm:flex items-center font-mono text-sm">{strain.thc?.toFixed(1)}%</div>}
             {visibleColumns.cbd && <div className="hidden sm:flex items-center font-mono text-sm">{strain.cbd?.toFixed(1)}%</div>}
             {visibleColumns.floweringTime && <div className="hidden sm:flex items-center text-sm">{strain.floweringTimeRange || strain.floweringTime} {t('common.units.weeks')}</div>}
-            {visibleColumns.yield && <div className="hidden md:flex items-center text-sm">{t(`strainsView.addStrainModal.yields.${(strain.agronomic.yield || 'Medium').toLowerCase()}`)}</div>}
+            {visibleColumns.yield && <div className="hidden sm:flex items-center text-sm">{t(`strainsView.addStrainModal.yields.${(strain.agronomic.yield || 'Medium').toLowerCase()}`)}</div>}
 
-            <div className="flex items-center text-sm">
-                <span className={`${difficultyMap[strain.agronomic.difficulty]?.color} mr-1.5`}>{difficultyMap[strain.agronomic.difficulty]?.icon}</span>
-                <span className="hidden md:inline">{t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)}</span>
+            <div className="flex items-center justify-start" title={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)}>
+                <DifficultyMeter difficulty={strain.agronomic.difficulty} />
             </div>
 
-            <div className="flex gap-1 justify-end" onClick={e => e.stopPropagation()}>
+            <div className="flex gap-1 justify-end min-w-[2.25rem]" onClick={e => e.stopPropagation()}>
                 {isUserStrain && (
-                    <Button variant="danger" size="sm" className="!p-1.5" onClick={() => onDelete(strain.id)}>
+                    <Button variant="danger" size="sm" className="!p-1.5" onClick={() => onDelete(strain.id)} title={t('common.delete')}>
                         <PhosphorIcons.TrashSimple className="w-4 h-4" />
                     </Button>
                 )}

@@ -30,16 +30,6 @@ export const useCommandPalette = () => {
             dispatch(setSetting({ path: 'language', value: newLang }));
             i18nInstance.changeLanguage(newLang);
         };
-
-        const themeCommands: Command[] = (Object.keys(t('settingsView.general.themes', { returnObjects: true })) as Theme[]).map(themeKey => ({
-            id: `theme-${themeKey}`,
-            title: t(`settingsView.general.themes.${themeKey}`),
-            subtitle: 'Set Theme',
-            icon: PhosphorIcons.PaintBrush,
-            group: CommandGroup.Settings,
-            action: () => dispatch(setSetting({ path: 'theme', value: themeKey })),
-            keywords: `design appearance look feel ${themeKey}`
-        }));
         
         const commands: Command[] = [
             // Navigation
@@ -62,7 +52,6 @@ export const useCommandPalette = () => {
                 group: CommandGroup.Settings, 
                 action: toggleLanguage 
             },
-            ...themeCommands,
             { id: 'setting-strains-list', title: t('strainsView.viewModes.list'), subtitle: 'Set Strains View', icon: PhosphorIcons.ListBullets, group: CommandGroup.Settings, action: () => dispatch(setStrainsViewMode('list')) },
             { id: 'setting-strains-grid', title: t('strainsView.viewModes.grid'), subtitle: 'Set Strains View', icon: PhosphorIcons.GridFour, group: CommandGroup.Settings, action: () => dispatch(setStrainsViewMode('grid')) },
             { id: 'setting-toggle-dyslexia-font', title: t('settingsView.accessibility.dyslexiaFont'), icon: PhosphorIcons.TextBolder, group: CommandGroup.Settings, action: () => dispatch(setSetting({ path: 'accessibility.dyslexiaFont', value: !settings.accessibility.dyslexiaFont })) },

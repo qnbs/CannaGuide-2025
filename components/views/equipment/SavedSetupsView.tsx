@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SavedSetup, ExportFormat } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -17,7 +17,7 @@ interface SavedSetupsViewProps {
 }
 
 export const SavedSetupsView: React.FC<SavedSetupsViewProps> = ({ savedSetups, updateSetup, deleteSetup }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [editingSetup, setEditingSetup] = useState<SavedSetup | null>(null);
     const dispatch = useAppDispatch();
 

@@ -1,5 +1,5 @@
 import React, { useState, useId } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input, ResultDisplay } from './common';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -11,7 +11,7 @@ interface Component {
 }
 
 export const NutrientCalculator: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [waterAmount, setWaterAmount] = useState(5);
     const [components, setComponents] = useState<Component[]>([{ id: useId(), name: 'Grow', dose: 2 }]);
 

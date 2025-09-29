@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plant, ModalType } from '@/types';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PlantVisualizer } from '../PlantVisualizer';
 import { HistoryChart } from '../HistoryChart';
 import { VPDGauge } from '../VPDGauge';
@@ -18,7 +18,7 @@ interface OverviewTabProps {
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const settings = useAppSelector(selectSettings);
     const highlightedElement = useAppSelector(selectHighlightedElement);

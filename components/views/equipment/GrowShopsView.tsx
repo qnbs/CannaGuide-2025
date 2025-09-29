@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
 import { PaymentIcons } from '@/components/icons/PaymentIcons';
@@ -58,7 +58,7 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
 
 
 export const GrowShopsView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [region, setRegion] = useState<ShopRegion>('europe');
     const [selectedShopKey, setSelectedShopKey] = useState<string | null>(null);
 

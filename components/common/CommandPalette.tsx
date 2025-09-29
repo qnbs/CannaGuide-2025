@@ -1,11 +1,12 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Command } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { groupAndSortCommands } from '@/services/commandService';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
+import { Input } from '@/components/ui/ThemePrimitives';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -17,7 +18,7 @@ const escapeRegExp = (string: string) => {
 };
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
-  const { t } = useTranslations();
+  const { t } = useTranslation();
   const modalRef = useFocusTrap(isOpen);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState('');
@@ -66,19 +67,19 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
       aria-label={t('commandPalette.title')}
     >
       <div
-        ref={modalRef}
+        ref={modalRef as React.RefObject<HTMLDivElement>}
         className="w-full max-w-xl bg-slate-800/90 backdrop-blur-lg rounded-lg shadow-2xl border border-slate-700 modal-content-animate"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-3 border-b border-slate-700 relative">
+        <div className="p-3 border-b border-slate-700 relative hidden sm:block">
             <PhosphorIcons.MagnifyingGlass className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"/>
-            <input 
+            <Input 
                 ref={inputRef}
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('commandPalette.placeholder')}
-                className="w-full bg-slate-800 pl-10 pr-4 py-2 rounded-md focus:outline-none text-slate-100"
+                className="w-full bg-slate-800 pl-10 pr-4 py-2 !rounded-md"
             />
         </div>
         {displayedCommands.length > 0 ? (

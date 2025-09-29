@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -13,13 +13,14 @@ import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <Card
             onClick={onStart}
@@ -33,7 +34,7 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     
     const { 

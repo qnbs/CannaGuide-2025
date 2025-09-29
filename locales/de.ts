@@ -1,7 +1,7 @@
 import { common, nav, plantStages, problemMessages, ai } from './common';
 import { commandPalette } from './commandPalette';
 import { equipmentView } from './equipment';
-import { helpView } from './help';
+import { helpView, visualGuides, faq } from './help';
 import { knowledgeView, tipOfTheDay } from './knowledge';
 import { onboarding } from './onboarding';
 import { plantsView } from './plants';
@@ -19,6 +19,8 @@ export const de = {
   commandPalette,
   equipmentView,
   helpView,
+  visualGuides,
+  faq,
   knowledgeView,
   onboarding,
   plantsView,

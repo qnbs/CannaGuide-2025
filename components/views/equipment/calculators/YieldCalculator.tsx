@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input, ResultDisplay } from './common';
 
 export const YieldCalculator: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [wattage, setWattage] = useState(300);
     const [efficiency, setEfficiency] = useState(1.2); // g/W
 

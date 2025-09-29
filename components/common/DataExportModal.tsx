@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ExportFormat } from '@/types';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/common/Modal';
 
 type ExportSource = 'selected' | 'all';
@@ -17,7 +17,7 @@ interface DataExportModalProps {
 }
 
 export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, onExport, title, selectionCount, totalCount, translationBasePath = 'strainsView.exportModal' }) => {
-  const { t } = useTranslations();
+  const { t } = useTranslation();
   const [source, setSource] = useState<ExportSource>(selectionCount > 0 ? 'selected' : 'all');
   const [format, setFormat] = useState<ExportFormat>('pdf');
   

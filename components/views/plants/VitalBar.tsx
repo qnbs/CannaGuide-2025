@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useAppSelector } from '@/stores/store';
 import { selectHighlightedElement } from '@/stores/selectors';
 
@@ -11,7 +11,7 @@ interface VitalBarProps {
   highlightId?: string;
 }
 
-export const VitalBar: React.FC<VitalBarProps> = ({ label, value, min, max, unit = '', highlightId }) => {
+export const VitalBar: React.FC<VitalBarProps> = memo(({ label, value, min, max, unit = '', highlightId }) => {
   const highlightedElement = useAppSelector(selectHighlightedElement);
   const percentage = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
   const isIdeal = value >= min && value <= max;
@@ -32,4 +32,4 @@ export const VitalBar: React.FC<VitalBarProps> = ({ label, value, min, max, unit
       <p className="text-xs font-mono text-slate-400">{value.toFixed(1)}{unit}</p>
     </div>
   );
-};
+});

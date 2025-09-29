@@ -1,15 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { ModalType } from '@/types';
 
 interface ActionToolbarProps {
     onLogAction: (type: ModalType) => void;
 }
 
-export const ActionToolbar: React.FC<ActionToolbarProps> = ({ onLogAction }) => {
-    const { t } = useTranslations();
+export const ActionToolbar: React.FC<ActionToolbarProps> = memo(({ onLogAction }) => {
+    const { t } = useTranslation();
 
     const actions = [
         { type: 'watering', icon: <PhosphorIcons.Drop />, label: t('plantsView.detailedView.journalFilters.watering') },
@@ -31,4 +31,4 @@ export const ActionToolbar: React.FC<ActionToolbarProps> = ({ onLogAction }) => 
             ))}
         </div>
     );
-};
+});

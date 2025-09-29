@@ -148,6 +148,16 @@ export const dbService = {
         });
     },
 
+    async getAllImages(): Promise<StoredImageData[]> {
+        await openDB();
+        return new Promise((resolve, reject) => {
+            const store = getStore(IMAGES_STORE, 'readonly');
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+        });
+    },
+
     async updateSearchIndex(index: Record<string, string[]>): Promise<void> {
         await openDB();
         return new Promise((resolve, reject) => {

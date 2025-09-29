@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { Notification, NotificationType } from '../../types';
+// FIX: Corrected import path for types to use the '@/' alias and import NotificationType.
+import { Notification, NotificationType } from '@/types';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { useTranslations } from '../../hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Corrected import for Redux action.
 import { removeNotification } from '@/stores/slices/uiSlice';
@@ -20,7 +22,7 @@ const toastIcons: Record<NotificationType, React.ReactNode> = {
 };
 
 const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [status, setStatus] = useState('toast-entering');
 
     useEffect(() => {

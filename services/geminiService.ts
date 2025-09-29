@@ -4,6 +4,7 @@ import {
     Type,
     FunctionDeclaration,
 } from '@google/genai';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { Plant, Recommendation, Strain, PlantDiagnosisResponse, AIResponse, StructuredGrowTips, DeepDiveGuide, MentorMessage, Language } from '@/types';
 import { getT } from '@/i18n';
 
@@ -79,9 +80,10 @@ class GeminiService {
         try {
             const systemInstruction = t('ai.prompts.equipmentSystemInstruction');
             const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang);
+            const localizedPrompt = createLocalizedPrompt(prompt, lang);
             const response = await this.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
-                contents: prompt,
+                contents: localizedPrompt,
                 config: {
                     systemInstruction: localizedSystemInstruction,
                     responseMimeType: 'application/json',
@@ -91,15 +93,17 @@ class GeminiService {
                             tent: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
                             light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING }, watts: { type: Type.NUMBER } } },
                             ventilation: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
+                            circulationFan: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
                             pots: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
                             soil: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
                             nutrients: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
                             extra: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
+                            proTip: { type: Type.STRING }
                         }
                     }
                 }
             });
-            return JSON.parse(response.text);
+            return JSON.parse(response.text) as Recommendation;
         } catch (error) {
             console.error('Gemini getEquipmentRecommendation Error:', error);
             throw new Error('ai.error.equipment');
@@ -154,7 +158,7 @@ PLANT CONTEXT:
                     }
                 }
             });
-            return JSON.parse(response.text);
+            return JSON.parse(response.text) as PlantDiagnosisResponse;
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error);
             throw new Error('ai.error.diagnostics');
@@ -163,8 +167,15 @@ PLANT CONTEXT:
     
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT();
+        // FIX: Pass a structured object for interpolation instead of a stringified object.
         const prompt = t('ai.prompts.advisor', {
-            plant: JSON.stringify({ name: plant.name, age: plant.age, stage: plant.stage, problems: plant.problems, vitals: plant.substrate })
+            plant: { 
+                name: plant.name, 
+                age: plant.age, 
+                stage: plant.stage, 
+                problems: plant.problems, 
+                vitals: plant.substrate 
+            }
         });
         const responseText = await this.generateText(prompt, lang);
         return { title: t('ai.advisor'), content: responseText };
@@ -190,9 +201,10 @@ PLANT CONTEXT:
         try {
             const systemInstruction = t('ai.prompts.mentor.systemInstruction');
             const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang);
+            const localizedPrompt = createLocalizedPrompt(prompt, lang);
             const response = await this.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
-                contents: prompt,
+                contents: localizedPrompt,
                 config: {
                     systemInstruction: localizedSystemInstruction,
                     responseMimeType: 'application/json',
@@ -216,7 +228,7 @@ PLANT CONTEXT:
                     }
                 }
             });
-            return JSON.parse(response.text);
+            return JSON.parse(response.text) as Omit<MentorMessage, 'role'>;
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error);
             throw new Error('ai.error.generic');
@@ -249,7 +261,7 @@ PLANT CONTEXT:
                     }
                 }
             });
-            return JSON.parse(response.text);
+            return JSON.parse(response.text) as StructuredGrowTips;
         } catch(e) {
              console.error('Gemini getStrainTips Error:', e);
             throw new Error('ai.error.tips');
@@ -277,14 +289,14 @@ PLANT CONTEXT:
                     }
                 }
             });
-            return JSON.parse(response.text);
+            return JSON.parse(response.text) as DeepDiveGuide;
         } catch(e) {
             console.error('Gemini generateDeepDive Error:', e);
             throw new Error('ai.error.deepDive');
         }
     }
     
-    getDynamicLoadingMessages({ useCase, data }: { useCase: string; data?: any }): string[] {
+    getDynamicLoadingMessages({ useCase, data }: { useCase: string; data?: Record<string, any> }): string[] {
         const t = getT();
         const messages = t(`ai.loading.${useCase}`, { ...data, returnObjects: true });
         return Array.isArray(messages) ? messages : [String(messages)];

@@ -1,9 +1,9 @@
-import React, { useState, useId } from 'react';
-import { useTranslations } from '../../hooks/useTranslations';
+import React, { useState, useId, memo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { AppSettings, Language, Theme, View, SortKey, SortDirection, UiDensity } from '@/types';
+import { AppSettings, Language, Theme, View, SortKey, SortDirection, UiDensity, BeforeInstallPromptEvent } from '@/types';
 import { useAvailableVoices } from '../../hooks/useAvailableVoices';
 import { Switch } from '../common/Switch';
 // FIX: Import Redux hooks and actions for state management
@@ -11,13 +11,15 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { setSetting, exportAllData, resetAllData } from '@/stores/slices/settingsSlice';
 import { addNotification, setOnboardingStep } from '@/stores/slices/uiSlice';
 import { resetPlants as resetPlantsAction } from '@/stores/slices/simulationSlice';
+import { FlagDE, FlagEN } from '@/components/icons/Flags';
+import { Select, Input } from '@/components/ui/ThemePrimitives';
 
 interface SettingsViewProps {
-    deferredPrompt: any;
+    deferredPrompt: BeforeInstallPromptEvent | null;
     onInstallClick: () => void;
 }
 
-const SettingsSection: React.FC<{ title: string; children: React.ReactNode; icon: React.ReactNode; defaultOpen?: boolean }> = ({ title, children, icon, defaultOpen = false }) => {
+const SettingsSection: React.FC<{ title: string; children: React.ReactNode; icon: React.ReactNode; defaultOpen?: boolean }> = memo(({ title, children, icon, defaultOpen = false }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     const sectionId = useId();
 
@@ -41,9 +43,9 @@ const SettingsSection: React.FC<{ title: string; children: React.ReactNode; icon
             )}
         </Card>
     );
-};
+});
 
-const SettingRow: React.FC<{ label: string; description?: string; children: React.ReactNode; className?: string }> = ({ label, description, children, className }) => (
+const SettingRow: React.FC<{ label: string; description?: string; children: React.ReactNode; className?: string }> = memo(({ label, description, children, className }) => (
     <div className={`flex flex-col sm:flex-row justify-between sm:items-center gap-2 py-3 first:pt-0 last:pb-0 ${className}`}>
         <div className="flex-grow">
             <p className="font-semibold text-slate-200">{label}</p>
@@ -51,10 +53,10 @@ const SettingRow: React.FC<{ label: string; description?: string; children: Reac
         </div>
         <div className="flex-shrink-0 flex items-center gap-2">{children}</div>
     </div>
-);
+));
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onInstallClick }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const settings = useAppSelector(state => state.settings.settings);
     const dispatch = useAppDispatch();
     
@@ -63,6 +65,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
     
     const handleSetSetting = (path: string, value: any) => {
         dispatch(setSetting({ path, value }));
+    };
+    
+    const handleLanguageSelect = (lang: Language) => {
+        handleSetSetting('language', lang);
     };
 
     const handleReplayOnboarding = () => {
@@ -95,22 +101,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
 
     return (
         <div className="space-y-6 animate-fade-in">
+             <Card>
+                <h2 className="text-2xl font-bold font-display text-primary-300 mb-2">Choose your language / Sprache wählen</h2>
+                <p className="text-slate-400 mb-4">Select your preferred language / Wähle deine bevorzugte Sprache</p>
+                <div className="flex gap-4">
+                    <Button onClick={() => handleLanguageSelect('de')} className="flex-1 flex items-center justify-center">
+                        <FlagDE className="w-6 h-6 mr-2" />
+                        Deutsch
+                    </Button>
+                    <Button onClick={() => handleLanguageSelect('en')} className="flex-1 flex items-center justify-center">
+                        <FlagEN className="w-6 h-6 mr-2" />
+                        English
+                    </Button>
+                </div>
+            </Card>
+
             <SettingsSection title={t('settingsView.categories.general')} icon={<PhosphorIcons.Gear />} defaultOpen>
-                <SettingRow label={t('settingsView.general.language')}>
-                    <select value={settings.language} onChange={e => handleSetSetting('language', e.target.value as Language)} className="select-input">
-                        <option value="en">{t('settingsView.languages.en')}</option>
-                        <option value="de">{t('settingsView.languages.de')}</option>
-                    </select>
-                </SettingRow>
                 <SettingRow label={t('settingsView.general.theme')}>
-                    <select value={settings.theme} onChange={e => handleSetSetting('theme', e.target.value as Theme)} className="select-input">
-                        {Object.keys(t('settingsView.general.themes', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.general.themes.${key}`)}</option>)}
-                    </select>
+                    <Select value={settings.theme} onChange={e => handleSetSetting('theme', e.target.value as Theme)} options={Object.keys(t('settingsView.general.themes', {returnObjects: true})).map(key => ({value: key, label: t(`settingsView.general.themes.${key}`)}))} />
                 </SettingRow>
                  <SettingRow label={t('settingsView.general.defaultView')}>
-                    <select value={settings.defaultView} onChange={e => handleSetSetting('defaultView', e.target.value as View)} className="select-input">
-                        {Object.values(View).map(v => <option key={v} value={v}>{t(`nav.${(v as string).toLowerCase()}`)}</option>)}
-                    </select>
+                    <Select value={settings.defaultView} onChange={e => handleSetSetting('defaultView', e.target.value as View)} options={Object.values(View).map(v => ({value: v, label: t(`nav.${(v as string).toLowerCase()}`)}))} />
                 </SettingRow>
                 <SettingRow label={t('settingsView.general.installApp')} description={t('settingsView.general.installAppDesc')}>
                     <Button onClick={onInstallClick} disabled={isInstalled}>
@@ -121,14 +132,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
             
             <SettingsSection title={t('settingsView.categories.accessibility')} icon={<PhosphorIcons.Person />}>
                  <SettingRow label={t('settingsView.accessibility.uiDensity')}>
-                    <select value={settings.uiDensity} onChange={e => handleSetSetting('uiDensity', e.target.value as UiDensity)} className="select-input">
-                        {Object.keys(t('settingsView.accessibility.uiDensities', { returnObjects: true })).map(key => <option key={key} value={key}>{t(`settingsView.accessibility.uiDensities.${key}`)}</option>)}
-                    </select>
+                    <Select value={settings.uiDensity} onChange={e => handleSetSetting('uiDensity', e.target.value as UiDensity)} options={Object.keys(t('settingsView.accessibility.uiDensities', { returnObjects: true })).map(key => ({value: key, label: t(`settingsView.accessibility.uiDensities.${key}`)}))} />
                 </SettingRow>
                  <SettingRow label={t('settingsView.general.fontSize')}>
-                    <select value={settings.fontSize} onChange={e => handleSetSetting('fontSize', e.target.value as 'sm'|'base'|'lg')} className="select-input">
-                        {Object.keys(t('settingsView.general.fontSizes', { returnObjects: true })).map(key => <option key={key} value={key}>{t(`settingsView.general.fontSizes.${key}`)}</option>)}
-                    </select>
+                    <Select value={settings.fontSize} onChange={e => handleSetSetting('fontSize', e.target.value as 'sm'|'base'|'lg')} options={Object.keys(t('settingsView.general.fontSizes', { returnObjects: true })).map(key => ({ value: key, label: t(`settingsView.general.fontSizes.${key}`) }))} />
                 </SettingRow>
                 <SettingRow label={t('settingsView.accessibility.dyslexiaFont')} description={t('settingsView.accessibility.dyslexiaFontDesc')}>
                     <Switch checked={settings.accessibility.dyslexiaFont} onChange={val => handleSetSetting('accessibility.dyslexiaFont', val)} aria-label={t('settingsView.accessibility.dyslexiaFont')} />
@@ -143,9 +150,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                     <Switch checked={settings.tts.enabled} onChange={val => handleSetSetting('tts.enabled', val)} aria-label={t('settingsView.tts.enabled')} />
                 </SettingRow>
                 <SettingRow label={t('settingsView.tts.voice')}>
-                    <select value={settings.tts.voiceName || ''} onChange={e => handleSetSetting('tts.voiceName', e.target.value)} className="select-input max-w-xs" disabled={!settings.tts.enabled || voices.length === 0}>
-                        {voices.length > 0 ? voices.map(v => <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>) : <option>{t('settingsView.tts.noVoices')}</option>}
-                    </select>
+                    <Select
+                        value={settings.tts.voiceName || ''}
+                        onChange={e => handleSetSetting('tts.voiceName', e.target.value)}
+                        className="max-w-xs"
+                        disabled={!settings.tts.enabled || voices.length === 0}
+                        options={voices.length > 0 ? voices.map(v => ({ value: v.name, label: `${v.name} (${v.lang})` })) : [{ value: '', label: t('settingsView.tts.noVoices') }]}
+                    />
                 </SettingRow>
                  <SettingRow label={t('settingsView.tts.rate')}>
                     <span className="font-mono text-sm">{settings.tts.rate.toFixed(1)}x</span>
@@ -159,17 +170,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
             
             <SettingsSection title={t('settingsView.categories.strains')} icon={<PhosphorIcons.Leafy />}>
                 <SettingRow label={t('settingsView.strains.defaultViewMode')}>
-                     <select value={settings.strainsViewSettings.defaultViewMode} onChange={e => handleSetSetting('strainsViewSettings.defaultViewMode', e.target.value as 'list'|'grid')} className="select-input">
-                        {Object.keys(t('settingsView.strains.viewModes', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.strains.viewModes.${key}`)}</option>)}
-                    </select>
+                     <Select value={settings.strainsViewSettings.defaultViewMode} onChange={e => handleSetSetting('strainsViewSettings.defaultViewMode', e.target.value as 'list'|'grid')} options={Object.keys(t('settingsView.strains.viewModes', {returnObjects: true})).map(key => ({ value: key, label: t(`settingsView.strains.viewModes.${key}`) }))} />
                 </SettingRow>
                 <SettingRow label={t('settingsView.strains.defaultSort')}>
-                    <select value={settings.strainsViewSettings.defaultSortKey} onChange={e => handleSetSetting('strainsViewSettings.defaultSortKey', e.target.value as SortKey)} className="select-input">
-                       {Object.keys(t('settingsView.strains.sortKeys', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.strains.sortKeys.${key}`)}</option>)}
-                    </select>
-                    <select value={settings.strainsViewSettings.defaultSortDirection} onChange={e => handleSetSetting('strainsViewSettings.defaultSortDirection', e.target.value as SortDirection)} className="select-input">
-                       {Object.keys(t('settingsView.strains.sortDirections', {returnObjects: true})).map(key => <option key={key} value={key}>{t(`settingsView.strains.sortDirections.${key}`)}</option>)}
-                    </select>
+                    <Select value={settings.strainsViewSettings.defaultSortKey} onChange={e => handleSetSetting('strainsViewSettings.defaultSortKey', e.target.value as SortKey)} options={Object.keys(t('settingsView.strains.sortKeys', {returnObjects: true})).map(key => ({ value: key, label: t(`settingsView.strains.sortKeys.${key as SortKey}`) }))} />
+                    <Select value={settings.strainsViewSettings.defaultSortDirection} onChange={e => handleSetSetting('strainsViewSettings.defaultSortDirection', e.target.value as SortDirection)} options={Object.keys(t('settingsView.strains.sortDirections', {returnObjects: true})).map(key => ({ value: key, label: t(`settingsView.strains.sortDirections.${key}`) }))} />
                 </SettingRow>
                  <SettingRow label={t('settingsView.strains.visibleColumns')} description={t('settingsView.strains.visibleColumnsDesc')} className="!flex-col sm:!flex-col !items-start">
                     <div className="flex flex-wrap gap-x-6 gap-y-2 mt-2">
@@ -193,9 +198,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                     <Switch checked={settings.simulationSettings.autoAdvance} onChange={val => handleSetSetting('simulationSettings.autoAdvance', val)} aria-label={t('settingsView.plants.autoAdvance')} />
                 </SettingRow>
                 <SettingRow label={t('settingsView.plants.speed')}>
-                     <select value={settings.simulationSettings.speed} onChange={e => handleSetSetting('simulationSettings.speed', e.target.value as '1x'|'2x'|'4x')} className="select-input" disabled={!settings.simulationSettings.autoAdvance}>
-                        <option value="1x">1x</option><option value="2x">2x</option><option value="4x">4x</option>
-                    </select>
+                     <Select value={settings.simulationSettings.speed} onChange={e => handleSetSetting('simulationSettings.speed', e.target.value as '1x'|'2x'|'4x')} disabled={!settings.simulationSettings.autoAdvance} options={[{value: '1x', label: '1x'}, {value: '2x', label: '2x'}, {value: '4x', label: '4x'}]} />
                 </SettingRow>
             </SettingsSection>
 
@@ -208,8 +211,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
                  <SettingRow label={t('settingsView.notifications.harvestReady')}><Switch checked={settings.notificationSettings.harvestReady} onChange={val => handleSetSetting('notificationSettings.harvestReady', val)}/></SettingRow>
                  <SettingRow label={t('settingsView.notifications.newTask')}><Switch checked={settings.notificationSettings.newTask} onChange={val => handleSetSetting('notificationSettings.newTask', val)}/></SettingRow>
                  <SettingRow label={t('settingsView.notifications.quietHours')} description={t('settingsView.notifications.quietHoursDesc')}>
-                    <input type="time" value={settings.quietHours.start} onChange={e => handleSetSetting('quietHours.start', e.target.value)} className="input-base w-28" />
-                    <input type="time" value={settings.quietHours.end} onChange={e => handleSetSetting('quietHours.end', e.target.value)} className="input-base w-28" />
+                    <Input type="time" value={settings.quietHours.start} onChange={e => handleSetSetting('quietHours.start', e.target.value)} className="w-28" />
+                    <Input type="time" value={settings.quietHours.end} onChange={e => handleSetSetting('quietHours.end', e.target.value)} className="w-28" />
                     <Switch checked={settings.quietHours.enabled} onChange={val => handleSetSetting('quietHours.enabled', val)} aria-label={t('settingsView.notifications.enableQuietHours')} />
                 </SettingRow>
             </SettingsSection>
@@ -217,20 +220,16 @@ export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onIn
              <SettingsSection title={t('settingsView.categories.defaults')} icon={<PhosphorIcons.BracketsCurly />}>
                 <SettingRow label={t('settingsView.defaults.growSetup')} className="!items-start !flex-col">
                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 w-full mt-2">
-                        <select value={settings.defaultGrowSetup.light.type} onChange={e => handleSetSetting('defaultGrowSetup.light.type', e.target.value)} className="select-input">
-                            <option>LED</option><option>HPS</option><option>CFL</option>
-                        </select>
-                         <input type="number" value={settings.defaultGrowSetup.light.wattage} onChange={e => handleSetSetting('defaultGrowSetup.light.wattage', Number(e.target.value))} className="input-base" />
-                         <input type="number" value={settings.defaultGrowSetup.potSize} onChange={e => handleSetSetting('defaultGrowSetup.potSize', Number(e.target.value))} className="input-base" />
-                        <select value={settings.defaultGrowSetup.medium} onChange={e => handleSetSetting('defaultGrowSetup.medium', e.target.value)} className="select-input">
-                            <option>Soil</option><option>Coco</option><option>Hydro</option>
-                        </select>
+                        <Select value={settings.defaultGrowSetup.light.type} onChange={e => handleSetSetting('defaultGrowSetup.light.type', e.target.value)} options={[{value: 'LED', label: 'LED'}, {value: 'HPS', label: 'HPS'}, {value: 'CFL', label: 'CFL'}]} />
+                         <Input type="number" value={settings.defaultGrowSetup.light.wattage} onChange={e => handleSetSetting('defaultGrowSetup.light.wattage', Number(e.target.value))} />
+                         <Input type="number" value={settings.defaultGrowSetup.potSize} onChange={e => handleSetSetting('defaultGrowSetup.potSize', Number(e.target.value))} />
+                        <Select value={settings.defaultGrowSetup.medium} onChange={e => handleSetSetting('defaultGrowSetup.medium', e.target.value)} options={[{value: 'Soil', label: 'Soil'}, {value: 'Coco', label: 'Coco'}, {value: 'Hydro', label: 'Hydro'}]} />
                     </div>
                 </SettingRow>
                 <SettingRow label={t('settingsView.defaults.journalNotesTitle')} className="!items-start !flex-col">
                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mt-2">
-                        <input type="text" value={settings.defaultJournalNotes.watering} onChange={e => handleSetSetting('defaultJournalNotes.watering', e.target.value)} className="input-base" aria-label={t('settingsView.defaults.wateringNoteLabel')} />
-                        <input type="text" value={settings.defaultJournalNotes.feeding} onChange={e => handleSetSetting('defaultJournalNotes.feeding', e.target.value)} className="input-base" aria-label={t('settingsView.defaults.feedingNoteLabel')} />
+                        <Input type="text" value={settings.defaultJournalNotes.watering} onChange={e => handleSetSetting('defaultJournalNotes.watering', e.target.value)} aria-label={t('settingsView.defaults.wateringNoteLabel')} />
+                        <Input type="text" value={settings.defaultJournalNotes.feeding} onChange={e => handleSetSetting('defaultJournalNotes.feeding', e.target.value)} aria-label={t('settingsView.defaults.feedingNoteLabel')} />
                     </div>
                 </SettingRow>
             </SettingsSection>

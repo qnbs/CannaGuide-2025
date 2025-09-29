@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input, ResultDisplay, Select } from './common';
 import { PlantStage } from '@/types';
 
 export const LightCalculator: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [dimensions, setDimensions] = useState({ width: 80, depth: 80 });
     const [stage, setStage] = useState<PlantStage>(PlantStage.Flowering);
 

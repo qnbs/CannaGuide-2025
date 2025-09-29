@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plant, MentorMessage } from '@/types';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { startPlantMentorChat, clearMentorChat } from '@/stores/slices/aiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { Input } from '@/components/ui/ThemePrimitives';
 
 interface MentorChatViewProps {
     plant: Plant;
@@ -27,7 +28,7 @@ const Message: React.FC<{ message: MentorMessage }> = ({ message }) => {
 
 
 export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const chatState = useAppSelector(state => state.ai.mentorChats[plant.id] || { history: [], isLoading: false, error: null });
     const [input, setInput] = useState('');
@@ -79,12 +80,13 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
             </div>
             <div className="flex-shrink-0 mt-4">
                 <div className="relative">
-                    <textarea
+                    <Input
+                        as="textarea"
                         value={input}
                         onChange={e => setInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
                         placeholder={t('knowledgeView.aiMentor.inputPlaceholder')}
-                        className="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 pr-20 resize-none focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        className="pr-20 resize-none"
                         rows={2}
                     />
                     <Button onClick={handleSend} disabled={chatState.isLoading || !input.trim()} className="absolute right-2 bottom-2 !p-2">

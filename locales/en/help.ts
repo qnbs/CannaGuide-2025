@@ -1,66 +1,48 @@
 export const helpView = {
-  title: 'Help & FAQ',
-  subtitle: 'Find answers to common questions about CannaGuide 2025.',
-  sections: {
-    general: {
-      title: 'General Questions',
-      faqs: [
-        {
-          q: 'What is CannaGuide 2025?',
-          a: 'CannaGuide 2025 is a comprehensive tool for cannabis enthusiasts and cultivators. It allows you to explore strains, manage virtual plant grows, get AI-powered equipment recommendations, and learn about the cultivation process from seed to harvest.'
-        },
-        {
-          q: 'Is this app for legal use only?',
-          a: 'Yes. This application is intended as an educational and tracking tool for users in regions where cannabis cultivation is legal. Please always adhere to your local laws and regulations.'
-        },
-        {
-          q: 'How is my data stored?',
-          a: 'Your data is stored locally in your browser. Nothing is sent to a server. You can export your data for backup purposes in the Settings view.'
-        }
-      ]
-    },
-    strains: {
-      title: 'Strains View',
-      faqs: [
-        {
-          q: 'How do I add a custom strain?',
-          a: 'In the Strains view, click the "Add Strain" button. A modal will appear where you can enter all the details for your custom strain. It will then appear under the "My Strains" tab.'
-        },
-        {
-          q: 'What do the AI Grow Tips do?',
-          a: 'In the strain detail view, you can request AI-generated tips. The AI analyzes the strain\'s characteristics and your specified goals (like maximizing yield) to provide tailored advice on nutrients, training, and environment.'
-        }
-      ]
-    },
-    plants: {
-      title: 'Plants View',
-      faqs: [
-        {
-          q: 'How do I start a new plant?',
-          a: 'You can start a new grow in two ways: either by clicking an empty plant slot in the Plants view and selecting a strain, or by going to the Strains view, finding a strain you like, and clicking the "Start Growing" button.'
-        },
-        {
-          q: 'What does "Simulate Next Day" do?',
-          a: 'This button advances the simulation for all your active plants by one day. It updates their age, height, and vitals, and checks for any new problems or tasks based on their current state.'
-        },
-        {
-          q: 'How does the AI Plant Doctor work?',
-          a: 'You can upload a photo of a plant leaf or problem area. The AI will analyze the image and provide a potential diagnosis, along with recommended actions, long-term solutions, and prevention tips.'
-        }
-      ]
-    },
-    equipment: {
-      title: 'Equipment View',
-      faqs: [
-        {
-          q: 'How does the Setup Configurator work?',
-          a: 'The configurator uses AI to generate a complete equipment list based on your needs. Simply select how many plants you want to grow and your preferred configuration style (e.g., value, balanced, premium), and the AI will provide a tailored recommendation.'
-        },
-        {
-          q: 'Can I save the AI recommendations?',
-          a: 'Yes. After a recommendation is generated, you can give it a name and save it. All your saved setups will appear in the "My Setups" tab for later reference.'
-        }
-      ]
-    }
+  title: 'Help & Learning Center',
+  subtitle: 'Find answers, learn key terms, and see visual guides.',
+  searchPlaceholder: 'Search lexicon...',
+  noResults: 'No results found for "{{term}}".',
+  tabs: {
+    lexicon: 'Lexicon',
+    guides: 'Visual Guides',
+    faq: 'FAQ',
+  },
+  lexiconTabs: {
+    all: 'All',
+    cannabinoids: 'Cannabinoids',
+    terpenes: 'Terpenes',
+    flavonoids: 'Flavonoids',
+    glossary: 'Glossary',
+  },
+  faq: {
+    title: 'Frequently Asked Questions (FAQ)',
+    relevance: 'Questions relevant to you',
   }
 };
+
+export const visualGuides = {
+  topping: {
+    title: 'Topping a Plant',
+    description: 'Topping is a high-stress training (HST) technique where the top growth of the main stem is removed. This encourages the plant to grow two new main colas, leading to a bushier shape and potentially higher yields.',
+  }
+}
+
+export const faq = {
+  phValue: {
+    question: 'Why is pH value so important?',
+    answer: 'The pH of your water and medium determines which nutrients the plant can absorb. An incorrect pH "locks out" certain nutrients, even if they are present in the soil, leading to deficiencies. For soil, the ideal range is 6.0-6.8; for coco/hydro, it\'s 5.5-6.5.'
+  },
+  yellowLeaves: {
+    question: 'What do yellow leaves mean?',
+    answer: 'Yellowing leaves (chlorosis) can have many causes. If it starts at the bottom and moves up, it\'s often a nitrogen deficiency, common in the vegetative stage. Splotchy yellow spots can indicate a calcium or magnesium deficiency. Overwatering is also a very common cause as it suffocates the roots.'
+  },
+  whenToHarvest: {
+    question: 'How do I know when to harvest?',
+    answer: 'The best indicator is the trichomes (the tiny resin glands). Viewed with a magnifier, most should be milky/cloudy for peak potency. Clear trichomes are not yet ready, while amber-colored ones indicate a more sedating effect. The color of the pistils (hairs) is a less accurate indicator.'
+  },
+  lightDistance: {
+    question: 'How far should my light be from my seedlings?',
+    answer: 'Seedlings are very delicate. Keep the light further away than you would for mature plants to avoid light burn. A good starting point for most LEDs is 24-30 inches (60-75 cm). Watch the plant: if it\'s stretching (getting tall and thin), the light is too far. If the leaves show signs of burning or bleaching, it\'s too close.'
+  }
+}

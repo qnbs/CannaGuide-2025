@@ -1,7 +1,7 @@
 import React from 'react';
 import { Strain, SortKey, AppSettings } from '@/types';
 import StrainListItem from './StrainListItem';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { LIST_GRID_CLASS } from './constants';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
@@ -32,7 +32,7 @@ export const StrainList: React.FC<StrainListProps> = ({
     onDelete,
     isPending 
 }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
 
     const SortIndicator: React.FC<{ sortKey: SortKey }> = ({ sortKey }) => {
         if (sort.key !== sortKey) return <div className="w-4 h-4 opacity-30"><PhosphorIcons.ArrowUp /></div>;

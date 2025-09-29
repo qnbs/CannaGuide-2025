@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Recommendation, SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
@@ -18,7 +18,7 @@ interface SetupResultsProps {
 }
 
 const RationaleModal: React.FC<{ category: string, rationale: string, onClose: () => void }> = ({ category, rationale, onClose }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
             <Card className="w-full max-w-md" onClick={e => e.stopPropagation()}>
@@ -33,7 +33,7 @@ const RationaleModal: React.FC<{ category: string, rationale: string, onClose: (
 };
 
 export const SetupResults: React.FC<SetupResultsProps> = ({ recommendation, isLoading, error, sourceDetails, startOver, handleGenerate, onSaveSetup, loadingMessage }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [rationale, setRationale] = useState<{ category: string; text: string } | null>(null);
 
     if (isLoading) {
@@ -53,7 +53,13 @@ export const SetupResults: React.FC<SetupResultsProps> = ({ recommendation, isLo
 
     if (!recommendation) return null;
 
-    const totalCost = (Object.values(recommendation) as RecommendationItem[]).reduce((sum, item) => sum + (item.price || 0), 0);
+    const totalCost = (Object.values(recommendation) as (RecommendationItem | string)[]).reduce((sum, item) => {
+        if (typeof item === 'object' && item.price) {
+            return sum + item.price;
+        }
+        return sum;
+    }, 0);
+
 
     const handleSave = () => {
         const setupName = `${t(`equipmentView.configurator.styles.${sourceDetails.growStyle}`)} ${sourceDetails.area} (${t(`equipmentView.configurator.setupNameBudgets.${sourceDetails.budget}`)})`;
@@ -63,7 +69,7 @@ export const SetupResults: React.FC<SetupResultsProps> = ({ recommendation, isLo
         }
     };
     
-    const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'pots', 'soil', 'nutrients', 'extra'];
+    const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'circulationFan', 'pots', 'soil', 'nutrients', 'extra'];
 
     return (
         <div className="animate-fade-in">
@@ -97,6 +103,15 @@ export const SetupResults: React.FC<SetupResultsProps> = ({ recommendation, isLo
                     );
                 })}
             </div>
+            
+            {recommendation.proTip && (
+                 <Card key="proTip" className="p-3 bg-primary-900/30 mt-4">
+                    <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
+                        <PhosphorIcons.Sparkle /> {t('strainsView.tips.form.categories.proTip')}
+                    </h4>
+                    <p className="text-sm text-slate-300">{recommendation.proTip}</p>
+                </Card>
+            )}
 
             <div className="mt-6 pt-4 border-t border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="text-2xl font-bold">

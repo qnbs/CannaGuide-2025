@@ -1,4 +1,3 @@
-
 import { AppSettings, View, Language, Theme } from '@/types';
 import { getT } from '../../i18n';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
@@ -12,10 +11,15 @@ export const defaultSettings: AppSettings = {
   fontSize: 'base', language: initialLang, theme: 'midnight', defaultView: View.Plants,
   strainsViewSettings: { defaultSortKey: 'name', defaultSortDirection: 'asc', defaultViewMode: 'list', visibleColumns: { type: true, thc: true, cbd: true, floweringTime: true, yield: true, difficulty: true }},
   notificationsEnabled: true, notificationSettings: { stageChange: true, problemDetected: true, harvestReady: true, newTask: true }, onboardingCompleted: false,
+  simulationProfile: 'beginner',
   simulationSettings: { 
-    difficulty: 'normal', 
+    difficulty: 'easy', 
     autoJournaling: { stageChanges: true, problems: true, tasks: true }, 
-    customDifficultyModifiers: { pestPressure: 1.0, nutrientSensitivity: 1.0, environmentalStability: 1.0 },
+    customDifficultyModifiers: { 
+        pestPressure: 0.7, 
+        nutrientSensitivity: 0.7, 
+        environmentalStability: 1.3 
+    },
     autoAdvance: false,
     speed: '1x'
   },
@@ -104,6 +108,30 @@ const settingsSlice = createSlice({
                 currentLevel = currentLevel[keys[i]];
             }
             currentLevel[keys[keys.length - 1]] = value;
+
+            if (path.startsWith('simulationSettings.customDifficultyModifiers')) {
+                state.settings.simulationProfile = 'custom';
+            }
+        },
+        setSimulationProfile: (state, action: PayloadAction<'beginner' | 'expert' | 'experimental' | 'custom'>) => {
+            state.settings.simulationProfile = action.payload;
+            switch (action.payload) {
+                case 'beginner':
+                    state.settings.simulationSettings.difficulty = 'easy';
+                    state.settings.simulationSettings.customDifficultyModifiers = { pestPressure: 0.7, nutrientSensitivity: 0.7, environmentalStability: 1.3 };
+                    break;
+                case 'expert':
+                    state.settings.simulationSettings.difficulty = 'hard';
+                    state.settings.simulationSettings.customDifficultyModifiers = { pestPressure: 1.2, nutrientSensitivity: 1.2, environmentalStability: 0.8 };
+                    break;
+                case 'experimental':
+                    state.settings.simulationSettings.difficulty = 'hard';
+                    state.settings.simulationSettings.customDifficultyModifiers = { pestPressure: 1.5, nutrientSensitivity: 1.5, environmentalStability: 0.6 };
+                    break;
+                case 'custom':
+                    state.settings.simulationSettings.difficulty = 'custom';
+                    break;
+            }
         },
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
             const { path } = action.payload;
@@ -120,6 +148,6 @@ const settingsSlice = createSlice({
     }
 });
 
-export const { setSetting, setSettings, toggleSetting } = settingsSlice.actions;
+export const { setSetting, setSettings, toggleSetting, setSimulationProfile } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -1,9 +1,10 @@
 import React from 'react';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { StrainType } from '@/types';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { Input } from '@/components/ui/ThemePrimitives';
 
 interface StrainToolbarProps {
     searchTerm: string;
@@ -23,7 +24,7 @@ interface StrainToolbarProps {
 }
 
 export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const { 
         searchTerm, onSearchTermChange, viewMode, onViewModeChange, onExport, onAdd, 
         showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter,
@@ -41,7 +42,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
             <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                 <div className="relative flex-grow">
                     <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-                    <input type="text" placeholder={t('strainsView.searchPlaceholder')} value={searchTerm} onChange={e => onSearchTermChange(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"/>
+                    <Input type="text" placeholder={t('strainsView.searchPlaceholder')} value={searchTerm} onChange={e => onSearchTermChange(e.target.value)} className="pl-10 pr-4 !py-2"/>
                 </div>
 
                 <div className="hidden sm:flex items-center gap-2">

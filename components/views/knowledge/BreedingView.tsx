@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
-import { selectBreeding } from '@/stores/selectors';
+import { selectCollectedSeeds, selectBreedingSlots } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
 
-export const BreedingView: React.FC = () => {
-    const { t } = useTranslations();
+export const BreedingView: React.FC = memo(() => {
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { collectedSeeds, breedingSlots } = useAppSelector(selectBreeding);
+    const collectedSeeds = useAppSelector(selectCollectedSeeds);
+    const breedingSlots = useAppSelector(selectBreedingSlots);
 
     // This is a placeholder for a more complex UI
     return (
@@ -32,4 +33,4 @@ export const BreedingView: React.FC = () => {
             </div>
         </Card>
     );
-};
+});

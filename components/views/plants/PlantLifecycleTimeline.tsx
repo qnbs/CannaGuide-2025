@@ -1,12 +1,9 @@
-
-
-
 import React, { memo } from 'react';
-// FIX: Update import paths to be relative
-import { PlantStage } from '../../../types';
-import { PLANT_STAGE_DETAILS } from '../../../services/plantSimulationService';
-import { STAGES_ORDER } from '../../../constants';
-import { useTranslations } from '../../../hooks/useTranslations';
+// FIX: Update import paths to use alias
+import { PlantStage } from '@/types';
+import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { STAGES_ORDER } from '@/constants';
+import { useTranslation } from 'react-i18next';
 
 interface TimelineProps {
     currentStage: PlantStage;
@@ -27,7 +24,7 @@ const stageColors: Record<PlantStage, string> = {
 
 
 export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentStage, currentAge }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const relevantStages = STAGES_ORDER.filter(s => PLANT_STAGE_DETAILS[s].duration !== Infinity);
     const totalDuration = relevantStages.reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
 

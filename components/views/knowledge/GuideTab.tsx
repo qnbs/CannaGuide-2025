@@ -1,6 +1,6 @@
 import React from 'react';
 import { KnowledgeArticle } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -32,7 +32,7 @@ interface GuideTabProps {
 
 // FIX: Added GuideTab component and exported it to fix the import error.
 export const GuideTab: React.FC<GuideTabProps> = ({ articles }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     // Fallback to all articles if none are provided (for the general guide view)
     const articlesToDisplay = articles || knowledgeBase;
 

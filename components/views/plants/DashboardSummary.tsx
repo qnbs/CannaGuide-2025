@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { Card } from '../../common/Card';
 import { Button } from '../../common/Button';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
-import { useTranslations } from '../../../hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectGardenHealthMetrics } from '@/stores/selectors';
 import { waterAllPlants } from '@/stores/slices/simulationSlice';
@@ -20,7 +20,7 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string }> = 
 );
 
 export const GardenVitals: React.FC<GardenVitalsProps> = memo(({ openTasksCount }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppSelector(selectGardenHealthMetrics);
     const hasActiveGrows = activePlantsCount > 0;

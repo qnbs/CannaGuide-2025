@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab } from '@/types';
 import { RootState } from '../store';
-import { startNewPlant } from './simulationSlice';
 import { getT } from '@/i18n';
 
 export interface UIState {
@@ -55,20 +54,6 @@ const initialState: UIState = {
 };
 
 // Thunks for complex actions
-export const finalizeNewGrow = createAsyncThunk<void, void, { state: RootState }>(
-    'ui/finalizeNewGrow',
-    (arg, { dispatch, getState }) => {
-        const { ui } = getState();
-        const { strainForNewGrow, setupForNewGrow, initiatingGrowForSlot } = ui;
-        if (strainForNewGrow && setupForNewGrow && initiatingGrowForSlot !== null) {
-            const name = `${strainForNewGrow.name} #${initiatingGrowForSlot + 1}`;
-            dispatch(startNewPlant({ strain: strainForNewGrow, setup: setupForNewGrow, slotIndex: initiatingGrowForSlot, name }));
-            dispatch(uiSlice.actions.cancelNewGrow());
-            dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name }), type: 'success' }));
-        }
-    }
-);
-
 export const initiateGrowFromStrainList = createAsyncThunk<void, Strain, { state: RootState }>(
     'ui/initiateGrowFromStrainList',
     (strain, { dispatch, getState }) => {

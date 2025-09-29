@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
 
 interface BulkActionsBarProps {
@@ -21,7 +21,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
     onRemoveFromFavorites,
     onDelete,
 }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [isFavMenuOpen, setIsFavMenuOpen] = useState(false);
     const favMenuRef = useOutsideClick<HTMLDivElement>(() => setIsFavMenuOpen(false));
 

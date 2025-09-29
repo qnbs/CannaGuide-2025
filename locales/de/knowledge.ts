@@ -6,6 +6,7 @@ export const knowledgeView = {
         guide: 'Grow-Guide',
         archive: 'Mentor-Archiv',
         breeding: 'Zuchtlabor',
+        sandbox: 'Sandbox',
     },
     hub: {
         selectPlant: 'Pflanze auswählen',

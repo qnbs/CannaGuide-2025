@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Strain, AIResponse, StructuredGrowTips } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
+import { useTranslation } from 'react-i18next';
 import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -12,7 +13,7 @@ import { startStrainTipGeneration } from '@/stores/slices/aiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
 
     const tipCategories = [
         { key: 'nutrientTip', icon: <PhosphorIcons.Flask />, label: t('strainsView.tips.form.categories.nutrientTip') },
@@ -48,7 +49,7 @@ interface StrainAiTipsProps {
 }
 
 export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { isLoading, response: tip, error } = useAppSelector(selectStrainTipState(strain.id));
 

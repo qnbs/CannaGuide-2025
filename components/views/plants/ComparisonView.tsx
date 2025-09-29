@@ -1,8 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Plant, Scenario } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { scenarioService } from '@/services/scenarioService';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { PlantVisualizer } from './PlantVisualizer';
@@ -14,7 +13,7 @@ interface ComparisonViewProps {
   onClose: () => void;
 }
 
-const PlantResultCard: React.FC<{ plant: Plant, title: string }> = ({ plant, title }) => (
+const PlantResultCard: React.FC<{ plant: Plant, title: string }> = memo(({ plant, title }) => (
     <Card className="text-center">
         <h3 className="text-lg font-bold text-primary-300">{title}</h3>
         <div className="h-48 my-2 flex items-center justify-center">
@@ -26,10 +25,10 @@ const PlantResultCard: React.FC<{ plant: Plant, title: string }> = ({ plant, tit
              <p><strong>Stress:</strong> {plant.stressLevel.toFixed(1)}%</p>
         </div>
     </Card>
-);
+));
 
-export const ComparisonView: React.FC<ComparisonViewProps> = ({ plant, scenario, onClose }) => {
-    const { t } = useTranslations();
+export const ComparisonView: React.FC<ComparisonViewProps> = memo(({ plant, scenario, onClose }) => {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [results, setResults] = useState<{ plantA: Plant, plantB: Plant } | null>(null);
 
@@ -71,4 +70,4 @@ export const ComparisonView: React.FC<ComparisonViewProps> = ({ plant, scenario,
             )}
         </Modal>
     );
-};
+});

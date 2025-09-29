@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Task } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface TasksTabProps {
@@ -11,7 +11,7 @@ interface TasksTabProps {
 }
 
 export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     
     const openTasks = tasks.filter(t => !t.isCompleted).sort((a, b) => a.createdAt - b.createdAt);
     const completedTasks = tasks.filter(t => t.isCompleted).sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));

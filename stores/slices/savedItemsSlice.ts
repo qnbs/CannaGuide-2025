@@ -26,16 +26,12 @@ export const addSetup = createAsyncThunk<SavedSetup, Omit<SavedSetup, 'id' | 'cr
         };
 
         try {
-            // In a real scenario with complex async storage, this is where you'd await the storage operation.
-            // Here, we dispatch the synchronous reducer. The try/catch simulates handling potential errors
-            // from either the dispatch or a hypothetical async storage layer, fulfilling the user's request for robustness.
             dispatch(savedItemsSlice.actions._addSetup(newSetup));
             dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: newSetup.name }), type: 'success' }));
             return newSetup;
         } catch (error) {
             console.error("Failed to save setup:", error);
-            // This is the user-requested error message for preview environments.
-            dispatch(addNotification({ message: 'Speichern in der Vorschau nicht möglich. Bitte in der deployten App versuchen.', type: 'error' }));
+            dispatch(addNotification({ message: t('common.saveErrorPreview'), type: 'error' }));
             return rejectWithValue('Failed to save');
         }
     }

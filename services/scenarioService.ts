@@ -41,6 +41,8 @@ class ScenarioService {
                 
                 plantA.name = `${basePlant.name} (A)`;
                 plantB.name = `${basePlant.name} (B)`;
+                
+                const oneDayInMillis = 24 * 60 * 60 * 1000;
 
                 for (let day = 1; day <= scenario.durationDays; day++) {
                     if (day === scenario.plantAModifier.day) {
@@ -50,8 +52,8 @@ class ScenarioService {
                         plantB = this.applyAction(plantB, scenario.plantBModifier.action);
                     }
                     
-                    plantA = simulationService.runDailyCycle(plantA).updatedPlant;
-                    plantB = simulationService.runDailyCycle(plantB).updatedPlant;
+                    plantA = simulationService.calculateStateForTimeDelta(plantA, oneDayInMillis).updatedPlant;
+                    plantB = simulationService.calculateStateForTimeDelta(plantB, oneDayInMillis).updatedPlant;
                 }
                 
                 resolve({ plantA, plantB });

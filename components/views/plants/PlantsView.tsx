@@ -6,7 +6,7 @@ import { DetailedPlantView } from './plants/DetailedPlantView';
 import { TipOfTheDay } from './plants/TipOfTheDay';
 import { GardenVitals } from './plants/DashboardSummary';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
-import { useTranslations } from '../../hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../../icons/PhosphorIcons';
 import { Card } from '../../common/Card';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
@@ -18,7 +18,7 @@ import { AiDiagnostics } from './plants/AiDiagnostics';
 import { Button } from '../../common/Button';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <Card
             onClick={onStart}
@@ -32,7 +32,7 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
 };
 
 export const PlantsView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     
     // Optimized State Selection
     const { waterAllPlants, setSelectedPlantId, startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } = useAppStore.getState();

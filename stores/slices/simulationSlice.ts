@@ -1,15 +1,66 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType } from '@/types';
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings } from '@/types';
 import { simulationService } from '@/services/plantSimulationService';
-import { AppSettings } from '@/types';
+import { RootState } from '../store';
+import { cancelNewGrow, addNotification } from './uiSlice';
+import { getT } from '@/i18n';
 
+// FIX: Added missing `devSpeedMultiplier` property to match the `SimulationState` type.
 const initialState: SimulationState = {
     plants: {},
     plantSlots: [null, null, null],
     selectedPlantId: null,
-    isCatchingUp: false,
-    lastTick: 0,
+    devSpeedMultiplier: 1,
 };
+
+// --- Async Thunks ---
+
+export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
+    'simulation/startNewPlant',
+    (arg, { dispatch, getState }) => {
+        const { ui, settings } = getState();
+        const { strainForNewGrow, setupForNewGrow, initiatingGrowForSlot } = ui;
+        
+        if (strainForNewGrow && setupForNewGrow && initiatingGrowForSlot !== null) {
+            const name = `${strainForNewGrow.name} #${initiatingGrowForSlot + 1}`;
+            
+            const newPlant = simulationService.createPlant(
+                strainForNewGrow,
+                setupForNewGrow,
+                settings.settings.defaultGrowSetup.light,
+                name
+            );
+
+            dispatch(simulationSlice.actions._addPlant({ plant: newPlant, slotIndex: initiatingGrowForSlot }));
+            dispatch(cancelNewGrow());
+            dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name }), type: 'success' }));
+        }
+    }
+);
+
+export const updatePlantToNow = createAsyncThunk<void, string, { state: RootState }>(
+    'simulation/updatePlantToNow',
+    async (plantId, { getState, dispatch }) => {
+        const plant = getState().simulation.plants[plantId];
+        if (!plant) return;
+
+        const deltaTime = Date.now() - plant.lastUpdated;
+        
+        // Only run simulation if more than a second has passed to avoid excessive calls
+        if (deltaTime > 1000) {
+            const { updatedPlant, newJournalEntries, newTasks } = simulationService.calculateStateForTimeDelta(plant, deltaTime);
+            
+            const daysSimulated = updatedPlant.age - plant.age;
+            if (daysSimulated > 0) {
+                const simulatedMilliseconds = daysSimulated * 24 * 60 * 60 * 1000;
+                updatedPlant.lastUpdated = plant.lastUpdated + simulatedMilliseconds;
+
+                dispatch(simulationSlice.actions.plantStateUpdated({ updatedPlant, newJournalEntries, newTasks }));
+            }
+        }
+    }
+);
+
 
 const simulationSlice = createSlice({
     name: 'simulation',
@@ -20,21 +71,32 @@ const simulationSlice = createSlice({
             if ('plants' in payload) { // Hydrating from persisted Redux state
                 state.plants = payload.plants;
                 state.plantSlots = payload.plantSlots;
+                // Migration for older states that don't have lastUpdated
+                Object.keys(state.plants).forEach(plantId => {
+                    const plant = state.plants[plantId];
+                    if (plant && !plant.lastUpdated) {
+                        plant.lastUpdated = Date.now();
+                    }
+                });
             }
-            state.lastTick = Date.now();
-            state.isCatchingUp = false;
         },
-        tick: (state, action: PayloadAction<{ deltaTime: number }>) => {
-            // Placeholder for a more complex time-based simulation update
+        plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
+            const { updatedPlant, newJournalEntries, newTasks } = action.payload;
+            state.plants[updatedPlant.id] = updatedPlant;
+            if (newJournalEntries.length > 0) {
+                state.plants[updatedPlant.id].journal.push(...newJournalEntries);
+            }
+            if (newTasks.length > 0) {
+                state.plants[updatedPlant.id].tasks.push(...newTasks);
+            }
         },
         setSelectedPlantId: (state, action: PayloadAction<string | null>) => {
             state.selectedPlantId = action.payload;
         },
-        startNewPlant: (state, action: PayloadAction<{ strain: Strain, setup: GrowSetup, slotIndex: number, name: string }>) => {
-            const { strain, setup, slotIndex, name } = action.payload;
-            const newPlant = simulationService.createPlant(strain, setup, name);
-            state.plants[newPlant.id] = newPlant;
-            state.plantSlots[slotIndex] = newPlant.id;
+        _addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
+            const { plant, slotIndex } = action.payload;
+            state.plants[plant.id] = plant;
+            state.plantSlots[slotIndex] = plant.id;
         },
         waterPlant: (state, action: PayloadAction<{ plantId: string, amount: number, ph: number, ec?: number }>) => {
             const plant = state.plants[action.payload.plantId];
@@ -44,6 +106,7 @@ const simulationSlice = createSlice({
                 if (action.payload.ec) {
                     plant.substrate.ec = (plant.substrate.ec + action.payload.ec) / 2;
                 }
+                plant.lastUpdated = Date.now();
             }
         },
         addJournalEntry: (state, action: PayloadAction<{ plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'> }>) => {
@@ -75,6 +138,7 @@ const simulationSlice = createSlice({
                     const plant = state.plants[plantId];
                     if (plant) {
                        plant.substrate.moisture = 100;
+                       plant.lastUpdated = Date.now();
                        plant.journal.push({id: `journal-water-all-${Date.now()}`, createdAt: Date.now(), type: JournalEntryType.Watering, notes: 'Watered all plants.'});
                     }
                 }
@@ -85,6 +149,7 @@ const simulationSlice = createSlice({
             if (plant) {
                 const { updatedPlant } = simulationService.topPlant(plant);
                 state.plants[action.payload.plantId] = updatedPlant;
+                state.plants[action.payload.plantId].lastUpdated = Date.now();
             }
         },
         applyLst: (state, action: PayloadAction<{ plantId: string }>) => {
@@ -92,21 +157,38 @@ const simulationSlice = createSlice({
             if (plant) {
                 const { updatedPlant } = simulationService.applyLst(plant);
                 state.plants[action.payload.plantId] = updatedPlant;
+                state.plants[action.payload.plantId].lastUpdated = Date.now();
             }
         },
-        // FIX: Add missing applyPestControl reducer.
         applyPestControl: (state, action: PayloadAction<{ plantId: string; notes: string }>) => {
             const plant = state.plants[action.payload.plantId];
             if (plant) {
                 plant.problems = plant.problems.filter(p => p.type !== ProblemType.PestInfestation);
                 plant.health = Math.min(100, plant.health + 5);
+                plant.lastUpdated = Date.now();
             }
         },
         harvestPlant: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants[action.payload.plantId];
             if(plant) {
                 plant.stage = PlantStage.Harvest;
-                plant.postHarvest = { currentDryDay: 0, currentCureDay: 0, jarHumidity: 70, finalQuality: 0 };
+                plant.lastUpdated = Date.now();
+                // @ts-ignore
+                plant.postHarvest = { 
+                    wetWeight: plant.biomass * 4, // Example calculation
+                    dryWeight: plant.biomass, // Example calculation
+                    terpeneRetentionPercent: 100,
+                    moldRiskPercent: 0,
+                    dryingEnvironment: { temperature: 20, humidity: 60 },
+                    currentDryDay: 0, 
+                    currentCureDay: 0, 
+                    jarHumidity: 75, 
+                    finalQuality: 0,
+                    chlorophyllPercent: 100,
+                    terpeneProfile: { 'Myrcene': 40, 'Limonene': 30, 'Caryophyllene': 20, 'Pinene': 10 },
+                    cannabinoidProfile: { thc: plant.strain.thc, cbn: 0 },
+                    lastBurpDay: 0,
+                };
             }
         },
         processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'cure' | 'burp' }>) => {
@@ -131,6 +213,7 @@ const simulationSlice = createSlice({
                          plant.postHarvest.jarHumidity = 62;
                          break;
                  }
+                 plant.lastUpdated = Date.now();
              }
         },
         toggleLight: (state, action: PayloadAction<{ plantId: string }>) => {
@@ -150,9 +233,9 @@ const simulationSlice = createSlice({
 
 export const { 
     initializeSimulation, 
-    tick, 
+    plantStateUpdated,
     setSelectedPlantId,
-    startNewPlant,
+    _addPlant,
     waterPlant,
     addJournalEntry,
     completeTask,
@@ -165,6 +248,6 @@ export const {
     processPostHarvest,
     toggleLight,
     toggleFan,
-    setFanSpeed
+    setFanSpeed,
 } = simulationSlice.actions;
 export default simulationSlice.reducer;

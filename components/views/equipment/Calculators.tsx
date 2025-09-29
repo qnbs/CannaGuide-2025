@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { VentilationCalculator } from './calculators/VentilationCalculator';
 import { LightCalculator } from './calculators/LightCalculator';
@@ -30,7 +30,7 @@ const calculatorIcons: Record<CalculatorType, React.ReactNode> = {
 };
 
 export const Calculators: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [activeCalculator, setActiveCalculator] = useState<CalculatorType>('ventilation');
 
     const calculators: { id: CalculatorType; title: string; description: string }[] = [

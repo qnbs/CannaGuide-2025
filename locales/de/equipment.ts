@@ -41,7 +41,8 @@ export const equipmentView = {
     categories: {
       tent: 'Growbox',
       light: 'Beleuchtung',
-      ventilation: 'Belüftung',
+      ventilation: 'Abluft',
+      circulationFan: 'Umluftventilator',
       pots: 'Töpfe & Untersetzer',
       soil: 'Medium/Substrat',
       nutrients: 'Nährstoffe',

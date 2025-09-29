@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 
 interface DrawerProps {
     isOpen: boolean;
@@ -15,7 +15,7 @@ interface DrawerProps {
 }
 
 export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, children, title, footer, size = 'md' }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const drawerRef = useFocusTrap(isOpen);
     
     if (!isOpen) return null;

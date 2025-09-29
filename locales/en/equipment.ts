@@ -41,7 +41,8 @@ export const equipmentView = {
     categories: {
       tent: 'Grow Tent',
       light: 'Lighting',
-      ventilation: 'Ventilation',
+      ventilation: 'Exhaust Fan',
+      circulationFan: 'Circulation Fan',
       pots: 'Pots & Saucers',
       soil: 'Medium/Substrate',
       nutrients: 'Nutrients',

@@ -3,7 +3,7 @@ import { Plant, AIResponse, ArchivedAdvisorResponse } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { geminiService } from '@/services/geminiService';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
@@ -21,7 +21,7 @@ interface AiTabProps {
 }
 
 export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     
     const advisorState = useAppSelector(selectAdvisorStateForPlant(plant.id));
@@ -35,6 +35,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
     useEffect(() => {
         if (advisorState.isLoading) {
+            // FIX: Pass a single object argument to getDynamicLoadingMessages.
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plantName: plant.name } });
             let messageIndex = 0;
             const intervalId = setInterval(() => {
@@ -44,6 +45,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             return () => clearInterval(intervalId);
         }
         if(diagnosisState.isLoading) {
+            // FIX: Pass a single object argument to getDynamicLoadingMessages.
              const messages = geminiService.getDynamicLoadingMessages({ useCase: 'proactiveDiagnosis', data: { plantName: plant.name } });
             let messageIndex = 0;
             const intervalId = setInterval(() => {

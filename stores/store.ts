@@ -14,6 +14,9 @@ import savedItemsReducer from './slices/savedItemsSlice';
 import knowledgeReducer from './slices/knowledgeSlice';
 import breedingReducer from './slices/breedingSlice';
 import ttsReducer from './slices/ttsSlice';
+import sandboxReducer from './slices/sandboxSlice';
+import filtersReducer from './slices/filtersSlice';
+
 
 export const store = configureStore({
     reducer: {
@@ -30,6 +33,8 @@ export const store = configureStore({
         knowledge: knowledgeReducer,
         breeding: breedingReducer,
         tts: ttsReducer,
+        sandbox: sandboxReducer,
+        filters: filtersReducer,
     },
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
         serializableCheck: false,

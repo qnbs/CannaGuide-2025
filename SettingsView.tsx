@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { useAppDispatch, useAppSelector } from './stores/store';
-import { useTranslations } from './hooks/useTranslations';
+// FIX: Corrected import path for Redux store hooks.
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
+import { useTranslation } from 'react-i18next';
 import { Card } from './components/common/Card';
 import { Button } from './components/common/Button';
 import { PhosphorIcons } from './components/icons/PhosphorIcons';
@@ -36,7 +38,7 @@ const SettingRow: React.FC<{ label: string; description?: string; children: Reac
 );
 
 export const SettingsView: React.FC<SettingsViewProps> = ({ deferredPrompt, onInstallClick }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const settings = useAppSelector(state => state.settings.settings);
     const dispatch = useAppDispatch();
     

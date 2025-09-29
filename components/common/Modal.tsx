@@ -3,7 +3,7 @@ import { Card } from '@/components/common/Card';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 
 interface ModalProps {
     isOpen: boolean;
@@ -16,7 +16,7 @@ interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, footer, size = 'md', containerClassName = '' }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const modalRef = useFocusTrap(isOpen);
     
     if (!isOpen) return null;

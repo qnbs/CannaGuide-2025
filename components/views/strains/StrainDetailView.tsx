@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Strain, AIResponse } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -25,7 +25,7 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 );
 
 const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }> = ({ difficulty }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
         Easy: t('strainsView.difficulty.easy'),
         Medium: t('strainsView.difficulty.medium'),
@@ -47,7 +47,7 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 };
 
 const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InfoSection title={t('common.description')}>
@@ -67,7 +67,7 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 };
 
 const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <InfoSection title={t('strainsView.strainModal.agronomicData')}>
             <div className="space-y-2">
@@ -83,7 +83,7 @@ const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 };
 
 const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <InfoSection title={t('strainsView.strainDetail.aromaProfile')}>
             <div className="space-y-4">
@@ -109,7 +109,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 };
 
 const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const note = useAppSelector(state => state.notes.strainNotes[strain.id] || '');
     
@@ -148,7 +148,7 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 };
 
 const SimilarStrainsSection: React.FC<{ currentStrain: Strain; onSelect: (strain: Strain) => void }> = ({ currentStrain, onSelect }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const [similar, setSimilar] = useState<Strain[]>([]);
 
     useEffect(() => {
@@ -180,7 +180,7 @@ interface StrainDetailViewProps {
 }
 
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const favoriteIds = useAppSelector(selectFavoriteIds);
     const isFavorite = favoriteIds.has(strain.id);

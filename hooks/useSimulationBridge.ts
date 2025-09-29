@@ -10,6 +10,7 @@ import {
     selectHasAvailableSlots,
     selectPlantSlots
 } from '@/stores/selectors';
+import { Plant } from '@/types';
 
 /**
  * Custom hook to get the list of currently active plants from the simulation state.

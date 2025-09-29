@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { JournalEntry } from '@/types';
+import { JournalEntry, PhotoDetails } from '@/types';
 import { Card } from '@/components/common/Card';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { dbService } from '@/services/dbService';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
@@ -10,14 +10,19 @@ interface PhotoTabProps {
 }
 
 const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
-    const [imageUrl, setImageUrl] = useState<string | null>(entry.details?.imageUrl || null);
-    const [isLoading, setIsLoading] = useState(!entry.details?.imageUrl);
+    // FIX: Cast details to PhotoDetails to access imageId and imageUrl
+    const [imageUrl, setImageUrl] = useState<string | null>((entry.details as PhotoDetails)?.imageUrl || null);
+    // FIX: Cast details to PhotoDetails to access imageId and imageUrl
+    const [isLoading, setIsLoading] = useState(!((entry.details as PhotoDetails)?.imageUrl));
 
     useEffect(() => {
         let isMounted = true;
-        if (entry.details?.imageId && !imageUrl) {
+        // FIX: Cast details to PhotoDetails to access imageId and imageUrl
+        const details = entry.details as PhotoDetails;
+        if (details?.imageId && !imageUrl) {
             setIsLoading(true);
-            dbService.getImage(entry.details.imageId)
+            // FIX: Cast details to PhotoDetails to access imageId and imageUrl
+            dbService.getImage(details.imageId)
                 .then(storedImage => {
                     if (isMounted && storedImage) setImageUrl(storedImage.data);
                 })
@@ -50,10 +55,11 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
 
 
 export const PhotosTab: React.FC<PhotoTabProps> = ({ journal }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     
     const photoJournalEntries = useMemo(() => 
-        journal.filter(entry => entry.type === 'PHOTO' && (entry.details?.imageUrl || entry.details?.imageId)), 
+        // FIX: Cast details to PhotoDetails to access imageId and imageUrl
+        journal.filter(entry => entry.type === 'PHOTO' && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)), 
     [journal]);
 
     return (

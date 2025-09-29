@@ -3,7 +3,7 @@ import { SavedStrainTip, Strain, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 // FIX: Corrected import path for selector to use the centralized `selectors.ts` file.
 import { selectHasAvailableSlots } from '@/stores/selectors';
@@ -21,7 +21,7 @@ interface StrainTipsViewProps {
 }
 
 const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => void, onDelete: (id: string) => void }> = ({ tip, onEdit, onDelete }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     return (
         <div className="animate-fade-in">
             <div className="flex justify-between items-start">
@@ -45,7 +45,7 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 
 
 export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     // FIX: Use `useAppSelector` for Redux state.
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);

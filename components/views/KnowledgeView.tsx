@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Card } from '../common/Card';
-import { useTranslations } from '../../hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 // FIX: Corrected import paths
 import { Plant, KnowledgeArticle, KnowledgeViewTab } from '@/types';
@@ -12,9 +12,11 @@ import { GuideTab } from './knowledge/GuideTab';
 import { MentorArchiveTab } from './knowledge/MentorArchiveTab';
 import { BreedingView } from './knowledge/BreedingView';
 import { useActivePlants, usePlantById } from '@/hooks/useSimulationBridge';
+// FIX: Corrected import paths
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi } from '@/stores/selectors';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
+import { SandboxView } from './knowledge/SandboxView';
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
     return knowledgeBase.filter(article => {
@@ -39,7 +41,7 @@ const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
 
 
 export const KnowledgeView: React.FC = () => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
     
@@ -72,6 +74,7 @@ export const KnowledgeView: React.FC = () => {
         { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
         { id: KnowledgeViewTab.Archive, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
         { id: KnowledgeViewTab.Breeding, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
+        { id: KnowledgeViewTab.Sandbox, label: t('knowledgeView.tabs.sandbox'), icon: <PhosphorIcons.Flask /> },
     ];
 
     const renderContent = () => {
@@ -113,6 +116,8 @@ export const KnowledgeView: React.FC = () => {
                 return <MentorArchiveTab />;
             case KnowledgeViewTab.Breeding:
                 return <BreedingView />;
+            case KnowledgeViewTab.Sandbox:
+                return <SandboxView />;
             default:
                 return null;
         }

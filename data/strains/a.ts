@@ -1,6 +1,6 @@
-// FIX: Update import paths to be relative
-import type { Strain } from '../../types';
-import { StrainType } from '../../types';
+// FIX: Corrected import paths for types to use the '@/' alias.
+import type { Strain } from '@/types';
+import { StrainType } from '@/types';
 
 export const strainsA: Strain[] = [
     {

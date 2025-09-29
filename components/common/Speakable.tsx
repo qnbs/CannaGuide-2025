@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { selectCurrentlySpeakingId } from '@/stores/selectors';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Corrected import for Redux action.
 import { addToTtsQueue } from '@/stores/slices/ttsSlice';
@@ -13,7 +13,7 @@ interface SpeakableProps {
 }
 
 export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, className }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId);
     const ref = useRef<HTMLDivElement>(null);

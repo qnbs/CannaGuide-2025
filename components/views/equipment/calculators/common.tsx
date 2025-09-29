@@ -1,5 +1,6 @@
 import React, { useId } from 'react';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Input as PrimitiveInput, Select as PrimitiveSelect } from '@/components/ui/ThemePrimitives';
 
 export const CalculatorSection: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
     <div className="space-y-4">
@@ -25,7 +26,7 @@ export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
                 )}
             </label>
             <div className="relative">
-                <input id={id} {...props} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500" />
+                <PrimitiveInput id={id} {...props} />
                 {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{unit}</span>}
             </div>
         </div>
@@ -37,9 +38,7 @@ export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { 
     return (
         <div>
             <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-            <select id={id} {...props} className="w-full bg-slate-800 border border-slate-600 rounded-md px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-                {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-            </select>
+            <PrimitiveSelect id={id} options={options} {...props} />
         </div>
     );
 };

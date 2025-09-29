@@ -1,11 +1,13 @@
 import React, { memo } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { Strain, SortKey, AppSettings } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '../../icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import { LIST_GRID_CLASS } from './constants';
 import { usePlantSlotsData } from '@/hooks/useSimulationBridge';
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectFavoriteIds } from '@/stores/selectors';
 import { toggleFavorite } from '@/stores/slices/favoritesSlice';
@@ -35,7 +37,7 @@ const DifficultyBar: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }>
 };
 
 const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index }) => {
-    const { t } = useTranslations();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const favoriteIds = useAppSelector(selectFavoriteIds);
     const isFavorite = favoriteIds.has(strain.id);

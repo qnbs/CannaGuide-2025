@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '@/types';
-import { useTranslations } from '@/hooks/useTranslations';
+import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
@@ -25,8 +26,8 @@ const eventIcons: Record<JournalEntryType, React.ReactNode> = {
     [JournalEntryType.Amendment]: <></>,
 };
 
-export const HistoryChart: React.FC<HistoryChartProps> = ({ history, journal, plantCreatedAt }) => {
-    const { t } = useTranslations();
+export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journal, plantCreatedAt }) => {
+    const { t } = useTranslation();
     const [view, setView] = useState<ChartView>('growth');
     
     if (!history || history.length < 2) {
@@ -128,4 +129,4 @@ export const HistoryChart: React.FC<HistoryChartProps> = ({ history, journal, pl
             </div>
         </div>
     );
-};
+});

@@ -39,31 +39,35 @@ export const useStrainFilters = (
         dispatch(toggleTypeFilter(type));
     }, [dispatch]);
 
+    const handleSetAdvancedFilters = useCallback((filters: Partial<AdvancedFilterState>) => {
+        dispatch(setAdvancedFilters(filters));
+    }, [dispatch]);
+
     const resetAllFilters = useCallback(() => {
         dispatch(resetFiltersAction());
     }, [dispatch]);
 
     const isAnyFilterActive = useMemo(() => {
         return searchTerm.trim() !== '' ||
-            typeFilter.size > 0 ||
+            typeFilter.length > 0 ||
             showFavoritesOnly ||
             advancedFilters.thcRange[0] > 0 || advancedFilters.thcRange[1] < 35 ||
             advancedFilters.cbdRange[0] > 0 || advancedFilters.cbdRange[1] < 20 ||
             advancedFilters.floweringRange[0] > 4 || advancedFilters.floweringRange[1] < 20 ||
-            advancedFilters.selectedDifficulties.size > 0 ||
-            advancedFilters.selectedYields.size > 0 ||
-            advancedFilters.selectedHeights.size > 0 ||
-            advancedFilters.selectedAromas.size > 0 ||
-            advancedFilters.selectedTerpenes.size > 0;
+            advancedFilters.selectedDifficulties.length > 0 ||
+            advancedFilters.selectedYields.length > 0 ||
+            advancedFilters.selectedHeights.length > 0 ||
+            advancedFilters.selectedAromas.length > 0 ||
+            advancedFilters.selectedTerpenes.length > 0;
     }, [searchTerm, typeFilter, showFavoritesOnly, advancedFilters]);
     
     const activeFilterCount = useMemo(() => {
         let count = 0;
-        if (advancedFilters.selectedAromas.size > 0) count++;
-        if (advancedFilters.selectedTerpenes.size > 0) count++;
-        if (advancedFilters.selectedDifficulties.size > 0) count++;
-        if (advancedFilters.selectedYields.size > 0) count++;
-        if (advancedFilters.selectedHeights.size > 0) count++;
+        if (advancedFilters.selectedAromas.length > 0) count++;
+        if (advancedFilters.selectedTerpenes.length > 0) count++;
+        if (advancedFilters.selectedDifficulties.length > 0) count++;
+        if (advancedFilters.selectedYields.length > 0) count++;
+        if (advancedFilters.selectedHeights.length > 0) count++;
         if (advancedFilters.thcRange[0] > 0 || advancedFilters.thcRange[1] < 35) count++;
         if (advancedFilters.cbdRange[0] > 0 || advancedFilters.cbdRange[1] < 20) count++;
         if (advancedFilters.floweringRange[0] > 4 || advancedFilters.floweringRange[1] < 20) count++;
@@ -85,7 +89,17 @@ export const useStrainFilters = (
         }
 
         if (showFavoritesOnly) strains = strains.filter(s => favorites.has(s.id));
-        if (typeFilter.size > 0) strains = strains.filter(s => typeFilter.has(s.type));
+        
+        const typeFilterSet = new Set(typeFilter);
+        if (typeFilterSet.size > 0) {
+            strains = strains.filter(s => typeFilterSet.has(s.type));
+        }
+        
+        const selectedDifficultiesSet = new Set(advancedFilters.selectedDifficulties);
+        const selectedYieldsSet = new Set(advancedFilters.selectedYields);
+        const selectedHeightsSet = new Set(advancedFilters.selectedHeights);
+        const selectedAromasSet = new Set(advancedFilters.selectedAromas);
+        const selectedTerpenesSet = new Set(advancedFilters.selectedTerpenes);
         
         strains = strains.filter(s =>
             s.thc >= advancedFilters.thcRange[0] && s.thc <= advancedFilters.thcRange[1] &&
@@ -93,11 +107,11 @@ export const useStrainFilters = (
             s.floweringTime >= advancedFilters.floweringRange[0] && s.floweringTime <= advancedFilters.floweringRange[1]
         );
 
-        if (advancedFilters.selectedDifficulties.size > 0) strains = strains.filter(s => advancedFilters.selectedDifficulties.has(s.agronomic.difficulty));
-        if (advancedFilters.selectedYields.size > 0) strains = strains.filter(s => advancedFilters.selectedYields.has(s.agronomic.yield));
-        if (advancedFilters.selectedHeights.size > 0) strains = strains.filter(s => advancedFilters.selectedHeights.has(s.agronomic.height));
-        if (advancedFilters.selectedAromas.size > 0) strains = strains.filter(s => (s.aromas || []).some(a => advancedFilters.selectedAromas.has(a)));
-        if (advancedFilters.selectedTerpenes.size > 0) strains = strains.filter(s => (s.dominantTerpenes || []).some(t => advancedFilters.selectedTerpenes.has(t)));
+        if (selectedDifficultiesSet.size > 0) strains = strains.filter(s => selectedDifficultiesSet.has(s.agronomic.difficulty));
+        if (selectedYieldsSet.size > 0) strains = strains.filter(s => selectedYieldsSet.has(s.agronomic.yield));
+        if (selectedHeightsSet.size > 0) strains = strains.filter(s => selectedHeightsSet.has(s.agronomic.height));
+        if (selectedAromasSet.size > 0) strains = strains.filter(s => (s.aromas || []).some(a => selectedAromasSet.has(a)));
+        if (selectedTerpenesSet.size > 0) strains = strains.filter(s => (s.dominantTerpenes || []).some(t => selectedTerpenesSet.has(t)));
         
         strains.sort((a, b) => {
             const aVal = a[sort.key] ?? a.agronomic[sort.key as keyof Strain['agronomic']];
@@ -126,7 +140,7 @@ export const useStrainFilters = (
         showFavoritesOnly,
         setShowFavoritesOnly: (value: boolean) => dispatch(setShowFavoritesOnly(value)),
         advancedFilters,
-        setAdvancedFilters: (updater: (prev: AdvancedFilterState) => Partial<AdvancedFilterState>) => dispatch(setAdvancedFilters(updater(advancedFilters))),
+        setAdvancedFilters: handleSetAdvancedFilters,
         resetAllFilters,
         sort,
         handleSort,

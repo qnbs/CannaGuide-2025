@@ -13,9 +13,10 @@ interface ModalProps {
     footer?: React.ReactNode;
     size?: 'md' | 'lg' | 'xl' | '2xl' | '4xl';
     containerClassName?: string;
+    showCloseButton?: boolean;
 }
 
-export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, footer, size = 'md', containerClassName = '' }) => {
+export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, footer, size = 'md', containerClassName = '', showCloseButton = true }) => {
     const { t } = useTranslation();
     const modalRef = useFocusTrap(isOpen);
     
@@ -45,10 +46,12 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, 
                 {title && (
                     <header className="flex justify-between items-start flex-shrink-0 mb-4 pb-4 border-b border-slate-700/50">
                         <h2 id="modal-title" className="text-2xl font-bold font-display text-primary-400">{title}</h2>
-                        <Button variant="secondary" size="sm" onClick={onClose} className="!p-1.5 !rounded-full -mt-1 -mr-1">
-                            <span className="sr-only">{t('common.close')}</span>
-                            <PhosphorIcons.X className="w-5 h-5"/>
-                        </Button>
+                        {showCloseButton && (
+                            <Button variant="secondary" size="sm" onClick={onClose} className="!p-1.5 !rounded-full -mt-1 -mr-1">
+                                <span className="sr-only">{t('common.close')}</span>
+                                <PhosphorIcons.X className="w-5 h-5"/>
+                            </Button>
+                        )}
                     </header>
                 )}
                 

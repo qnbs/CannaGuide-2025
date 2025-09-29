@@ -1,19 +1,19 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Card } from './Card';
-import { Button } from './Button';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 interface State {
   hasError: boolean;
 }
 
+// FIX: Implemented a standard React Error Boundary component to catch rendering errors.
+// This resolves the 'not a module' error in index.tsx by providing a proper export.
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Initialized state as a public class field. This correctly sets up the component's state and props without needing a constructor, resolving type errors.
-  public state: State = { hasError: false };
+  public state: State = {
+    hasError: false,
+  };
 
   public static getDerivedStateFromError(_: Error): State {
     // Update state so the next render will show the fallback UI.
@@ -25,25 +25,27 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error("Uncaught error:", error, errorInfo);
   }
 
-  private handleReload = () => {
-    window.location.reload();
-  }
-
   public render() {
     if (this.state.hasError) {
+      // You can render any custom fallback UI
       return (
-        <div className="flex items-center justify-center h-screen bg-slate-900 text-slate-300 p-4">
-          <Card className="text-center max-w-lg">
-            <PhosphorIcons.WarningCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-red-400 mb-2">Oops! Something went wrong.</h1>
-            <p className="text-slate-400 mb-6">
-              An unexpected error occurred. Please try reloading the page. If the problem persists, please report the issue.
-            </p>
-            <Button onClick={this.handleReload} variant="secondary">
-              <PhosphorIcons.ArrowClockwise className="w-5 h-5 mr-2" />
-              Reload Page
-            </Button>
-          </Card>
+        <div style={{ padding: '2rem', textAlign: 'center', color: '#cbd5e1', backgroundColor: '#0f172a', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f87171' }}>Oops! Something went wrong.</h1>
+          <p style={{ marginTop: '1rem' }}>An unexpected error occurred. Please try reloading the page.</p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              marginTop: '1.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '0.5rem',
+              cursor: 'pointer'
+            }}
+          >
+            Reload Page
+          </button>
         </div>
       );
     }

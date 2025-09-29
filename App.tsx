@@ -34,7 +34,7 @@ const StrainsView = lazy(() => import('./components/views/StrainsView').then(mod
 const PlantsView = lazy(() => import('./components/views/PlantsView').then(module => ({ default: module.PlantsView })));
 const EquipmentView = lazy(() => import('./components/views/EquipmentView').then(module => ({ default: module.EquipmentView })));
 const KnowledgeView = lazy(() => import('./components/views/KnowledgeView').then(module => ({ default: module.KnowledgeView })));
-const SettingsView = lazy(() => import('./components/views/SettingsView').then(module => ({ default: module.SettingsView })));
+const SettingsView = lazy(() => import('./components/views/settings/SettingsView').then(module => ({ default: module.SettingsView })));
 // FIX: Corrected import path for HelpView component.
 const HelpView = lazy(() => import('./components/views/HelpView').then(module => ({ default: module.HelpView })));
 
@@ -107,7 +107,7 @@ const AppContent: React.FC = () => {
             case View.Plants: return <PlantsView />;
             case View.Equipment: return <EquipmentView />;
             case View.Knowledge: return <KnowledgeView />;
-            case View.Settings: return <SettingsView deferredPrompt={deferredPrompt} onInstallClick={handleInstallClick} />;
+            case View.Settings: return <SettingsView />;
             case View.Help: return <HelpView />;
             default: return <PlantsView />;
         }

@@ -1,7 +1,7 @@
 
 import React, { memo } from 'react';
-import { Card } from '../../common/Card';
-import { PhosphorIcons } from '../../icons/PhosphorIcons';
+import { Card } from '@/components/common/Card';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { Task, PlantProblem, TaskPriority } from '@/types';
 

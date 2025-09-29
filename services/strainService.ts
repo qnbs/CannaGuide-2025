@@ -9,20 +9,24 @@ class StrainService {
     private allStrains: Strain[] = [];
 
     async init(): Promise<void> {
-        const metadata = await dbService.getMetadata(METADATA_KEY);
-        const count = await dbService.getStrainsCount();
-        
-        if (!metadata || metadata.version !== CURRENT_VERSION || count !== allStrainsData.length) {
-            console.log('Strain data is outdated or missing. Initializing...');
-            await dbService.addStrains(allStrainsData);
-            await this.buildSearchIndex(allStrainsData);
-            await dbService.setMetadata({ key: METADATA_KEY, version: CURRENT_VERSION, timestamp: Date.now() });
-            console.log('Strain data initialized.');
-        } else {
-            console.log('Strain data is up to date.');
+        try {
+            const metadata = await dbService.getMetadata(METADATA_KEY);
+            const count = await dbService.getStrainsCount();
+            
+            if (!metadata || metadata.version !== CURRENT_VERSION || count !== allStrainsData.length) {
+                console.log('Strain data is outdated or missing. Initializing...');
+                await dbService.addStrains(allStrainsData);
+                await this.buildSearchIndex(allStrainsData);
+                await dbService.setMetadata({ key: METADATA_KEY, version: CURRENT_VERSION, timestamp: Date.now() });
+                console.log('Strain data initialized.');
+            } else {
+                console.log('Strain data is up to date.');
+            }
+    
+            this.allStrains = await this.getAllStrains();
+        } catch (error) {
+            console.error('Failed to initialize or seed the strain database. The app might not function correctly.', error);
         }
-
-        this.allStrains = await this.getAllStrains();
     }
     
     async getAllStrains(): Promise<Strain[]> {

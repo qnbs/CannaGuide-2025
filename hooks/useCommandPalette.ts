@@ -1,18 +1,24 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { setActiveView, openAddModal } from '@/stores/slices/uiSlice';
-import { setSetting, exportAllData, resetAllData } from '@/stores/slices/settingsSlice';
-import { Command, View, Language } from '@/types';
+// FIX: Moved 'startGrowInSlot' to its correct import from uiSlice.
+import { setActiveView, openAddModal, startGrowInSlot } from '@/stores/slices/uiSlice';
+import { setSetting, exportAllData } from '@/stores/slices/settingsSlice';
+import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';
+import { waterAllPlants } from '@/stores/slices/simulationSlice';
+import { Command, View, Language, Theme } from '@/types';
 import { CommandGroup } from '@/services/commandService';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { i18nInstance } from '@/i18n';
-import { selectSettings } from '@/stores/selectors';
+import { selectSettings, selectHasAvailableSlots, selectSimulation } from '@/stores/selectors';
 
 export const useCommandPalette = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { language } = useAppSelector(selectSettings);
+    const settings = useAppSelector(selectSettings);
+    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
+    const { plantSlots } = useAppSelector(selectSimulation);
+    const { language } = settings;
 
     const allCommands: Command[] = useMemo(() => {
         const navigate = (view: View) => {
@@ -25,7 +31,17 @@ export const useCommandPalette = () => {
             i18nInstance.changeLanguage(newLang);
         };
 
-        return [
+        const themeCommands: Command[] = (Object.keys(t('settingsView.general.themes', { returnObjects: true })) as Theme[]).map(themeKey => ({
+            id: `theme-${themeKey}`,
+            title: t(`settingsView.general.themes.${themeKey}`),
+            subtitle: 'Set Theme',
+            icon: PhosphorIcons.PaintBrush,
+            group: CommandGroup.Settings,
+            action: () => dispatch(setSetting({ path: 'theme', value: themeKey })),
+            keywords: `design appearance look feel ${themeKey}`
+        }));
+        
+        const commands: Command[] = [
             // Navigation
             { id: 'nav-plants', title: t('nav.plants'), icon: PhosphorIcons.Plant, group: CommandGroup.Navigation, action: () => navigate(View.Plants), keywords: 'grow room dashboard garden' },
             { id: 'nav-strains', title: t('nav.strains'), icon: PhosphorIcons.Leafy, group: CommandGroup.Navigation, action: () => navigate(View.Strains), keywords: 'encyclopedia library search find' },
@@ -36,7 +52,8 @@ export const useCommandPalette = () => {
             
             // General Actions
             { id: 'action-add-strain', title: t('strainsView.addStrain'), icon: PhosphorIcons.PlusCircle, group: CommandGroup.General, action: () => dispatch(openAddModal()) },
-            
+            { id: 'action-water-all', title: t('plantsView.summary.waterAll'), icon: PhosphorIcons.Drop, group: CommandGroup.General, action: () => dispatch(waterAllPlants()) },
+
             // Settings
             { 
                 id: 'setting-toggle-language', 
@@ -45,12 +62,35 @@ export const useCommandPalette = () => {
                 group: CommandGroup.Settings, 
                 action: toggleLanguage 
             },
-
+            ...themeCommands,
+            { id: 'setting-strains-list', title: t('strainsView.viewModes.list'), subtitle: 'Set Strains View', icon: PhosphorIcons.ListBullets, group: CommandGroup.Settings, action: () => dispatch(setStrainsViewMode('list')) },
+            { id: 'setting-strains-grid', title: t('strainsView.viewModes.grid'), subtitle: 'Set Strains View', icon: PhosphorIcons.GridFour, group: CommandGroup.Settings, action: () => dispatch(setStrainsViewMode('grid')) },
+            { id: 'setting-toggle-dyslexia-font', title: t('settingsView.accessibility.dyslexiaFont'), icon: PhosphorIcons.TextBolder, group: CommandGroup.Settings, action: () => dispatch(setSetting({ path: 'accessibility.dyslexiaFont', value: !settings.accessibility.dyslexiaFont })) },
+            { id: 'setting-toggle-reduced-motion', title: t('settingsView.accessibility.reducedMotion'), icon: PhosphorIcons.Person, group: CommandGroup.Settings, action: () => dispatch(setSetting({ path: 'accessibility.reducedMotion', value: !settings.accessibility.reducedMotion })) },
+            
             // Data Management
             { id: 'data-export', title: t('settingsView.data.exportAll'), icon: PhosphorIcons.DownloadSimple, group: CommandGroup.Settings, action: () => dispatch(exportAllData()) },
-            { id: 'data-reset', title: t('settingsView.data.resetAll'), icon: PhosphorIcons.WarningCircle, group: CommandGroup.Settings, action: () => dispatch(resetAllData()) },
         ];
-    }, [t, dispatch, language]);
+        
+        if (hasAvailableSlots) {
+            commands.push({
+                id: 'action-start-grow',
+                title: t('plantsView.emptySlot.title'),
+                icon: PhosphorIcons.PlusCircle,
+                group: CommandGroup.General,
+                action: () => {
+                    const firstEmptySlot = plantSlots.findIndex(slot => slot === null);
+                    if (firstEmptySlot !== -1) {
+                        dispatch(setActiveView(View.Plants));
+                        dispatch(startGrowInSlot(firstEmptySlot));
+                    }
+                },
+                keywords: 'new plant'
+            });
+        }
+
+        return commands;
+    }, [t, dispatch, language, settings.accessibility, hasAvailableSlots, plantSlots]);
 
     return { allCommands };
 };

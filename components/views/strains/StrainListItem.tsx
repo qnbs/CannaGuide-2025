@@ -23,6 +23,13 @@ const typeIcons: Record<StrainType, React.ReactNode> = {
     [StrainType.Hybrid]: <HybridIcon className="w-6 h-6 text-blue-400" />,
 };
 
+const typeClasses: Record<StrainType, string> = {
+    [StrainType.Sativa]: 'text-amber-400',
+    [StrainType.Indica]: 'text-indigo-400',
+    [StrainType.Hybrid]: 'text-blue-400',
+};
+
+
 const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index }) => {
     const { t } = useTranslation();
 
@@ -52,7 +59,18 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
                     {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" title={t('strainsView.tabs.myStrains')} />}
                     <p className="font-bold text-slate-100 truncate">{strain.name}</p>
                 </div>
-                <p className="text-xs text-slate-400 truncate sm:hidden">{strain.type}</p>
+                <div className="flex items-center gap-3 text-xs text-slate-400 sm:hidden mt-1">
+                    <span className={`font-semibold ${typeClasses[strain.type]}`}>{strain.type}</span>
+                    <div className="w-px h-3 bg-slate-600"></div>
+                    <div className="flex items-center gap-1" title="THC">
+                        <PhosphorIcons.Lightning weight="fill" className="w-3 h-3 text-red-400" />
+                        <span>{strain.thc?.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex items-center gap-1" title={t('strainsView.table.flowering')}>
+                        <PhosphorIcons.ArrowClockwise className="w-3 h-3" />
+                        <span>{strain.floweringTimeRange || strain.floweringTime}{t('common.units.weeks').substring(0,1)}</span>
+                    </div>
+                </div>
             </div>
 
             {visibleColumns.type && <div className="hidden sm:flex items-center justify-center" title={strain.type}>{typeIcons[strain.type]}</div>}

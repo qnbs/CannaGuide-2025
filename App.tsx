@@ -131,7 +131,7 @@ const AppContent: React.FC = () => {
                 onInstallClick={handleInstallClick}
             />
             <OfflineBanner />
-            <main ref={mainContentRef} className="flex-grow overflow-y-auto p-4 sm:p-6">
+            <main ref={mainContentRef} className="flex-grow overflow-y-auto p-4 sm:p-6 pb-20 sm:pb-6">
                 <div className="max-w-7xl mx-auto">
                      <Suspense fallback={<SkeletonLoader variant="list" count={5} />}>
                         {renderView()}

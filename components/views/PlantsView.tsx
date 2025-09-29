@@ -106,6 +106,9 @@ export const PlantsView: React.FC = () => {
             )}
 
             <div className="lg:col-span-2 space-y-6">
+                <GardenVitals 
+                    openTasksCount={tasks.length}
+                />
                 <TipOfTheDay />
                 {showGrowFromStrainBanner && (
                     <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -140,13 +143,10 @@ export const PlantsView: React.FC = () => {
                         })}
                     </div>
                 )}
-                 <GlobalAdvisorArchiveView />
             </div>
             <div className="lg:col-span-1 space-y-6">
-                <GardenVitals 
-                    openTasksCount={tasks.length}
-                />
                 <TasksAndWarnings tasks={tasks} problems={problems} />
+                <GlobalAdvisorArchiveView />
             </div>
         </div>
     );

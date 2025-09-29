@@ -10,12 +10,14 @@ export const equipmentView = {
     subtitleNew: 'Answer two simple questions to get a complete, AI-generated equipment recommendation for your grow.',
     step1TitleNew: '1. How many plants do you want to grow?',
     plantCount_one: '1 Plant',
-    plantCount_other: '{{count}} Plants',
+    // FIX: Changed interpolation key from 'count' to 'range' to allow passing a string for display while still using the numeric 'count' for pluralization.
+    plantCount_other: '{{range}} Plants',
     step2TitleNew: '2. Choose your configuration style',
     generate: 'Generate Setup',
     setupSaveSuccess: 'Setup "{{name}}" saved successfully!',
     resultsTitle: 'Your AI-Generated Setup',
     resultsSubtitle: 'For: {{area}} area, with a focus on {{style}} and a {{budget}} budget.',
+    resultsSubtitleNew: 'For: {{plants}} plants, with a {{budget}} budget.',
     total: 'Total Cost',
     error: 'An error occurred while generating your setup.',
     tryAgain: 'Try Again',
@@ -24,9 +26,14 @@ export const equipmentView = {
     costBreakdown: 'Cost Breakdown',
     setupNamePrompt: 'Enter a name for this setup:',
     budgets: {
-      low: 'value',
-      medium: 'balanced',
-      high: 'premium',
+      value: 'Value',
+      balanced: 'Balanced',
+      premium: 'Premium',
+    },
+    budgetDescriptions: {
+      value: 'Focus on the essentials with reliable, cost-effective equipment.',
+      balanced: 'A blend of quality and value components for an optimal balance.',
+      premium: 'No compromises. The best technology available for maximum quality and yield.'
     },
     styles: {
       beginner: 'ease of use',
@@ -34,9 +41,9 @@ export const equipmentView = {
       yield: 'maximizing yield',
     },
     setupNameBudgets: {
-      low: 'Value',
-      medium: 'Balanced',
-      high: 'Premium',
+      value: 'Value',
+      balanced: 'Balanced',
+      premium: 'Premium',
     },
     categories: {
       tent: 'Grow Tent',
@@ -54,59 +61,6 @@ export const equipmentView = {
       abluft: 'Exhaust',
       toepfe: 'Pots',
       medium: 'Medium',
-    },
-    setups: {
-      '1': {
-        standard: {
-          title: 'Value Starter',
-          description: 'A cost-effective, no-frills setup perfect for beginners to learn the basics.',
-          prompt: 'Create a value-focused, budget-friendly, complete cannabis grow setup for one plant in a 60x60cm tent.',
-        },
-        medium: {
-          title: 'Balanced Solo',
-          description: 'A quality setup with upgraded components for better results and more control.',
-          prompt: 'Create a balanced, high-quality, complete cannabis grow setup for one plant in an 80x80cm tent.',
-        },
-        premium: {
-          title: 'Premium Boutique',
-          description: 'A top-of-the-line setup for a single plant, focused on maximizing quality and yield with the best tech.',
-          prompt: 'Create a premium, top-of-the-line, complete cannabis grow setup for one high-quality plant in a 60x60cm tent, focusing on quality and using coco coir.',
-        },
-      },
-      '2': {
-        standard: {
-          title: 'Value Duo',
-          description: 'An efficient setup for two plants, balancing cost with enough space and power.',
-          prompt: 'Create a value-focused, budget-friendly, complete cannabis grow setup for two plants in a 120x60cm tent.',
-        },
-        medium: {
-          title: 'Balanced Duo',
-          description: 'A solid setup for two plants, offering good quality components for consistent results.',
-          prompt: 'Create a balanced, high-quality, complete cannabis grow setup for two plants in a 100x100cm tent.',
-        },
-        premium: {
-          title: 'Premium Pair',
-          description: 'A high-end configuration for two plants, designed for connoisseurs seeking top-shelf results.',
-          prompt: 'Create a premium, top-of-the-line, complete cannabis grow setup for two high-quality plants in a 120x60cm tent, using a coco/perlite mix.',
-        },
-      },
-      '3': {
-        standard: {
-          title: 'Value Trio',
-          description: 'A spacious and budget-conscious setup for growers wanting to manage three plants.',
-          prompt: 'Create a value-focused, budget-friendly, complete cannabis grow setup for three plants in a 100x100cm tent.',
-        },
-        medium: {
-          title: 'Balanced Trio',
-          description: 'A robust setup for three plants, with quality lighting and ventilation for a healthy environment.',
-          prompt: 'Create a balanced, high-quality, complete cannabis grow setup for three plants in a 120x120cm tent.',
-        },
-        premium: {
-          title: 'Premium Harvest',
-          description: 'A no-compromise, professional-grade setup for three plants, aimed at achieving maximum yield and quality.',
-          prompt: 'Create a premium, professional-grade, complete cannabis grow setup for three large plants in a 120x120cm tent, focusing on maximum yield and quality.',
-        },
-      },
     },
   },
   savedSetups: {

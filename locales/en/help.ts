@@ -23,26 +23,38 @@ export const helpView = {
 
 export const visualGuides = {
   topping: {
-    title: 'Topping a Plant',
-    description: 'Topping is a high-stress training (HST) technique where the top growth of the main stem is removed. This encourages the plant to grow two new main colas, leading to a bushier shape and potentially higher yields.',
+    title: 'Visual Guide: Topping',
+    description: 'Learn how to top your plant to encourage bushier growth and more main colas.'
+  },
+  lst: {
+    title: 'Visual Guide: LST',
+    description: 'Gently bend your plant\'s branches downwards to create a flat, wide canopy, ensuring optimal light exposure for all bud sites.'
+  },
+  defoliation: {
+    title: 'Visual Guide: Defoliation',
+    description: 'Strategically remove large fan leaves to improve air circulation and allow more light to reach lower buds, increasing yield.'
+  },
+  harvesting: {
+    title: 'Visual Guide: Harvesting',
+    description: 'Identify the perfect harvest time by observing trichome color and learn the correct way to cut your plant.'
   }
-}
+};
 
 export const faq = {
   phValue: {
-    question: 'Why is pH value so important?',
-    answer: 'The pH of your water and medium determines which nutrients the plant can absorb. An incorrect pH "locks out" certain nutrients, even if they are present in the soil, leading to deficiencies. For soil, the ideal range is 6.0-6.8; for coco/hydro, it\'s 5.5-6.5.'
+    question: 'Why is the pH value so important?',
+    answer: 'The pH of your water and medium determines which nutrients the plant can absorb. An incorrect pH leads to nutrient lockout, even if enough fertilizer is present. For soil, the ideal range is 6.0-7.0; for hydro/coco, it\'s 5.5-6.5.'
   },
   yellowLeaves: {
     question: 'What do yellow leaves mean?',
-    answer: 'Yellowing leaves (chlorosis) can have many causes. If it starts at the bottom and moves up, it\'s often a nitrogen deficiency, common in the vegetative stage. Splotchy yellow spots can indicate a calcium or magnesium deficiency. Overwatering is also a very common cause as it suffocates the roots.'
+    answer: 'Yellow leaves can have many causes. If the lower, older leaves turn yellow, it is often a nitrogen deficiency. If spots appear on upper, younger leaves, it could be a deficiency of immobile nutrients like calcium or a pH problem. Overwatering is also a common cause.'
   },
   whenToHarvest: {
     question: 'How do I know when to harvest?',
-    answer: 'The best indicator is the trichomes (the tiny resin glands). Viewed with a magnifier, most should be milky/cloudy for peak potency. Clear trichomes are not yet ready, while amber-colored ones indicate a more sedating effect. The color of the pistils (hairs) is a less accurate indicator.'
+    answer: 'The best indicator is the trichomes (the resin glands) on the flowers. Under a microscope, most trichomes should be milky-white, with a few amber ones. Clear trichomes are immature; too many amber ones indicate an overripe harvest with a more sedating effect.'
   },
   lightDistance: {
-    question: 'How far should my light be from my seedlings?',
-    answer: 'Seedlings are very delicate. Keep the light further away than you would for mature plants to avoid light burn. A good starting point for most LEDs is 24-30 inches (60-75 cm). Watch the plant: if it\'s stretching (getting tall and thin), the light is too far. If the leaves show signs of burning or bleaching, it\'s too close.'
+    question: 'How far should the lamp be from the plants?',
+    answer: 'This depends heavily on the lamp type and wattage. For modern LED lamps, a rule of thumb is: Seedlings: 60-90 cm, Vegetative: 45-60 cm, Flowering: 30-45 cm. Observe your plants closely. If they are stretching excessively, the lamp is too far. If the upper leaves show signs of burning (yellow, dry tips), it is too close.'
   }
-}
+};

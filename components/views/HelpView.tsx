@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useTransition } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { lexiconData } from '@/data/lexicon';
@@ -11,6 +11,7 @@ import { VisualGuideCard } from './help/VisualGuideCard';
 import { Tabs } from '@/components/common/Tabs';
 import { useActivePlants } from '@/hooks/useSimulationBridge';
 import { LexiconEntry, FAQItem } from '@/types';
+import { SkeletonLoader } from '../common/SkeletonLoader';
 
 type MainTab = 'lexicon' | 'guides' | 'faq';
 type LexiconCategory = 'All' | 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General';
@@ -33,6 +34,7 @@ export const HelpView: React.FC = () => {
     const [mainTab, setMainTab] = useState<MainTab>('lexicon');
     const [lexiconCategory, setLexiconCategory] = useState<LexiconCategory>('All');
     const [searchTerm, setSearchTerm] = useState('');
+    const [isPending, startTransition] = useTransition();
     const activePlants = useActivePlants();
 
     const mainTabs = [
@@ -49,6 +51,18 @@ export const HelpView: React.FC = () => {
         { id: 'General', label: t('helpView.lexiconTabs.glossary') },
     ];
     
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        startTransition(() => {
+            setSearchTerm(e.target.value);
+        });
+    };
+
+    const handleCategoryChange = (id: string) => {
+        startTransition(() => {
+            setLexiconCategory(id as LexiconCategory);
+        });
+    };
+
     const filteredLexicon = useMemo(() => {
         const lowerCaseSearch = searchTerm.toLowerCase();
         return lexiconData.filter((entry: LexiconEntry) => {
@@ -86,18 +100,23 @@ export const HelpView: React.FC = () => {
                             <div className="flex flex-col sm:flex-row gap-4">
                                 <div className="relative flex-grow">
                                     <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-                                    <Input type="text" placeholder={t('helpView.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
+                                    <Input type="text" placeholder={t('helpView.searchPlaceholder')} defaultValue={searchTerm} onChange={handleSearchChange} className="pl-10" />
                                 </div>
                             </div>
                              <div className="mt-4">
-                                <Tabs tabs={lexiconTabs} activeTab={lexiconCategory} setActiveTab={(id) => setLexiconCategory(id as LexiconCategory)} />
+                                <Tabs tabs={lexiconTabs} activeTab={lexiconCategory} setActiveTab={handleCategoryChange} />
                             </div>
                         </Card>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {filteredLexicon.map(entry => <LexiconCard key={entry.term} entry={entry} />)}
-                        </div>
-                        {filteredLexicon.length === 0 && (
+                        {isPending ? (
+                            <SkeletonLoader variant="grid" count={6} containerClassName="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" />
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {filteredLexicon.map(entry => <LexiconCard key={entry.term} entry={entry} />)}
+                            </div>
+                        )}
+                        
+                        {!isPending && filteredLexicon.length === 0 && (
                             <Card className="col-span-full text-center py-10 text-slate-500">
                                 <p>{t('helpView.noResults', { term: searchTerm })}</p>
                             </Card>
@@ -108,7 +127,7 @@ export const HelpView: React.FC = () => {
                 return (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
                         {visualGuidesData.map(guide => (
-                            <VisualGuideCard key={guide.id} title={t(guide.titleKey)} description={t(guide.descriptionKey)} />
+                            <VisualGuideCard key={guide.id} guideId={guide.id} title={t(guide.titleKey)} description={t(guide.descriptionKey)} />
                         ))}
                     </div>
                 );

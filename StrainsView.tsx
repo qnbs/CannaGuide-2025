@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, useTransition } from 'react';
 import { Strain, StrainViewTab, AIResponse } from '@/types';
-// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { StrainToolbar } from './strains/StrainToolbar';
@@ -37,7 +36,7 @@ const processAndTranslateStrains = (strains: Strain[], t: (key: string, options?
         return (typeof result === 'string' && result !== key) ? result : fallback;
     };
     const getTranslatedObject = (key: string, fallback: object | undefined): object | undefined => {
-         const result = t(key, { returnObjects: true });
+         const result = t(key);
          return (typeof result === 'object' && result !== null) ? result : fallback;
     }
     return strains.map(strain => ({

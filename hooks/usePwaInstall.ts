@@ -3,28 +3,18 @@ import { useAppDispatch } from '../stores/store';
 import { useTranslation } from 'react-i18next';
 import { addNotification } from '../stores/slices/uiSlice';
 import { BeforeInstallPromptEvent } from '@/types';
+import { storageService } from '@/services/storageService';
 
 export const usePwaInstall = () => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isInstalled, setIsInstalled] = useState(false);
+    const [isInstalled, setIsInstalled] = useState(() => storageService.getItem('isPwaInstalled', false));
 
     useEffect(() => {
-        const checkInstalledStatus = () => {
-            const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true;
-            setIsInstalled(isAppInstalled);
-            if (isAppInstalled) {
-                setDeferredPrompt(null);
-            }
-            return isAppInstalled;
-        };
-
-        checkInstalledStatus();
-
         const beforeInstallPromptHandler = (e: Event) => {
             e.preventDefault();
-            if (checkInstalledStatus()) {
+            if (isInstalled) {
                 return;
             }
             setDeferredPrompt(e as BeforeInstallPromptEvent);
@@ -33,6 +23,7 @@ export const usePwaInstall = () => {
         window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);
 
         const appInstalledHandler = () => {
+            storageService.setItem('isPwaInstalled', true);
             setDeferredPrompt(null);
             setIsInstalled(true);
             dispatch(addNotification({ message: t('common.installPwaSuccess'), type: 'success' }));
@@ -43,14 +34,14 @@ export const usePwaInstall = () => {
             window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
             window.removeEventListener('appinstalled', appInstalledHandler);
         };
-    }, [t, dispatch]);
+    }, [t, dispatch, isInstalled]);
 
     const handleInstallClick = useCallback(async () => {
         if (deferredPrompt) {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                // The 'appinstalled' event will handle the success notification.
+                // The 'appinstalled' event will handle success notification and storage.
             } else {
                 dispatch(addNotification({ message: t('common.installPwaDismissed'), type: 'info' }));
             }

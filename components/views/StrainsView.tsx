@@ -215,71 +215,6 @@ export const StrainsView: React.FC = () => {
         { id: StrainViewTab.Tips, label: t('strainsView.tabs.tips', { count: savedTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
     ];
 
-    const renderContent = () => {
-        if (isLoading || isSearching) {
-            return viewMode === 'list' ? <SkeletonLoader variant="list" count={10} columns={settings.strainsViewSettings.visibleColumns}/> : <SkeletonLoader variant="grid" count={10}/>;
-        }
-        
-        if (filteredStrains.length === 0) {
-            if (filterProps.isAnyFilterActive) {
-                 return (
-                    <Card className="text-center py-10 text-slate-500">
-                        <PhosphorIcons.MagnifyingGlass className="w-12 h-12 mx-auto text-slate-400 mb-4" />
-                        <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
-                        <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
-                        <Button onClick={filterProps.resetAllFilters} className="mt-4">
-                            {t('strainsView.resetFilters')}
-                        </Button>
-                    </Card>
-                );
-            }
-
-            if (activeTab === StrainViewTab.MyStrains || activeTab === StrainViewTab.Favorites) {
-                const emptyStateKey = activeTab === StrainViewTab.MyStrains ? 'myStrains' : 'favorites';
-                return <Card className="text-center py-10 text-slate-500"><p>{t(`strainsView.emptyStates.${emptyStateKey}.text`)}</p></Card>;
-            }
-        }
-        
-        const content = viewMode === 'list' ? (
-            <StrainList 
-                strains={strainsToShow} 
-                selectedIds={selectedIds}
-                onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                onSelect={handleStrainSelect}
-                onToggleAll={handleToggleAll}
-                sort={filterProps.sort}
-                handleSort={filterProps.handleSort}
-                visibleColumns={settings.strainsViewSettings.visibleColumns}
-                isUserStrain={isUserStrain}
-                onDelete={handleDeleteStrain}
-                isPending={isPending}
-            />
-        ) : (
-            <StrainGrid 
-                strains={strainsToShow} 
-                onSelect={handleStrainSelect}
-                selectedIds={selectedIds}
-                onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                isUserStrain={isUserStrain} 
-                onDelete={handleDeleteStrain}
-                isPending={isPending}
-            />
-        );
-        
-        return (
-            <>
-                {content}
-                {visibleCount < filteredStrains.length && (
-                    <div className="mt-6 text-center">
-                        <Button onClick={() => setVisibleCount(v => v + ITEMS_PER_PAGE)} variant="secondary">
-                            {t('common.loadMore')} ({t('strainsView.matchingStrains', { count: filteredStrains.length - visibleCount })})
-                        </Button>
-                    </div>
-                )}
-            </>
-        );
-    };
-
     const showToolbar = activeTab === StrainViewTab.All || activeTab === StrainViewTab.MyStrains || activeTab === StrainViewTab.Favorites;
 
     return (
@@ -325,7 +260,66 @@ export const StrainsView: React.FC = () => {
 
             {activeTab === StrainViewTab.Exports && <ExportsManagerView savedExports={savedExports} deleteExport={(id) => dispatch(deleteExport(id))} updateExport={(exp) => dispatch(updateExport(exp))} allStrains={allStrains} onOpenExportModal={() => dispatch(openExportModal())} />}
             {activeTab === StrainViewTab.Tips && <StrainTipsView savedTips={savedTips} deleteTip={(id) => dispatch(deleteStrainTip(id))} updateTip={(tip) => dispatch(updateStrainTip(tip))} allStrains={allStrains} />}
-            {showToolbar && renderContent()}
+            
+            {showToolbar && (
+                (isLoading || isSearching) ? (
+                    viewMode === 'list' 
+                        ? <SkeletonLoader variant="list" count={10} columns={settings.strainsViewSettings.visibleColumns}/> 
+                        : <SkeletonLoader variant="grid" count={10}/>
+                ) : (
+                    filteredStrains.length === 0 ? (
+                        filterProps.isAnyFilterActive ? (
+                            <Card className="text-center py-10 text-slate-500">
+                                <PhosphorIcons.MagnifyingGlass className="w-12 h-12 mx-auto text-slate-400 mb-4" />
+                                <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
+                                <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
+                                <Button onClick={filterProps.resetAllFilters} className="mt-4">
+                                    {t('strainsView.resetFilters')}
+                                </Button>
+                            </Card>
+                        ) : (
+                            <Card className="text-center py-10 text-slate-500">
+                                <p>{t(`strainsView.emptyStates.${activeTab === StrainViewTab.MyStrains ? 'myStrains' : 'favorites'}.text`)}</p>
+                            </Card>
+                        )
+                    ) : (
+                        <>
+                            {viewMode === 'list' ? (
+                                <StrainList 
+                                    strains={strainsToShow} 
+                                    selectedIds={selectedIds}
+                                    onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
+                                    onSelect={handleStrainSelect}
+                                    onToggleAll={handleToggleAll}
+                                    sort={filterProps.sort}
+                                    handleSort={filterProps.handleSort}
+                                    visibleColumns={settings.strainsViewSettings.visibleColumns}
+                                    isUserStrain={isUserStrain}
+                                    onDelete={handleDeleteStrain}
+                                    isPending={isPending}
+                                />
+                            ) : (
+                                <StrainGrid 
+                                    strains={strainsToShow} 
+                                    onSelect={handleStrainSelect}
+                                    selectedIds={selectedIds}
+                                    onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
+                                    isUserStrain={isUserStrain} 
+                                    onDelete={handleDeleteStrain}
+                                    isPending={isPending}
+                                />
+                            )}
+                            {visibleCount < filteredStrains.length && (
+                                <div className="mt-6 text-center">
+                                    <Button onClick={() => setVisibleCount(v => v + ITEMS_PER_PAGE)} variant="secondary">
+                                        {t('common.loadMore')} ({t('strainsView.matchingStrains', { count: filteredStrains.length - visibleCount })})
+                                    </Button>
+                                </div>
+                            )}
+                        </>
+                    )
+                )
+            )}
         </div>
     );
 };

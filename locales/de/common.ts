@@ -121,7 +121,8 @@ export const common = {
     bold: 'Fett',
     italic: 'Kursiv',
     list: 'Aufzählung',
-  }
+  },
+  loadMore: 'Mehr laden',
 };
 
 export const nav = {

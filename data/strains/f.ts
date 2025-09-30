@@ -1,17 +1,18 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsF: Strain[] = [
-    {
+    createStrainObject({
         "id": "face-off-og",
         "name": "Face Off OG",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
-        "genetics": "OG Kush (phenotype)",
+        "genetics": "OG Kush phenotype",
         "floweringType": "Photoperiod",
         "description": "An extremely potent indica-dominant strain, known for its heavily sedating and physically relaxing effects. Ideal for evening use and for severe pain or insomnia.",
-        "thc": 24,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "20-28%",
+        "thcRange": "20-24%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
@@ -24,12 +25,12 @@ export const strainsF: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "fat-banana",
         "name": "Fat Banana",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
+        "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "OG Kush x Chiquita Banana",
         "floweringType": "Photoperiod",
         "description": "An indica-dominant strain with a sweet, fruity banana aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
@@ -37,10 +38,10 @@ export const strainsF: Strain[] = [
         "cbd": 1,
         "thcRange": "22-28%",
         "cbdRange": "<1%",
-        "floweringTime": 7.5,
-        "floweringTimeRange": "7-8",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "375-425 g/m²", "outdoor": "450-500 g/plant" },
@@ -48,61 +49,61 @@ export const strainsF: Strain[] = [
         },
         "aromas": ["Banana", "Sweet", "Fruity", "Tropical"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "fire-og",
         "name": "Fire OG",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
-        "genetics": "OG Kush x SFV OG Kush",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "OG Kush x SFV OG",
         "floweringType": "Photoperiod",
-        "description": "A potent indica-dominant strain known as one of the strongest OG Kush phenotypes. It delivers a strong, long-lasting euphoric effect that transitions into deep body relaxation. The aroma is a classic mix of lemon, pine, and pungent diesel.",
         "thc": 24,
         "cbd": 1,
         "thcRange": "20-28%",
         "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A potent indica-dominant strain with an earthy, piney, and citrusy aroma. The effect is strong, relaxing, and long-lasting, ideal for evening use.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Earthy", "Pine", "Lemon", "Pungent"],
+        "aromas": ["Earthy", "Pine", "Citrus", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "forbidden-fruit",
         "name": "Forbidden Fruit",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
+        "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Cherry Pie x Tangie",
         "floweringType": "Photoperiod",
-        "description": "An indica-dominant strain with an exotic, fruity aroma of cherry, passionfruit, and citrus. The effect is strong, relaxing, and euphoric.",
-        "thc": 24,
+        "thc": 26,
         "cbd": 1,
-        "thcRange": "22-26%",
+        "thcRange": "23-29%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
+        "description": "An indica-dominant strain with an exotic, fruity aroma of cherry, passionfruit, and citrus. The effect is strong, relaxing, and euphoric.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Cherry", "Tropical", "Citrus", "Sweet"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+        "aromas": ["Cherry", "Tropical", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "frankenstein",
         "name": "Frankenstein",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "OG Kush x an unknown strain",
+        "genetics": "Unknown (likely an OG Kush variant)",
         "floweringType": "Photoperiod",
         "thc": 22,
         "cbd": 1,
@@ -112,53 +113,53 @@ export const strainsF: Strain[] = [
         "floweringTimeRange": "8-9",
         "description": "An indica-dominant strain with an earthy, citrusy aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
         "agronomic": {
-            "difficulty": "Easy",
+            "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Earthy", "Citrus", "Sweet", "Pungent"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Earthy", "Citrus", "Sweet", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "freakshow",
         "name": "Freakshow",
         "type": StrainType.Sativa,
-        "typeDetails": "Sativa - 90% Sativa / 10% Indica",
-        "genetics": "Unknown (Unique Bx4 Landrace)",
+        "typeDetails": "Sativa 90% / Indica 10%",
+        "genetics": "Unknown (mutant phenotype)",
         "floweringType": "Photoperiod",
-        "description": "A unique strain bred by Humboldt Seed Co., known for its unusual, fern-like leaf structure that makes it a 'stealth' plant. The effect is uplifting, creative, and energizing, ideal for daytime use.",
         "thc": 18,
         "cbd": 1,
         "thcRange": "16-20%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9",
+        "description": "A unique strain bred by Humboldt Seed Co., known for its unusual, fern-like leaf structure that makes it a 'stealth' plant. The effect is uplifting, creative, and energizing. Ideal for daytime use.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "High",
             "height": "Tall",
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Pine", "Spicy", "Earthy"],
-        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Pine", "Spicy", "Citrus", "Earthy"],
+        "dominantTerpenes": ["Pinene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "french-toast",
         "name": "French Toast",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
-        "genetics": "Paris OG x Face Off OG Bx2",
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Paris OG x Face Off OG BX2",
         "floweringType": "Photoperiod",
-        "description": "An indica-dominant strain with a sweet, buttery, and slightly spicy aroma. The effect is relaxing and calming, ideal for evening use.",
         "thc": 26,
         "cbd": 1,
         "thcRange": "24-28%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
+        "description": "An indica-dominant strain with a sweet, buttery, and slightly spicy aroma. The effect is relaxing and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -166,95 +167,95 @@ export const strainsF: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Butter", "Earthy", "Meaty"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+        "aromas": ["Sweet", "Butter", "Earthy", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "frisian-dew",
         "name": "Frisian Dew",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Super Skunk x Purple Star",
         "floweringType": "Photoperiod",
-        "description": "An award-winning strain from Dutch Passion, specifically developed for outdoor cultivation in cooler climates. It is highly resistant to mold and often develops beautiful purple hues. The effect is balanced between uplifting and relaxing.",
         "thc": 16,
         "cbd": 1,
         "thcRange": "14-18%",
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "High",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Earthy", "Pine", "Fruity"],
-        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
-    },
-    {
-        "id": "frisian-duck",
-        "name": "Frisian Duck",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-        "genetics": "Frisian Dew x DucksFoot",
-        "floweringType": "Photoperiod",
-        "description": "A unique 'stealth' strain with webbed, duck-foot-like leaves, making it inconspicuous. The effect is uplifting and clear, ideal for daytime use.",
-        "thc": 15,
-        "cbd": 1,
-        "thcRange": "13-17%",
-        "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "8",
+        "description": "An award-winning strain specifically developed for outdoor cultivation in cooler climates. It is highly resistant to mold and often develops beautiful purple hues.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",
             "height": "Tall",
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">250 cm" }
         },
-        "aromas": ["Pine", "Citrus", "Spicy"],
+        "aromas": ["Pine", "Earthy", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "frisian-duck",
+        "name": "Frisian Duck",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Frisian Dew x DucksFoot",
+        "floweringType": "Photoperiod",
+        "thc": 17,
+        "cbd": 1,
+        "thcRange": "15-19%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A unique 'stealth' strain with webbed, duck-foot-like leaves, making it inconspicuous. The effect is uplifting and clear, ideal for daytime use.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-200 cm" }
+        },
+        "aromas": ["Pine", "Citrus", "Spicy", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Pinene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "frosted-guava",
         "name": "Frosted Guava",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
+        "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Guava x Frosted Skywalker",
         "floweringType": "Photoperiod",
-        "description": "A potent hybrid with a sweet, fruity aroma of guava and tropical fruits. The effect is strong, euphoric, and relaxing.",
         "thc": 25,
         "cbd": 1,
         "thcRange": "22-28%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
+        "description": "A potent hybrid with a sweet, fruity aroma of guava and tropical fruits. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Guava", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "fruity-pebbles-og",
         "name": "Fruity Pebbles OG",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 55% Indica / 45% Sativa",
+        "typeDetails": "Indica 55% / Sativa 45%",
         "genetics": "Green Ribbon x Granddaddy Purple x Tahoe Alien",
         "floweringType": "Photoperiod",
-        "description": "A hybrid known for its sweet, fruity aroma reminiscent of the breakfast cereal of the same name. The effect is strong, euphoric, and relaxing.",
-        "thc": 20,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "18-24%",
+        "thcRange": "18-26%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A hybrid known for its sweet, fruity aroma reminiscent of the breakfast cereal of the same name. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -262,19 +263,19 @@ export const strainsF: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Fruity", "Sweet", "Berry", "Tropical"],
+        "aromas": ["Sweet", "Fruity", "Tropical", "Berry"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "future-1",
         "name": "Future #1",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Gorilla Glue #4 x Starfighter F2",
         "floweringType": "Photoperiod",
-        "thc": 32.5,
-        "thcRange": "30-35%+",
+        "thc": 35,
         "cbd": 1,
+        "thcRange": "30-37%",
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
@@ -283,10 +284,10 @@ export const strainsF: Strain[] = [
             "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pineapple", "Mango", "Sweet", "Citrus"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }
+        "aromas": ["Pineapple", "Mango", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
+    })
 ];

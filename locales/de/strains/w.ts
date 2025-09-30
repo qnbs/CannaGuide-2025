@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "white-fire-alien-og": {
+        "description": "Eine potente indica-dominante Hybride, die die starke Harzproduktion von The White mit dem außerweltlichen OG-Funk von Fire Alien Kush kombiniert. Sie bietet ein starkes, entspannendes High, das Geist und Körper beruhigt, was sie zu einer großartigen Wahl für Stressabbau und Schlaf macht. Das Aroma ist eine scharfe Mischung aus erdiger Zitrone, sauren Zitrusfrüchten und Diesel.",
+    },
     "wappa": {
         "description": "Eine indica-dominante Hybride mit einem süßen, fruchtigen und skunkigen Aroma. Die Wirkung ist stark, entspannend und glücklich, ideal für den Abend."
     },

@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsT: Strain[] = [
-    {
+    createStrainObject({
         "id": "tahoe-alien",
         "name": "Tahoe Alien",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Lemon", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tahoe-og-kush",
         "name": "Tahoe OG Kush",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Lemon", "Pungent"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tangerine-dream",
         "name": "Tangerine Dream",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Tangerine", "Citrus", "Sweet", "Tropical"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tangie",
         "name": "Tangie",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Tangerine", "Citrus", "Sweet", "Orange"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tangilope",
         "name": "Tangilope",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Tangerine", "Chocolate", "Sweet", "Citrus"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tegridy-og",
         "name": "Tegridy OG",
         "type": StrainType.Hybrid,
@@ -133,19 +134,19 @@ export const strainsT: Strain[] = [
         "thcRange": "22-28%",
         "cbdRange": "<1%",
         "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
+        "floweringTimeRange": "8-10",
         "description": "Named after the fictional farm in the TV show \"South Park,\" Tegridy OG is a potent indica-dominant hybrid for experienced users. It typically combines classic OG Kush and Chemdawg genetics, resulting in a powerful aroma of earth, pine, and pungent diesel. The effects are strong and fast-acting, delivering a wave of cerebral euphoria that quickly transitions into a heavy, full-body relaxation that can lead to couch-lock. It's an ideal strain for evening use, stress relief, and managing pain.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
         },
         "aromas": ["Earthy", "Pine", "Diesel", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "thai",
         "name": "Thai",
         "type": StrainType.Sativa,
@@ -168,8 +169,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Earthy", "Woody", "Spicy", "Citrus"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "thc-bomb",
         "name": "THC Bomb",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Earthy", "Skunk", "Sweet", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "the-og",
         "name": "The OG",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Spicy", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "the-soap",
         "name": "The Soap",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Floral", "Mint", "Clean", "Sweet"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "the-y",
         "name": "The Y",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Diesel", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "thin-mint-gsc",
         "name": "Thin Mint GSC",
         "type": StrainType.Hybrid,
@@ -288,8 +289,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Mint", "Sweet", "Earthy", "Cookie"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "three-kings",
         "name": "Three Kings",
         "type": StrainType.Hybrid,
@@ -312,8 +313,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Pine", "Earthy", "Diesel", "Sour"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tiramisu",
         "name": "Tiramisu",
         "type": StrainType.Hybrid,
@@ -336,8 +337,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Coffee", "Earthy"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tom-ford-pink-kush",
         "name": "Tom Ford Pink Kush",
         "type": StrainType.Hybrid,
@@ -360,8 +361,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Sweet", "Floral", "Earthy", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "trainwreck",
         "name": "Trainwreck",
         "type": StrainType.Sativa,
@@ -384,8 +385,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Pine", "Lemon", "Spicy", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tres-dawg",
         "name": "Tres Dawg",
         "type": StrainType.Hybrid,
@@ -408,8 +409,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Chemical", "Diesel", "Earthy", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "triangle-mints",
         "name": "Triangle Mints",
         "type": StrainType.Hybrid,
@@ -432,8 +433,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Mint", "Earthy", "Sweet", "Pine"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "triple-og",
         "name": "Triple OG",
         "type": StrainType.Indica,
@@ -456,8 +457,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tropicana-cherry",
         "name": "Tropicana Cherry",
         "type": StrainType.Hybrid,
@@ -480,8 +481,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Cherry", "Citrus", "Sweet", "Fruity"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tropicana-cookies",
         "name": "Tropicana Cookies",
         "type": StrainType.Hybrid,
@@ -504,8 +505,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Cookie"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "truffle-butter",
         "name": "Truffle Butter",
         "type": StrainType.Hybrid,
@@ -528,8 +529,8 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Sweet", "Butter", "Earthy", "Nutty"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "tutankhamon",
         "name": "Tutankhamon",
         "type": StrainType.Hybrid,
@@ -552,5 +553,53 @@ export const strainsT: Strain[] = [
         },
         "aromas": ["Skunk", "Fruity", "Sweet", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }
+    }),
+    createStrainObject({
+        "id": "tropical-runtz",
+        "name": "Tropical Runtz",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Runtz x Tropic Truffle",
+        "floweringType": "Photoperiod",
+        "thc": 25.5,
+        "cbd": 1,
+        "thcRange": "23-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A potent hybrid with a sweet, fruity aroma of tropical fruits and pineapple. The effect is strong, euphoric, and relaxing.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+        },
+        "aromas": ["Tropical", "Pineapple", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "tropical-punch",
+        "name": "Tropical Punch",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Hawaiian x Purple Punch",
+        "floweringType": "Photoperiod",
+        "thc": 21,
+        "cbd": 1,
+        "thcRange": "18-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A sativa-dominant strain with a sweet, tropical aroma of pineapple and fruity punch. The effect is uplifting, energizing, and creative.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": "" }
+        },
+        "aromas": ["Tropical", "Pineapple", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    })
 ];

@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "chems-sister": {
+        "description": "Also known as 'Chem Sis', this is a famous phenotype of the legendary Chemdawg line. This sativa-dominant hybrid delivers a powerful, uplifting cerebral high that boosts creativity and energy. Its aroma is unmistakably pungent and chemical, with strong notes of diesel and earth."
+    },
+    "cherry-cookies": {
+        "description": "An indica-dominant hybrid that crosses Cherry Pie with Girl Scout Cookies. It delivers a potent, euphoric head high that melts into a deep body relaxation. Its aroma is a delicious blend of sweet cherries and earthy, doughy notes from its Cookies parentage, making it a flavorful choice for unwinding.",
+    },
     "cactus-breath": {
         "description": "A potent indica-dominant hybrid with an earthy, piney, and spicy aroma. Cactus Breath delivers a strong, relaxing, and euphoric high that is perfect for unwinding at the end of the day.",
     },

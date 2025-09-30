@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from "@/types";
 
 export const strains: Record<string, StrainTranslationData> = {
+  "killer-new-haven": {
+    "description": "A potent and legendary indica heirloom strain from Connecticut. It is a key parent of Herijuana and delivers a heavy, almost narcotic body high. Its aroma is pungent, earthy, and hash-like."
+  },
   "kush-mints": {
     "description": "Kush Mints is a perfectly balanced hybrid bred by Seed Junky Genetics, known for its extreme potency and unique flavor profile. It is a cross between the potent Animal Mints and the classic Bubba Kush. This strain offers a strong but balanced effect, encompassing both an uplifting, euphoric cerebral stimulation and a deeply relaxing, calming body high without being overly sedating. This makes it a versatile strain that can be enjoyed both during the day and in the evening. The aroma is complex and enticing, a blend of fresh mint and sweet cookies, underscored by earthy, piney, and coffee-like notes. Due to its high THC content, it is one of the parent strains for many modern high-potency hybrids like Cap Junky.",
     "typeDetails": "Hybrid - 50% Indica / 50% Sativa",

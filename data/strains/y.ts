@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsY: Strain[] = [
-    {
+    createStrainObject({
         "id": "ya-hemi",
         "name": "Ya Hemi",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsY: Strain[] = [
         },
         "aromas": ["Fruity", "Diesel", "Sweet", "Earthy"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "yeti-og",
         "name": "Yeti OG",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsY: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "yumboldt",
         "name": "Yumboldt",
         "type": StrainType.Indica,
@@ -72,5 +73,5 @@ export const strainsY: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Hash", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }
+    })
 ];

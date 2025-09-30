@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings } from '@/types';
+import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings, HarvestData } from '@/types';
 import { simulationService } from '@/services/plantSimulationService';
 import { RootState } from '../store';
 import { cancelNewGrow, addNotification } from './uiSlice';
@@ -101,10 +101,10 @@ const simulationSlice = createSlice({
         waterPlant: (state, action: PayloadAction<{ plantId: string, amount: number, ph: number, ec?: number }>) => {
             const plant = state.plants[action.payload.plantId];
             if (plant) {
-                plant.substrate.moisture = 100;
-                plant.substrate.ph = (plant.substrate.ph + action.payload.ph) / 2;
+                plant.medium.moisture = 100;
+                plant.medium.ph = (plant.medium.ph + action.payload.ph) / 2;
                 if (action.payload.ec) {
-                    plant.substrate.ec = (plant.substrate.ec + action.payload.ec) / 2;
+                    plant.medium.ec = (plant.medium.ec + action.payload.ec) / 2;
                 }
                 plant.lastUpdated = Date.now();
             }
@@ -137,7 +137,7 @@ const simulationSlice = createSlice({
                 if (plantId) {
                     const plant = state.plants[plantId];
                     if (plant) {
-                       plant.substrate.moisture = 100;
+                       plant.medium.moisture = 100;
                        plant.lastUpdated = Date.now();
                        plant.journal.push({id: `journal-water-all-${Date.now()}`, createdAt: Date.now(), type: JournalEntryType.Watering, notes: 'Watered all plants.'});
                     }
@@ -173,10 +173,9 @@ const simulationSlice = createSlice({
             if(plant) {
                 plant.stage = PlantStage.Harvest;
                 plant.lastUpdated = Date.now();
-                // @ts-ignore
-                plant.postHarvest = { 
-                    wetWeight: plant.biomass * 4, // Example calculation
-                    dryWeight: plant.biomass, // Example calculation
+                plant.harvestData = { 
+                    wetWeight: plant.biomass * 4,
+                    dryWeight: plant.biomass,
                     terpeneRetentionPercent: 100,
                     moldRiskPercent: 0,
                     dryingEnvironment: { temperature: 20, humidity: 60 },
@@ -185,32 +184,32 @@ const simulationSlice = createSlice({
                     jarHumidity: 75, 
                     finalQuality: 0,
                     chlorophyllPercent: 100,
-                    terpeneProfile: { 'Myrcene': 40, 'Limonene': 30, 'Caryophyllene': 20, 'Pinene': 10 },
-                    cannabinoidProfile: { thc: plant.strain.thc, cbn: 0 },
+                    terpeneProfile: {}, // Will be populated during simulation
+                    cannabinoidProfile: { thc: 0, cbn: 0 },
                     lastBurpDay: 0,
                 };
             }
         },
         processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'cure' | 'burp' }>) => {
              const plant = state.plants[action.payload.plantId];
-             if(plant && plant.postHarvest) {
+             if(plant && plant.harvestData) {
                  switch(action.payload.action) {
                      case 'dry':
-                         plant.postHarvest.currentDryDay += 1;
-                         if(plant.postHarvest.currentDryDay >= 10) {
+                         plant.harvestData.currentDryDay += 1;
+                         if(plant.harvestData.currentDryDay >= 10) {
                              plant.stage = PlantStage.Curing;
                          }
                          break;
                      case 'cure':
-                         plant.postHarvest.currentCureDay += 1;
-                          plant.postHarvest.jarHumidity = Math.max(55, plant.postHarvest.jarHumidity - 0.5);
-                         if(plant.postHarvest.currentCureDay >= 21) {
+                         plant.harvestData.currentCureDay += 1;
+                          plant.harvestData.jarHumidity = Math.max(55, plant.harvestData.jarHumidity - 0.5);
+                         if(plant.harvestData.currentCureDay >= 21) {
                              plant.stage = PlantStage.Finished;
-                             plant.postHarvest.finalQuality = plant.health + (Math.random() * 10);
+                             plant.harvestData.finalQuality = plant.health + (Math.random() * 10);
                          }
                          break;
                      case 'burp':
-                         plant.postHarvest.jarHumidity = 62;
+                         plant.harvestData.jarHumidity = 62;
                          break;
                  }
                  plant.lastUpdated = Date.now();
@@ -227,6 +226,13 @@ const simulationSlice = createSlice({
         setFanSpeed: (state, action: PayloadAction<{ plantId: string, speed: number }>) => {
             const plant = state.plants[action.payload.plantId];
             if(plant) plant.equipment.fan.speed = action.payload.speed;
+        },
+        setLightHours: (state, action: PayloadAction<{ plantId: string; hours: number }>) => {
+            const plant = state.plants[action.payload.plantId];
+            if (plant) {
+                plant.equipment.light.lightHours = action.payload.hours;
+                plant.lastUpdated = Date.now();
+            }
         },
     },
 });
@@ -249,5 +255,6 @@ export const {
     toggleLight,
     toggleFan,
     setFanSpeed,
+    setLightHours,
 } = simulationSlice.actions;
 export default simulationSlice.reducer;

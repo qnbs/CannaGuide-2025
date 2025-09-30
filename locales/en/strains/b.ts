@@ -1,6 +1,12 @@
 import { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "blue-moonshine": {
+        "description": "A classic, almost pure Indica from DJ Short's Blueberry line. Renowned for its sweet blueberry flavor and a fast-acting, deeply sedating high."
+    },
+    "black-banana": {
+        "description": "A potent indica-dominant strain known for its exceptionally high THC levels and unique flavor profile. It combines the aroma of sweet, ripe bananas with earthy, gassy undertones. The effect is powerful and fast-acting, delivering a deeply relaxing body high and a euphoric head buzz, making it ideal for experienced consumers in the evening."
+    },
     "b-52": {
         "description": "A Skunk hybrid known for its large, dense buds and high yields. The effect is balanced, starting with a cerebral, uplifting feeling that transitions into a gentle body relaxation. The aroma is sweet and skunky.",
     },

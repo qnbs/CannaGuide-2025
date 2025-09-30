@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "double-burger": {
+    "description": "An intensely potent and savory indica-dominant hybrid. It doubles down on the GMO genetics, resulting in a powerful aroma of garlic, onion, and chemical diesel. The effect is strong and fast-hitting, delivering a heavy body relaxation that is perfect for ending the day and combating pain."
+  },
   "dance-world": {
     "description": "A CBD-rich strain with a balanced THC and CBD content. The effect is uplifting and functional, ideal for relieving pain and anxiety without strong psychoactive effects.",
     "typeDetails": "Sativa 75% / Indica 25%",
@@ -85,6 +88,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "yieldDetails": { "indoor": "~350 g/m²", "outdoor": "~450 g/plant" },
     "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 1.5 m)" }
   },
+  "dolato": {
+    "description": "Also known as 'Do-Si-Lato', Dolato is a potent Indica hybrid. It combines the earthy potency of Do-Si-Dos with the sweet, creamy aroma of Gelato. The effect is strongly relaxing and calming, making it ideal for evening use to unwind and de-stress."
+  },
   "donkey-butter": {
     "description": "A potent indica-dominant strain with a pungent, diesel-like, and earthy aroma. The effect is strong, sedating, and physically relaxing, ideal for evening use.",
     "typeDetails": "Indica 70% / Sativa 30%",
@@ -133,6 +139,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Blue Dream x Stardawg",
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
     "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
+  },
+  "duct-tape": {
+    "description": "Duct Tape is a potent hybrid strain named for its glue-like and diesel aroma, complemented by notes of chocolate and earth. The effect is strong and balanced, beginning with a cerebral, creative rush that slowly transitions into an intense body relaxation without completely sedating the user."
   },
   "ducksfoot": {
     "description": "A unique Sativa strain known for its webbed, duck-foot-like leaves, making it inconspicuous. The effect is uplifting, energizing, and creative.",

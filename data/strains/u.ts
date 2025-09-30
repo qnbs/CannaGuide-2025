@@ -1,8 +1,8 @@
-
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsU: Strain[] = [
-    {
+    createStrainObject({
         "id": "uk-cheese",
         "name": "UK Cheese",
         "type": StrainType.Hybrid,
@@ -25,8 +25,8 @@ export const strainsU: Strain[] = [
         },
         "aromas": ["Cheese", "Pungent", "Skunk", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "unicorn-poop",
         "name": "Unicorn Poop",
         "type": StrainType.Hybrid,
@@ -49,5 +49,5 @@ export const strainsU: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Citrus"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }
+    })
 ];

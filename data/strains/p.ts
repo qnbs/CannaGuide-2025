@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsP: Strain[] = [
-    {
+    createStrainObject({
         "id": "painkiller-xl",
         "name": "Painkiller XL",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Earthy", "Citrus", "Spicy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "panama-red",
         "name": "Panama Red",
         "type": StrainType.Sativa,
@@ -48,8 +49,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Tropical", "Sweet", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "papaya",
         "name": "Papaya",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Papaya", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "papaya-cookies",
         "name": "Papaya Cookies",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Papaya", "Sweet", "Fruity", "Cookie"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "papaya-punch",
         "name": "Papaya Punch",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Papaya", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "paris-og",
         "name": "Paris OG",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Citrus", "Fruity", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pave-runtz",
         "name": "Pave Runtz",
         "type": StrainType.Hybrid,
@@ -166,19 +167,19 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Fruity", "Diesel", "Mint"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+        "aromas": ["Sweet", "Fruity", "Diesel", "Earthy"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
         "id": "peanut-butter-breath",
         "name": "Peanut Butter Breath",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Do-Si-Dos x Mendo Breath F2",
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Do-Si-Dos x Mendo Breath",
         "floweringType": "Photoperiod",
         "thc": 26,
         "cbd": 1,
-        "thcRange": "23-29%",
+        "thcRange": "24-28%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
@@ -190,94 +191,94 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Nutty", "Earthy", "Sweet", "Woody"],
+        "aromas": ["Nutty", "Earthy", "Sweet", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "peanut-butter-souffle",
-        "name": "Peanut Butter Soufflé",
+        "name": "Peanut Butter Souffle",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
+        "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
         "genetics": "Do-Si-Dos x Lava Cake",
         "floweringType": "Photoperiod",
-        "thc": 26,
+        "thc": 28,
         "cbd": 1,
-        "thcRange": "23-29%",
+        "thcRange": "26-30%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
         "description": "An indica-dominant strain with a sweet, nutty, and chocolatey aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Nutty", "Chocolate", "Earthy"],
+        "aromas": ["Nutty", "Chocolate", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pennywise",
         "name": "Pennywise",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Harlequin x Jack the Ripper",
+        "typeDetails": "Hybrid - 70% Indica / 30% Sativa (CBD Dominant)",
+        "genetics": "Harlequin x Jack The Ripper",
         "floweringType": "Photoperiod",
-        "thc": 10,
-        "cbd": 10,
-        "thcRange": "8-12%",
-        "cbdRange": "8-12%",
+        "thc": 13.5,
+        "cbd": 13.5,
+        "thcRange": "12-15%",
+        "cbdRange": "12-15%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "A high-CBD indica-dominant strain with a balanced 1:1 THC:CBD ratio. It offers a mild, clear-headed relaxation, ideal for medical users seeking relief without strong psychoactive effects.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Earthy", "Woody", "Sweet", "Spicy"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
-    },
-    {
+        "aromas": ["Earthy", "Sweet", "Coffee", "Pepper"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "permanent-chimera",
         "name": "Permanent Chimera",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Permanent Marker x Chimera",
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Permanent Marker x Chimera #2",
         "floweringType": "Photoperiod",
-        "thc": 29.5,
+        "thc": 28,
         "cbd": 1,
-        "thcRange": "27-32%",
+        "thcRange": "26-30%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
         "description": "A potent hybrid with a sweet, fruity, and chemical aroma. The effect is strong, euphoric, and creative.",
         "agronomic": {
-            "difficulty": "Hard",
-            "yield": "High",
+            "difficulty": "Medium",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Chemical", "Diesel"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
         "id": "permanent-marker",
         "name": "Permanent Marker",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Biscotti x Jealousy x Sherbet BX",
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Biscotti x Jealousy x Sherb Bx",
         "floweringType": "Photoperiod",
-        "thc": 27.5,
+        "thc": 28.5,
         "cbd": 1,
-        "thcRange": "25-30%",
+        "thcRange": "26-31%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "A potent hybrid, known for its strong, pungent aroma reminiscent of a sharpie, with floral and candy undertones. The effect is creative, focused, and relaxing, making it a unique and popular choice.",
         "agronomic": {
             "difficulty": "Medium",
@@ -286,22 +287,22 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pungent", "Floral", "Candy", "Chemical"],
+        "aromas": ["Chemical", "Floral", "Sweet", "Fruity"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "peyote-cookies",
         "name": "Peyote Cookies",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 95% / Sativa 5%",
         "genetics": "Peyote Purple x Cookies Kush",
         "floweringType": "Photoperiod",
-        "thc": 24,
+        "thc": 21,
         "cbd": 1,
-        "thcRange": "22-26%",
+        "thcRange": "19-23%",
         "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "8",
+        "floweringTime": 7.5,
+        "floweringTimeRange": "7-8",
         "description": "An indica-dominant hybrid with a sweet, earthy, and coffee-like aroma. The effect is deeply relaxing and euphoric, with a strong body high.",
         "agronomic": {
             "difficulty": "Easy",
@@ -310,20 +311,20 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Coffee", "Vanilla", "Sweet", "Earthy"],
+        "aromas": ["Sweet", "Earthy", "Coffee", "Vanilla"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "peyote-critical",
         "name": "Peyote Critical",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 90% / Sativa 10%",
+        "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Peyote Purple x Critical Kush",
         "floweringType": "Photoperiod",
         "thc": 24,
-        "cbd": 1,
-        "thcRange": "21-27%",
-        "cbdRange": "<1%",
+        "cbd": 1.2,
+        "thcRange": "22-26%",
+        "cbdRange": "1-1.5%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
         "description": "An indica-dominant strain known for its fast flowering time and high yields. The effect is strong, relaxing, and almost psychedelic.",
@@ -334,10 +335,10 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Earthy", "Sweet", "Coffee", "Vanilla"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+        "aromas": ["Earthy", "Sweet", "Coffee", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
         "id": "phantom-cookies",
         "name": "Phantom Cookies",
         "type": StrainType.Hybrid,
@@ -354,62 +355,62 @@ export const strainsP: Strain[] = [
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Nutty", "Cookie", "Sweet", "Earthy"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
-        "id": "phantom-og",
-        "name": "Phantom OG",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 55% / Indica 45%",
-        "genetics": "OG Kush x Phantom Cookies",
-        "floweringType": "Photoperiod",
-        "thc": 24,
-        "cbd": 1,
-        "thcRange": "21-27%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "A sativa-dominant strain with a citrusy, earthy aroma. The effect is uplifting, creative, and energizing.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Citrus", "Earthy", "Sweet", "Pine"],
+        "aromas": ["Sweet", "Nutty", "Cookie", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
-        "id": "pineapple",
-        "name": "Pineapple",
+    }),
+    createStrainObject({
+        "id": "phantom-og",
+        "name": "Phantom OG",
         "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Ed Rosenthal Super Bud phenotype",
+        "typeDetails": "Sativa 65% / Indica 35%",
+        "genetics": "OG Kush x Phantom Cookies",
         "floweringType": "Photoperiod",
-        "thc": 22,
+        "thc": 24,
         "cbd": 1,
-        "thcRange": "20-24%",
+        "thcRange": "22-26%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A sativa-dominant hybrid known for its distinct sweet pineapple flavor. The effect is energetic, uplifting, and creative, making it a great daytime strain.",
+        "description": "A sativa-dominant strain with a citrusy, earthy aroma. The effect is uplifting, creative, and energizing.",
         "agronomic": {
-            "difficulty": "Easy",
+            "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pineapple", "Tropical", "Sweet", "Citrus"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
-    },
-    {
+        "aromas": ["Citrus", "Earthy", "Sweet", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "pineapple",
+        "name": "Pineapple",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Ed Rosenthal Super Bud",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "24-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A sativa-dominant hybrid known for its distinct sweet pineapple flavor. The effect is energetic, uplifting, and creative, making it a great daytime strain.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Pineapple", "Sweet", "Tropical", "Fruity"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
         "id": "pineapple-chunk",
         "name": "Pineapple Chunk",
         "type": StrainType.Hybrid,
@@ -420,8 +421,8 @@ export const strainsP: Strain[] = [
         "cbd": 1.1,
         "thcRange": "22-28%",
         "cbdRange": "1-1.5%",
-        "floweringTime": 8,
-        "floweringTimeRange": "8",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
         "description": "A potent indica-dominant hybrid with a strong pineapple and cheese aroma. The effect is heavy, relaxing, and long-lasting, providing a strong body buzz.",
         "agronomic": {
             "difficulty": "Easy",
@@ -430,49 +431,49 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "600-650 g/m²", "outdoor": "700-800 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Pineapple", "Cheese", "Skunk", "Sweet"],
+        "aromas": ["Pineapple", "Cheese", "Sweet", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pineapple-express",
         "name": "Pineapple Express",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "Trainwreck x Hawaiian",
         "floweringType": "Photoperiod",
-        "thc": 20,
+        "thc": 25,
         "cbd": 1,
-        "thcRange": "18-24%",
+        "thcRange": "22-28%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
         "description": "A sativa-dominant hybrid, made famous by the movie of the same name. It offers a long-lasting, energizing effect and a sweet, tropical pineapple aroma.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Pineapple", "Tropical", "Sweet", "Citrus"],
+        "aromas": ["Pineapple", "Sweet", "Tropical", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pineapple-kush",
         "name": "Pineapple Kush",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Pineapple x OG Kush",
+        "genetics": "Pineapple x Master Kush",
         "floweringType": "Photoperiod",
-        "thc": 21,
-        "cbd": 1,
-        "thcRange": "19-23%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
+        "thc": 18,
+        "cbd": 3,
+        "thcRange": "16-20%",
+        "cbdRange": "1-5%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
         "description": "An indica-dominant hybrid with a sweet pineapple and buttery aroma. The effect is relaxing and euphoric, with a gentle body buzz.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "550-650 g/plant" },
@@ -480,17 +481,17 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Pineapple", "Sweet", "Butter", "Tropical"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pineapple-upside-down-cake",
         "name": "Pineapple Upside Down Cake",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "Pineapple Trainwreck x Cookie Monster",
         "floweringType": "Photoperiod",
-        "thc": 25,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "22-28%",
+        "thcRange": "20-24%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
@@ -504,21 +505,21 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Pineapple", "Sweet", "Cake", "Tropical"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pink-kush",
         "name": "Pink Kush",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
-        "genetics": "OG Kush (phenotype)",
+        "genetics": "OG Kush phenotype",
         "floweringType": "Photoperiod",
-        "thc": 22.5,
+        "thc": 20,
         "cbd": 1,
-        "thcRange": "20-25%",
+        "thcRange": "18-22%",
         "cbdRange": "<1%",
         "floweringTime": 10.5,
         "floweringTimeRange": "10-11",
-        "description": "An indica-dominant hybrid known for its beautiful pink hues and its strong, relaxing body effects. The aroma is sweet, floral, and vanilla-like.",
+        "description": "An indica-dominant hybrid, known for its beautiful pink hues and its strong, relaxing body effects. The aroma is sweet, floral, and vanilla-like.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -527,57 +528,57 @@ export const strainsP: Strain[] = [
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Floral", "Vanilla", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "pink-panties",
         "name": "Pink Panties",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
+        "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Burmese Kush x Florida Kush",
         "floweringType": "Photoperiod",
         "thc": 24,
         "cbd": 1,
-        "thcRange": "21-27%",
+        "thcRange": "22-26%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "A potent Indica hybrid made famous primarily as a parent of Sherbet and Sunset Sherbet. It offers a sweet, floral, and citrusy aroma. The effect is strongly relaxing and euphoric, ideal for stress relief and mood enhancement in the evening.",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A potent Indica hybrid, made famous primarily as a parent of Sherbet and Sunset Sherbet. It offers a sweet, floral, and citrusy aroma. The effect is strongly relaxing and euphoric, ideal for stress relief and mood enhancement in the evening.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
-            "height": "Short",
-            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
-            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Floral", "Sweet", "Citrus", "Earthy"],
+        "aromas": ["Sweet", "Floral", "Citrus", "Berry"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pink-rozay",
         "name": "Pink Rozay",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Lemonchello #10 x LPC75",
+        "genetics": "Lemonchello #10 x LPC #75",
         "floweringType": "Photoperiod",
-        "thc": 25,
+        "thc": 24,
         "cbd": 1,
-        "thcRange": "22-28%",
+        "thcRange": "22-26%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
         "description": "An indica-dominant strain with a sweet, floral, and fruity aroma. The effect is relaxing and euphoric, ideal for evening use.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Floral", "Sweet", "Fruity", "Berry"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Sweet", "Floral", "Fruity", "Rose"],
+        "dominantTerpenes": ["Myrcene", "Linalool", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "pink-runtz",
         "name": "Pink Runtz",
         "type": StrainType.Hybrid,
@@ -599,9 +600,9 @@ export const strainsP: Strain[] = [
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Candy", "Berry"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Linalool"]
+    }),
+    createStrainObject({
         "id": "pinkman-goo",
         "name": "Pinkman Goo",
         "type": StrainType.Indica,
@@ -612,9 +613,9 @@ export const strainsP: Strain[] = [
         "cbd": 1,
         "thcRange": "16-20%",
         "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "A rare Indica strain known for its unique, resinous 'goo' droplets. The effect is strong, relaxing, and sedating.",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A rare Indica strain known for its unique, resinous 'Goo' droplets. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -622,22 +623,22 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Sweet", "Earthy", "Grape", "Berry"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Sweet", "Grape", "Earthy", "Berry"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
         "id": "platinum-gsc",
         "name": "Platinum GSC",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "OG Kush x Durban Poison x an unknown strain",
+        "typeDetails": "Hybrid 60% Indica / 40% Sativa",
+        "genetics": "GSC x an unknown strain",
         "floweringType": "Photoperiod",
-        "thc": 24,
+        "thc": 26,
         "cbd": 1,
-        "thcRange": "22-26%",
+        "thcRange": "24-28%",
         "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
         "description": "A GSC phenotype known for its frosty appearance and sweet, earthy aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
@@ -648,17 +649,17 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Pungent", "Spicy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "platinum-kush-mints",
         "name": "Platinum Kush Mints",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
+        "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Platinum OG Kush x Kush Mints",
         "floweringType": "Photoperiod",
         "thc": 28,
         "cbd": 1,
-        "thcRange": "25-31%",
+        "thcRange": "26-30%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
@@ -672,8 +673,8 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Mint", "Earthy", "Sweet", "Pine"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "platinum-og",
         "name": "Platinum OG",
         "type": StrainType.Hybrid,
@@ -688,7 +689,7 @@ export const strainsP: Strain[] = [
         "floweringTimeRange": "8-10",
         "description": "An indica-dominant strain with an earthy, piney aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
         "agronomic": {
-            "difficulty": "Easy",
+            "difficulty": "Medium",
             "yield": "Medium",
             "height": "Short",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
@@ -696,17 +697,17 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "point-break",
         "name": "Point Break",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Tropicana Cookies x Trophy Wife",
         "floweringType": "Photoperiod",
-        "thc": 25,
+        "thc": 21,
         "cbd": 1,
-        "thcRange": "22-28%",
+        "thcRange": "18-24%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
@@ -714,19 +715,19 @@ export const strainsP: Strain[] = [
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
-            "height": "Tall",
+            "height": "Medium",
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Tropical", "Citrus", "Sweet", "Orange"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Tropical", "Citrus", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "power-plant",
         "name": "Power Plant",
         "type": StrainType.Sativa,
-        "typeDetails": "Sativa 80% / Indica 20%",
-        "genetics": "South African Sativa",
+        "typeDetails": "Sativa 100%",
+        "genetics": "South African Landrace",
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
@@ -742,15 +743,15 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Earthy", "Woody", "Spicy", "Pungent"],
+        "aromas": ["Spicy", "Woody", "Earthy", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pre-98-bubba-kush",
         "name": "Pre-98 Bubba Kush",
         "type": StrainType.Indica,
-        "typeDetails": "Indica 85% / Sativa 15%",
-        "genetics": "Unknown (Original Bubba Kush cut)",
+        "typeDetails": "Indica 100%",
+        "genetics": "OG Kush x West Coast Dog",
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
@@ -758,54 +759,54 @@ export const strainsP: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "The original 'Bubba Kush' from before 1998. A classic Indica known for its powerfully calming and physically relaxing effects. The aroma is a distinctive blend of earthy coffee and sweet, hash-like notes. Ideal for relieving stress, pain, and insomnia.",
+        "description": "The original 'Bubba Kush' from before 1998. A classic Indica known for its heavily calming and physically relaxing effects. The aroma is a distinctive mix of earthy coffee and sweet, hash-like notes. Ideal for relieving stress, pain, and insomnia.",
         "agronomic": {
-            "difficulty": "Easy",
+            "difficulty": "Medium",
             "yield": "Medium",
             "height": "Short",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Coffee", "Earthy", "Sweet", "Hash"],
+        "aromas": ["Coffee", "Earthy", "Sweet", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "project-4516",
         "name": "Project 4516",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 60% / Sativa 40%",
+        "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Platinum Puff x Gelato 45",
         "floweringType": "Photoperiod",
         "thc": 27,
         "cbd": 1,
         "thcRange": "24-30%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
         "description": "A potent hybrid with a fruity, gassy, and slightly creamy aroma. The effect is strong, euphoric, and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Fruity", "Diesel", "Sweet", "Creamy"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "punch-breath",
         "name": "Punch Breath",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Mendo Breath F2 x Purple Punch",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Mendo Breath x Purple Punch",
         "floweringType": "Photoperiod",
-        "thc": 25,
+        "thc": 24,
         "cbd": 1,
-        "thcRange": "22-28%",
+        "thcRange": "22-26%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
         "description": "An indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
@@ -816,17 +817,17 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Grape"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "punto-rojo",
         "name": "Punto Rojo",
         "type": StrainType.Sativa,
         "typeDetails": "Sativa 100%",
         "genetics": "Colombian Landrace",
         "floweringType": "Photoperiod",
-        "thc": 18,
+        "thc": 20,
         "cbd": 1,
-        "thcRange": "16-20%",
+        "thcRange": "18-22%",
         "cbdRange": "<1%",
         "floweringTime": 12,
         "floweringTimeRange": "11-13",
@@ -838,46 +839,46 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
         },
-        "aromas": ["Earthy", "Spicy", "Sweet", "Woody"],
+        "aromas": ["Spicy", "Earthy", "Sweet", "Floral"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "pure-kush",
         "name": "Pure Kush",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 85% / Sativa 15%",
-        "genetics": "OG Kush (phenotype)",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "OG Kush phenotype",
         "floweringType": "Photoperiod",
-        "thc": 24,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "22-26%",
+        "thcRange": "20-24%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
-        "description": "An OG Kush phenotype known for its extremely potent and sedating effects. Ideal for experienced consumers and medical users.",
+        "floweringTimeRange": "8-10",
+        "description": "An OG Kush phenotype known for its extremely potent and sedating effect. Ideal for experienced consumers and medical users.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "Medium",
-            "height": "Short",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Earthy", "Pungent", "Skunk", "Diesel"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "purple-candy",
         "name": "Purple Candy",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "BC Sweet Tooth x Mendocino Purps",
+        "genetics": "Sweet Tooth x Mendocino Purps",
         "floweringType": "Photoperiod",
         "thc": 19,
         "cbd": 1,
         "thcRange": "17-21%",
         "cbdRange": "<1%",
-        "floweringTime": 8,
-        "floweringTimeRange": "7-9",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
         "description": "An indica-dominant strain with a sweet, grape-like aroma. The effect is relaxing and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Easy",
@@ -888,17 +889,17 @@ export const strainsP: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "purple-cream",
         "name": "Purple Cream",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 90% / Sativa 10%",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
         "genetics": "Blackwater x Green Crack",
         "floweringType": "Photoperiod",
-        "thc": 23,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "21-25%",
+        "thcRange": "20-24%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
@@ -910,22 +911,22 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Sweet", "Creamy", "Berry", "Vanilla"],
+        "aromas": ["Sweet", "Creamy", "Berry", "Grape"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "purple-diesel",
         "name": "Purple Diesel",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid 50% / 50%",
         "genetics": "Pre-98 Bubba Kush x Sour Diesel",
         "floweringType": "Photoperiod",
-        "thc": 21,
+        "thc": 18,
         "cbd": 1,
-        "thcRange": "18-24%",
+        "thcRange": "16-20%",
         "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
         "description": "A balanced hybrid that combines the best of both worlds. It offers the pungent diesel aroma of Sour Diesel along with the sweet grape notes and relaxing effects of Kush. The effect is both uplifting and cerebral as well as physically calming.",
         "agronomic": {
             "difficulty": "Medium",
@@ -934,10 +935,10 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Diesel", "Grape", "Sweet", "Pungent"],
+        "aromas": ["Diesel", "Grape", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "purple-haze",
         "name": "Purple Haze",
         "type": StrainType.Sativa,
@@ -950,7 +951,7 @@ export const strainsP: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "A legendary Sativa made famous by Jimi Hendrix. It offers a dreamy, euphoric, and creative high. The aroma is a mix of sweet, earthy, and berry notes.",
+        "description": "A legendary Sativa, made famous by Jimi Hendrix. It offers a dreamy, euphoric, and creative high. The aroma is a mix of sweet, earthy, and berry notes.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -958,10 +959,10 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Berry", "Sweet", "Earthy", "Spicy"],
+        "aromas": ["Sweet", "Earthy", "Berry", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "purple-kush",
         "name": "Purple Kush",
         "type": StrainType.Indica,
@@ -974,7 +975,7 @@ export const strainsP: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A pure Indica known for its deep purple colors and its earthy, grape-like aroma. The effect is strong, physically relaxing, and ideal for pain and insomnia.",
+        "description": "A pure Indica, known for its deep purple colors and its earthy, grape-like aroma. The effect is strong, physically relaxing, and ideal for pain and insomnia.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -982,10 +983,10 @@ export const strainsP: Strain[] = [
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
-        "aromas": ["Grape", "Earthy", "Sweet", "Berry"],
+        "aromas": ["Grape", "Earthy", "Sweet", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "purple-punch",
         "name": "Purple Punch",
         "type": StrainType.Hybrid,
@@ -998,7 +999,7 @@ export const strainsP: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "An indica-dominant hybrid with a sweet aroma of grape candy and blueberry muffins. The effect is a one-two punch of a euphoric head high followed by heavy body sedation.",
+        "description": "An indica-dominant hybrid with a sweet aroma of grape candy and blueberry muffins. The effect is a one-two punch of a euphoric head high followed by a heavy body sedation.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -1007,6 +1008,78 @@ export const strainsP: Strain[] = [
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Grape", "Sweet", "Berry", "Vanilla"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "purple-space-cookies",
+        "name": "Purple Space Cookies",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Durban Poison x GSC",
+        "floweringType": "Photoperiod",
+        "thc": 22.5,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Purple Space Cookies is a sativa-dominant hybrid known for its sweet berry aroma and uplifting effects. Users report an energetic and euphoric high that stimulates creativity while providing pleasant physical relaxation. The complex flavor profile blends sweet, earthy notes with a hint of pine and fruit.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+        },
+        "aromas": ["Sweet", "Berry", "Earthy", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "purple-star",
+        "name": "Purple Star",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Dutch strain",
+        "floweringType": "Photoperiod",
+        "thc": 16,
+        "cbd": 1,
+        "thcRange": "14-18%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "description": "A pure Indica from the Netherlands known for its beautiful purple colors. The effect is relaxing and calming, ideal for evening use.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-120 cm" }
+        },
+        "aromas": ["Grape", "Sweet", "Earthy", "Berry"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "purple-urkle",
+        "name": "Purple Urkle",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Mendocino Purps phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A classic California Indica, known for its deep purple colors and grape-like aroma. The effect is strongly relaxing and ideal for pain and insomnia.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Low",
+            "height": "Short",
+            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    })
 ];

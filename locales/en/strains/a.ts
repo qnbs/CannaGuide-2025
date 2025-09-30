@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "abusive-og": {
+    "description": "An OG Kush phenotype known for its heavily relaxing and sedating effects. This pure indica delivers a potent, earthy pine flavor and is often used to alleviate pain, anxiety, and insomnia."
+  },
   "acdc": {
     "description": "A famous CBD-dominant strain, bred for therapeutic purposes without strong psychoactive effects. The name stands for 'Alternative Cannabinoid Dietary Cannabis'. It has a relaxing and anxiolytic effect, while the mind remains clear. Ideal for pain and anxiety."
   },

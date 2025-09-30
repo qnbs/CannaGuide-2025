@@ -28,12 +28,13 @@ ENVIRONMENT
 Temperature: ${plant.environment.internalTemperature.toFixed(1)}°C
 Humidity: ${plant.environment.internalHumidity.toFixed(1)}%
 VPD: ${plant.environment.vpd.toFixed(2)} kPa
+CO2 Level: ${plant.environment.co2Level.toFixed(0)} ppm
 
-SUBSTRATE & ROOTS
+MEDIUM & ROOTS
 -----------------
-pH: ${plant.substrate.ph.toFixed(2)}
-EC: ${plant.substrate.ec.toFixed(2)}
-Moisture: ${plant.substrate.moisture.toFixed(1)}%
+pH: ${plant.medium.ph.toFixed(2)}
+EC: ${plant.medium.ec.toFixed(2)}
+Moisture: ${plant.medium.moisture.toFixed(1)}%
 Root Health: ${plant.rootSystem.health.toFixed(1)}%
 
 ACTIVE ISSUES
@@ -121,7 +122,7 @@ PLANT CONTEXT:
 - Strain: ${plant.strain.name} (${plant.strain.type})
 - Age: ${plant.age} days (Stage: ${t(`plantStages.${plant.stage}`)})
 - Active Issues: ${problems}
-- Substrate Vitals: pH ${plant.substrate.ph.toFixed(2)}, EC ${plant.substrate.ec.toFixed(2)}
+- Medium Vitals: pH ${plant.medium.ph.toFixed(2)}, EC ${plant.medium.ec.toFixed(2)}
 - Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(1)}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
 - USER NOTES: "${userNotes || 'None provided'}"
         `.trim();
@@ -167,15 +168,16 @@ PLANT CONTEXT:
     
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT();
-        // FIX: Pass a structured object for interpolation instead of a stringified object.
+        // FIX: The previous fix was incorrect. Interpolating a complex object results in '[object Object]'.
+        // Reverting to JSON.stringify to provide detailed context to the AI model.
         const prompt = t('ai.prompts.advisor', {
-            plant: { 
+            plant: JSON.stringify({ 
                 name: plant.name, 
                 age: plant.age, 
                 stage: plant.stage, 
                 problems: plant.problems, 
-                vitals: plant.substrate 
-            }
+                vitals: plant.medium 
+            }, null, 2)
         });
         const responseText = await this.generateText(prompt, lang);
         return { title: t('ai.advisor'), content: responseText };

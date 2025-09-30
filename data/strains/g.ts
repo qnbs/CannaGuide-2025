@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsG: Strain[] = [
-    {
+    createStrainObject({
         "id": "g-13",
         "name": "G13",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Pine", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "g-13-haze",
         "name": "G13 Haze",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Fruity", "Sweet", "Spicy", "Haze"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "galactica-og",
         "name": "Galactica OG",
         "type": StrainType.Indica,
@@ -72,8 +73,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Coffee", "Earthy", "Sweet", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "garanimals",
         "name": "Garanimals",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Grape", "Spicy", "Sweet", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "garlic-breath",
         "name": "Garlic Breath",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Garlic", "Spicy", "Earthy", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "garlic-muffin",
         "name": "Garlic Muffin",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Garlic", "Blueberry", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gary-payton",
         "name": "Gary Payton",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Diesel", "Pepper", "Apricot", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gastropop",
         "name": "Gastropop",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Grape", "Diesel"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gelato",
         "name": "Gelato",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Fruity", "Berry"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gelato-33",
         "name": "Gelato #33",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Citrus", "Fruity", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gelato-41",
         "name": "Gelato #41",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Berry", "Creamy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gelonade",
         "name": "Gelonade",
         "type": StrainType.Hybrid,
@@ -288,8 +289,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Lemon", "Citrus", "Sweet", "Fruity"],
         "dominantTerpenes": ["Terpinolene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "georgia-pie",
         "name": "Georgia Pie",
         "type": StrainType.Hybrid,
@@ -312,8 +313,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Peach", "Sweet", "Creamy", "Earthy"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ghost-og",
         "name": "Ghost OG",
         "type": StrainType.Hybrid,
@@ -336,8 +337,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Citrus", "Pine", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ghost-train-haze",
         "name": "Ghost Train Haze",
         "type": StrainType.Hybrid,
@@ -360,8 +361,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Citrus", "Floral", "Sweet", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "girl-scout-cookies",
         "name": "Girl Scout Cookies",
         "type": StrainType.Hybrid,
@@ -384,8 +385,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Mint", "Cookie"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gmo-cookies",
         "name": "GMO Cookies",
         "type": StrainType.Hybrid,
@@ -408,8 +409,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Garlic", "Onion", "Diesel", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "god-bud",
         "name": "God Bud",
         "type": StrainType.Hybrid,
@@ -432,8 +433,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Fruity", "Tropical"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gods-gift",
         "name": "God's Gift",
         "type": StrainType.Hybrid,
@@ -456,8 +457,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Earthy", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gods-green-crack",
         "name": "God's Green Crack",
         "type": StrainType.Hybrid,
@@ -480,8 +481,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Fruity", "Woody"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "godfather-og",
         "name": "Godfather OG",
         "type": StrainType.Hybrid,
@@ -504,8 +505,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "golden-goat",
         "name": "Golden Goat",
         "type": StrainType.Hybrid,
@@ -528,8 +529,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Tropical", "Sweet", "Spicy", "Citrus"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "golden-pineapple",
         "name": "Golden Pineapple",
         "type": StrainType.Hybrid,
@@ -552,8 +553,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Pineapple", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gorilla-bomb",
         "name": "Gorilla Bomb",
         "type": StrainType.Hybrid,
@@ -576,8 +577,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Diesel", "Chocolate", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gorilla-glue-4",
         "name": "Gorilla Glue #4",
         "type": StrainType.Hybrid,
@@ -600,8 +601,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gorilla-zkittlez",
         "name": "Gorilla Zkittlez",
         "type": StrainType.Hybrid,
@@ -624,8 +625,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Tropical", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "granddaddy-purple",
         "name": "Granddaddy Purple",
         "type": StrainType.Indica,
@@ -648,8 +649,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "grandmommy",
         "name": "Grandmommy Purple",
         "type": StrainType.Indica,
@@ -672,8 +673,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Fruity", "Grape"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "grape-ape",
         "name": "Grape Ape",
         "type": StrainType.Indica,
@@ -696,8 +697,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "grape-pie",
         "name": "Grape Pie",
         "type": StrainType.Hybrid,
@@ -720,8 +721,8 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Earthy", "Berry"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Linalool"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "grape-stomper",
         "name": "Grape Stomper",
         "type": StrainType.Hybrid,
@@ -738,74 +739,74 @@ export const strainsG: Strain[] = [
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
-            "height": "Tall",
+            "height": "Medium",
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
         },
-        "aromas": ["Grape", "Sweet", "Diesel", "Lemon"],
-        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Grape", "Sweet", "Diesel", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "grapefruit",
         "name": "Grapefruit",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Cinderella 99 x an unknown sativa",
+        "genetics": "Cinderella 99 x an unknown Sativa",
         "floweringType": "Photoperiod",
         "thc": 22.5,
         "cbd": 1,
         "thcRange": "20-25%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
         "description": "A sativa-dominant hybrid with a strong grapefruit and citrus aroma. Grapefruit delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Grapefruit", "Citrus", "Sweet", "Tropical"],
-        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+        "dominantTerpenes": ["Myrcene", "Terpinolene", "Pinene"]
+    }),
+    createStrainObject({
         "id": "grease-monkey",
         "name": "Grease Monkey",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Gorilla Glue #4 x Cookies and Cream",
         "floweringType": "Photoperiod",
-        "thc": 28.5,
+        "thc": 27,
         "cbd": 1,
-        "thcRange": "25-32%",
+        "thcRange": "25-30%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
         "description": "A potent Indica hybrid with a sweet, earthy aroma with notes of vanilla and diesel. The effect is strongly relaxing and ideal for the evening.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "Medium",
+            "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Earthy", "Diesel", "Vanilla"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "green-crack",
         "name": "Green Crack",
         "type": StrainType.Sativa,
         "typeDetails": "Sativa 65% / Indica 35%",
         "genetics": "Skunk #1 x an unknown Indica",
         "floweringType": "Photoperiod",
-        "thc": 20,
+        "thc": 24,
         "cbd": 1,
-        "thcRange": "18-22%",
+        "thcRange": "20-28%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
         "description": "A potent Sativa known for its highly energizing and focusing effects. Ideal for daytime use. The aroma is fruity, citrusy, and reminiscent of mango.",
         "agronomic": {
             "difficulty": "Easy",
@@ -814,14 +815,14 @@ export const strainsG: Strain[] = [
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
-        "aromas": ["Mango", "Citrus", "Fruity", "Sweet"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+        "aromas": ["Mango", "Citrus", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "green-gelato",
         "name": "Green Gelato",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 55% Indica / 45% Sativa",
+        "typeDetails": "Indica 55% / Sativa 45%",
         "genetics": "Thin Mint GSC x Sunset Sherbet",
         "floweringType": "Photoperiod",
         "thc": 27,
@@ -833,15 +834,15 @@ export const strainsG: Strain[] = [
         "description": "Green Gelato is a slightly indica-dominant powerhouse from Royal Queen Seeds, bred for maximum flavor and potency. It offers a delicious taste of sweet mint, citrus, and creamy sherbet. The effects are incredibly strong, providing an uplifting mental energy and creativity boost while simultaneously delivering a heavy, relaxing body stone. It's a top-tier dessert strain for experienced users.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-700 g/m²", "outdoor": "800 g/plant" },
-            "heightDetails": { "indoor": "80-120 cm", "outdoor": "150-200 cm" }
+            "yieldDetails": { "indoor": "500-700 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "" }
         },
-        "aromas": ["Mint", "Citrus", "Sweet", "Creamy"],
+        "aromas": ["Sweet", "Mint", "Citrus", "Earthy"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "green-goblin",
         "name": "Green Goblin",
         "type": StrainType.Hybrid,
@@ -862,15 +863,15 @@ export const strainsG: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Diesel", "Pungent", "Earthy", "Skunk"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Diesel", "Earthy", "Pungent", "Skunk"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
         "id": "green-gummy",
         "name": "Green Gummy",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "GSC x an unknown strain",
+        "genetics": "Unknown",
         "floweringType": "Photoperiod",
         "thc": 22,
         "cbd": 1,
@@ -881,27 +882,27 @@ export const strainsG: Strain[] = [
         "description": "An indica-dominant hybrid with a sweet, fruity, and berry-like aroma. Green Gummy delivers a relaxing and happy high that is perfect for unwinding.",
         "agronomic": {
             "difficulty": "Easy",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "guava-cake",
         "name": "Guava Cake",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
+        "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Wedding Cake phenotype",
         "floweringType": "Photoperiod",
         "thc": 23,
         "cbd": 1,
         "thcRange": "21-25%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 10.5,
+        "floweringTimeRange": "10-11",
         "description": "A balanced hybrid with a sweet, tropical guava aroma. Guava Cake delivers a relaxing and euphoric high that is perfect for social situations.",
         "agronomic": {
             "difficulty": "Medium",
@@ -912,32 +913,32 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Guava", "Tropical", "Sweet", "Fruity"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "gummibears",
         "name": "Gummibears",
         "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
+        "typeDetails": "Sativa 60% / Indica 40%",
         "genetics": "Atlas Star x an unknown strain",
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
         "thcRange": "18-22%",
         "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
         "description": "An indica-dominant hybrid with a sweet, fruity, and berry-like aroma. Gummibears delivers a relaxing and happy high that is perfect for unwinding.",
         "agronomic": {
             "difficulty": "Easy",
-            "yield": "High",
+            "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+        "aromas": ["Sweet", "Fruity", "Berry", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "gusher",
         "name": "Gusher",
         "type": StrainType.Hybrid,
@@ -948,8 +949,8 @@ export const strainsG: Strain[] = [
         "cbd": 1,
         "thcRange": "22-26%",
         "cbdRange": "<1%",
-        "floweringTime": 10.5,
-        "floweringTimeRange": "10-11",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
         "description": "An indica-dominant hybrid with a sweet, fruity, and tropical aroma. Gusher delivers a strong, relaxing, and euphoric high that is perfect for evening use.",
         "agronomic": {
             "difficulty": "Medium",
@@ -960,5 +961,5 @@ export const strainsG: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Tropical", "Cookie"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }
+    })
 ];

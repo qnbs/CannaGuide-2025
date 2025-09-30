@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "double-burger": {
+    "description": "Eine intensiv potente und herzhafte Indica-dominante Hybride. Sie verdoppelt die GMO-Genetik, was zu einem kräftigen Aroma von Knoblauch, Zwiebel und chemischem Diesel führt. Die Wirkung ist stark und schnell einsetzend und liefert eine schwere Körperentspannung, die perfekt ist, um den Tag zu beenden und Schmerzen zu bekämpfen."
+  },
   "dance-world": {
     "description": "Eine CBD-reiche Sorte mit einem ausgewogenen THC- und CBD-Gehalt. Die Wirkung ist erhebend und funktional, ideal zur Linderung von Schmerzen und Angstzuständen ohne starke psychoaktive Effekte.",
     "typeDetails": "Sativa 75% / Indica 25%",
@@ -155,10 +158,10 @@ export const strains: Record<string, StrainTranslationData> = {
     "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel" }
   },
   "durban-poison": {
-    "description": "Eine reine Sativa-Landrasse aus Südafrika, bekannt für ihr süßes, anisartiges Aroma und ihre klare, energetisierende und erhebende Wirkung. Ideal für den Tagesgebrauch, um produktiv zu bleiben.",
-    "typeDetails": "Sativa 100%",
+    "description": "Durban Poison ist eine reine Sativa-Landrasse, die direkt aus der südafrikanischen Hafenstadt Durban stammt. Sie wurde in den 1970er Jahren in die USA gebracht und hat seitdem weltweite Bekanntheit erlangt. Diese Sorte ist berühmt für ihre klare, energetisierende und extrem erhebende Wirkung, die oft als der 'Espresso des Cannabis' bezeichnet wird. Sie erzeugt ein starkes, fokussiertes und kreatives zerebrales High, ohne die sedierenden oder körperlich schweren Effekte, die bei vielen Hybriden üblich sind. Das macht sie zu einer idealen Sorte für den Tagesgebrauch, um produktiv zu bleiben oder soziale Aktivitäten zu genießen. Das Aroma ist einzigartig und komplex, mit einem süßen und würzigen Duft, der an Anis oder Lakritz erinnert, untermalt von erdigen und kiefernartigen Noten. Aufgrund ihrer reinen Sativa-Genetik und ihrer hohen Harzproduktion ist sie auch ein geschätzter Elternteil für viele moderne Hybriden, allen voran Girl Scout Cookies.",
+    "typeDetails": "Sativa - 100% Sativa",
     "genetics": "Südafrikanische Landrasse",
-    "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "~650 g/Pflanze" },
+    "yieldDetails": { "indoor": "~450-550 g/m²", "outdoor": "~650 g/Pflanze" },
     "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch (bis 2.5 m)" }
   },
   "dutch-treat": {

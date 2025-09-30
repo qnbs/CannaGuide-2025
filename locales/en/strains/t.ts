@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "the-menthol": {
+    "description": "A unique hybrid known for its distinctively sharp, minty, and chemical aroma, reminiscent of menthol. The high is balanced, offering an uplifting and creative cerebral buzz followed by a soothing body calm, making it suitable for various occasions without being overly sedative.",
+  },
   "tahoe-alien": {
     "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening."
   },
@@ -58,11 +61,14 @@ export const strains: Record<string, StrainTranslationData> = {
   "triple-og": {
     "description": "A pure Indica with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and sedating."
   },
+  "tropicana-banana": {
+    "description": "Tropicana Banana combines the citrus profile of Tropicana Cookies with the creamy sweetness of Banana Kush. The result is an exotic fruit cocktail aroma. The effect is happy, euphoric, and relaxing, perfect for social gatherings or creative afternoon activities."
+  },
   "tropicana-cherry": {
     "description": "A balanced hybrid with a sweet, fruity aroma of cherries and citrus. The effect is uplifting, happy, and relaxing."
   },
   "tropicana-cookies": {
-    "description": "A sativa-dominant strain with a strong orange and citrus aroma. The effect is uplifting, creative, and energizing."
+    "description": "Tropicana Cookies is a sativa-dominant strain famous for its incredibly intense aroma of fresh oranges and sweet cookie dough. It produces a strong, energetic, and uplifting high that boosts creativity and focus, making it ideal for daytime use."
   },
   "truffle-butter": {
     "description": "An indica-dominant strain with a sweet, buttery, and earthy aroma. The effect is strong, relaxing, and sedating."

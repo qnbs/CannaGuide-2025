@@ -1,8 +1,8 @@
-
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsR: Strain[] = [
-    {
+    createStrainObject({
         "id": "rainbow-sherbet",
         "name": "Rainbow Sherbet",
         "type": StrainType.Hybrid,
@@ -25,8 +25,8 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Creamy", "Berry"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "rare-dankness-1",
         "name": "Rare Dankness #1",
         "type": StrainType.Hybrid,
@@ -49,8 +49,8 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "raspberry-cough",
         "name": "Raspberry Cough",
         "type": StrainType.Sativa,
@@ -73,8 +73,8 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Raspberry", "Sweet", "Fruity", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ray-charles",
         "name": "Ray Charles",
         "type": StrainType.Indica,
@@ -97,8 +97,8 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Grape", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "red-dragon",
         "name": "Red Dragon",
         "type": StrainType.Hybrid,
@@ -121,17 +121,17 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Guava", "Sweet", "Fruity", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "red-velvet",
         "name": "Red Velvet",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "genetics": "Lemon Cherry Gelato x Pina Acai",
         "floweringType": "Photoperiod",
-        "thc": 24,
+        "thc": 23,
         "cbd": 1,
-        "thcRange": "22-26%",
+        "thcRange": "20-26%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
@@ -143,97 +143,25 @@ export const strainsR: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Sweet", "Cake", "Creamy", "Vanilla"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
-        "id": "reina-madre",
-        "name": "Reina Madre",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa 75% / Indica 25%",
-        "genetics": "La Reunion x Congo",
-        "floweringType": "Photoperiod",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 10,
-        "floweringTimeRange": "10",
-        "description": "A sativa-dominant strain with a spicy, incense-like aroma. The effect is uplifting, cerebral, and energizing.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Spicy", "Incense", "Earthy", "Woody"],
-        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
-        "id": "rocket-fuel",
-        "name": "Rocket Fuel",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Jet Fuel OG x Face Off OG Bx1",
-        "floweringType": "Photoperiod",
-        "thc": 29,
-        "cbd": 1,
-        "thcRange": "26-32%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "9",
-        "description": "A potent indica-dominant strain with a pungent, diesel-like aroma. The effect is strong, physically relaxing, and sedating.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Diesel", "Pungent", "Earthy", "Spicy"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
-        "id": "rockstar",
-        "name": "Rockstar",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Rockbud x Sensi Star",
-        "floweringType": "Photoperiod",
-        "thc": 23.5,
-        "cbd": 1,
-        "thcRange": "20-27%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Rockstar is a potent indica-dominant strain prized for its strong pain-relieving effects without being overly sedative. It delivers a euphoric and uplifting head high that gently transitions into deep physical relaxation. The aroma is a complex blend of spicy herbs with a hint of sweet grape.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Spicy", "Grape", "Earthy", "Pungent"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Humulene"]
-    },
-    {
+        "aromas": ["Sweet", "Cake", "Vanilla", "Earthy"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
         "id": "romulan",
         "name": "Romulan",
         "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
+        "typeDetails": "Indica - 100% Indica",
         "genetics": "North American Indica",
         "floweringType": "Photoperiod",
-        "thc": 20,
+        "thc": 22,
         "cbd": 1,
-        "thcRange": "18-22%",
+        "thcRange": "20-24%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A pure Indica known for its strongly therapeutic and relaxing effects. The aroma is earthy, piney, and spicy.",
+        "description": "A pure Indica, known for its strongly therapeutic and relaxing effects. The aroma is earthy, piney, and spicy.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "Medium",
             "height": "Short",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
@@ -241,80 +169,32 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Pine", "Earthy", "Spicy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
-        "id": "royal-gorilla",
-        "name": "Royal Gorilla",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Sour Dubb x Chem's Sister x Chocolate Diesel",
-        "floweringType": "Photoperiod",
-        "thc": 27,
-        "cbd": 1,
-        "thcRange": "24-30%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Royal Queen Seeds' version of the legendary GG4, Royal Gorilla is an extremely potent and perfectly balanced hybrid. It is famous for its massive resin production, which makes the buds sticky and frosty. The effects are powerful, starting with a wave of cheerful euphoria that quickly melts into a deep, heavy body relaxation, effectively gluing the user to the couch. Its earthy and piney aroma is complemented by notes of lemon and diesel.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "550-600 g/plant" },
-            "heightDetails": { "indoor": "90-160 cm", "outdoor": "130-170 cm" }
-        },
-        "aromas": ["Earthy", "Pine", "Lemon", "Diesel"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
-        "id": "royal-highness",
-        "name": "Royal Highness",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 60% / Indica 40%",
-        "genetics": "Respect x Dance Hall",
-        "floweringType": "Photoperiod",
-        "thc": 14,
-        "cbd": 14,
-        "thcRange": "~14%",
-        "cbdRange": "~14%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "A CBD-rich strain with a balanced THC:CBD ratio. It offers a clear, functional, and anxiety-relieving effect without strong psychoactivity.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "425-475 g/m²", "outdoor": "425-475 g/plant" },
-            "heightDetails": { "indoor": "80-140 cm", "outdoor": "100-160 cm" }
-        },
-        "aromas": ["Sweet", "Fruity", "Skunk", "Haze"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
-        "id": "rs11-rainbow-sherbert-11",
-        "name": "RS11 (Rainbow Sherbert #11)",
+    }),
+    createStrainObject({
+        "id": "rockstar",
+        "name": "Rockstar",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Pink Guava x OZK",
+        "genetics": "Rockbud x Sensi Star",
         "floweringType": "Photoperiod",
-        "thc": 28.5,
+        "thc": 22.5,
         "cbd": 1,
-        "thcRange": "25-32%",
+        "thcRange": "20-25%",
         "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "A potent hybrid with a sweet, fruity, and spicy aroma. The effect is relaxing, happy, and uplifting.",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "Rockstar is a potent indica-dominant strain prized for its strong pain-relieving effects without being overly sedative. It delivers a euphoric and uplifting head high that gently transitions into deep physical relaxation. The aroma is a complex blend of spicy herbs with a hint of sweet grape.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
         },
-        "aromas": ["Sweet", "Fruity", "Spicy", "Citrus"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+        "aromas": ["Spicy", "Herbal", "Earthy", "Grape"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "runtz",
         "name": "Runtz",
         "type": StrainType.Hybrid,
@@ -323,7 +203,7 @@ export const strainsR: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 24,
         "cbd": 1,
-        "thcRange": "19-29%",
+        "thcRange": "20-29%",
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
@@ -337,8 +217,8 @@ export const strainsR: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Candy", "Tropical"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "runtz-muffin",
         "name": "Runtz Muffin",
         "type": StrainType.Hybrid,
@@ -351,15 +231,39 @@ export const strainsR: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A potent indica-dominant hybrid from Barney's Farm, Runtz Muffin combines the candy-like sweetness of Zkittlez and Gelato with a creamy, orange-vanilla finish from Orange Punch. The effect is profoundly relaxing and long-lasting, washing over the user with a wave of euphoria that soothes stress and tension, eventually leading to a state of deep calm.",
+        "description": "Runtz Muffin is a potent indica-dominant hybrid from Barney's Farm that combines the candy-like sweetness of Zkittlez and Gelato with a creamy orange-vanilla finish from Orange Punch. The effect is profoundly relaxing and long-lasting, washing over the user with a wave of euphoria that soothes stress and tension, eventually leading to a state of deep calm.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "100-120 cm", "outdoor": "150-200 cm" }
+            "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
         },
-        "aromas": ["Sweet", "Orange", "Vanilla", "Fruity"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }
+        "aromas": ["Sweet", "Cake", "Fruity", "Lavender"],
+        "dominantTerpenes": ["Limonene", "Linalool", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "royal-gorilla",
+        "name": "Royal Gorilla",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Sour Dubb x Chem's Sister x Chocolate Diesel",
+        "floweringType": "Photoperiod",
+        "thc": 25.5,
+        "cbd": 1,
+        "thcRange": "24-27%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Royal Queen Seeds' version of the legendary GG4, Royal Gorilla is an extremely potent and perfectly balanced hybrid. It is famous for its massive resin production, which makes the buds sticky and frosty. The effects are powerful, starting with a wave of cheerful euphoria that quickly melts into a deep, heavy body relaxation, effectively gluing the user to the couch. Its earthy and piney aroma is complemented by notes of lemon and diesel.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+        },
+        "aromas": ["Earthy", "Pine", "Sweet", "Diesel"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    })
 ];

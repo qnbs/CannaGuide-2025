@@ -60,9 +60,9 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     const lineGenerators = useMemo(() => ({
         height: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.height(d.height)),
         stressLevel: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.stressLevel(d.stressLevel)),
-        ph: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ph(d.substrate.ph)),
-        ec: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ec(d.substrate.ec)),
-        moisture: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.moisture(d.substrate.moisture)),
+        ph: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ph(d.medium.ph)),
+        ec: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ec(d.medium.ec)),
+        moisture: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.moisture(d.medium.moisture)),
     }), [xScale, yScales]);
     
     const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);

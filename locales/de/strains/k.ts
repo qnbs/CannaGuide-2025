@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from "@/types";
 
 export const strains: Record<string, StrainTranslationData> = {
+  "killer-new-haven": {
+    "description": "Eine potente und legendäre Indica-Heirloom-Sorte aus Connecticut. Sie ist ein Schlüssel-Elternteil von Herijuana und liefert eine schwere, fast narkotische Körperwirkung. Ihr Aroma ist stechend, erdig und haschartig."
+  },
   "kali-mist": {
     "description": "Eine preisgekrönte, fast reine Sativa. Sie ist bekannt für ihre energetisierende, klare und kreative Wirkung, die sie zur 'Königin der Sativas' macht. Ideal für den Tagesgebrauch.",
     "typeDetails": "Sativa 90% / Indica 10%",

@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "lemon-pebbles": {
+        "description": "A balanced hybrid known for its delicious flavor profile that combines the sweet, fruity notes of Fruity Pebbles OG with a sharp, zesty lemon kick. The effect is happy, uplifting, and creative, providing a gentle body relaxation that makes it suitable for daytime use."
+    },
+    "lemon-cooler": {
+        "description": "A sativa-dominant hybrid known for its refreshing and vibrant citrus profile, reminiscent of a cool lemon beverage on a hot day. It typically provides an energizing and uplifting high that encourages creativity and focus, making it an excellent choice for daytime use."
+    },
     "la-cake": {
         "description": "An indica-dominant strain with a sweet, cake-like, and earthy aroma. The effect is strong, relaxing, and sedating.",
         "typeDetails": "Indica 70% / Sativa 30%",
@@ -37,11 +43,11 @@ export const strains: Record<string, StrainTranslationData> = {
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
     },
     "larry-og": {
-        "description": "An indica-dominant strain with a strong lemon and pine aroma. The effect is relaxing and happy, ideal for evening use.",
-        "typeDetails": "Indica 50% / Sativa 50%",
+        "description": "Larry OG, also known as Lemon Larry, is an award-winning hybrid from Orange County, California, and a prominent member of the famed OG Kush family. It is a cross between the legendary OG Kush and SFV OG (San Fernando Valley OG). This strain is known for its balanced effects, which combine a strong but clear cerebral euphoria with a deeply relaxing and calming body high. It elevates the mood and promotes creativity without impairing mental clarity, making it a good choice for the late afternoon or evening. The aroma is a classic OG profile: an intense blend of fresh lemon and earthy pine with a sharp, clean undertone. Its robust characteristics make it a key parent for popular strains like Purple Punch.",
+        "typeDetails": "Hybrid - 55% Indica / 45% Sativa",
         "genetics": "OG Kush x SFV OG",
-        "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-        "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        "yieldDetails": { "indoor": "~450-550 g/m²", "outdoor": "~600 g/plant" },
+        "heightDetails": { "indoor": "Medium to Tall", "outdoor": "Tall" }
     },
     "lava-cake": {
         "description": "An indica-dominant strain with a sweet, chocolatey, and minty aroma. The effect is strong, relaxing, and sedating.",
@@ -91,13 +97,6 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Lemon Skunk x Silver Haze",
         "yieldDetails": { "indoor": "450-500 g/m²", "outdoor": "500-600 g/plant" },
         "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-    },
-    "lemon-pepper": {
-        "description": "A sativa-dominant strain with a spicy, peppery lemon aroma. The effect is uplifting, energizing, and creative.",
-        "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Lemon Cooler x Lemon Pebbles",
-        "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-        "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
     },
     "lemon-thai": {
         "description": "A sativa-dominant strain with a strong lemon and mint aroma. The effect is uplifting, creative, and energizing.",

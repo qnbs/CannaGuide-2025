@@ -128,6 +128,11 @@ export interface Strain {
     };
     aromas?: string[];
     dominantTerpenes?: string[];
+    geneticModifiers: {
+        pestResistance: number; // 0.8 to 1.2
+        nutrientUptakeRate: number; // 0.8 to 1.2
+        stressTolerance: number; // 0.8 to 1.2
+    };
 }
 
 export interface Plant {
@@ -152,24 +157,32 @@ export interface Plant {
         internalTemperature: number;
         internalHumidity: number;
         vpd: number;
+        co2Level: number; // in ppm
     };
-    substrate: {
+    medium: {
         ph: number;
-        ec: number;
-        moisture: number;
+        ec: number; // Electrical Conductivity
+        moisture: number; // Percentage
+        microbeHealth: number; // Percentage
     };
     rootSystem: {
-        health: number;
-        microbeActivity: number;
+        health: number; // Percentage
+        microbeActivity: number; // Percentage
+        rootMass: number; // in grams
+    };
+    structuralModel: {
+        branches: number;
+        nodes: number;
+        leafCount: number;
     };
     equipment: {
-        light: { wattage: number; isOn: boolean };
+        light: { wattage: number; isOn: boolean; lightHours: number; };
         fan: { isOn: boolean; speed: number };
     };
-    postHarvest?: PostHarvestData;
+    harvestData?: HarvestData;
 }
 
-export interface PostHarvestData {
+export interface HarvestData {
     wetWeight: number;
     dryWeight: number;
     terpeneRetentionPercent: number;
@@ -224,7 +237,7 @@ export interface PlantHistoryEntry {
     height: number;
     health: number;
     stressLevel: number;
-    substrate: {
+    medium: {
         ph: number;
         ec: number;
         moisture: number;

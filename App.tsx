@@ -18,6 +18,7 @@ import { i18nInstance } from './i18n';
 import { LogActionModalContainer } from './components/views/plants/LogActionModalContainer';
 import { DeepDiveModalContainer } from './components/views/plants/deepDive/DeepDiveModalContainer';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
+// FIX: Updated to import the `runDataMigrations` thunk.
 import { runDataMigrations } from './services/migrationService';
 // FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from './stores/store';
@@ -158,7 +159,8 @@ export const App: React.FC = () => {
             // Pass the entire settings object for initialization
             dispatch(initializeSimulation(settings));
             
-            runDataMigrations();
+            // FIX: Dispatch the async thunk instead of calling it directly.
+            dispatch(runDataMigrations());
             dispatch(setAppReady(true));
         };
         initializeApp();

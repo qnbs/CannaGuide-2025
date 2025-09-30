@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "abusive-og": {
+    "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Diese reine Indica liefert einen kräftigen, erdigen Kieferngeschmack und wird oft zur Linderung von Schmerzen, Angst und Schlaflosigkeit eingesetzt."
+  },
   "acdc": {
     "description": "Eine berühmte CBD-dominante Sorte, gezüchtet für therapeutische Zwecke ohne starke psychoaktive Wirkung. Der Name steht für 'Alternative Cannabinoid Dietary Cannabis'. Wirkt entspannend und angstlösend, während der Geist klar bleibt. Ideal bei Schmerzen und Angstzuständen."
   },

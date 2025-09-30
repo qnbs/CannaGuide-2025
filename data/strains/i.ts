@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsI: Strain[] = [
-    {
+    createStrainObject({
         "id": "ice",
         "name": "Ice",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Diesel", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ice-cream-cake",
         "name": "Ice Cream Cake",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Vanilla", "Earthy"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Linalool"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ice-cream-man",
         "name": "Ice Cream Man",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Fruity", "Vanilla"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "imperial-lion",
         "name": "Imperial Lion",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Herbal", "Pine"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "incredible-bulk",
         "name": "Incredible Bulk",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Earthy", "Skunk", "Sweet", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "indiana-bubblegum",
         "name": "Indiana Bubblegum",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Bubblegum", "Sweet", "Fruity", "Berry"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "indigo-berry-kush",
         "name": "Indigo Berry Kush",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Berry", "Sweet", "Earthy", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "island-pink-kush",
         "name": "Island Pink Kush",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Floral", "Sweet", "Skunk", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "island-sweet-skunk",
         "name": "Island Sweet Skunk",
         "type": StrainType.Hybrid,
@@ -216,5 +217,5 @@ export const strainsI: Strain[] = [
         },
         "aromas": ["Sweet", "Skunk", "Tropical", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
-    }
+    })
 ];

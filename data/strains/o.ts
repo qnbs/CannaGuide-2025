@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsO: Strain[] = [
-    {
+    createStrainObject({
         "id": "og-kush",
         "name": "OG Kush",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Citrus", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ogkb-og-kush-breath",
         "name": "OGKB (OG Kush Breath)",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Earthy", "Nutty", "Sweet", "Vanilla"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-bud",
         "name": "Orange Bud",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-cookies",
         "name": "Orange Cookies",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Cookie"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-cream-sicle",
         "name": "Orange Cream Sicle",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Creamy", "Sweet", "Vanilla"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-eruption",
         "name": "Orange Eruption",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Sour"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-juice",
         "name": "Orange Juice",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Fruity"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-sherbet",
         "name": "Orange Sherbet",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Creamy", "Sweet", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orange-velvet",
         "name": "Orange Velvet",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Orange", "Creamy", "Sweet", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "oreo-cake",
         "name": "Oreo Cake",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Sweet", "Chocolate", "Earthy", "Vanilla"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "oreoz",
         "name": "Oreoz",
         "type": StrainType.Hybrid,
@@ -264,32 +265,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Chocolate", "Sweet", "Creamy", "Vanilla"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
-        "id": "original-glue",
-        "name": "Original Glue",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Chem's Sister x Sour Dubb x Chocolate Diesel",
-        "floweringType": "Photoperiod",
-        "thc": 28.5,
-        "cbd": 1,
-        "thcRange": "25-32%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "9",
-        "description": "Also known as GG4. An extremely potent and resinous hybrid. Its effect is strong, euphoric, and relaxing, often with a 'couch-lock' effect. The aroma is earthy, sour, and reminiscent of diesel.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
-        },
-        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "orion",
         "name": "Orion",
         "type": StrainType.Hybrid,
@@ -312,8 +289,8 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Pine"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ortega",
         "name": "Ortega",
         "type": StrainType.Indica,
@@ -336,5 +313,29 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Woody", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }
+    }),
+    createStrainObject({
+        "id": "original-glue",
+        "name": "Original Glue",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Chem's Sister x Sour Dubb x Chocolate Diesel",
+        "floweringType": "Photoperiod",
+        "thc": 28.5,
+        "cbd": 1,
+        "thcRange": "25-32%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "9",
+        "description": "Also known as GG4. An extremely potent and resinous hybrid. Its effect is strong, euphoric, and relaxing, often with a 'couch-lock' effect. The aroma is earthy, sour, and reminiscent of diesel.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
+        },
+        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    })
 ];

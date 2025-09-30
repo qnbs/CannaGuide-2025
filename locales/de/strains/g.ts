@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "gupta-kush": {
+    "description": "Eine potente Indica und ein Schlüssel-Elternteil für mehrere moderne Kush-Sorten. Liefert eine schwere, klassische OG-Erfahrung mit erdigen, kiefernartigen Noten. Ideal für tiefe Entspannung."
+  },
+  "grape-gasoline": {
+    "description": "Eine ausgewogene Hybride mit einem kraftvollen Aroma, das seinem Namen alle Ehre macht und süße Traubennoten mit einem scharfen, gasartigen Diesel-Abgang verbindet. Die Wirkung ist typischerweise zunächst erhebend und euphorisch und geht dann in ein angenehmes und entspannendes Körper-High über, was sie vielseitig für den Tages- und Abendgebrauch macht.",
+  },
   "g-13": {
     "description": "Eine legendäre Indica-Sorte mit einer mysteriösen Herkunftsgeschichte. Sie bietet eine starke, körperlich entspannende und zerebral stimulierende Wirkung.",
   },

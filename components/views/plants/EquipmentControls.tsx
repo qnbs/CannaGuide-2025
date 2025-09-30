@@ -4,7 +4,8 @@ import { Card } from '@/components/common/Card';
 import { Plant } from '@/types';
 import { Switch } from '@/components/common/Switch';
 import { useAppDispatch } from '@/stores/store';
-import { toggleLight, toggleFan, setFanSpeed } from '@/stores/slices/simulationSlice';
+import { toggleLight, toggleFan, setFanSpeed, setLightHours } from '@/stores/slices/simulationSlice';
+import { Select } from '@/components/ui/ThemePrimitives';
 
 interface EquipmentControlsProps {
     plant: Plant;
@@ -26,6 +27,22 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
                     checked={light.isOn} 
                     onChange={() => dispatch(toggleLight({ plantId: plant.id }))} 
                 />
+                 <div>
+                    <label htmlFor="light-hours" className="block text-sm font-semibold text-slate-300 mb-1">
+                        {t('plantsView.setupModal.lightCycle')}
+                    </label>
+                    <Select
+                        id="light-hours"
+                        value={light.lightHours}
+                        onChange={(e) => dispatch(setLightHours({ plantId: plant.id, hours: Number(e.target.value) }))}
+                        options={[
+                            { value: '18', label: t('plantsView.setupModal.cycles.veg') },
+                            { value: '12', label: t('plantsView.setupModal.cycles.flower') },
+                            { value: '24', label: t('plantsView.setupModal.cycles.auto') },
+                        ]}
+                        disabled={!light.isOn}
+                    />
+                </div>
                 <Switch 
                     label={t('plantsView.detailedView.controls.fan')} 
                     checked={fan.isOn} 

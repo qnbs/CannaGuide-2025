@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "himalayan-kush": {
+        "description": "A pure indica landrace from the Himalayan mountain range. It is prized for its resilience to cold climates and its deeply relaxing, almost meditative body high. Its aroma is a classic mix of earthy, woody, and sweet hash notes."
+    },
     "han-solo-burger": {
         "description": "A potent indica-dominant hybrid known for its strong, relaxing effects and a complex aroma that blends spicy, earthy notes with a pungent diesel kick. It's a great choice for experienced users seeking deep relaxation.",
         "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "700-800 g/plant" },

@@ -7,6 +7,7 @@ import { Modal } from '@/components/common/Modal';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { Input, Select, FormSection } from '@/components/ui/ThemePrimitives';
+import { createStrainObject } from '@/services/strainFactory';
 
 interface AddStrainModalProps {
     isOpen: boolean;
@@ -82,7 +83,8 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
     
     const onSubmit = (values: ReturnType<typeof strainToFormValues>) => {
         const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
-        const finalStrain: Strain = {
+        
+        const partialStrainData: Partial<Strain> = {
             id: isEditMode ? strainToEdit.id : `${values.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
             name: values.name,
             type: values.type as StrainType,
@@ -104,8 +106,10 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                 height: values.height as HeightLevel,
                 yieldDetails: { indoor: values.yieldIndoor, outdoor: values.yieldOutdoor },
                 heightDetails: { indoor: values.heightIndoor, outdoor: values.heightOutdoor }
-            }
+            },
         };
+
+        const finalStrain = createStrainObject(partialStrainData);
 
         if (isEditMode) {
             onUpdateStrain(finalStrain);

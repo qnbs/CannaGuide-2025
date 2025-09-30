@@ -1,8 +1,8 @@
-
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsK: Strain[] = [
-    {
+    createStrainObject({
         "id": "k2",
         "name": "K2",
         "type": StrainType.Hybrid,
@@ -25,8 +25,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Sweet", "Woody"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "kali-mist",
         "name": "Kali Mist",
         "type": StrainType.Hybrid,
@@ -49,8 +49,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Spicy", "Sweet", "Earthy", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "kandy-kush",
         "name": "Kandy Kush",
         "type": StrainType.Hybrid,
@@ -73,8 +73,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Sweet", "Candy", "Earthy", "Lemon"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ketama",
         "name": "Ketama",
         "type": StrainType.Indica,
@@ -97,8 +97,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Earthy", "Hash", "Spicy", "Woody"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "key-lime-pie",
         "name": "Key Lime Pie",
         "type": StrainType.Hybrid,
@@ -121,8 +121,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Lime", "Mint", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "khalifa-kush",
         "name": "Khalifa Kush",
         "type": StrainType.Hybrid,
@@ -145,8 +145,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Earthy", "Pungent"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "king-louis-xiii",
         "name": "King Louis XIII",
         "type": StrainType.Hybrid,
@@ -159,7 +159,6 @@ export const strainsK: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A rare phenotype of OG Kush, known for its extremely pungent, piney, and earthy aroma. The effect is strong, sedating, and ideal for insomnia.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -169,8 +168,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "kosher-kush",
         "name": "Kosher Kush",
         "type": StrainType.Indica,
@@ -193,8 +192,8 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Earthy", "Fruity", "Sweet", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "kush-mints",
         "name": "Kush Mints",
         "type": StrainType.Hybrid,
@@ -217,5 +216,125 @@ export const strainsK: Strain[] = [
         },
         "aromas": ["Mint", "Cookie", "Earthy", "Coffee"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }
+    }),
+    createStrainObject({
+        "id": "kilimanjaro",
+        "name": "Kilimanjaro",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Kenyan Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 11,
+        "floweringTimeRange": "10-12",
+        "description": "A pure African Sativa from the slopes of Kilimanjaro in Kenya. It is known for its extremely energizing and almost immediate effect, which has earned it the nickname 'one-hit-wonder'. Ideal for daytime use to promote activity and creativity.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "150-220 cm", "outdoor": ">200 cm" }
+        },
+        "aromas": ["Sweet", "Fruity", "Tropical", "Earthy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "king",
+        "name": "King",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "OG Kush phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A potent indica-dominant strain with an earthy, spicy aroma. The effect is strong, physically relaxing, and sedating.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Earthy", "Spicy", "Pungent", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "kings-kush",
+        "name": "King's Kush",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush x Grape",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "9",
+        "description": "An indica-dominant strain with a sweet, grape-like, and earthy aroma. The effect is strong, relaxing, and long-lasting.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Grape", "Sweet", "Earthy", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "kosher-tangie",
+        "name": "Kosher Tangie",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Kosher Kush x Tangie",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A sativa-dominant strain with a strong citrus and orange aroma. The effect is uplifting, creative, and energizing.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Citrus", "Orange", "Sweet", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "kush-sorbet",
+        "name": "Kush Sorbet",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Sunset Sherbet x Triangle Kush",
+        "floweringType": "Photoperiod",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "An indica-dominant strain with a sweet, creamy, and fruity aroma. The effect is relaxing and calming, ideal for evening use.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Sweet", "Creamy", "Fruity", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    })
 ];

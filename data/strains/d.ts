@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsD: Strain[] = [
-    {
+    createStrainObject({
         "id": "dance-world",
         "name": "Dance World",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Fruity", "Floral"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "darth-vader-og",
         "name": "Darth Vader OG",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Grape", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "deadhead-og",
         "name": "Deadhead OG",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Sour", "Diesel"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "death-bubba",
         "name": "Death Bubba",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Skunk", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "death-star",
         "name": "Death Star",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Diesel", "Earthy", "Pungent", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "diablo-og",
         "name": "Diablo OG",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Fruity", "Spicy", "Citrus", "Sweet"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "diamond-og",
         "name": "Diamond OG",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Citrus", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "diesel",
         "name": "Diesel",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Diesel", "Pungent", "Earthy", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "divine-gelato",
         "name": "Divine Gelato",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Fruity", "Vanilla"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "do-si-dos",
         "name": "Do-Si-Dos",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Floral", "Pungent"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "do-si-woah",
         "name": "Do-Si-Woah",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Fruity", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dogwalker-og",
         "name": "Dogwalker OG",
         "type": StrainType.Hybrid,
@@ -288,8 +289,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Skunk", "Diesel", "Woody"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dolato",
         "name": "Dolato",
         "type": StrainType.Hybrid,
@@ -312,8 +313,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Pine", "Lavender"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Linalool"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "donkey-butter",
         "name": "Donkey Butter",
         "type": StrainType.Hybrid,
@@ -336,8 +337,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Diesel", "Pungent", "Earthy", "Pine"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "donny-burger",
         "name": "Donny Burger",
         "type": StrainType.Hybrid,
@@ -360,8 +361,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Cheese", "Spicy", "Earthy", "Sweet"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dosi-cake",
         "name": "Dosi-Cake",
         "type": StrainType.Hybrid,
@@ -384,8 +385,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Cake", "Earthy", "Vanilla"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "double-dream",
         "name": "Double Dream",
         "type": StrainType.Hybrid,
@@ -408,8 +409,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Floral", "Berry", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dr-grinspoon",
         "name": "Dr. Grinspoon",
         "type": StrainType.Sativa,
@@ -432,8 +433,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Spicy", "Tropical"],
         "dominantTerpenes": ["Terpinolene", "Limonene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dream-queen",
         "name": "Dream Queen",
         "type": StrainType.Hybrid,
@@ -456,8 +457,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dream-star",
         "name": "Dream Star",
         "type": StrainType.Hybrid,
@@ -480,8 +481,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "duct-tape",
         "name": "Duct Tape",
         "type": StrainType.Hybrid,
@@ -504,8 +505,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Diesel", "Chocolate", "Pine", "Earthy"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ducksfoot",
         "name": "DucksFoot",
         "type": StrainType.Hybrid,
@@ -528,8 +529,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Spicy", "Sweet"],
         "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dumpster",
         "name": "Dumpster",
         "type": StrainType.Hybrid,
@@ -552,8 +553,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Skunk", "Earthy", "Pungent", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "durban-poison",
         "name": "Durban Poison",
         "type": StrainType.Sativa,
@@ -576,8 +577,8 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Sweet", "Anise", "Earthy", "Spicy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "dutch-treat",
         "name": "Dutch Treat",
         "type": StrainType.Hybrid,
@@ -600,5 +601,5 @@ export const strainsD: Strain[] = [
         },
         "aromas": ["Eucalyptus", "Pine", "Sweet", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
-    }
+    })
 ];

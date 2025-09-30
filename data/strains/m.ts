@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsM: Strain[] = [
-    {
+    createStrainObject({
         "id": "mac",
         "name": "MAC (Miracle Alien Cookies)",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Citrus", "Earthy", "Spicy", "Diesel"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mac-1",
         "name": "Mac 1",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Citrus", "Earthy", "Diesel", "Spicy"],
         "dominantTerpenes": ["Limonene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "malawi-gold",
         "name": "Malawi Gold",
         "type": StrainType.Sativa,
@@ -72,8 +73,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Woody", "Floral"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mandarin-cookies",
         "name": "Mandarin Cookies",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Cookie"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mandarin-zkittlez",
         "name": "Mandarin Zkittlez",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Tangerine", "Sweet", "Fruity", "Tropical"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mango-kush",
         "name": "Mango Kush",
         "type": StrainType.Hybrid,
@@ -140,12 +141,12 @@ export const strainsM: Strain[] = [
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-200 cm" }
         },
         "aromas": ["Mango", "Sweet", "Fruity", "Tropical"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "marathon-og",
         "name": "Marathon OG",
         "type": StrainType.Indica,
@@ -168,8 +169,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Pine", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mars-og",
         "name": "Mars OG",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Pine", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "martian",
         "name": "Martian",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "master-kush",
         "name": "Master Kush",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Earthy", "Citrus", "Sweet", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mataro-blue",
         "name": "Mataro Blue",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Berry", "Sweet", "Earthy", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "maui-haze",
         "name": "Maui Haze",
         "type": StrainType.Hybrid,
@@ -288,8 +289,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Tropical", "Sweet", "Citrus", "Pineapple"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Terpinolene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "maui-wowie",
         "name": "Maui Wowie",
         "type": StrainType.Hybrid,
@@ -312,8 +313,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Pineapple", "Tropical", "Sweet", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mazar-sharif",
         "name": "Mazar | Sharif",
         "type": StrainType.Indica,
@@ -336,8 +337,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Spicy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "meat-breath",
         "name": "Meat Breath",
         "type": StrainType.Hybrid,
@@ -360,8 +361,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Diesel", "Meaty", "Pungent", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "melonade-runtz",
         "name": "Melonade Runtz",
         "type": StrainType.Hybrid,
@@ -384,8 +385,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Melon", "Sweet", "Fruity", "Tropical"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "melonatta",
         "name": "Melonatta",
         "type": StrainType.Hybrid,
@@ -408,8 +409,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Melon", "Citrus", "Sweet", "Fruity"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mendo-breath",
         "name": "Mendo Breath",
         "type": StrainType.Hybrid,
@@ -432,8 +433,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Sweet", "Vanilla", "Caramel", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mendo-purps",
         "name": "Mendo Purps",
         "type": StrainType.Hybrid,
@@ -456,8 +457,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Grape", "Sweet", "Earthy", "Berry"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mimosa",
         "name": "Mimosa",
         "type": StrainType.Hybrid,
@@ -480,8 +481,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Citrus", "Orange", "Grapefruit"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mint-chocolate-chip",
         "name": "Mint Chocolate Chip",
         "type": StrainType.Hybrid,
@@ -504,8 +505,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Mint", "Chocolate", "Sweet", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mk-ultra",
         "name": "MK Ultra",
         "type": StrainType.Hybrid,
@@ -528,8 +529,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Earthy", "Woody", "Pine", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "moby-dick",
         "name": "Moby Dick",
         "type": StrainType.Hybrid,
@@ -552,8 +553,8 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Citrus", "Pine", "Earthy", "Sweet", "Vanilla"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "mochi-gelato",
         "name": "Mochi Gelato",
         "type": StrainType.Hybrid,
@@ -576,5 +577,29 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Sweet", "Creamy", "Fruity", "Floral"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }
+    }),
+    createStrainObject({
+        "id": "motorbreath",
+        "name": "Motorbreath",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Chemdawg x SFV OG Kush",
+        "floweringType": "Photoperiod",
+        "thc": 28,
+        "cbd": 1,
+        "thcRange": "26-30%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A potent indica-dominant strain with a strong, diesel-like and earthy aroma. The effect is strong, relaxing, and long-lasting.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Diesel", "Earthy", "Pungent", "Chemical"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    })
 ];

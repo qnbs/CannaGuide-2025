@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsE: Strain[] = [
-    {
+    createStrainObject({
         "id": "early-maroc",
         "name": "Early Maroc",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Spicy", "Floral"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "early-pearl",
         "name": "Early Pearl",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "early-skunk",
         "name": "Early Skunk",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Skunk", "Sweet", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ed-rosenthal-super-bud",
         "name": "Ed Rosenthal Super Bud",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Pineapple", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "el-chapo-og",
         "name": "El Chapo OG",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "electric-lemon-g",
         "name": "Electric Lemon G",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Lemon", "Citrus", "Sweet", "Sour"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "eleven-roses",
         "name": "Eleven Roses",
         "type": StrainType.Indica,
@@ -168,8 +169,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Metallic"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "elmers-glue",
         "name": "Elmer's Glue",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Diesel", "Chocolate", "Pine", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "emergen-c",
         "name": "Emergen-C",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Sour"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "emperor-cookies",
         "name": "Emperor Cookies",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Sweet", "Earthy", "Spicy", "Cookie"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "ewok",
         "name": "Ewok",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Citrus", "Fruity", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "exodus-cheese",
         "name": "Exodus Cheese",
         "type": StrainType.Hybrid,
@@ -288,5 +289,5 @@ export const strainsE: Strain[] = [
         },
         "aromas": ["Cheese", "Pungent", "Skunk", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    }
+    })
 ];

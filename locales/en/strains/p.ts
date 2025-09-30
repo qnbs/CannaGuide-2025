@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "pcs1-panama-creature-s1": {
+    "description": "An S1 backcross of the rare Panama Creature, this phenotype is a key parent of Cake Bomb. It's a potent indica-dominant strain known for its heavy resin production and pungent, chemical, and earthy aroma."
+  },
+  "purple-elephant": {
+    "description": "An Indica-dominant hybrid and a parent of Grape Stomper. Known for its strong grape aroma and relaxing effects that combat stress and pain."
+  },
   "painkiller-xl": {
     "description": "A CBD-rich strain with a balanced THC and CBD content. The effect is mild, relaxing, and pain-relieving, without strong psychoactivity."
   },
@@ -125,7 +131,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "A pure Indica known for its deep purple colors and its earthy, grape-like aroma. The effect is strong, physically relaxing, and ideal for pain and insomnia."
   },
   "purple-punch": {
-    "description": "Purple Punch is an extremely popular Indica-dominant strain known for its delicious aroma and potent, relaxing effects. It is a cross between two Californian classics: Larry OG and Granddaddy Purple. The effect is often described as a 'one-two punch': it starts with a strong, euphoric head high that quickly transitions into a deeply relaxing and sedating body high, effectively relieving stress and pain. This makes it an ideal strain for the evening or for treating insomnia. The aroma is distinctively sweet and fruity, reminiscent of grape candy, blueberry muffins, and vanilla. The buds are often dense, with purple hues and a thick layer of frosty trichomes."
+    "description": "An indica-dominant hybrid with a sweet aroma of grape candy and blueberry muffins. The effect is a one-two punch of a euphoric head high followed by a heavy body sedation."
   },
   "purple-space-cookies": {
     "description": "Purple Space Cookies is a sativa-dominant hybrid known for its sweet berry aroma and uplifting effects. Users report an energetic and euphoric high that stimulates creativity while providing pleasant physical relaxation. The complex flavor profile blends sweet, earthy notes with a hint of pine and fruit."

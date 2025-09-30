@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsNumeric: Strain[] = [
-    {
+    createStrainObject({
         "id": "1024",
         "name": "1024",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Spicy", "Incense"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "24k-gold",
         "name": "24k Gold",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Tangerine", "Citrus", "Sweet", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "303-og",
         "name": "303 OG",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "501st-og",
         "name": "501st OG",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Pine"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "707-headband",
         "name": "707 Headband",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Earthy", "Citrus", "Diesel", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "8-ball-kush",
         "name": "8 Ball Kush",
         "type": StrainType.Indica,
@@ -144,8 +145,8 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Sweet", "Pine"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "9-pound-hammer",
         "name": "9 Pound Hammer",
         "type": StrainType.Hybrid,
@@ -168,5 +169,5 @@ export const strainsNumeric: Strain[] = [
         },
         "aromas": ["Grape", "Lime", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }
+    })
 ];

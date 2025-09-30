@@ -66,8 +66,16 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 </div>
             </div>
 
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 flex flex-col items-end gap-1">
                 <DifficultyMeter difficulty={strain.agronomic.difficulty} />
+                <div className="flex items-center gap-1 text-xs text-slate-400" title={t('strainsView.addStrainModal.yield')}>
+                    <PhosphorIcons.Archive className="w-3 h-3" />
+                    <span>{t(`strainsView.addStrainModal.yields.${strain.agronomic.yield.toLowerCase()}`)}</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-slate-400" title={t('strainsView.addStrainModal.height')}>
+                    <PhosphorIcons.Ruler className="w-3 h-3" />
+                    <span>{t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`)}</span>
+                </div>
             </div>
         </button>
     );

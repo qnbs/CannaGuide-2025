@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "og-badazz": {
+    "description": "Eine Indica-dominante Hybride aus der OG-Kush-Familie, bekannt für ihr starkes Diesel- und würziges Aroma. Sie bietet ein ausgewogenes High, das den Körper entspannt, während der Geist klar und glücklich bleibt."
+  },
   "og-kush": {
     "description": "Eine legendäre Hybride mit einem erdigen, kiefernartigen und zitrusartigen Aroma. Sie ist bekannt für ihre ausgewogene, starke Wirkung, die sowohl den Geist als auch den Körper entspannt."
   },

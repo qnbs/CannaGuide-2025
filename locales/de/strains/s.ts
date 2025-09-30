@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "sophisticated-lady": {
+    "description": "Eine ausgewogene Hybride, die aus der Kreuzung von Ghost OG und Grateful Breath entstanden ist. Sie ist bekannt für ihr komplexes, blumiges und erdiges Aroma mit einem Hauch von süßem Gas. Die Wirkung ist typischerweise euphorisch und entspannend und sorgt für ein glückseliges Gefühl, das sowohl den Geist als auch den Körper beruhigt."
+  },
   "s-a-g-e": {
     "description": "Eine sativa-dominante Sorte mit einem würzigen, salbeiartigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend, ideal für den Tagesgebrauch."
   },
@@ -108,6 +111,9 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "super-critical": {
     "description": "Eine indica-dominante Sorte, die für ihre extrem hohen Erträge und ihre schnelle Blütezeit bekannt ist. Die Wirkung ist stark, entspannend und sedierend."
+  },
+  "super-glue": {
+    "description": "Super Glue ist eine Indica-dominante Hybride, die für ihre stark entspannende und beruhigende Wirkung bekannt ist. Sie erzeugt ein Gefühl der Ruhe, das Stress und Schmerzen lindert, während ein Hauch von zerebraler Klarheit erhalten bleibt. Das Aroma ist primär von Kiefer und erdigen Noten geprägt."
   },
   "super-lemon-haze": {
     "description": "Eine mehrfache Cannabis-Cup-Gewinnerin, die für ihr intensives Zitronenaroma und ihre energetisierende, kreative Wirkung bekannt ist. Eine klassische Sativa für den Tagesgebrauch."

@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "white-fire-alien-og": {
+        "description": "A potent indica-dominant hybrid that combines the heavy resin production of The White with the otherworldly OG funk of Fire Alien Kush. It provides a strong, relaxing high that calms the mind and body, making it a great choice for stress relief and sleep. The aroma is a pungent mix of earthy lemon, sour citrus, and diesel.",
+    },
     "wappa": {
         "description": "An indica-dominant hybrid with a sweet, fruity, and skunky aroma. The effect is strong, relaxing, and happy, ideal for the evening."
     },

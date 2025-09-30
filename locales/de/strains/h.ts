@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "himalayan-kush": {
+        "description": "Eine reine Indica-Landrasse aus der Himalaya-Gebirgskette. Sie wird für ihre Widerstandsfähigkeit gegenüber kalten Klimazonen und ihr tief entspannendes, fast meditatives Körper-High geschätzt. Ihr Aroma ist eine klassische Mischung aus erdigen, holzigen und süßen Haschischnoten."
+    },
     "han-solo-burger": {
         "description": "Eine potente indica-dominante Hybride, bekannt für ihre starke, entspannende Wirkung und ein komplexes Aroma, das würzige, erdige Noten mit einem scharfen Diesel-Kick verbindet. Eine gute Wahl für erfahrene Konsumenten, die tiefe Entspannung suchen.",
         "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "700-800 g/Pflanze" },

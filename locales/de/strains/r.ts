@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "red-pop": {
+    "description": "Eine Hybride von Exotic Genetix, die für ihr einzigartiges kohlensäurehaltiges Erdbeer- und Kirscharoma gefeiert wird. Red Pop liefert ein erhebendes und glückliches High, das perfekt ist, um die Stimmung zu heben und Kreativität zu fördern."
+  },
+  "rbx4": {
+    "description": "Eine stark zurückgekreuzte Indica (Backcross 4), die als Elternteil für Do-Si-Woah verwendet wird. Sie wurde wegen ihrer stabilen, potenten Indica-Eigenschaften selektiert, die eine starke körperliche Entspannung und ein erdig-süßes Aroma bieten."
+  },
   "rainbow-sherbet": {
     "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen und cremigen Aroma, das an das gleichnamige Sorbet erinnert. Die Wirkung ist entspannend, glücklich und erhebend."
   },

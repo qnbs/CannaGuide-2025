@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "the-menthol": {
+    "description": "Eine einzigartige Hybride, bekannt für ihr ausgeprägt scharfes, minziges und chemisches Aroma, das an Menthol erinnert. Die Wirkung ist ausgewogen und bietet einen erhebenden und kreativen zerebralen Rausch, gefolgt von einer beruhigenden Körperruhe, was sie für verschiedene Anlässe geeignet macht, ohne übermäßig sedierend zu sein.",
+  },
   "tahoe-alien": {
     "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen und zitronigen Aroma. Die Wirkung ist stark, entspannend und ideal für den Abend."
   },
@@ -58,11 +61,14 @@ export const strains: Record<string, StrainTranslationData> = {
   "triple-og": {
     "description": "Eine reine Indica mit einem erdigen, kiefernartigen und würzigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
   },
+  "tropicana-banana": {
+    "description": "Tropicana Banana kombiniert das Zitrusprofil von Tropicana Cookies mit der cremigen Süße von Banana Kush. Das Ergebnis ist ein exotischer Fruchtcocktail im Aroma. Die Wirkung ist fröhlich, euphorisch und entspannend, perfekt für soziale Anlässe oder kreative Tätigkeiten am Nachmittag."
+  },
   "tropicana-cherry": {
     "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen Aroma von Kirschen und Zitrusfrüchten. Die Wirkung ist erhebend, glücklich und entspannend."
   },
   "tropicana-cookies": {
-    "description": "Eine sativa-dominante Sorte mit einem starken Orangen- und Zitrusaroma. Die Wirkung ist erhebend, kreativ und energetisierend."
+    "description": "Tropicana Cookies ist eine Sativa-dominante Sorte, die für ihr unglaublich intensives Aroma nach frischen Orangen und süßem Keksteig berühmt ist. Sie erzeugt ein starkes, energetisches und erhebendes High, das die Kreativität und Konzentration fördert und ideal für den Tagesgebrauch ist."
   },
   "truffle-butter": {
     "description": "Eine indica-dominante Sorte mit einem süßen, butterartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und sedierend."

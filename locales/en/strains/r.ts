@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "red-pop": {
+    "description": "A hybrid from Exotic Genetix celebrated for its unique fizzy strawberry and cherry soda aroma. Red Pop delivers an uplifting and happy high that's perfect for elevating mood and encouraging creativity."
+  },
+  "rbx4": {
+    "description": "A heavily backcrossed indica (Backcross 4) used as a parent for Do-Si-Woah. It was selected for its stable, potent indica traits, providing a strong body relaxation and an earthy, sweet aroma."
+  },
   "rainbow-sherbet": {
     "description": "A balanced hybrid with a sweet, fruity, and creamy aroma reminiscent of the sorbet of the same name. The effect is relaxing, happy, and uplifting."
   },

@@ -1,8 +1,8 @@
-
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsV: Strain[] = [
-    {
+    createStrainObject({
         "id": "v-kush",
         "name": "V-Kush",
         "type": StrainType.Hybrid,
@@ -25,8 +25,8 @@ export const strainsV: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "vader-og",
         "name": "Vader OG",
         "type": StrainType.Hybrid,
@@ -49,8 +49,8 @@ export const strainsV: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Grape", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "vanilla-kush",
         "name": "Vanilla Kush",
         "type": StrainType.Hybrid,
@@ -73,8 +73,8 @@ export const strainsV: Strain[] = [
         },
         "aromas": ["Vanilla", "Sweet", "Lavender", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "velvet-glove",
         "name": "Velvet Glove",
         "type": StrainType.Hybrid,
@@ -97,8 +97,8 @@ export const strainsV: Strain[] = [
         },
         "aromas": ["Diesel", "Earthy", "Pungent", "Chemical"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "venom-og",
         "name": "Venom OG",
         "type": StrainType.Hybrid,
@@ -121,8 +121,8 @@ export const strainsV: Strain[] = [
         },
         "aromas": ["Earthy", "Skunk", "Diesel", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "violator-kush",
         "name": "Violator Kush",
         "type": StrainType.Hybrid,
@@ -145,5 +145,5 @@ export const strainsV: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Pungent", "Pine"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
-    }
+    })
 ];

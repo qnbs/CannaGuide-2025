@@ -1,8 +1,8 @@
-
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsQ: Strain[] = [
-    {
+    createStrainObject({
         "id": "qrazy-train",
         "name": "Qrazy Train",
         "type": StrainType.Hybrid,
@@ -25,8 +25,8 @@ export const strainsQ: Strain[] = [
         },
         "aromas": ["Grape", "Spicy", "Sweet", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "quantum-kush",
         "name": "Quantum Kush",
         "type": StrainType.Hybrid,
@@ -49,8 +49,8 @@ export const strainsQ: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Tropical", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "quattro-kush",
         "name": "Quattro Kush",
         "type": StrainType.Hybrid,
@@ -73,8 +73,8 @@ export const strainsQ: Strain[] = [
         },
         "aromas": ["Diesel", "Earthy", "Pine", "Pungent"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "queen-mother",
         "name": "Queen Mother",
         "type": StrainType.Hybrid,
@@ -97,8 +97,8 @@ export const strainsQ: Strain[] = [
         },
         "aromas": ["Spicy", "Incense", "Earthy", "Woody"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "queens-sangria",
         "name": "Queen's Sangria",
         "type": StrainType.Hybrid,
@@ -121,8 +121,8 @@ export const strainsQ: Strain[] = [
         },
         "aromas": ["Citrus", "Grape", "Sweet", "Berry"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "querkle",
         "name": "Querkle",
         "type": StrainType.Hybrid,
@@ -145,5 +145,5 @@ export const strainsQ: Strain[] = [
         },
         "aromas": ["Grape", "Berry", "Sweet", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }
+    })
 ];

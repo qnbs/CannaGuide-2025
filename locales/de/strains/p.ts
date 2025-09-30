@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "pcs1-panama-creature-s1": {
+    "description": "Ein S1-Backcross der seltenen Panama Creature, dieser Phänotyp ist ein Schlüssel-Elternteil von Cake Bomb. Es handelt sich um eine potente Indica-dominante Sorte, die für ihre hohe Harzproduktion und ihr scharfes, chemisches und erdiges Aroma bekannt ist."
+  },
+  "purple-elephant": {
+    "description": "Eine Indica-dominante Hybride und Elternteil von Grape Stomper. Bekannt für ihr starkes Traubenaroma und ihre entspannende Wirkung, die Stress und Schmerzen bekämpft."
+  },
   "painkiller-xl": {
     "description": "Eine CBD-reiche Sorte mit einem ausgewogenen THC- und CBD-Gehalt. Die Wirkung ist mild, entspannend und schmerzlindernd, ohne starke Psychoaktivität."
   },
@@ -107,7 +113,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "'Roter Punkt' auf Spanisch. Eine weitere legendäre kolumbianische Landrasse, benannt nach den leuchtend roten Stempeln ihrer Blüten. Die Wirkung ist langanhaltend, stark zerebral und kann fast psychedelisch sein, was sie zu einem Favoriten für erfahrene Sativa-Liebhaber macht."
   },
   "pure-kush": {
-    "description": "Ein Phänotyp von OG Kush, bekannt für seine extrem potente und sedierende Wirkung. Ideal für erfahrene Konsumenten und medizinische Anwender."
+    "description": "Ein OG-Kush-Phänotyp, bekannt für seine extrem potente und sedierende Wirkung. Ideal für erfahrene Konsumenten und medizinische Anwender."
   },
   "purple-candy": {
     "description": "Eine indica-dominante Sorte mit einem süßen, traubenartigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal für den Abendgebrauch."
@@ -122,7 +128,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "Eine legendäre Sativa, berühmt gemacht durch Jimi Hendrix. Sie bietet ein verträumtes, euphorisches und kreatives High. Das Aroma ist eine Mischung aus süßen, erdigen und beerigen Noten."
   },
   "purple-kush": {
-    "description": "Eine reine Indica, die für ihre tiefvioletten Farben und ihr erdiges, traubenartiges Aroma bekannt ist. Die Wirkung ist stark, körperlich entspannend und ideal bei Schmerzen und Schlaflosigkeit."
+    "description": "Eine reine Indica, bekannt für ihre tiefvioletten Farben und ihr erdiges, traubenartiges Aroma. Die Wirkung ist stark, körperlich entspannend und ideal bei Schmerzen und Schlaflosigkeit."
   },
   "purple-punch": {
     "description": "Eine indica-dominante Hybride mit einem süßen Aroma von Traubenzucker und Blaubeermuffins. Die Wirkung ist ein Doppelschlag aus einem euphorischen Kopf-High, gefolgt von einer schweren Körpersedierung."

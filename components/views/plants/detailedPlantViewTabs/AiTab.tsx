@@ -31,7 +31,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
     const [isCurrentResponseSaved, setIsCurrentResponseSaved] = useState(false);
 
-    const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, substrate: plant.substrate, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
+    const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, medium: plant.medium, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
     useEffect(() => {
         if (advisorState.isLoading) {

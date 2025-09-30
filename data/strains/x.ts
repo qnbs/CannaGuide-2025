@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsX: Strain[] = [
-    {
+    createStrainObject({
         "id": "xanadu",
         "name": "Xanadu",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsX: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Earthy", "Floral"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "xeno",
         "name": "Xeno",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsX: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Mint", "Diesel"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "xj-13",
         "name": "XJ-13",
         "type": StrainType.Hybrid,
@@ -72,5 +73,5 @@ export const strainsX: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Spicy", "Sweet"],
         "dominantTerpenes": ["Terpinolene", "Caryophyllene", "Pinene"]
-    }
+    })
 ];

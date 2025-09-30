@@ -45,11 +45,11 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
             </div>
 
             <div className="flex justify-around items-center text-slate-300 border-t border-slate-700/50 pt-3 mt-auto">
-                <VitalSign value={plant.substrate.ph} idealMin={stageDetails.idealVitals.ph.min} idealMax={stageDetails.idealVitals.ph.max} label="pH" />
-                <VitalSign value={plant.substrate.ec} idealMin={stageDetails.idealVitals.ec.min} idealMax={stageDetails.idealVitals.ec.max} label="EC" />
+                <VitalSign value={plant.medium.ph} idealMin={stageDetails.idealVitals.ph.min} idealMax={stageDetails.idealVitals.ph.max} label="pH" />
+                <VitalSign value={plant.medium.ec} idealMin={stageDetails.idealVitals.ec.min} idealMax={stageDetails.idealVitals.ec.max} label="EC" />
                 <div className="flex items-center gap-1" title={t('plantsView.vitals.moisture')}>
-                    <div className={`w-2 h-2 rounded-full ${plant.substrate.moisture > 30 ? 'bg-blue-500' : 'bg-red-500'}`}></div>
-                    <span className="text-xs font-mono">{plant.substrate.moisture.toFixed(0)}%</span>
+                    <div className={`w-2 h-2 rounded-full ${plant.medium.moisture > 30 ? 'bg-blue-500' : 'bg-red-500'}`}></div>
+                    <span className="text-xs font-mono">{plant.medium.moisture.toFixed(0)}%</span>
                 </div>
             </div>
         </Card>

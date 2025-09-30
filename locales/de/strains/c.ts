@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "chems-sister": {
+        "description": "Auch bekannt als 'Chem Sis', ist dies ein berühmter Phänotyp der legendären Chemdawg-Linie. Diese Sativa-dominante Hybride liefert ein starkes, erhebendes zerebrales High, das Kreativität und Energie fördert. Ihr Aroma ist unverkennbar scharf und chemisch, mit starken Noten von Diesel und Erde."
+    },
+    "cherry-cookies": {
+        "description": "Eine indica-dominante Hybride, die Cherry Pie mit Girl Scout Cookies kreuzt. Sie liefert ein potentes, euphorisches Kopf-High, das in eine tiefe Körperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Kirschen und erdigen, teigigen Noten ihrer Cookies-Abstammung, was sie zu einer geschmackvollen Wahl zum Entspannen macht.",
+    },
     "cactus-breath": {
         "description": "Eine potente indica-dominante Hybride mit einem erdigen, kiefernartigen und würzigen Aroma. Cactus Breath liefert ein starkes, entspannendes und euphorisches High, das perfekt zum Entspannen am Ende des Tages ist.",
     },

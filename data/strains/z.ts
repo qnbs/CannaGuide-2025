@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsZ: Strain[] = [
-    {
+    createStrainObject({
         "id": "zashimi",
         "name": "Zashimi",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsZ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Berry", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "zen",
         "name": "Zen",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsZ: Strain[] = [
         },
         "aromas": ["Earthy", "Herbal", "Sweet", "Pine"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "zkittlez",
         "name": "Zkittlez",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsZ: Strain[] = [
         },
         "aromas": ["Sweet", "Berry", "Grape", "Tropical"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Linalool"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "zkittlez-cake",
         "name": "Zkittlez Cake",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsZ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Cake", "Berry"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "zoap",
         "name": "Zoap",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsZ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Floral", "Soap"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "zour-apples",
         "name": "Zour Apples",
         "type": StrainType.Hybrid,
@@ -144,5 +145,5 @@ export const strainsZ: Strain[] = [
         },
         "aromas": ["Apple", "Sour", "Sweet", "Diesel"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
-    }
+    })
 ];

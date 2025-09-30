@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsJ: Strain[] = [
-    {
+    createStrainObject({
         "id": "jack-frost",
         "name": "Jack Frost",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Sweet", "Citrus", "Pine", "Earthy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jack-herer",
         "name": "Jack Herer",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Pine", "Spicy", "Earthy", "Sweet"],
         "dominantTerpenes": ["Terpinolene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jack-the-ripper",
         "name": "Jack The Ripper",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Lemon", "Citrus", "Pine", "Spicy"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jager",
         "name": "Jager",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Licorice", "Sweet", "Earthy", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jamaican-pearl",
         "name": "Jamaican Pearl",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Tropical", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jealousy",
         "name": "Jealousy",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Creamy", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jealousy-pie",
         "name": "Jealousy Pie",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Pastry", "Diesel"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jealousy-z",
         "name": "Jealousy Z",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Candy", "Citrus"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jedi-kush",
         "name": "Jedi Kush",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Sweet", "Pine"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jenny-kush",
         "name": "Jenny Kush",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Sweet", "Citrus", "Floral", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jesus-og",
         "name": "Jesus OG",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Earthy", "Citrus", "Sweet", "Pine"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jet-fuel",
         "name": "Jet Fuel",
         "type": StrainType.Hybrid,
@@ -288,8 +289,8 @@ export const strainsJ: Strain[] = [
         },
         "aromas": ["Diesel", "Pungent", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "jillybean",
         "name": "Jillybean",
         "type": StrainType.Hybrid,
@@ -304,13 +305,13 @@ export const strainsJ: Strain[] = [
         "thcRange": "15-22%",
         "cbdRange": "<1%",
         "agronomic": {
-            "difficulty": "Easy",
+            "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Orange", "Mango", "Sweet", "Fruity"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    })
 ];

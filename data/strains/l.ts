@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsL: Strain[] = [
-    {
+    createStrainObject({
         "id": "la-cake",
         "name": "LA Cake",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Sweet", "Cake", "Earthy", "Vanilla"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "la-confidential",
         "name": "LA Confidential",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Skunk", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "la-kush",
         "name": "LA Kush",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Sweet", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lambs-bread",
         "name": "Lamb's Bread",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Spicy", "Earthy", "Sweet", "Herbal"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "larry-bird",
         "name": "Larry Bird",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Sweet", "Grape", "Mint", "Pine"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "larry-og",
         "name": "Larry OG",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Earthy", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lava-cake",
         "name": "Lava Cake",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Sweet", "Chocolate", "Mint", "Earthy"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lavender",
         "name": "Lavender",
         "type": StrainType.Hybrid,
@@ -181,29 +182,29 @@ export const strainsL: Strain[] = [
         "thcRange": "18-22%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTimeRange": "9-10",
         "description": "An Indica strain known for its deep purple colors and its strong, lavender-like, floral aroma. The effect is deeply relaxing and sedating.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
-            "height": "Short",
+            "height": "Medium",
             "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-120 cm" }
+            "heightDetails": { "indoor": "90-130 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Lavender", "Floral", "Sweet", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Linalool"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lebanese",
         "name": "Lebanese",
         "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Lebanese Landrace",
         "floweringType": "Photoperiod",
-        "thc": 17.5,
-        "cbd": 2,
+        "thc": 17,
+        "cbd": 3,
         "thcRange": "15-20%",
-        "cbdRange": "1-3%",
+        "cbdRange": "1-5%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
         "description": "An Indica landrace from Lebanon, traditionally used for making the famous red and blonde Lebanese hash. It is robust and resinous.",
@@ -216,20 +217,20 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Earthy", "Woody", "Spicy", "Hash"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "legend-orange-apricot",
         "name": "Legend Orange Apricot",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Legend OG x Orange Apricot",
         "floweringType": "Photoperiod",
-        "thc": 24,
+        "thc": 25,
         "cbd": 1,
-        "thcRange": "22-26%",
+        "thcRange": "22-28%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "8-10",
+        "floweringTimeRange": "9",
         "description": "A sativa-dominant strain with a sweet, fruity aroma of oranges and apricots. The effect is uplifting, energizing, and creative.",
         "agronomic": {
             "difficulty": "Medium",
@@ -238,10 +239,10 @@ export const strainsL: Strain[] = [
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Orange", "Apricot", "Sweet", "Fruity"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+        "aromas": ["Orange", "Apricot", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "lemon-berry",
         "name": "Lemon Berry",
         "type": StrainType.Hybrid,
@@ -252,8 +253,8 @@ export const strainsL: Strain[] = [
         "cbd": 1,
         "thcRange": "22-26%",
         "cbdRange": "<1%",
-        "floweringTime": 10,
-        "floweringTimeRange": "9-11",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
         "description": "A sativa-dominant strain with a sweet, fruity aroma of lemons and berries. The effect is uplifting, energizing, and social.",
         "agronomic": {
             "difficulty": "Easy",
@@ -264,8 +265,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Lemon", "Berry", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lemon-cherry-gelato",
         "name": "Lemon Cherry Gelato",
         "type": StrainType.Hybrid,
@@ -288,8 +289,8 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Lemon", "Cherry", "Sweet", "Fruity"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lemon-haze",
         "name": "Lemon Haze",
         "type": StrainType.Hybrid,
@@ -298,103 +299,31 @@ export const strainsL: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
-        "thcRange": "17-23%",
+        "thcRange": "18-22%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
         "description": "A popular Sativa with a strong, fresh lemon aroma. It produces an energizing, happy, and uplifting effect, ideal for daytime use.",
         "agronomic": {
             "difficulty": "Medium",
-            "yield": "Medium",
+            "yield": "High",
             "height": "Tall",
             "yieldDetails": { "indoor": "450-500 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Lemon", "Citrus", "Sweet", "Sour"],
         "dominantTerpenes": ["Limonene", "Terpinolene", "Caryophyllene"]
-    },
-    {
-        "id": "lemon-pepper",
-        "name": "Lemon Pepper",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Lemon Cooler x Lemon Pebbles",
-        "floweringType": "Photoperiod",
-        "thc": 24,
-        "cbd": 1,
-        "thcRange": "22-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 10,
-        "floweringTimeRange": "9-11",
-        "description": "A sativa-dominant strain with a spicy, peppery lemon aroma. The effect is uplifting, energizing, and creative.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Lemon", "Pepper", "Spicy", "Citrus"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
-        "id": "lemon-thai",
-        "name": "Lemon Thai",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 80% / Indica 20%",
-        "genetics": "Thai Sativa x Hawaiian Sativa",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "thcRange": "20-24%",
-        "cbdRange": "<1%",
-        "floweringTime": 11,
-        "floweringTimeRange": "10-12",
-        "description": "A sativa-dominant strain with a strong lemon and mint aroma. The effect is uplifting, creative, and energizing.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Lemon", "Mint", "Spicy", "Earthy"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    },
-    {
-        "id": "lemon-tree",
-        "name": "Lemon Tree",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Lemon Skunk x Sour Diesel",
-        "floweringType": "Photoperiod",
-        "thc": 25,
-        "cbd": 1,
-        "thcRange": "22-28%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "description": "A balanced hybrid with a strong, fresh lemon aroma. The effect is uplifting, relaxing, and happy, ideal for all-day use.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Lemon", "Citrus", "Sour", "Diesel"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lemonchello",
         "name": "Lemonchello",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "The Original Lemonnade x Cherry Pie",
         "floweringType": "Photoperiod",
-        "thc": 18.5,
+        "thc": 17,
         "cbd": 1,
-        "thcRange": "16-21%",
+        "thcRange": "15-20%",
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
@@ -408,8 +337,56 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Lemon", "Cherry", "Sweet", "Citrus"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
+        "id": "lemon-thai",
+        "name": "Lemon Thai",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Thai Sativa x Hawaiian Sativa",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A sativa-dominant strain with a strong lemon and mint aroma. The effect is uplifting, creative, and energizing.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+        },
+        "aromas": ["Lemon", "Mint", "Citrus", "Spicy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "lemon-tree",
+        "name": "Lemon Tree",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Lemon Skunk x Sour Diesel",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A balanced hybrid with a strong, fresh lemon aroma. The effect is uplifting, relaxing, and happy, ideal for all-day use.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+        },
+        "aromas": ["Lemon", "Citrus", "Sour", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "liberty-haze",
         "name": "Liberty Haze",
         "type": StrainType.Hybrid,
@@ -424,7 +401,7 @@ export const strainsL: Strain[] = [
         "floweringTimeRange": "8-10",
         "description": "A Cannabis Cup winner from Barney's Farm. This fast-flowering hybrid offers a long-lasting, euphoric, and uplifting effect. The aroma is a mix of pine and lime.",
         "agronomic": {
-            "difficulty": "Medium",
+            "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
             "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "600-700 g/plant" },
@@ -432,21 +409,21 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Pine", "Lime", "Spicy", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "london-pound-cake",
         "name": "London Pound Cake",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Sunset Sherbet x Unknown Indica",
+        "genetics": "Sunset Sherbet x an unknown Indica",
         "floweringType": "Photoperiod",
-        "thc": 28,
+        "thc": 27.5,
         "cbd": 1,
-        "thcRange": "26-30%",
+        "thcRange": "26-29%",
         "cbdRange": "<1%",
-        "floweringTime": 10.5,
-        "floweringTimeRange": "10-11",
-        "description": "An indica-dominant strain with a sweet, berry-like, and grape-like aroma. The effect is strong, relaxing, and calming, ideal for evening use.",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A potent indica-dominant strain with a sweet, berry-like, and grape-like aroma. The effect is strong, relaxing, and calming, ideal for evening use.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -454,34 +431,10 @@ export const strainsL: Strain[] = [
             "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
-        "aromas": ["Berry", "Grape", "Sweet", "Vanilla"],
+        "aromas": ["Berry", "Grape", "Sweet", "Citrus"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
-        "id": "lowryder",
-        "name": "Lowryder",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50% (Autoflower)",
-        "genetics": "Northern Lights #2 x William's Wonder x Ruderalis",
-        "floweringType": "Autoflower",
-        "thc": 13,
-        "cbd": 1,
-        "thcRange": "10-16%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9 (Lifecycle)",
-        "description": "The original autoflowering strain that revolutionized the world of cannabis cultivation. It is small, fast, and discreet, with a mild, relaxing effect.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "Low",
-            "height": "Short",
-            "yieldDetails": { "indoor": "150-250 g/m²", "outdoor": "50-100 g/plant" },
-            "heightDetails": { "indoor": "40-60 cm", "outdoor": "50-70 cm" }
-        },
-        "aromas": ["Earthy", "Pine", "Sweet", "Spicy"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "lsd",
         "name": "LSD",
         "type": StrainType.Hybrid,
@@ -490,8 +443,8 @@ export const strainsL: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 24,
         "cbd": 1.2,
-        "thcRange": "20-28%",
-        "cbdRange": "1-2%",
+        "thcRange": "22-26%",
+        "cbdRange": "1-1.5%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
         "description": "A hybrid known for its highly psychedelic, euphoric, and cerebral effects. It is robust and high-yielding. The aroma is earthy and sweet.",
@@ -504,5 +457,5 @@ export const strainsL: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Skunk", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Pinene"]
-    }
+    })
 ];

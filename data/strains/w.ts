@@ -1,7 +1,8 @@
 import { Strain, StrainType } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strainsW: Strain[] = [
-    {
+    createStrainObject({
         "id": "wappa",
         "name": "Wappa",
         "type": StrainType.Hybrid,
@@ -24,8 +25,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Skunk", "Berry"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "wedding-cake",
         "name": "Wedding Cake",
         "type": StrainType.Hybrid,
@@ -48,8 +49,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Sweet", "Vanilla", "Earthy", "Peppery"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "wedding-crasher",
         "name": "Wedding Crasher",
         "type": StrainType.Hybrid,
@@ -72,8 +73,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Grape", "Vanilla", "Sweet", "Berry"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "white-castle",
         "name": "White Castle",
         "type": StrainType.Hybrid,
@@ -96,8 +97,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Strawberry", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "white-dawg",
         "name": "White Dawg",
         "type": StrainType.Hybrid,
@@ -120,8 +121,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Diesel", "Earthy", "Pungent", "Chemical"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "white-rhino",
         "name": "White Rhino",
         "type": StrainType.Hybrid,
@@ -144,8 +145,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Earthy", "Woody", "Sweet", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "white-runtz",
         "name": "White Runtz",
         "type": StrainType.Hybrid,
@@ -168,8 +169,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Sweet", "Fruity", "Candy", "Vanilla"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Linalool"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "white-widow",
         "name": "White Widow",
         "type": StrainType.Hybrid,
@@ -192,8 +193,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Earthy", "Woody", "Pungent", "Spicy"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "whitewalker-og",
         "name": "Whitewalker OG",
         "type": StrainType.Hybrid,
@@ -216,8 +217,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "wifi-og",
         "name": "WiFi OG",
         "type": StrainType.Hybrid,
@@ -240,8 +241,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Earthy", "Pungent", "Sour", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "wonder-woman",
         "name": "Wonder Woman",
         "type": StrainType.Hybrid,
@@ -264,8 +265,8 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Skunk", "Sweet", "Earthy", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    },
-    {
+    }),
+    createStrainObject({
         "id": "wu-5",
         "name": "WU-5",
         "type": StrainType.Hybrid,
@@ -288,5 +289,53 @@ export const strainsW: Strain[] = [
         },
         "aromas": ["Earthy", "Herbal", "Sweet", "Pine"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }
+    }),
+    createStrainObject({
+        "id": "white-truffle",
+        "name": "White Truffle",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Gorilla Butter",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "20-30%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A potent indica-dominant strain with a savory, earthy aroma reminiscent of truffles and garlic. The effect is quick-hitting, providing a cerebral buzz that settles into a relaxing body high.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+        },
+        "aromas": ["Earthy", "Truffle", "Garlic", "Nutty"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Humulene"]
+    }),
+    createStrainObject({
+        "id": "white-train-haze",
+        "name": "White Train Haze",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "White Widow x Trainwreck",
+        "floweringType": "Photoperiod",
+        "thc": 22.5,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A potent sativa-dominant strain with a complex aroma of lemon, pine, and spice. It delivers a strong, energetic, and euphoric high that is great for creativity and focus.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": "" }
+        },
+        "aromas": ["Lemon", "Pine", "Spicy", "Earthy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
+    })
 ];

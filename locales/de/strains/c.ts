@@ -68,6 +68,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "cereal-milk": {
         "description": "Eine ausgewogene Hybride mit einem einzigartigen Aroma, das an süße Milch und Eiscreme erinnert. Die Wirkung ist beruhigend, kreativ und sorgt für ein wohliges Gefühl.",
     },
+    "champagne": {
+        "description": "Champagne, auch bekannt als Champagne Kush, ist eine feierliche Indica-dominante Hybride. Sie liefert ein sprudelndes, euphorisches und geselliges High, das den Körper sanft entspannt, ohne stark zu sedieren. Ihr Aroma erinnert an Champagner, mit süßen Trauben- und erdigen Untertönen."
+    },
     "charlie-sheen": {
         "description": "Eine potente Hybride, die die besten Eigenschaften ihrer Eltern vereint. Sie bietet eine starke, euphorische und gleichzeitig entspannende Wirkung.",
     },
@@ -95,6 +98,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "chemdawg-91": {
         "description": "Einer der ursprünglichen und potentesten Phänotypen der Chemdawg-Linie. Bekannt für sein extrem scharfes, dieselartiges Aroma und eine starke, zerebrale Wirkung, die in eine tiefe Körperentspannung übergeht. Eine legendäre Sorte, die als Elternteil für viele berühmte Hybriden wie OG Kush und Sour Diesel diente."
     },
+    "chemdawg-sour-diesel": {
+        "description": "Chemdawg Sour Diesel, oft als Chem Sour abgekürzt, ist eine kraftvolle sativa-dominante Hybride, die zwei legendäre Sorten vereint. Sie liefert einen potenten, schnell wirkenden zerebralen Rausch, der energetisierend und euphorisch ist, was sie zu einer großartigen Wahl für den Tagesgebrauch macht. Ihr Aroma ist eine intensive und klassische Mischung aus scharfem Diesel, sauren Zitrusfrüchten und Erde."
+    },
     "chemdog-millionaire": {
         "description": "Eine potente Hybride mit einem zitronigen, dieselartigen und erdigen Aroma. Chemdog Millionaire liefert ein starkes, euphorisches und entspannendes High, das perfekt zum Entspannen ist.",
     },
@@ -106,6 +112,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "cherry-pie": {
         "description": "Eine indica-dominante Hybride mit einem süßen, kirschartigen und erdigen Aroma. Cherry Pie liefert ein entspannendes und glückliches High, das perfekt zum Entspannen ist.",
+    },
+    "chimera-2": {
+        "description": "Chimera #2 ist eine potente und geschmackvolle Hybride, gezüchtet von BeLeaf Cannabis. Sie ist bekannt für ihr komplexes und einzigartiges Terpenprofil, das oft als eine Mischung aus Portwein, Orangen-Tic-Tacs und Butterscotch beschrieben wird. Die Wirkung ist typischerweise stark und ausgewogen und bietet ein euphorisches zerebrales High, gepaart mit tiefer Körperentspannung."
     },
     "chiquita-banana": {
         "description": "Eine potente Hybride mit einem süßen, fruchtigen Bananenaroma. Chiquita Banana liefert ein starkes, euphorisches und entspannendes High, das perfekt zum Entspannen ist.",
@@ -133,6 +142,15 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "congo": {
         "description": "Eine reine Sativa mit einem süßen, fruchtigen und erdigen Aroma. Congo liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
+    },
+    "congo-3": {
+        "description": "Congo #3 ist ein ausgewählter Phänotyp einer reinen afrikanischen Sativa-Landrasse, bekannt für ihr klares, energetisches und langanhaltendes High. Sie sorgt für einen Schub an Kreativität und Euphorie, ohne die Angstzustände, die oft mit potenten Sativas verbunden sind. Das Aroma ist eine komplexe Mischung aus fruchtigen, würzigen und erdigen Noten."
+    },
+    "congo-pointe-noire": {
+        "description": "Congo Pointe Noire ist eine seltene und reine Sativa-Landrasse aus der Republik Kongo. Sie wird für ihre starke, anregende und fast psychedelische zerebrale Wirkung gefeiert. Diese Sorte ist für erfahrene Sativa-Liebhaber, die einen intensiven und langanhaltenden kreativen Rausch suchen. Ihr Aroma ist klassischer Old-School-Haze, mit holzigen, würzigen und weihrauchartigen Noten."
+    },
+    "cookie-monster": {
+        "description": "Cookie Monster ist eine potente Indica-dominante Hybride, die Girl Scout Cookies mit OG Kush kreuzt. Sie ist bekannt für ihre starke, entspannende Wirkung, die leicht zu einem Zustand tiefer Sedierung führen kann, was sie ideal für den nächtlichen Gebrauch macht. Das Aroma ist eine süße Mischung aus Minze und holziger Erde, getreu ihrem GSC-Erbe."
     },
     "cookies-and-cream": {
         "description": "Eine ausgewogene Hybride mit einem süßen, vanilleartigen und nussigen Aroma. Cookies and Cream liefert ein starkes, euphorisches und entspannendes High, das für verschiedene Anlässe geeignet ist.",

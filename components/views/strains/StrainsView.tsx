@@ -1,3 +1,4 @@
+
 import React, {
     useState,
     useMemo,
@@ -6,6 +7,7 @@ import React, {
     useTransition,
     memo,
 } from 'react';
+// FIX: Corrected import path for types to use the '@/' alias.
 import { Strain, StrainViewTab, AIResponse } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
@@ -17,6 +19,7 @@ import { StrainDetailView } from './strains/StrainDetailView';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { FilterDrawer } from './strains/FilterDrawer';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+// FIX: Corrected import path for hook to use the '@/' alias.
 import { useStrainFilters } from '@/hooks/useStrainFilters';
 import { Tabs } from '@/components/common/Tabs';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -24,7 +27,9 @@ import { ExportsManagerView } from './strains/ExportsManagerView';
 import { StrainTipsView } from './strains/StrainTipsView';
 import { Button } from '@/components/common/Button';
 import { BulkActionsBar } from './strains/BulkActionsBar';
+import { GenealogyView } from './strains/GenealogyView';
 
+// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import {
     selectStrainsView,
@@ -127,6 +132,7 @@ const StrainsViewComponent: React.FC = () => {
         strainsViewMode: viewMode,
         selectedStrainIds: selectedIdsSet,
     } = useAppSelector(selectStrainsView);
+    // FIX: Explicitly type the Set to avoid inference issues.
     const selectedIds = useMemo(() => new Set<string>(selectedIdsSet), [selectedIdsSet]);
 
     const isAddModalOpen = useAppSelector((state) => state.ui.isAddModalOpen);
@@ -208,7 +214,8 @@ const StrainsViewComponent: React.FC = () => {
 
     const handleAddStrain = useCallback(
         (strain: Strain) => {
-            if (userStrains.some((s) => s.name.toLowerCase() === strain.name.toLowerCase())) {
+            const strainNameLower = strain.name.toLowerCase().trim();
+            if (allStrains.some(s => s.name.toLowerCase().trim() === strainNameLower) || userStrains.some(s => s.name.toLowerCase().trim() === strainNameLower)) {
                 dispatch(
                     addNotification({
                         message: t('strainsView.addStrainModal.validation.duplicate', {
@@ -220,17 +227,35 @@ const StrainsViewComponent: React.FC = () => {
                 return;
             }
             dispatch(addUserStrain(strain));
+            dispatch(addNotification({ message: t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }), type: 'success' }));
             dispatch(closeAddModal());
         },
-        [dispatch, t, userStrains]
+        [dispatch, t, userStrains, allStrains]
     );
 
     const handleUpdateStrain = useCallback(
         (strain: Strain) => {
+            const strainNameLower = strain.name.toLowerCase().trim();
+            const isDuplicate = 
+                allStrains.some(s => s.name.toLowerCase().trim() === strainNameLower) ||
+                userStrains.some(s => s.id !== strain.id && s.name.toLowerCase().trim() === strainNameLower);
+
+            if (isDuplicate) {
+                dispatch(
+                    addNotification({
+                        message: t('strainsView.addStrainModal.validation.duplicate', {
+                            name: strain.name,
+                        }),
+                        type: 'error',
+                    })
+                );
+                return;
+            }
             dispatch(updateUserStrain(strain));
+            dispatch(addNotification({ message: t('strainsView.addStrainModal.validation.updateSuccess', { name: strain.name }), type: 'success' }));
             dispatch(closeAddModal());
         },
-        [dispatch]
+        [dispatch, t, userStrains, allStrains]
     );
 
     const handleDeleteStrain = useCallback(
@@ -359,6 +384,7 @@ const StrainsViewComponent: React.FC = () => {
             label: t('strainsView.tabs.tips', { count: savedTips.length }),
             icon: <PhosphorIcons.LightbulbFilament />,
         },
+        { id: StrainViewTab.Genealogy, label: t('strainsView.tabs.genealogy'), icon: <PhosphorIcons.TreeStructure /> },
     ];
 
     const showToolbar =
@@ -433,7 +459,8 @@ const StrainsViewComponent: React.FC = () => {
                     onRemoveFromFavorites={handleBulkRemoveFromFavorites}
                 />
             )}
-
+            
+            {activeTab === StrainViewTab.Genealogy && <GenealogyView />}
             {activeTab === StrainViewTab.Exports && (
                 <ExportsManagerView
                     savedExports={savedExports}

@@ -49,8 +49,14 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
         }
     };
 
-    const handleUpdate = (updated: SavedExport) => {
-        updateExport(updated);
+    const handleUpdate = (updatedData: { title: string; content: string }) => {
+        if (!editingExport) return;
+        const updatedExportData: SavedExport = {
+            ...editingExport,
+            name: updatedData.title,
+            notes: updatedData.content,
+        };
+        updateExport(updatedExportData);
         setEditingExport(null);
     };
     
@@ -75,9 +81,9 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     return (
         <div className="mt-4 animate-fade-in">
             {editingExport && <EditResponseModal
-                response={{ ...editingExport, title: editingExport.name, content: editingExport.notes || '' }}
+                response={{ id: editingExport.id, title: editingExport.name, content: editingExport.notes || '' }}
                 onClose={() => setEditingExport(null)}
-                onSave={(updated) => handleUpdate({ ...editingExport, name: updated.title, notes: updated.content, id: updated.id, createdAt: editingExport.createdAt, source: editingExport.source, format: editingExport.format, count: editingExport.count, strainIds: editingExport.strainIds })}
+                onSave={handleUpdate}
                 title={t('strainsView.exportsManager.editExportTitle')}
             />}
             

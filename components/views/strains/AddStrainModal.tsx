@@ -85,7 +85,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
         const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
         
         const partialStrainData: Partial<Strain> = {
-            id: isEditMode ? strainToEdit.id : `${values.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
+            id: isEditMode ? strainToEdit.id : undefined,
             name: values.name,
             type: values.type as StrainType,
             typeDetails: values.typeDetails,
@@ -109,12 +109,19 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
             },
         };
 
-        const finalStrain = createStrainObject(partialStrainData);
+        try {
+            const finalStrain = createStrainObject(partialStrainData);
 
-        if (isEditMode) {
-            onUpdateStrain(finalStrain);
-        } else {
-            onAddStrain(finalStrain);
+            if (isEditMode) {
+                onUpdateStrain(finalStrain);
+            } else {
+                onAddStrain(finalStrain);
+            }
+        } catch (error) {
+            dispatch(addNotification({
+                message: (error as Error).message,
+                type: 'error'
+            }));
         }
     };
     

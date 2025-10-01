@@ -1,5 +1,4 @@
-
-import { AppSettings } from '@/types';
+import { AppSettings, GenealogyState } from '@/types';
 import { defaultSettings } from '@/stores/slices/settingsSlice';
 import { RootState } from '@/stores/store';
 
@@ -71,6 +70,14 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
                 plant.lastUpdated = plant.createdAt || Date.now();
             }
         }
+    }
+
+    if (!migratedState.genealogy) {
+        migratedState.genealogy = {
+            computedTrees: {},
+            isLoading: false,
+            error: null,
+        };
     }
 
     return migratedState;

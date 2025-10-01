@@ -1,4 +1,3 @@
-
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings, HarvestData, TrainingType } from '@/types';
 import { simulationService } from '@/services/plantSimulationService';
@@ -248,17 +247,18 @@ const simulationSlice = createSlice({
         topPlant: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
-                const { updatedPlant } = simulationService.topPlant(plant);
-                updatedPlant.lastUpdated = Date.now();
-                plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes: updatedPlant });
+                plant.isTopped = true;
+                plant.structuralModel.branches *= 2;
+                plant.stressLevel = Math.min(100, plant.stressLevel + 15);
+                plant.lastUpdated = Date.now();
             }
         },
         applyLst: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
-                const { updatedPlant } = simulationService.applyLst(plant);
-                updatedPlant.lastUpdated = Date.now();
-                plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes: updatedPlant });
+                plant.lstApplied += 1;
+                plant.stressLevel = Math.min(100, plant.stressLevel + 5);
+                plant.lastUpdated = Date.now();
             }
         },
         applyPestControl: (state, action: PayloadAction<{ plantId: string; notes: string }>) => {

@@ -1,6 +1,24 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "gelato-25": {
+    "description": "Gelato #25, also known as 'Barry Bonds', is a famous phenotype of the Gelato family. This indica-dominant hybrid offers a relaxing and euphoric high, accompanied by a sweet, fruity, and dessert-like aroma with earthy undertones. It's cherished for its potent effects that soothe the body while keeping the mind happy and creative."
+  },
+  "gelato-42": {
+    "description": "An evenly balanced hybrid phenotype from the Gelato line, Gelato #42 is known for its uplifting and relaxing effects. It features a sweet and earthy aroma with hints of citrus and vanilla, providing a creamy smoke. The high is typically happy and creative, making it suitable for various occasions."
+  },
+  "gelato-45": {
+    "description": "Also known as 'Michael Jordan', Gelato #45 is a popular indica-dominant phenotype of the Gelato strain. It's celebrated for its heavy-handed euphoria and relaxation, making it a great choice for the end of the day. The aroma is a sweet and earthy blend with notes of citrus, berry, and lavender."
+  },
+  "gooberry": {
+    "description": "Gooberry is a potent indica-dominant hybrid, a cross between Afgoo and Blueberry. It's famous for its strong sedative effects, often leading to a sleepy and deeply relaxed state, making it a top choice for combating insomnia and pain. The aroma is a delightful mix of sweet berries and nutty earth."
+  },
+  "green-ribbon-bx": {
+    "description": "A sativa-dominant backcross of the original Green Ribbon, this strain is known for its energetic and uplifting effects. It provides a clear-headed, focused high that's great for daytime productivity and creativity. The aroma is a pleasant mix of sweet florals and sharp pine."
+  },
+  "green-spirit": {
+    "description": "Green Spirit is a balanced hybrid that combines the massive yields of Big Bud with the pungent power of Skunk #1. It delivers a happy, euphoric, and relaxing effect that isn't overpowering, making it a good all-around strain. It has a classic skunky aroma with sweet and citrusy undertones and is one of the parent strains of Incredible Bulk."
+  },
   "gupta-kush": {
     "description": "A potent Indica and a key parent for several modern Kush varieties. Delivers a heavy, classic OG experience with earthy, piney notes. Ideal for deep relaxation."
   },

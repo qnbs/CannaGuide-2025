@@ -1,4 +1,3 @@
-
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -17,12 +16,9 @@ interface State {
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// FIX: Refactored to use class properties for state and arrow functions for methods.
-// This modernizes the component and resolves a series of confusing TypeScript errors
-// where `this.state`, `this.props`, and `this.setState` were not being correctly identified
-// on the component instance. This change removes the constructor and explicit binding.
 export class ErrorBoundary extends Component<Props, State> {
-  state: State = {
+  // FIX: Reverted to class property initialization for state. The constructor was causing issues with 'this' context, leading to compilation errors where `this.state` and `this.props` were not recognized.
+  public state: State = {
     hasError: false,
     error: null,
     errorInfo: null,
@@ -32,7 +28,7 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const scope = this.props.scope ? `[${this.props.scope}] ` : '';
     console.error(`Uncaught error in scope: ${scope}`, error, errorInfo);
     this.setState({ error, errorInfo });

@@ -110,6 +110,7 @@ const TextBolder: React.FC<IconProps> = memo(({ className }) => <IconBase classN
 const TextItalic: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M208,48H104a8,8,0,0,0,0,16h22.4l-44.8,128H48a8,8,0,0,0,0,16H152a8,8,0,0,0,0-16H130l44.8-128H208a8,8,0,0,0,0-16Z"/></IconBase>);
 const Thermometer: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M152,154.5V48a24,24,0,0,0-48,0v106.5a48,48,0,1,0,48,0Zm-24,61.5a32,32,0,0,1-17-29.2V48a8,8,0,0,1,16,0v140.1a32.1,32.1,0,0,1,1,2.8Z"/></IconBase>);
 const TrashSimple: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM192,208H64V64H192Z"/></IconBase>);
+const TreeStructure: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M216,96a8,8,0,0,0-8-8H168V72a8,8,0,0,0-8-8H96a8,8,0,0,0-8,8V88H48a8,8,0,0,0-8,8v64a8,8,0,0,0,8,8h40v8a8,8,0,0,0,8,8h64a8,8,0,0,0,8-8v-8h40a8,8,0,0,0,8-8Zm-16,56H160a8,8,0,0,0-8,8v8H104v-8a8,8,0,0,0-8-8H56V104H96a8,8,0,0,0,8-8V72h56V96a8,8,0,0,0,8,8h40Z"/></IconBase>);
 const UploadSimple: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M85.7,110.3a8.1,8.1,0,0,1,11.4,0l22.6,22.6V80a8,8,0,0,1,16,0v72.9l22.6-22.6a8.1,8.1,0,0,1,11.4,11.4l-36.2,36.2a8.1,8.1,0,0,1-11.4,0L85.7,121.7A8.1,8.1,0,0,1,85.7,110.3ZM224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Z"/></IconBase>);
 const WarningCircle: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M128,24A104,104,0,1,0,232,128,104.2,104.2,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-88a8,8,0,0,1,16,0v48a8,8,0,0,1-16,0Zm8-32a12,12,0,1,1-12-12A12,12,0,0,1,128,96Z"/></IconBase>);
 const Wrench: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M214.2,73.4,182.6,41.8a31.9,31.9,0,0,0-45.2,0L34.1,145.1a16.3,16.3,0,0,0-3.3,10.6l-2.9,31.8a15.8,15.8,0,0,0,4,13.1,16,16,0,0,0,13.1,4l31.8-2.9a16.3,16.3,0,0,0,10.6-3.3L191.6,96a16.2,16.2,0,0,0,4.6-7.6,15.9,15.9,0,0,0-15.4-15.4,16.2,16.2,0,0,0-7.6,4.6l-3.3,3.3-33.9-34,3.3-3.3a16,16,0,0,1,22.6,0l31.6,31.6a16,16,0,0,1,0,22.6Zm-69,69L98.7,196.1,64.8,202,60.2,191.8l53.7-53.7,10.2,4.6Z"/></IconBase>);
@@ -191,6 +192,7 @@ export const PhosphorIcons = {
     TextItalic,
     Thermometer,
     TrashSimple,
+    TreeStructure,
     UploadSimple,
     WarningCircle,
     Wrench,

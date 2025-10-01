@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "early-girl": {
+    "description": "Eine von Sensi Seeds' originalen Outdoor-Sorten, gezüchtet für Zuverlässigkeit und schnelle Blüte in kühleren Klimazonen. Sie erzeugt einen milden, angenehmen und entspannenden Körperrausch mit einem subtilen, fröhlichen Auftrieb. Ihre kompakte Größe und Widerstandsfähigkeit machen sie zu einem Favoriten für Anfänger."
+  },
   "early-maroc": {
     "description": "Eine sativa-dominante Sorte, die für ihre extrem schnelle Blütezeit im Freien bekannt ist. Sie bietet eine erhebende, klare Wirkung und ein süßes, erdiges Aroma. Ideal für den Anbau in kühleren Klimazonen.",
   },
@@ -30,6 +33,12 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "emperor-cookies": {
     "description": "Eine potente Hybride mit einem süßen, erdigen und leicht würzigen Aroma. Die Wirkung ist stark, euphorisch und entspannend, ideal für erfahrene Konsumenten.",
+  },
+  "erdpurt": {
+    "description": "Eine robuste und schnell blühende Indica, gezüchtet von ACE Seeds für kalte und feuchte Klimazonen. Sie kombiniert das Erdbeeraroma von Erdbeer mit der Widerstandsfähigkeit einer Schweizer Landrasse. Die Wirkung ist moderat, beruhigend und funktional, mit einem guten CBD-Gehalt, was sie für medizinische Anwender geeignet macht."
+  },
+  "ethos-glue": {
+    "description": "Ethos Glue, auch bekannt als Ethos GG4, ist eine potente Rückkreuzung der legendären Gorilla Glue #4. Sie verstärkt die besten Eigenschaften ihres Elternteils und bietet eine unglaublich klebrige Harzproduktion sowie ein kräftiges, scharfes Aroma von Diesel und Schokolade. Die Wirkung ist intensiv euphorisch und entspannend und liefert einen schweren Körperstein, der dich an die Couch fesselt."
   },
   "ewok": {
     "description": "Eine indica-dominante Sorte mit einem fruchtigen, zitrusartigen Aroma. Die Wirkung ist entspannend und beruhigend, ideal zur Linderung von Stress und Angstzuständen.",

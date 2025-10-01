@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v4-cache-first';
+const CACHE_NAME = 'cannaguide-v4-app-shell';
 const URLS_TO_CACHE = [
     '/',
     '/index.html',
@@ -11,6 +11,7 @@ const URLS_TO_CACHE = [
     '/register-sw.js'
 ];
 
+// Install event: Cache the application shell.
 self.addEventListener('install', event => {
     event.waitUntil(
         caches.open(CACHE_NAME)
@@ -26,6 +27,7 @@ self.addEventListener('install', event => {
     );
 });
 
+// Activate event: Clean up old caches.
 self.addEventListener('activate', event => {
     event.waitUntil(
         caches.keys().then(cacheNames => {
@@ -41,28 +43,29 @@ self.addEventListener('activate', event => {
     );
 });
 
+// Fetch event: Implement cache-first strategy.
 self.addEventListener('fetch', event => {
-    // Let the browser handle requests for API calls
+    // Let the browser handle non-GET requests or API calls
     if (event.request.method !== 'GET' || event.request.url.includes('googleapis.com')) {
         return;
     }
 
-    // For other GET requests, try cache first, then network
     event.respondWith(
         caches.match(event.request)
             .then(cachedResponse => {
-                // Return from cache if found
+                // If the response is in the cache, return it
                 if (cachedResponse) {
                     return cachedResponse;
                 }
 
-                // Not in cache, fetch from network
+                // If not in cache, fetch from the network
                 return fetch(event.request).then(networkResponse => {
                     // Check if we received a valid response
-                    if (!networkResponse || networkResponse.status !== 200) {
+                    if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
                         return networkResponse;
                     }
 
+                    // Clone the response and cache it
                     const responseToCache = networkResponse.clone();
                     caches.open(CACHE_NAME)
                         .then(cache => {
@@ -72,7 +75,8 @@ self.addEventListener('fetch', event => {
                     return networkResponse;
                 }).catch(error => {
                     console.error('[SW] Fetch failed; returning offline fallback if available.', error);
-                    // Optionally, return an offline fallback page here
+                    // Optionally, you can return a fallback offline page here:
+                    // return caches.match('/offline.html');
                 });
             })
     );

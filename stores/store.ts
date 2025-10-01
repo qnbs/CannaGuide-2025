@@ -15,6 +15,7 @@ import breedingReducer from './slices/breedingSlice';
 import ttsReducer from './slices/ttsSlice';
 import sandboxReducer from './slices/sandboxSlice';
 import filtersReducer from './slices/filtersSlice';
+import genealogyReducer from './slices/genealogySlice';
 import { geminiApi } from './api';
 import { listenerMiddleware } from './listenerMiddleware';
 
@@ -33,6 +34,7 @@ const rootReducer = combineReducers({
     tts: ttsReducer,
     sandbox: sandboxReducer,
     filters: filtersReducer,
+    genealogy: genealogyReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
 });
 

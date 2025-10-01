@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React from 'react'
 
 /**
  * @deprecated This component is obsolete and should be removed.
@@ -7,5 +8,5 @@ import React from 'react';
  * triggered by the `tick` action.
  */
 export const SimulationManager: React.FC = () => {
-    return null;
-};
+  return null
+}

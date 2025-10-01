@@ -6,7 +6,6 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { strainService } from '@/services/strainService';
-// FIX: Corrected imports for Redux
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
 import { toggleFavorite } from '@/stores/slices/favoritesSlice';

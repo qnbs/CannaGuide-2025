@@ -3,7 +3,6 @@ import { Strain } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSavedStrainTips } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
-import { Modal } from '@/components/common/Modal';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 

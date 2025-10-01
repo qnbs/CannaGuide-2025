@@ -1,4 +1,3 @@
-
 import { Plant, PlantStage, GrowSetup, Strain, ProblemType, TaskPriority, JournalEntryType, HarvestData } from '@/types';
 
 // Constants for simulation
@@ -129,7 +128,7 @@ class SimulationService {
         }
         
         // This timestamp is now correctly handled in the thunk that calls this service.
-        // updatedPlant.lastUpdated = Date.now();
+        
 
         return { updatedPlant, newJournalEntries: [], newTasks: [] };
     }

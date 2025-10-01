@@ -1,5 +1,5 @@
-// FIX: Import React to resolve 'Cannot find namespace React' error for React.ElementType.
 import React from 'react';
+import { EntityState } from '@reduxjs/toolkit';
 
 // This file was created to define all the shared types for the application.
 
@@ -39,6 +39,11 @@ export enum ProblemType {
     PestInfestation = 'PEST_INFESTATION',
     phTooHigh = 'PH_TOO_HIGH',
     phTooLow = 'PH_TOO_LOW',
+    HumidityTooHigh = 'HUMIDITY_TOO_HIGH',
+    HumidityTooLow = 'HUMIDITY_TOO_LOW',
+    TemperatureTooHigh = 'TEMPERATURE_TOO_HIGH',
+    TemperatureTooLow = 'TEMPERATURE_TOO_LOW',
+    NutrientBurn = 'NUTRIENT_BURN',
 }
 
 export enum JournalEntryType {
@@ -98,9 +103,8 @@ export type SortDirection = 'asc' | 'desc';
 export type UiDensity = 'comfortable' | 'compact';
 export type ExportFormat = 'pdf' | 'csv' | 'json' | 'txt' | 'xml';
 export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo' | 'amendment';
-// FIX: Export TaskPriority type alias to be used in other components.
+export type PlantCount = '1' | '2-3';
 export type TaskPriority = 'high' | 'medium' | 'low';
-// FIX: Export NotificationType type alias to be used in other components.
 export type NotificationType = 'success' | 'error' | 'info';
 
 // --- Interfaces ---
@@ -132,6 +136,7 @@ export interface Strain {
         pestResistance: number; // 0.8 to 1.2
         nutrientUptakeRate: number; // 0.8 to 1.2
         stressTolerance: number; // 0.8 to 1.2
+        rue: number; // Radiation Use Efficiency, 0.8 to 1.2
     };
 }
 
@@ -147,6 +152,7 @@ export interface Plant {
     biomass: number;
     health: number;
     stressLevel: number;
+    nutrientPool: number; // Internal reserve of nutrients for growth
     problems: PlantProblem[];
     tasks: Task[];
     journal: JournalEntry[];
@@ -211,7 +217,6 @@ export interface Task {
     id: string;
     title: string;
     description: string;
-    // FIX: Use TaskPriority type alias.
     priority: TaskPriority;
     isCompleted: boolean;
     createdAt: number;
@@ -281,7 +286,6 @@ export interface AIResponse {
 
 export interface MentorMessage {
     role: 'user' | 'model';
-    // FIX: Made title required to ensure consistency and fix type errors with EditableResponse.
     title: string;
     content: string;
     uiHighlights?: { elementId: string; plantId?: string }[];
@@ -386,7 +390,6 @@ export interface BeforeInstallPromptEvent extends Event {
 export interface Notification {
     id: number;
     message: string;
-    // FIX: Use NotificationType type alias.
     type: NotificationType;
 }
 
@@ -412,6 +415,7 @@ export interface SavedSetup {
         area: string;
         budget: string;
         growStyle: string;
+        plantCount?: PlantCount;
     };
 }
 
@@ -431,6 +435,7 @@ export interface SavedStrainTip extends AIResponse {
     strainId: string;
     strainName: string;
     createdAt: number;
+    imageUrl?: string;
 }
 
 export interface ArchivedMentorResponse extends Omit<MentorMessage, 'role'> {
@@ -493,7 +498,7 @@ export interface BreedingState {
 }
 
 export interface SimulationState {
-    plants: Record<string, Plant>;
+    plants: EntityState<Plant>;
     plantSlots: (string | null)[];
     selectedPlantId: string | null;
     isCatchingUp?: boolean; // Optional property for UI state
@@ -579,3 +584,9 @@ export interface FAQItem {
     plantStage?: PlantStage | PlantStage[];
   };
 }
+
+// Redux-specific types
+export type UserStrainsState = EntityState<Strain>;
+export type SavedExportsState = EntityState<SavedExport>;
+export type SavedSetupsState = EntityState<SavedSetup>;
+export type SavedStrainTipsState = EntityState<SavedStrainTip>;

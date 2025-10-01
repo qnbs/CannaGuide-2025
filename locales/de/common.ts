@@ -123,6 +123,7 @@ export const common = {
     list: 'Aufzählung',
   },
   loadMore: 'Mehr laden',
+  regenerate: 'Erneut generieren',
 };
 
 export const nav = {
@@ -186,7 +187,8 @@ export const ai = {
       systemInstruction: 'Du bist ein KI-Mentor für einen Cannabis-Züchter. Dein Ziel ist es, hilfreich und prägnant zu sein und den Benutzer innerhalb der App zu führen. Antworte NUR im JSON-Format und halte dich an das vorgegebene Schema. Wenn du eine Aktion vorschlägst, gib die entsprechende uiHighlight elementId an.',
     },
     strainTips: 'Gib strukturierte Anbautipps für die Cannabis-Sorte {{strain}} mit folgendem Kontext: Fokus auf {{focus}}, während der {{stage}}-Phase, für einen Züchter mit {{experience}} Erfahrung. Antworte nur im JSON-Format.',
-    deepDive: 'Generiere einen detaillierten Leitfaden zum Thema "{{topic}}" im Kontext der Cannabispflanze {{plant}}. Antworte nur im JSON-Format.'
+    deepDive: 'Generiere einen detaillierten Leitfaden zum Thema "{{topic}}" im Kontext der Cannabispflanze {{plant}}. Antworte nur im JSON-Format.',
+    strainImage: 'Ein kreatives, fantasievolles und unterhaltsames Bild, das die Cannabissorte "{{strainName}}" darstellt. Stilisiert, künstlerisch, lebendig.',
   },
   schemas: {
     diagnostics: {

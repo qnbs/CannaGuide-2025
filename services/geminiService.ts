@@ -5,14 +5,32 @@ import {
     FunctionDeclaration,
 } from '@google/genai';
 // FIX: Corrected import path for types to use the '@/' alias.
-import { Plant, Recommendation, Strain, PlantDiagnosisResponse, AIResponse, StructuredGrowTips, DeepDiveGuide, MentorMessage, Language } from '@/types';
+import {
+    Plant,
+    Recommendation,
+    Strain,
+    PlantDiagnosisResponse,
+    AIResponse,
+    StructuredGrowTips,
+    DeepDiveGuide,
+    MentorMessage,
+    Language,
+} from '@/types';
 import { getT } from '@/i18n';
 
-const formatPlantContextForPrompt = (plant: Plant, t: (key: string, options?: any) => string): string => {
+const formatPlantContextForPrompt = (
+    plant: Plant,
+    t: (key: string, options?: Record<string, any>) => string
+): string => {
     const stageDetails = t(`plantStages.${plant.stage}`);
-    const problems = plant.problems.length > 0
-        ? plant.problems.map(p => t(`problemMessages.${p.type.charAt(0).toLowerCase() + p.type.slice(1)}.message`)).join(', ')
-        : t('common.none');
+    const problems =
+        plant.problems.length > 0
+            ? plant.problems
+                  .map((p) =>
+                      t(`problemMessages.${p.type.charAt(0).toLowerCase() + p.type.slice(1)}.message`)
+                  )
+                  .join(', ')
+            : t('common.none');
 
     return `
 PLANT CONTEXT REPORT
@@ -44,20 +62,20 @@ ${problems}
 };
 
 const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
-  const languageInstruction = lang === 'de'
-    ? "WICHTIG: Deine gesamte Antwort muss ausschließlich auf Deutsch (de-DE) sein."
-    : "IMPORTANT: Your entire response must be exclusively in English (en-US).";
-  
-  return `${languageInstruction}\n\n${basePrompt}`;
-};
+    const languageInstruction =
+        lang === 'de'
+            ? 'WICHTIG: Deine gesamte Antwort muss ausschließlich auf Deutsch (de-DE) sein.'
+            : 'IMPORTANT: Your entire response must be exclusively in English (en-US).';
 
+    return `${languageInstruction}\n\n${basePrompt}`;
+};
 
 class GeminiService {
     private ai: GoogleGenAI;
 
     constructor() {
         if (!process.env.API_KEY) {
-            throw new Error("API_KEY environment variable not set");
+            throw new Error('API_KEY environment variable not set');
         }
         this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     }
@@ -81,7 +99,7 @@ class GeminiService {
         try {
             const systemInstruction = t('ai.prompts.equipmentSystemInstruction');
             const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang);
-            
+
             const response = await this.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
@@ -91,18 +109,75 @@ class GeminiService {
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
-                            tent: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            light: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING }, watts: { type: Type.NUMBER } } },
-                            ventilation: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            circulationFan: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            pots: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            soil: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            nutrients: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            extra: { type: Type.OBJECT, properties: { name: { type: Type.STRING }, price: { type: Type.NUMBER }, rationale: { type: Type.STRING } } },
-                            proTip: { type: Type.STRING }
-                        }
-                    }
-                }
+                            tent: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            light: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                    watts: { type: Type.NUMBER },
+                                },
+                            },
+                            ventilation: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            circulationFan: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            pots: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            soil: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            nutrients: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            extra: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    name: { type: Type.STRING },
+                                    price: { type: Type.NUMBER },
+                                    rationale: { type: Type.STRING },
+                                },
+                            },
+                            proTip: { type: Type.STRING },
+                        },
+                    },
+                },
             });
             return JSON.parse(response.text) as Recommendation;
         } catch (error) {
@@ -110,12 +185,28 @@ class GeminiService {
             throw new Error('ai.error.equipment');
         }
     }
-    
-    async diagnosePlant(base64Image: string, mimeType: string, plant: Plant, userNotes: string, lang: Language): Promise<PlantDiagnosisResponse> {
+
+    async diagnosePlant(
+        base64Image: string,
+        mimeType: string,
+        plant: Plant,
+        userNotes: string,
+        lang: Language
+    ): Promise<PlantDiagnosisResponse> {
         const t = getT();
-        const problems = plant.problems.length > 0
-            ? plant.problems.map(p => t(`problemMessages.${p.type.charAt(0).toLowerCase() + p.type.slice(1)}.message`, p.type)).join(', ')
-            : t('common.none');
+        const problems =
+            plant.problems.length > 0
+                ? plant.problems
+                      .map((p) =>
+                          t(
+                              `problemMessages.${
+                                  p.type.charAt(0).toLowerCase() + p.type.slice(1)
+                              }.message`,
+                              p.type
+                          )
+                      )
+                      .join(', ')
+                : t('common.none');
 
         const contextString = `
 PLANT CONTEXT:
@@ -123,7 +214,9 @@ PLANT CONTEXT:
 - Age: ${plant.age} days (Stage: ${t(`plantStages.${plant.stage}`)})
 - Active Issues: ${problems}
 - Medium Vitals: pH ${plant.medium.ph.toFixed(2)}, EC ${plant.medium.ec.toFixed(2)}
-- Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(1)}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
+- Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(
+            1
+        )}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
 - USER NOTES: "${userNotes || 'None provided'}"
         `.trim();
 
@@ -133,7 +226,7 @@ PLANT CONTEXT:
             Based on the image and the detailed context, provide a comprehensive diagnosis.
             Respond in JSON format only, adhering strictly to the provided schema.
         `;
-        
+
         const localizedPrompt = createLocalizedPrompt(prompt, lang);
 
         try {
@@ -148,16 +241,41 @@ PLANT CONTEXT:
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
-                            title: { type: Type.STRING, description: t('ai.schemas.diagnostics.title') },
-                            confidence: { type: Type.NUMBER, description: t('ai.schemas.diagnostics.confidence') },
-                            diagnosis: { type: Type.STRING, description: t('ai.schemas.diagnostics.diagnosis') },
-                            immediateActions: { type: Type.STRING, description: t('ai.schemas.diagnostics.immediateActions') },
-                            longTermSolution: { type: Type.STRING, description: t('ai.schemas.diagnostics.longTermSolution') },
-                            prevention: { type: Type.STRING, description: t('ai.schemas.diagnostics.prevention') },
+                            title: {
+                                type: Type.STRING,
+                                description: t('ai.schemas.diagnostics.title'),
+                            },
+                            confidence: {
+                                type: Type.NUMBER,
+                                description: t('ai.schemas.diagnostics.confidence'),
+                            },
+                            diagnosis: {
+                                type: Type.STRING,
+                                description: t('ai.schemas.diagnostics.diagnosis'),
+                            },
+                            immediateActions: {
+                                type: Type.STRING,
+                                description: t('ai.schemas.diagnostics.immediateActions'),
+                            },
+                            longTermSolution: {
+                                type: Type.STRING,
+                                description: t('ai.schemas.diagnostics.longTermSolution'),
+                            },
+                            prevention: {
+                                type: Type.STRING,
+                                description: t('ai.schemas.diagnostics.prevention'),
+                            },
                         },
-                        required: ['title', 'confidence', 'diagnosis', 'immediateActions', 'longTermSolution', 'prevention']
-                    }
-                }
+                        required: [
+                            'title',
+                            'confidence',
+                            'diagnosis',
+                            'immediateActions',
+                            'longTermSolution',
+                            'prevention',
+                        ],
+                    },
+                },
             });
             return JSON.parse(response.text) as PlantDiagnosisResponse;
         } catch (error) {
@@ -165,39 +283,47 @@ PLANT CONTEXT:
             throw new Error('ai.error.diagnostics');
         }
     }
-    
+
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT();
         // FIX: The previous fix was incorrect. Interpolating a complex object results in '[object Object]'.
         // Reverting to JSON.stringify to provide detailed context to the AI model.
         const prompt = t('ai.prompts.advisor', {
-            plant: JSON.stringify({ 
-                name: plant.name, 
-                age: plant.age, 
-                stage: plant.stage, 
-                problems: plant.problems, 
-                vitals: plant.medium 
-            }, null, 2)
+            plant: JSON.stringify(
+                {
+                    name: plant.name,
+                    age: plant.age,
+                    stage: plant.stage,
+                    problems: plant.problems,
+                    vitals: plant.medium,
+                },
+                null,
+                2
+            ),
         });
         const responseText = await this.generateText(prompt, lang);
         return { title: t('ai.advisor'), content: responseText };
     }
-    
+
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT();
         const prompt = t('ai.prompts.proactiveDiagnosis', {
-            plant: JSON.stringify(plant, null, 2)
+            plant: JSON.stringify(plant, null, 2),
         });
         const responseText = await this.generateText(prompt, lang);
         return { title: t('ai.proactiveDiagnosis'), content: responseText };
     }
 
-    async getMentorResponse(plant: Plant, query: string, lang: Language): Promise<Omit<MentorMessage, 'role'>> {
+    async getMentorResponse(
+        plant: Plant,
+        query: string,
+        lang: Language
+    ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT();
         const plantContext = formatPlantContextForPrompt(plant, t);
         const prompt = t('ai.prompts.mentor.main', {
             context: plantContext,
-            query: query
+            query: query,
         });
 
         try {
@@ -223,12 +349,12 @@ PLANT CONTEXT:
                                     properties: {
                                         elementId: { type: Type.STRING },
                                         plantId: { type: Type.STRING },
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             });
             return JSON.parse(response.text) as Omit<MentorMessage, 'role'>;
         } catch (error) {
@@ -237,13 +363,17 @@ PLANT CONTEXT:
         }
     }
 
-    async getStrainTips(strain: Strain, context: { focus: string, stage: string, experience: string }, lang: Language): Promise<StructuredGrowTips> {
+    async getStrainTips(
+        strain: Strain,
+        context: { focus: string; stage: string; experience: string },
+        lang: Language
+    ): Promise<StructuredGrowTips> {
         const t = getT();
         const prompt = t('ai.prompts.strainTips', {
             strain: JSON.stringify(strain),
             focus: context.focus,
             stage: context.stage,
-            experience: context.experience
+            experience: context.experience,
         });
         const localizedPrompt = createLocalizedPrompt(prompt, lang);
         try {
@@ -259,23 +389,52 @@ PLANT CONTEXT:
                             trainingTip: { type: Type.STRING },
                             environmentalTip: { type: Type.STRING },
                             proTip: { type: Type.STRING },
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             });
             return JSON.parse(response.text) as StructuredGrowTips;
-        } catch(e) {
-             console.error('Gemini getStrainTips Error:', e);
+        } catch (e) {
+            console.error('Gemini getStrainTips Error:', e);
             throw new Error('ai.error.tips');
         }
     }
-    
+
+    async generateStrainImage(strainName: string, lang: Language): Promise<string> {
+        const t = getT();
+        const prompt = t('ai.prompts.strainImage', { strainName });
+        // Images don't need language instruction
+        // const localizedPrompt = createLocalizedPrompt(prompt, lang);
+
+        try {
+            const response = await this.ai.models.generateImages({
+                model: 'imagen-4.0-generate-001',
+                prompt: prompt,
+                config: {
+                    numberOfImages: 1,
+                    outputMimeType: 'image/jpeg',
+                    aspectRatio: '1:1',
+                },
+            });
+
+            if (response.generatedImages && response.generatedImages.length > 0) {
+                const base64ImageBytes: string = response.generatedImages[0].image.imageBytes;
+                return base64ImageBytes;
+            } else {
+                throw new Error('No image was generated by the API.');
+            }
+        } catch (error) {
+            console.error('Gemini generateStrainImage Error:', error);
+            throw new Error('ai.error.generic');
+        }
+    }
+
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
         const t = getT();
         const prompt = t('ai.prompts.deepDive', { topic, plant: JSON.stringify(plant) });
         const localizedPrompt = createLocalizedPrompt(prompt, lang);
         try {
-             const response = await this.ai.models.generateContent({
+            const response = await this.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: localizedPrompt,
                 config: {
@@ -285,30 +444,46 @@ PLANT CONTEXT:
                         properties: {
                             introduction: { type: Type.STRING },
                             stepByStep: { type: Type.ARRAY, items: { type: Type.STRING } },
-                            prosAndCons: { type: Type.OBJECT, properties: { pros: { type: Type.ARRAY, items: { type: Type.STRING } }, cons: { type: Type.ARRAY, items: { type: Type.STRING } } } },
+                            prosAndCons: {
+                                type: Type.OBJECT,
+                                properties: {
+                                    pros: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                    cons: { type: Type.ARRAY, items: { type: Type.STRING } },
+                                },
+                            },
                             proTip: { type: Type.STRING },
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             });
             return JSON.parse(response.text) as DeepDiveGuide;
-        } catch(e) {
+        } catch (e) {
             console.error('Gemini generateDeepDive Error:', e);
             throw new Error('ai.error.deepDive');
         }
     }
-    
-    getDynamicLoadingMessages({ useCase, data }: { useCase: string; data?: Record<string, any> }): string[] {
+
+    getDynamicLoadingMessages({
+        useCase,
+        data,
+    }: {
+        useCase: string;
+        data?: Record<string, any>;
+    }): string[] {
         const t = getT();
         const messagesResult = t(`ai.loading.${useCase}`, { ...data, returnObjects: true });
 
-        if (typeof messagesResult === 'object' && messagesResult !== null && !Array.isArray(messagesResult)) {
+        if (
+            typeof messagesResult === 'object' &&
+            messagesResult !== null &&
+            !Array.isArray(messagesResult)
+        ) {
             return Object.values(messagesResult).map(String);
         }
         if (Array.isArray(messagesResult)) {
             return messagesResult.map(String);
         }
-        
+
         return [String(messagesResult)];
     }
 }

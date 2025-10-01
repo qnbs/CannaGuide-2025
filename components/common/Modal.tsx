@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -19,6 +19,13 @@ interface ModalProps {
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, footer, size = 'md', containerClassName = '', showCloseButton = true }) => {
     const { t } = useTranslation();
     const modalRef = useFocusTrap(isOpen);
+    const scrollableContentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isOpen && scrollableContentRef.current) {
+            scrollableContentRef.current.scrollTop = 0;
+        }
+    }, [isOpen]);
     
     if (!isOpen) return null;
 
@@ -55,7 +62,7 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title, 
                     </header>
                 )}
                 
-                <div className="flex-grow overflow-y-auto pr-2 -mr-4 pl-1">
+                <div ref={scrollableContentRef} className="flex-grow overflow-y-auto pr-2 -mr-4 pl-1">
                     {children}
                 </div>
 

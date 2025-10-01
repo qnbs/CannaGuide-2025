@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
 import { toggleFavorite } from '@/stores/slices/favoritesSlice';
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
-import { updateNote } from '@/stores/slices/notesSlice';
+import { updateNote, undoNoteChange, redoNoteChange } from '@/stores/slices/notesSlice';
 import { StrainAiTips } from './StrainAiTips';
 import { Tabs } from '@/components/common/Tabs';
 import { InfoSection } from '@/components/common/InfoSection';
@@ -111,37 +111,33 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const note = useAppSelector(state => state.notes.strainNotes[strain.id] || '');
-    
-    const [noteContent, setNoteContent] = useState('');
-    const [isEditing, setIsEditing] = useState(false);
+    const noteHistory = useAppSelector(state => state.notes.strainNotes[strain.id]);
 
-    useEffect(() => {
-        setNoteContent(note);
-    }, [strain, note]);
+    const canUndo = noteHistory && noteHistory.past.length > 0;
+    const canRedo = noteHistory && noteHistory.future.length > 0;
+    const noteContent = noteHistory ? noteHistory.present : '';
 
-    const handleSaveNote = () => {
-        dispatch(updateNote({ strainId: strain.id, note: noteContent }));
-        setIsEditing(false);
+    const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        dispatch(updateNote({ strainId: strain.id, note: e.target.value }));
     };
 
     return (
         <InfoSection title={t('strainsView.strainModal.notes')}>
-            <div className="bg-slate-800 p-3 rounded-md">
+            <div className="bg-slate-800 rounded-md border border-slate-700">
+                <div className="flex items-center p-2 border-b border-slate-700 gap-2">
+                    <Button size="sm" variant="secondary" onClick={() => dispatch(undoNoteChange({ strainId: strain.id }))} disabled={!canUndo} className="!p-1.5">
+                        <PhosphorIcons.ArrowClockwise className="w-4 h-4 transform scale-x-[-1]" />
+                    </Button>
+                    <Button size="sm" variant="secondary" onClick={() => dispatch(redoNoteChange({ strainId: strain.id }))} disabled={!canRedo} className="!p-1.5">
+                        <PhosphorIcons.ArrowClockwise className="w-4 h-4" />
+                    </Button>
+                </div>
                 <textarea
                     value={noteContent}
-                    onChange={(e) => setNoteContent(e.target.value)}
-                    onClick={() => !isEditing && setIsEditing(true)}
-                    readOnly={!isEditing}
-                    className={`w-full bg-transparent resize-none focus:outline-none min-h-[150px] ${isEditing ? 'ring-1 ring-primary-500 rounded p-2' : 'p-2'}`}
+                    onChange={handleNoteChange}
+                    className='w-full bg-transparent resize-none focus:outline-none min-h-[150px] p-2'
                     placeholder={t('strainsView.addStrainModal.aromasPlaceholder')}
                 />
-                {isEditing && (
-                    <div className="text-right mt-2 flex gap-2 justify-end">
-                        <Button size="sm" variant="secondary" onClick={() => { setIsEditing(false); setNoteContent(note); }}>{t('common.cancel')}</Button>
-                        <Button size="sm" onClick={handleSaveNote}>{t('strainsView.strainModal.saveNotes')}</Button>
-                    </div>
-                )}
             </div>
         </InfoSection>
     );
@@ -176,7 +172,7 @@ interface StrainDetailViewProps {
     strain: Strain;
     allStrains: Strain[];
     onBack: () => void;
-    onSaveTip: (strain: Strain, tip: AIResponse) => void;
+    onSaveTip: (strain: Strain, tip: AIResponse, imageUrl?: string) => void;
 }
 
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {

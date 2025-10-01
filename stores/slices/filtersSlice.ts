@@ -6,6 +6,7 @@ export interface FiltersState {
     typeFilter: StrainType[];
     showFavoritesOnly: boolean;
     advancedFilters: AdvancedFilterState;
+    letterFilter: string | null;
 }
 
 export const initialAdvancedFilters: AdvancedFilterState = {
@@ -24,6 +25,7 @@ const initialState: FiltersState = {
     typeFilter: [],
     showFavoritesOnly: false,
     advancedFilters: initialAdvancedFilters,
+    letterFilter: null,
 };
 
 const filtersSlice = createSlice({
@@ -48,11 +50,15 @@ const filtersSlice = createSlice({
         setAdvancedFilters: (state, action: PayloadAction<Partial<AdvancedFilterState>>) => {
             state.advancedFilters = { ...state.advancedFilters, ...action.payload };
         },
+        setLetterFilter: (state, action: PayloadAction<string | null>) => {
+            state.letterFilter = state.letterFilter === action.payload ? null : action.payload;
+        },
         resetAllFilters: (state) => {
             state.searchTerm = '';
             state.typeFilter = [];
             state.showFavoritesOnly = false;
             state.advancedFilters = initialAdvancedFilters;
+            state.letterFilter = null;
         },
     },
 });
@@ -63,6 +69,7 @@ export const {
     setShowFavoritesOnly,
     setAdvancedFilters,
     resetAllFilters,
+    setLetterFilter,
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

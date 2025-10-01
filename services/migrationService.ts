@@ -7,7 +7,6 @@ import { runDataMigrationsLogic } from './migrationLogic';
  * Runs data migrations on the application state after it has been hydrated from storage.
  * This function uses pure logic to clean up data and dispatches actions to update the store.
  */
-// FIX: Converted to a Redux Thunk to access the store's state and dispatch function correctly without direct imports.
 export const runDataMigrations = createAsyncThunk<void, void, { state: RootState }>(
     'data/runMigrations',
     async (_, { getState, dispatch }) => {

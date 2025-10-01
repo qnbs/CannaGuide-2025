@@ -100,6 +100,7 @@ export const plantsView = {
     tasksComplete: 'Complete',
     tasksNoEntries: 'No completed tasks yet.',
     tasksCompleted: 'Completed: {{date}}',
+    photosNoEntries: 'No photos have been logged for this plant yet.',
   },
   postHarvest: {
       title: 'Post-Harvest Processing',

@@ -12,10 +12,8 @@ import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
 import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
 // FIX: Corrected import path for Redux store to use the '@/' alias.
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
+import { useAppDispatch } from '@/stores/store';
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice';
-import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
 import { openActionModal, openDiagnosticsModal } from '@/stores/slices/uiSlice';
 
 interface DetailedPlantViewProps {
@@ -28,8 +26,6 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     const dispatch = useAppDispatch();
     const [activeTab, setActiveTab] = useState('overview');
     
-    const archive = useAppSelector(selectArchivedAdvisorResponsesForPlant(plant.id));
-
     useEffect(() => {
         dispatch(updatePlantToNow(plant.id));
     }, [plant.id, dispatch]);
@@ -72,15 +68,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}
                 {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={(taskId) => dispatch(completeTask({ plantId: plant.id, taskId }))} />}
                 {activeTab === 'photos' && <PhotosTab journal={plant.journal} />}
-                {activeTab === 'ai' && (
-                    <AiTab
-                        plant={plant}
-                        archive={archive}
-                        addResponse={(p, res, query) => dispatch(addArchivedAdvisorResponse({ plant: p, response: res, query }))}
-                        updateResponse={(res) => dispatch(updateArchivedAdvisorResponse(res))}
-                        deleteResponse={(plantId, resId) => dispatch(deleteArchivedAdvisorResponse({ plantId, responseId: resId }))}
-                    />
-                )}
+                {activeTab === 'ai' && <AiTab plant={plant} />}
             </div>
         </div>
     );

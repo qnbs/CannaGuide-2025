@@ -24,10 +24,12 @@ class BreedingService {
             },
             aromas: [...new Set([...(parentA.aromas || []), ...(parentB.aromas || [])])].slice(0, 4),
             dominantTerpenes: [...new Set([...(parentA.dominantTerpenes || []), ...(parentB.dominantTerpenes || [])])].slice(0, 3),
+            // FIX: Added missing 'rue' property to the geneticModifiers object.
             geneticModifiers: {
                 pestResistance: ((parentA.geneticModifiers.pestResistance + parentB.geneticModifiers.pestResistance) / 2) * (1 + (Math.random() - 0.5) * 0.1),
                 nutrientUptakeRate: ((parentA.geneticModifiers.nutrientUptakeRate + parentB.geneticModifiers.nutrientUptakeRate) / 2) * (1 + (Math.random() - 0.5) * 0.1),
                 stressTolerance: ((parentA.geneticModifiers.stressTolerance + parentB.geneticModifiers.stressTolerance) / 2) * (1 + (Math.random() - 0.5) * 0.1),
+                rue: ((parentA.geneticModifiers.rue + parentB.geneticModifiers.rue) / 2) * (1 + (Math.random() - 0.5) * 0.1),
             },
         };
         

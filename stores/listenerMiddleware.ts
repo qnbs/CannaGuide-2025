@@ -1,0 +1,219 @@
+import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
+import type { RootState } from './store';
+import { i18nInstance, getT } from '@/i18n';
+import { Language } from '@/types';
+import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
+import { plantStateUpdated, resetPlants, addJournalEntry } from './slices/simulationSlice';
+import { addNotification, setOnboardingStep } from './slices/uiSlice';
+import { indexedDBStorage } from './indexedDBStorage';
+
+// Import actions to listen for
+import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice';
+// FIX: Imported missing `updateSetup` and `deleteSetup` actions.
+import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip, addSetup, updateSetup, deleteSetup } from './slices/savedItemsSlice';
+import { addArchivedMentorResponse, addArchivedAdvisorResponse, clearArchives } from './slices/archivesSlice';
+import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice';
+
+
+export const listenerMiddleware = createListenerMiddleware();
+const REDUX_STATE_KEY = 'cannaguide-redux-storage';
+
+/**
+ * Listener to handle state persistence to IndexedDB with debouncing.
+ * This is a more modern and robust approach than a manual store.subscribe().
+ */
+listenerMiddleware.startListening({
+  // Listen to all actions, but not the ones from RTK Query which are internal
+  predicate: (action) => !action.type.startsWith('geminiApi/'),
+  effect: async (action, listenerApi) => {
+    // Cancel any in-progress saves
+    listenerApi.cancelActiveListeners();
+    
+    // Debounce saving by 1 second
+    await listenerApi.delay(1000);
+    
+    const state = listenerApi.getState() as RootState;
+    try {
+        const stateToSave = {
+            settings: state.settings,
+            simulation: state.simulation,
+            strainsView: state.strainsView,
+            userStrains: state.userStrains,
+            favorites: state.favorites,
+            notes: state.notes,
+            archives: state.archives,
+            savedItems: state.savedItems,
+            knowledge: state.knowledge,
+            breeding: state.breeding,
+            sandbox: state.sandbox,
+            filters: state.filters,
+        };
+        const serializedState = JSON.stringify(stateToSave);
+        await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
+    } catch (e) {
+        console.error("Could not save state", e);
+    }
+  },
+});
+
+
+/**
+ * Listener to automatically change the i18n language when the setting is updated.
+ */
+listenerMiddleware.startListening({
+  matcher: isAnyOf(setSetting),
+  effect: async (action, listenerApi) => {
+    if (action.payload.path === 'language') {
+      const newLang = action.payload.value as Language;
+      if (i18nInstance.language !== newLang) {
+        await i18nInstance.changeLanguage(newLang);
+      }
+    }
+  },
+});
+
+/**
+ * Listener to create notifications when a new plant problem is detected.
+ */
+listenerMiddleware.startListening({
+  actionCreator: plantStateUpdated,
+  effect: async (action, listenerApi) => {
+      const { updatedPlant } = action.payload;
+      const previousState = listenerApi.getOriginalState() as RootState;
+      const oldPlant = previousState.simulation.plants.entities[updatedPlant.id];
+      
+      if (!oldPlant) return;
+
+      const oldProblems = new Set(oldPlant.problems.filter(p => p.status === 'active').map(p => p.type));
+      const newProblems = updatedPlant.problems.filter(p => p.status === 'active');
+
+      newProblems.forEach(problem => {
+          if (!oldProblems.has(problem.type)) {
+              const t = getT();
+              const message = `${updatedPlant.name}: ${t(`problemMessages.${problem.type.charAt(0).toLowerCase() + problem.type.slice(1)}.message`)}`;
+              listenerApi.dispatch(addNotification({ message, type: 'error' }));
+          }
+      });
+  }
+});
+
+
+// --- Centralized Notification Listeners ---
+
+// User Strains
+listenerMiddleware.startListening({
+  matcher: isAnyOf(addUserStrain, updateUserStrain),
+  effect: (action, { dispatch }) => {
+    const t = getT();
+    const type = action.type.includes('addUser') ? 'add' : 'update';
+    dispatch(addNotification({ message: t(`strainsView.addStrainModal.validation.${type}Success`, { name: action.payload.name }), type: 'success' }));
+  }
+});
+
+// Saved Items (Exports, Setups, Tips)
+listenerMiddleware.startListening({
+  matcher: isAnyOf(addSetup.fulfilled),
+  effect: (action, { dispatch }) => {
+    const t = getT();
+    dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: action.payload.name }), type: 'success' }));
+  }
+});
+
+listenerMiddleware.startListening({
+    matcher: isAnyOf(deleteExport, deleteSetup, deleteStrainTip, deleteUserStrain),
+    effect: (action, { dispatch }) => {
+        const t = getT();
+        let message = 'Item removed.';
+        if (action.type.includes('Export')) message = t('strainsView.exportsManager.exportRemoved');
+        if (action.type.includes('Setup')) message = 'Setup removed.'; // Assuming no specific translation key
+        if (action.type.includes('StrainTip')) message = 'Tip removed.';
+        if (action.type.includes('UserStrain')) message = 'Custom strain removed.';
+        dispatch(addNotification({ message, type: 'info' }));
+    }
+});
+
+listenerMiddleware.startListening({
+    matcher: isAnyOf(updateExport, updateSetup, updateStrainTip),
+    effect: (action, { dispatch }) => {
+        const t = getT();
+        const payload = (action.payload as any).changes || action.payload;
+        const name = payload.name;
+        let message = `Item "${name}" updated.`;
+        if (action.type.includes('Export')) message = t('strainsView.exportsManager.updateExportSuccess', { name });
+        // Add more specific messages if needed
+        dispatch(addNotification({ message, type: 'success' }));
+    }
+});
+
+
+listenerMiddleware.startListening({
+  actionCreator: addStrainTip,
+  effect: (action, { dispatch }) => {
+    const t = getT();
+    dispatch(addNotification({ message: t('strainsView.tips.saveSuccess', { name: action.payload.strain.name }), type: 'success' }));
+  }
+});
+
+// Favorites
+listenerMiddleware.startListening({
+  actionCreator: addMultipleToFavorites,
+  effect: (action, { dispatch }) => {
+    const t = getT();
+    dispatch(addNotification({ message: t('strainsView.bulkActions.addedToFavorites', { count: action.payload.length }), type: 'success' }));
+  }
+});
+listenerMiddleware.startListening({
+  actionCreator: removeMultipleFromFavorites,
+  effect: (action, { dispatch }) => {
+    const t = getT();
+    dispatch(addNotification({ message: t('strainsView.bulkActions.removedFromFavorites', { count: action.payload.length }), type: 'info' }));
+  }
+});
+
+// Archives & Data Management
+listenerMiddleware.startListening({
+  actionCreator: addArchivedMentorResponse,
+  effect: (_, { dispatch }) => {
+    dispatch(addNotification({ message: getT()('knowledgeView.archive.saveSuccess'), type: 'success' }));
+  }
+});
+listenerMiddleware.startListening({
+  actionCreator: addJournalEntry,
+  effect: (action, { dispatch }) => {
+    if(action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
+        dispatch(addNotification({ message: getT()('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
+    }
+  }
+});
+listenerMiddleware.startListening({
+  actionCreator: clearArchives,
+  effect: (_, { dispatch }) => {
+    dispatch(addNotification({ message: getT()('settingsView.data.clearArchivesSuccess'), type: 'success' }));
+  }
+});
+listenerMiddleware.startListening({
+  actionCreator: resetPlants,
+  effect: (_, { dispatch }) => {
+    dispatch(addNotification({ message: getT()('settingsView.data.resetPlantsSuccess'), type: 'success' }));
+  }
+});
+listenerMiddleware.startListening({
+  actionCreator: exportAllData.fulfilled,
+  effect: (_, { dispatch }) => {
+    dispatch(addNotification({ message: getT()('settingsView.data.exportSuccess'), type: 'success' }));
+  }
+});
+listenerMiddleware.startListening({
+  actionCreator: resetAllData.fulfilled,
+  effect: (_, { dispatch }) => {
+      dispatch(addNotification({ message: getT()('settingsView.data.resetAllSuccess'), type: 'success' }));
+  }
+});
+listenerMiddleware.startListening({
+  matcher: isAnyOf(setOnboardingStep),
+  effect: (action, listenerApi) => {
+    if (action.payload === 0 && (listenerApi.getOriginalState() as RootState).settings.settings.onboardingCompleted) {
+        listenerApi.dispatch(addNotification({ message: getT()('settingsView.data.replayOnboardingSuccess'), type: 'success' }));
+    }
+  }
+});

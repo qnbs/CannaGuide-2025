@@ -4,6 +4,7 @@ import { Command } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon';
 import { groupAndSortCommands } from '@/services/commandService';
 import { useCommandPalette } from '@/hooks/useCommandPalette';
 import { Input } from '@/components/ui/ThemePrimitives';
@@ -71,7 +72,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         className="w-full max-w-xl bg-slate-800/90 backdrop-blur-lg rounded-lg shadow-2xl border border-slate-700 modal-content-animate"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-3 border-b border-slate-700 relative hidden sm:block">
+        <div className="flex items-center gap-3 p-4 border-b border-slate-700">
+            <CannabisLeafIcon className="w-6 h-6 flex-shrink-0" />
+            <h2 className="text-lg font-bold font-display text-slate-100">
+                CannaGuide 2025
+            </h2>
+        </div>
+        <div className="p-3 border-b border-slate-700 relative">
             <PhosphorIcons.MagnifyingGlass className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none"/>
             <Input 
                 ref={inputRef}

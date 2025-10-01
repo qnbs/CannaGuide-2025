@@ -6,8 +6,9 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { geminiService } from '@/services/geminiService';
-import { selectDeepDiveState } from '@/stores/selectors';
-import { startDeepDiveGeneration } from '@/stores/slices/aiSlice';
+// FIX: The selector `selectDeepDiveState` and thunk `startDeepDiveGeneration` were part of an old pattern.
+// Replaced with the RTK Query mutation hook which is the correct, modern approach used in the app.
+import { useGenerateDeepDiveMutation } from '@/stores/api';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
@@ -22,13 +23,15 @@ interface DeepDiveModalProps {
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { isLoading, response, error } = useAppSelector(selectDeepDiveState(plant.id, topic));
+    // FIX: Using the RTK Query mutation hook instead of the old selector/thunk pattern.
+    const [generateDeepDive, { data: response, isLoading, error }] = useGenerateDeepDiveMutation();
 
     useEffect(() => {
         if (!response && !isLoading && !error) {
-            dispatch(startDeepDiveGeneration({ topic, plant }));
+            // FIX: Directly call the mutation trigger function provided by the hook.
+            generateDeepDive({ topic, plant });
         }
-    }, [plant, topic, response, isLoading, error, dispatch]);
+    }, [plant, topic, response, isLoading, error, dispatch, generateDeepDive]);
 
     const loadingMessage = useMemo(() => {
         // FIX: Corrected call to geminiService to pass a single object argument.
@@ -37,7 +40,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
             data: { topic, plantName: plant.name }
         });
         return messages[Math.floor(Math.random() * messages.length)];
-    }, [topic, plant.name, t]);
+    }, [topic, plant.name]);
 
 
     const relevantScenario = useMemo(() => {
@@ -50,7 +53,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
     return (
         <Modal isOpen={true} onClose={onClose} title={`${t('common.deepDive')}: ${topic}`} size="2xl">
             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-            {error && <div className="text-red-400">{error}</div>}
+            {error && <div className="text-red-400">{'message' in (error as any) ? (error as any).message : t('ai.error.unknown')}</div>}
             {response && (
                 <div className="space-y-4">
                     <div className="flex items-start gap-3 bg-slate-800/50 p-3 rounded-lg">

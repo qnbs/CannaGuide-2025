@@ -3,10 +3,13 @@ import { Plant, MentorMessage } from '@/types';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { startPlantMentorChat, clearMentorChat } from '@/stores/slices/aiSlice';
+import { useAppDispatch } from '@/stores/store';
+// FIX: Removed unused import from obsolete aiSlice. Chat history is now local state.
+// import { clearMentorChat } from '@/stores/slices/aiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { Input } from '@/components/ui/ThemePrimitives';
+import { useGetMentorResponseMutation } from '@/stores/api';
+import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice';
 
 interface MentorChatViewProps {
     plant: Plant;
@@ -30,7 +33,9 @@ const Message: React.FC<{ message: MentorMessage }> = ({ message }) => {
 export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const chatState = useAppSelector(state => state.ai.mentorChats[plant.id] || { history: [], isLoading: false, error: null });
+    const [getMentorResponse, { isLoading }] = useGetMentorResponseMutation();
+    const [history, setHistory] = useState<MentorMessage[]>([]);
+    
     const [input, setInput] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -38,18 +43,30 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    useEffect(scrollToBottom, [chatState.history]);
+    useEffect(scrollToBottom, [history]);
 
-    const handleSend = () => {
-        if (input.trim()) {
-            dispatch(startPlantMentorChat({ plant, query: input.trim() }));
+    const handleSend = async () => {
+        if (input.trim() && !isLoading) {
+            const userMessage: MentorMessage = { role: 'user', content: input.trim(), title: '' };
+            setHistory(prev => [...prev, userMessage]);
             setInput('');
+
+            try {
+                const response = await getMentorResponse({ plant, query: input.trim() }).unwrap();
+                const modelMessage: MentorMessage = { role: 'model', ...response };
+                setHistory(prev => [...prev, modelMessage]);
+                // Automatically archive successful responses
+                dispatch(addArchivedMentorResponse({ query: input.trim(), ...response }));
+            } catch (error) {
+                const errorMessage: MentorMessage = { role: 'model', title: t('common.error'), content: (error as any).message || t('ai.error.unknown') };
+                setHistory(prev => [...prev, errorMessage]);
+            }
         }
     };
 
     const handleClear = () => {
         if(window.confirm(t('knowledgeView.aiMentor.clearConfirm'))) {
-            dispatch(clearMentorChat(plant.id));
+            setHistory([]);
         }
     }
 
@@ -61,7 +78,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                         <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
                         {t('common.back')}
                     </Button>
-                    <Button variant="danger" size="sm" onClick={handleClear} disabled={chatState.history.length === 0}>
+                    <Button variant="danger" size="sm" onClick={handleClear} disabled={history.length === 0}>
                         <PhosphorIcons.TrashSimple className="w-4 h-4 mr-1"/>
                         {t('knowledgeView.aiMentor.clearChat')}
                     </Button>
@@ -72,10 +89,10 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                 </div>
             </header>
             <div className="flex-grow overflow-y-auto pr-2 -mr-4 space-y-4">
-                {chatState.history.map((msg, index) => (
+                {history.map((msg, index) => (
                     <Message key={index} message={msg} />
                 ))}
-                {chatState.isLoading && <AiLoadingIndicator loadingMessage={t('ai.generating')} />}
+                {isLoading && <AiLoadingIndicator loadingMessage={t('ai.generating')} />}
                  <div ref={messagesEndRef} />
             </div>
             <div className="flex-shrink-0 mt-4">
@@ -89,7 +106,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                         className="pr-20 resize-none"
                         rows={2}
                     />
-                    <Button onClick={handleSend} disabled={chatState.isLoading || !input.trim()} className="absolute right-2 bottom-2 !p-2">
+                    <Button onClick={handleSend} disabled={isLoading || !input.trim()} className="absolute right-2 bottom-2 !p-2">
                         <PhosphorIcons.PaperPlaneTilt className="w-5 h-5"/>
                     </Button>
                 </div>

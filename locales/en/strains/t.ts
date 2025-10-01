@@ -1,11 +1,14 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "the-original": {
+    "description": "Often referring to a foundational OG Kush phenotype, 'The Original' is a potent indica celebrated for its classic earthy, pine, and pungent aroma. It delivers a heavy, tranquilizing body high, making it a go-to for stress relief and deep relaxation."
+  },
   "the-menthol": {
     "description": "A unique hybrid known for its distinctively sharp, minty, and chemical aroma, reminiscent of menthol. The high is balanced, offering an uplifting and creative cerebral buzz followed by a soothing body calm, making it suitable for various occasions without being overly sedative.",
   },
   "tahoe-alien": {
-    "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening."
+    "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening, known for inducing a powerful sense of calm and euphoria."
   },
   "tahoe-og-kush": {
     "description": "An OG Kush phenotype known for its heavily relaxing and sedating effects. Ideal for evening use and for insomnia."

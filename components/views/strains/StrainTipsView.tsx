@@ -24,6 +24,11 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
     const { t } = useTranslation();
     return (
         <div className="animate-fade-in">
+             {tip.imageUrl && (
+                <div className="mb-4 -mx-3 -mt-3">
+                    <img src={tip.imageUrl} alt={tip.strainName} className="rounded-t-lg w-full" />
+                </div>
+            )}
             <div className="flex justify-between items-start">
                 <div>
                     <p className="text-xs text-slate-400">{new Date(tip.createdAt).toLocaleString()}</p>
@@ -151,13 +156,13 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
                                 <details key={strainName} open={true} className="group">
                                      <summary className="list-none"><div className="flex justify-between items-center p-3 rounded-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>
                                     <div className="pl-6 pt-3 space-y-3">
-                                        {tips.map(tip => (<Card key={tip.id} className="bg-slate-800/50 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500"/><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))}
+                                        {tips.map(tip => (<Card key={tip.id} className="bg-slate-800/50 p-3 flex gap-3 items-start overflow-hidden"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500"/><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))}
                                     </div>
                                 </details>
                             )
                         })
                     ) : (
-                        (sortedAndGrouped as SavedStrainTip[]).map(tip => (<Card key={tip.id} className="bg-slate-800 p-3 flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500"/><div className="flex-1"><p className="text-xs font-bold text-primary-300 mb-2">{tip.strainName}</p><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))
+                        (sortedAndGrouped as SavedStrainTip[]).map(tip => (<Card key={tip.id} className="bg-slate-800 p-3 flex gap-3 items-start overflow-hidden"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500"/><div className="flex-1"><p className="text-xs font-bold text-primary-300 mb-2">{tip.strainName}</p><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></Card>))
                     )}
                 </div>
             )}

@@ -6,15 +6,16 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CameraModal } from '@/components/common/CameraModal';
 import { Modal } from '@/components/common/Modal';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectDiagnosticsState } from '@/stores/selectors';
-import { startDiagnostics } from '@/stores/slices/aiSlice';
+import { useAppDispatch } from '@/stores/store';
+// FIX: The selector `selectDiagnosticsState` and thunk `startDiagnostics` were part of an old pattern.
+// Replaced with the RTK Query mutation hook which is the correct, modern approach used in the app.
+import { useDiagnosePlantMutation } from '@/stores/api';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { addJournalEntry } from '@/stores/slices/simulationSlice';
 import { Card } from '@/components/common/Card';
 import { geminiService } from '@/services/geminiService';
 import { dbService } from '@/services/dbService';
-import { Input, Select } from '@/components/ui/ThemePrimitives';
+import { Input } from '@/components/ui/ThemePrimitives';
 
 
 const base64ToMimeType = (base64: string): string => {
@@ -81,7 +82,6 @@ ${response.prevention}
                 details: journalDetails 
             }
         }));
-        dispatch(addNotification({ message: t('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
     };
 
     return (
@@ -130,7 +130,7 @@ interface AiDiagnosticsModalProps {
 export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, onClose }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { isLoading, response, error } = useAppSelector(selectDiagnosticsState);
+    const [diagnosePlant, { isLoading, data: response, error }] = useDiagnosePlantMutation();
 
     const [step, setStep] = useState<'upload' | 'context' | 'result'>('upload');
     const [image, setImage] = useState<string | null>(null);
@@ -181,7 +181,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
         setStep('result');
         const base64Data = image.split(',')[1];
         const mimeType = base64ToMimeType(base64Data);
-        dispatch(startDiagnostics({ base64Image: base64Data, mimeType, plant, userNotes }));
+        diagnosePlant({ base64Image: base64Data, mimeType, plant, userNotes });
     };
     
     return (
@@ -220,7 +220,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
                     {step === 'result' && (
                         <div>
                             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                            {error && <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">{error}</div>}
+                            {error && <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">{'message' in (error as any) ? (error as any).message : t('ai.error.unknown')}</div>}
                             {response && !isLoading && (
                                 <DiagnosisResult response={response} plantId={plant.id} image={image} />
                             )}

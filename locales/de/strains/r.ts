@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "rare-dankness-2": {
+    "description": "Ein geschätzter Phänotyp aus dem Zuchtprogramm von Rare Dankness. Diese ausgewogene Hybride bietet ein erhebendes und kreatives Kopf-High, gepaart mit einer sanften Körperentspannung. Sie ist bekannt für ein komplexes OG-Kush- und Chemdawg-Aroma, das Zitrus-, Erd- und Dieselnoten vereint."
+  },
   "red-pop": {
     "description": "Eine Hybride von Exotic Genetix, die für ihr einzigartiges kohlensäurehaltiges Erdbeer- und Kirscharoma gefeiert wird. Red Pop liefert ein erhebendes und glückliches High, das perfekt ist, um die Stimmung zu heben und Kreativität zu fördern."
   },

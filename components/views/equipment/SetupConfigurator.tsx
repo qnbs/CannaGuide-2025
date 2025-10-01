@@ -3,26 +3,25 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
-import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem } from '@/types';
+import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem, PlantCount } from '@/types';
 import { geminiService } from '@/services/geminiService';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectEquipmentGenerationState } from '@/stores/selectors';
-import { startEquipmentGeneration, resetEquipmentGenerationState } from '@/stores/slices/aiSlice';
+import { useAppDispatch } from '@/stores/store';
 import { openSaveSetupModal } from '@/stores/slices/uiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { useGetEquipmentRecommendationMutation } from '@/stores/api';
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;
 }
 
 type Step = 1 | 2;
-type PlantCount = '1' | '2-3';
 type Budget = 'value' | 'balanced' | 'premium';
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { isLoading, response: recommendation, error } = useAppSelector(selectEquipmentGenerationState);
+    
+    const [getEquipmentRecommendation, { data: recommendation, isLoading, error }] = useGetEquipmentRecommendationMutation();
 
     const [step, setStep] = useState<Step>(1);
     const [plantCount, setPlantCount] = useState<PlantCount | null>(null);
@@ -68,11 +67,14 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             tentSize
         });
 
-        dispatch(startEquipmentGeneration({ prompt, details: { plantCount, budget } }));
+        getEquipmentRecommendation({ prompt });
     };
 
     const handleSaveSetup = () => {
         if (!recommendation || !sourceDetails) return;
+        
+        const tentSizes: Record<PlantCount, string> = { '1': '60x60cm', '2-3': '100x100cm' };
+        const tentSize = tentSizes[sourceDetails.plants];
 
         const totalCost = (Object.values(recommendation) as (RecommendationItem | string)[]).reduce((sum, item) => {
             if (typeof item === 'object' && item.price) {
@@ -85,9 +87,10 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             recommendation,
             totalCost,
             sourceDetails: {
-                area: '',
+                area: tentSize,
                 budget: sourceDetails.budget,
-                growStyle: '',
+                growStyle: '', // Obsolete, but kept for type consistency
+                plantCount: sourceDetails.plants,
             }
         }));
     };
@@ -96,7 +99,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
         setStep(1);
         setPlantCount(null);
         setBudget(null);
-        dispatch(resetEquipmentGenerationState());
+        // No need to dispatch a reset action, as RTK Query handles its own state reset on component unmount or new mutation.
     };
 
     const showResults = isLoading || recommendation || error;
@@ -122,7 +125,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                      <div className="text-center p-8">
                         <PhosphorIcons.XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                         <p className="text-red-400">{t('equipmentView.configurator.error')}</p>
-                        <p className="text-sm text-slate-400 mb-4">{error}</p>
+                        <p className="text-sm text-slate-400 mb-4">{'message' in error ? (error as any).message : t('ai.error.unknown')}</p>
                         <Button onClick={handleGenerate}>{t('equipmentView.configurator.tryAgain')}</Button>
                     </div>
                 )}

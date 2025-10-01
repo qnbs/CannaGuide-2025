@@ -1,6 +1,21 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "ace-of-spades": {
+    "description": "An indica-dominant hybrid known for its sweet and sour berry aroma. It provides a relaxing and euphoric high that is great for unwinding and stimulating creativity. The buds often have a beautiful purple hue."
+  },
+  "afghani-bullrider": {
+    "description": "A potent indica strain believed to be a phenotype of an Afghani landrace. It delivers a deeply relaxing, almost narcotic body high that melts away pain and stress, making it ideal for nighttime use. Its aroma is a classic mix of earthy, sweet, and pungent notes."
+  },
+  "albert-walker-og": {
+    "description": "A clone-only indica-dominant hybrid with mysterious origins, though it's believed to be a phenotype of Afghan Skunk. It is known for its potent, long-lasting effects that are both euphoric and deeply relaxing. The aroma is a pungent mix of skunk, lemon, and diesel."
+  },
+  "alien-technology": {
+    "description": "A pure indica landrace strain reportedly brought back from Afghanistan by a US soldier. It is known for its strong, sedating effects and its high resin production. The aroma is a classic Afghani mix of earthy, spicy, and woody notes with a hint of diesel."
+  },
+  "atlas-star": {
+    "description": "A balanced hybrid known for its sweet, fruity aroma and well-rounded effects. It provides a euphoric and happy high that gently relaxes the body without being overly sedating, making it a good choice for various occasions."
+  },
   "abusive-og": {
     "description": "An OG Kush phenotype known for its heavily relaxing and sedating effects. This pure indica delivers a potent, earthy pine flavor and is often used to alleviate pain, anxiety, and insomnia."
   },
@@ -54,7 +69,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "A pure Indica known for its sour, diesel-like aroma and potent, relaxing effects. It is one of the parent strains of Alien Kush and offers a strong cerebral effect that transitions into deep body relaxation."
   },
   "alien-kush": {
-    "description": "A balanced hybrid with a spicy, earthy, and pine-like aroma. It offers a clear, cerebral effect that transitions into gentle body relaxation. Known for its 'alien-like' effect that can slightly alter perception."
+    "description": "A balanced hybrid with a spicy, earthy, and pine-like aroma. It offers a clear, cerebral effect that transitions into a gentle body relaxation. Known for its 'alien-like' effect that can slightly alter perception."
   },
   "alien-og": {
     "description": "Also known as Alien OG Kush. A highly potent hybrid known for its intense, almost psychedelic cerebral high combined with a heavy body effect. Ideal for experienced consumers. The aroma is a classic OG mix of lemon, pine, and earth."

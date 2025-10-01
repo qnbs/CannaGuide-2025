@@ -46,6 +46,12 @@ export const knowledgeView = {
         saveStrain: 'Save Strain',
         breedingSuccess: 'Successfully bred "{{name}}"! It has been added to "My Strains".',
     },
+    scenarios: {
+        toppingVsLst: {
+            title: "Run Topping vs. Untouched Experiment",
+            description: "Simulates a 14-day growth period comparing an untouched plant against one that has been topped."
+        }
+    },
     knowledgebase: {
         'phase1-prep': {
             title: 'Phase 1: Preparation & Equipment',

@@ -22,7 +22,7 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => 
     const { scenario } = e.data;
 
     // Start with fresh history for the simulation branches
-    plantA.history = []; 
+    plantA.history = [];
     plantB.history = [];
 
     const oneDayInMillis = 24 * 60 * 60 * 1000;
@@ -34,7 +34,7 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => 
         if (day === scenario.plantBModifier.day) {
             plantB = applyAction(plantB, scenario.plantBModifier.action);
         }
-        
+
         // FIX: The method `runDailyCycle` does not exist. The `calculateStateForTimeDelta` method with a 1-day delta performs a daily cycle.
         plantA = simulationService.calculateStateForTimeDelta(plantA, oneDayInMillis).updatedPlant;
         // FIX: The method `runDailyCycle` does not exist. The `calculateStateForTimeDelta` method with a 1-day delta performs a daily cycle.

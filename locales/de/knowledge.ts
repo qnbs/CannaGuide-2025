@@ -46,6 +46,12 @@ export const knowledgeView = {
         saveStrain: 'Sorte speichern',
         breedingSuccess: 'Neue Sorte "{{name}}" erfolgreich gezüchtet und zu "Meine Sorten" hinzugefügt!',
     },
+    scenarios: {
+        toppingVsLst: {
+            title: "Experiment 'Topping vs. Unberührt' starten",
+            description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht eine unberührte Pflanze mit einer, die getoppt wurde."
+        }
+    },
     knowledgebase: {
         'phase1-prep': {
             title: 'Phase 1: Vorbereitung & Ausrüstung',

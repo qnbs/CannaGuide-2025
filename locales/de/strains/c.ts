@@ -1,12 +1,7 @@
 import type { StrainTranslationData } from '@/types';
+import { createStrainObject } from '@/services/strainFactory';
 
 export const strains: Record<string, StrainTranslationData> = {
-    "chems-sister": {
-        "description": "Auch bekannt als 'Chem Sis', ist dies ein berühmter Phänotyp der legendären Chemdawg-Linie. Diese Sativa-dominante Hybride liefert ein starkes, erhebendes zerebrales High, das Kreativität und Energie fördert. Ihr Aroma ist unverkennbar scharf und chemisch, mit starken Noten von Diesel und Erde."
-    },
-    "cherry-cookies": {
-        "description": "Eine indica-dominante Hybride, die Cherry Pie mit Girl Scout Cookies kreuzt. Sie liefert ein potentes, euphorisches Kopf-High, das in eine tiefe Körperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Kirschen und erdigen, teigigen Noten ihrer Cookies-Abstammung, was sie zu einer geschmackvollen Wahl zum Entspannen macht.",
-    },
     "cactus-breath": {
         "description": "Eine potente indica-dominante Hybride mit einem erdigen, kiefernartigen und würzigen Aroma. Cactus Breath liefert ein starkes, entspannendes und euphorisches High, das perfekt zum Entspannen am Ende des Tages ist.",
     },
@@ -15,6 +10,12 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "cake-bomb": {
         "description": "Eine indica-dominante Hybride mit einem süßen, kuchenartigen und erdigen Aroma. Cake Bomb liefert ein starkes, entspannendes und euphorisches High, das perfekt zum Entspannen am Abend ist.",
+    },
+    "california-black-rose": {
+        "description": "Eine preisgekrönte Indica-Sorte, bekannt für ihre schnelle Blütezeit und ihr einzigartiges blumiges, rosenartiges Aroma mit fruchtigen Untertönen. Sie bietet eine entspannende und beruhigende Wirkung, perfekt zum Entspannen. Ihre wunderschöne dunkelviolette bis schwarze Färbung macht sie optisch atemberaubend."
+    },
+    "california-orange-cbd": {
+        "description": "Eine CBD-reiche Version der klassischen California Orange. Sie bietet ein Verhältnis von ~1:2 THC zu CBD und sorgt für eine milde, erhebende und funktionale Wirkung mit erheblichen therapeutischen Vorteilen. Das Aroma ist ein süßer und spritziger Ausbruch von frischen Orangen und Zitrusfrüchten."
     },
     "cali-o-california-orange": {
         "description": "Eine klassische Hybride, die seit den 1980ern bekannt ist. Sie bietet eine klare, erhebende und glückliche Wirkung und ein starkes Orangenaroma.",
@@ -32,9 +33,7 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "Eine der ersten CBD-reichen Sorten mit einem 1:1 THC:CBD-Verhältnis. Bietet eine milde, entspannende Wirkung ohne starke Psychoaktivität. Ideal für medizinische Anwender.",
     },
     "cap-junky": {
-        "description": "Eine potente Hybride mit einem scharfen, dieselartigen und minzigen Aroma. Cap Junky liefert ein starkes, euphorisches und entspannendes High, das perfekt für erfahrene Konsumenten ist.",
-        "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "~700 g/Pflanze" },
-        "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel (bis 2 m)" },
+        "description": "Cap Junky ist eine extrem potente und hochgelobte moderne Hybride, die aus einer Zusammenarbeit der Elite-Züchter Capulator und Seed Junky Genetics hervorgegangen ist. Diese Sorte ist eine Kreuzung aus Alien Cookies und Kush Mints #11 und hat sich schnell den Ruf als eine der stärksten Sorten auf dem Markt erworben. Die Wirkung ist intensiv und schnell einsetzend, mit einem starken zerebralen Rausch, der Euphorie, Glücksgefühle und ein kribbelndes Gefühl hervorruft, gefolgt von einer tiefen, aber nicht überwältigenden Körperentspannung. Das Aroma ist komplex und einzigartig, oft beschrieben als eine Mischung aus sauren, fermentierten Früchten und scharfem Diesel, mit Untertönen von Menthol, Pfeffer und Kiefer. Aufgrund ihres extrem hohen THC-Gehalts, der oft 30% übersteigt, wird Cap Junky ausschließlich für sehr erfahrene Konsumenten empfohlen.",
     },
     "captain-morgan": {
         "description": "Eine indica-dominante Hybride mit einem würzigen, süßen und vanilleartigen Aroma. Captain Morgan liefert ein entspannendes und euphorisches High, das perfekt zum Entspannen ist.",
@@ -102,6 +101,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "cherry-ak-47": {
         "description": "Eine sativa-dominante Hybride mit einem süßen, kirschartigen und erdigen Aroma. Cherry AK-47 liefert ein erhebendes, kreatives und energetisches High, das perfekt für den Tagesgebrauch ist.",
     },
+    "cherry-cookies": {
+        "description": "Eine indica-dominante Hybride, die Cherry Pie mit Girl Scout Cookies kreuzt. Sie liefert ein potentes, euphorisches Kopf-High, das in eine tiefe Körperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Kirschen und erdigen, teigigen Noten ihrer Cookies-Abstammung, was sie zu einer geschmackvollen Wahl zum Entspannen macht.",
+    },
     "cherry-pie": {
         "description": "Eine indica-dominante Hybride mit einem süßen, kirschartigen und erdigen Aroma. Cherry Pie liefert ein entspannendes und glückliches High, das perfekt zum Entspannen ist.",
     },
@@ -120,11 +122,11 @@ export const strains: Record<string, StrainTranslationData> = {
     "citradelic-sunset": {
         "description": "Eine sativa-dominante Hybride mit einem starken zitrusartigen, orangenartigen und süßen Aroma. Citradelic Sunset liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
     },
+    "colombian": {
+        "description": "Eine klassische Sativa-Landrasse aus den Bergen von Santa Marta in Kolumbien. Sie ist einer der Elternteile von Skunk #1 und ist bekannt für ihre erhebende, energetisierende und klare Wirkung ohne Paranoia. Das Aroma ist eine süße Mischung aus Zitrus, Limette und Skunk."
+    },
     "colombian-gold": {
         "description": "Eine klassische Sativa-Landrasse aus den Bergen von Santa Marta in Kolumbien. Sie ist einer der Elternteile von Skunk #1"
-    },
-    "cosmic-charlie": {
-        "description": "Eine sativa-dominante Sorte mit einer stark psychedelischen und kreativen Wirkung. Das Aroma ist eine Mischung aus Zitrus, Süße und erdigen Noten.",
     },
     "colt-45": {
         "description": "Eine sativa-dominante Hybride mit einem erdigen, kiefernartigen und holzigen Aroma. Colt 45 liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
@@ -137,5 +139,8 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "critical-mass": {
         "description": "Eine indica-dominante Sorte, die für ihre massiven Erträge und dichten Knospen bekannt ist, die dazu neigen, unter ihrem eigenen Gewicht zu brechen. Die Wirkung ist tief entspannend.",
+    },
+    "c-vitt": {
+        "description": "Eine CBD-reiche Sorte mit einem süßen, zitrusartigen Aroma. Die Wirkung ist mild, klar und funktional, ideal für medizinische Anwender, die Linderung ohne starke psychoaktive Effekte suchen.",
     }
 }

@@ -1,11 +1,14 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "the-original": {
+    "description": "Oft als foundationaler OG-Kush-Phänotyp bezeichnet, ist 'The Original' eine potente Indica, die für ihr klassisches erdiges, kiefernartiges und scharfes Aroma gefeiert wird. Sie liefert ein schweres, beruhigendes Körper-High, was sie zu einer ersten Wahl für Stressabbau und tiefe Entspannung macht."
+  },
   "the-menthol": {
     "description": "Eine einzigartige Hybride, bekannt für ihr ausgeprägt scharfes, minziges und chemisches Aroma, das an Menthol erinnert. Die Wirkung ist ausgewogen und bietet einen erhebenden und kreativen zerebralen Rausch, gefolgt von einer beruhigenden Körperruhe, was sie für verschiedene Anlässe geeignet macht, ohne übermäßig sedierend zu sein.",
   },
   "tahoe-alien": {
-    "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen und zitronigen Aroma. Die Wirkung ist stark, entspannend und ideal für den Abend."
+    "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen und zitronigen Aroma. Die Wirkung ist stark, entspannend und ideal für den Abend, bekannt dafür, ein starkes Gefühl der Ruhe und Euphorie zu erzeugen."
   },
   "tahoe-og-kush": {
     "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Ideal für den Abend und bei Schlaflosigkeit."

@@ -1,4 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { Card } from './Card';
+import { Button } from './Button';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 
 interface Props {
   children: ReactNode;
@@ -14,65 +17,81 @@ interface State {
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Reverted to class field declarations for state and arrow functions for methods.
-  // The previous constructor-based approach was causing TypeScript errors related to 'this' context.
-  // This is a more modern and standard way to write React class components.
-  public state: State = {
+  state: State = {
     hasError: false,
     error: null,
     errorInfo: null,
   };
 
-  public static getDerivedStateFromError(_: Error): Pick<State, 'hasError'> {
+  static getDerivedStateFromError(_: Error): Pick<State, 'hasError'> {
     return { hasError: true };
   }
 
+  // FIX: Reverted `componentDidCatch` to a standard lifecycle method. React automatically binds `this`
+  // for lifecycle methods, and using an arrow function property was unconventional, likely causing
+  // TypeScript to incorrectly infer the type of `this`. Event handlers like `handleReset` remain as
+  // arrow functions to correctly bind `this` when passed as callbacks.
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const scope = this.props.scope ? `[${this.props.scope}] ` : '';
     console.error(`Uncaught error in scope: ${scope}`, error, errorInfo);
     this.setState({ error, errorInfo });
   }
 
-  private handleReset = () => {
+  // FIX: Changed to arrow functions to correctly bind `this` as suggested by the comment on `componentDidCatch`.
+  // This resolves TypeScript errors related to `this.setState` and `this.props`.
+  handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-  };
+  }
   
-  private handleReload = () => {
+  handleReload = () => {
     window.location.reload();
-  };
+  }
 
-  public render() {
+  render() {
     if (this.state.hasError) {
       const scopeMessage = this.props.scope ? ` in ${this.props.scope}` : '';
 
-      if (isDevelopment) {
-        // Detailed error view for developers
-        return (
-          <div style={{ padding: '2rem', color: '#cbd5e1', backgroundColor: '#0f172a', height: '100vh', overflowY: 'auto' }}>
-            <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f87171' }}>An Error Occurred{scopeMessage}</h1>
-            <div style={{ marginTop: '1rem', display: 'flex', gap: '0.5rem' }}>
-              <button onClick={this.handleReset} style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>Try Again</button>
-              <button onClick={this.handleReload} style={{ padding: '0.5rem 1rem', backgroundColor: '#475569', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>Reload Page</button>
-            </div>
-            <pre style={{ marginTop: '1.5rem', padding: '1rem', backgroundColor: '#1e293b', borderRadius: '0.5rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#fecaca', fontSize: '0.875rem' }}>
-              <strong>{this.state.error?.toString()}</strong>
-            </pre>
-            <pre style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#1e293b', borderRadius: '0.5rem', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: '#94a3b8', fontSize: '0.875rem' }}>
-              {this.state.errorInfo?.componentStack}
-            </pre>
-          </div>
-        );
-      }
-      
-      // Generic fallback UI for production
       return (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#cbd5e1', backgroundColor: '#0f172a', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#f87171' }}>Oops! Something went wrong.</h1>
-          <p style={{ marginTop: '1rem' }}>An unexpected error occurred{scopeMessage}. Please try again or reload the page.</p>
-          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '0.5rem' }}>
-             <button onClick={this.handleReset} style={{ padding: '0.5rem 1rem', backgroundColor: '#3b82f6', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>Try Again</button>
-             <button onClick={this.handleReload} style={{ padding: '0.5rem 1rem', backgroundColor: '#475569', color: 'white', border: 'none', borderRadius: '0.5rem', cursor: 'pointer' }}>Reload Page</button>
-          </div>
+        <div className="flex items-center justify-center min-h-screen bg-slate-900 p-4">
+          <Card className="w-full max-w-3xl text-center animate-fade-in">
+            <PhosphorIcons.WarningCircle className="w-16 h-16 mx-auto text-red-500 mb-4" />
+            <h1 className="text-2xl font-bold font-display text-red-400">
+              Oops! Something went wrong{scopeMessage}.
+            </h1>
+            <p className="text-slate-400 mt-2">
+              An unexpected error occurred. Please try again or reload the page.
+            </p>
+
+            <div className="flex justify-center gap-4 mt-6">
+              <Button onClick={this.handleReset} variant="primary">
+                <PhosphorIcons.MagicWand className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
+              <Button onClick={this.handleReload} variant="secondary">
+                <PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-2" />
+                Reload Page
+              </Button>
+            </div>
+
+            {isDevelopment && this.state.error && (
+              <div className="text-left mt-6 space-y-4">
+                <Card className="bg-slate-800/50">
+                  <h3 className="font-semibold text-red-300">Error Message</h3>
+                  <pre className="mt-2 p-2 bg-slate-900 rounded-md text-red-400 text-sm overflow-auto">
+                    {this.state.error.toString()}
+                  </pre>
+                </Card>
+                {this.state.errorInfo && (
+                  <Card className="bg-slate-800/50">
+                    <h3 className="font-semibold text-slate-300">Component Stack</h3>
+                    <pre className="mt-2 p-2 bg-slate-900 rounded-md text-slate-400 text-xs overflow-auto max-h-48">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  </Card>
+                )}
+              </div>
+            )}
+          </Card>
         </div>
       );
     }

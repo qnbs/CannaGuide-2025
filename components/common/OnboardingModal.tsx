@@ -13,6 +13,7 @@ import { setOnboardingStep } from '@/stores/slices/uiSlice';
 import { selectOnboardingStep } from '@/stores/selectors';
 import { FlagDE, FlagEN } from '@/components/icons/Flags';
 import { i18nInstance } from '@/i18n';
+import { CannabisLeafIcon } from '../icons/CannabisLeafIcon';
 
 
 interface OnboardingModalProps {
@@ -59,8 +60,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
 
     if (step === 0) {
         return (
-            <Modal isOpen={true} onClose={() => {}} title="Choose your language / Sprache wählen" showCloseButton={false}>
+            <Modal isOpen={true} onClose={() => {}} showCloseButton={false}>
                 <div className="text-center">
+                    <div className="flex items-center justify-center gap-3 mb-6">
+                        <CannabisLeafIcon className="w-10 h-10" />
+                        <h1 className="text-3xl font-bold font-display text-slate-100">
+                            CannaGuide 2025
+                        </h1>
+                    </div>
+                    <h2 className="text-xl font-bold font-display text-primary-300 mb-2">Choose your language / Sprache wählen</h2>
                     <p className="text-slate-400 mb-6">Select your preferred language / Wähle deine bevorzugte Sprache</p>
                     <div className="flex gap-4">
                         <Button onClick={() => handleLanguageSelect('de')} className="flex-1 flex items-center justify-center">

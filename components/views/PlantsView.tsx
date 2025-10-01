@@ -78,16 +78,9 @@ export const PlantsView: React.FC = () => {
     const { slotsWithData } = usePlantSlotsData();
     const { tasks, problems } = useGardenSummary();
     const selectedPlant = useSelectedPlant();
-
-    const selectedPlantId = useAppSelector(state => state.simulation.selectedPlantId);
     
-    const plantData = useMemo(() => {
-        if (!selectedPlantId) return null;
-        return slotsWithData.flat().find(p => p?.id === selectedPlantId) || null;
-    }, [selectedPlantId, slotsWithData]);
-
-    if (plantData) {
-        return <DetailedPlantView plant={plantData} onClose={() => dispatch(setSelectedPlantId(null))} />;
+    if (selectedPlant) {
+        return <DetailedPlantView plant={selectedPlant} onClose={() => dispatch(setSelectedPlantId(null))} />;
     }
 
     const showGrowFromStrainBanner = strainForNewGrow && initiatingGrowForSlot === null;

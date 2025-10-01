@@ -8,36 +8,63 @@ const detectedLang = navigator.language.split('-')[0];
 const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en';
 
 export const defaultSettings: AppSettings = {
-  fontSize: 'base', language: initialLang, theme: 'midnight', defaultView: View.Plants,
-  strainsViewSettings: { defaultSortKey: 'name', defaultSortDirection: 'asc', defaultViewMode: 'list', visibleColumns: { type: true, thc: true, cbd: true, floweringTime: true, yield: true, difficulty: true }},
-  notificationsEnabled: true, notificationSettings: { stageChange: true, problemDetected: true, harvestReady: true, newTask: true }, onboardingCompleted: false,
-  simulationProfile: 'beginner',
-  simulationSettings: { 
-    difficulty: 'easy', 
-    autoJournaling: { stageChanges: true, problems: true, tasks: true }, 
-    customDifficultyModifiers: { 
-        pestPressure: 0.7, 
-        nutrientSensitivity: 0.7, 
-        environmentalStability: 1.3 
+    fontSize: 'base',
+    language: initialLang,
+    theme: 'midnight',
+    defaultView: View.Plants,
+    strainsViewSettings: {
+        defaultSortKey: 'name',
+        defaultSortDirection: 'asc',
+        defaultViewMode: 'list',
+        visibleColumns: {
+            type: true,
+            thc: true,
+            cbd: true,
+            floweringTime: true,
+            yield: true,
+            difficulty: true,
+        },
     },
-    autoAdvance: false,
-    speed: '1x'
-  },
-  defaultGrowSetup: { light: { type: 'LED', wattage: 150 }, potSize: 15, medium: 'Soil' },
-  defaultJournalNotes: { watering: 'plantsView.actionModals.defaultNotes.watering', feeding: 'plantsView.actionModals.defaultNotes.feeding' },
-  defaultExportSettings: { source: 'all', format: 'pdf' }, lastBackupTimestamp: undefined,
-  accessibility: { reducedMotion: false, dyslexiaFont: false }, uiDensity: 'comfortable',
-  quietHours: { enabled: false, start: '22:00', end: '08:00' },
-  tts: { enabled: true, rate: 1, pitch: 1, voiceName: null }
+    notificationsEnabled: true,
+    notificationSettings: {
+        stageChange: true,
+        problemDetected: true,
+        harvestReady: true,
+        newTask: true,
+    },
+    onboardingCompleted: false,
+    simulationProfile: 'beginner',
+    simulationSettings: {
+        difficulty: 'easy',
+        autoJournaling: { stageChanges: true, problems: true, tasks: true },
+        customDifficultyModifiers: {
+            pestPressure: 0.7,
+            nutrientSensitivity: 0.7,
+            environmentalStability: 1.3,
+        },
+        autoAdvance: false,
+        speed: '1x',
+    },
+    defaultGrowSetup: { light: { type: 'LED', wattage: 150 }, potSize: 15, medium: 'Soil' },
+    defaultJournalNotes: {
+        watering: 'plantsView.actionModals.defaultNotes.watering',
+        feeding: 'plantsView.actionModals.defaultNotes.feeding',
+    },
+    defaultExportSettings: { source: 'all', format: 'pdf' },
+    lastBackupTimestamp: undefined,
+    accessibility: { reducedMotion: false, dyslexiaFont: false },
+    uiDensity: 'comfortable',
+    quietHours: { enabled: false, start: '22:00', end: '08:00' },
+    tts: { enabled: true, rate: 1, pitch: 1, voiceName: null },
 };
 
-const isObject = (item: any): item is Record<string, any> => {
-  return item && typeof item === 'object' && !Array.isArray(item);
+const isObject = (item: unknown): item is Record<string, unknown> => {
+    return !!item && typeof item === 'object' && !Array.isArray(item);
 };
 
 export const mergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
     const output = JSON.parse(JSON.stringify(defaultSettings));
-    function deepMerge(target: any, source: any) {
+    function deepMerge(target: Record<string, any>, source: Record<string, any>) {
         for (const key of Object.keys(source)) {
             const sourceValue = source[key];
             if (isObject(sourceValue)) {
@@ -69,7 +96,9 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
     async (_, { getState, dispatch }) => {
         const t = getT();
         const stateToExport = getState();
-        const blob = new Blob([JSON.stringify(stateToExport, null, 2)], { type: 'application/json' });
+        const blob = new Blob([JSON.stringify(stateToExport, null, 2)], {
+            type: 'application/json',
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
@@ -92,7 +121,6 @@ export const resetAllData = createAsyncThunk<void, void, { state: RootState }>(
     }
 );
 
-
 const settingsSlice = createSlice({
     name: 'settings',
     initialState,
@@ -100,7 +128,7 @@ const settingsSlice = createSlice({
         setSettings: (state, action: PayloadAction<AppSettings>) => {
             state.settings = action.payload;
         },
-        setSetting: (state, action: PayloadAction<{ path: string, value: any }>) => {
+        setSetting: (state, action: PayloadAction<{ path: string; value: any }>) => {
             const { path, value } = action.payload;
             const keys = path.split('.');
             let currentLevel: any = state.settings;
@@ -113,20 +141,35 @@ const settingsSlice = createSlice({
                 state.settings.simulationProfile = 'custom';
             }
         },
-        setSimulationProfile: (state, action: PayloadAction<'beginner' | 'expert' | 'experimental' | 'custom'>) => {
+        setSimulationProfile: (
+            state,
+            action: PayloadAction<'beginner' | 'expert' | 'experimental' | 'custom'>
+        ) => {
             state.settings.simulationProfile = action.payload;
             switch (action.payload) {
                 case 'beginner':
                     state.settings.simulationSettings.difficulty = 'easy';
-                    state.settings.simulationSettings.customDifficultyModifiers = { pestPressure: 0.7, nutrientSensitivity: 0.7, environmentalStability: 1.3 };
+                    state.settings.simulationSettings.customDifficultyModifiers = {
+                        pestPressure: 0.7,
+                        nutrientSensitivity: 0.7,
+                        environmentalStability: 1.3,
+                    };
                     break;
                 case 'expert':
                     state.settings.simulationSettings.difficulty = 'hard';
-                    state.settings.simulationSettings.customDifficultyModifiers = { pestPressure: 1.2, nutrientSensitivity: 1.2, environmentalStability: 0.8 };
+                    state.settings.simulationSettings.customDifficultyModifiers = {
+                        pestPressure: 1.2,
+                        nutrientSensitivity: 1.2,
+                        environmentalStability: 0.8,
+                    };
                     break;
                 case 'experimental':
                     state.settings.simulationSettings.difficulty = 'hard';
-                    state.settings.simulationSettings.customDifficultyModifiers = { pestPressure: 1.5, nutrientSensitivity: 1.5, environmentalStability: 0.6 };
+                    state.settings.simulationSettings.customDifficultyModifiers = {
+                        pestPressure: 1.5,
+                        nutrientSensitivity: 1.5,
+                        environmentalStability: 0.6,
+                    };
                     break;
                 case 'custom':
                     state.settings.simulationSettings.difficulty = 'custom';
@@ -145,9 +188,10 @@ const settingsSlice = createSlice({
                 currentLevel[finalKey] = !currentLevel[finalKey];
             }
         },
-    }
+    },
 });
 
-export const { setSetting, setSettings, toggleSetting, setSimulationProfile } = settingsSlice.actions;
+export const { setSetting, setSettings, toggleSetting, setSimulationProfile } =
+    settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -8,34 +8,32 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectAdvisorStateForPlant, selectProactiveDiagnosisState } from '@/stores/selectors';
+import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
 import { addNotification } from '@/stores/slices/uiSlice';
-import { startAdvisorGeneration, startProactiveDiagnosis } from '@/stores/slices/aiSlice';
+import { useGetPlantAdviceMutation, useGetProactiveDiagnosisMutation } from '@/stores/api';
+import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
 
 interface AiTabProps {
     plant: Plant;
-    archive: ArchivedAdvisorResponse[];
-    addResponse: (plant: Plant, response: AIResponse, query: string) => void;
-    updateResponse: (updatedResponse: ArchivedAdvisorResponse) => void;
-    deleteResponse: (plantId: string, responseId: string) => void;
 }
 
-export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updateResponse, deleteResponse }) => {
+export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     
-    const advisorState = useAppSelector(selectAdvisorStateForPlant(plant.id));
-    const diagnosisState = useAppSelector(selectProactiveDiagnosisState);
+    const archive = useAppSelector(state => selectArchivedAdvisorResponsesForPlant(state, plant.id));
+    const [getPlantAdvice, advisorState] = useGetPlantAdviceMutation();
+    const [getProactiveDiagnosis, diagnosisState] = useGetProactiveDiagnosisMutation();
 
     const [loadingMessage, setLoadingMessage] = useState('');
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null);
     const [isCurrentResponseSaved, setIsCurrentResponseSaved] = useState(false);
+    const [isDiagnosisSaved, setIsDiagnosisSaved] = useState(false);
 
     const plantQueryData = JSON.stringify({ age: plant.age, stage: plant.stage, medium: plant.medium, environment: plant.environment, problems: plant.problems, journal: plant.journal.slice(-5) }, null, 2);
 
     useEffect(() => {
         if (advisorState.isLoading) {
-            // FIX: Pass a single object argument to getDynamicLoadingMessages.
             const messages = geminiService.getDynamicLoadingMessages({ useCase: 'advisor', data: { plantName: plant.name } });
             let messageIndex = 0;
             const intervalId = setInterval(() => {
@@ -45,7 +43,6 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             return () => clearInterval(intervalId);
         }
         if(diagnosisState.isLoading) {
-            // FIX: Pass a single object argument to getDynamicLoadingMessages.
              const messages = geminiService.getDynamicLoadingMessages({ useCase: 'proactiveDiagnosis', data: { plantName: plant.name } });
             let messageIndex = 0;
             const intervalId = setInterval(() => {
@@ -54,25 +51,32 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
             }, 2000);
             return () => clearInterval(intervalId);
         }
-    }, [advisorState.isLoading, diagnosisState.isLoading, plant, t]);
+    }, [advisorState.isLoading, diagnosisState.isLoading, plant.name, t]);
 
     const handleGetAdvice = () => {
         setIsCurrentResponseSaved(false);
-        dispatch(startAdvisorGeneration(plant));
+        getPlantAdvice(plant);
     };
     
     const handleGetDiagnosis = () => {
-        dispatch(startProactiveDiagnosis(plant));
+        setIsDiagnosisSaved(false);
+        getProactiveDiagnosis(plant);
     }
 
     const handleSaveResponse = () => {
-        if (advisorState.response) {
-            addResponse(plant, advisorState.response, plantQueryData);
+        if (advisorState.data) {
+            dispatch(addArchivedAdvisorResponse({ plant, response: advisorState.data, query: plantQueryData }));
             setIsCurrentResponseSaved(true);
-            dispatch(addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }));
         }
     };
     
+    const handleSaveDiagnosisResponse = () => {
+        if (diagnosisState.data) {
+            dispatch(addArchivedAdvisorResponse({ plant, response: diagnosisState.data, query: t('ai.proactiveDiagnosis') }));
+            setIsDiagnosisSaved(true);
+        }
+    };
+
     const sortedArchive = [...archive].sort((a, b) => b.createdAt - a.createdAt);
 
     return (
@@ -82,7 +86,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                     response={editingResponse} 
                     onClose={() => setEditingResponse(null)} 
                     onSave={(updated) => {
-                        updateResponse(updated);
+                        dispatch(updateArchivedAdvisorResponse(updated));
                         setEditingResponse(null);
                     }}
                 />
@@ -98,10 +102,18 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
                 <div className="mt-4">
                     {diagnosisState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                    {diagnosisState.response && !diagnosisState.isLoading && (
+                    {diagnosisState.data && !diagnosisState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
-                            <h4 className="font-bold text-primary-300">{diagnosisState.response.title}</h4>
-                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: diagnosisState.response.content }}></div>
+                            <h4 className="font-bold text-primary-300">{diagnosisState.data.title}</h4>
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: diagnosisState.data.content }}></div>
+                             <div className="text-right mt-2">
+                                   <Button size="sm" variant="secondary" onClick={handleSaveDiagnosisResponse} disabled={isDiagnosisSaved}>
+                                       {isDiagnosisSaved ? 
+                                        <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />{t('strainsView.tips.saved')}</> :
+                                        <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />{t('knowledgeView.archive.saveButton')}</>
+                                       }
+                                   </Button>
+                                </div>
                         </Card>
                     )}
                 </div>
@@ -118,15 +130,15 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
 
                 <div className="mt-4">
                     {advisorState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                    {advisorState.response && !advisorState.isLoading && (
+                    {advisorState.data && !advisorState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
-                            <h4 className="font-bold text-primary-300">{advisorState.response.title}</h4>
-                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: advisorState.response.content }}></div>
+                            <h4 className="font-bold text-primary-300">{advisorState.data.title}</h4>
+                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: advisorState.data.content }}></div>
                             {!advisorState.error && (
                                 <div className="text-right mt-2">
                                    <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
                                        {isCurrentResponseSaved ? 
-                                        <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" />{t('strainsView.tips.saved')}</> :
+                                        <><PhosphorIcons.CheckCircle className="w-4 h-4 mr-1.5" weight="fill" />{t('strainsView.tips.saved')}</> :
                                         <><PhosphorIcons.ArchiveBox className="w-4 h-4 mr-1.5" />{t('knowledgeView.archive.saveButton')}</>
                                        }
                                    </Button>
@@ -153,7 +165,7 @@ export const AiTab: React.FC<AiTabProps> = ({ plant, archive, addResponse, updat
                                     <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                         <PhosphorIcons.PencilSimple className="w-4 h-4"/>
                                     </Button>
-                                    <Button size="sm" variant="danger" onClick={() => deleteResponse(plant.id, res.id)} aria-label={t('common.deleteResponse')}>
+                                    <Button size="sm" variant="danger" onClick={() => dispatch(deleteArchivedAdvisorResponse({plantId: plant.id, responseId: res.id}))} aria-label={t('common.deleteResponse')}>
                                         <PhosphorIcons.TrashSimple className="w-4 h-4"/>
                                     </Button>
                                 </div>

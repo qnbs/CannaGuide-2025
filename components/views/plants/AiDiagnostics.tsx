@@ -6,12 +6,10 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CameraModal } from '@/components/common/CameraModal';
 import { useActivePlants } from '@/hooks/useSimulationBridge';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectDiagnosticsState } from '@/stores/selectors';
-// FIX: Corrected imports for Redux actions.
-import { startDiagnostics } from '@/stores/slices/aiSlice';
+import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { addJournalEntry } from '@/stores/slices/simulationSlice';
+import { useDiagnosePlantMutation } from '@/stores/api';
 
 
 const base64ToMimeType = (base64: string): string => {
@@ -31,7 +29,7 @@ const base64ToMimeType = (base64: string): string => {
 export const AiDiagnostics: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { isLoading, response, error } = useAppSelector(selectDiagnosticsState);
+    const [diagnosePlant, { data: response, isLoading, error }] = useDiagnosePlantMutation();
     const activePlants = useActivePlants();
 
     const [image, setImage] = useState<string | null>(null);
@@ -60,8 +58,13 @@ export const AiDiagnostics: React.FC = () => {
         const base64Data = image.split(',')[1];
         const mimeType = base64ToMimeType(base64Data);
         const selectedPlant = activePlants.find(p => p.id === plantContextId);
-        const context = selectedPlant ? { name: selectedPlant.name, age: selectedPlant.age, stage: selectedPlant.stage, notes: userNotes } : { notes: userNotes };
-        dispatch(startDiagnostics({ base64Image: base64Data, mimeType, context }));
+        
+        if (!selectedPlant) {
+            dispatch(addNotification({ message: 'Selected plant context not found.', type: 'error' }));
+            return;
+        }
+
+        diagnosePlant({ base64Image: base64Data, mimeType, plant: selectedPlant, userNotes });
     };
 
     const handleSaveToJournal = () => {
@@ -120,7 +123,7 @@ export const AiDiagnostics: React.FC = () => {
                 
                 <div className="min-h-[200px]">
                     {isLoading && <AiLoadingIndicator loadingMessage={t('ai.loading.diagnostics.analyzing')} />}
-                    {error && <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">{error}</div>}
+                    {error && <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">{'message' in error ? (error as any).message : t('ai.error.unknown')}</div>}
                     {response && !isLoading && (
                         <div className="space-y-3">
                             <div className="flex justify-between items-baseline">

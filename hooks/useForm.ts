@@ -20,19 +20,22 @@ export const useForm = <T extends Record<string, any>>({
     const [values, setValues] = useState<T>(initialValues);
     const [errors, setErrors] = useState<ValidationErrors<T>>({});
 
-    const handleChange = useCallback((field: keyof T, value: T[keyof T]) => {
-        setValues(prev => ({ ...prev, [field]: value }));
+    const handleChange = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
+        setValues((prev) => ({ ...prev, [field]: value }));
     }, []);
 
-    const handleSubmit = useCallback((e: React.FormEvent) => {
-        e.preventDefault();
-        const validationErrors = validate(values);
-        setErrors(validationErrors);
+    const handleSubmit = useCallback(
+        (e: React.FormEvent) => {
+            e.preventDefault();
+            const validationErrors = validate(values);
+            setErrors(validationErrors);
 
-        if (Object.keys(validationErrors).length === 0) {
-            onSubmit(values);
-        }
-    }, [values, validate, onSubmit]);
+            if (Object.keys(validationErrors).length === 0) {
+                onSubmit(values);
+            }
+        },
+        [values, validate, onSubmit]
+    );
 
     return {
         values,

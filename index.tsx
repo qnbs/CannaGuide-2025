@@ -33,6 +33,7 @@ const initialize = async () => {
 
   const store = createAppStore(preloadedState);
 
+  // FIX: Wrapped component tree within ErrorBoundary components to provide the required 'children' prop and fix component hierarchy.
   root.render(
     <React.StrictMode>
       <ErrorBoundary scope="Global App">

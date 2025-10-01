@@ -12,9 +12,7 @@ import { strainService } from './services/strainService';
 import { TTSControls } from './components/common/TTSControls';
 import { ttsService } from './services/ttsService';
 import { useDocumentEffects } from './hooks/useDocumentEffects';
-import { AiLoadingIndicator } from './components/common/AiLoadingIndicator';
 import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
-import { i18nInstance } from './i18n';
 import { LogActionModalContainer } from './components/views/plants/LogActionModalContainer';
 import { DeepDiveModalContainer } from './components/views/plants/deepDive/DeepDiveModalContainer';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
@@ -148,31 +146,20 @@ const AppContent: React.FC = () => {
 export const App: React.FC = () => {
     const dispatch = useAppDispatch();
     const isAppReady = useAppSelector(state => state.ui.isAppReady);
-    const settings = useAppSelector(selectSettings);
-    const language = settings.language;
-
+    
     useEffect(() => {
         const initializeApp = async () => {
             dispatch(setAppReady(false));
             await strainService.init();
             
-            // Pass the entire settings object for initialization
-            dispatch(initializeSimulation(settings));
+            dispatch(initializeSimulation());
             
-            // FIX: Dispatch the async thunk instead of calling it directly.
             dispatch(runDataMigrations());
+            ttsService.init();
             dispatch(setAppReady(true));
         };
         initializeApp();
     }, [dispatch]);
-    
-    useEffect(() => {
-        ttsService.init();
-
-        if (language && i18nInstance.language !== language) {
-            i18nInstance.changeLanguage(language).catch(console.error);
-        }
-    }, [language]);
     
     if (!isAppReady) {
         return <LoadingGate />;

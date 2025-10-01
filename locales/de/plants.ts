@@ -100,6 +100,7 @@ export const plantsView = {
     tasksComplete: 'Abschließen',
     tasksNoEntries: 'Noch keine abgeschlossenen Aufgaben.',
     tasksCompleted: 'Abgeschlossen: {{date}}',
+    photosNoEntries: 'Für diese Pflanze wurden noch keine Fotos protokolliert.',
   },
   postHarvest: {
       title: 'Nachernte-Verarbeitung',

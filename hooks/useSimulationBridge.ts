@@ -41,10 +41,10 @@ export const useGardenSummary = () => {
  */
 export const usePlantSlotsData = () => {
     const slots = useAppSelector(selectPlantSlots);
-    const plants = useAppSelector(state => state.simulation.plants);
+    const plantEntities = useAppSelector(state => state.simulation.plants.entities);
     const hasAvailable = useAppSelector(selectHasAvailableSlots);
     
-    const slotsWithData = useMemo(() => slots.map(id => id ? plants[id] : null), [slots, plants]);
+    const slotsWithData = useMemo(() => slots.map(id => id ? plantEntities[id] : null), [slots, plantEntities]);
     
     return { slotsWithData, hasAvailable };
 };
@@ -55,7 +55,8 @@ export const usePlantSlotsData = () => {
  */
 export const useSelectedPlant = () => {
     const selectedId = useAppSelector(selectSelectedPlantId);
-    return useAppSelector(selectPlantById(selectedId));
+    const plants = useAppSelector(state => state.simulation.plants.entities);
+    return useMemo(() => selectedId ? plants[selectedId] || null : null, [selectedId, plants]);
 };
 
 /**
@@ -64,8 +65,10 @@ export const useSelectedPlant = () => {
  * @returns The Plant object or null if not found.
  */
 export const usePlantById = (plantId: string | null) => {
-    return useAppSelector(selectPlantById(plantId));
+    const plants = useAppSelector(state => state.simulation.plants.entities);
+    return useMemo(() => plantId ? plants[plantId] || null : null, [plantId, plants]);
 };
+
 
 /**
  * Custom hook to check if the simulation is currently in a "catch-up" state.

@@ -39,21 +39,18 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     const handleDelete = (id: string) => {
         if (window.confirm(t('strainsView.exportsManager.deleteConfirm'))) {
             deleteExport(id);
-            dispatch(addNotification({ message: t('strainsView.exportsManager.exportRemoved'), type: 'info' }));
         }
     };
 
     const handleBulkDelete = () => {
          if (window.confirm(t('strainsView.exportsManager.deleteConfirmPlural', { count: selectedIds.size }))) {
             selectedIds.forEach(id => deleteExport(id));
-            dispatch(addNotification({ message: t('strainsView.exportsManager.deleteSuccessPlural', { count: selectedIds.size }), type: 'success' }));
             setSelectedIds(new Set());
         }
     };
 
     const handleUpdate = (updated: SavedExport) => {
         updateExport(updated);
-        dispatch(addNotification({ message: t('strainsView.exportsManager.updateExportSuccess', { name: updated.name }), type: 'success' }));
         setEditingExport(null);
     };
     

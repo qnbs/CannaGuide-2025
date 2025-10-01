@@ -1,12 +1,6 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-    "blue-moonshine": {
-        "description": "Eine klassische, fast reine Indica aus der Blueberry-Linie von DJ Short. Berühmt für ihren süßen Blaubeergeschmack und ein schnell einsetzendes, tief sedierendes High."
-    },
-    "black-banana": {
-        "description": "Eine potente Indica-dominante Sorte, die für ihren außergewöhnlich hohen THC-Gehalt und ihr einzigartiges Geschmacksprofil bekannt ist. Sie kombiniert das Aroma von süßen, reifen Bananen mit erdigen, gasartigen Untertönen. Die Wirkung ist stark und schnell einsetzend, liefert eine tief entspannende Körperwirkung und ein euphorisches Kopf-High, was sie ideal für erfahrene Konsumenten am Abend macht."
-    },
     "b-52": {
         "description": "Eine Skunk-Hybride, die für ihre großen, dichten Knospen und hohen Erträge bekannt ist. Die Wirkung ist ausgewogen, beginnend mit einem zerebralen, erhebenden Gefühl, das in eine sanfte Körperentspannung übergeht. Das Aroma ist süß und skunkig.",
     },
@@ -16,11 +10,17 @@ export const strains: Record<string, StrainTranslationData> = {
     "bahama-mama": {
         "description": "Eine Sativa-dominante Hybride, bekannt für ihr tropisches, fruchtiges Aroma und ihre erhebende Wirkung. Sie sorgt für einen energetischen und euphorischen Rausch, perfekt für den Tagesgebrauch, mit einem Geschmacksprofil, das an Passionsfrucht und Zitrus erinnert. Die Pflanze ist mit ihren leuchtenden Farben ein echter Hingucker.",
     },
+    "bangi-haze": {
+        "description": "Eine klassische Sativa von ACE Seeds, bekannt für ihre Resistenz gegen Kälte und Schimmel. Sie liefert ein klares, energetisches und fokussiertes zerebrales High ohne Paranoia. Das Aroma ist süß und blumig mit Anklängen von Anis und Zitrone."
+    },
     "banana-kush": {
         "description": "Eine Westküsten-Legende, berühmt für ihren ausgeprägten Geschmack und Geruch von frischen Bananen. Diese indica-dominante Hybride bietet eine sanfte, euphorische Wirkung, die die Kreativität fördert und gleichzeitig den Körper entspannt, ohne zu sedieren.",
     },
     "banana-og": {
         "description": "Eine potente indica-dominante Sorte mit dem Aroma von überreifen Bananen und erdigen Kiefernnoten. Die Wirkung ist stark und schleicht sich an, führt zu tiefer körperlicher Entspannung und kann bei höheren Dosen stark sedierend sein. Ideal für den Abendgebrauch.",
+    },
+    "bay-11": {
+        "description": "Eine preisgekrönte (High Times Cannabis Cup 2011) Sativa-Sorte, die für ihre dichten, kristallüberzogenen Knospen bekannt ist. Sie bietet ein potentes, erhebendes und kreatives High, das sich hervorragend für den Tagesgebrauch eignet. Das Aroma ist süß und kiefernartig mit erdigen Untertönen."
     },
     "bay-platinum-cookies": {
         "description": "Eine potente Hybride, die für ihre dichten, harzigen Knospen mit einem süßen, erdigen Aroma bekannt ist. Sie kombiniert die euphorische Wirkung von Bay 11 mit der entspannenden Kraft von Platinum Cookies und bietet eine ausgewogene, starke Wirkung.",
@@ -46,6 +46,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "big-bud": {
         "description": "Big Bud ist eine legendäre, preisgekrönte Indica-Sorte, die, wie der Name schon sagt, für ihre massiven, schweren Knospen und extrem hohen Erträge bekannt ist. Die Wirkung ist tief entspannend und körperlich, typisch für eine starke Indica, was sie ideal zur Linderung von Stress, Schmerzen und Schlaflosigkeit am Abend macht. Das Aroma ist süß, erdig und fruchtig mit würzigen Untertönen.",
     },
+    "biker-kush": {
+        "description": "Eine potente Indica-dominante Sorte von Karma Genetics. Sie liefert ein schweres, entspannendes Körper-High, das sich hervorragend zur Schmerzlinderung und bei Schlaflosigkeit eignet. Das Aroma ist ein klassisches OG-Profil mit scharfen Noten von Zitrone, Kiefer und Dieselkraftstoff."
+    },
     "birthday-cake-kush": {
         "description": "Auch bekannt als Birthday Cake. Eine potente indica-dominante Hybride mit einem süßen, vanilligen und erdigen Aroma. Die Wirkung ist stark entspannend und euphorisch, ideal zur Linderung von Schmerzen, Angst und Schlaflosigkeit. Ein perfekter 'Dessert'-Rauch.",
     },
@@ -54,6 +57,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "biscotti-mintz": {
         "description": "Eine indica-dominante Sorte von Barney's Farm, die für ihre atemberaubenden Farben und ihr komplexes Aroma bekannt ist. Sie kombiniert den Geschmack von Schokoladenkeksen mit cremiger Minze und Gewürzen. Die Wirkung ist kreativ, erhebend und gleichzeitig tief entspannend.",
+    },
+    "black-banana": {
+        "description": "Eine potente Indica-dominante Sorte, die für ihren außergewöhnlich hohen THC-Gehalt und ihr einzigartiges Geschmacksprofil bekannt ist. Sie kombiniert das Aroma von süßen, reifen Bananen mit erdigen, gasartigen Untertönen. Die Wirkung ist stark und schnell einsetzend, liefert eine tief entspannende Körperwirkung und ein euphorisches Kopf-High, was sie ideal für erfahrene Konsumenten am Abend macht."
     },
     "black-beauty": {
         "description": "Eine seltene, einzigartige Sorte, die für ihre dunkelvioletten, fast schwarzen Blätter und ihren niedrigen THC-Gehalt bekannt ist. Die Wirkung ist mild und klar, ideal für Konsumenten, die eine subtile, entspannende Erfahrung ohne starke Psychoaktivität suchen.",
@@ -88,9 +94,6 @@ export const strains: Record<string, StrainTranslationData> = {
     "blackwater": {
         "description": "Eine stark indica-dominante Sorte, die für ihre tiefviolette Färbung und ihre beruhigende Wirkung bekannt ist. Blackwater bietet ein süßes Traubenaroma mit Untertönen von Zitrone und Kiefer. Das High beginnt mit einem euphorischen Auftrieb, der bald in eine Ganzkörperentspannung übergeht, was sie hervorragend für den abendlichen Gebrauch zur Linderung von Schmerzen und Stress macht.",
     },
-    "brazilian-sativa": {
-        "description": "Die brasilianische Sativa ist eine reine Landrasse, die sich über Generationen an das tropische Klima des brasilianischen Amazonas angepasst hat. Sie ist historisch bedeutsam als eine der Elternsorten der legendären White Widow. Diese Sorte ist bekannt für ihre Resistenz gegen Hitze und hohe Luftfeuchtigkeit. Die Wirkung ist ein klassisches Sativa-Erlebnis: ein klares, energetisches und langanhaltendes zerebrales High, das Euphorie, Kreativität und Geselligkeit fördert, ohne den Körper zu belasten. Das Aroma ist ausgeprägt tropisch und fruchtig, oft mit dominanten Noten von süßer Mango und Papaya, was ihr den lokalen Spitznamen 'Manga Rosa' (Rosa Mango) eingebracht hat. Agronomisch wächst sie hoch und schlank mit einer langen Blütezeit von 10-14 Wochen.",
-    },
     "blue-cheese": {
         "description": "Eine klassische indica-dominante Hybride, die das süße, fruchtige Aroma von Blueberry mit dem würzigen, käsigen Aroma von UK Cheese kombiniert. Die Wirkung ist tief entspannend und beruhigend, ideal zum Stressabbau und zur Schmerzbehandlung.",
     },
@@ -118,6 +121,12 @@ export const strains: Record<string, StrainTranslationData> = {
     "blue-magoo": {
         "description": "Eine indica-dominante Sorte, bekannt für ihr süßes, beerenartiges und blumiges Aroma. Die Wirkung ist entspannend und beruhigend, ideal zur Linderung von Stress, Schmerzen und Schlaflosigkeit am Abend.",
     },
+    "blue-monster": {
+        "description": "Eine potente Indica-dominante Sorte, bekannt für ihre großen, harzigen Knospen und ihren süßen Beerengeschmack. Sie bietet ein langanhaltendes, tief entspannendes Körper-High, das zum 'Couch-Lock' führen kann, was sie ideal für den Abendgebrauch macht."
+    },
+    "blue-moonshine": {
+        "description": "Eine klassische, fast reine Indica aus der Blueberry-Linie von DJ Short. Berühmt für ihren süßen Blaubeergeschmack und ein schnell einsetzendes, tief sedierendes High."
+    },
     "blue-power": {
         "description": "Eine indica-dominante Sorte mit einem komplexen Aroma von süßen Beeren, Zitrone und Erde. Die Wirkung ist stark, euphorisch und körperlich entspannend. Bekannt für ihre hohe Harzproduktion und schöne blaue und violette Farbtöne.",
     },
@@ -141,6 +150,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "booger": {
         "description": "Eine potente indica-dominante Sorte mit einem skunkigen, erdigen Aroma und einem Hauch von Süße. Die Wirkung ist stark, körperlich entspannend und sedierend, ideal zur Linderung von Schmerzen, Stress und Schlaflosigkeit.",
+    },
+    "brazilian-sativa": {
+        "description": "Die brasilianische Sativa ist eine reine Landrasse, die sich über Generationen an das tropische Klima des brasilianischen Amazonas angepasst hat. Sie ist historisch bedeutsam als eine der Elternsorten der legendären White Widow. Diese Sorte ist bekannt für ihre Resistenz gegen Hitze und hohe Luftfeuchtigkeit. Die Wirkung ist ein klassisches Sativa-Erlebnis: ein klares, energetisches und langanhaltendes zerebrales High, das Euphorie, Kreativität und Geselligkeit fördert, ohne den Körper zu belasten. Das Aroma ist ausgeprägt tropisch und fruchtig, oft mit dominanten Noten von süßer Mango und Papaya, was ihr den lokalen Spitznamen 'Manga Rosa' (Rosa Mango) eingebracht hat. Agronomisch wächst sie hoch und schlank mit einer langen Blütezeit von 10-14 Wochen.",
     },
     "bruce-banger": {
         "description": "Eine potente sativa-dominante Hybride von Growers Choice. Sie kombiniert das Dieselaroma von Bruce Banner mit dem fruchtigen Geschmack von Strawberry Diesel. Die Wirkung ist stark, euphorisch und energetisierend, ideal für den Tagesgebrauch.",

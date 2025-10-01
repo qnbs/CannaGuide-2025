@@ -1,24 +1,31 @@
-import { createSelector } from 'reselect';
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from './store';
-import { Plant, ArchivedAdvisorResponse, Experiment } from '../types';
+// FIX: Removed SavedItemsState from here as it's not in the global types file.
+import { Plant, ArchivedAdvisorResponse, Experiment, UserStrainsState, SimulationState, Strain } from '../types';
+// FIX: Imported SavedItemsState from its slice definition file.
+import { SavedItemsState } from './slices/savedItemsSlice';
 
 // --- Base Selectors (for each slice) ---
 const selectUi = (state: RootState) => state.ui;
 const selectSettingsState = (state: RootState) => state.settings;
-// FIX: Export selectSavedItems to be used in useStorageEstimate hook.
 export const selectSavedItems = (state: RootState) => state.savedItems;
 const selectUserStrainsState = (state: RootState) => state.userStrains;
 const selectFavoritesState = (state: RootState) => state.favorites;
-const selectAi = (state: RootState) => state.ai;
-// FIX: Export selectArchives to be used in useStorageEstimate hook.
 export const selectArchives = (state: RootState) => state.archives;
 const selectTts = (state: RootState) => state.tts;
-// FIX: Export selectSimulation to be used in useStorageEstimate hook.
 export const selectSimulation = (state: RootState) => state.simulation;
 const selectStrainsView = (state: RootState) => state.strainsView;
 const selectKnowledge = (state: RootState) => state.knowledge;
 const selectBreeding = (state: RootState) => state.breeding;
 const selectSandbox = (state: RootState) => state.sandbox;
+// FIX: Add selector for the new aiSlice state
+const selectAi = (state: RootState) => state.ai;
+
+// --- Adapter Selectors ---
+import { userStrainsAdapter } from './slices/userStrainsSlice';
+import { savedExportsAdapter, savedSetupsAdapter, savedStrainTipsAdapter } from './slices/savedItemsSlice';
+// FIX: This import was incorrect as plantsAdapter was not exported. The selectors are now directly imported from the slice.
+import { plantsAdapter } from './slices/simulationSlice';
 
 // --- UI Selectors ---
 export { selectUi };
@@ -35,56 +42,36 @@ export const selectSettings = createSelector([selectSettingsState], (settingsSta
 export const selectLanguage = createSelector([selectSettings], (settings) => settings.language);
 
 // --- Saved Items Selectors ---
-export const selectSavedSetups = createSelector([selectSavedItems], (savedItems) => savedItems.savedSetups);
-export const selectSavedExports = createSelector([selectSavedItems], (savedItems) => savedItems.savedExports);
-export const selectSavedStrainTips = createSelector([selectSavedItems], (savedItems) => savedItems.savedStrainTips);
+export const { selectAll: selectSavedExports } = savedExportsAdapter.getSelectors<RootState>(state => state.savedItems.savedExports);
+export const { selectAll: selectSavedSetups } = savedSetupsAdapter.getSelectors<RootState>(state => state.savedItems.savedSetups);
+export const { selectAll: selectSavedStrainTips } = savedStrainTipsAdapter.getSelectors<RootState>(state => state.savedItems.savedStrainTips);
 
 // --- User Strains & Favorites Selectors ---
-export const selectUserStrains = createSelector([selectUserStrainsState], (userStrains) => userStrains.userStrains);
+export const { selectAll: selectUserStrains, selectIds: selectUserStrainIdsAsArray } = userStrainsAdapter.getSelectors<RootState>(selectUserStrainsState);
+
 export const selectUserStrainIds = createSelector(
-  [selectUserStrains],
-  (userStrains) => new Set(userStrains.map(s => s.id))
+  [selectUserStrainIdsAsArray],
+  (ids) => new Set(ids as string[])
 );
 export const selectFavoriteIds = createSelector(
     [selectFavoritesState],
     (favorites) => new Set(favorites.favoriteIds)
 );
 
-// --- AI Selectors ---
-export const selectEquipmentGenerationState = createSelector([selectAi], (ai) => ai.equipmentGeneration);
-export const selectDiagnosticsState = createSelector([selectAi], (ai) => ai.diagnostics);
-export const selectProactiveDiagnosisState = createSelector([selectAi], (ai) => ai.proactiveDiagnosis);
-
-const emptyAdvisorState = { isLoading: false, response: null, error: null };
-export const selectAdvisorStateForPlant = (plantId: string) => createSelector(
-  [selectAi],
-  (ai) => ai.advisorChats[plantId] || emptyAdvisorState
-);
-
-const emptyStrainTipState = { isLoading: false, response: null, error: null };
-export const selectStrainTipState = (strainId: string) => createSelector(
-  [selectAi],
-  (ai) => ai.strainTips[strainId] || emptyStrainTipState
-);
-
-const emptyDeepDiveState = { isLoading: false, response: null, error: null };
-export const selectDeepDiveState = (plantId: string, topic: string) => createSelector(
-    [selectAi],
-    (ai) => {
-        const key = `${plantId}-${topic}`;
-        return ai.deepDives[key] || emptyDeepDiveState;
-    }
-);
-
 // --- Archives Selectors ---
 export const selectArchivedMentorResponses = createSelector([selectArchives], (archives) => archives.archivedMentorResponses);
 const selectAllArchivedAdvisorResponses = createSelector([selectArchives], (archives) => archives.archivedAdvisorResponses);
 
-const emptyArchivedAdvisorResponses: ArchivedAdvisorResponse[] = []; // Stable reference
-export const selectArchivedAdvisorResponsesForPlant = (plantId: string) => createSelector(
-  [selectAllArchivedAdvisorResponses],
-  (archives) => archives[plantId] || emptyArchivedAdvisorResponses
+const emptyArchivedAdvisorResponses: ArchivedAdvisorResponse[] = []; // Stable reference for memoization
+
+export const selectArchivedAdvisorResponsesForPlant = createSelector(
+  [
+    selectAllArchivedAdvisorResponses,
+    (state: RootState, plantId: string) => plantId,
+  ],
+  (archives, plantId) => archives[plantId] || emptyArchivedAdvisorResponses
 );
+
 export const selectArchivedAdvisorResponses = selectAllArchivedAdvisorResponses;
 
 // --- TTS Selectors ---
@@ -99,14 +86,16 @@ export const selectTtsState = createSelector(
 export const selectCurrentlySpeakingId = createSelector([selectTts], (tts) => tts.currentlySpeakingId);
 
 // --- Plant Simulation Selectors ---
-const selectPlants = createSelector([selectSimulation], (sim) => sim.plants);
+// FIX: Correctly construct selectors using the exported adapter
+export const { selectAll: selectAllPlants, selectById: selectPlantEntityById } = plantsAdapter.getSelectors<RootState>(state => state.simulation.plants);
+
 export const selectPlantSlots = createSelector([selectSimulation], (sim) => sim.plantSlots);
 
 export const selectActivePlants = createSelector(
-  [selectPlantSlots, selectPlants],
-  (slots, plants) => slots
+  [selectPlantSlots, selectAllPlants],
+  (slots, allPlants) => slots
     .filter((id): id is string => id !== null)
-    .map(id => plants[id])
+    .map(id => allPlants.find(p => p.id === id))
     .filter((p): p is Plant => p !== undefined)
 );
 
@@ -118,9 +107,10 @@ export const selectHasAvailableSlots = createSelector(
 export const selectSelectedPlantId = createSelector([selectSimulation], (sim) => sim.selectedPlantId);
 
 export const selectPlantById = (id: string | null) => createSelector(
-  [selectPlants],
-  (plants) => (id ? plants[id] : null)
+  [selectSimulation],
+  (sim) => (id ? sim.plants.entities[id] : null)
 );
+
 
 export const selectOpenTasksSummary = createSelector(
   [selectActivePlants],
@@ -170,3 +160,14 @@ export const selectBreedingSlots = createSelector([selectBreeding], b => b.breed
 // --- Sandbox Selector ---
 export const selectSandboxState = createSelector([selectSandbox], (s) => s);
 export const selectSavedExperiments = createSelector([selectSandboxState], (s) => s.savedExperiments);
+
+// FIX: Add selectors for the new aiSlice state
+export const selectDiagnosticsState = createSelector(
+    [selectAi],
+    (ai) => ai.diagnostics
+);
+
+export const selectDeepDiveState = (plantId: string, topic: string) => createSelector(
+    [selectAi],
+    (ai) => ai.deepDive[`${plantId}-${topic}`] || { isLoading: false, response: null, error: null }
+);

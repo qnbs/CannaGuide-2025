@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Card } from '@/components/common/Card';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -17,6 +17,13 @@ interface DrawerProps {
 export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, children, title, footer, size = 'md' }) => {
     const { t } = useTranslation();
     const drawerRef = useFocusTrap(isOpen);
+    const scrollableContentRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (isOpen && scrollableContentRef.current) {
+            scrollableContentRef.current.scrollTop = 0;
+        }
+    }, [isOpen]);
     
     if (!isOpen) return null;
 
@@ -53,7 +60,7 @@ export const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose, children, title
                     </header>
                 )}
                 
-                <div className="overflow-y-auto flex-grow p-4">
+                <div ref={scrollableContentRef} className="overflow-y-auto flex-grow p-4">
                     {children}
                 </div>
 

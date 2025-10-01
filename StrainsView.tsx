@@ -21,7 +21,7 @@ import { BulkActionsBar } from './strains/BulkActionsBar';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectStrainsView, selectUserStrains, selectFavoriteIds, selectSavedExports, selectSavedStrainTips, selectSettings, selectUserStrainIds } from '@/stores/selectors';
 import { setStrainsViewTab, setStrainsViewMode, toggleStrainSelection, toggleAllStrainSelection, clearStrainSelection } from '@/stores/slices/strainsViewSlice';
-import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification } from '@/stores/slices/uiSlice';
+import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { addUserStrain, updateUserStrain, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
 import { addExport, deleteExport, updateExport, addStrainTip, deleteStrainTip, updateStrainTip } from '@/stores/slices/savedItemsSlice';
 import { addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
@@ -36,7 +36,7 @@ const processAndTranslateStrains = (strains: Strain[], t: (key: string, options?
         return (typeof result === 'string' && result !== key) ? result : fallback;
     };
     const getTranslatedObject = (key: string, fallback: object | undefined): object | undefined => {
-         const result = t(key);
+         const result = t(key, { returnObjects: true });
          return (typeof result === 'object' && result !== null) ? result : fallback;
     }
     return strains.map(strain => ({
@@ -187,8 +187,8 @@ export const StrainsView: React.FC = () => {
         startTransition(() => { dispatch(setStrainsViewTab(id as StrainViewTab)); });
     }, [dispatch]);
     
-    const handleSaveTip = useCallback((strain: Strain, tip: AIResponse) => {
-        dispatch(addStrainTip({ strain, tip }));
+    const handleSaveTip = useCallback((strain: Strain, tip: AIResponse, imageUrl?: string) => {
+        dispatch(addStrainTip({ strain, tip, imageUrl }));
         dispatch(addNotification({ message: t('strainsView.tips.saveSuccess', {name: strain.name}), type: 'success' }));
     }, [dispatch, t]);
 
@@ -303,6 +303,8 @@ export const StrainsView: React.FC = () => {
                         activeFilterCount={filterProps.activeFilterCount}
                         isAnyFilterActive={filterProps.isAnyFilterActive}
                         onClearAllFilters={filterProps.resetAllFilters}
+                        letterFilter={filterProps.letterFilter}
+                        onLetterFilterChange={filterProps.handleSetLetterFilter}
                     />
                 </Card>
             )}

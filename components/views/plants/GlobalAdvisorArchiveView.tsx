@@ -116,12 +116,17 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                             <input type="checkbox" checked={selectedIds.size === filteredAdvice.length && filteredAdvice.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
                             <label className="text-sm text-slate-400">{t('strainsView.selectedCount', { count: selectedIds.size })}</label>
                         </div>
-                        {filteredAdvice.map((res) => (
+                        {filteredAdvice.map((res) => {
+                            const isProactive = res.query === t('ai.proactiveDiagnosis');
+                            return (
                             <Card key={res.id} className="bg-slate-800/70 p-3 flex items-start gap-3">
                                  <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="mt-1.5 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
                                 <div className="flex-grow">
                                     <div className="flex justify-between items-start">
-                                        <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
+                                        <h4 className={`font-bold mt-1 ${isProactive ? 'text-amber-300' : 'text-primary-300'} flex items-center gap-2`}>
+                                            {isProactive && <PhosphorIcons.FirstAidKit className="w-5 h-5" />}
+                                            {res.title}
+                                        </h4>
                                         <div className="text-xs text-slate-400 text-right flex-shrink-0 ml-2">
                                             <p className="font-semibold">{res.plantName}</p>
                                             <p>{new Date(res.createdAt).toLocaleDateString()}</p>
@@ -130,7 +135,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                                     <div className="prose prose-sm dark:prose-invert max-w-none mt-2" dangerouslySetInnerHTML={{ __html: res.content }}></div>
                                 </div>
                             </Card>
-                        ))}
+                        )})}
                     </>
                 ) : (
                     <div className="text-center py-10 text-slate-500">

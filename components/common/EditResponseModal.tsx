@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -17,7 +17,7 @@ interface EditResponseModalProps<T extends EditableResponse> {
     title?: string;
 }
 
-export const EditResponseModal = <T extends EditableResponse>({ response, onClose, onSave, title: customTitle }: EditResponseModalProps<T>) => {
+const EditResponseModalComponent = <T extends EditableResponse>({ response, onClose, onSave, title: customTitle }: EditResponseModalProps<T>) => {
     const { t } = useTranslation();
     const [title, setTitle] = useState(response.title);
     const [content, setContent] = useState(response.content);
@@ -63,22 +63,26 @@ export const EditResponseModal = <T extends EditableResponse>({ response, onClos
                     aria-label={t('common.name')}
                 />
                 
-                <div className="bg-slate-800 border border-slate-600 rounded-md">
-                    <div className="flex items-center gap-1 p-1 border-b border-slate-600">
-                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('bold')} className="!p-1.5" aria-label={t('common.editor.bold')}><PhosphorIcons.TextBolder className="w-5 h-5" /></Button>
-                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('italic')} className="!p-1.5" aria-label={t('common.editor.italic')}><PhosphorIcons.TextItalic className="w-5 h-5" /></Button>
-                        <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('insertUnorderedList')} className="!p-1.5" aria-label={t('common.editor.list')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
+                {content && (
+                    <div className="bg-slate-800 border border-slate-600 rounded-md">
+                        <div className="flex items-center gap-1 p-1 border-b border-slate-600">
+                            <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('bold')} className="!p-1.5" aria-label={t('common.editor.bold')}><PhosphorIcons.TextBolder className="w-5 h-5" /></Button>
+                            <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('italic')} className="!p-1.5" aria-label={t('common.editor.italic')}><PhosphorIcons.TextItalic className="w-5 h-5" /></Button>
+                            <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('insertUnorderedList')} className="!p-1.5" aria-label={t('common.editor.list')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
+                        </div>
+                        <div
+                            ref={contentRef}
+                            contentEditable={true}
+                            onInput={handleContentChange}
+                            dangerouslySetInnerHTML={{ __html: content }}
+                            className="w-full min-h-[150px] p-2 focus:outline-none prose prose-sm dark:prose-invert max-w-none"
+                            aria-label={t('common.notes')}
+                        />
                     </div>
-                    <div
-                        ref={contentRef}
-                        contentEditable={true}
-                        onInput={handleContentChange}
-                        dangerouslySetInnerHTML={{ __html: content }}
-                        className="w-full min-h-[150px] p-2 focus:outline-none prose prose-sm dark:prose-invert max-w-none"
-                        aria-label={t('common.notes')}
-                    />
-                </div>
+                )}
             </div>
         </Modal>
     );
 };
+
+export const EditResponseModal = memo(EditResponseModalComponent);

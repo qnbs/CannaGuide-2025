@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Strain, AIResponse, StructuredGrowTips } from '@/types';
-// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
 import { useTranslation } from 'react-i18next';
 import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-// FIX: Import Redux hooks and actions/selectors
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectStrainTipState } from '@/stores/selectors';
-import { startStrainTipGeneration } from '@/stores/slices/aiSlice';
+import { useAppDispatch } from '@/stores/store';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stores/api';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
     const { t } = useTranslation();
@@ -45,13 +43,18 @@ const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => v
 
 interface StrainAiTipsProps {
     strain: Strain;
-    onSaveTip: (strain: Strain, tip: AIResponse) => void;
+    onSaveTip: (strain: Strain, tip: AIResponse, imageUrl?: string) => void;
 }
 
 export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { isLoading, response: tip, error } = useAppSelector(selectStrainTipState(strain.id));
+    
+    const [getStrainTips, { data: tip, isLoading: isTextLoading, error: textError }] = useGetStrainTipsMutation();
+    const [generateStrainImage, { data: imageBase64, isLoading: isImageLoading, error: imageError }] = useGenerateStrainImageMutation();
+    
+    const isLoading = isTextLoading || isImageLoading;
+    const error = textError || imageError;
 
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isTipSaved, setIsTipSaved] = useState(false);
@@ -61,13 +64,14 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
         experience: 'advanced'
     });
 
+    const hasGeneratedOnce = !!tip || !!imageBase64;
+
     useEffect(() => {
         setIsTipSaved(false);
     }, [strain]);
     
     useEffect(() => {
         if (isLoading) {
-            // FIX: Corrected call to geminiService to pass a single object argument.
             const messages = geminiService.getDynamicLoadingMessages({ 
                 useCase: 'growTips',
                 data: {
@@ -93,7 +97,8 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
         const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
         const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
         const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
-        dispatch(startStrainTipGeneration({strain, context: { focus: focusText, stage: stageText, experience: experienceText }}));
+        getStrainTips({strain, context: { focus: focusText, stage: stageText, experience: experienceText }});
+        generateStrainImage(strain);
     };
 
     const handleSaveTip = () => {
@@ -105,7 +110,8 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
             <h3>${t('strainsView.tips.form.categories.environmentalTip')}</h3><p>${tip.environmentalTip}</p>
             <h3>${t('strainsView.tips.form.categories.proTip')}</h3><p>${tip.proTip}</p>
         `;
-        onSaveTip(strain, { title, content });
+        const imageUrl = imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : undefined;
+        onSaveTip(strain, { title, content }, imageUrl);
         setIsTipSaved(true);
     };
 
@@ -135,12 +141,28 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
                     </div>
                 </div>
                 <Button size="sm" onClick={handleGetAiTips} disabled={isLoading} className="w-full">
-                    {isLoading ? loadingMessage : t('strainsView.tips.form.generate')}
+                    {isLoading ? loadingMessage : (hasGeneratedOnce ? t('common.regenerate') : t('strainsView.tips.form.generate'))}
                 </Button>
+                
                 {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                {error && !isLoading && <div className="text-center text-sm text-red-400">{error}</div>}
-                {tip && !isLoading && (
-                    <StructuredTipDisplay tips={tip} onSave={handleSaveTip} isSaved={isTipSaved} />
+                {error && !isLoading && <div className="text-center text-sm text-red-400">{'message' in error ? (error as any).message : t('ai.error.unknown')}</div>}
+
+                {isImageLoading ? (
+                    <SkeletonLoader className="w-full h-64 rounded-lg" />
+                ) : (
+                    imageBase64 && (
+                        <div className="mt-4 animate-fade-in">
+                            <img src={`data:image/jpeg;base64,${imageBase64}`} alt={t('ai.prompts.strainImage', { strainName: strain.name })} className="rounded-lg w-full" />
+                        </div>
+                    )
+                )}
+                
+                {isTextLoading && !tip ? (
+                     <div className="mt-4"><SkeletonLoader count={4} /></div>
+                ) : (
+                    tip && (
+                        <StructuredTipDisplay tips={tip} onSave={handleSaveTip} isSaved={isTipSaved} />
+                    )
                 )}
             </div>
         </Card>

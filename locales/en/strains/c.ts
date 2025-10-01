@@ -1,12 +1,6 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-    "chems-sister": {
-        "description": "Also known as 'Chem Sis', this is a famous phenotype of the legendary Chemdawg line. This sativa-dominant hybrid delivers a powerful, uplifting cerebral high that boosts creativity and energy. Its aroma is unmistakably pungent and chemical, with strong notes of diesel and earth."
-    },
-    "cherry-cookies": {
-        "description": "An indica-dominant hybrid that crosses Cherry Pie with Girl Scout Cookies. It delivers a potent, euphoric head high that melts into a deep body relaxation. Its aroma is a delicious blend of sweet cherries and earthy, doughy notes from its Cookies parentage, making it a flavorful choice for unwinding.",
-    },
     "cactus-breath": {
         "description": "A potent indica-dominant hybrid with an earthy, piney, and spicy aroma. Cactus Breath delivers a strong, relaxing, and euphoric high that is perfect for unwinding at the end of the day.",
     },
@@ -15,6 +9,12 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "cake-bomb": {
         "description": "An indica-dominant hybrid with a sweet, cake-like, and earthy aroma. Cake Bomb delivers a strong, relaxing, and euphoric high that is perfect for unwinding in the evening.",
+    },
+    "california-black-rose": {
+        "description": "An award-winning indica strain known for its fast flowering time and unique floral, rose-like aroma with fruity undertones. It provides a relaxing and calming effect, perfect for unwinding. Its beautiful dark purple to black coloration makes it visually stunning."
+    },
+    "california-orange-cbd": {
+        "description": "A CBD-rich version of the classic California Orange. It offers a ~1:2 THC to CBD ratio, providing a mild, uplifting, and functional effect with significant therapeutic benefits. The aroma is a sweet and tangy burst of fresh oranges and citrus."
     },
     "cali-o-california-orange": {
         "description": "A classic hybrid known since the 1980s. It offers a clear, uplifting, and happy effect and a strong orange aroma.",
@@ -33,10 +33,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "cap-junky": {
         "description": "Cap Junky is an extremely potent and highly acclaimed modern hybrid resulting from a collaboration between elite breeders Capulator and Seed Junky Genetics. This strain is a cross of Alien Cookies and Kush Mints #11 and has quickly earned a reputation as one of the strongest strains on the market. The effect is intense and fast-acting, with a powerful cerebral rush that induces euphoria, happiness, and a tingly sensation, followed by a deep but not overwhelming body relaxation. The aroma is complex and unique, often described as a mix of sour, fermented fruit and pungent diesel, with undertones of menthol, pepper, and pine. Due to its extremely high THC content, often exceeding 30%, Cap Junky is recommended exclusively for very experienced consumers.",
-        "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
-        "genetics": "Alien Cookies x Kush Mints #11",
-        "yieldDetails": { "indoor": "Medium to High (~550-650 g/m²)", "outdoor": "High" },
-        "heightDetails": { "indoor": "Medium", "outdoor": "Medium" }
     },
     "captain-morgan": {
         "description": "An indica-dominant hybrid with a spicy, sweet, and vanilla-like aroma. Captain Morgan delivers a relaxing and euphoric high that is perfect for unwinding.",
@@ -90,14 +86,10 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "A sativa-dominant hybrid with a pungent, ammonia-like, and citrusy aroma. Cheetah Piss delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
     },
     "chem-sis": {
-        "description": "A sativa-dominant hybrid with a pungent, diesel-like, and earthy aroma. Chem Sis delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
+        "description": "Also known as 'Chem Sis', this is a famous phenotype of the legendary Chemdawg line. This sativa-dominant hybrid delivers a powerful, uplifting cerebral high that boosts creativity and energy. Its aroma is unmistakably pungent and chemical, with strong notes of diesel and earth."
     },
     "chemdawg": {
         "description": "Chemdawg, often spelled Chemdog, is a legendary hybrid with a mysterious origin, serving as the genetic cornerstone for countless modern classics like OG Kush and Sour Diesel. Its origin story is shrouded in myth, but the most popular theory suggests the strain originated from seeds acquired at a Grateful Dead concert in 1991. Its effect is strongly cerebral, uplifting, and creative, but it quickly transitions into a noticeable physical relaxation without being fully sedating. Its aroma is its most distinctive feature: an extremely sharp, pungent smell of diesel, chemicals, and earthy pine, which became known as 'gas' or 'fuel' and defined an entire category of flavor profiles. Due to its potency and unique terpene profile, it is a strain better suited for experienced consumers.",
-        "typeDetails": "Hybrid - 55% Indica / 45% Sativa",
-        "genetics": "Unknown (presumed Nepalese Sativa x Thai Sativa)",
-        "yieldDetails": { "indoor": "~300-450 g/m²", "outdoor": "~400 g/plant" },
-        "heightDetails": { "indoor": "Medium to Tall", "outdoor": "Tall" }
     },
     "chemdawg-91": {
         "description": "One of the original and most potent phenotypes of the Chemdawg line. Known for its extremely pungent, diesel-like aroma and a strong, cerebral effect that transitions into deep body relaxation. A legendary strain that served as a parent for many famous hybrids like OG Kush and Sour Diesel."
@@ -107,6 +99,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "cherry-ak-47": {
         "description": "A sativa-dominant hybrid with a sweet, cherry-like, and earthy aroma. Cherry AK-47 delivers an uplifting, creative, and energetic high that is perfect for daytime use.",
+    },
+    "cherry-cookies": {
+        "description": "An indica-dominant hybrid that crosses Cherry Pie with Girl Scout Cookies. It delivers a potent, euphoric head high that melts into a deep body relaxation. Its aroma is a delicious blend of sweet cherries and earthy, doughy notes from its Cookies parentage, making it a flavorful choice for unwinding.",
     },
     "cherry-pie": {
         "description": "An indica-dominant hybrid with a sweet, cherry-like, and earthy aroma. Cherry Pie delivers a relaxing and happy high that is perfect for unwinding.",
@@ -143,5 +138,8 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "critical-mass": {
         "description": "An indica-dominant strain known for its massive yields and dense buds that tend to break under their own weight. The effect is deeply relaxing.",
+    },
+    "c-vitt": {
+        "description": "A CBD-rich strain with a sweet, citrusy aroma. The effect is mild, clear, and functional, ideal for medical users seeking relief without strong psychoactive effects.",
     }
 }

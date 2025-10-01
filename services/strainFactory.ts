@@ -22,6 +22,7 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
       pestResistance: 1.0,
       nutrientUptakeRate: 1.0,
       stressTolerance: 1.0,
+      rue: 1.0, // Default Radiation Use Efficiency
     },
   };
 

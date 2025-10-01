@@ -123,6 +123,7 @@ export const common = {
     list: 'Bulleted List',
   },
   loadMore: 'Load More',
+  regenerate: 'Regenerate',
 };
 
 export const nav = {
@@ -186,7 +187,8 @@ export const ai = {
       systemInstruction: 'You are an AI Mentor for a cannabis grower. Your goal is to be helpful, concise, and guide the user within the app. Respond ONLY in JSON format, adhering to the provided schema. If you suggest an action, provide the corresponding uiHighlight elementId.',
     },
     strainTips: 'Provide structured grow tips for the cannabis strain {{strain}} with the following context: Focus on {{focus}}, during the {{stage}} phase, for a grower with {{experience}} experience. Respond in JSON format only.',
-    deepDive: 'Generate a detailed guide on the topic "{{topic}}" in the context of the cannabis plant {{plant}}. Respond in JSON format only.'
+    deepDive: 'Generate a detailed guide on the topic "{{topic}}" in the context of the cannabis plant {{plant}}. Respond in JSON format only.',
+    strainImage: 'A creative, imaginative, and entertaining image representing a cannabis strain named "{{strainName}}". Stylized, artistic, vibrant.',
   },
   schemas: {
     diagnostics: {

@@ -1,12 +1,6 @@
 import { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-    "blue-moonshine": {
-        "description": "A classic, almost pure Indica from DJ Short's Blueberry line. Renowned for its sweet blueberry flavor and a fast-acting, deeply sedating high."
-    },
-    "black-banana": {
-        "description": "A potent indica-dominant strain known for its exceptionally high THC levels and unique flavor profile. It combines the aroma of sweet, ripe bananas with earthy, gassy undertones. The effect is powerful and fast-acting, delivering a deeply relaxing body high and a euphoric head buzz, making it ideal for experienced consumers in the evening."
-    },
     "b-52": {
         "description": "A Skunk hybrid known for its large, dense buds and high yields. The effect is balanced, starting with a cerebral, uplifting feeling that transitions into a gentle body relaxation. The aroma is sweet and skunky.",
     },
@@ -16,11 +10,17 @@ export const strains: Record<string, StrainTranslationData> = {
     "bahama-mama": {
         "description": "A sativa-dominant hybrid known for its tropical, fruity aroma and uplifting effects. It provides an energetic and euphoric high perfect for daytime use, with a flavor profile reminiscent of passionfruit and citrus. The plant is visually striking with vibrant colors.",
     },
+    "bangi-haze": {
+        "description": "A classic sativa from ACE Seeds, known for its resistance to cold and mold. It delivers a clean, energetic, and focused cerebral high without paranoia. The aroma is sweet and floral with hints of anise and lemon."
+    },
     "banana-kush": {
         "description": "A West Coast legend, famous for its distinct taste and smell of fresh bananas. This indica-dominant hybrid offers a mellow, euphoric effect that boosts creativity while relaxing the body without being overly sedating.",
     },
     "banana-og": {
         "description": "A potent indica-dominant strain with an aroma of overripe bananas and earthy pine notes. The effect is strong and creeps up, leading to deep physical relaxation and can be heavily sedating in higher doses. Ideal for evening use.",
+    },
+    "bay-11": {
+        "description": "An award-winning (High Times Cannabis Cup 2011) sativa strain known for its dense, crystal-coated buds. It provides a potent, uplifting, and creative high that's great for daytime use. The aroma is sweet and piney with earthy undertones."
     },
     "bay-platinum-cookies": {
         "description": "A potent hybrid known for its dense, resinous buds with a sweet, earthy aroma. It combines the euphoric effects of Bay 11 with the relaxing power of Platinum Cookies, offering a balanced, strong effect.",
@@ -46,6 +46,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "big-bud": {
         "description": "Big Bud is a legendary, award-winning Indica strain known, as its name suggests, for its massive, heavy buds and extremely high yields. The effect is deeply relaxing and physical, typical of a strong Indica, making it ideal for relieving stress, pain, and insomnia in the evening. The aroma is sweet, earthy, and fruity with spicy undertones.",
     },
+    "biker-kush": {
+        "description": "A potent indica-dominant strain from Karma Genetics. It delivers a heavy, relaxing body high that is great for pain relief and insomnia. The aroma is a classic OG profile with pungent notes of lemon, pine, and diesel fuel."
+    },
     "birthday-cake-kush": {
         "description": "Also known as Birthday Cake. A potent indica-dominant hybrid with a sweet, vanilla, and earthy aroma. The effect is highly relaxing and euphoric, ideal for relieving pain, anxiety, and insomnia. A perfect 'dessert' smoke.",
     },
@@ -54,6 +57,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "biscotti-mintz": {
         "description": "An indica-dominant strain from Barney's Farm known for its stunning colors and complex aroma. It combines the taste of chocolate cookies with creamy mint and spices. The effect is creative, uplifting, and deeply relaxing at the same time.",
+    },
+    "black-banana": {
+        "description": "A potent indica-dominant strain known for its exceptionally high THC levels and unique flavor profile. It combines the aroma of sweet, ripe bananas with earthy, gassy undertones. The effect is powerful and fast-acting, delivering a deeply relaxing body high and a euphoric head buzz, making it ideal for experienced consumers in the evening."
     },
     "black-beauty": {
         "description": "A rare, unique strain known for its dark purple, almost black leaves and its low THC content. The effect is mild and clear, ideal for consumers seeking a subtle, relaxing experience without strong psychoactivity.",
@@ -88,9 +94,6 @@ export const strains: Record<string, StrainTranslationData> = {
     "blackwater": {
         "description": "A heavily indica-dominant strain known for its deep purple coloration and calming effects. Blackwater offers a sweet grape aroma with undertones of lemon and pine. The high begins with a euphoric uplift that soon melts into a full-body relaxation, making it excellent for evening use to alleviate pain and stress.",
     },
-    "brazilian-sativa": {
-        "description": "Brazilian Sativa is a pure landrace that has adapted over generations to the tropical climate of the Brazilian Amazon. It is historically significant as one of the parent strains of the legendary White Widow. This strain is known for its resistance to heat and high humidity. The effect is a classic Sativa experience: a clear, energetic, and long-lasting cerebral high that promotes euphoria, creativity, and sociability without weighing down the body. The aroma is distinctly tropical and fruity, often with dominant notes of sweet mango and papaya, earning it the local nickname 'Manga Rosa' (Pink Mango). Agronomically, it grows tall and slender with a long flowering time of 10-14 weeks.",
-    },
     "blue-cheese": {
         "description": "A classic indica-dominant hybrid that combines the sweet, fruity aroma of Blueberry with the pungent, cheesy aroma of UK Cheese. The effect is deeply relaxing and calming, ideal for stress relief and pain management.",
     },
@@ -118,6 +121,12 @@ export const strains: Record<string, StrainTranslationData> = {
     "blue-magoo": {
         "description": "An indica-dominant strain known for its sweet, berry-like, and floral aroma. The effect is relaxing and calming, ideal for relieving stress, pain, and insomnia in the evening.",
     },
+    "blue-monster": {
+        "description": "A potent indica-dominant strain known for its large, resinous buds and sweet berry flavor. It provides a long-lasting, deeply relaxing body high that can lead to couch-lock, making it ideal for evening use."
+    },
+    "blue-moonshine": {
+        "description": "A classic, almost pure Indica from DJ Short's Blueberry line. Renowned for its sweet blueberry flavor and a fast-acting, deeply sedating high."
+    },
     "blue-power": {
         "description": "An indica-dominant strain with a complex aroma of sweet berries, lemon, and earth. The effect is strong, euphoric, and physically relaxing. Known for its high resin production and beautiful blue and purple hues.",
     },
@@ -141,6 +150,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "booger": {
         "description": "A potent indica-dominant strain with a skunky, earthy aroma and a hint of sweetness. The effect is strong, physically relaxing, and sedating, ideal for relieving pain, stress, and insomnia.",
+    },
+    "brazilian-sativa": {
+        "description": "Brazilian Sativa is a pure landrace that has adapted over generations to the tropical climate of the Brazilian Amazon. It is historically significant as one of the parent strains of the legendary White Widow. This strain is known for its resistance to heat and high humidity. The effect is a classic Sativa experience: a clear, energetic, and long-lasting cerebral high that promotes euphoria, creativity, and sociability without weighing down the body. The aroma is distinctly tropical and fruity, often with dominant notes of sweet mango and papaya, earning it the local nickname 'Manga Rosa' (Pink Mango). Agronomically, it grows tall and slender with a long flowering time of 10-14 weeks.",
     },
     "bruce-banger": {
         "description": "A potent sativa-dominant hybrid from Growers Choice. It combines the diesel aroma of Bruce Banner with the fruity taste of Strawberry Diesel. The effect is strong, euphoric, and energizing, ideal for daytime use.",

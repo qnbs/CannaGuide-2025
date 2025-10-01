@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v2-stable';
+const CACHE_NAME = 'cannaguide-v3-stable';
 
 // Install-Event: Sofort aktivieren, ohne auf Caching zu warten.
 self.addEventListener('install', event => {
@@ -14,6 +14,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -26,10 +27,15 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
+  // Do not cache any Google API calls to ensure fresh data from Gemini
+  if (event.request.url.includes('googleapis.com')) {
+    return; // Let the browser handle the request normally, bypassing the service worker.
+  }
+
   event.respondWith(
     fetch(event.request)
       .then(networkResponse => {
-        // Wenn erfolgreich, speichere eine Kopie im Cache für Offline-Nutzung
+        // If successful, store a copy in the cache for offline use
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then(cache => {
           cache.put(event.request, responseToCache);
@@ -37,7 +43,7 @@ self.addEventListener('fetch', event => {
         return networkResponse;
       })
       .catch(() => {
-        // Wenn das Netzwerk fehlschlägt, versuche, aus dem Cache zu antworten
+        // If the network fails, try to respond from the cache
         return caches.match(event.request);
       })
   );

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { KnowledgeArticle } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +20,7 @@ const ArticleItem: React.FC<{ article: KnowledgeArticle; t: (key: string, option
             <div className="p-3 border-t border-slate-700/50">
                 <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: content }} />
                 <div className="flex flex-wrap gap-2 mt-4">
-                    {article.tags.map(tag => <span key={tag} className="bg-slate-700 text-slate-300 text-xs font-medium px-2 py-0.5 rounded-full">{t(`common.aromas.${tag}`, tag)}</span>)}
+                    {article.tags.map(tag => <span key={tag} className="bg-slate-700 text-slate-300 text-xs font-medium px-2 py-0.5 rounded-full">{t(`common.aromas.${tag}`, { defaultValue: tag })}</span>)}
                 </div>
             </div>
         </details>

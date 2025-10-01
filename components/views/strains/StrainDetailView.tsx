@@ -17,6 +17,7 @@ import { Tabs } from '@/components/common/Tabs';
 import { InfoSection } from '@/components/common/InfoSection';
 import { AttributeDisplay } from '@/components/common/AttributeDisplay';
 import { Speakable } from '@/components/common/Speakable';
+import { StrainImageGalleryTab } from './StrainImageGalleryTab';
 
 // --- Sub-components for better structure ---
 
@@ -196,6 +197,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
         { id: 'profile', label: t('strainsView.strainDetail.tabs.profile'), icon: <PhosphorIcons.Sparkle /> },
         { id: 'notes', label: t('strainsView.strainDetail.tabs.notes'), icon: <PhosphorIcons.BookOpenText /> },
         { id: 'aiTips', label: t('strainsView.strainDetail.tabs.aiTips'), icon: <PhosphorIcons.Brain /> },
+        { id: 'images', label: t('strainsView.strainDetail.tabs.images'), icon: <PhosphorIcons.Camera /> },
     ];
     
     const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
@@ -235,6 +237,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
                 {activeTab === 'profile' && <ProfileTab strain={currentStrain} />}
                 {activeTab === 'notes' && <NotesTab strain={currentStrain} />}
                 {activeTab === 'aiTips' && <StrainAiTips strain={currentStrain} onSaveTip={onSaveTip} />}
+                {activeTab === 'images' && <StrainImageGalleryTab strain={currentStrain} />}
             </div>
             
             <SimilarStrainsSection currentStrain={currentStrain} onSelect={setCurrentStrain} />

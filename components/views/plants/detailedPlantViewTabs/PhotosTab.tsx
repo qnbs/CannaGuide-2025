@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
-import { JournalEntry, PhotoDetails } from '@/types';
+import { JournalEntry, PhotoDetails, JournalEntryType } from '@/types';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { dbService } from '@/services/dbService';
@@ -59,7 +60,7 @@ export const PhotosTab: React.FC<PhotoTabProps> = ({ journal }) => {
     
     const photoJournalEntries = useMemo(() => 
         // FIX: Cast details to PhotoDetails to access imageId and imageUrl
-        journal.filter(entry => entry.type === 'PHOTO' && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)), 
+        journal.filter(entry => entry.type === JournalEntryType.Photo && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)), 
     [journal]);
 
     return (

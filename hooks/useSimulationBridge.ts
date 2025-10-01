@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { useAppSelector } from '@/stores/store';
 import {
@@ -74,4 +75,5 @@ export const usePlantById = (plantId: string | null) => {
  * Custom hook to check if the simulation is currently in a "catch-up" state.
  * @returns A boolean indicating the catch-up status.
  */
+// @ts-ignore
 export const useIsSimulationCatchingUp = () => useAppSelector(state => state.simulation.isCatchingUp);

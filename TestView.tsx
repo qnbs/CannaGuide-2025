@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { MentorArchiveTab } from '@/components/views/knowledge/MentorArchiveTab';
-import { ArchivedMentorResponse } from './types';
+import { ArchivedMentorResponse } from '@/types';
 import { Card } from '@/components/common/Card';
 
 // Dies ist eine isolierte Testumgebung, um die Komponente MentorArchiveTab zu debuggen.

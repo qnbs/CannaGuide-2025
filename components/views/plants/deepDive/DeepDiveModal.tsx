@@ -1,3 +1,4 @@
+
 import React, { useEffect, useMemo } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Plant, Scenario } from '@/types';
@@ -40,7 +41,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
             data: { topic, plantName: plant.name }
         });
         return messages[Math.floor(Math.random() * messages.length)];
-    }, [topic, plant.name]);
+    }, [topic, plant.name, t]);
 
 
     const relevantScenario = useMemo(() => {

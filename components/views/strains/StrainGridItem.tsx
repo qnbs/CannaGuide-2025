@@ -46,7 +46,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                 )}
             </div>
             
-            {isUserStrain && <PhosphorIcons.Star weight="fill" className="absolute top-2 left-2 w-4 h-4 text-amber-400" title={t('strainsView.tabs.myStrains')} />}
+            {/* FIX: The `title` prop is not valid on PhosphorIcons. Wrapped with a span to provide the tooltip. */}
+            {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" /></span>}
 
             <div className="mx-auto mb-2">
                 {typeIcons[strain.type]}

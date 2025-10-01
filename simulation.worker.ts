@@ -1,27 +1,16 @@
-import { Plant } from './types';
-import { simulationService } from './services/plantSimulationService';
+// This worker is intended for background simulation tasks.
+// It receives a plant state and a time delta, runs the simulation logic,
+// and posts the updated state back to the main thread.
 
-self.onmessage = (e: MessageEvent<{ plants: Record<string, Plant>, deltaTime: number }>) => {
-    const { plants, deltaTime } = e.data;
-    const updatedPlants: Plant[] = [];
+import { Plant } from '@/types';
+import { simulationService } from '@/services/plantSimulationService';
 
-    if (deltaTime > 0) {
-        for (const plantId in plants) {
-            const plant = plants[plantId];
-            const { updatedPlant } = simulationService.calculateStateForTimeDelta(plant, deltaTime);
-
-            const daysSimulated = updatedPlant.age - plant.age;
-            if (daysSimulated > 0) {
-                const simulatedMilliseconds = daysSimulated * 24 * 60 * 60 * 1000;
-                updatedPlant.lastUpdated = plant.lastUpdated + simulatedMilliseconds;
-            }
-            
-            updatedPlants.push(updatedPlant);
-        }
-    } else {
-        // If no time has passed, just return the original plants to avoid unnecessary updates
-        updatedPlants.push(...Object.values(plants));
+self.onmessage = (e: MessageEvent<{ plant: Plant; deltaTime: number }>) => {
+    const { plant, deltaTime } = e.data;
+    if (plant && deltaTime > 0) {
+        // Run the simulation logic from the shared service
+        const result = simulationService.calculateStateForTimeDelta(plant, deltaTime);
+        // Post the results back to the main thread
+        self.postMessage(result);
     }
-    
-    self.postMessage(updatedPlants);
 };

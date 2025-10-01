@@ -1,3 +1,4 @@
+
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Plant, PlantDiagnosisResponse, DeepDiveGuide } from '@/types';
 import { geminiService } from '@/services/geminiService';

@@ -1,6 +1,4 @@
 
-
-
 // FIX: Changed import path to use alias
 import { PlantStage } from '@/types';
 

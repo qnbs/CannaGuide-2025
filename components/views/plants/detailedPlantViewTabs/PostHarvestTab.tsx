@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Plant, PlantStage } from '@/types';
 // FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
@@ -27,15 +28,16 @@ const ProgressBar: React.FC<{ label: string; progress: number }> = ({ label, pro
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const postHarvestData = plant.postHarvest;
+    // FIX: The property is named `harvestData` on the Plant type, not `postHarvest`.
+    const harvestData = plant.harvestData;
     const isFinished = plant.stage === PlantStage.Finished;
 
-    if (!postHarvestData) {
+    if (!harvestData) {
         return <Card><p>{t('common.error')}</p></Card>;
     }
 
-    const dryingProgress = (postHarvestData.currentDryDay / PLANT_STAGE_DETAILS[PlantStage.Drying].duration) * 100;
-    const curingProgress = (postHarvestData.currentCureDay / PLANT_STAGE_DETAILS[PlantStage.Curing].duration) * 100;
+    const dryingProgress = (harvestData.currentDryDay / PLANT_STAGE_DETAILS[PlantStage.Drying].duration) * 100;
+    const curingProgress = (harvestData.currentCureDay / PLANT_STAGE_DETAILS[PlantStage.Curing].duration) * 100;
 
     return (
         <Card>
@@ -44,14 +46,14 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
             {isFinished ? (
                  <div className="text-center p-8 bg-slate-800 rounded-lg">
                     <h4 className="text-2xl font-bold text-green-400">{t('plantsView.postHarvest.processComplete')}</h4>
-                    <p className="text-lg mt-2">{t('plantsView.postHarvest.finalQuality')}: <span className="font-bold">{postHarvestData.finalQuality.toFixed(1)}/100</span></p>
+                    <p className="text-lg mt-2">{t('plantsView.postHarvest.finalQuality')}: <span className="font-bold">{harvestData.finalQuality.toFixed(1)}/100</span></p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className={`p-4 rounded-lg ${plant.stage === PlantStage.Drying ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}>
                         <h4 className="font-bold text-lg text-slate-100 mb-3">{t('plantsView.postHarvest.drying')}</h4>
                         <ProgressBar label={t('plantsView.postHarvest.dryingProgress')} progress={dryingProgress} />
-                        <p className="text-sm text-slate-400 mt-2">{t('plantsView.postHarvest.day')} {postHarvestData.currentDryDay} / {PLANT_STAGE_DETAILS[PlantStage.Drying].duration}</p>
+                        <p className="text-sm text-slate-400 mt-2">{t('plantsView.postHarvest.day')} {harvestData.currentDryDay} / {PLANT_STAGE_DETAILS[PlantStage.Drying].duration}</p>
                         <Button
                             size="sm"
                             className="w-full mt-4"
@@ -65,8 +67,8 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
                     <div className={`p-4 rounded-lg ${plant.stage === PlantStage.Curing ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}>
                         <h4 className="font-bold text-lg text-slate-100 mb-3">{t('plantsView.postHarvest.curing')}</h4>
                         <ProgressBar label={t('plantsView.postHarvest.curingProgress')} progress={curingProgress} />
-                        <p className="text-sm text-slate-400 mt-2">{t('plantsView.postHarvest.day')} {postHarvestData.currentCureDay} / {PLANT_STAGE_DETAILS[PlantStage.Curing].duration}</p>
-                        <p className="text-sm text-slate-300 mt-2">{t('plantsView.postHarvest.jarHumidity')}: <span className="font-bold">{postHarvestData.jarHumidity.toFixed(1)}%</span></p>
+                        <p className="text-sm text-slate-400 mt-2">{t('plantsView.postHarvest.day')} {harvestData.currentCureDay} / {PLANT_STAGE_DETAILS[PlantStage.Curing].duration}</p>
+                        <p className="text-sm text-slate-300 mt-2">{t('plantsView.postHarvest.jarHumidity')}: <span className="font-bold">{harvestData.jarHumidity.toFixed(1)}%</span></p>
                         <div className="flex gap-2 mt-4">
                              <Button
                                 size="sm"

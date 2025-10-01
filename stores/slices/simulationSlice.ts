@@ -1,3 +1,4 @@
+
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings, HarvestData, TrainingType } from '@/types';
 import { simulationService } from '@/services/plantSimulationService';
@@ -7,11 +8,9 @@ import { getT } from '@/i18n';
 import { z } from 'zod';
 import { GrowSetupSchema, WaterDataSchema, TrainingTypeSchema } from '@/types/schemas';
 
-// FIX: Create and export entity adapter for plants to manage the normalized state.
 export const plantsAdapter = createEntityAdapter<Plant>();
 
 const initialState: SimulationState = {
-    // FIX: Initialize plants state using the adapter's initial state.
     plants: plantsAdapter.getInitialState(),
     plantSlots: [null, null, null],
     selectedPlantId: null,
@@ -23,7 +22,7 @@ const initialState: SimulationState = {
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (arg, { dispatch, getState }) => {
-        const { ui, settings } = getState();
+        const { ui, settings, simulation } = getState();
         const { strainForNewGrow, setupForNewGrow, initiatingGrowForSlot } = ui;
 
         const validationResult = GrowSetupSchema.safeParse(setupForNewGrow);
@@ -34,8 +33,14 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
             return;
         }
         
-        if (strainForNewGrow && validationResult.data && initiatingGrowForSlot !== null) {
-            const name = `${strainForNewGrow.name} #${initiatingGrowForSlot + 1}`;
+        let targetSlot = initiatingGrowForSlot;
+        // If the flow didn't start by clicking a slot, find the first available one.
+        if (targetSlot === null) {
+            targetSlot = simulation.plantSlots.findIndex(slot => slot === null);
+        }
+        
+        if (strainForNewGrow && validationResult.data && targetSlot !== null && targetSlot !== -1) {
+            const name = `${strainForNewGrow.name} #${targetSlot + 1}`;
             
             const newPlant = simulationService.createPlant(
                 strainForNewGrow,
@@ -44,9 +49,12 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 name
             );
 
-            dispatch(simulationSlice.actions._addPlant({ plant: newPlant, slotIndex: initiatingGrowForSlot }));
+            dispatch(simulationSlice.actions._addPlant({ plant: newPlant, slotIndex: targetSlot }));
             dispatch(cancelNewGrow());
             dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name }), type: 'success' }));
+        } else {
+            dispatch(addNotification({ message: getT()('plantsView.notifications.allSlotsFull'), type: 'error' }));
+            dispatch(cancelNewGrow());
         }
     }
 );
@@ -122,7 +130,6 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
 
         const deltaTime = Date.now() - plant.lastUpdated;
         
-        // Only run simulation if more than a second has passed to avoid excessive calls
         if (deltaTime > 1000) {
             const { updatedPlant, newJournalEntries, newTasks } = simulationService.calculateStateForTimeDelta(plant, deltaTime);
             
@@ -137,17 +144,14 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
     }
 );
 
-// FIX: Converted `initializeSimulation` from a reducer to a thunk to correctly access state during app startup.
-// This thunk will get the pre-hydrated state and pass it to a reducer to perform migration logic.
 export const initializeSimulation = createAsyncThunk<
     { plants: SimulationState['plants'], plantSlots: (string | null)[] } | null,
-    void, // No argument needed from the component
+    void,
     { state: RootState }
 >(
     'simulation/initializeSimulation',
     async (_, { getState }) => {
         const { simulation } = getState();
-        // Check if state is hydrated and has plants
         if (simulation && simulation.plants && simulation.plants.ids.length > 0) {
             return {
                 plants: simulation.plants,
@@ -163,9 +167,19 @@ const simulationSlice = createSlice({
     name: 'simulation',
     initialState,
     reducers: {
+        setSimulationState: (state, action: PayloadAction<SimulationState>) => {
+            if (action.payload && action.payload.plants) {
+                plantsAdapter.setAll(state.plants, action.payload.plants);
+            }
+            if (action.payload && action.payload.plantSlots) {
+                state.plantSlots = action.payload.plantSlots;
+            }
+            if (action.payload && action.payload.selectedPlantId) {
+                state.selectedPlantId = action.payload.selectedPlantId;
+            }
+        },
         plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
             const { updatedPlant, newJournalEntries, newTasks } = action.payload;
-            // FIX: Use adapter's upsertOne method to update or insert the plant state.
             plantsAdapter.upsertOne(state.plants, updatedPlant);
             const currentPlant = state.plants.entities[updatedPlant.id];
             if (currentPlant) {
@@ -182,12 +196,10 @@ const simulationSlice = createSlice({
         },
         _addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
             const { plant, slotIndex } = action.payload;
-            // FIX: Use adapter's addOne method to add a new plant.
             plantsAdapter.addOne(state.plants, plant);
             state.plantSlots[slotIndex] = plant.id;
         },
         waterPlant: (state, action: PayloadAction<{ plantId: string, amount: number, ph: number, ec?: number }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
                 plant.medium.moisture = 100;
@@ -199,7 +211,6 @@ const simulationSlice = createSlice({
             }
         },
         addJournalEntry: (state, action: PayloadAction<{ plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'> }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if(plant) {
                 const newEntry: JournalEntry = {
@@ -211,7 +222,6 @@ const simulationSlice = createSlice({
             }
         },
         completeTask: (state, action: PayloadAction<{ plantId: string, taskId: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             const task = plant?.tasks.find(t => t.id === action.payload.taskId);
             if(task) {
@@ -220,14 +230,12 @@ const simulationSlice = createSlice({
             }
         },
         resetPlants: (state) => {
-            // FIX: Use adapter's getInitialState to correctly reset the plants state.
             plantsAdapter.removeAll(state.plants);
             state.plantSlots = [null, null, null];
         },
         waterAllPlants: (state) => {
             state.plantSlots.forEach(plantId => {
                 if (plantId) {
-                    // FIX: Access plant through entities object.
                     const plant = state.plants.entities[plantId];
                     if (plant) {
                        plant.medium.moisture = 100;
@@ -238,29 +246,22 @@ const simulationSlice = createSlice({
             });
         },
         topPlant: (state, action: PayloadAction<{ plantId: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
                 const { updatedPlant } = simulationService.topPlant(plant);
-                // FIX: Use adapter to update the plant state.
+                updatedPlant.lastUpdated = Date.now();
                 plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes: updatedPlant });
-                const currentPlant = state.plants.entities[action.payload.plantId];
-                if(currentPlant) currentPlant.lastUpdated = Date.now();
             }
         },
         applyLst: (state, action: PayloadAction<{ plantId: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
                 const { updatedPlant } = simulationService.applyLst(plant);
-                // FIX: Use adapter to update the plant state.
+                updatedPlant.lastUpdated = Date.now();
                 plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes: updatedPlant });
-                const currentPlant = state.plants.entities[action.payload.plantId];
-                if(currentPlant) currentPlant.lastUpdated = Date.now();
             }
         },
         applyPestControl: (state, action: PayloadAction<{ plantId: string; notes: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
                 plant.problems = plant.problems.filter(p => p.type !== ProblemType.PestInfestation);
@@ -269,7 +270,6 @@ const simulationSlice = createSlice({
             }
         },
         harvestPlant: (state, action: PayloadAction<{ plantId: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if(plant) {
                 plant.stage = PlantStage.Harvest;
@@ -285,14 +285,13 @@ const simulationSlice = createSlice({
                     jarHumidity: 75, 
                     finalQuality: 0,
                     chlorophyllPercent: 100,
-                    terpeneProfile: {}, // Will be populated during simulation
+                    terpeneProfile: {},
                     cannabinoidProfile: { thc: 0, cbn: 0 },
                     lastBurpDay: 0,
                 };
             }
         },
         processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'cure' | 'burp' }>) => {
-             // FIX: Access plant through entities object.
              const plant = state.plants.entities[action.payload.plantId];
              if(plant && plant.harvestData) {
                  switch(action.payload.action) {
@@ -318,22 +317,18 @@ const simulationSlice = createSlice({
              }
         },
         toggleLight: (state, action: PayloadAction<{ plantId: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if(plant) plant.equipment.light.isOn = !plant.equipment.light.isOn;
         },
         toggleFan: (state, action: PayloadAction<{ plantId: string }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if(plant) plant.equipment.fan.isOn = !plant.equipment.fan.isOn;
         },
         setFanSpeed: (state, action: PayloadAction<{ plantId: string, speed: number }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if(plant) plant.equipment.fan.speed = action.payload.speed;
         },
         setLightHours: (state, action: PayloadAction<{ plantId: string; hours: number }>) => {
-            // FIX: Access plant through entities object.
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) {
                 plant.equipment.light.lightHours = action.payload.hours;
@@ -347,20 +342,13 @@ const simulationSlice = createSlice({
             if (payload && payload.plants.ids && payload.plants.entities) {
                 plantsAdapter.setAll(state.plants, payload.plants);
                 state.plantSlots = payload.plantSlots;
-                // FIX: Iterate over entity IDs and access entities via the dictionary for type safety.
-                // This resolves an issue where `plant` was inferred as `unknown`, causing a compile error.
-                for (const id of state.plants.ids) {
-                    const plant = state.plants.entities[id];
-                    if (plant && !plant.lastUpdated) {
-                        plant.lastUpdated = Date.now();
-                    }
-                }
             }
         });
     },
 });
 
 export const { 
+    setSimulationState,
     plantStateUpdated,
     setSelectedPlantId,
     _addPlant,

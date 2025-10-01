@@ -1,3 +1,4 @@
+
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 import { i18nInstance, getT } from '@/i18n';
@@ -9,7 +10,6 @@ import { indexedDBStorage } from './indexedDBStorage';
 
 // Import actions to listen for
 import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice';
-// FIX: Imported missing `updateSetup` and `deleteSetup` actions.
 import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip, addSetup, updateSetup, deleteSetup } from './slices/savedItemsSlice';
 import { addArchivedMentorResponse, addArchivedAdvisorResponse, clearArchives } from './slices/archivesSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice';
@@ -19,19 +19,14 @@ export const listenerMiddleware = createListenerMiddleware();
 const REDUX_STATE_KEY = 'cannaguide-redux-storage';
 
 /**
- * Listener to handle state persistence to IndexedDB with debouncing.
+ * Listener to handle state persistence to IndexedDB.
  * This is a more modern and robust approach than a manual store.subscribe().
+ * Debouncing has been removed to ensure immediate saving, preventing data loss on tab close.
  */
 listenerMiddleware.startListening({
   // Listen to all actions, but not the ones from RTK Query which are internal
   predicate: (action) => !action.type.startsWith('geminiApi/'),
   effect: async (action, listenerApi) => {
-    // Cancel any in-progress saves
-    listenerApi.cancelActiveListeners();
-    
-    // Debounce saving by 1 second
-    await listenerApi.delay(1000);
-    
     const state = listenerApi.getState() as RootState;
     try {
         const stateToSave = {

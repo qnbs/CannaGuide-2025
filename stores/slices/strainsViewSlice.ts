@@ -8,7 +8,6 @@ export interface StrainsViewState {
 }
 
 const initialState: StrainsViewState = {
-    // FIX: Use enum member for type safety.
     strainsViewTab: StrainViewTab.All,
     strainsViewMode: 'list',
     selectedStrainIds: [],
@@ -18,6 +17,9 @@ const strainsViewSlice = createSlice({
     name: 'strainsView',
     initialState,
     reducers: {
+        setStrainsViewState: (state, action: PayloadAction<StrainsViewState>) => {
+            return action.payload;
+        },
         setStrainsViewTab: (state, action: PayloadAction<StrainViewTab>) => {
             state.strainsViewTab = action.payload;
             state.selectedStrainIds = []; // Clear selection when changing tabs
@@ -54,6 +56,7 @@ const strainsViewSlice = createSlice({
 });
 
 export const {
+    setStrainsViewState,
     setStrainsViewTab,
     setStrainsViewMode,
     toggleStrainSelection,

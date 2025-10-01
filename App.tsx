@@ -1,5 +1,5 @@
+
 import React, { useEffect, useRef, lazy, Suspense } from 'react';
-// FIX: Corrected import path for types to use the '@/' alias.
 import { View } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Header } from './components/navigation/Header';
@@ -8,7 +8,8 @@ import { OnboardingModal } from './components/common/OnboardingModal';
 import { CommandPalette } from './components/common/CommandPalette';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { usePwaInstall } from './hooks/usePwaInstall';
-import { strainService } from './services/strainService';
+// FIX: Corrected import path for strainService to use the '@/' alias.
+import { strainService } from '@/services/strainService';
 import { TTSControls } from './components/common/TTSControls';
 import { ttsService } from './services/ttsService';
 import { useDocumentEffects } from './hooks/useDocumentEffects';
@@ -16,9 +17,7 @@ import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon';
 import { LogActionModalContainer } from './components/views/plants/LogActionModalContainer';
 import { DeepDiveModalContainer } from './components/views/plants/deepDive/DeepDiveModalContainer';
 import { SkeletonLoader } from './components/common/SkeletonLoader';
-// FIX: Updated to import the `runDataMigrations` thunk.
 import { runDataMigrations } from './services/migrationService';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from './stores/store';
 import { selectActiveView, selectIsCommandPaletteOpen, selectSettings } from './stores/selectors';
 import { setAppReady, setIsCommandPaletteOpen, addNotification } from './stores/slices/uiSlice';
@@ -34,7 +33,6 @@ const PlantsView = lazy(() => import('./components/views/PlantsView').then(modul
 const EquipmentView = lazy(() => import('./components/views/EquipmentView').then(module => ({ default: module.EquipmentView })));
 const KnowledgeView = lazy(() => import('./components/views/KnowledgeView').then(module => ({ default: module.KnowledgeView })));
 const SettingsView = lazy(() => import('./components/views/settings/SettingsView').then(module => ({ default: module.SettingsView })));
-// FIX: Corrected import path for HelpView component.
 const HelpView = lazy(() => import('./components/views/HelpView').then(module => ({ default: module.HelpView })));
 
 const LoadingGate: React.FC = () => {
@@ -150,12 +148,15 @@ export const App: React.FC = () => {
     useEffect(() => {
         const initializeApp = async () => {
             dispatch(setAppReady(false));
+            
+            // Hydrate and migrate persisted state before anything else.
+            await dispatch(runDataMigrations());
+            
+            // Initialize other services after state is ready.
             await strainService.init();
-            
             dispatch(initializeSimulation());
-            
-            dispatch(runDataMigrations());
             ttsService.init();
+            
             dispatch(setAppReady(true));
         };
         initializeApp();

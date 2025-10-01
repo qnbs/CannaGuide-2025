@@ -1,3 +1,4 @@
+
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
@@ -41,7 +42,7 @@ export const useCommandPalette = () => {
             { id: 'nav-help', title: t('nav.help'), icon: PhosphorIcons.Question, group: CommandGroup.Navigation, action: () => navigate(View.Help), keywords: 'faq support lexicon' },
             
             // General Actions
-            { id: 'action-add-strain', title: t('strainsView.addStrain'), icon: PhosphorIcons.PlusCircle, group: CommandGroup.General, action: () => dispatch(openAddModal()) },
+            { id: 'action-add-strain', title: t('strainsView.addStrain'), icon: PhosphorIcons.PlusCircle, group: CommandGroup.General, action: () => dispatch(openAddModal(null)) },
             { id: 'action-water-all', title: t('plantsView.summary.waterAll'), icon: PhosphorIcons.Drop, group: CommandGroup.General, action: () => dispatch(waterAllPlants()) },
 
             // Settings

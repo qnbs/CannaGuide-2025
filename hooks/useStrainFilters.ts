@@ -1,3 +1,4 @@
+
 // FIX: Add missing React import.
 import React, { useMemo, useTransition, useCallback } from 'react';
 // FIX: Import AdvancedFilterState type.
@@ -180,8 +181,8 @@ export const useStrainFilters = (
             );
 
         strains.sort((a, b) => {
-            const aVal = a[sort.key] ?? a.agronomic[sort.key as keyof Strain['agronomic']];
-            const bVal = b[sort.key] ?? b.agronomic[sort.key as keyof Strain['agronomic']];
+            const aVal = a[sort.key as keyof Strain] ?? a.agronomic[sort.key as keyof Strain['agronomic']];
+            const bVal = b[sort.key as keyof Strain] ?? b.agronomic[sort.key as keyof Strain['agronomic']];
 
             if (typeof aVal === 'string' && typeof bVal === 'string') {
                 return sort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);

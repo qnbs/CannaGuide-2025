@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Plant, MentorMessage } from '@/types';
 import { Button } from '@/components/common/Button';

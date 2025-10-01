@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { Plant, SandboxState, Experiment, Scenario } from '@/types';
+import { scenarioService } from '@/services/scenarioService';
 
 const initialState: SandboxState = {
     savedExperiments: [],
@@ -12,13 +13,12 @@ export const runComparisonScenario = createAsyncThunk<
     Omit<Experiment, 'id' | 'createdAt'>,
     { plantId: string; scenario: Scenario },
     { state: RootState }
->('sandbox/runScenario', async ({ plantId, scenario }, { getState }) => {
-    const basePlant = getState().simulation.plants[plantId];
+>('sandbox/runScenario', async ({ plantId, scenario }, { getState, rejectWithValue }) => {
+    const basePlant = getState().simulation.plants.entities[plantId];
     if (!basePlant) {
-        throw new Error('Plant not found');
+        return rejectWithValue('Plant not found');
     }
 
-    // Deep copy using structuredClone as requested
     const plantToSimulate = structuredClone(basePlant);
 
     return new Promise((resolve, reject) => {
@@ -53,7 +53,10 @@ const sandboxSlice = createSlice({
     name: 'sandbox',
     initialState,
     reducers: {
-        // Reducers for managing saved experiments can be added here if needed
+        setSandboxState: (state, action: PayloadAction<SandboxState>) => {
+            // Only hydrate persistent data
+            state.savedExperiments = action.payload.savedExperiments || [];
+        }
     },
     extraReducers: (builder) => {
         builder
@@ -76,5 +79,7 @@ const sandboxSlice = createSlice({
             });
     },
 });
+
+export const { setSandboxState } = sandboxSlice.actions;
 
 export default sandboxSlice.reducer;

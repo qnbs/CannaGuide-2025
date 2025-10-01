@@ -1,3 +1,4 @@
+
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Card } from './Card';
 import { Button } from './Button';
@@ -16,6 +17,10 @@ interface State {
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// FIX: Refactored to use class properties for state and arrow functions for methods.
+// This modernizes the component and resolves a series of confusing TypeScript errors
+// where `this.state`, `this.props`, and `this.setState` were not being correctly identified
+// on the component instance. This change removes the constructor and explicit binding.
 export class ErrorBoundary extends Component<Props, State> {
   state: State = {
     hasError: false,
@@ -27,25 +32,19 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true };
   }
 
-  // FIX: Reverted `componentDidCatch` to a standard lifecycle method. React automatically binds `this`
-  // for lifecycle methods, and using an arrow function property was unconventional, likely causing
-  // TypeScript to incorrectly infer the type of `this`. Event handlers like `handleReset` remain as
-  // arrow functions to correctly bind `this` when passed as callbacks.
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const scope = this.props.scope ? `[${this.props.scope}] ` : '';
     console.error(`Uncaught error in scope: ${scope}`, error, errorInfo);
     this.setState({ error, errorInfo });
   }
 
-  // FIX: Changed to arrow functions to correctly bind `this` as suggested by the comment on `componentDidCatch`.
-  // This resolves TypeScript errors related to `this.setState` and `this.props`.
   handleReset = () => {
     this.setState({ hasError: false, error: null, errorInfo: null });
-  }
+  };
   
   handleReload = () => {
     window.location.reload();
-  }
+  };
 
   render() {
     if (this.state.hasError) {

@@ -16,12 +16,21 @@
     "react-redux": "^9.1.2",
     "reselect": "^5.1.1"
   },
+  "devDependencies": {
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.7"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
   "prettier": {
-    "semi": true,
+    "semi": false,
     "singleQuote": true,
     "trailingComma": "es5",
-    "printWidth": 100,
-    "tabWidth": 4,
-    "jsxSingleQuote": true
+    "printWidth": 80,
+    "tabWidth": 2
   }
 }

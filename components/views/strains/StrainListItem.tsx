@@ -61,7 +61,8 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
             </div>
             <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                    {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" title={t('strainsView.tabs.myStrains')} />}
+                    {/* FIX: The `title` prop is not valid on PhosphorIcons. Wrapped with a span to provide the tooltip. */}
+                    {isUserStrain && <span title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
                     <p className="font-bold text-slate-100 truncate">{strain.name}</p>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-slate-400 sm:hidden mt-1">

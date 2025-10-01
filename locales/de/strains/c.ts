@@ -1,5 +1,5 @@
+
 import type { StrainTranslationData } from '@/types';
-import { createStrainObject } from '@/services/strainFactory';
 
 export const strains: Record<string, StrainTranslationData> = {
     "cactus-breath": {

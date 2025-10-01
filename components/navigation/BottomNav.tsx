@@ -1,11 +1,8 @@
 import React from 'react';
-// FIX: Corrected import path for types to use the '@/' alias.
 import { View } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-// FIX: Corrected import to get the action creator from the uiSlice.
 import { setActiveView } from '@/stores/slices/uiSlice';
 import { selectActiveView } from '@/stores/selectors';
 
@@ -35,24 +32,21 @@ export const BottomNav: React.FC = () => {
     return (
         <nav className="fixed bottom-0 left-0 right-0 sm:relative glass-pane border-t sm:border-t-0 flex-shrink-0 z-20 pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-around max-w-5xl mx-auto">
-                {mainNavViews.map((viewValue) => {
-                    const isActive = activeView === viewValue;
-                    return (
-                        <button
-                            key={viewValue}
-                            onClick={() => dispatch(setActiveView(viewValue))}
-                            className={`relative flex flex-col items-center justify-center w-full py-2 transition-all duration-300 rounded-lg ${
-                                isActive ? 'text-primary-300 bg-primary-500/10' : 'text-slate-400 hover:text-primary-300 hover:bg-slate-700/50'
-                            }`}
-                        >
-                            <div className="w-6 h-6">{navIcons[viewValue]}</div>
-                            <span className="text-xs font-semibold relative">
-                                {navLabels[viewValue]}
-                                <span className={`absolute -bottom-1.5 left-1/2 -translate-x-1/2 h-1 w-4 rounded-full bg-primary-400 transition-all duration-300 ${isActive ? 'opacity-100' : 'opacity-0'}`}></span>
-                            </span>
-                        </button>
-                    );
-                })}
+                {mainNavViews.map((view) => (
+                    <button
+                        key={view}
+                        onClick={() => dispatch(setActiveView(view))}
+                        className={`flex-1 flex flex-col items-center justify-center py-2 px-1 text-center transition-colors duration-200 ${
+                            activeView === view
+                                ? 'text-primary-400'
+                                : 'text-slate-400 hover:text-primary-300'
+                        }`}
+                        aria-current={activeView === view ? 'page' : undefined}
+                    >
+                        <div className="w-6 h-6 mb-1">{navIcons[view]}</div>
+                        <span className="text-xs">{navLabels[view]}</span>
+                    </button>
+                ))}
             </div>
         </nav>
     );

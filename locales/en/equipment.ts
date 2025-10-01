@@ -1,3 +1,4 @@
+
 export const equipmentView = {
   tabs: {
     configurator: 'Setup Configurator',

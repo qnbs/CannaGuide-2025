@@ -3,6 +3,7 @@ import { getT } from '../../i18n';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { indexedDBStorage } from '../indexedDBStorage';
+import { APP_VERSION } from '@/services/migrationLogic';
 
 const detectedLang = navigator.language.split('-')[0];
 const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en';
@@ -56,39 +57,17 @@ export const defaultSettings: AppSettings = {
     uiDensity: 'comfortable',
     quietHours: { enabled: false, start: '22:00', end: '08:00' },
     tts: { enabled: true, rate: 1, pitch: 1, voiceName: null },
-};
-
-const isObject = (item: unknown): item is Record<string, unknown> => {
-    return !!item && typeof item === 'object' && !Array.isArray(item);
-};
-
-export const mergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
-    const output = JSON.parse(JSON.stringify(defaultSettings));
-    function deepMerge(target: Record<string, any>, source: Record<string, any>) {
-        for (const key of Object.keys(source)) {
-            const sourceValue = source[key];
-            if (isObject(sourceValue)) {
-                if (!target[key] || !isObject(target[key])) {
-                    target[key] = {};
-                }
-                deepMerge(target[key], sourceValue);
-            } else if (sourceValue !== undefined) {
-                target[key] = sourceValue;
-            }
-        }
-    }
-    if (isObject(persisted)) {
-        deepMerge(output, persisted);
-    }
-    return output;
+    showArchivedInPlantsView: true,
 };
 
 export interface SettingsState {
     settings: AppSettings;
+    version: number;
 }
 
 const initialState: SettingsState = {
     settings: defaultSettings,
+    version: APP_VERSION,
 };
 
 export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
@@ -106,7 +85,6 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
         a.click();
         URL.revokeObjectURL(url);
         dispatch(setSetting({ path: 'lastBackupTimestamp', value: Date.now() }));
-        // addNotification needs to be dispatched from component
     }
 );
 
@@ -115,7 +93,7 @@ export const resetAllData = createAsyncThunk<void, void, { state: RootState }>(
     async (_, { getState }) => {
         const t = getT();
         if (window.confirm(t('settingsView.data.resetAllConfirm'))) {
-            await indexedDBStorage.removeItem('cannaguide-redux-storage'); // Assuming this is the key used for redux persist
+            await indexedDBStorage.removeItem('cannaguide-redux-storage');
             window.location.reload();
         }
     }
@@ -125,6 +103,10 @@ const settingsSlice = createSlice({
     name: 'settings',
     initialState,
     reducers: {
+        setSettingsState: (state, action: PayloadAction<SettingsState>) => {
+            state.settings = action.payload.settings;
+            state.version = action.payload.version;
+        },
         setSettings: (state, action: PayloadAction<AppSettings>) => {
             state.settings = action.payload;
         },
@@ -191,7 +173,7 @@ const settingsSlice = createSlice({
     },
 });
 
-export const { setSetting, setSettings, toggleSetting, setSimulationProfile } =
+export const { setSettingsState, setSetting, setSettings, toggleSetting, setSimulationProfile } =
     settingsSlice.actions;
 
 export default settingsSlice.reducer;

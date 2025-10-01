@@ -1,48 +1,38 @@
-import { Strain, StrainType } from '@/types';
 
-// Diese Funktion nimmt ein beliebiges Sorten-Objekt entgegen
-// und garantiert, dass das Ergebnis dem neuesten Schema entspricht.
+import { Strain } from '@/types';
+
+// This factory ensures that every strain object has a consistent shape and default values.
 export const createStrainObject = (data: Partial<Strain>): Strain => {
-  // 1. Setze sichere Standardwerte für alle obligatorischen Felder
-  const defaults: Strain = {
-    id: `unknown-${Date.now()}`,
-    name: 'Unknown Strain',
-    type: StrainType.Hybrid,
-    thc: 0,
-    cbd: 0,
-    floweringTime: 8,
+  const nameHash = (data.name || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  const defaults: Omit<Strain, 'id' | 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime'> = {
+    floweringType: 'Photoperiod',
     agronomic: {
       difficulty: 'Medium',
       yield: 'Medium',
       height: 'Medium',
+      ...data.agronomic,
     },
-    // 2. Initialisiere die neuen, für die Simulation kritischen Felder
-    floweringType: 'Photoperiod', // Standard-Annahme
     geneticModifiers: {
-      pestResistance: 1.0,
-      nutrientUptakeRate: 1.0,
-      stressTolerance: 1.0,
-      rue: 1.0, // Default Radiation Use Efficiency
+      pestResistance: 0.8 + ((nameHash % 40) / 100), // Range 0.8 to 1.2
+      nutrientUptakeRate: 0.8 + (((nameHash * 3) % 40) / 100), // Range 0.8 to 1.2
+      stressTolerance: 0.8 + (((nameHash * 7) % 40) / 100), // Range 0.8 to 1.2
+      rue: 0.8 + (((nameHash * 5) % 40) / 100), // Radiation Use Efficiency, Range 0.8 to 1.2
     },
   };
 
-  // 3. Überschreibe die Standards mit den übergebenen Daten (inkl. verschachtelter Objekte)
-  const merged = { 
-      ...defaults, 
-      ...data, 
-      agronomic: { ...defaults.agronomic, ...data.agronomic },
-      geneticModifiers: { ...defaults.geneticModifiers, ...data.geneticModifiers },
-  };
-
-  // 4. Intelligente Logik: Leite 'floweringType' ab, falls nicht vorhanden
-  if (!data.floweringType && data.typeDetails?.toLowerCase().includes('autoflower')) {
-    merged.floweringType = 'Autoflower';
-  }
-  
-  // 5. Validierungs-Logik
-  if (!data.id || !data.name) {
-    console.warn(`[StrainFactory] Strain created with missing id or name.`, data);
+  if (!data.id || !data.name || !data.type || data.thc === undefined || data.cbd === undefined || data.floweringTime === undefined) {
+    throw new Error(`Strain factory is missing required fields for: ${data.name || 'Unknown'}`);
   }
 
-  return merged as Strain;
+  return {
+    ...defaults,
+    ...data,
+    id: data.id,
+    name: data.name,
+    type: data.type,
+    thc: data.thc,
+    cbd: data.cbd,
+    floweringTime: data.floweringTime,
+  } as Strain;
 };

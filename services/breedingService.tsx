@@ -1,3 +1,4 @@
+
 import { Strain, Seed, StrainType } from '@/types';
 
 class BreedingService {

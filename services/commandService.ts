@@ -38,7 +38,7 @@ export const groupAndSortCommands = (commands: Command[]): Command[] => {
                 group: groupName,
                 isHeader: true,
                 action: () => {},
-                icon: React.Fragment,
+                icon: () => React.createElement('div'),
             });
             result.push(...grouped[groupName]);
         }

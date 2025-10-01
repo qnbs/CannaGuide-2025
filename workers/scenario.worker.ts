@@ -1,5 +1,6 @@
-import { Plant, Scenario, ScenarioAction } from '../types';
-import { simulationService } from '../services/plantSimulationService';
+
+import { Plant, Scenario, ScenarioAction } from '@/types';
+import { simulationService } from '@/services/plantSimulationService';
 
 // This is a simplified version of the main simulation service for the worker
 const applyAction = (plant: Plant, action: ScenarioAction): Plant => {

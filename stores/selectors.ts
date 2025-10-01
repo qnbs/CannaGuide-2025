@@ -1,12 +1,14 @@
+
+
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from './store';
 // FIX: Removed SavedItemsState from here as it's not in the global types file.
-import { Plant, ArchivedAdvisorResponse, Experiment, UserStrainsState, SimulationState, Strain } from '../types';
+import { Plant, ArchivedAdvisorResponse, Experiment, UserStrainsState, SimulationState, Strain } from '@/types';
 // FIX: Imported SavedItemsState from its slice definition file.
 import { SavedItemsState } from './slices/savedItemsSlice';
 
 // --- Base Selectors (for each slice) ---
-const selectUi = (state: RootState) => state.ui;
+export const selectUi = (state: RootState) => state.ui;
 const selectSettingsState = (state: RootState) => state.settings;
 export const selectSavedItems = (state: RootState) => state.savedItems;
 const selectUserStrainsState = (state: RootState) => state.userStrains;
@@ -28,7 +30,7 @@ import { savedExportsAdapter, savedSetupsAdapter, savedStrainTipsAdapter } from 
 import { plantsAdapter } from './slices/simulationSlice';
 
 // --- UI Selectors ---
-export { selectUi };
+// FIX: Removed duplicate export of `selectUi`. It is already exported when defined.
 export const selectActiveView = createSelector([selectUi], (ui) => ui.activeView);
 export const selectIsCommandPaletteOpen = createSelector([selectUi], (ui) => ui.isCommandPaletteOpen);
 export const selectHighlightedElement = createSelector([selectUi], (ui) => ui.highlightedElement);

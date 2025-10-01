@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Recommendation, SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
+import { Recommendation, SavedSetup, RecommendationCategory, RecommendationItem, PlantCount } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -10,7 +10,8 @@ interface SetupResultsProps {
     recommendation: Recommendation | null;
     isLoading: boolean;
     error: string | null;
-    sourceDetails: { area: string; budget: string; growStyle: string; };
+    // FIX: Add missing `plantCount` property to the `sourceDetails` prop type.
+    sourceDetails: { plantCount: PlantCount; area: string; budget: string; growStyle: string; };
     startOver: () => void;
     handleGenerate: () => void;
     onSaveSetup: (setup: Omit<SavedSetup, 'id' | 'createdAt'>) => void;

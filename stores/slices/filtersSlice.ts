@@ -32,6 +32,9 @@ const filtersSlice = createSlice({
     name: 'filters',
     initialState,
     reducers: {
+        setFiltersState: (state, action: PayloadAction<FiltersState>) => {
+            return action.payload;
+        },
         setSearchTerm: (state, action: PayloadAction<string>) => {
             state.searchTerm = action.payload;
         },
@@ -64,6 +67,7 @@ const filtersSlice = createSlice({
 });
 
 export const {
+    setFiltersState,
     setSearchTerm,
     toggleTypeFilter,
     setShowFavoritesOnly,

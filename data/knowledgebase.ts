@@ -1,3 +1,4 @@
+
 import { KnowledgeArticle, PlantStage, ProblemType } from '@/types';
 
 export const knowledgeBase: KnowledgeArticle[] = [

@@ -1,3 +1,4 @@
+
 import { Strain, StrainType } from '@/types';
 import { createStrainObject } from '@/services/strainFactory';
 

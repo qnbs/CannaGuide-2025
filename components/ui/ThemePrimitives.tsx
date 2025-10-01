@@ -1,3 +1,4 @@
+
 import React, { forwardRef, memo, useId } from 'react';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 
@@ -90,7 +91,7 @@ export const Input = memo(
 );
 
 type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
-    options: { value: string; label: string }[];
+    options: { value: string | number; label: string }[];
 };
 
 export const Select = memo(

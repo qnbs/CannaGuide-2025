@@ -176,9 +176,14 @@ export const strainsView = {
       profile: 'Profil',
       notes: 'Notizen',
       aiTips: 'KI-Tipps',
+      images: 'Bilder',
     },
     cannabinoidProfile: 'Cannabinoid-Profil',
     aromaProfile: 'Aroma- & Terpenprofil',
+    images: {
+        noImagesTitle: 'Noch keine Bilder',
+        noImagesSubtitle: 'Generiere KI-Tipps mit Bildern, um diese Galerie zu füllen.',
+    },
   },
   exportsManager: {
     createExport: 'Neuen Export erstellen',

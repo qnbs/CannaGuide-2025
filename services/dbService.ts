@@ -1,3 +1,4 @@
+
 import { StoredImageData, Strain } from '@/types';
 
 const DB_NAME = 'CannaGuideDB';

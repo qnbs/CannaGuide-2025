@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 // FIX: Corrected import path for types to use the '@/' alias and import NotificationType.

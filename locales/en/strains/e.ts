@@ -1,9 +1,6 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-  "early-girl": {
-    "description": "One of Sensi Seeds' original outdoor strains, bred for reliability and fast flowering in cooler climates. It produces a mild, pleasant, and relaxing body buzz with a subtle happy uplift. Its compact size and resilience make it a favorite for beginners."
-  },
   "early-maroc": {
     "description": "A sativa-dominant strain known for its extremely fast outdoor flowering time. It offers an uplifting, clear-headed effect and a sweet, earthy aroma. Ideal for growing in cooler climates.",
   },
@@ -33,12 +30,6 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "emperor-cookies": {
     "description": "A potent hybrid with a sweet, earthy, and slightly spicy aroma. The effect is strong, euphoric, and relaxing, ideal for experienced consumers.",
-  },
-  "erdpurt": {
-    "description": "A robust and fast-flowering indica bred by ACE Seeds for cold and humid climates. It combines the strawberry aroma of Erdbeer with the resilience of a Swiss landrace. The effect is moderate, calming, and functional, with a good CBD content making it suitable for medicinal users."
-  },
-  "ethos-glue": {
-    "description": "Ethos Glue, also known as Ethos GG4, is a potent backcross of the legendary Gorilla Glue #4. It amplifies the best traits of its parent, offering an incredibly sticky resin production and a powerful, pungent aroma of diesel and chocolate. The effect is intensely euphoric and relaxing, delivering a heavy body stone that glues you to the couch."
   },
   "ewok": {
     "description": "An indica-dominant strain with a fruity, citrusy aroma. The effect is relaxing and calming, ideal for relieving stress and anxiety.",

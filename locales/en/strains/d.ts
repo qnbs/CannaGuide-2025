@@ -134,7 +134,11 @@ export const strains: Record<string, StrainTranslationData> = {
     "heightDetails": { "indoor": "Tall", "outdoor": "Tall (up to 2.5 m)" }
   },
   "dream-star": {
-    "description": "A potent hybrid that balances the sweet berry flavors of Blue Dream with the gassy, earthy notes of Stardawg. It delivers a relaxing and euphoric high, ideal for the late afternoon or evening, providing a happy mental state while soothing the body."
+    "description": "A balanced hybrid with a sweet, fruity aroma. The effect is relaxing and euphoric, ideal for the late afternoon or evening.",
+    "typeDetails": "Hybrid 50% / 50%",
+    "genetics": "Blue Dream x Stardawg",
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "~700 g/plant" },
+    "heightDetails": { "indoor": "Medium", "outdoor": "Medium (up to 2 m)" }
   },
   "duct-tape": {
     "description": "Duct Tape is a potent hybrid strain named for its glue-like and diesel aroma, complemented by notes of chocolate and earth. The effect is strong and balanced, beginning with a cerebral, creative rush that slowly transitions into an intense body relaxation without completely sedating the user."

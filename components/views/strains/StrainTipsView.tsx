@@ -61,8 +61,10 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-    const handleUpdateSave = (updatedTip: SavedStrainTip) => {
-        updateTip(updatedTip);
+    const handleUpdateSave = (updated: { id: string, title: string, content: string }) => {
+        if (!editingTip) return;
+        const updatedTipData: SavedStrainTip = { ...editingTip, title: updated.title, content: updated.content };
+        updateTip(updatedTipData);
         setEditingTip(null);
     };
     

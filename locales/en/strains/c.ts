@@ -68,9 +68,6 @@ export const strains: Record<string, StrainTranslationData> = {
     "cereal-milk": {
         "description": "A balanced hybrid with a unique aroma reminiscent of sweet milk and ice cream. The effect is calming, creative, and provides a feeling of well-being.",
     },
-    "champagne": {
-        "description": "Champagne, also known as Champagne Kush, is a celebratory indica-dominant hybrid. It provides a bubbly, euphoric, and sociable high that gently relaxes the body without heavy sedation. Its aroma is reminiscent of champagne, with sweet grape and earthy undertones."
-    },
     "charlie-sheen": {
         "description": "A potent hybrid that combines the best qualities of its parents. It offers a strong, euphoric, and simultaneously relaxing effect.",
     },
@@ -98,9 +95,6 @@ export const strains: Record<string, StrainTranslationData> = {
     "chemdawg-91": {
         "description": "One of the original and most potent phenotypes of the Chemdawg line. Known for its extremely pungent, diesel-like aroma and a strong, cerebral effect that transitions into deep body relaxation. A legendary strain that served as a parent for many famous hybrids like OG Kush and Sour Diesel."
     },
-    "chemdawg-sour-diesel": {
-        "description": "Chemdawg Sour Diesel, often shortened to Chem Sour, is a powerhouse sativa-dominant hybrid that combines two legendary strains. It delivers a potent, fast-acting cerebral rush that is energizing and euphoric, making it a great choice for daytime use. Its aroma is an intense and classic blend of pungent diesel, sour citrus, and earth."
-    },
     "chemdog-millionaire": {
         "description": "A potent hybrid with a lemony, diesel-like, and earthy aroma. Chemdog Millionaire delivers a strong, euphoric, and relaxing high that is perfect for unwinding.",
     },
@@ -112,9 +106,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "cherry-pie": {
         "description": "An indica-dominant hybrid with a sweet, cherry-like, and earthy aroma. Cherry Pie delivers a relaxing and happy high that is perfect for unwinding.",
-    },
-    "chimera-2": {
-        "description": "Chimera #2 is a potent and flavorful hybrid bred by BeLeaf Cannabis. It's known for its complex and unique terpene profile, often described as a mix of port wine, orange Tic-Tacs, and butterscotch. The effects are typically strong and balanced, providing a euphoric cerebral high coupled with deep body relaxation."
     },
     "chiquita-banana": {
         "description": "A potent hybrid with a sweet, fruity banana aroma. Chiquita Banana delivers a strong, euphoric, and relaxing high that is perfect for unwinding.",
@@ -142,15 +133,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "congo": {
         "description": "A pure Sativa with a sweet, fruity, and earthy aroma. Congo delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
-    },
-    "congo-3": {
-        "description": "Congo #3 is a select phenotype of a pure African sativa landrace, known for its clear-headed, energetic, and long-lasting high. It provides a burst of creativity and euphoria without the anxiety often associated with potent sativas. The aroma is a complex mix of fruity, spicy, and earthy notes."
-    },
-    "congo-pointe-noire": {
-        "description": "Congo Pointe Noire is a rare and pure sativa landrace from the Republic of the Congo. It is celebrated for its powerful, stimulating, and almost psychedelic cerebral effects. This strain is for experienced sativa lovers seeking an intense and long-lasting creative buzz. Its aroma is classic old-school haze, with woody, spicy, and incense-like notes."
-    },
-    "cookie-monster": {
-        "description": "Cookie Monster is a potent indica-dominant hybrid that crosses Girl Scout Cookies with OG Kush. It's known for its powerful, relaxing effects that can easily lead to a state of deep sedation, making it ideal for nighttime use. The aroma is a sweet blend of mint and woody earth, true to its GSC heritage."
     },
     "cookies-and-cream": {
         "description": "A balanced hybrid with a sweet, vanilla-like, and nutty aroma. Cookies and Cream delivers a strong, euphoric, and relaxing high that is suitable for various occasions.",

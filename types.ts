@@ -1,3 +1,5 @@
+
+
 // FIX: Add React to the scope for React.FC type usage. This resolves cascading type errors in other files.
 import type React from 'react'
 import type { EntityState } from '@reduxjs/toolkit'
@@ -63,7 +65,6 @@ export enum StrainViewTab {
   Favorites = 'favorites',
   Exports = 'exports',
   Tips = 'tips',
-  Genealogy = 'genealogy',
 }
 
 export enum EquipmentViewTab {
@@ -592,7 +593,6 @@ export interface TTSSettings {
 export interface GenealogyNode {
     name: string;
     id: string;
-    type?: StrainType;
     children?: GenealogyNode[];
 }
 
@@ -622,10 +622,4 @@ export interface SandboxState {
   savedExperiments: Experiment[]
   isLoading: boolean
   error: string | null
-}
-
-export interface GenealogyState {
-    computedTrees: Record<string, GenealogyNode>;
-    isLoading: boolean;
-    error: string | null;
 }

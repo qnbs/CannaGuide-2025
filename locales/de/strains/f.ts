@@ -10,14 +10,8 @@ export const strains: Record<string, StrainTranslationData> = {
   "fire-og": {
     "description": "Eine potente indica-dominante Sorte mit einem erdigen, kiefernartigen und zitrusartigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend, ideal für den Abendgebrauch.",
   },
-  "florida-kush": {
-    "description": "Eine potente Indica-dominante Hybride, die für ihre klassischen Kush-Eigenschaften bekannt ist. Sie liefert ein starkes, entspannendes Körper-High, das sich hervorragend zum Stressabbau und für den abendlichen Gebrauch eignet. Das Aroma ist eine scharfe Mischung aus Erde, Zitrus und Kräuternoten, typisch für ihre Florida OG-Abstammung."
-  },
   "forbidden-fruit": {
     "description": "Eine indica-dominante Sorte mit einem exotischen, fruchtigen Aroma von Kirschen, Passionsfrucht und Zitrusfrüchten. Die Wirkung ist stark, entspannend und euphorisch.",
-  },
-  "forum-cut-cookies": {
-    "description": "Der legendäre, nur als Klon erhältliche Schnitt von Girl Scout Cookies, der den Cookies-Hype auslöste. Sie ist bekannt für ihre unglaubliche Potenz, dichte Knospenstruktur und ein komplexes Aroma aus süßer, nussiger Erde mit minzigen Untertönen. Die Wirkung ist ein starkes, euphorisches zerebrales High, gefolgt von einem entspannenden Körperrausch."
   },
   "frankenstein": {
     "description": "Eine indica-dominante Sorte mit einem erdigen, zitrusartigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch."

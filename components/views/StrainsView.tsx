@@ -26,7 +26,6 @@ import { ExportsManagerView } from './strains/ExportsManagerView';
 import { StrainTipsView } from './strains/StrainTipsView';
 import { Button } from '@/components/common/Button';
 import { BulkActionsBar } from './strains/BulkActionsBar';
-import { GenealogyView } from './strains/GenealogyView';
 
 // FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
@@ -365,7 +364,6 @@ const StrainsViewComponent: React.FC = () => {
             label: t('strainsView.tabs.tips', { count: savedTips.length }),
             icon: <PhosphorIcons.LightbulbFilament />,
         },
-        { id: StrainViewTab.Genealogy, label: t('strainsView.tabs.genealogy'), icon: <PhosphorIcons.TreeStructure /> },
     ];
 
     const showToolbar =
@@ -440,8 +438,7 @@ const StrainsViewComponent: React.FC = () => {
                     onRemoveFromFavorites={handleBulkRemoveFromFavorites}
                 />
             )}
-            
-            {activeTab === StrainViewTab.Genealogy && <GenealogyView />}
+
             {activeTab === StrainViewTab.Exports && (
                 <ExportsManagerView
                     savedExports={savedExports}

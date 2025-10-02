@@ -1,24 +1,6 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-  "gelato-25": {
-    "description": "Gelato #25, auch bekannt als 'Barry Bonds', ist ein berühmter Phänotyp der Gelato-Familie. Diese indica-dominante Hybride bietet ein entspannendes und euphorisches High, begleitet von einem süßen, fruchtigen und dessertartigen Aroma mit erdigen Untertönen. Sie wird für ihre potente Wirkung geschätzt, die den Körper beruhigt, während der Geist glücklich und kreativ bleibt."
-  },
-  "gelato-42": {
-    "description": "Als ausgewogener Hybrid-Phänotyp aus der Gelato-Linie ist Gelato #42 für seine erhebende und entspannende Wirkung bekannt. Er zeichnet sich durch ein süßes und erdiges Aroma mit Noten von Zitrus und Vanille aus, was einen cremigen Rauch ergibt. Das High ist typischerweise fröhlich und kreativ, was es für verschiedene Anlässe geeignet macht."
-  },
-  "gelato-45": {
-    "description": "Auch bekannt als 'Michael Jordan', ist Gelato #45 ein beliebter indica-dominanter Phänotyp der Gelato-Sorte. Er wird für seine starke Euphorie und Entspannung gefeiert, was ihn zu einer großartigen Wahl für das Ende des Tages macht. Das Aroma ist eine süße und erdige Mischung mit Noten von Zitrus, Beeren und Lavendel."
-  },
-  "gooberry": {
-    "description": "Gooberry ist eine potente indica-dominante Hybride, eine Kreuzung aus Afgoo und Blueberry. Sie ist berühmt für ihre starke sedierende Wirkung, die oft zu einem schläfrigen und tief entspannten Zustand führt, was sie zu einer erstklassigen Wahl zur Bekämpfung von Schlaflosigkeit und Schmerzen macht. Das Aroma ist eine köstliche Mischung aus süßen Beeren und nussiger Erde."
-  },
-  "green-ribbon-bx": {
-    "description": "Als sativa-dominante Rückkreuzung der ursprünglichen Green Ribbon ist diese Sorte für ihre energetische und erhebende Wirkung bekannt. Sie sorgt für ein klares, fokussiertes High, das sich hervorragend für die Produktivität und Kreativität am Tag eignet. Das Aroma ist eine angenehme Mischung aus süßen Blumen und scharfer Kiefer."
-  },
-  "green-spirit": {
-    "description": "Green Spirit ist eine ausgewogene Hybride, die die massiven Erträge von Big Bud mit der scharfen Kraft von Skunk #1 kombiniert. Sie liefert eine glückliche, euphorische und entspannende Wirkung, die nicht überwältigend ist, was sie zu einer guten Allround-Sorte macht. Sie hat ein klassisches Skunk-Aroma mit süßen und zitrusartigen Untertönen und ist eine der Elternsorten von Incredible Bulk."
-  },
   "gupta-kush": {
     "description": "Eine potente Indica und ein Schlüssel-Elternteil für mehrere moderne Kush-Sorten. Liefert eine schwere, klassische OG-Erfahrung mit erdigen, kiefernartigen Noten. Ideal für tiefe Entspannung."
   },

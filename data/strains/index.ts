@@ -35,9 +35,6 @@ import { strains as newParents5 } from './temp-additions-parents-5';
 import { strains as newParents6 } from './temp-additions-parents-6';
 import { strains as newParents7 } from './temp-additions-parents-7';
 import { strains as newParents8 } from './temp-additions-parents-8';
-import { strains as newParents9 } from './temp-additions-parents-9';
-import { strains as newParents10 } from './temp-additions-parents-10';
-import { strains as newParents11 } from './temp-additions-parents-11';
 
 // All imported strain arrays now correctly export `Strain[]`, fully validated by the factory.
 // The filter provides an extra layer of safety against any malformed or incomplete objects.
@@ -77,10 +74,7 @@ const allStrains: Strain[] = [
     ...newParents5,
     ...newParents6,
     ...newParents7,
-    ...newParents8,
-    ...newParents9,
-    ...newParents10,
-    ...newParents11
+    ...newParents8
 ].filter(s => s && s.id && s.name && s.floweringType); // Filter out potentially incomplete objects
 
 // Overwrite the factory's default genetic modifiers with pseudo-random, deterministic

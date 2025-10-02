@@ -42,13 +42,6 @@ export const strainsView = {
     exports_other: '{{count}} Exporte',
     tips_one: '1 Tipp',
     tips_other: '{{count}} Tipps',
-    genealogy: 'Stammbaum',
-  },
-  genealogy: {
-    selectStrain: 'Wähle eine Sorte aus, um ihren Stammbaum zu erstellen.',
-    searchPlaceholder: 'Suche nach einer Sorte...',
-    selectAnother: 'Andere Sorte wählen',
-    buildingTree: 'Stammbaum wird erstellt...',
   },
   filters: {
     thcMax: 'THC',

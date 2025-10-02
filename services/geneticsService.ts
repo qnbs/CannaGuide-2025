@@ -2,26 +2,11 @@ import { Strain, GenealogyNode } from '@/types';
 
 class GeneticsService {
 
-    private parseParents(genetics: string): string[] {
-        // Remove content within parentheses that doesn't contain 'x' (like phenotype info)
-        let cleanGenetics = genetics.replace(/\(([^)]*?)\)/g, (match) => {
-            return match.toLowerCase().includes(' x ') ? match : '';
-        });
-
-        // Remove all parentheses
-        cleanGenetics = cleanGenetics.replace(/[()]/g, '');
-
-        // Split by 'x' and trim whitespace
-        return cleanGenetics.split(/\s*x\s*/i)
-            .map(p => p.trim())
-            .filter(p => p && p.toLowerCase() !== 'unknown' && p.toLowerCase() !== 'clone-only' && p.toLowerCase() !== 'phenotype');
-    }
-
     private findAndBuildNode(
         strainName: string,
         allStrains: Strain[],
         visited: Set<string>
-    ): GenealogyNode | null {
+    ): GenealogyNode {
         // Find the strain in the master list, case-insensitive
         const strain = allStrains.find(s => s.name.toLowerCase() === strainName.toLowerCase());
 
@@ -41,20 +26,24 @@ class GeneticsService {
             };
         }
 
-        // Add current strain to the visited set for this path
-        const newVisited = new Set(visited);
-        newVisited.add(strain.id);
-
         // Create the node for the current strain
         const node: GenealogyNode = {
             name: strain.name,
             id: strain.id,
-            type: strain.type,
         };
 
+        // Add current strain to the visited set for this path
+        const newVisited = new Set(visited);
+        newVisited.add(strain.id);
+
         // Recursive step: Parse genetics and find children
-        if (strain.genetics) {
-            const parentNames = this.parseParents(strain.genetics);
+        const genetics = strain.genetics;
+        if (genetics && genetics.toLowerCase().includes(' x ')) {
+            const parentNames = genetics
+                .replace(/[()]/g, '') // Remove parentheses
+                .split(/\s*x\s*/i)     // Split by 'x'
+                .map(p => p.trim())
+                .filter(p => p.length > 0 && p.toLowerCase() !== 'unknown' && p.toLowerCase() !== 'clone-only');
 
             if (parentNames.length > 0) {
                 node.children = parentNames

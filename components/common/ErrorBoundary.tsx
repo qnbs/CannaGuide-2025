@@ -17,8 +17,10 @@ interface State {
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 export class ErrorBoundary extends Component<Props, State> {
-  // FIX: Reverted to class property initialization for state. The constructor was causing issues with 'this' context, leading to compilation errors where `this.state` and `this.props` were not recognized.
-  public state: State = {
+  // FIX: Reverted to class property syntax for state and arrow functions for methods.
+  // This is a more modern and less error-prone way to define state and handlers in React class components,
+  // and it resolves the type inference issues with `this.state` and `this.props`.
+  state: State = {
     hasError: false,
     error: null,
     errorInfo: null,

@@ -10,14 +10,8 @@ export const strains: Record<string, StrainTranslationData> = {
   "fire-og": {
     "description": "A potent indica-dominant strain with an earthy, piney, and citrusy aroma. The effect is strong, relaxing, and long-lasting, ideal for evening use.",
   },
-  "florida-kush": {
-    "description": "A potent indica-dominant hybrid known for its classic Kush characteristics. It delivers a strong, relaxing body high that is excellent for stress relief and evening use. The aroma is a pungent mix of earth, citrus, and herbal notes, typical of its Florida OG lineage."
-  },
   "forbidden-fruit": {
     "description": "An indica-dominant strain with an exotic, fruity aroma of cherry, passionfruit, and citrus. The effect is strong, relaxing, and euphoric.",
-  },
-  "forum-cut-cookies": {
-    "description": "The legendary, clone-only cut of Girl Scout Cookies that started the Cookies craze. It's known for its incredible potency, dense bud structure, and a complex aroma of sweet, nutty earth with minty undertones. The effect is a powerful, euphoric cerebral high followed by a relaxing body buzz."
   },
   "frankenstein": {
     "description": "An indica-dominant strain with an earthy, citrusy aroma. The effect is strong, relaxing, and sedating, ideal for evening use."

@@ -1,5 +1,5 @@
+
 import React, { memo } from 'react';
-// FIX: Corrected import path for PlantStage to use the '@/' alias.
 import { PlantStage } from '@/types';
 
 interface PlantVisualProps {

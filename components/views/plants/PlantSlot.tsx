@@ -1,5 +1,5 @@
+
 import React, { memo } from 'react';
-// FIX: Update import paths to use alias
 import { Plant, PlantStage } from '@/types';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';

@@ -1,5 +1,5 @@
+
 import React, { useState, memo, useEffect } from 'react';
-// FIX: Corrected import path for types to use the '@/' alias.
 import { Plant, PlantStage, ModalType, Task, TaskPriority } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
@@ -11,7 +11,6 @@ import { TasksTab } from './detailedPlantViewTabs/TasksTab';
 import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
 import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice';
 import { openActionModal as openActionModalAction, openDiagnosticsModal } from '@/stores/slices/uiSlice';

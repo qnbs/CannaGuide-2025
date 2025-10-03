@@ -70,6 +70,7 @@ export enum StrainViewTab {
     Favorites = 'favorites',
     Exports = 'exports',
     Tips = 'tips',
+    Genealogy = 'genealogy',
 }
 
 export enum EquipmentViewTab {

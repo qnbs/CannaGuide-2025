@@ -1,5 +1,4 @@
 import React, { memo } from 'react';
-// FIX: Update import paths to use alias
 import { PlantStage } from '@/types';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { STAGES_ORDER } from '@/constants';

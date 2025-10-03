@@ -64,7 +64,7 @@ type InputProps =
 export const Input = memo(
     forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
         ({ as = 'input', className, ...props }, ref) => {
-            const commonClassName = `w-full input-base ${className}`;
+            const commonClassName = `w-full input-base ${className || ''}`;
 
             if (as === 'textarea') {
                 return (
@@ -94,7 +94,7 @@ type SelectProps = React.SelectHTMLAttributes<HTMLSelectElement> & {
 export const Select = memo(
     forwardRef<HTMLSelectElement, SelectProps>(({ options, className, ...props }, ref) => {
         return (
-            <select {...props} ref={ref} className={`w-full select-input ${className}`}>
+            <select {...props} ref={ref} className={`w-full select-input ${className || ''}`}>
                 {options.map((opt) => (
                     <option key={opt.value} value={opt.value}>
                         {opt.label}

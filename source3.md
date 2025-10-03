@@ -1,8 +1,165 @@
+# CannaGuide 2025 - Kompletter Quellcode (Teil 4)
+
+Dieser Teil enthält den gesamten Code für das State Management mit Redux Toolkit.
+
+---
+
+## 5. State Management (`stores/`)
+
+Dieser Ordner enthält die gesamte Logik für das globale Zustandsmanagement der Anwendung mithilfe von Redux Toolkit.
+
+---
+
+### `stores/store.ts`
+
+```typescript
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+
+import simulationReducer from './slices/simulationSlice';
+import uiReducer from './slices/uiSlice';
+import settingsReducer from './slices/settingsSlice';
+import strainsViewReducer from './slices/strainsViewSlice';
+import userStrainsReducer from './slices/userStrainsSlice';
+import favoritesReducer from './slices/favoritesSlice';
+import notesReducer from './slices/notesSlice';
+import archivesReducer from './slices/archivesSlice';
+import savedItemsReducer from './slices/savedItemsSlice';
+import knowledgeReducer from './slices/knowledgeSlice';
+import breedingReducer from './slices/breedingSlice';
+import ttsReducer from './slices/ttsSlice';
+import sandboxReducer from './slices/sandboxSlice';
+import filtersReducer from './slices/filtersSlice';
+import { geminiApi } from './api';
+import { listenerMiddleware } from './listenerMiddleware';
+
+const rootReducer = combineReducers({
+    simulation: simulationReducer,
+    ui: uiReducer,
+    settings: settingsReducer,
+    strainsView: strainsViewReducer,
+    userStrains: userStrainsReducer,
+    favorites: favoritesReducer,
+    notes: notesReducer,
+    archives: archivesReducer,
+    savedItems: savedItemsReducer,
+    knowledge: knowledgeReducer,
+    breeding: breedingReducer,
+    tts: ttsReducer,
+    sandbox: sandboxReducer,
+    filters: filtersReducer,
+    [geminiApi.reducerPath]: geminiApi.reducer,
+});
+
+const tempStoreForTypes = configureStore({ reducer: rootReducer });
+export type RootState = ReturnType<typeof tempStoreForTypes.getState>;
+export type AppDispatch = typeof tempStoreForTypes.dispatch;
+
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+export const createAppStore = (preloadedState?: Partial<RootState>) => {
+    const store = configureStore({
+        reducer: rootReducer,
+        preloadedState,
+        middleware: (getDefaultMiddleware) => getDefaultMiddleware({
+            serializableCheck: false,
+        }).concat(geminiApi.middleware).prepend(listenerMiddleware.middleware),
+    });
+
+    return store;
+};
+```
+
+### `stores/indexedDBStorage.ts`
+
+```typescript
+export interface StateStorage {
+  getItem: (name: string) => string | null | Promise<string | null>
+  setItem: (name: string, value: string) => void | Promise<void>
+  removeItem: (name: string) => void | Promise<void>
+}
+
+const DB_NAME = 'CannaGuideStateDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'zustand_state';
+
+let db: IDBDatabase;
+
+const openDB = (): Promise<IDBDatabase> => {
+  return new Promise((resolve, reject) => {
+    if (db) {
+      return resolve(db);
+    }
+
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+    request.onupgradeneeded = (event) => {
+      const dbInstance = (event.target as IDBOpenDBRequest).result;
+      if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+        dbInstance.createObjectStore(STORE_NAME);
+      }
+    };
+
+    request.onsuccess = (event) => {
+      db = (event.target as IDBOpenDBRequest).result;
+      resolve(db);
+    };
+
+    request.onerror = (event) => {
+      console.error("IndexedDB error:", (event.target as IDBOpenDBRequest).error);
+      reject((event.target as IDBOpenDBRequest).error);
+    };
+  });
+};
+
+const getStore = (mode: IDBTransactionMode): IDBObjectStore => {
+  const transaction = db.transaction(STORE_NAME, mode);
+  return transaction.objectStore(STORE_NAME);
+};
+
+export const indexedDBStorage: StateStorage = {
+  getItem: async (name: string): Promise<string | null> => {
+    await openDB();
+    return new Promise((resolve, reject) => {
+      const store = getStore('readonly');
+      const request = store.get(name);
+      request.onsuccess = () => {
+        resolve((request.result as string) || null);
+      };
+      request.onerror = () => {
+        reject(request.error);
+      };
+    });
+  },
+  setItem: async (name: string, value: string): Promise<void> => {
+    await openDB();
+    return new Promise((resolve, reject) => {
+      const store = getStore('readwrite');
+      const request = store.put(value, name);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  },
+  removeItem: async (name: string): Promise<void> => {
+    await openDB();
+    return new Promise((resolve, reject) => {
+      const store = getStore('readwrite');
+      const request = store.delete(name);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  },
+};
+```
+
+### `stores/listenerMiddleware.ts`
+
+```typescript
 import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
 import type { RootState } from './store';
 import { i18nInstance, getT } from '@/i18n';
-// FIX: Import Strain type to resolve missing type error.
-import { Language, Strain } from '@/types';
+import { Language } from '@/types';
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
 import { plantStateUpdated, resetPlants, addJournalEntry } from './slices/simulationSlice';
 import { addNotification, setOnboardingStep } from './slices/uiSlice';
@@ -14,67 +171,40 @@ import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, d
 import { addArchivedMentorResponse, addArchivedAdvisorResponse, clearArchives } from './slices/archivesSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice';
 
+
 export const listenerMiddleware = createListenerMiddleware();
 const REDUX_STATE_KEY = 'cannaguide-redux-storage';
 
-// --- State-of-the-art Persistence Logic ---
-
-const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => {
-  let timeout: ReturnType<typeof setTimeout>;
-  const debounced = (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-  debounced.flush = () => {
-    clearTimeout(timeout);
-    func.apply(null); // Call immediately with last known state
-  };
-  return debounced;
-};
-
-let lastState: RootState;
-const saveState = () => {
-    if (!lastState) return;
-    try {
-        const stateToSave = {
-            settings: lastState.settings,
-            simulation: lastState.simulation,
-            strainsView: lastState.strainsView,
-            userStrains: lastState.userStrains,
-            favorites: lastState.favorites,
-            notes: lastState.notes,
-            archives: lastState.archives,
-            savedItems: lastState.savedItems,
-            knowledge: lastState.knowledge,
-            breeding: lastState.breeding,
-            sandbox: lastState.sandbox,
-            filters: lastState.filters,
-        };
-        const serializedState = JSON.stringify(stateToSave);
-        indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
-    } catch (e) {
-        console.error("Could not save state to IndexedDB", e);
-    }
-};
-
-// Debounced save function for performance
-const debouncedSave = debounce(saveState, 1000);
-
-// Ensure state is saved before the page unloads
-window.addEventListener('beforeunload', () => {
-    debouncedSave.flush();
-});
-
 /**
  * Listener to handle state persistence to IndexedDB.
- * This implementation is highly performant by debouncing writes, but ensures
- * data integrity by flushing any pending saves when the user leaves the page.
+ * This is a more modern and robust approach than a manual store.subscribe().
+ * Debouncing has been removed to ensure immediate saving, preventing data loss on tab close.
  */
 listenerMiddleware.startListening({
-  predicate: (action) => !action.type.startsWith('geminiApi/'), // Ignore internal RTK Query actions
+  // Listen to all actions, but not the ones from RTK Query which are internal
+  predicate: (action) => !action.type.startsWith('geminiApi/'),
   effect: async (action, listenerApi) => {
-    lastState = listenerApi.getState() as RootState;
-    debouncedSave();
+    const state = listenerApi.getState() as RootState;
+    try {
+        const stateToSave = {
+            settings: state.settings,
+            simulation: state.simulation,
+            strainsView: state.strainsView,
+            userStrains: state.userStrains,
+            favorites: state.favorites,
+            notes: state.notes,
+            archives: state.archives,
+            savedItems: state.savedItems,
+            knowledge: state.knowledge,
+            breeding: state.breeding,
+            sandbox: state.sandbox,
+            filters: state.filters,
+        };
+        const serializedState = JSON.stringify(stateToSave);
+        await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
+    } catch (e) {
+        console.error("Could not save state", e);
+    }
   },
 });
 
@@ -84,7 +214,7 @@ listenerMiddleware.startListening({
  */
 listenerMiddleware.startListening({
   matcher: isAnyOf(setSetting),
-  effect: async (action) => {
+  effect: async (action, listenerApi) => {
     if (action.payload.path === 'language') {
       const newLang = action.payload.value as Language;
       if (i18nInstance.language !== newLang) {
@@ -127,9 +257,7 @@ listenerMiddleware.startListening({
   matcher: isAnyOf(addUserStrain, updateUserStrain),
   effect: (action, { dispatch }) => {
     const type = action.type.includes('addUser') ? 'add' : 'update';
-    // The payload for userStrainsAdapter actions is the strain object itself.
-    const strain = action.payload as Strain;
-    dispatch(addNotification({ message: t(`strainsView.addStrainModal.validation.${type}Success`, { name: strain.name }), type: 'success' }));
+    dispatch(addNotification({ message: t(`strainsView.addStrainModal.validation.${type}Success`, { name: action.payload.name }), type: 'success' }));
   }
 });
 
@@ -239,8 +367,4 @@ listenerMiddleware.startListening({
 listenerMiddleware.startListening({
   matcher: isAnyOf(setOnboardingStep),
   effect: (action, listenerApi) => {
-    if (action.payload === 0 && (listenerApi.getOriginalState() as RootState).settings.settings.onboardingCompleted) {
-        listenerApi.dispatch(addNotification({ message: t('settingsView.data.replayOnboardingSuccess'), type: 'success' }));
-    }
-  }
-});
+    if (action.payload === 0 && (listenerApi.getOriginalState()

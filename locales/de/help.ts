@@ -5,6 +5,7 @@ export const helpView = {
     faq: 'FAQ',
     guides: 'Visuelle Anleitungen',
     lexicon: 'Lexikon',
+    manual: 'Bedienungsanleitung',
   },
   faq: {
     title: 'Häufig gestellte Fragen',
@@ -76,6 +77,129 @@ export const helpView = {
       landrace: { term: 'Landrasse', definition: 'Eine reine, ursprüngliche Cannabis-Sorte, die sich über einen langen Zeitraum in einer bestimmten geografischen Region natürlich angepasst und stabilisiert hat.' },
     },
   },
+  manual: {
+    title: 'Bedienungsanleitung',
+    introduction: {
+      title: 'Einführung',
+      content: 'Willkommen bei CannaGuide 2025! Diese Anleitung führt dich durch alle wichtigen Funktionen der App, damit du das Beste aus deinem Anbau herausholen kannst.'
+    },
+    strains: {
+      title: 'Die Sorten-Ansicht',
+      content: 'Dies ist deine Enzyklopädie. Hier kannst du über 480 Sorten erkunden, deine eigenen hinzufügen und KI-gestützte Tipps erhalten.',
+      allStrains: {
+        title: 'Tab "Alle Sorten"',
+        content: 'Durchsuche die gesamte Datenbank. Nutze die Suchleiste, Buchstaben-Filter und Typ-Schalter für eine schnelle Navigation. Öffne das erweiterte Filtermenü für detailliertere Suchen nach THC, Blütezeit, Aroma und mehr.'
+      },
+      myStrains: {
+        title: 'Tab "Meine Sorten"',
+        content: 'Verwalte deine selbst erstellten oder gezüchteten Sorten. Du hast hier volle CRUD-Funktionen (Erstellen, Lesen, Aktualisieren, Löschen).'
+      },
+      favorites: {
+        title: 'Tab "Favoriten"',
+        content: 'Ein schneller Zugriff auf alle Sorten, die du mit einem Herz markiert hast. Ideal, um eine Auswahlliste für deinen nächsten Anbau zusammenzustellen.'
+      },
+      exports: {
+        title: 'Tab "Exporte"',
+        content: 'Verwalte alle deine gespeicherten Exporte. Du kannst sie hier erneut herunterladen, umbenennen oder löschen. Exporte im CSV-, JSON- oder XML-Format werden hier gespeichert, um die Datenintegrität zu gewährleisten.'
+      },
+      tips: {
+        title: 'Tab "Tipps"',
+        content: 'Hier findest du alle KI-generierten Anbau-Tipps, die du gespeichert hast. Du kannst sie durchsuchen, bearbeiten, löschen und exportieren.'
+      },
+      toolbar: {
+        title: 'Toolbar & Filterung',
+        content: 'Die Toolbar ermöglicht dir den Wechsel zwischen Listen- und Rasteransicht, das Exportieren von Daten und das Hinzufügen neuer Sorten. Die Filterleiste darunter bietet schnelle Filteroptionen, während der Button "Erweiterte Filter" ein detailliertes Menü für präzise Suchen öffnet.'
+      },
+      detailView: {
+        title: 'Sorten-Detailansicht',
+        content: 'Klicke auf eine beliebige Sorte, um eine detaillierte Aufschlüsselung zu erhalten. Hier findest du agronomische Daten, Aroma-Profile, kannst persönliche Notizen hinzufügen und KI-Tipps generieren. Du kannst von hier aus auch direkt einen Anbau mit dieser Sorte starten.'
+      }
+    },
+    plants: {
+      title: 'Die Pflanzen-Ansicht',
+      content: 'Das Kontrollzentrum für deine aktiven Anbauprojekte. Verwalte bis zu drei Pflanzen gleichzeitig in einer realistischen Simulation.',
+      dashboard: {
+        title: 'Dashboard & Vitalwerte',
+        content: 'Die Hauptansicht zeigt dir eine Zusammenfassung deiner Garten-Vitalwerte, einen Tipp des Tages sowie eine Übersicht deiner offenen Aufgaben und Warnungen. Von hier aus kannst du auch alle Pflanzen auf einmal gießen.'
+      },
+      startingGrow: {
+        title: 'Einen neuen Anbau starten',
+        content: 'Klicke auf einen leeren Slot, um den Prozess zu starten. Du wählst zuerst eine Sorte aus der Bibliothek aus und konfigurierst dann dein Anbau-Setup (z.B. Topfgröße, Lichtzyklus).'
+      },
+      detailView: {
+        title: 'Detaillierte Pflanzenansicht',
+        content: 'Klicke auf eine aktive Pflanze, um zur Detailansicht zu gelangen. Hier kannst du alle Aktionen protokollieren, Vitalwerte in Echtzeit überwachen und KI-Tools nutzen. Der Expertenmodus (schaltbar in der Kopfzeile) zeigt hier noch mehr wissenschaftliche Daten an.'
+      },
+      aiDiagnostics: {
+        title: 'KI-Pflanzendoktor',
+        content: 'Mache ein Foto von einem problematischen Blatt oder Bereich deiner Pflanze. Die KI analysiert das Bild zusammen mit den aktuellen Vitalwerten deiner Pflanze, um eine Diagnose und Handlungsempfehlungen zu geben. Du kannst die Diagnose direkt im Journal der Pflanze speichern.'
+      }
+    },
+    equipment: {
+      title: 'Die Ausrüstungs-Ansicht',
+      content: 'Dein Werkzeugkasten für die Planung und Berechnung deines Anbaus.',
+      configurator: {
+        title: 'KI-Setup-Konfigurator',
+        content: 'Beantworte zwei einfache Fragen (Anzahl der Pflanzen und dein Stil), und die KI generiert eine vollständige, marken-spezifische Ausrüstungsempfehlung, inklusive Begründungen und Profi-Tipp. Speichere deine Konfigurationen für später.'
+      },
+      savedSetups: {
+        title: 'Meine Setups',
+        content: 'Verwalte deine gespeicherten Ausrüstungs-Setups. Du kannst sie hier bearbeiten, löschen oder als detailliertes PDF exportieren.'
+      },
+      calculators: {
+        title: 'Rechner',
+        content: 'Eine Sammlung nützlicher Rechner für Belüftung, Beleuchtung, Stromkosten, Nährstoffmischungen, EC/PPM-Umrechnung und eine grobe Ertragsschätzung.'
+      },
+      growShops: {
+        title: 'Grow Shops',
+        content: 'Eine kuratierte Liste empfohlener Online-Grow-Shops für Europa und die USA, inklusive einer kurzen Beschreibung ihrer Stärken.'
+      }
+    },
+    knowledge: {
+      title: 'Der Wissens-Hub',
+      content: 'Der Ort zum Lernen, Experimentieren und Vertiefen deines Wissens.',
+      mentor: {
+        title: 'KI-Mentor',
+        content: 'Wähle eine deiner aktiven Pflanzen aus und stelle dem Mentor spezifische Fragen. Die KI nutzt die Echtzeitdaten deiner Pflanze, um maßgeschneiderte Ratschläge zu geben. Alle Konversationen können im Archiv gespeichert werden.'
+      },
+      guide: {
+        title: 'Grow-Guide',
+        content: 'Ein interaktiver Leitfaden, der die wichtigsten Phasen und Techniken des Cannabisanbaus in leicht verdaulichen, ausklappbaren Abschnitten erklärt.'
+      },
+      archive: {
+        title: 'Archive',
+        content: 'Verwalte alle deine gespeicherten Antworten vom KI-Mentor und die proaktiven Ratschläge vom KI-Pflanzenberater.'
+      },
+      breeding: {
+        title: 'Zuchtlabor (Demnächst verfügbar)',
+        content: 'Eine zukünftige Funktion, die es dir ermöglichen wird, Samen von deinen besten Pflanzen zu sammeln und sie zu kreuzen, um völlig neue, einzigartige Sorten zu erschaffen.'
+      },
+      sandbox: {
+        title: 'Sandbox',
+        content: 'Führe risikofreie "Was-wäre-wenn"-Szenarien durch. Wähle eine deiner Pflanzen als Klon und simuliere den Effekt verschiedener Trainingstechniken (z.B. Topping vs. LST) über einen beschleunigten Zeitraum, um die Ergebnisse zu vergleichen.'
+      }
+    },
+    general: {
+      title: 'Allgemeine Funktionen',
+      content: 'Funktionen, die in der gesamten App verfügbar sind.',
+      pwa: {
+        title: 'PWA & Offline-Nutzung',
+        content: 'CannaGuide ist eine Progressive Web App. Du kannst sie über die Schaltfläche in der Kopfzeile auf deinem Gerät "installieren". Dadurch funktioniert sie wie eine native App und ist zu 100% offline verfügbar.'
+      },
+      commandPalette: {
+        title: 'Befehlspalette (Cmd/Ctrl + K)',
+        content: 'Drücke <code>Cmd/Ctrl + K</code>, um die Befehlspalette zu öffnen. Dies ist der schnellste Weg, um zu navigieren und Aktionen auszuführen, ohne die Hände von der Tastatur zu nehmen.'
+      },
+      dataManagement: {
+        title: 'Datenverwaltung',
+        content: 'Unter <code>Einstellungen > Datenverwaltung</code> kannst du deine gesamten App-Daten (Pflanzen, Einstellungen, eigene Sorten usw.) in einer einzigen JSON-Datei sichern. Diese Datei kann später importiert werden, um deinen Zustand wiederherzustellen.'
+      },
+      accessibility: {
+        title: 'Barrierefreiheit',
+        content: 'Die App enthält Funktionen wie eine legasthenikerfreundliche Schriftart und einen Modus mit reduzierter Bewegung. Die Sprachausgabe (TTS) ermöglicht es dir, dir Inhalte vorlesen zu lassen.'
+      }
+    }
+  }
 };
 
 export const visualGuides = {

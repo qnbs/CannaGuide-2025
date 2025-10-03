@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { Strain, SavedExport, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
@@ -47,7 +48,6 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
             let comparison = 0;
             if (typeof valA === 'string' && typeof valB === 'string') {
                 comparison = valA.localeCompare(valB);
-            // FIX: Add type guard to ensure valA and valB are numbers before subtraction.
             } else if (typeof valA === 'number' && typeof valB === 'number') {
                 comparison = valA - valB;
             }

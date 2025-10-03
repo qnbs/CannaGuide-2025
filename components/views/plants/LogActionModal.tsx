@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plant, JournalEntry, TrainingType, JournalEntryType, PhotoCategory, AppSettings } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -31,8 +32,7 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { l
 export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
-    const settings = useAppSelector(selectSettings) as AppSettings;
+    const settings = useAppSelector(selectSettings);
     
     const [notes, setNotes] = useState(t(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '') || '');
     const [waterAmount, setWaterAmount] = useState(500);

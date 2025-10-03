@@ -42,6 +42,7 @@ export const strainsView = {
     exports_other: '{{count}} Exports',
     tips_one: '1 Tip',
     tips_other: '{{count}} Tips',
+    genealogy: 'Genealogy',
   },
   filters: {
     thcMax: 'THC',
@@ -270,5 +271,12 @@ export const strainsView = {
     addedToFavorites_other: 'Added {{count}} strains to favorites.',
     removedFromFavorites_one: 'Removed 1 strain from favorites.',
     removedFromFavorites_other: 'Removed {{count}} strains from favorites.',
-  }
+  },
+  genealogyView: {
+      title: 'Genealogy Explorer',
+      description: 'Select a strain to visualize its genetic lineage.',
+      selectStrain: 'Select a Strain',
+      noStrainSelected: 'Please select a strain to display the genealogy tree.',
+      loadingTree: 'Generating tree...'
+  },
 };

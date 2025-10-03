@@ -1,7 +1,7 @@
+
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-// FIX: Moved 'startGrowInSlot' to its correct import from uiSlice.
 import { setActiveView, openAddModal, startGrowInSlot } from '@/stores/slices/uiSlice';
 import { setSetting, exportAllData } from '@/stores/slices/settingsSlice';
 import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';

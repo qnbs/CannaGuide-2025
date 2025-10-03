@@ -161,18 +161,55 @@ const LexiconSection: React.FC = memo(() => {
     );
 });
 
+const ManualSection: React.FC = memo(() => {
+    const { t } = useTranslation();
+    const manualContent = t('helpView.manual', { returnObjects: true }) as Record<string, any>;
+
+    const renderSection = (section: any, isSubSection = false) => {
+        const title = section.title;
+        const content = section.content;
+        const subSections = Object.keys(section).filter(key => key !== 'title' && key !== 'content');
+
+        return (
+            <details key={title} open={!isSubSection} className="group">
+                <summary className={`list-none flex items-center gap-2 cursor-pointer ${isSubSection ? 'text-lg font-semibold text-primary-300' : 'text-xl font-bold font-display text-primary-400'}`}>
+                    <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
+                    {title}
+                </summary>
+                <div className={`pt-2 pb-4 ${isSubSection ? 'pl-8 border-l border-slate-700 ml-2' : 'pl-7'}`}>
+                    {content && <div className="prose prose-sm dark:prose-invert max-w-none mb-4" dangerouslySetInnerHTML={{ __html: content }} />}
+                    {subSections.length > 0 && (
+                        <div className="space-y-4">
+                            {subSections.map(key => renderSection(section[key], true))}
+                        </div>
+                    )}
+                </div>
+            </details>
+        );
+    };
+
+    return (
+        <Card>
+            {Object.keys(manualContent).filter(key => key !== 'title').map(key => renderSection(manualContent[key]))}
+        </Card>
+    );
+});
+
+
 export const HelpView: React.FC = () => {
     const { t } = useTranslation();
-    const [activeTab, setActiveTab] = useState('lexicon');
+    const [activeTab, setActiveTab] = useState('manual');
 
     const tabs = [
+        { id: 'manual', label: t('helpView.tabs.manual'), icon: <PhosphorIcons.BookOpenText /> },
         { id: 'lexicon', label: t('helpView.tabs.lexicon'), icon: <PhosphorIcons.Book /> },
-        { id: 'guides', label: t('helpView.tabs.guides'), icon: <PhosphorIcons.BookOpenText /> },
+        { id: 'guides', label: t('helpView.tabs.guides'), icon: <PhosphorIcons.GraduationCap /> },
         { id: 'faq', label: t('helpView.tabs.faq'), icon: <PhosphorIcons.Question /> },
     ];
 
     const renderContent = () => {
         switch (activeTab) {
+            case 'manual': return <ManualSection />;
             case 'lexicon': return <LexiconSection />;
             case 'guides': return <VisualGuidesSection />;
             case 'faq': return <FAQSection />;

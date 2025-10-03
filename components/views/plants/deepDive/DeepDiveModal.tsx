@@ -2,13 +2,10 @@
 import React, { useEffect, useMemo } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Plant, Scenario } from '@/types';
-// FIX: Corrected imports for Redux
-import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { useAppDispatch } from '@/stores/store';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { geminiService } from '@/services/geminiService';
-// FIX: The selector `selectDeepDiveState` and thunk `startDeepDiveGeneration` were part of an old pattern.
-// Replaced with the RTK Query mutation hook which is the correct, modern approach used in the app.
 import { useGenerateDeepDiveMutation } from '@/stores/api';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
@@ -24,18 +21,15 @@ interface DeepDiveModalProps {
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: Using the RTK Query mutation hook instead of the old selector/thunk pattern.
     const [generateDeepDive, { data: response, isLoading, error }] = useGenerateDeepDiveMutation();
 
     useEffect(() => {
         if (!response && !isLoading && !error) {
-            // FIX: Directly call the mutation trigger function provided by the hook.
             generateDeepDive({ topic, plant });
         }
     }, [plant, topic, response, isLoading, error, dispatch, generateDeepDive]);
 
     const loadingMessage = useMemo(() => {
-        // FIX: Corrected call to geminiService to pass a single object argument.
         const messages = geminiService.getDynamicLoadingMessages({
             useCase: 'deepDive',
             data: { topic, plantName: plant.name }

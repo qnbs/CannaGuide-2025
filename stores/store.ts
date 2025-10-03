@@ -17,6 +17,8 @@ import sandboxReducer from './slices/sandboxSlice';
 import filtersReducer from './slices/filtersSlice';
 import { geminiApi } from './api';
 import { listenerMiddleware } from './listenerMiddleware';
+import { indexedDBStorage } from './indexedDBStorage';
+import { migrateState, PersistedState } from '../services/migrationLogic';
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -43,7 +45,23 @@ export type AppDispatch = typeof tempStoreForTypes.dispatch;
 export const useAppDispatch: () => AppDispatch = useDispatch;
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
-export const createAppStore = (preloadedState?: Partial<RootState>) => {
+const REDUX_STATE_KEY = 'cannaguide-redux-storage';
+
+export const createAppStore = async () => {
+    let preloadedState: Partial<RootState> | undefined;
+
+    try {
+        const persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY);
+        if (persistedString) {
+            console.log('[Store] Hydrating state from IndexedDB.');
+            const persistedState = JSON.parse(persistedString);
+            preloadedState = migrateState(persistedState) as Partial<RootState>;
+        }
+    } catch (e) {
+        console.error("Could not load or migrate state from IndexedDB, starting fresh.", e);
+        await indexedDBStorage.removeItem(REDUX_STATE_KEY);
+    }
+    
     const store = configureStore({
         reducer: rootReducer,
         preloadedState,

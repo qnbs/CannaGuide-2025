@@ -11,9 +11,9 @@ const root = ReactDOM.createRoot(document.getElementById('root')!)
 const initialize = async () => {
     await i18nPromise
 
-    // The store is now initialized without preloadedState.
-    // State hydration and migration will be handled by the `runDataMigrations` thunk.
-    const store = createAppStore()
+    // The store is now created asynchronously to allow for pre-hydration
+    // and migration of persisted state from IndexedDB before the app mounts.
+    const store = await createAppStore()
 
     root.render(
         <React.StrictMode>

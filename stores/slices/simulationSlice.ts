@@ -115,8 +115,8 @@ export const applyPestControlAction = createAsyncThunk<void, { plantId: string, 
             dispatch(addNotification({ message: validation.error.issues[0].message, type: 'error' }));
             return;
         }
-        dispatch(applyPestControl({ plantId, notes }));
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes } }));
+        dispatch(applyPestControl({ plantId, notes: validation.data.notes }));
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes: validation.data.notes } }));
     }
 );
 

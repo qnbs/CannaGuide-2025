@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v6-pwa-cache'; // New version to force update
+const CACHE_NAME = 'cannaguide-v7-pwa-cache'; // New version to force update
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -6,10 +6,9 @@ const URLS_TO_CACHE = [
   '/icon.svg',
   '/pwa-icon.svg',
   '/register-sw.js',
-  // NOTE: These are placeholders for actual icon files that should be generated
-  // and placed in the public directory for the manifest to work correctly.
-  // '/pwa-icon-192.png', 
-  // '/pwa-icon-512.png',
+  '/favicon.ico',
+  '/pwa-icon-192.png', 
+  '/pwa-icon-512.png',
 ];
 
 // Install the service worker and cache the app shell

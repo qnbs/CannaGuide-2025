@@ -2,19 +2,20 @@ import React, { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '../common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+// FIX: Add SandboxState and Plant to imports for type casting.
 import { Plant, KnowledgeArticle, KnowledgeViewTab, SandboxState } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
-import { MentorChatView } from './knowledge/MentorChatView';
+import { MentorChatView } from './MentorChatView';
 import { Button } from '../common/Button';
 import { Tabs } from '../common/Tabs';
-import { GuideTab } from './knowledge/GuideTab';
-import { MentorArchiveTab } from './knowledge/MentorArchiveTab';
-import { BreedingView } from './knowledge/BreedingView';
+import { GuideTab } from './GuideTab';
+import { MentorArchiveTab } from './MentorArchiveTab';
+import { BreedingView } from './BreedingView';
 import { useActivePlants, usePlantById } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi, selectSandboxState } from '@/stores/selectors';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
-import { SandboxView } from './knowledge/SandboxView';
+import { SandboxView } from './SandboxView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
@@ -43,11 +44,13 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
-    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
+    // FIX: Cast result of useAppSelector to SandboxState to fix type inference issue.
+    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState) as SandboxState;
 
     const [isTabLoading, startTabTransition] = useTransition();
     
-    const activePlants = useActivePlants();
+    // FIX: Cast result of useActivePlants to Plant[] to fix type inference issue.
+    const activePlants = useActivePlants() as Plant[];
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);

@@ -15,7 +15,6 @@ import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
 import { LogActionModalContainer } from '@/components/views/plants/LogActionModalContainer'
 import { DeepDiveModalContainer } from '@/hooks/DeepDiveModalContainer'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
-import { runDataMigrations } from '@/services/migrationService'
 import { useAppDispatch, useAppSelector, RootState } from '@/stores/store'
 import {
   selectActiveView,
@@ -191,17 +190,14 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     const initializeApp = async () => {
-      dispatch(setAppReady(false))
+        // Hydration and migration are now handled by `createAppStore`.
+        // This effect initializes services that depend on a hydrated store.
+        await strainService.init()
+        dispatch(initializeSimulation())
+        ttsService.init()
 
-      // Hydrate and migrate persisted state before anything else.
-      await dispatch(runDataMigrations())
-
-      // Initialize other services after state is ready.
-      await strainService.init()
-      dispatch(initializeSimulation())
-      ttsService.init()
-
-      dispatch(setAppReady(true))
+        // Signal that the app is fully ready to be displayed.
+        dispatch(setAppReady(true))
     }
     initializeApp()
   }, [dispatch])

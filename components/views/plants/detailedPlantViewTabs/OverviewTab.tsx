@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plant, ModalType } from '@/types';
+import { Plant, ModalType, AppSettings } from '@/types';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { PlantVisualizer } from '../PlantVisualizer';
@@ -20,7 +20,8 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
+    // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
+    const settings = useAppSelector(selectSettings) as AppSettings;
     const highlightedElement = useAppSelector(selectHighlightedElement);
 
     return (

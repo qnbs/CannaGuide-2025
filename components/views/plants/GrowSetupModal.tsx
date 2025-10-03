@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-// FIX: Corrected import path for types to use the '@/' alias.
-import { Strain, GrowSetup } from '@/types';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
+// FIX: Add AppSettings to imports for type casting.
+import { Strain, GrowSetup, AppSettings } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
@@ -37,24 +36,21 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   const { t } = useTranslation();
   const settings = useAppSelector(selectSettings);
   
-  const [setup, setSetup] = useState<GrowSetup>({
-    lightHours: 18,
+  const [setup, setSetup] = useState({
+    lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
     potSize: settings.defaultGrowSetup.potSize,
     medium: settings.defaultGrowSetup.medium,
   });
   
   const isPhotoperiod = strain.floweringType === 'Photoperiod';
 
-  useEffect(() => {
-    if (isPhotoperiod) {
-      setSetup(prev => ({ ...prev, lightHours: 18 }));
-    } else { // Autoflower
-      setSetup(prev => ({ ...prev, lightHours: 18 }));
-    }
-  }, [strain, isPhotoperiod]);
-
   const handleConfirm = () => {
-    onConfirm(setup);
+    const finalSetup: GrowSetup = {
+        lightHours: setup.lightHours,
+        potSize: setup.potSize,
+        medium: setup.medium,
+    };
+    onConfirm(finalSetup);
   };
   
   const potSizes = [5, 11, 15, 25, 35];

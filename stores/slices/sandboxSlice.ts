@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '../store';
 import { Plant, SandboxState, Experiment, Scenario } from '@/types';
-import { scenarioService } from '@/services/scenarioService';
+import { getT } from '@/i18n';
 
 const initialState: SandboxState = {
     savedExperiments: [],
@@ -14,6 +14,7 @@ export const runComparisonScenario = createAsyncThunk<
     { plantId: string; scenario: Scenario },
     { state: RootState }
 >('sandbox/runScenario', async ({ plantId, scenario }, { getState, rejectWithValue }) => {
+    const t = getT();
     const basePlant = getState().simulation.plants.entities[plantId];
     if (!basePlant) {
         return rejectWithValue('Plant not found');
@@ -27,10 +28,10 @@ export const runComparisonScenario = createAsyncThunk<
         worker.onmessage = (e) => {
             const { originalHistory, modifiedHistory, originalFinalState, modifiedFinalState } = e.data;
             resolve({
-                name: `Experiment on ${basePlant.name}`,
+                name: t('knowledgeView.sandbox.experimentOn', { name: basePlant.name }),
                 basePlantId: plantId,
                 basePlantName: basePlant.name,
-                scenarioDescription: `Compared ${scenario.plantAModifier.action} vs ${scenario.plantBModifier.action} over ${scenario.durationDays} days.`,
+                scenarioDescription: t('knowledgeView.sandbox.scenarioDescription', { actionA: scenario.plantAModifier.action, actionB: scenario.plantBModifier.action, duration: scenario.durationDays }),
                 durationDays: scenario.durationDays,
                 originalHistory,
                 modifiedHistory,

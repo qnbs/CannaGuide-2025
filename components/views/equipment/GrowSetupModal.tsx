@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-import { Strain, GrowSetup } from '@/types';
+// FIX: Add AppSettings to imports for type casting.
+import { Strain, GrowSetup, AppSettings } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { RangeSlider } from '@/components/common/RangeSlider';
@@ -24,7 +25,8 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
     const { t } = useTranslation();
-    const settings = useAppSelector(selectSettings);
+    // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
+    const settings = useAppSelector(selectSettings) as AppSettings;
     // FIX: Removed incorrect <GrowSetup> type annotation which caused property errors. The component's internal state is more complex than the final GrowSetup type.
     const [setup, setSetup] = useState({
         ...settings.defaultGrowSetup,

@@ -1,67 +1,88 @@
-import React, { useCallback, useState, useId } from 'react';
+import React, { useCallback, useState, useId } from 'react'
 
 interface RangeSliderProps {
-    min: number;
-    max: number;
-    step: number;
-    value: [number, number];
-    onChange: (newValue: [number, number]) => void;
-    label: string;
-    unit: string;
-    color?: 'primary' | 'green' | 'blue';
+    min: number
+    max: number
+    step: number
+    value: [number, number]
+    onChange: (newValue: [number, number]) => void
+    label: string
+    unit: string
+    color?: 'primary' | 'green' | 'blue'
 }
 
-export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value, onChange, label, unit, color = 'primary' }) => {
-    const rangeId = useId();
+export const RangeSlider: React.FC<RangeSliderProps> = ({
+    min,
+    max,
+    step,
+    value,
+    onChange,
+    label,
+    unit,
+    color = 'primary',
+}) => {
+    const rangeId = useId()
     // z-index state to determine which thumb is on top and visually active
-    const [minZIndex, setMinZIndex] = useState(1);
-    const [maxZIndex, setMaxZIndex] = useState(1);
+    const [minZIndex, setMinZIndex] = useState(1)
+    const [maxZIndex, setMaxZIndex] = useState(1)
 
-    const handleMinChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const newMinVal = Math.min(Number(e.target.value), value[1] - step);
-        onChange([newMinVal, value[1]]);
-    }, [onChange, value, step]);
+    const handleMinChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newMinVal = Math.min(Number(e.target.value), value[1] - step)
+            onChange([newMinVal, value[1]])
+        },
+        [onChange, value, step]
+    )
 
-    const handleMaxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-        const newMaxVal = Math.max(Number(e.target.value), value[0] + step);
-        onChange([value[0], newMaxVal]);
-    }, [onChange, value, step]);
+    const handleMaxChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newMaxVal = Math.max(Number(e.target.value), value[0] + step)
+            onChange([value[0], newMaxVal])
+        },
+        [onChange, value, step]
+    )
 
     // When user interacts with a thumb, bring it to the front to ensure it's selectable
     const handleMinInteraction = () => {
-        setMinZIndex(2);
-        setMaxZIndex(1);
-    };
+        setMinZIndex(2)
+        setMaxZIndex(1)
+    }
 
     const handleMaxInteraction = () => {
-        setMaxZIndex(2);
-        setMinZIndex(1);
-    };
+        setMaxZIndex(2)
+        setMinZIndex(1)
+    }
 
-    const minPos = ((value[0] - min) / (max - min)) * 100;
-    const maxPos = ((value[1] - min) / (max - min)) * 100;
+    const minPos = ((value[0] - min) / (max - min)) * 100
+    const maxPos = ((value[1] - min) / (max - min)) * 100
 
     // Visual feedback variables for CSS
-    const minIsActive = minZIndex > maxZIndex;
-    const maxIsActive = maxZIndex > minZIndex;
+    const minIsActive = minZIndex > maxZIndex
+    const maxIsActive = maxZIndex > minZIndex
 
     const colorMap = {
-        primary: { active: 'rgb(var(--color-primary-600))', inactive: 'rgb(var(--color-primary-500))', bg: 'bg-primary-500' },
+        primary: {
+            active: 'rgb(var(--color-primary-600))',
+            inactive: 'rgb(var(--color-primary-500))',
+            bg: 'bg-primary-500',
+        },
         green: { active: 'rgb(22, 163, 74)', inactive: 'rgb(34, 197, 94)', bg: 'bg-green-500' },
         blue: { active: 'rgb(37, 99, 235)', inactive: 'rgb(59, 130, 246)', bg: 'bg-blue-500' },
-    };
-    
-    const { active, inactive, bg } = colorMap[color] || colorMap.primary;
+    }
+
+    const { active, inactive, bg } = colorMap[color] || colorMap.primary
 
     return (
         <div>
             <div className="flex justify-between items-center mb-2">
-                <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-300">{label}</label>
+                <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-300">
+                    {label}
+                </label>
                 <span className="text-sm font-mono bg-slate-700 px-2 py-0.5 rounded-md">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
             </div>
             <div className="relative h-4 flex items-center">
                 <div className="relative w-full h-1 bg-slate-600 rounded-full">
-                    <div 
+                    <div
                         className={`absolute h-1 ${bg} rounded-full`}
                         style={{ left: `${minPos}%`, right: `${100 - maxPos}%` }}
                     ></div>
@@ -77,11 +98,13 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
                         onMouseDown={handleMinInteraction}
                         onTouchStart={handleMinInteraction}
                         className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                        style={{
-                            zIndex: minZIndex,
-                            '--thumb-color': minIsActive ? active : inactive,
-                            '--thumb-scale': minIsActive ? 1.2 : 1,
-                        } as React.CSSProperties}
+                        style={
+                            {
+                                zIndex: minZIndex,
+                                '--thumb-color': minIsActive ? active : inactive,
+                                '--thumb-scale': minIsActive ? 1.2 : 1,
+                            } as React.CSSProperties
+                        }
                         aria-label={`${label} minimum`}
                     />
                     <input
@@ -96,15 +119,17 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({ min, max, step, value,
                         onMouseDown={handleMaxInteraction}
                         onTouchStart={handleMaxInteraction}
                         className="range-slider-input absolute w-full -top-0.5 h-2 appearance-none bg-transparent"
-                        style={{
-                            zIndex: maxZIndex,
-                            '--thumb-color': maxIsActive ? active : inactive,
-                            '--thumb-scale': maxIsActive ? 1.2 : 1,
-                        } as React.CSSProperties}
+                        style={
+                            {
+                                zIndex: maxZIndex,
+                                '--thumb-color': maxIsActive ? active : inactive,
+                                '--thumb-scale': maxIsActive ? 1.2 : 1,
+                            } as React.CSSProperties
+                        }
                         aria-label={`${label} maximum`}
                     />
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}

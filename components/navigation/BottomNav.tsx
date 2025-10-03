@@ -1,24 +1,24 @@
-import React from 'react';
-import { View } from '@/types';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { setActiveView } from '@/stores/slices/uiSlice';
-import { selectActiveView } from '@/stores/selectors';
+import React from 'react'
+import { View } from '@/types'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useTranslation } from 'react-i18next'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { setActiveView } from '@/stores/slices/uiSlice'
+import { selectActiveView } from '@/stores/selectors'
 
 const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,
     [View.Plants]: <PhosphorIcons.Plant />,
     [View.Equipment]: <PhosphorIcons.Wrench />,
     [View.Knowledge]: <PhosphorIcons.BookOpenText />,
-};
+}
 
-const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Knowledge];
+const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Knowledge]
 
 export const BottomNav: React.FC = () => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const activeView = useAppSelector(selectActiveView);
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const activeView = useAppSelector(selectActiveView)
 
     const navLabels: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
@@ -27,8 +27,8 @@ export const BottomNav: React.FC = () => {
         [View.Knowledge]: t('nav.knowledge'),
         [View.Settings]: t('nav.settings'),
         [View.Help]: t('nav.help'),
-    };
-    
+    }
+
     return (
         <nav className="fixed bottom-0 left-0 right-0 sm:relative glass-pane border-t sm:border-t-0 flex-shrink-0 z-20 pb-[env(safe-area-inset-bottom)]">
             <div className="flex justify-around max-w-5xl mx-auto">
@@ -49,5 +49,5 @@ export const BottomNav: React.FC = () => {
                 ))}
             </div>
         </nav>
-    );
-};
+    )
+}

@@ -1,68 +1,64 @@
-
 import React, { useEffect, useRef, lazy, Suspense } from 'react'
-import { View } from '@/types'
+import { View, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
-import { Header } from './components/navigation/Header'
-import { BottomNav } from './components/navigation/BottomNav'
-import { OnboardingModal } from './components/common/OnboardingModal'
-import { CommandPalette } from './components/common/CommandPalette'
-import { useOnlineStatus } from './hooks/useOnlineStatus'
-import { usePwaInstall } from './hooks/usePwaInstall'
-// FIX: Corrected import path for strainService to use the '@/' alias.
+import { Header } from '@/components/navigation/Header'
+import { BottomNav } from '@/components/navigation/BottomNav'
+import { OnboardingModal } from '@/components/common/OnboardingModal'
+import { CommandPalette } from '@/components/common/CommandPalette'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { strainService } from '@/services/strainService'
-import { TTSControls } from './components/common/TTSControls'
-import { ttsService } from './services/ttsService'
-import { useDocumentEffects } from './hooks/useDocumentEffects'
-import { CannabisLeafIcon } from './components/icons/CannabisLeafIcon'
-import { LogActionModalContainer } from './components/views/plants/LogActionModalContainer'
-import { DeepDiveModalContainer } from './components/views/plants/deepDive/DeepDiveModalContainer'
-import { SkeletonLoader } from './components/common/SkeletonLoader'
-import { runDataMigrations } from './services/migrationService'
-import { useAppDispatch, useAppSelector } from './stores/store'
+import { TTSControls } from '@/components/common/TTSControls'
+import { ttsService } from '@/services/ttsService'
+import { useDocumentEffects } from '@/hooks/useDocumentEffects'
+import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
+import { LogActionModalContainer } from '@/components/views/plants/LogActionModalContainer'
+import { DeepDiveModalContainer } from '@/hooks/DeepDiveModalContainer'
+import { SkeletonLoader } from '@/components/common/SkeletonLoader'
+import { runDataMigrations } from '@/services/migrationService'
+import { useAppDispatch, useAppSelector, RootState } from '@/stores/store'
 import {
   selectActiveView,
   selectIsCommandPaletteOpen,
   selectSettings,
-} from './stores/selectors'
+} from '@/stores/selectors'
 import {
   setAppReady,
   setIsCommandPaletteOpen,
   addNotification,
-} from './stores/slices/uiSlice'
-import { initializeSimulation } from './stores/slices/simulationSlice'
-import { setSetting } from './stores/slices/settingsSlice'
-import { ToastContainer } from './components/common/Toast'
-import { AiDiagnosticsModalContainer } from './components/views/plants/AiDiagnosticsModalContainer'
-import { SaveSetupModalContainer } from './components/views/equipment/SaveSetupModalContainer'
+} from '@/stores/slices/uiSlice'
+import { initializeSimulation } from '@/stores/slices/simulationSlice'
+import { setSetting } from '@/stores/slices/settingsSlice'
+import { ToastContainer } from '@/components/common/Toast'
+import { AiDiagnosticsModalContainer } from '@/components/views/plants/AiDiagnosticsModalContainer'
+import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupModalContainer'
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
-  import('./components/views/StrainsView').then((module) => ({
+  import('@/components/views/StrainsView').then((module) => ({
     default: module.StrainsView,
   }))
 )
 const PlantsView = lazy(() =>
-  import('./components/views/PlantsView').then((module) => ({
+  import('@/components/views/PlantsView').then((module) => ({
     default: module.PlantsView,
   }))
 )
 const EquipmentView = lazy(() =>
-  import('./components/views/EquipmentView').then((module) => ({
+  import('@/components/views/equipment/EquipmentView').then((module) => ({
     default: module.EquipmentView,
   }))
 )
 const KnowledgeView = lazy(() =>
-  import('./components/views/KnowledgeView').then((module) => ({
+  import('@/components/views/KnowledgeView').then((module) => ({
     default: module.KnowledgeView,
   }))
 )
 const SettingsView = lazy(() =>
-  import('./components/views/SettingsView').then((module) => ({
-    default: module.SettingsView,
-  }))
+  import('@/components/views/settings/SettingsView').then(module => ({ default: module.SettingsView }))
 )
 const HelpView = lazy(() =>
-  import('./components/views/HelpView').then((module) => ({
+  import('@/components/views/HelpView').then((module) => ({
     default: module.HelpView,
   }))
 )
@@ -89,7 +85,7 @@ const ToastManager: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const dispatch = useAppDispatch()
-  const settings = useAppSelector(selectSettings)
+  const settings = useAppSelector(selectSettings);
   const activeView = useAppSelector(selectActiveView)
   const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
   const onboardingCompleted = settings.onboardingCompleted
@@ -191,7 +187,7 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch()
-  const isAppReady = useAppSelector((state) => state.ui.isAppReady)
+  const isAppReady = useAppSelector((state: RootState) => state.ui.isAppReady);
 
   useEffect(() => {
     const initializeApp = async () => {

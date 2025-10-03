@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { JournalEntry, PhotoDetails, JournalEntryType } from '@/types';
 import { Card } from '@/components/common/Card';
@@ -11,18 +10,14 @@ interface PhotoTabProps {
 }
 
 const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
-    // FIX: Cast details to PhotoDetails to access imageId and imageUrl
     const [imageUrl, setImageUrl] = useState<string | null>((entry.details as PhotoDetails)?.imageUrl || null);
-    // FIX: Cast details to PhotoDetails to access imageId and imageUrl
     const [isLoading, setIsLoading] = useState(!((entry.details as PhotoDetails)?.imageUrl));
 
     useEffect(() => {
         let isMounted = true;
-        // FIX: Cast details to PhotoDetails to access imageId and imageUrl
         const details = entry.details as PhotoDetails;
         if (details?.imageId && !imageUrl) {
             setIsLoading(true);
-            // FIX: Cast details to PhotoDetails to access imageId and imageUrl
             dbService.getImage(details.imageId)
                 .then(storedImage => {
                     if (isMounted && storedImage) setImageUrl(storedImage.data);
@@ -59,7 +54,6 @@ export const PhotosTab: React.FC<PhotoTabProps> = ({ journal }) => {
     const { t } = useTranslation();
     
     const photoJournalEntries = useMemo(() => 
-        // FIX: Cast details to PhotoDetails to access imageId and imageUrl
         journal.filter(entry => entry.type === JournalEntryType.Photo && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)), 
     [journal]);
 

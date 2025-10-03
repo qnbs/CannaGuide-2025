@@ -1,7 +1,7 @@
-import { AppSettings, View, Language, Theme } from '@/types';
+import { AppSettings, View, Language, Theme, TTSSettings, UiDensity } from '@/types';
 import { getT } from '../../i18n';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '../store';
 import { indexedDBStorage } from '../indexedDBStorage';
 import { APP_VERSION } from '@/services/migrationLogic';
 
@@ -58,6 +58,7 @@ export const defaultSettings: AppSettings = {
     quietHours: { enabled: false, start: '22:00', end: '08:00' },
     tts: { enabled: true, rate: 1, pitch: 1, voiceName: null },
     showArchivedInPlantsView: true,
+    isExpertMode: false,
 };
 
 export interface SettingsState {
@@ -123,6 +124,12 @@ const settingsSlice = createSlice({
                 state.settings.simulationProfile = 'custom';
             }
         },
+        updateAccessibilitySettings: (state, action: PayloadAction<Partial<AppSettings['accessibility']>>) => {
+            state.settings.accessibility = { ...state.settings.accessibility, ...action.payload };
+        },
+        updateTtsSettings: (state, action: PayloadAction<Partial<TTSSettings>>) => {
+            state.settings.tts = { ...state.settings.tts, ...action.payload };
+        },
         setSimulationProfile: (
             state,
             action: PayloadAction<'beginner' | 'expert' | 'experimental' | 'custom'>
@@ -173,7 +180,14 @@ const settingsSlice = createSlice({
     },
 });
 
-export const { setSettingsState, setSetting, setSettings, toggleSetting, setSimulationProfile } =
-    settingsSlice.actions;
+export const { 
+    setSettingsState, 
+    setSetting, 
+    setSettings, 
+    toggleSetting, 
+    setSimulationProfile,
+    updateAccessibilitySettings,
+    updateTtsSettings,
+} = settingsSlice.actions;
 
 export default settingsSlice.reducer;

@@ -1,6 +1,7 @@
+
+
 import React, { useMemo, useState } from 'react';
 import { Card } from '@/components/common/Card';
-// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { ArchivedAdvisorResponse, ExportFormat, Plant } from '@/types';
@@ -24,7 +25,6 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
 
     const allAdvice = useMemo<(ArchivedAdvisorResponse & { plantName: string })[]>(() => {
         const plantMap = new Map<string, string>();
-        // Also check archived plants from Zustand store if they exist in a more complex state
         const allKnownPlants: Plant[] = [...activePlants]; // In a real scenario, you might merge with archived plants
         
         allKnownPlants.forEach(p => plantMap.set(p.id, p.name));
@@ -139,7 +139,7 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                     </>
                 ) : (
                     <div className="text-center py-10 text-slate-500">
-                        <PhosphorIcons.Archive className="w-12 h-12 mx-auto text-slate-500 mb-2"/>
+                        <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-500 mb-2"/>
                         <h3 className="font-semibold">{t('knowledgeView.archive.empty')}</h3>
                     </div>
                 )}

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectCollectedSeeds, selectBreedingSlots } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
+import { Seed } from '@/types';
 
 export const BreedingView: React.FC = memo(() => {
     const { t } = useTranslation();

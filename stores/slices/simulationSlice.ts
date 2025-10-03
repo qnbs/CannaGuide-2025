@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
 import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings, HarvestData, TrainingType } from '@/types';
 import { simulationService } from '@/services/plantSimulationService';
-import { RootState } from '../store';
+import type { RootState } from '../store';
 import { cancelNewGrow, addNotification } from './uiSlice';
 import { getT } from '@/i18n';
 import { z } from 'zod';
@@ -22,12 +22,12 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (arg, { dispatch, getState }) => {
         const { ui, settings, simulation } = getState();
-        const { strainForNewGrow, setupForNewGrow, initiatingGrowForSlot } = ui;
+        const { strain: strainForNewGrow, setup: setupForNewGrow, slotIndex: initiatingGrowForSlot } = ui.newGrowFlow;
 
         const validationResult = GrowSetupSchema.safeParse(setupForNewGrow);
         if (!validationResult.success) {
             console.error("GrowSetup validation failed:", validationResult.error.flatten());
-            dispatch(addNotification({ message: 'Invalid grow setup data. Cannot start grow.', type: 'error' }));
+            dispatch(addNotification({ message: getT()('simulationErrors.invalidGrowSetup'), type: 'error' }));
             dispatch(cancelNewGrow());
             return;
         }
@@ -63,13 +63,13 @@ export const applyWateringAction = createAsyncThunk<void, { plantId: string, wat
     async ({ plantId, waterData, notes }, { dispatch, getState }) => {
         const validation = WaterDataSchema.safeParse(waterData);
         if (!validation.success) {
-            dispatch(addNotification({ message: 'Invalid watering data provided.', type: 'error' }));
+            dispatch(addNotification({ message: getT()('simulationErrors.invalidWateringData'), type: 'error' }));
             return;
         }
 
         const plant = getState().simulation.plants.entities[plantId];
         if (!plant) {
-            dispatch(addNotification({ message: 'Plant not found for watering.', type: 'error' }));
+            dispatch(addNotification({ message: getT()('simulationErrors.plantNotFoundWatering'), type: 'error' }));
             return;
         }
 
@@ -85,14 +85,14 @@ export const applyTrainingAction = createAsyncThunk<void, { plantId: string, tra
     async ({ plantId, trainingType, notes }, { dispatch, getState }) => {
         const validation = TrainingTypeSchema.safeParse(trainingType);
         if (!validation.success) {
-            dispatch(addNotification({ message: 'Invalid training type.', type: 'error' }));
+            dispatch(addNotification({ message: getT()('simulationErrors.invalidTrainingType'), type: 'error' }));
             return;
         }
         const validatedTrainingType = validation.data;
 
         const plant = getState().simulation.plants.entities[plantId];
         if (!plant) {
-            dispatch(addNotification({ message: 'Plant not found for training.', type: 'error' }));
+            dispatch(addNotification({ message: getT()('simulationErrors.plantNotFoundTraining'), type: 'error' }));
             return;
         }
 
@@ -106,7 +106,7 @@ export const applyTrainingAction = createAsyncThunk<void, { plantId: string, tra
     }
 );
 
-const PestControlSchema = z.object({ notes: z.string().min(1, { message: "Pest control notes cannot be empty." }) });
+const PestControlSchema = z.object({ notes: z.string().min(1, { message: getT()('simulationErrors.pestControlNotesEmpty') }) });
 export const applyPestControlAction = createAsyncThunk<void, { plantId: string, notes: string }, { state: RootState }>(
     'simulation/applyPestControlAction',
     async({ plantId, notes }, { dispatch }) => {

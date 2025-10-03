@@ -6,7 +6,6 @@ import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppDispatch } from '@/stores/store';
 // FIX: Removed unused import from obsolete aiSlice. Chat history is now local state.
-// import { clearMentorChat } from '@/stores/slices/aiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { useGetMentorResponseMutation } from '@/stores/api';

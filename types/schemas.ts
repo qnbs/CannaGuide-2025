@@ -1,15 +1,47 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 // Enums as Zod enums
-export const PlantStageSchema = z.enum(['SEED', 'GERMINATION', 'SEEDLING', 'VEGETATIVE', 'FLOWERING', 'HARVEST', 'DRYING', 'CURING', 'FINISHED']);
-export const StrainTypeSchema = z.enum(['Sativa', 'Indica', 'Hybrid']);
-export const DifficultyLevelSchema = z.enum(['Easy', 'Medium', 'Hard']);
-export const YieldLevelSchema = z.enum(['Low', 'Medium', 'High']);
-export const HeightLevelSchema = z.enum(['Short', 'Medium', 'Tall']);
-export const ProblemTypeSchema = z.enum(['NUTRIENT_DEFICIENCY', 'OVERWATERING', 'UNDERWATERING', 'PEST_INFESTATION', 'PH_TOO_HIGH', 'PH_TOO_LOW', 'HUMIDITY_TOO_HIGH', 'HUMIDITY_TOO_LOW', 'TEMPERATURE_TOO_HIGH', 'TEMPERATURE_TOO_LOW', 'NUTRIENT_BURN']);
-export const JournalEntryTypeSchema = z.enum(['WATERING', 'FEEDING', 'TRAINING', 'OBSERVATION', 'SYSTEM', 'PHOTO', 'PEST_CONTROL', 'ENVIRONMENT', 'AMENDMENT']);
-export const TaskPrioritySchema = z.enum(['high', 'medium', 'low']);
-export const TrainingTypeSchema = z.enum(['LST', 'Topping', 'FIMing', 'Defoliation']);
+export const PlantStageSchema = z.enum([
+    'SEED',
+    'GERMINATION',
+    'SEEDLING',
+    'VEGETATIVE',
+    'FLOWERING',
+    'HARVEST',
+    'DRYING',
+    'CURING',
+    'FINISHED',
+])
+export const StrainTypeSchema = z.enum(['Sativa', 'Indica', 'Hybrid'])
+export const DifficultyLevelSchema = z.enum(['Easy', 'Medium', 'Hard'])
+export const YieldLevelSchema = z.enum(['Low', 'Medium', 'High'])
+export const HeightLevelSchema = z.enum(['Short', 'Medium', 'Tall'])
+export const ProblemTypeSchema = z.enum([
+    'NUTRIENT_DEFICIENCY',
+    'OVERWATERING',
+    'UNDERWATERING',
+    'PEST_INFESTATION',
+    'PH_TOO_HIGH',
+    'PH_TOO_LOW',
+    'HUMIDITY_TOO_HIGH',
+    'HUMIDITY_TOO_LOW',
+    'TEMPERATURE_TOO_HIGH',
+    'TEMPERATURE_TOO_LOW',
+    'NUTRIENT_BURN',
+])
+export const JournalEntryTypeSchema = z.enum([
+    'WATERING',
+    'FEEDING',
+    'TRAINING',
+    'OBSERVATION',
+    'SYSTEM',
+    'PHOTO',
+    'PEST_CONTROL',
+    'ENVIRONMENT',
+    'AMENDMENT',
+])
+export const TaskPrioritySchema = z.enum(['high', 'medium', 'low'])
+export const TrainingTypeSchema = z.enum(['LST', 'Topping', 'FIMing', 'Defoliation'])
 
 // Schemas for nested interfaces
 export const StrainSchema = z.object({
@@ -37,11 +69,11 @@ export const StrainSchema = z.object({
     dominantTerpenes: z.array(z.string()).optional(),
     geneticModifiers: z.object({
         pestResistance: z.number(),
-        nutrientUptakeRate: z.number(),
+        nutrientUtakeRate: z.number(),
         stressTolerance: z.number(),
         rue: z.number(),
     }),
-});
+})
 
 export const PlantProblemSchema = z.object({
     type: ProblemTypeSchema,
@@ -49,7 +81,7 @@ export const PlantProblemSchema = z.object({
     severity: z.number(),
     detectedAt: z.number(),
     resolvedAt: z.number().optional(),
-});
+})
 
 export const TaskSchema = z.object({
     id: z.string(),
@@ -59,7 +91,7 @@ export const TaskSchema = z.object({
     isCompleted: z.boolean(),
     createdAt: z.number(),
     completedAt: z.number().optional(),
-});
+})
 
 export const JournalEntrySchema = z.object({
     id: z.string(),
@@ -67,7 +99,7 @@ export const JournalEntrySchema = z.object({
     type: JournalEntryTypeSchema,
     notes: z.string(),
     details: z.record(z.any()).optional(),
-});
+})
 
 export const PlantHistoryEntrySchema = z.object({
     day: z.number(),
@@ -79,7 +111,7 @@ export const PlantHistoryEntrySchema = z.object({
         ec: z.number(),
         moisture: z.number(),
     }),
-});
+})
 
 export const HarvestDataSchema = z.object({
     wetWeight: z.number(),
@@ -95,7 +127,7 @@ export const HarvestDataSchema = z.object({
     terpeneProfile: z.record(z.number()),
     cannabinoidProfile: z.object({ thc: z.number(), cbn: z.number() }),
     lastBurpDay: z.number(),
-});
+})
 
 export const PlantSchema = z.object({
     id: z.string(),
@@ -143,16 +175,16 @@ export const PlantSchema = z.object({
         fan: z.object({ isOn: z.boolean(), speed: z.number() }),
     }),
     harvestData: HarvestDataSchema.optional(),
-});
+})
 
 export const GrowSetupSchema = z.object({
     potSize: z.number().min(1),
     medium: z.enum(['Soil', 'Coco', 'Hydro']),
     lightHours: z.number().min(0).max(24),
-});
+})
 
 export const WaterDataSchema = z.object({
     amount: z.number().min(0),
     ph: z.number().min(0).max(14),
     ec: z.number().min(0).optional(),
-});
+})

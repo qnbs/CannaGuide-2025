@@ -1,15 +1,15 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react'
 
 type ValidationErrors<T> = {
-    [K in keyof T]?: string;
-};
+    [K in keyof T]?: string
+}
 
-type ValidationFunction<T> = (values: T) => ValidationErrors<T>;
+type ValidationFunction<T> = (values: T) => ValidationErrors<T>
 
 interface UseFormProps<T> {
-    initialValues: T;
-    validate: ValidationFunction<T>;
-    onSubmit: (values: T) => void;
+    initialValues: T
+    validate: ValidationFunction<T>
+    onSubmit: (values: T) => void
 }
 
 export const useForm = <T extends Record<string, any>>({
@@ -17,30 +17,30 @@ export const useForm = <T extends Record<string, any>>({
     validate,
     onSubmit,
 }: UseFormProps<T>) => {
-    const [values, setValues] = useState<T>(initialValues);
-    const [errors, setErrors] = useState<ValidationErrors<T>>({});
+    const [values, setValues] = useState<T>(initialValues)
+    const [errors, setErrors] = useState<ValidationErrors<T>>({})
 
     const handleChange = useCallback(<K extends keyof T>(field: K, value: T[K]) => {
-        setValues((prev) => ({ ...prev, [field]: value }));
-    }, []);
+        setValues((prev) => ({ ...prev, [field]: value }))
+    }, [])
 
     const handleSubmit = useCallback(
         (e: React.FormEvent) => {
-            e.preventDefault();
-            const validationErrors = validate(values);
-            setErrors(validationErrors);
+            e.preventDefault()
+            const validationErrors = validate(values)
+            setErrors(validationErrors)
 
             if (Object.keys(validationErrors).length === 0) {
-                onSubmit(values);
+                onSubmit(values)
             }
         },
         [values, validate, onSubmit]
-    );
+    )
 
     return {
         values,
         errors,
         handleChange,
         handleSubmit,
-    };
-};
+    }
+}

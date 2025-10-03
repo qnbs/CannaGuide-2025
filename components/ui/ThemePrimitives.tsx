@@ -1,4 +1,3 @@
-
 import React, { forwardRef, memo, useId } from 'react';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 
@@ -58,8 +57,6 @@ export const Paragraph = memo(ParagraphComponent);
 
 // --- FORM ELEMENTS ---
 
-// FIX: Redefined props to use a discriminated union for type-safe polymorphic behavior,
-// correctly handling attributes for both <input> and <textarea>.
 type InputProps =
     | ({ as?: 'input' } & React.InputHTMLAttributes<HTMLInputElement>)
     | ({ as: 'textarea' } & React.TextareaHTMLAttributes<HTMLTextAreaElement>);

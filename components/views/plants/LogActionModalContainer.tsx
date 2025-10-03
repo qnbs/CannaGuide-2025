@@ -1,8 +1,9 @@
 import React from 'react';
-import { LogActionModal } from './LogActionModal';
+import { LogActionModal, ModalType } from './LogActionModal';
 import { selectPlantById, selectActionModalState } from '@/stores/selectors';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { closeActionModal, openDeepDiveModal } from '@/stores/slices/uiSlice';
+import { Plant } from '@/types';
 
 export const LogActionModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();

@@ -1,27 +1,23 @@
 {
   "name": "CannaGuide 2025",
   "short_name": "CannaGuide",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0F172A",
   "theme_color": "#0F172A",
-  "orientation": "portrait-primary",
+  "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle.",
   "icons": [
-    {
-      "src": "pwa-icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
-    },
     {
       "src": "/pwa-icon-192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any"
     },
     {
       "src": "/pwa-icon-512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ]
 }

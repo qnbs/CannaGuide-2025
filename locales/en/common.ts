@@ -124,6 +124,15 @@ export const common = {
   },
   loadMore: 'Load More',
   regenerate: 'Regenerate',
+  unchanged: 'Unchanged',
+  simulationErrors: {
+    invalidGrowSetup: 'Invalid grow setup data. Cannot start grow.',
+    plantNotFoundWatering: 'Plant not found for watering.',
+    invalidWateringData: 'Invalid watering data provided.',
+    invalidTrainingType: 'Invalid training type.',
+    plantNotFoundTraining: 'Plant not found for training.',
+    pestControlNotesEmpty: 'Pest control notes cannot be empty.'
+  },
 };
 
 export const nav = {

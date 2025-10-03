@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Strain, SavedExport, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -9,6 +9,7 @@ import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { BulkActionsBar } from './BulkActionsBar';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
+import { Input } from '@/components/ui/ThemePrimitives';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -18,11 +19,43 @@ interface ExportsManagerViewProps {
     onOpenExportModal: () => void;
 }
 
+type SortKey = 'createdAt' | 'name' | 'format';
+
 export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, deleteExport, updateExport, allStrains, onOpenExportModal }) => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const [editingExport, setEditingExport] = useState<SavedExport | null>(null);
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
+    const [searchTerm, setSearchTerm] = useState('');
+    const [sort, setSort] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'createdAt', direction: 'desc' });
+
+    const processedExports = useMemo(() => {
+        let exports = [...savedExports];
+
+        if (searchTerm) {
+            const lowerTerm = searchTerm.toLowerCase();
+            exports = exports.filter(e => 
+                e.name.toLowerCase().includes(lowerTerm) ||
+                (e.notes || '').toLowerCase().includes(lowerTerm) ||
+                e.format.toLowerCase().includes(lowerTerm)
+            );
+        }
+
+        exports.sort((a, b) => {
+            const valA = a[sort.key];
+            const valB = b[sort.key];
+            let comparison = 0;
+            if (typeof valA === 'string' && typeof valB === 'string') {
+                comparison = valA.localeCompare(valB);
+            // FIX: Add type guard to ensure valA and valB are numbers before subtraction.
+            } else if (typeof valA === 'number' && typeof valB === 'number') {
+                comparison = valA - valB;
+            }
+            return sort.direction === 'asc' ? comparison : -comparison;
+        });
+
+        return exports;
+    }, [savedExports, searchTerm, sort]);
 
     const handleRedownload = (savedExport: SavedExport) => {
         const strainsToExport = allStrains.filter(s => savedExport.strainIds.includes(s.id));
@@ -63,14 +96,12 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     };
 
     const handleToggleAll = () => {
-        if (selectedIds.size === sortedExports.length) {
+        if (selectedIds.size === processedExports.length) {
             setSelectedIds(new Set());
         } else {
-            setSelectedIds(new Set(sortedExports.map(e => e.id)));
+            setSelectedIds(new Set(processedExports.map(e => e.id)));
         }
     };
-    
-    const sortedExports = [...savedExports].sort((a, b) => b.createdAt - a.createdAt);
 
     return (
         <div className="mt-4 animate-fade-in">
@@ -90,9 +121,18 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
             )}
             
             <Card>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
                      <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.tabs.exports', { count: savedExports.length })}</h3>
-                     <Button onClick={onOpenExportModal}><PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />{t('strainsView.exportsManager.createExport')}</Button>
+                     <div className="flex items-center gap-2 w-full sm:w-auto">
+                        <div className="relative flex-grow">
+                            <Input type="text" placeholder={t('strainsView.tips.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8 !py-1.5" />
+                            <PhosphorIcons.MagnifyingGlass className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        </div>
+                        <Button variant="secondary" onClick={() => setSort(s => ({ ...s, direction: s.direction === 'asc' ? 'desc' : 'asc' }))} className="!p-2">
+                           {sort.direction === 'asc' ? <PhosphorIcons.ArrowUp /> : <PhosphorIcons.ArrowDown />}
+                        </Button>
+                        <Button onClick={onOpenExportModal}><PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />{t('strainsView.exportsManager.createExport')}</Button>
+                     </div>
                 </div>
                  {savedExports.length === 0 ? (
                     <div className="text-center py-10 text-slate-500">
@@ -103,10 +143,10 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                 ) : (
                      <div className="space-y-3">
                         <div className="flex items-center gap-3 px-2 text-sm text-slate-400">
-                           <input type="checkbox" checked={selectedIds.size === sortedExports.length && sortedExports.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                           <input type="checkbox" checked={selectedIds.size === processedExports.length && processedExports.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
                             <span>{t('strainsView.selectedCount', { count: selectedIds.size })}</span>
                         </div>
-                        {sortedExports.map(item => (
+                        {processedExports.map(item => (
                             <div key={item.id} className={`p-3 rounded-lg flex items-center gap-3 transition-colors ${selectedIds.has(item.id) ? 'bg-primary-900/40' : 'bg-slate-800'}`}>
                                  <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
                                 <div className="flex-grow">

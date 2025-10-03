@@ -1,17 +1,16 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { SavedStrainTip, Strain, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
-// FIX: Corrected import path for selector to use the centralized `selectors.ts` file.
 import { selectHasAvailableSlots } from '@/stores/selectors';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { exportService } from '@/services/exportService';
-// FIX: Import useAppSelector to access Redux state.
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
+import { BulkActionsBar } from './BulkActionsBar';
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[];
@@ -52,7 +51,6 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
 export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, updateTip, allStrains }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: Use `useAppSelector` for Redux state.
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
     const [editingTip, setEditingTip] = useState<SavedStrainTip | null>(null);
@@ -78,33 +76,6 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
         );
     }, [savedTips, searchTerm]);
 
-    const handleToggleSelection = (id: string) => {
-        setSelectedIds(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) newSet.delete(id);
-            else newSet.add(id);
-            return newSet;
-        });
-    };
-
-    const handleToggleAll = (items: any[]) => {
-        if (selectedIds.size === items.length) {
-            setSelectedIds(new Set());
-        } else {
-            setSelectedIds(new Set(items.map(item => item.id)));
-        }
-    };
-    
-    const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
-        const dataToExport = source === 'selected' ? savedTips.filter(tip => selectedIds.has(tip.id)) : filteredTips;
-        if (dataToExport.length === 0) {
-            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
-            return;
-        }
-        // FIX: Removed extra `t` argument from exportService call.
-        exportService.exportStrainTips(dataToExport, format, `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`);
-    };
-
     const sortedAndGrouped = useMemo(() => {
         if (sortMode === 'date') {
             return [...filteredTips].sort((a,b) => b.createdAt - a.createdAt);
@@ -120,10 +91,57 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
         return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
     }, [filteredTips, sortMode]);
 
+    const allVisibleIds = useMemo(() => {
+        if (sortMode === 'date') {
+            return (sortedAndGrouped as SavedStrainTip[]).map(t => t.id);
+        }
+        return (sortedAndGrouped as [string, SavedStrainTip[]][]).flatMap(([, tips]) => tips.map(t => t.id));
+    }, [sortedAndGrouped, sortMode]);
+
+    const handleToggleSelection = useCallback((id: string) => {
+        setSelectedIds(prev => {
+            const newSet = new Set(prev);
+            newSet.has(id) ? newSet.delete(id) : newSet.add(id);
+            return newSet;
+        });
+    }, []);
+
+    const handleToggleAll = useCallback(() => {
+        if (selectedIds.size === allVisibleIds.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(allVisibleIds));
+        }
+    }, [selectedIds.size, allVisibleIds]);
+
+    const handleBulkDelete = useCallback(() => {
+        if (window.confirm(t('strainsView.exportsManager.deleteConfirmPlural', { count: selectedIds.size }))) {
+            selectedIds.forEach(id => deleteTip(id));
+            setSelectedIds(new Set());
+        }
+    }, [selectedIds, deleteTip, t]);
+    
+    const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
+        const dataToExport = source === 'selected' ? savedTips.filter(tip => selectedIds.has(tip.id)) : filteredTips;
+        if (dataToExport.length === 0) {
+            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
+            return;
+        }
+        exportService.exportStrainTips(dataToExport, format, `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`);
+    };
+
     return (
         <div className="mt-4">
             {editingTip && <EditResponseModal response={editingTip} onClose={() => setEditingTip(null)} onSave={handleUpdateSave} title={t('strainsView.tips.editTipTitle')} />}
             <DataExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} title={t('strainsView.tips.title')} selectionCount={selectedIds.size} totalCount={filteredTips.length} translationBasePath="strainsView.tips.exportModal" />
+
+            {selectedIds.size > 0 && (
+                <BulkActionsBar
+                    selectedCount={selectedIds.size}
+                    onClearSelection={() => setSelectedIds(new Set())}
+                    onDelete={handleBulkDelete}
+                />
+            )}
 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                 <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.tips.title')}</h3>
@@ -146,7 +164,7 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
             ) : (
                 <div className="space-y-3">
                     <div className="px-3 flex items-center gap-3">
-                        <input type="checkbox" checked={selectedIds.size === filteredTips.length && filteredTips.length > 0} onChange={() => handleToggleAll(filteredTips)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                        <input type="checkbox" checked={selectedIds.size === allVisibleIds.length && allVisibleIds.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
                         <label className="text-sm text-slate-400">{t('strainsView.selectedCount', { count: selectedIds.size })}</label>
                     </div>
                     {sortMode === 'grouped' ? (

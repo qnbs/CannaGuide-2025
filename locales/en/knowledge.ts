@@ -48,8 +48,8 @@ export const knowledgeView = {
     },
     scenarios: {
         toppingVsLst: {
-            title: "Run Topping vs. Untouched Experiment",
-            description: "Simulates a 14-day growth period comparing an untouched plant against one that has been topped."
+            title: "Run Topping vs. LST Experiment",
+            description: "Simulates a 14-day growth period comparing a plant that receives LST against one that has been topped."
         }
     },
     knowledgebase: {
@@ -106,7 +106,23 @@ export const knowledgeView = {
                       <strong>Causes:</strong> Often not a lack of it in the fertilizer, but an incorrect pH in the root zone blocking uptake. Can also occur when using RO (reverse osmosis) water.<br>
                       <strong>Solution:</strong> 1. Check and correct the pH of your nutrient solution (Soil: 6.0-6.8, Hydro/Coco: 5.5-6.5). 2. Use a Cal-Mag supplement. 3. Ensure humidity is not too high, as this can slow transpiration and thus calcium uptake.`
         }
-    }
+    },
+    sandbox: {
+        title: 'Experimental Sandbox',
+        experimentOn: 'Experiment on {{name}}',
+        scenarioDescription: 'Compared {{actionA}} vs {{actionB}} over {{duration}} days.',
+        runningSimulation: 'Running accelerated simulation...',
+        startExperiment: 'New Experiment',
+        modal: {
+            title: 'Start New Experiment',
+            description: 'Select a plant to run a 14-day "Topping vs. LST" simulation.',
+            runScenario: 'Start Scenario',
+            noPlants: 'You must first grow a plant to start an experiment.',
+        },
+        savedExperiments: 'Saved Experiments',
+        noExperiments: 'No experiments saved yet.',
+        experimentMeta: 'Based on {{basePlantName}} - Run on {{date}}',
+    },
 };
 
 export const tipOfTheDay = {

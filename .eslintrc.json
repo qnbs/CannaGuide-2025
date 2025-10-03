@@ -22,7 +22,8 @@
     "env": {
         "browser": true,
         "es2021": true,
-        "node": true
+        "node": true,
+        "worker": true
     },
     "rules": {
         "react/react-in-jsx-scope": "off",

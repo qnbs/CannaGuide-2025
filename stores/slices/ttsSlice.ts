@@ -1,8 +1,7 @@
-
 import { SpeechQueueItem, TTSSettings } from '@/types';
 import { ttsService } from '../../services/ttsService';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { RootState } from '../store';
+import type { RootState } from '../store';
 
 export interface TtsState {
     ttsQueue: SpeechQueueItem[];

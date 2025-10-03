@@ -1,4 +1,9 @@
-import { PersistStorage, StateStorage } from 'zustand/middleware';
+
+export interface StateStorage {
+  getItem: (name: string) => string | null | Promise<string | null>
+  setItem: (name: string, value: string) => void | Promise<void>
+  removeItem: (name: string) => void | Promise<void>
+}
 
 const DB_NAME = 'CannaGuideStateDB';
 const DB_VERSION = 1;

@@ -1,4 +1,3 @@
-
 import { Strain, StrainType } from '@/types';
 import { createStrainObject } from '@/services/strainFactory';
 
@@ -23,28 +22,6 @@ export const strains: Strain[] = [
         aromas: ["Earthy", "Pine", "Diesel", "Chocolate"],
         dominantTerpenes: ["Caryophyllene", "Myrcene", "Limonene"],
     }),
-    // NOTE: This strain is a duplicate of an existing entry in `data/strains/s.ts`
-    // and was causing a database initialization error. It has been commented out to fix the error.
-    // createStrainObject({
-    //     id: 'super-glue',
-    //     name: 'Super Glue',
-    //     type: StrainType.Hybrid,
-    //     typeDetails: "Indica 60% / Sativa 40%",
-    //     thc: 24,
-    //     cbd: 1,
-    //     thcRange: "20-28%",
-    //     cbdRange: "<1%",
-    //     floweringTime: 8.5,
-    //     floweringTimeRange: "8-9",
-    //     genetics: "Afghani x Northern Lights",
-    //     agronomic: {
-    //         difficulty: "Easy",
-    //         yield: "Medium",
-    //         height: "Medium",
-    //     },
-    //     aromas: ["Pine", "Earthy", "Sweet", "Citrus"],
-    //     dominantTerpenes: ["Caryophyllene", "Myrcene", "Pinene"],
-    // }),
     createStrainObject({
         id: 'monkey-glue',
         name: 'Monkey Glue',
@@ -65,28 +42,6 @@ export const strains: Strain[] = [
         aromas: ["Diesel", "Pine", "Earthy", "Sweet"],
         dominantTerpenes: ["Myrcene", "Caryophyllene", "Limonene"],
     }),
-    // NOTE: This strain is a duplicate of an existing entry in `data/strains/t.ts`
-    // and was causing a database initialization error. It has been commented out to fix the error.
-    // createStrainObject({
-    //     id: 'tropicana-cookies',
-    //     name: 'Tropicana Cookies',
-    //     type: StrainType.Hybrid,
-    //     typeDetails: "Sativa 70% / Indica 30%",
-    //     thc: 25,
-    //     cbd: 1,
-    //     thcRange: "22-28%",
-    //     cbdRange: "<1%",
-    //     floweringTime: 9.5,
-    //     floweringTimeRange: "9-10",
-    //     genetics: "Girl Scout Cookies x Tangie",
-    //     agronomic: {
-    //         difficulty: "Medium",
-    //         yield: "High",
-    //         height: "Tall",
-    //     },
-    //     aromas: ["Orange", "Citrus", "Sweet", "Cookie"],
-    //     dominantTerpenes: ["Caryophyllene", "Limonene", "Myrcene"],
-    // }),
     createStrainObject({
         id: 'tropicana-banana',
         name: 'Tropicana Banana',

@@ -1,23 +1,32 @@
-import React from 'react';
+import React from 'react'
 
 interface Tab {
-    id: string;
-    label: string;
-    icon?: React.ReactNode;
+    id: string
+    label: string
+    icon?: React.ReactNode
 }
 
 interface TabsProps {
-    tabs: Tab[];
-    activeTab: string;
-    setActiveTab: (id: string) => void;
-    className?: string;
-    buttonClassName?: string;
+    tabs: Tab[]
+    activeTab: string
+    setActiveTab: (id: string) => void
+    className?: string
+    buttonClassName?: string
 }
 
-export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, className = '', buttonClassName = '' }) => {
+export const Tabs: React.FC<TabsProps> = ({
+    tabs,
+    activeTab,
+    setActiveTab,
+    className = '',
+    buttonClassName = '',
+}) => {
     return (
-        <nav className={`flex flex-wrap items-center gap-1 bg-slate-900 rounded-lg p-0.5 ${className}`} role="tablist">
-            {tabs.map(tab => (
+        <nav
+            className={`flex flex-wrap items-center gap-1 bg-slate-900 rounded-lg p-0.5 ${className}`}
+            role="tablist"
+        >
+            {tabs.map((tab) => (
                 <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
@@ -36,5 +45,5 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                 </button>
             ))}
         </nav>
-    );
-};
+    )
+}

@@ -1,5 +1,4 @@
 import React from 'react';
-// FIX: Import AdvancedFilterState from the types file.
 import { DifficultyLevel, YieldLevel, HeightLevel, AdvancedFilterState } from '@/types';
 import { Button } from '@/components/common/Button';
 import { RangeSlider } from '@/components/common/RangeSlider';
@@ -71,7 +70,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                 <section aria-labelledby="growdata-filter-title">
                     <FilterSection title={t('strainsView.addStrainModal.growData')}>
                         <h3 id="growdata-filter-title" className="sr-only">{t('strainsView.addStrainModal.growData')}</h3>
-                        <RangeSlider label={t('strainsView.filters.floweringTime')} min={4} max={20} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState({ floweringRange: val })} unit={` ${t('strainsView.weeks')}`} color="blue"/>
+                        <RangeSlider label={t('strainsView.filters.floweringTime')} min={4} max={20} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState({ floweringRange: val })} unit={` ${t('common.units.weeks')}`} color="blue"/>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
                                 <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.difficulty')}</h4>
@@ -126,7 +125,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                         <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                             {allTerpenes.map(terpene => (
                                 <button key={terpene} onClick={() => handleToggleArray('selectedTerpenes', terpene)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.includes(terpene) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
-                                     {t(`common.terpenes.${terpene}`, terpene)}
+                                    {t(`common.terpenes.${terpene}`, terpene)}
                                 </button>
                             ))}
                         </div>

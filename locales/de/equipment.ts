@@ -11,7 +11,6 @@ export const equipmentView = {
     subtitleNew: 'Beantworte zwei einfache Fragen, um eine komplette, KI-generierte Ausrüstungsempfehlung für deinen Grow zu erhalten.',
     step1TitleNew: '1. Wie viele Pflanzen möchtest du anbauen?',
     plantCount_one: '1 Pflanze',
-    // FIX: Changed interpolation key from 'count' to 'range' to allow passing a string for display while still using the numeric 'count' for pluralization.
     plantCount_other: '{{range}} Pflanzen',
     step2TitleNew: '2. Wähle deinen Konfigurationsstil',
     generate: 'Setup generieren',
@@ -80,7 +79,8 @@ export const equipmentView = {
       rationale: 'Begründung',
       price: 'Preis (€)',
       category: 'Kategorie',
-    }
+    },
+    noDetails: 'Keine detaillierten Komponenteninformationen für dieses Setup verfügbar.',
   },
   calculators: {
     yes: 'Ja',

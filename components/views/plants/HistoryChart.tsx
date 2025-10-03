@@ -1,5 +1,5 @@
-import React, { useState, useMemo, memo } from 'react';
-// FIX: Corrected import path for types to use the '@/' alias.
+
+import React, { useState, useMemo, memo, useRef } from 'react';
 import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
@@ -26,10 +26,26 @@ const eventIcons: Record<JournalEntryType, React.ReactNode> = {
     [JournalEntryType.Amendment]: <></>,
 };
 
+type Metric = 'height' | 'stressLevel' | 'ph' | 'ec' | 'moisture';
+
+const pathConfig = {
+    growth: [
+        { key: 'height' as Metric, labelKey: 'plantsView.detailedView.height', color: 'rgb(var(--color-primary-500))', strokeWidth: 2, dash: false, unit: 'cm' },
+        { key: 'stressLevel' as Metric, labelKey: 'plantsView.detailedView.stress', color: 'rgb(var(--color-accent-500))', strokeWidth: 1.5, dash: true, unit: '%' },
+    ],
+    substrate: [
+        { key: 'ph' as Metric, labelKey: 'plantsView.vitals.ph', color: 'rgb(250, 204, 21)', strokeWidth: 2, dash: false, unit: '' },
+        { key: 'ec' as Metric, labelKey: 'plantsView.vitals.ec', color: 'rgb(249, 115, 22)', strokeWidth: 2, dash: true, unit: '' },
+        { key: 'moisture' as Metric, labelKey: 'plantsView.vitals.moisture', color: 'rgb(59, 130, 246)', strokeWidth: 1.5, dash: false, unit: '%', opacity: 0.7 },
+    ]
+};
+
 export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journal, plantCreatedAt }) => {
     const { t } = useTranslation();
     const [view, setView] = useState<ChartView>('growth');
-    
+    const [hoveredData, setHoveredData] = useState<{ point: PlantHistoryEntry, x: number } | null>(null);
+    const svgRef = useRef<SVGSVGElement>(null);
+
     if (!history || history.length < 2) {
         return <div className="flex items-center justify-center h-full text-slate-500 text-sm">{t('plantsView.detailedView.historyNoData')}</div>;
     }
@@ -55,7 +71,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         ph: d3.scaleLinear().domain(yDomains.ph).range([height - padding.bottom, padding.top]),
         ec: d3.scaleLinear().domain(yDomains.ec).range([height - padding.bottom, padding.top]),
         moisture: d3.scaleLinear().domain(yDomains.moisture).range([height - padding.bottom, padding.top]),
-    }), [yDomains]);
+    }), [yDomains, height, padding]);
 
     const lineGenerators = useMemo(() => ({
         height: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.height(d.height)),
@@ -67,14 +83,28 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     
     const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);
 
-    const paths = view === 'growth' ? [
-        { d: lineGenerators.height(history), stroke: 'rgb(var(--color-primary-500))', strokeWidth: 2, label: t('plantsView.detailedView.height'), dash: false },
-        { d: lineGenerators.stressLevel(history), stroke: 'rgb(var(--color-accent-500))', strokeWidth: 1.5, label: t('plantsView.detailedView.stress'), dash: true },
-    ] : [
-        { d: lineGenerators.ph(history), stroke: 'rgb(250, 204, 21)', strokeWidth: 2, label: 'pH', dash: false },
-        { d: lineGenerators.ec(history), stroke: 'rgb(249, 115, 22)', strokeWidth: 2, label: 'EC', dash: true },
-        { d: lineGenerators.moisture(history), stroke: 'rgb(59, 130, 246)', strokeWidth: 1.5, label: t('plantsView.vitals.moisture'), dash: false, opacity: 0.5 },
-    ];
+    const paths = pathConfig[view];
+
+    const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
+        const svg = svgRef.current;
+        if (!svg) return;
+        
+        const [mouseX] = d3.pointer(event);
+        const day = xScale.invert(mouseX);
+        
+        const bisector = d3.bisector((d: PlantHistoryEntry) => d.day).left;
+        const index = bisector(history, day, 1);
+        const d0 = history[index - 1];
+        const d1 = history[index];
+        if (!d0 || !d1) return;
+        
+        const point = day - d0.day > d1.day - day ? d1 : d0;
+        setHoveredData({ point, x: xScale(point.day) });
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredData(null);
+    };
 
     return (
         <div className="w-full h-full">
@@ -82,7 +112,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 <button onClick={() => setView('growth')} className={`px-2 py-0.5 text-xs rounded-md ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.history')}</button>
                 <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
             </div>
-            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
                 <g className="history-chart-grid" transform={`translate(0, ${height - padding.bottom})`}>
                     {xScale.ticks(5).map(tick => (
                         <g key={`x-${tick}`} transform={`translate(${xScale(tick)}, 0)`}>
@@ -92,8 +122,8 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                     ))}
                 </g>
                 
-                {paths.map((path, i) => (
-                    <path key={i} d={path.d || ''} fill="none" stroke={path.stroke} strokeWidth={path.strokeWidth} strokeDasharray={path.dash ? '3,3' : 'none'} opacity={path.opacity ?? 1} />
+                {paths.map((pathInfo) => (
+                    <path key={pathInfo.key} d={lineGenerators[pathInfo.key](history) || ''} fill="none" stroke={pathInfo.color} strokeWidth={pathInfo.strokeWidth} strokeDasharray={pathInfo.dash ? '3,3' : 'none'} opacity={pathInfo.opacity ?? 1} />
                 ))}
 
                 {eventEntries.map(entry => {
@@ -115,15 +145,58 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                         </g>
                     );
                 })}
+
+                <rect 
+                    x={padding.left}
+                    y={padding.top}
+                    width={width - padding.left - padding.right}
+                    height={height - padding.top - padding.bottom}
+                    fill="transparent"
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={handleMouseLeave}
+                />
+
+                {hoveredData && (
+                    <g pointerEvents="none">
+                        <line x1={hoveredData.x} y1={padding.top} x2={hoveredData.x} y2={height - padding.bottom} stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="2,2" />
+                        
+                        {paths.map(pathInfo => {
+                            let yValue;
+                            if (pathInfo.key === 'ph' || pathInfo.key === 'ec' || pathInfo.key === 'moisture') {
+                                yValue = hoveredData.point.medium[pathInfo.key];
+                            } else {
+                                yValue = (hoveredData.point as any)[pathInfo.key];
+                            }
+                            const yPos = yScales[pathInfo.key](yValue);
+
+                            return <circle key={`dot-${pathInfo.key}`} cx={hoveredData.x} cy={yPos} r="3" fill={pathInfo.color} stroke="rgb(var(--color-bg-primary))" strokeWidth="1.5" />;
+                        })}
+
+                        <foreignObject x={hoveredData.x > width / 2 ? hoveredData.x - 120 - 10 : hoveredData.x + 10} y={padding.top} width="120" height="100">
+                           <div className="bg-slate-900/80 p-2 rounded-md border border-slate-700 text-xs text-slate-200 space-y-1">
+                                <p className="font-bold border-b border-slate-700 pb-1 mb-1">{t('plantsView.plantCard.day')} {hoveredData.point.day}</p>
+                                {paths.map(pathInfo => {
+                                      let value;
+                                      if (pathInfo.key === 'ph' || pathInfo.key === 'ec' || pathInfo.key === 'moisture') {
+                                          value = hoveredData.point.medium[pathInfo.key];
+                                      } else {
+                                          value = (hoveredData.point as any)[pathInfo.key];
+                                      }
+                                      return <p key={`tooltip-${pathInfo.key}`} style={{color: pathInfo.color}}>{t(pathInfo.labelKey)}: {value.toFixed(1)}{pathInfo.unit}</p>
+                                })}
+                           </div>
+                        </foreignObject>
+                    </g>
+                )}
             </svg>
             <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-xs mt-2">
-                {paths.map((path, i) => (
-                    <span key={i} className="flex items-center gap-1.5">
-                        {path.dash ? 
-                            <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: path.stroke}}></div> :
-                            <div className="w-2.5 h-0.5" style={{backgroundColor: path.stroke}}></div>
+                {paths.map((pathInfo) => (
+                    <span key={pathInfo.key} className="flex items-center gap-1.5">
+                        {pathInfo.dash ? 
+                            <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: pathInfo.color}}></div> :
+                            <div className="w-2.5 h-0.5" style={{backgroundColor: pathInfo.color}}></div>
                         }
-                        {path.label}
+                        {t(pathInfo.labelKey)}
                     </span>
                 ))}
             </div>

@@ -93,35 +93,39 @@ listenerMiddleware.startListening({
 
 
 // --- Centralized Notification Listeners ---
+const t = getT();
 
-// User Strains
 listenerMiddleware.startListening({
   matcher: isAnyOf(addUserStrain, updateUserStrain),
   effect: (action, { dispatch }) => {
-    const t = getT();
     const type = action.type.includes('addUser') ? 'add' : 'update';
     dispatch(addNotification({ message: t(`strainsView.addStrainModal.validation.${type}Success`, { name: action.payload.name }), type: 'success' }));
   }
 });
 
-// Saved Items (Exports, Setups, Tips)
 listenerMiddleware.startListening({
-  matcher: isAnyOf(addSetup.fulfilled),
+  actionCreator: addSetup.fulfilled,
   effect: (action, { dispatch }) => {
-    const t = getT();
     dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: action.payload.name }), type: 'success' }));
+  }
+});
+
+listenerMiddleware.startListening({
+  actionCreator: addExport,
+  effect: (action, { dispatch }) => {
+      dispatch(addNotification({
+          message: t('common.successfullyExported_other', { count: action.payload.strainIds.length, format: action.payload.data.format.toUpperCase() }),
+          type: 'success',
+      }));
   }
 });
 
 listenerMiddleware.startListening({
     matcher: isAnyOf(deleteExport, deleteSetup, deleteStrainTip, deleteUserStrain),
     effect: (action, { dispatch }) => {
-        const t = getT();
         let message = 'Item removed.';
         if (action.type.includes('Export')) message = t('strainsView.exportsManager.exportRemoved');
-        if (action.type.includes('Setup')) message = 'Setup removed.'; // Assuming no specific translation key
-        if (action.type.includes('StrainTip')) message = 'Tip removed.';
-        if (action.type.includes('UserStrain')) message = 'Custom strain removed.';
+        // Add more specific messages if needed for other types
         dispatch(addNotification({ message, type: 'info' }));
     }
 });
@@ -129,85 +133,84 @@ listenerMiddleware.startListening({
 listenerMiddleware.startListening({
     matcher: isAnyOf(updateExport, updateSetup, updateStrainTip),
     effect: (action, { dispatch }) => {
-        const t = getT();
         const payload = (action.payload as any).changes || action.payload;
-        const name = payload.name;
+        const name = payload.name || payload.title;
         let message = `Item "${name}" updated.`;
         if (action.type.includes('Export')) message = t('strainsView.exportsManager.updateExportSuccess', { name });
-        // Add more specific messages if needed
         dispatch(addNotification({ message, type: 'success' }));
     }
 });
 
-
 listenerMiddleware.startListening({
   actionCreator: addStrainTip,
   effect: (action, { dispatch }) => {
-    const t = getT();
     dispatch(addNotification({ message: t('strainsView.tips.saveSuccess', { name: action.payload.strain.name }), type: 'success' }));
   }
 });
 
-// Favorites
 listenerMiddleware.startListening({
   actionCreator: addMultipleToFavorites,
   effect: (action, { dispatch }) => {
-    const t = getT();
     dispatch(addNotification({ message: t('strainsView.bulkActions.addedToFavorites', { count: action.payload.length }), type: 'success' }));
   }
 });
+
 listenerMiddleware.startListening({
   actionCreator: removeMultipleFromFavorites,
   effect: (action, { dispatch }) => {
-    const t = getT();
     dispatch(addNotification({ message: t('strainsView.bulkActions.removedFromFavorites', { count: action.payload.length }), type: 'info' }));
   }
 });
 
-// Archives & Data Management
 listenerMiddleware.startListening({
   actionCreator: addArchivedMentorResponse,
   effect: (_, { dispatch }) => {
-    dispatch(addNotification({ message: getT()('knowledgeView.archive.saveSuccess'), type: 'success' }));
+    dispatch(addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }));
   }
 });
+
 listenerMiddleware.startListening({
   actionCreator: addJournalEntry,
   effect: (action, { dispatch }) => {
     if(action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
-        dispatch(addNotification({ message: getT()('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
+        dispatch(addNotification({ message: t('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
     }
   }
 });
+
 listenerMiddleware.startListening({
   actionCreator: clearArchives,
   effect: (_, { dispatch }) => {
-    dispatch(addNotification({ message: getT()('settingsView.data.clearArchivesSuccess'), type: 'success' }));
+    dispatch(addNotification({ message: t('settingsView.data.clearArchivesSuccess'), type: 'success' }));
   }
 });
+
 listenerMiddleware.startListening({
   actionCreator: resetPlants,
   effect: (_, { dispatch }) => {
-    dispatch(addNotification({ message: getT()('settingsView.data.resetPlantsSuccess'), type: 'success' }));
+    dispatch(addNotification({ message: t('settingsView.data.resetPlantsSuccess'), type: 'success' }));
   }
 });
+
 listenerMiddleware.startListening({
   actionCreator: exportAllData.fulfilled,
   effect: (_, { dispatch }) => {
-    dispatch(addNotification({ message: getT()('settingsView.data.exportSuccess'), type: 'success' }));
+    dispatch(addNotification({ message: t('settingsView.data.exportSuccess'), type: 'success' }));
   }
 });
+
 listenerMiddleware.startListening({
   actionCreator: resetAllData.fulfilled,
   effect: (_, { dispatch }) => {
-      dispatch(addNotification({ message: getT()('settingsView.data.resetAllSuccess'), type: 'success' }));
+      dispatch(addNotification({ message: t('settingsView.data.resetAllSuccess'), type: 'success' }));
   }
 });
+
 listenerMiddleware.startListening({
   matcher: isAnyOf(setOnboardingStep),
   effect: (action, listenerApi) => {
     if (action.payload === 0 && (listenerApi.getOriginalState() as RootState).settings.settings.onboardingCompleted) {
-        listenerApi.dispatch(addNotification({ message: getT()('settingsView.data.replayOnboardingSuccess'), type: 'success' }));
+        listenerApi.dispatch(addNotification({ message: t('settingsView.data.replayOnboardingSuccess'), type: 'success' }));
     }
   }
 });

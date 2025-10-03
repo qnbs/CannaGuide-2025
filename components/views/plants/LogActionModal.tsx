@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plant, JournalEntry, TrainingType, JournalEntryType, PhotoCategory } from '@/types';
+import { Plant, JournalEntry, TrainingType, JournalEntryType, PhotoCategory, AppSettings } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
@@ -31,7 +31,8 @@ const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { l
 export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
+    // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
+    const settings = useAppSelector(selectSettings) as AppSettings;
     
     const [notes, setNotes] = useState(t(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '') || '');
     const [waterAmount, setWaterAmount] = useState(500);
@@ -103,7 +104,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
             }
         } catch (error) {
             console.error("Failed to save image to DB", error);
-            dispatch(addNotification({ message: "Failed to save image", type: 'error' }));
+            dispatch(addNotification({ message: t('plantsView.aiDiagnostics.saveImageError'), type: 'error' }));
         }
     };
 
@@ -130,10 +131,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                         value={trainingType}
                         onChange={e => setTrainingType(e.target.value as TrainingType)}
                         options={[
-                            { value: 'LST', label: 'LST' },
-                            { value: 'Topping', label: 'Topping' },
-                            { value: 'FIMing', label: 'FIMing' },
-                            { value: 'Defoliation', label: 'Defoliation' },
+                            { value: 'LST', label: t('plantsView.actionModals.trainingTypes.LST') },
+                            { value: 'Topping', label: t('plantsView.actionModals.trainingTypes.Topping') },
+                            { value: 'FIMing', label: t('plantsView.actionModals.trainingTypes.FIMing') },
+                            { value: 'Defoliation', label: t('plantsView.actionModals.trainingTypes.Defoliation') },
                         ]}
                     />
                 </div>
@@ -147,8 +148,8 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onC
                     value={amendmentType}
                     onChange={e => setAmendmentType(e.target.value)}
                     options={[
-                        { value: 'Mycorrhizae', label: 'Mycorrhizae' },
-                        { value: 'Worm Castings', label: 'Worm Castings' },
+                        { value: 'Mycorrhizae', label: t('plantsView.actionModals.amendmentTypes.Mycorrhizae') },
+                        { value: 'Worm Castings', label: t('plantsView.actionModals.amendmentTypes.WormCastings') },
                     ]}
                 />
             </>;

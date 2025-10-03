@@ -15,6 +15,8 @@ interface StrainListItemProps {
     isUserStrain: boolean;
     onDelete: (id: string) => void;
     index: number;
+    isFavorite: boolean;
+    onToggleFavorite: () => void;
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
@@ -41,7 +43,7 @@ const DifficultyMeter: React.FC<{ difficulty: DifficultyLevel }> = ({ difficulty
 };
 
 
-const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index }) => {
+const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected, onToggleSelection, onSelect, visibleColumns, isUserStrain, onDelete, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
     
     return (
@@ -61,7 +63,6 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
             </div>
             <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                    {/* FIX: The `title` prop is not valid on PhosphorIcons. Wrapped with a span to provide the tooltip. */}
                     {isUserStrain && <span title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" /></span>}
                     <p className="font-bold text-slate-100 truncate">{strain.name}</p>
                 </div>
@@ -93,7 +94,16 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
                 <DifficultyMeter difficulty={strain.agronomic.difficulty} />
             </div>
 
-            <div className="flex gap-1 justify-end min-w-[2.25rem]" onClick={e => e.stopPropagation()}>
+            <div className="flex gap-1 justify-end min-w-[5rem]" onClick={e => e.stopPropagation()}>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`!p-1.5 favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
+                    onClick={onToggleFavorite} 
+                    title={t('common.manageFavorites')}
+                >
+                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
+                </Button>
                 {isUserStrain && (
                     <Button variant="danger" size="sm" className="!p-1.5" onClick={() => onDelete(strain.id)} title={t('common.delete')}>
                         <PhosphorIcons.TrashSimple className="w-4 h-4" />

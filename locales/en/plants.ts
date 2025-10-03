@@ -57,6 +57,7 @@ export const plantsView = {
     stepContextTitle: 'Step 2: Add Context (Optional)',
     stepContextDesc: 'Provide any additional observations that might help the AI make a more accurate diagnosis.',
     journalTitle: 'AI Diagnosis: {{title}}',
+    saveImageError: 'Failed to save image.',
   },
   detailedView: {
     lifecycle: 'Plant Lifecycle',
@@ -185,6 +186,16 @@ export const plantsView = {
             Trichomes: 'Trichomes',
             Setup: 'Setup',
         }
+      },
+      trainingTypes: {
+        LST: 'LST',
+        Topping: 'Topping',
+        FIMing: 'FIMing',
+        Defoliation: 'Defoliation'
+      },
+      amendmentTypes: {
+          Mycorrhizae: 'Mycorrhizae',
+          WormCastings: 'Worm Castings'
       },
   },
   setupModal: {

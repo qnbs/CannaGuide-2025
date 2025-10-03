@@ -46,7 +46,7 @@ export const ComparisonView: React.FC<ComparisonViewProps> = memo(({ plant, scen
     }, [plant, scenario]);
 
     const getActionLabel = (action: string) => {
-        if (action === 'NONE') return 'Unchanged';
+        if (action === 'NONE') return t('common.unchanged');
         return action;
     };
 

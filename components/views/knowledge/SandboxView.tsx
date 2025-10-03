@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectActivePlants, selectSandboxState } from '@/stores/selectors';
 import { runComparisonScenario } from '@/stores/slices/sandboxSlice';
-import { Plant, Experiment, Scenario, ScenarioAction } from '@/types';
+import { Plant, Experiment, Scenario, ScenarioAction, SandboxState } from '@/types';
 import { scenarioService } from '@/services/scenarioService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -127,8 +127,10 @@ const ExperimentResults: React.FC<{ experiment: Experiment }> = memo(({ experime
 export const SandboxView: React.FC = memo(() => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const activePlants = useAppSelector(selectActivePlants);
-    const { savedExperiments, isLoading, error } = useAppSelector(selectSandboxState);
+    // FIX: Cast result of useAppSelector to Plant[] to fix type inference issue.
+    const activePlants = useAppSelector(selectActivePlants) as Plant[];
+    // FIX: Cast result of useAppSelector to SandboxState to fix type inference issue.
+    const { savedExperiments, isLoading, error } = useAppSelector(selectSandboxState) as SandboxState;
     const [selectedExperimentId, setSelectedExperimentId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
@@ -160,37 +162,37 @@ export const SandboxView: React.FC = memo(() => {
     return (
         <div className="space-y-6">
              {isModalOpen && (
-                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Neues Experiment starten">
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t('knowledgeView.sandbox.modal.title')}>
                     <div className="space-y-4">
-                        <p>Wähle eine Pflanze aus, um eine 14-tägige Simulation "Topping vs. kein Topping" durchzuführen.</p>
+                        <p>{t('knowledgeView.sandbox.modal.description')}</p>
                          <Select
                             value={selectedPlantId || ''}
                             onChange={e => setSelectedPlantId(e.target.value)}
                             options={activePlants.map(p => ({ value: p.id, label: p.name }))}
                             disabled={activePlants.length === 0}
                          />
-                         {activePlants.length === 0 && <p className="text-amber-400 text-sm">Du musst zuerst eine Pflanze anbauen, um ein Experiment zu starten.</p>}
+                         {activePlants.length === 0 && <p className="text-amber-400 text-sm">{t('knowledgeView.sandbox.modal.noPlants')}</p>}
                     </div>
                      <div className="flex justify-end gap-2 mt-4">
-                        <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Abbrechen</Button>
-                        <Button onClick={handleRun} disabled={!selectedPlantId || isLoading}>Szenario starten</Button>
+                        <Button variant="secondary" onClick={() => setIsModalOpen(false)}>{t('common.cancel')}</Button>
+                        <Button onClick={handleRun} disabled={!selectedPlantId || isLoading}>{t('knowledgeView.sandbox.modal.runScenario')}</Button>
                     </div>
                 </Modal>
             )}
             <Card>
                  <div className="flex justify-between items-center">
-                    <h3 className="text-xl font-bold font-display text-primary-400">Experimentelle Sandbox</h3>
+                    <h3 className="text-xl font-bold font-display text-primary-400">{t('knowledgeView.sandbox.title')}</h3>
                     <Button onClick={() => setIsModalOpen(true)} disabled={isLoading || activePlants.length === 0}>
-                         {isLoading ? "Wird ausgeführt..." : "Neues Experiment"}
+                         {isLoading ? t('knowledgeView.sandbox.runningSimulation') : t('knowledgeView.sandbox.startExperiment')}
                     </Button>
                 </div>
-                 {isLoading && <AiLoadingIndicator loadingMessage="Beschleunigte Simulation wird ausgeführt..." />}
+                 {isLoading && <AiLoadingIndicator loadingMessage={t('knowledgeView.sandbox.runningSimulation')} />}
             </Card>
 
             <Card>
-                <h4 className="text-lg font-bold mb-2">Gespeicherte Experimente</h4>
+                <h4 className="text-lg font-bold mb-2">{t('knowledgeView.sandbox.savedExperiments')}</h4>
                 {savedExperiments.length === 0 && !isLoading ? (
-                    <p className="text-slate-400">Noch keine Experimente gespeichert.</p>
+                    <p className="text-slate-400">{t('knowledgeView.sandbox.noExperiments')}</p>
                 ) : (
                     <div className="space-y-2">
                         {savedExperiments.map(exp => (
@@ -201,7 +203,7 @@ export const SandboxView: React.FC = memo(() => {
                             >
                                 <p className="font-semibold">{exp.name}</p>
                                 <p className="text-xs text-slate-400">
-                                    Basiert auf {exp.basePlantName} - Gelaufen am {new Date(exp.createdAt).toLocaleDateString()}
+                                    {t('knowledgeView.sandbox.experimentMeta', { basePlantName: exp.basePlantName, date: new Date(exp.createdAt).toLocaleDateString()})}
                                 </p>
                             </button>
                         ))}

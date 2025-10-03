@@ -70,7 +70,7 @@ ${response.prevention}
                 journalDetails.imageId = imageId;
             } catch (error) {
                 console.error("Failed to save diagnosis image to DB", error);
-                dispatch(addNotification({ message: "Failed to save image.", type: 'error' }));
+                dispatch(addNotification({ message: t('plantsView.aiDiagnostics.saveImageError'), type: 'error' }));
             }
         }
         

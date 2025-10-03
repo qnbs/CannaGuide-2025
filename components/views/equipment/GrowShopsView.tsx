@@ -69,7 +69,6 @@ export const GrowShopsView: React.FC = () => {
         const regionKey = region === 'europe' ? 'european' : 'us';
         const shopKeys = t(`equipmentView.growShops.${regionKey}.shopKeys`, { returnObjects: true }) as string[];
 
-        // FIX: Added a type guard to ensure `shopKeys` is an array before calling .map(), preventing the runtime error.
         if (!Array.isArray(shopKeys)) {
             console.error("Translation for shopKeys is not an array:", shopKeys);
             return [];

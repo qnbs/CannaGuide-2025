@@ -1,11 +1,33 @@
 import { Strain } from '../../types';
-import { createSlice, PayloadAction, createEntityAdapter, EntityState } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction, createEntityAdapter, EntityState, createAsyncThunk } from '@reduxjs/toolkit';
+import type { RootState } from '../store';
+import { addNotification, closeAddModal } from './uiSlice';
+import { getT } from '@/i18n';
 
 export const userStrainsAdapter = createEntityAdapter<Strain>();
 
 export type UserStrainsState = EntityState<Strain>;
 
 const initialState: UserStrainsState = userStrainsAdapter.getInitialState();
+
+
+export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { state: RootState }>(
+    'userStrains/addUserStrainWithValidation',
+    (strain, { dispatch, getState }) => {
+        const { userStrains } = getState();
+        const existingStrains = userStrainsAdapter.getSelectors().selectAll(userStrains);
+        const isDuplicate = existingStrains.some(s => s.name.toLowerCase() === strain.name.toLowerCase());
+
+        if (isDuplicate) {
+            dispatch(addNotification({ message: getT()('strainsView.addStrainModal.validation.duplicate', { name: strain.name }), type: 'error' }));
+            return;
+        }
+
+        dispatch(userStrainsSlice.actions.addUserStrain(strain));
+        dispatch(closeAddModal());
+    }
+);
+
 
 const userStrainsSlice = createSlice({
     name: 'userStrains',

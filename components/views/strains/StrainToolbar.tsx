@@ -2,8 +2,6 @@ import React from 'react';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
-import { StrainType } from '@/types';
-import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Input } from '@/components/ui/ThemePrimitives';
 
 interface StrainToolbarProps {
@@ -13,50 +11,27 @@ interface StrainToolbarProps {
     onViewModeChange: (mode: 'list' | 'grid') => void;
     onExport: () => void;
     onAdd: () => void;
-    showFavorites: boolean;
-    onToggleFavorites: () => void;
-    typeFilter: StrainType[];
-    onToggleTypeFilter: (type: StrainType) => void;
     onOpenDrawer: () => void;
     activeFilterCount: number;
-    isAnyFilterActive: boolean;
-    onClearAllFilters: () => void;
-    letterFilter: string | null;
-    onLetterFilterChange: (letter: string | null) => void;
 }
 
 export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
     const { t } = useTranslation();
     const { 
         searchTerm, onSearchTermChange, viewMode, onViewModeChange, onExport, onAdd, 
-        showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter,
-        onOpenDrawer, activeFilterCount, isAnyFilterActive, onClearAllFilters,
-        letterFilter, onLetterFilterChange
+        onOpenDrawer, activeFilterCount
     } = props;
-
-     const typeOptions = [
-        { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
-        { value: 'Indica' as StrainType, label: t('strainsView.indica') },
-        { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
-    ];
     
     return (
         <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
+            {/* Desktop Toolbar */}
+            <div className="hidden sm:flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
                 <div className="relative flex-grow">
                     <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                     <Input type="text" placeholder={t('strainsView.searchPlaceholder')} value={searchTerm} onChange={e => onSearchTermChange(e.target.value)} className="pl-10 pr-4 !py-2"/>
                 </div>
 
-                <div className="hidden sm:flex items-center gap-2">
-                     <div className="flex items-center bg-slate-800/60 border border-slate-700/80 rounded-lg p-0.5">
-                        <Button variant="ghost" onClick={() => onViewModeChange('list')} className={`!p-2 !rounded-md ${viewMode === 'list' ? '!bg-slate-700 !text-primary-300' : ''}`} title={t('strainsView.viewModes.list')}>
-                            <PhosphorIcons.ListBullets className="w-5 h-5" />
-                        </Button>
-                        <Button variant="ghost" onClick={() => onViewModeChange('grid')} className={`!p-2 !rounded-md ${viewMode === 'grid' ? '!bg-slate-700 !text-primary-300' : ''}`} title={t('strainsView.viewModes.grid')}>
-                            <PhosphorIcons.GridFour className="w-5 h-5" />
-                        </Button>
-                    </div>
+                <div className="flex items-center gap-2">
                     <Button onClick={onExport} variant="secondary" className="!py-2 !px-3">
                         <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
                         <span>{t('common.export')}</span>
@@ -68,57 +43,26 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                 </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 items-center">
-                <button onClick={onToggleFavorites} className={`flex-shrink-0 px-3 py-1.5 text-sm font-semibold rounded-lg transition-all flex items-center gap-1.5 border-2 ${showFavorites ? 'bg-primary-500/20 border-primary-500/80 text-primary-300' : 'bg-slate-800/60 border-slate-700/80 text-slate-300 hover:bg-slate-700/50'}`}>
-                    <PhosphorIcons.Heart weight={showFavorites ? 'fill' : 'regular'} />
-                    {t('strainsView.favorites')}
-                </button>
-                <div className="w-px h-6 bg-slate-700/80 mx-1 hidden sm:block"></div>
-                <SegmentedControl options={typeOptions} value={typeFilter} onToggle={onToggleTypeFilter} />
-                <div className="flex-grow"></div>
-                <Button variant="secondary" onClick={onOpenDrawer} className="relative !px-3 !py-1.5 rounded-lg">
-                    <PhosphorIcons.FunnelSimple className="w-4 h-4 mr-1.5"/>
-                    <span>{t('strainsView.advancedFilters')}</span>
-                    {activeFilterCount > 0 && (
-                        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
-                            {activeFilterCount}
-                        </span>
-                    )}
-                </Button>
-                {isAnyFilterActive && (
-                    <Button onClick={onClearAllFilters} variant="secondary" size="sm" className="!py-1.5 !px-2.5" aria-label={t('strainsView.resetFilters')}>
-                        <PhosphorIcons.X className="w-4 h-4" />
-                    </Button>
-                )}
-            </div>
-
-            <div className="w-full overflow-x-auto no-scrollbar">
-                <div className="flex items-center justify-start sm:justify-center gap-1 mx-auto w-max p-1 bg-slate-900/50 rounded-lg">
-                    {['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(char => (
-                        <button
-                            key={char}
-                            onClick={() => onLetterFilterChange(letterFilter === char ? null : char)}
-                            className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${letterFilter === char ? 'bg-primary-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-                        >
-                            {char}
-                        </button>
-                    ))}
+             {/* Mobile Toolbar */}
+            <div className="sm:hidden flex items-center gap-2">
+                <div className="relative flex-grow">
+                    <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                    <Input type="text" placeholder={t('strainsView.searchPlaceholder')} value={searchTerm} onChange={e => onSearchTermChange(e.target.value)} className="pl-10 pr-4 !py-2"/>
                 </div>
-            </div>
-
-            <div className="sm:hidden mt-4 flex items-center gap-2">
-                <Button onClick={onAdd} variant="primary" className="flex-1">
-                    <PhosphorIcons.PlusCircle className="w-5 h-5 mr-1.5" />
-                    <span>{t('strainsView.addStrain')}</span>
-                </Button>
-                <Button onClick={onExport} variant="secondary" className="flex-1">
-                    <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
-                    <span>{t('common.export')}</span>
-                </Button>
-                 <Button onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} variant="secondary" className="p-2.5">
-                     <span className="sr-only">{t('strainsView.toggleView')}</span>
-                    {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
-                </Button>
+                <div className="flex items-center gap-2">
+                    <Button onClick={onOpenDrawer} variant="secondary" className="relative !p-2.5">
+                        <PhosphorIcons.FunnelSimple className="w-5 h-5"/>
+                        {activeFilterCount > 0 && (
+                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
+                                {activeFilterCount}
+                            </span>
+                        )}
+                    </Button>
+                     <Button onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} variant="secondary" className="!p-2.5">
+                        <span className="sr-only">{t('strainsView.toggleView')}</span>
+                        {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
+                    </Button>
+                </div>
             </div>
         </div>
     );

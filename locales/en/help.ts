@@ -5,6 +5,7 @@ export const helpView = {
     faq: 'FAQ',
     guides: 'Visual Guides',
     lexicon: 'Lexicon',
+    manual: 'User Manual',
   },
   faq: {
     title: 'Frequently Asked Questions',
@@ -70,12 +71,135 @@ export const helpView = {
       sog: { term: 'SOG (Sea of Green)', definition: 'A cultivation method where many small plants are grown closely together and quickly sent into flowering to achieve a fast and high-yielding harvest.' },
       curing: { term: 'Curing', definition: 'The process of storing dried cannabis flowers in airtight containers to break down chlorophyll and improve the taste, aroma, and smoothness of the smoke.' },
       nutrientLockout: { term: 'Nutrient Lockout', definition: 'A state where the plant cannot absorb available nutrients due to an incorrect pH in the root zone, even if they are present.' },
-      flushing: { term: 'Flushing', definition: 'The practice of watering the plant with pure, pH-adjusted water in the last one to two weeks before harvest to remove excess nutrient salts from the medium and the plant.' },
+      flushing: { term: 'Flushing', definition: 'The practice of watering the plant with only pure, pH-adjusted water for the last one to two weeks before harvest to remove excess nutrient salts from the medium and the plant.' },
       phenotype: { term: 'Phenotype', definition: 'The observable characteristics of a plant (appearance, smell, effect) that result from the interaction of its genotype and the environment.' },
       genotype: { term: 'Genotype', definition: 'The genetic makeup of a plant, which determines its potential for certain traits.' },
       landrace: { term: 'Landrace', definition: 'A pure, original cannabis variety that has naturally adapted and stabilized in a specific geographic region over a long period.' },
     },
   },
+  manual: {
+    title: 'User Manual',
+    introduction: {
+      title: 'Introduction',
+      content: 'Welcome to CannaGuide 2025! This manual will guide you through all the major features of the app to help you get the most out of your cultivation experience.'
+    },
+    strains: {
+      title: 'The Strains View',
+      content: 'This is your encyclopedia. Here you can explore over 480 strains, add your own, and get AI-powered tips.',
+      allStrains: {
+        title: 'All Strains Tab',
+        content: 'Browse the entire database. Use the search bar, letter filter, and type toggles for quick navigation. Open the advanced filter drawer for more granular searches by THC, flowering time, aroma, and more.'
+      },
+      myStrains: {
+        title: 'My Strains Tab',
+        content: 'Manage your custom-created or bred strains. You have full CRUD (Create, Read, Update, Delete) functionality here.'
+      },
+      favorites: {
+        title: 'Favorites Tab',
+        content: 'A quick-access list of all strains you have marked with a heart. Ideal for creating a shortlist for your next grow.'
+      },
+      exports: {
+        title: 'Exports Tab',
+        content: 'Manage all of your saved exports. You can re-download, rename, or delete them here. Exports in CSV, JSON, or XML format are stored here to preserve data integrity.'
+      },
+      tips: {
+        title: 'Tips Tab',
+        content: 'This is where you find all the AI-generated grow tips you have saved. You can search, edit, delete, and export them.'
+      },
+      toolbar: {
+        title: 'Toolbar & Filtering',
+        content: 'The toolbar lets you switch between list and grid view, export data, and add new strains. The filter bar below offers quick filtering, while the "Advanced Filters" button opens a detailed menu for precise searching.'
+      },
+      detailView: {
+        title: 'Strain Detail View',
+        content: 'Click any strain to see a detailed breakdown. Here you can find agronomic data, aroma profiles, add personal notes, and generate AI tips. You can also start a grow with this strain directly from here.'
+      }
+    },
+    plants: {
+      title: 'The Plants View',
+      content: 'The command center for your active grows. Manage up to three plants simultaneously in a realistic simulation.',
+      dashboard: {
+        title: 'Dashboard & Vitals',
+        content: 'The main view gives you a summary of your garden vitals, a tip of the day, and an overview of your open tasks and warnings. You can also water all plants at once from here.'
+      },
+      startingGrow: {
+        title: 'Starting a New Grow',
+        content: 'Click an empty slot to begin the process. You first select a strain from the library, then configure your grow setup (e.g., pot size, light cycle).'
+      },
+      detailView: {
+        title: 'Detailed Plant View',
+        content: 'Click an active plant to go to its detailed view. Here you can log all actions, monitor real-time vitals, and use AI tools. Expert Mode (toggleable in the header) will show even more scientific data here.'
+      },
+      aiDiagnostics: {
+        title: 'AI Plant Doctor',
+        content: 'Take a photo of a problematic leaf or area on your plant. The AI will analyze the image along with your plant\'s current vitals to provide a diagnosis and recommended actions. You can save the diagnosis directly to the plant\'s journal.'
+      }
+    },
+    equipment: {
+      title: 'The Equipment View',
+      content: 'Your toolbox for planning and calculating your grow.',
+      configurator: {
+        title: 'AI Setup Configurator',
+        content: 'Answer two simple questions (plant count and your style), and the AI will generate a complete, brand-specific equipment recommendation, including rationales and a pro-tip. Save your configurations for later.'
+      },
+      savedSetups: {
+        title: 'My Setups',
+        content: 'Manage your saved equipment setups. You can edit, delete, or export them as a detailed PDF report here.'
+      },
+      calculators: {
+        title: 'Calculators',
+        content: 'A suite of useful calculators for ventilation, lighting, electricity cost, nutrient mixing, EC/PPM conversion, and a rough yield estimate.'
+      },
+      growShops: {
+        title: 'Grow Shops',
+        content: 'A curated list of recommended online grow shops for Europe and the USA, including a brief description of their strengths.'
+      }
+    },
+    knowledge: {
+      title: 'The Knowledge Hub',
+      content: 'The place to learn, experiment, and deepen your knowledge.',
+      mentor: {
+        title: 'AI Mentor',
+        content: 'Select one of your active plants and ask the Mentor specific questions. The AI uses your plant\'s real-time data to give tailored advice. All conversations can be saved to the archive.'
+      },
+      guide: {
+        title: 'Grow Guide',
+        content: 'An interactive guide that explains the key stages and techniques of cannabis cultivation in easy-to-digest, collapsible sections.'
+      },
+      archive: {
+        title: 'Archives',
+        content: 'Manage all of your saved responses from the AI Mentor and the proactive advice from the AI Plant Advisor.'
+      },
+      breeding: {
+        title: 'Breeding Lab (Coming Soon)',
+        content: 'A future feature that will allow you to collect seeds from your best plants and cross them to create entirely new, unique strains.'
+      },
+      sandbox: {
+        title: 'Sandbox',
+        content: 'Run risk-free "what-if" scenarios. Select one of your plants as a clone and simulate the effect of different training techniques (e.g., Topping vs. LST) over an accelerated period to compare the outcomes.'
+      }
+    },
+    general: {
+      title: 'General Features',
+      content: 'Features available throughout the app.',
+      pwa: {
+        title: 'PWA & Offline Use',
+        content: 'CannaGuide is a Progressive Web App. You can "install" it to your device via the button in the header. This makes it act like a native app and function 100% offline.'
+      },
+      commandPalette: {
+        title: 'Command Palette (Cmd/Ctrl + K)',
+        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the fastest way to navigate and perform actions without taking your hands off the keyboard.'
+      },
+      dataManagement: {
+        title: 'Data Management',
+        content: 'Under <code>Settings > Data Management</code>, you can back up your entire app data (plants, settings, custom strains, etc.) to a single JSON file. This file can be imported later to restore your state.'
+      },
+      accessibility: {
+        title: 'Accessibility',
+        content: 'The app includes features like a dyslexia-friendly font and a reduced motion mode. Text-to-Speech (TTS) allows you to have content read aloud.'
+      }
+    }
+  }
 };
 
 export const visualGuides = {

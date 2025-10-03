@@ -1,5 +1,4 @@
 // services/exportService.ts
-// FIX: Corrected import path for types to use the '@/' alias.
 import { Strain, SavedSetup, ExportFormat, ArchivedMentorResponse, SavedStrainTip, ArchivedAdvisorResponse } from '@/types';
 import { getT } from '@/i18n';
 import {

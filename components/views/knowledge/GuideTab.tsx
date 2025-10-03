@@ -6,7 +6,6 @@ import { knowledgeBase } from '@/data/knowledgebase';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
-// FIX: Updated type of t to allow for fallback values
 const ArticleItem: React.FC<{ article: KnowledgeArticle; t: (key: string, options?: any) => string }> = ({ article, t }) => {
     const title = t(article.titleKey);
     const content = t(article.contentKey);
@@ -31,7 +30,6 @@ interface GuideTabProps {
     articles?: KnowledgeArticle[];
 }
 
-// FIX: Added GuideTab component and exported it to fix the import error.
 export const GuideTab: React.FC<GuideTabProps> = ({ articles }) => {
     const { t } = useTranslation();
     // Fallback to all articles if none are provided (for the general guide view)

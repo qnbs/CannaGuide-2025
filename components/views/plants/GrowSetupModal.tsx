@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-// FIX: Add AppSettings to imports for type casting.
-import { Strain, GrowSetup, AppSettings } from '@/types';
+import { Strain, GrowSetup } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
@@ -36,7 +35,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   const { t } = useTranslation();
   const settings = useAppSelector(selectSettings);
   
-  const [setup, setSetup] = useState({
+  const [setup, setSetup] = useState<GrowSetup>({
     lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
     potSize: settings.defaultGrowSetup.potSize,
     medium: settings.defaultGrowSetup.medium,
@@ -45,12 +44,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   const isPhotoperiod = strain.floweringType === 'Photoperiod';
 
   const handleConfirm = () => {
-    const finalSetup: GrowSetup = {
-        lightHours: setup.lightHours,
-        potSize: setup.potSize,
-        medium: setup.medium,
-    };
-    onConfirm(finalSetup);
+    onConfirm(setup);
   };
   
   const potSizes = [5, 11, 15, 25, 35];

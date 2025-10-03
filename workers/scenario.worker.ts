@@ -1,7 +1,6 @@
-import { Plant, Scenario, ScenarioAction } from '@/types'
+import { Plant, Scenario, ScenarioAction, PlantHistoryEntry } from '@/types'
 import { simulationService } from '@/services/plantSimulationService'
 
-// This is a simplified version of the main simulation service for the worker
 const applyAction = (plant: Plant, action: ScenarioAction): Plant => {
     switch (action) {
         case 'TOP':
@@ -15,15 +14,12 @@ const applyAction = (plant: Plant, action: ScenarioAction): Plant => {
 }
 
 self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => {
-    // Deep copy using structuredClone is implicitly handled by the message passing,
-    // but we do it again to ensure no mutation of the initial state.
     let plantA = structuredClone(e.data.basePlant)
     let plantB = structuredClone(e.data.basePlant)
     const { scenario } = e.data
 
-    // Start with fresh history for the simulation branches
-    plantA.history = []
-    plantB.history = []
+    const historyA: PlantHistoryEntry[] = []
+    const historyB: PlantHistoryEntry[] = []
 
     const oneDayInMillis = 24 * 60 * 60 * 1000
 
@@ -35,13 +31,30 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => 
             plantB = applyAction(plantB, scenario.plantBModifier.action)
         }
 
-        plantA = simulationService.calculateStateForTimeDelta(plantA, oneDayInMillis).updatedPlant
-        plantB = simulationService.calculateStateForTimeDelta(plantB, oneDayInMillis).updatedPlant
+        const resultA = simulationService.calculateStateForTimeDelta(plantA, oneDayInMillis)
+        plantA = resultA.updatedPlant
+        historyA.push({
+            day: plantA.age,
+            height: plantA.height,
+            health: plantA.health,
+            stressLevel: plantA.stressLevel,
+            medium: plantA.medium
+        })
+
+        const resultB = simulationService.calculateStateForTimeDelta(plantB, oneDayInMillis)
+        plantB = resultB.updatedPlant
+        historyB.push({
+            day: plantB.age,
+            height: plantB.height,
+            health: plantB.health,
+            stressLevel: plantB.stressLevel,
+            medium: plantB.medium
+        })
     }
 
     self.postMessage({
-        originalHistory: plantA.history,
-        modifiedHistory: plantB.history,
+        originalHistory: historyA,
+        modifiedHistory: historyB,
         originalFinalState: plantA,
         modifiedFinalState: plantB,
     })

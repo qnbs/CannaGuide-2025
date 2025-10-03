@@ -42,6 +42,7 @@ export const strainsView = {
     exports_other: '{{count}} Exporte',
     tips_one: '1 Tipp',
     tips_other: '{{count}} Tipps',
+    genealogy: 'Stammbaum',
   },
   filters: {
     thcMax: 'THC',
@@ -209,7 +210,7 @@ export const strainsView = {
   tips: {
     title: 'Gespeicherte Anbau-Tipps',
     editTipTitle: 'Tipp bearbeiten',
-    saveSuccess: 'Tipp für {{name}} erfolgreich gespeichert!',
+    saveSuccess: 'Tipp für {{name}}" erfolgreich gespeichert!',
     saved: 'Gespeichert',
     saveButton: 'Tipp speichern',
     getTipsFor: 'KI-Anbau-Tipps für {{name}}',
@@ -270,5 +271,12 @@ export const strainsView = {
     addedToFavorites_other: '{{count}} Sorten zu Favoriten hinzugefügt.',
     removedFromFavorites_one: '1 Sorte aus Favoriten entfernt.',
     removedFromFavorites_other: '{{count}} Sorten aus Favoriten entfernt.',
-  }
+  },
+  genealogyView: {
+      title: 'Stammbaum-Explorer',
+      description: 'Wähle eine Sorte aus, um ihre genetische Abstammung zu visualisieren.',
+      selectStrain: 'Sorte auswählen',
+      noStrainSelected: 'Bitte wähle eine Sorte aus, um den Stammbaum anzuzeigen.',
+      loadingTree: 'Stammbaum wird generiert...'
+  },
 };

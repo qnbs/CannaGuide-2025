@@ -7,14 +7,15 @@ class GeneticsService {
         allStrains: Strain[],
         visited: Set<string>
     ): GenealogyNode {
-        // Find the strain in the master list, case-insensitive
-        const strain = allStrains.find(s => s.name.toLowerCase() === strainName.toLowerCase());
+        // Find the strain in the master list, case-insensitive and trimmed
+        const strain = allStrains.find(s => s.name.toLowerCase() === strainName.trim().toLowerCase());
 
         // Base case 1: Strain not found in the database (e.g., landrace or unlisted parent)
         if (!strain) {
+            const trimmedName = strainName.trim();
             return {
-                name: strainName,
-                id: strainName.toLowerCase().replace(/[^a-z0-9]/g, '-')
+                name: trimmedName,
+                id: trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '-')
             };
         }
 
@@ -40,10 +41,10 @@ class GeneticsService {
         const genetics = strain.genetics;
         if (genetics && genetics.toLowerCase().includes(' x ')) {
             const parentNames = genetics
-                .replace(/[()]/g, '') // Remove parentheses
-                .split(/\s*x\s*/i)     // Split by 'x'
+                .replace(/[()\[\]]/g, '') // Remove parentheses and brackets
+                .split(/\s*x\s*/i)     // Split by 'x', case-insensitive with surrounding spaces
                 .map(p => p.trim())
-                .filter(p => p.length > 0 && p.toLowerCase() !== 'unknown' && p.toLowerCase() !== 'clone-only');
+                .filter(p => p.length > 0 && p.toLowerCase() !== 'unknown' && !p.toLowerCase().includes('phenotype'));
 
             if (parentNames.length > 0) {
                 node.children = parentNames

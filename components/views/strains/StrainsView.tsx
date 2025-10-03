@@ -24,24 +24,24 @@ import {
 import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
 import { addUserStrainWithValidation, updateUserStrain, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
-import { StrainToolbar } from './StrainToolbar';
-import { StrainList } from './StrainList';
-import { StrainGrid } from './StrainGrid';
-import { StrainDetailView } from './StrainDetailView';
-import { AddStrainModal } from './AddStrainModal';
+import { StrainToolbar } from './strains/StrainToolbar';
+import { StrainList } from './strains/StrainList';
+import { StrainGrid } from './strains/StrainGrid';
+import { StrainDetailView } from './strains/StrainDetailView';
+import { AddStrainModal } from './strains/AddStrainModal';
 import { DataExportModal } from '@/components/common/DataExportModal';
-import { ExportsManagerView } from './ExportsManagerView';
-import { StrainTipsView } from './StrainTipsView';
+import { ExportsManagerView } from './strains/ExportsManagerView';
+import { StrainTipsView } from './strains/StrainTipsView';
 import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip } from '@/stores/slices/savedItemsSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { Tabs } from '@/components/common/Tabs';
 import { Card } from '@/components/common/Card';
-import { BulkActionsBar } from './BulkActionsBar';
+import { BulkActionsBar } from './strains/BulkActionsBar';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { FilterDrawer } from './FilterDrawer';
+import { FilterDrawer } from '@/data/FilterDrawer';
 import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
-import { GenealogyView } from './GenealogyView';
+import { GenealogyView } from './strains/GenealogyView';
 
 
 export const StrainsView: React.FC = () => {
@@ -52,17 +52,25 @@ export const StrainsView: React.FC = () => {
     const [selectedStrainForDetail, setSelectedStrainForDetail] = useState<Strain | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
+    // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
     const settings = useAppSelector(selectSettings) as AppSettings;
+    // FIX: Cast result of useAppSelector to StrainsViewState to fix type inference issue.
     const { strainsViewTab, strainsViewMode, selectedStrainIds } = useAppSelector(selectStrainsView) as StrainsViewState;
+    // FIX: Cast result of useAppSelector to Strain[] to fix type inference issue.
     const userStrains = useAppSelector(selectUserStrains) as Strain[];
+    // FIX: Cast result of useAppSelector to Set<string> to fix type inference issue.
     const userStrainIds = useAppSelector(selectUserStrainIds) as Set<string>;
+    // FIX: Cast result of useAppSelector to Set<string> to fix type inference issue.
     const favoriteIds = useAppSelector(selectFavoriteIds) as Set<string>;
+    // FIX: Cast result of useAppSelector to SavedExport[] to fix type inference issue.
     const savedExports = useAppSelector(selectSavedExports) as SavedExport[];
+    // FIX: Cast result of useAppSelector to SavedStrainTip[] to fix type inference issue.
     const savedTips = useAppSelector(selectSavedStrainTips) as SavedStrainTip[];
     const isAddModalOpen = useAppSelector(state => state.ui.isAddModalOpen);
     const strainToEdit = useAppSelector(state => state.ui.strainToEdit);
     const isExportModalOpen = useAppSelector(state => state.ui.isExportModalOpen);
 
+    // FIX: Explicitly type `new Set()` as `Set<string>` to fix type inference issue.
     const selectedIdsSet = useMemo(() => new Set<string>(selectedStrainIds), [selectedStrainIds]);
 
     useEffect(() => {
@@ -112,7 +120,10 @@ export const StrainsView: React.FC = () => {
     const handleToggleAll = () => dispatch(toggleAllStrainSelection({ ids: filteredStrains.map(s => s.id), areAllCurrentlySelected: selectedIdsSet.size === filteredStrains.length && filteredStrains.length > 0 }));
     
     const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
-    const handleUpdateStrain = (strain: Strain) => dispatch(updateUserStrain(strain));
+    const handleUpdateStrain = (strain: Strain) => {
+        dispatch(updateUserStrain(strain));
+        dispatch(closeAddModal());
+    };
     const handleDeleteUserStrain = (id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
         if (strainToDelete && window.confirm(t('strainsView.addStrainModal.validation.deleteConfirm', { name: strainToDelete.name }))) {

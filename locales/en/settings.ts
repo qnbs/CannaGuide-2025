@@ -1,7 +1,7 @@
 export const settingsView = {
   title: 'Settings',
   categories: {
-    general: 'General',
+    general: 'General & UI',
     accessibility: 'Accessibility',
     strains: 'Strains View',
     plants: 'Plants & Simulation',
@@ -31,6 +31,8 @@ export const settingsView = {
     defaultView: 'Default View on Startup',
     installApp: 'Install App',
     installAppDesc: 'Install CannaGuide 2025 on your device for a native-app experience, including offline access.',
+    expertModeTitle: 'Expert Mode',
+    expertModeDesc: 'Show advanced scientific data and detailed charts in the plant view.',
   },
   languages: {
     en: 'English',
@@ -159,7 +161,6 @@ export const settingsView = {
     importAll: 'Import All Data',
     importConfirm: 'Are you sure you want to import this data? This will overwrite all your current data.',
     importSuccess: 'Data imported successfully! The app will now reload.',
-    importError: 'Error importing data',
     importInvalidFile: 'Invalid CannaGuide 2025 backup file.',
     clearArchives: 'Clear AI Archives',
     clearArchivesDesc: 'Deletes all saved responses from the AI Mentor and Advisor.',

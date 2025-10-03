@@ -1,14 +1,17 @@
-import React from 'react';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import React from 'react'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 interface AiLoadingIndicatorProps {
-    loadingMessage: string;
-    className?: string;
+    loadingMessage: string
+    className?: string
 }
 
-export const AiLoadingIndicator: React.FC<AiLoadingIndicatorProps> = ({ loadingMessage, className = '' }) => {
+export const AiLoadingIndicator: React.FC<AiLoadingIndicatorProps> = ({
+    loadingMessage,
+    className = '',
+}) => {
     return (
-        <div 
+        <div
             className={`text-center p-6 flex flex-col items-center justify-center gap-4 ${className}`}
             role="status"
             aria-live="polite"
@@ -18,5 +21,5 @@ export const AiLoadingIndicator: React.FC<AiLoadingIndicatorProps> = ({ loadingM
                 {loadingMessage}
             </p>
         </div>
-    );
-};
+    )
+}

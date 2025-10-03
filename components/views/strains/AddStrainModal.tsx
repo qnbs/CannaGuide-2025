@@ -159,7 +159,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                                 className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"
                             />
                             <label htmlFor="isAutoflower" className="text-sm font-semibold text-slate-300 cursor-pointer">
-                                Autoflower
+                                {t('strainsView.addStrainModal.autoflower')}
                             </label>
                         </div>
                     </FormSection>

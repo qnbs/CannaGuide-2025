@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab, SavedSetup } from '@/types';
-import { RootState } from '../store';
+import type { RootState } from '../store';
 import { getT } from '@/i18n';
 
 export interface UIState {
@@ -15,13 +15,12 @@ export interface UIState {
     deepDiveModal: { isOpen: boolean; plantId: string | null; topic: string | null };
     isAppReady: boolean;
     notifications: Notification[];
-    // New grow flow state
-    initiatingGrowForSlot: number | null;
-    strainForNewGrow: Strain | null;
-    setupForNewGrow: GrowSetup | null;
-    isGrowSetupModalOpen: boolean;
-    isConfirmationModalOpen: boolean;
-    // View-specific tabs
+    newGrowFlow: {
+        status: 'idle' | 'selectingSlot' | 'selectingStrain' | 'configuringSetup' | 'confirming';
+        slotIndex: number | null;
+        strain: Strain | null;
+        setup: GrowSetup | null;
+    },
     equipmentViewTab: EquipmentViewTab;
     knowledgeViewTab: KnowledgeViewTab;
     activeMentorPlantId: string | null;
@@ -43,11 +42,12 @@ const initialState: UIState = {
     deepDiveModal: { isOpen: false, plantId: null, topic: null },
     isAppReady: false,
     notifications: [],
-    initiatingGrowForSlot: null,
-    strainForNewGrow: null,
-    setupForNewGrow: null,
-    isGrowSetupModalOpen: false,
-    isConfirmationModalOpen: false,
+    newGrowFlow: {
+        status: 'idle',
+        slotIndex: null,
+        strain: null,
+        setup: null,
+    },
     equipmentViewTab: EquipmentViewTab.Configurator,
     knowledgeViewTab: KnowledgeViewTab.Mentor,
     activeMentorPlantId: null,
@@ -133,24 +133,19 @@ const uiSlice = createSlice({
             state.diagnosticsPlantId = null;
         },
         startGrowInSlot: (state, action: PayloadAction<number>) => {
-            state.initiatingGrowForSlot = action.payload;
-            state.strainForNewGrow = null;
+            state.newGrowFlow.status = 'selectingStrain';
+            state.newGrowFlow.slotIndex = action.payload;
         },
         selectStrainForGrow: (state, action: PayloadAction<Strain>) => {
-            state.strainForNewGrow = action.payload;
-            state.isGrowSetupModalOpen = true;
+            state.newGrowFlow.strain = action.payload;
+            state.newGrowFlow.status = 'configuringSetup';
         },
         confirmSetupAndShowConfirmation: (state, action: PayloadAction<GrowSetup>) => {
-            state.setupForNewGrow = action.payload;
-            state.isGrowSetupModalOpen = false;
-            state.isConfirmationModalOpen = true;
+            state.newGrowFlow.setup = action.payload;
+            state.newGrowFlow.status = 'confirming';
         },
         cancelNewGrow: (state) => {
-            state.initiatingGrowForSlot = null;
-            state.strainForNewGrow = null;
-            state.setupForNewGrow = null;
-            state.isGrowSetupModalOpen = false;
-            state.isConfirmationModalOpen = false;
+            state.newGrowFlow = initialState.newGrowFlow;
         },
         setEquipmentViewTab: (state, action: PayloadAction<EquipmentViewTab>) => {
             state.equipmentViewTab = action.payload;

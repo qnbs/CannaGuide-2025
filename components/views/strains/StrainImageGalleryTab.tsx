@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Strain } from '@/types';
+import { Strain, SavedStrainTip } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSavedStrainTips } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';

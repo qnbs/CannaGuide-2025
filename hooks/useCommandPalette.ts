@@ -1,5 +1,4 @@
-
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Moved 'startGrowInSlot' to its correct import from uiSlice.
@@ -7,7 +6,7 @@ import { setActiveView, openAddModal, startGrowInSlot } from '@/stores/slices/ui
 import { setSetting, exportAllData } from '@/stores/slices/settingsSlice';
 import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';
 import { waterAllPlants } from '@/stores/slices/simulationSlice';
-import { Command, View, Language, Theme } from '@/types';
+import { Command, View, Language, Theme, AppSettings } from '@/types';
 import { CommandGroup } from '@/services/commandService';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { i18nInstance } from '@/i18n';

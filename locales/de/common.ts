@@ -124,6 +124,15 @@ export const common = {
   },
   loadMore: 'Mehr laden',
   regenerate: 'Erneut generieren',
+  unchanged: 'Unverändert',
+  simulationErrors: {
+    invalidGrowSetup: 'Ungültige Anbau-Setup-Daten. Anbau kann nicht gestartet werden.',
+    plantNotFoundWatering: 'Pflanze zum Gießen nicht gefunden.',
+    invalidWateringData: 'Ungültige Gießdaten bereitgestellt.',
+    invalidTrainingType: 'Ungültiger Trainingstyp.',
+    plantNotFoundTraining: 'Pflanze zum Trainieren nicht gefunden.',
+    pestControlNotesEmpty: 'Notizen zur Schädlingsbekämpfung dürfen nicht leer sein.'
+  },
 };
 
 export const nav = {

@@ -48,8 +48,8 @@ export const knowledgeView = {
     },
     scenarios: {
         toppingVsLst: {
-            title: "Experiment 'Topping vs. Unberührt' starten",
-            description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht eine unberührte Pflanze mit einer, die getoppt wurde."
+            title: "Experiment 'Topping vs. LST' starten",
+            description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht eine Pflanze, die LST erhält, mit einer, die getoppt wurde."
         }
     },
     knowledgebase: {
@@ -106,7 +106,23 @@ export const knowledgeView = {
                       <strong>Ursachen:</strong> Oft nicht ein Mangel im Dünger, sondern ein falscher pH-Wert im Wurzelbereich, der die Aufnahme blockiert. Kann auch bei der Verwendung von RO-Wasser (Umkehrosmose) auftreten.<br>
                       <strong>Lösung:</strong> 1. Überprüfe und korrigiere den pH-Wert deiner Nährlösung (Erde: 6.0-6.8, Hydro/Coco: 5.5-6.5). 2. Verwende einen Cal-Mag-Zusatz. 3. Stelle sicher, dass die Luftfeuchtigkeit nicht zu hoch ist, da dies die Transpiration und damit die Kalziumaufnahme verlangsamen kann.`
         }
-    }
+    },
+    sandbox: {
+        title: 'Experimentelle Sandbox',
+        experimentOn: 'Experiment an {{name}}',
+        scenarioDescription: 'Vergleich von {{actionA}} vs. {{actionB}} über {{duration}} Tage.',
+        runningSimulation: 'Beschleunigte Simulation wird ausgeführt...',
+        startExperiment: 'Neues Experiment',
+        modal: {
+            title: 'Neues Experiment starten',
+            description: 'Wähle eine Pflanze aus, um eine 14-tägige Simulation "Topping vs. LST" durchzuführen.',
+            runScenario: 'Szenario starten',
+            noPlants: 'Du musst zuerst eine Pflanze anbauen, um ein Experiment zu starten.',
+        },
+        savedExperiments: 'Gespeicherte Experimente',
+        noExperiments: 'Noch keine Experimente gespeichert.',
+        experimentMeta: 'Basiert auf {{basePlantName}} - Gelaufen am {{date}}',
+    },
 };
 
 export const tipOfTheDay = {

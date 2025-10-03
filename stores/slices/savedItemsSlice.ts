@@ -44,6 +44,10 @@ const savedItemsSlice = createSlice({
     reducers: {
         addExport: (state, action: PayloadAction<{ data: Omit<SavedExport, 'id' | 'createdAt' | 'count'>, strainIds: string[] }>) => {
             const { data, strainIds } = action.payload;
+            if (!data.name?.trim() || !strainIds || strainIds.length === 0) {
+                console.error('[savedItemsSlice] Attempted to add an empty or invalid export. Aborted.');
+                return;
+            }
             const newExport: SavedExport = {
                 ...data,
                 id: `export-${Date.now()}`,
@@ -67,6 +71,10 @@ const savedItemsSlice = createSlice({
         },
         addStrainTip: (state, action: PayloadAction<{ strain: Strain, tip: AIResponse, imageUrl?: string }>) => {
             const { strain, tip, imageUrl } = action.payload;
+            if (!tip || !tip.title?.trim() || !tip.content?.trim()) {
+                console.error("[savedItemsSlice] Attempted to save an empty or invalid strain tip. Aborted.");
+                return;
+            }
             const newTip: SavedStrainTip = {
                 ...tip,
                 id: `tip-${strain.id}-${Date.now()}`,

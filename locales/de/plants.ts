@@ -57,6 +57,7 @@ export const plantsView = {
     stepContextTitle: 'Schritt 2: Kontext hinzufügen (Optional)',
     stepContextDesc: 'Gib zusätzliche Beobachtungen an, die der KI helfen könnten, eine genauere Diagnose zu stellen.',
     journalTitle: 'KI-Diagnose: {{title}}',
+    saveImageError: 'Bild konnte nicht gespeichert werden.',
   },
   detailedView: {
     lifecycle: 'Pflanzen-Lebenszyklus',
@@ -185,6 +186,16 @@ export const plantsView = {
             Trichomes: 'Trichome',
             Setup: 'Setup',
         }
+      },
+      trainingTypes: {
+          LST: 'LST',
+          Topping: 'Topping',
+          FIMing: 'FIMing',
+          Defoliation: 'Entlaubung'
+      },
+      amendmentTypes: {
+          Mycorrhizae: 'Mykorrhiza',
+          WormCastings: 'Wurmhumus'
       },
   },
   setupModal: {

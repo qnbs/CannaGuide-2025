@@ -31,7 +31,7 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                 <div className="flex-grow">
                     <h3 className="font-bold text-lg text-slate-100">{setup.name}</h3>
                     <p className="text-xs text-slate-400">
-                        {new Date(setup.createdAt).toLocaleString()} | {t('equipmentView.configurator.total')}: {setup.totalCost.toFixed(2)}{t('common.units.currency_eur')}
+                        {new Date(setup.createdAt).toLocaleString()} | {t('equipmentView.configurator.total')}: {(setup.totalCost || 0).toFixed(2)}{t('common.units.currency_eur')}
                     </p>
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
@@ -42,7 +42,7 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                 </div>
             </summary>
             <div className="border-t border-slate-700/50 p-4 space-y-3">
-                {categoryOrder.map(key => {
+                {setup.recommendation && categoryOrder.map(key => {
                     const item = setup.recommendation[key as keyof typeof setup.recommendation] as RecommendationItem | string;
                     if (!item || typeof item !== 'object' || !item.name) return null;
                     const categoryLabel = t(`equipmentView.configurator.categories.${key}`);
@@ -53,17 +53,20 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                                     <h4 className="font-semibold text-slate-200">{categoryLabel}</h4>
                                     <p className="text-sm text-primary-300">{item.name} {item.watts && `(${item.watts}W)`}</p>
                                 </div>
-                                <span className="text-sm font-mono font-semibold text-slate-300">{item.price.toFixed(2)} {t('common.units.currency_eur')}</span>
+                                <span className="text-sm font-mono font-semibold text-slate-300">{(item.price || 0).toFixed(2)} {t('common.units.currency_eur')}</span>
                             </div>
                             <p className="text-xs text-slate-400 mt-1 italic">"{item.rationale}"</p>
                         </div>
                     );
                 })}
-                 {setup.recommendation.proTip && (
+                 {setup.recommendation?.proTip && (
                      <div className="p-2 bg-primary-900/20 rounded-md">
                         <h4 className="font-semibold text-primary-300 flex items-center gap-1.5"><PhosphorIcons.Sparkle /> {t('strainsView.tips.form.categories.proTip')}</h4>
                         <p className="text-xs text-slate-300 mt-1 italic">"{setup.recommendation.proTip}"</p>
                     </div>
+                )}
+                {!setup.recommendation && (
+                    <p className="text-sm text-slate-400">{t('equipmentView.savedSetups.noDetails')}</p>
                 )}
             </div>
         </details>

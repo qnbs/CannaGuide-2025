@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Plant, PlantStage } from '@/types';
-// FIX: Replaced non-existent `useTranslations` with `useTranslation` from react-i18next.
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -28,7 +26,6 @@ const ProgressBar: React.FC<{ label: string; progress: number }> = ({ label, pro
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: The property is named `harvestData` on the Plant type, not `postHarvest`.
     const harvestData = plant.harvestData;
     const isFinished = plant.stage === PlantStage.Finished;
 

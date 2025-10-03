@@ -61,7 +61,6 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
          migratedState.settings.settings.showArchivedInPlantsView = true;
     }
     
-    // FIX: Add migration for plant objects to ensure `lastUpdated` exists.
     if (migratedState.simulation?.plants?.entities) {
         for (const id in migratedState.simulation.plants.entities) {
             const plant = migratedState.simulation.plants.entities[id];

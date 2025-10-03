@@ -1,6 +1,4 @@
-
-// FIX: Changed import path to use alias
-import { PlantStage } from '@/types';
+import { PlantStage } from '@/types'
 
 export const STAGES_ORDER: PlantStage[] = [
     PlantStage.Seed,
@@ -12,9 +10,6 @@ export const STAGES_ORDER: PlantStage[] = [
     PlantStage.Drying,
     PlantStage.Curing,
     PlantStage.Finished,
-];
+]
 
-export const FLOWERING_STAGES: PlantStage[] = [
-    PlantStage.Flowering,
-    PlantStage.Harvest,
-];
+export const FLOWERING_STAGES: PlantStage[] = [PlantStage.Flowering, PlantStage.Harvest]

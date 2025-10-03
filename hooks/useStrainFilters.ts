@@ -1,7 +1,4 @@
-
-// FIX: Add missing React import.
-import React, { useMemo, useTransition, useCallback } from 'react';
-// FIX: Import AdvancedFilterState type.
+import { useMemo, useTransition, useCallback } from 'react';
 import {
     Strain,
     SortKey,
@@ -23,6 +20,7 @@ import {
     setLetterFilter,
 } from '@/stores/slices/filtersSlice';
 import { selectFavoriteIds } from '@/stores/selectors';
+import React from 'react';
 
 export const useStrainFilters = (
     allStrains: Strain[],

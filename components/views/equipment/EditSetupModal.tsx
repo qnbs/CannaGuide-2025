@@ -38,22 +38,23 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
     
     const handleRecommendationChange = (category: RecommendationCategory | 'proTip', field: keyof RecommendationItem | 'proTip', value: string | number) => {
         setFormData(prev => {
+            if (!prev.recommendation) return prev;
             const newRecommendation = { ...prev.recommendation };
             if (field === 'proTip' && category === 'proTip') {
-                newRecommendation.proTip = value as string;
-            } else if (category !== 'proTip') {
+                (newRecommendation as any).proTip = value as string;
+            } else if (category !== 'proTip' && newRecommendation[category]) {
                  const item = { ...newRecommendation[category] };
                  (item as any)[field] = (field === 'price' || field === 'watts') ? Number(value) : value;
                  newRecommendation[category] = item;
             }
-            return { ...prev, recommendation: newRecommendation };
+            return { ...prev, recommendation: newRecommendation as any };
         });
     };
 
     const handleSave = () => {
         // Recalculate total cost before saving
-        const totalCost = (Object.values(formData.recommendation) as (RecommendationItem | string)[])
-            .reduce((sum, item) => (typeof item === 'object' && item.price) ? sum + item.price : sum, 0);
+        const totalCost = formData.recommendation ? (Object.values(formData.recommendation) as (RecommendationItem | string)[])
+            .reduce((sum, item) => (typeof item === 'object' && item.price) ? sum + item.price : sum, 0) : 0;
         
         onSave({ ...formData, totalCost });
     };
@@ -76,7 +77,7 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
                     onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
                 />
                 
-                {categoryOrder.map(key => {
+                {formData.recommendation && categoryOrder.map(key => {
                     const item = formData.recommendation[key];
                      if (!item || typeof item !== 'object') return null;
                      const categoryLabel = t(`equipmentView.configurator.categories.${key}`);
@@ -93,11 +94,14 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
                      );
                 })}
 
-                 <FormSection title={t('strainsView.tips.form.categories.proTip')}>
+                 {formData.recommendation?.proTip && <FormSection title={t('strainsView.tips.form.categories.proTip')}>
                       <div className="sm:col-span-2">
                         <FormTextarea label="Pro-Tip" value={formData.recommendation.proTip} onChange={e => handleRecommendationChange('proTip', 'proTip', e.target.value)} />
                       </div>
-                 </FormSection>
+                 </FormSection>}
+                 {!formData.recommendation && (
+                     <p className="text-sm text-slate-400 text-center py-4">{t('equipmentView.savedSetups.noDetails')}</p>
+                 )}
             </div>
         </Modal>
     );

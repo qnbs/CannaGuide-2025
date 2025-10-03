@@ -1,50 +1,57 @@
-import React, { useState, useRef, memo } from 'react';
-import { Button } from '@/components/common/Button';
-import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Modal } from './Modal';
+import React, { useState, useRef, memo } from 'react'
+import { Button } from '@/components/common/Button'
+import { useTranslation } from 'react-i18next'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { Modal } from './Modal'
 
 interface EditableResponse {
-    id: string;
-    title: string;
-    content: string;
+    id: string
+    title: string
+    content: string
 }
 
 interface EditResponseModalProps<T extends EditableResponse> {
-    response: T;
-    onClose: () => void;
-    onSave: (updatedResponse: T) => void;
-    title?: string;
+    response: T
+    onClose: () => void
+    onSave: (updatedResponse: T) => void
+    title?: string
 }
 
-const EditResponseModalComponent = <T extends EditableResponse>({ response, onClose, onSave, title: customTitle }: EditResponseModalProps<T>) => {
-    const { t } = useTranslation();
-    const [title, setTitle] = useState(response.title);
-    const [content, setContent] = useState(response.content);
-    const contentRef = useRef<HTMLDivElement>(null);
+const EditResponseModalComponent = <T extends EditableResponse>({
+    response,
+    onClose,
+    onSave,
+    title: customTitle,
+}: EditResponseModalProps<T>) => {
+    const { t } = useTranslation()
+    const [title, setTitle] = useState(response.title)
+    const [content, setContent] = useState(response.content)
+    const contentRef = useRef<HTMLDivElement>(null)
 
     const handleSave = () => {
-        onSave({ ...response, title, content });
-    };
+        onSave({ ...response, title, content })
+    }
 
     const handleContentChange = () => {
         if (contentRef.current) {
-            setContent(contentRef.current.innerHTML);
+            setContent(contentRef.current.innerHTML)
         }
-    };
-    
+    }
+
     const applyFormat = (command: string) => {
-        document.execCommand(command, false);
-        handleContentChange();
-        contentRef.current?.focus();
-    };
+        document.execCommand(command, false)
+        handleContentChange()
+        contentRef.current?.focus()
+    }
 
     const footer = (
         <>
-            <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
+            <Button variant="secondary" onClick={onClose}>
+                {t('common.cancel')}
+            </Button>
             <Button onClick={handleSave}>{t('common.save')}</Button>
         </>
-    );
+    )
 
     return (
         <Modal
@@ -55,20 +62,47 @@ const EditResponseModalComponent = <T extends EditableResponse>({ response, onCl
             footer={footer}
         >
             <div className="space-y-4">
-                <input 
-                    type="text" 
-                    value={title} 
-                    onChange={e => setTitle(e.target.value)} 
-                    className="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-slate-100 focus:ring-2 focus:ring-primary-500 focus:outline-none" 
+                <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-slate-100 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     aria-label={t('common.name')}
                 />
-                
+
                 {content && (
                     <div className="bg-slate-800 border border-slate-600 rounded-md">
                         <div className="flex items-center gap-1 p-1 border-b border-slate-600">
-                            <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('bold')} className="!p-1.5" aria-label={t('common.editor.bold')}><PhosphorIcons.TextBolder className="w-5 h-5" /></Button>
-                            <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('italic')} className="!p-1.5" aria-label={t('common.editor.italic')}><PhosphorIcons.TextItalic className="w-5 h-5" /></Button>
-                            <Button type="button" variant="secondary" size="sm" onClick={() => applyFormat('insertUnorderedList')} className="!p-1.5" aria-label={t('common.editor.list')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => applyFormat('bold')}
+                                className="!p-1.5"
+                                aria-label={t('common.editor.bold')}
+                            >
+                                <PhosphorIcons.TextBolder className="w-5 h-5" />
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => applyFormat('italic')}
+                                className="!p-1.5"
+                                aria-label={t('common.editor.italic')}
+                            >
+                                <PhosphorIcons.TextItalic className="w-5 h-5" />
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => applyFormat('insertUnorderedList')}
+                                className="!p-1.5"
+                                aria-label={t('common.editor.list')}
+                            >
+                                <PhosphorIcons.ListBullets className="w-5 h-5" />
+                            </Button>
                         </div>
                         <div
                             ref={contentRef}
@@ -82,7 +116,7 @@ const EditResponseModalComponent = <T extends EditableResponse>({ response, onCl
                 )}
             </div>
         </Modal>
-    );
-};
+    )
+}
 
-export const EditResponseModal = memo(EditResponseModalComponent);
+export const EditResponseModal = memo(EditResponseModalComponent)

@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { Strain } from '@/types';
-// FIX: Replace Zustand store with Redux hooks and selectors
 import { useAppSelector } from '@/stores/store';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';

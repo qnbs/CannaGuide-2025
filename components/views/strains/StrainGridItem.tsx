@@ -14,6 +14,8 @@ interface StrainGridItemProps {
     isUserStrain: boolean;
     onDelete: (id: string) => void;
     index: number;
+    isFavorite: boolean;
+    onToggleFavorite: () => void;
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
@@ -22,7 +24,7 @@ const typeIcons: Record<StrainType, React.ReactNode> = {
     [StrainType.Hybrid]: <HybridIcon className="w-10 h-10 text-blue-400" />,
 };
 
-const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index }) => {
+const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
 
     return (
@@ -36,17 +38,25 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => onToggleSelection(strain.id)}
-                    className="h-4 w-4 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500"
+                    className="h-4 w-4 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500 self-end"
                     aria-label={`Select ${strain.name}`}
                 />
+                 <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={`!p-1 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
+                    onClick={onToggleFavorite} 
+                    title={t('common.manageFavorites')}
+                 >
+                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-3 h-3" />
+                </Button>
                  {isUserStrain && (
-                    <Button variant="danger" size="sm" className="!p-1" onClick={() => onDelete(strain.id)}>
+                    <Button variant="danger" size="sm" className="!p-1 rounded-full" onClick={() => onDelete(strain.id)} title={t('common.delete')}>
                         <PhosphorIcons.TrashSimple className="w-3 h-3" />
                     </Button>
                 )}
             </div>
             
-            {/* FIX: The `title` prop is not valid on PhosphorIcons. Wrapped with a span to provide the tooltip. */}
             {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" /></span>}
 
             <div className="mx-auto mb-2">

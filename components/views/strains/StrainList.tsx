@@ -17,6 +17,8 @@ interface StrainListProps {
     sort: { key: SortKey; direction: string; };
     handleSort: (key: SortKey) => void;
     isPending?: boolean;
+    favorites: Set<string>;
+    onToggleFavorite: (id: string) => void;
 }
 
 export const StrainList: React.FC<StrainListProps> = ({ 
@@ -30,7 +32,9 @@ export const StrainList: React.FC<StrainListProps> = ({
     visibleColumns, 
     isUserStrain, 
     onDelete,
-    isPending 
+    isPending,
+    favorites,
+    onToggleFavorite
 }) => {
     const { t } = useTranslation();
 
@@ -63,6 +67,8 @@ export const StrainList: React.FC<StrainListProps> = ({
                     isUserStrain={isUserStrain(strain.id)}
                     onDelete={onDelete}
                     index={index}
+                    isFavorite={favorites.has(strain.id)}
+                    onToggleFavorite={() => onToggleFavorite(strain.id)}
                 />)}
             </div>
         </div>

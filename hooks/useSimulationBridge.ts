@@ -1,5 +1,4 @@
-
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useAppSelector } from '@/stores/store';
 import {
     selectActivePlants,
@@ -11,7 +10,7 @@ import {
     selectHasAvailableSlots,
     selectPlantSlots
 } from '@/stores/selectors';
-import { Plant } from '@/types';
+import { Plant, Task, PlantProblem } from '@/types';
 
 /**
  * Custom hook to get the list of currently active plants from the simulation state.
@@ -45,7 +44,7 @@ export const usePlantSlotsData = () => {
     const plantEntities = useAppSelector(state => state.simulation.plants.entities);
     const hasAvailable = useAppSelector(selectHasAvailableSlots);
     
-    const slotsWithData = useMemo(() => slots.map(id => id ? plantEntities[id] : null), [slots, plantEntities]);
+    const slotsWithData = useMemo(() => slots.map(id => id ? plantEntities[id] || null : null), [slots, plantEntities]);
     
     return { slotsWithData, hasAvailable };
 };

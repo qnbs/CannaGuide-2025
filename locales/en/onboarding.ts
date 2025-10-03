@@ -9,7 +9,7 @@ export const onboarding = {
   },
   step2: {
     title: '🌿 The Digital Grow Room',
-    text: 'Manage up to three plants in an ultra-realistic real-time simulation. Intervene, log everything, and watch them grow.',
+    text: 'Manage up to three plants in an ultra-realistic real-time simulation. Intervene, log everything, and watch them grow. You can enable Expert Mode anytime in the header for more scientific data!',
   },
   step3: {
     title: '🛠️ The Workshop',

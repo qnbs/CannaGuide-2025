@@ -8,7 +8,7 @@ const scenarios: Record<string, Scenario> = {
         titleKey: 'scenarios.toppingVsLst.title',
         descriptionKey: 'scenarios.toppingVsLst.description',
         durationDays: 14,
-        plantAModifier: { action: 'NONE', day: 1 },
+        plantAModifier: { action: 'LST', day: 1 },
         plantBModifier: { action: 'TOP', day: 1 },
     },
     // Add more scenarios here

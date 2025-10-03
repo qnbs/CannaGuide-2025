@@ -10,6 +10,7 @@ import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { addJournalEntry } from '@/stores/slices/simulationSlice';
 import { useDiagnosePlantMutation } from '@/stores/api';
+import { Plant } from '@/types';
 
 
 const base64ToMimeType = (base64: string): string => {

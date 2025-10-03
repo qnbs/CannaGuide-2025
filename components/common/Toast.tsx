@@ -1,52 +1,53 @@
-
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
-// FIX: Corrected import path for types to use the '@/' alias and import NotificationType.
-import { Notification, NotificationType } from '@/types';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { useTranslation } from 'react-i18next';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-// FIX: Corrected import for Redux action.
-import { removeNotification } from '@/stores/slices/uiSlice';
-import { selectNotifications } from '@/stores/selectors';
+import React, { useEffect, useState } from 'react'
+import ReactDOM from 'react-dom'
+import { Notification, NotificationType } from '@/types'
+import { PhosphorIcons } from '../icons/PhosphorIcons'
+import { useTranslation } from 'react-i18next'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { removeNotification } from '@/stores/slices/uiSlice'
+import { selectNotifications } from '@/stores/selectors'
 
 interface ToastProps {
-  notification: Notification;
-  onClose: (id: number) => void;
+    notification: Notification
+    onClose: (id: number) => void
 }
 
 const toastIcons: Record<NotificationType, React.ReactNode> = {
     success: <PhosphorIcons.CheckCircle className="w-6 h-6 text-green-500" />,
     error: <PhosphorIcons.XCircle className="w-6 h-6 text-red-500" />,
     info: <PhosphorIcons.Info className="w-6 h-6 text-blue-500" />,
-};
+}
 
 const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
-    const { t } = useTranslation();
-    const [status, setStatus] = useState('toast-entering');
+    const { t } = useTranslation()
+    const [status, setStatus] = useState('toast-entering')
 
     useEffect(() => {
         const timer = setTimeout(() => {
-            setStatus('toast-exiting');
-        }, 3000);
+            setStatus('toast-exiting')
+        }, 3000)
 
         const exitTimer = setTimeout(() => {
-            onClose(notification.id);
-        }, 3300); // 300ms for exit animation
+            onClose(notification.id)
+        }, 3300) // 300ms for exit animation
 
         return () => {
-            clearTimeout(timer);
-            clearTimeout(exitTimer);
-        };
-    }, [notification.id, onClose]);
+            clearTimeout(timer)
+            clearTimeout(exitTimer)
+        }
+    }, [notification.id, onClose])
 
+    // Use a key on the message div to force re-render and re-trigger animation on new toasts.
     return (
-        <div className={`toast ${status} flex items-center gap-3 w-full max-w-xs p-4 rounded-lg shadow-lg border`} role="alert">
-            <div>
-                {toastIcons[notification.type]}
+        <div
+            key={notification.id}
+            className={`toast ${status} flex items-center gap-3 w-full max-w-xs p-4 rounded-lg shadow-lg border`}
+            role="alert"
+        >
+            <div>{toastIcons[notification.type]}</div>
+            <div className="text-sm font-normal text-slate-800 dark:text-slate-200">
+                {notification.message}
             </div>
-            <div className="text-sm font-normal text-slate-800 dark:text-slate-200">{notification.message}</div>
             <button
                 type="button"
                 className="ml-auto -mx-1.5 -my-1.5 bg-transparent text-slate-400 hover:text-slate-900 rounded-lg focus:ring-2 focus:ring-slate-300 p-1.5 hover:bg-slate-100 dark:text-slate-500 dark:hover:text-white dark:hover:bg-slate-700"
@@ -57,26 +58,26 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
                 <PhosphorIcons.X className="w-5 h-5" />
             </button>
         </div>
-    );
-};
+    )
+}
 
 export const ToastContainer: React.FC = () => {
-    const dispatch = useAppDispatch();
-    const notifications = useAppSelector(selectNotifications);
-    const container = document.getElementById('toast-container');
+    const dispatch = useAppDispatch()
+    const notifications = useAppSelector(selectNotifications)
+    const container = document.getElementById('toast-container')
 
     const handleClose = (id: number) => {
-        dispatch(removeNotification(id));
-    };
+        dispatch(removeNotification(id))
+    }
 
-    if (!container) return null;
+    if (!container) return null
 
     return ReactDOM.createPortal(
         <>
-            {notifications.map(n => (
+            {notifications.map((n) => (
                 <Toast key={n.id} notification={n} onClose={handleClose} />
             ))}
         </>,
         container
-    );
-};
+    )
+}

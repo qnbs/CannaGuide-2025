@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '../common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-import { Plant, KnowledgeArticle, KnowledgeViewTab } from '@/types';
+// FIX: Add SandboxState and Plant to imports for type casting.
+import { Plant, KnowledgeArticle, KnowledgeViewTab, SandboxState } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
 import { Button } from '../common/Button';
@@ -43,11 +44,13 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
-    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
+    // FIX: Cast result of useAppSelector to SandboxState to fix type inference issue.
+    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState) as SandboxState;
 
     const [isTabLoading, startTabTransition] = useTransition();
     
-    const activePlants = useActivePlants();
+    // FIX: Cast result of useActivePlants to Plant[] to fix type inference issue.
+    const activePlants = useActivePlants() as Plant[];
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);

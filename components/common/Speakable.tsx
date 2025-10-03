@@ -1,39 +1,40 @@
-import React, { useRef } from 'react';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { selectCurrentlySpeakingId } from '@/stores/selectors';
-import { useTranslation } from 'react-i18next';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-// FIX: Corrected import for Redux action.
-import { addToTtsQueue } from '@/stores/slices/ttsSlice';
+import React, { useRef } from 'react'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { selectCurrentlySpeakingId } from '@/stores/selectors'
+import { useTranslation } from 'react-i18next'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { addToTtsQueue } from '@/stores/slices/ttsSlice'
 
 interface SpeakableProps {
-    children: React.ReactNode;
-    elementId: string;
-    className?: string;
+    children: React.ReactNode
+    elementId: string
+    className?: string
 }
 
 export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, className }) => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId);
-    const ref = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId)
+    const ref = useRef<HTMLDivElement>(null)
 
-    const isSpeaking = currentlySpeakingId === elementId;
+    const isSpeaking = currentlySpeakingId === elementId
 
     const handleSpeak = (e: React.MouseEvent) => {
-        e.stopPropagation();
+        e.stopPropagation()
         if (ref.current) {
-            const textToSpeak = ref.current.textContent || '';
+            const textToSpeak = ref.current.textContent || ''
             if (textToSpeak.trim()) {
-                dispatch(addToTtsQueue({ id: elementId, text: textToSpeak }));
+                dispatch(addToTtsQueue({ id: elementId, text: textToSpeak }))
             }
         }
-    };
+    }
 
     return (
         <div
             ref={ref}
-            className={`speakable-container relative group ${isSpeaking ? 'speakable-highlight' : ''} ${className}`}
+            className={`speakable-container relative group ${
+                isSpeaking ? 'speakable-highlight' : ''
+            } ${className}`}
         >
             {children}
             <button
@@ -44,5 +45,5 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
                 <PhosphorIcons.SpeakerHigh className="w-4 h-4" />
             </button>
         </div>
-    );
-};
+    )
+}

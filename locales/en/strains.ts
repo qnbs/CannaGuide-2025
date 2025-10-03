@@ -114,6 +114,7 @@ export const strainsView = {
       duplicate: 'A strain with the name "{{name}}" already exists.',
       deleteConfirm: 'Are you sure you want to delete the strain "{{name}}"? This action cannot be undone.',
     },
+    autoflower: 'Autoflower',
   },
   strainModal: {
       agronomicData: 'Agronomic Data',

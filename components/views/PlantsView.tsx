@@ -13,12 +13,12 @@ import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { GrowSetupModal } from './plants/GrowSetupModal';
 import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
-// FIX: Corrected import path for Redux store to use the '@/' alias.
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 import { SkeletonLoader } from '../common/SkeletonLoader';
+import { Task, PlantProblem } from '@/types';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     const { t } = useTranslation();
@@ -68,12 +68,7 @@ export const PlantsView: React.FC = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    const { 
-        initiatingGrowForSlot,
-        strainForNewGrow,
-        isGrowSetupModalOpen,
-        isConfirmationModalOpen
-    } = useAppSelector(selectUi);
+    const { newGrowFlow } = useAppSelector(selectUi);
     
     const { slotsWithData } = usePlantSlotsData();
     const { tasks, problems } = useGardenSummary();
@@ -83,18 +78,18 @@ export const PlantsView: React.FC = () => {
         return <DetailedPlantView plant={selectedPlant} onClose={() => dispatch(setSelectedPlantId(null))} />;
     }
 
-    const showGrowFromStrainBanner = strainForNewGrow && initiatingGrowForSlot === null;
+    const showGrowFromStrainBanner = newGrowFlow.strain && newGrowFlow.status === 'selectingSlot';
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
-            {isGrowSetupModalOpen && strainForNewGrow && (
+            {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
                 <GrowSetupModal
-                    strain={strainForNewGrow}
+                    strain={newGrowFlow.strain}
                     onClose={() => dispatch(cancelNewGrow())}
                     onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
                 />
             )}
-            {isConfirmationModalOpen && (
+            {newGrowFlow.status === 'confirming' && (
                 <GrowConfirmationModal />
             )}
 
@@ -107,7 +102,7 @@ export const PlantsView: React.FC = () => {
                     <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
                         <div className="flex-grow">
                             <h3 className="font-bold text-primary-300">{t('plantsView.inlineSelector.title')}</h3>
-                            <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {strainForNewGrow.name}.</p>
+                            <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {newGrowFlow.strain?.name}.</p>
                         </div>
                         <Button variant="secondary" size="sm" onClick={() => dispatch(cancelNewGrow())}>
                             {t('common.cancel')}
@@ -119,7 +114,7 @@ export const PlantsView: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {slotsWithData.map((plant, index) => {
-                            if (initiatingGrowForSlot === index) {
+                            if (newGrowFlow.status === 'selectingStrain' && newGrowFlow.slotIndex === index) {
                                 return (
                                     <InlineStrainSelector 
                                         key={`selector-${index}`}

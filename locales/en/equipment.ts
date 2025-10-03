@@ -11,7 +11,6 @@ export const equipmentView = {
     subtitleNew: 'Answer two simple questions to get a complete, AI-generated equipment recommendation for your grow.',
     step1TitleNew: '1. How many plants do you want to grow?',
     plantCount_one: '1 Plant',
-    // FIX: Changed interpolation key from 'count' to 'range' to allow passing a string for display while still using the numeric 'count' for pluralization.
     plantCount_other: '{{range}} Plants',
     step2TitleNew: '2. Choose your configuration style',
     generate: 'Generate Setup',
@@ -80,7 +79,8 @@ export const equipmentView = {
       rationale: 'Rationale',
       price: 'Price (€)',
       category: 'Category',
-    }
+    },
+    noDetails: 'No detailed component information available for this setup.',
   },
   calculators: {
     yes: 'Yes',

@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -11,12 +9,10 @@ import { DataExportModal } from '@/components/common/DataExportModal';
 import { exportService } from '@/services/exportService';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectArchivedMentorResponses } from '@/stores/selectors';
-// FIX: Corrected imports for Redux actions.
 import { updateArchivedMentorResponse, deleteArchivedMentorResponse } from '@/stores/slices/archivesSlice';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 
-// FIX: Add props interface to allow passing data for testing.
 interface MentorArchiveTabProps {
     archivedResponses?: ArchivedMentorResponse[];
 }
@@ -25,7 +21,6 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const storeResponses = useAppSelector(selectArchivedMentorResponses);
-    // FIX: Use props if available, otherwise fall back to store.
     const archivedResponses = propsResponses || storeResponses;
 
 
@@ -100,10 +95,8 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
         <Card>
             {editingResponse && (
                 <EditResponseModal 
-                    // FIX: Ensure title is a string to match EditableResponse type.
                     response={{ ...editingResponse, title: editingResponse.title || '' }} 
                     onClose={() => setEditingResponse(null)} 
-                    // FIX: Pass the fully typed response to the update action.
                     onSave={(updated) => handleUpdate({ ...editingResponse, ...updated })}
                 />
             )}

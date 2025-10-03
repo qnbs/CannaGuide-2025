@@ -1,5 +1,4 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -8,7 +7,7 @@ import { PaymentIcons } from '@/components/icons/PaymentIcons';
 
 type ShopRegion = 'europe' | 'us';
 
-const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = ({ shop, t, onClose }) => (
+const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = memo(({ shop, t, onClose }) => (
     <div className="flex flex-col h-full">
         <div className="flex justify-between items-start mb-4">
             <div>
@@ -55,7 +54,7 @@ const ShopDetailView: React.FC<{ shop: any; t: (key: string, params?: any) => an
             </Button>
         </div>
     </div>
-);
+));
 
 
 export const GrowShopsView: React.FC = () => {
@@ -82,15 +81,15 @@ export const GrowShopsView: React.FC = () => {
     const selectedShop = selectedShopKey ? allShops[selectedShopKey] : null;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-full">
-            <div className={`md:col-span-1 flex-col gap-4 ${selectedShop ? 'hidden md:flex' : 'flex'}`}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className={`md:col-span-1 flex flex-col gap-4 ${selectedShop ? 'hidden md:flex' : 'flex'}`}>
                 <Card className="flex-shrink-0">
                      <div className="flex gap-1 bg-slate-900 rounded-lg p-0.5">
                         <button onClick={() => setRegion('europe')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-800'}`}>{t('equipmentView.growShops.region.europe')}</button>
                         <button onClick={() => setRegion('us')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-800'}`}>{t('equipmentView.growShops.region.usa')}</button>
                     </div>
                 </Card>
-                <div className="flex-grow overflow-y-auto space-y-3 pr-2">
+                <div className="space-y-3 pr-2">
                     {filteredAndSortedShops.map(shop => (
                         <Card key={shop.key} onClick={() => setSelectedShopKey(shop.key)} className="p-3 cursor-pointer">
                             <div className="flex justify-between items-start">

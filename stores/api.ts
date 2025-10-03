@@ -21,20 +21,21 @@ interface MinimalRootState {
     };
 }
 
-// FIX: Removed the CustomError interface. The explicit generic was causing type inference issues with the endpoint builder.
-// The default error type, `SerializedError`, is structurally compatible with the errors returned in the `queryFn`.
+// Define an explicit error shape for the API calls.
+interface ApiError {
+  message: string;
+}
 
 export const geminiApi = createApi({
   reducerPath: 'geminiApi',
-  // The `fakeBaseQuery` requires a generic type for the error shape.
-  // Without it, the `builder` in `endpoints` is not correctly typed,
-  // which causes "Untyped function calls may not accept type arguments" on `builder.mutation`.
-  // FIX: Removed <CustomError> generic to allow RTK Query to correctly infer types using the default SerializedError.
-  baseQuery: fakeBaseQuery(),
+  // Provide the explicit error type to fakeBaseQuery. This is crucial for fixing the
+  // type inference issue with the endpoint builder that caused errors on all mutations.
+  baseQuery: fakeBaseQuery<ApiError>(),
   endpoints: (builder) => ({
     getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string }>({
       queryFn: async ({ prompt }, api) => {
-        const state = api.getState() as MinimalRootState;
+        // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+        const state = api.getState() as unknown as MinimalRootState;
         const lang = state.settings.settings.language;
         try {
           const data = await geminiService.getEquipmentRecommendation(prompt, lang);
@@ -46,7 +47,8 @@ export const geminiApi = createApi({
     }),
     diagnosePlant: builder.mutation<PlantDiagnosisResponse, { base64Image: string, mimeType: string, plant: Plant, userNotes: string }>({
       queryFn: async (args, api) => {
-        const state = api.getState() as MinimalRootState;
+        // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+        const state = api.getState() as unknown as MinimalRootState;
         const lang = state.settings.settings.language;
         try {
           const data = await geminiService.diagnosePlant(args.base64Image, args.mimeType, args.plant, args.userNotes, lang);
@@ -58,7 +60,8 @@ export const geminiApi = createApi({
     }),
     getPlantAdvice: builder.mutation<AIResponse, Plant>({
       queryFn: async (plant, api) => {
-        const state = api.getState() as MinimalRootState;
+        // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+        const state = api.getState() as unknown as MinimalRootState;
         const lang = state.settings.settings.language;
         try {
           const data = await geminiService.getPlantAdvice(plant, lang);
@@ -70,7 +73,8 @@ export const geminiApi = createApi({
     }),
     getProactiveDiagnosis: builder.mutation<AIResponse, Plant>({
        queryFn: async (plant, api) => {
-        const state = api.getState() as MinimalRootState;
+        // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+        const state = api.getState() as unknown as MinimalRootState;
         const lang = state.settings.settings.language;
         try {
           const data = await geminiService.getProactiveDiagnosis(plant, lang);
@@ -82,7 +86,8 @@ export const geminiApi = createApi({
     }),
     getMentorResponse: builder.mutation<Omit<MentorMessage, 'role'>, { plant: Plant, query: string }>({
         queryFn: async ({ plant, query }, api) => {
-            const state = api.getState() as MinimalRootState;
+            // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+            const state = api.getState() as unknown as MinimalRootState;
             const lang = state.settings.settings.language;
             try {
                 const data = await geminiService.getMentorResponse(plant, query, lang);
@@ -94,7 +99,8 @@ export const geminiApi = createApi({
     }),
     getStrainTips: builder.mutation<StructuredGrowTips, { strain: Strain, context: { focus: string, stage: string, experience: string } }>({
         queryFn: async ({ strain, context }, api) => {
-            const state = api.getState() as MinimalRootState;
+            // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+            const state = api.getState() as unknown as MinimalRootState;
             const lang = state.settings.settings.language;
             try {
                 const data = await geminiService.getStrainTips(strain, context, lang);
@@ -106,7 +112,8 @@ export const geminiApi = createApi({
     }),
     generateStrainImage: builder.mutation<string, Strain>({
         queryFn: async (strain, api) => {
-            const state = api.getState() as MinimalRootState;
+            // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+            const state = api.getState() as unknown as MinimalRootState;
             const lang = state.settings.settings.language;
             try {
                 const data = await geminiService.generateStrainImage(strain.name, lang);
@@ -118,7 +125,8 @@ export const geminiApi = createApi({
     }),
     generateDeepDive: builder.mutation<DeepDiveGuide, { topic: string, plant: Plant }>({
         queryFn: async ({ topic, plant }, api) => {
-            const state = api.getState() as MinimalRootState;
+            // FIX: Use a more robust type assertion `as unknown as Type` to resolve potential TypeScript inference issues.
+            const state = api.getState() as unknown as MinimalRootState;
             const lang = state.settings.settings.language;
             try {
                 const data = await geminiService.generateDeepDive(topic, plant, lang);

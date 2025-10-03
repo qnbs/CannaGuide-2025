@@ -1,13 +1,15 @@
-const CACHE_NAME = 'cannaguide-v5-pwa-cache';
+const CACHE_NAME = 'cannaguide-v6-pwa-cache'; // New version to force update
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
   '/manifest.json',
   '/icon.svg',
   '/pwa-icon.svg',
-  '/pwa-icon-192.png',
-  '/pwa-icon-512.png',
   '/register-sw.js',
+  // NOTE: These are placeholders for actual icon files that should be generated
+  // and placed in the public directory for the manifest to work correctly.
+  // '/pwa-icon-192.png', 
+  // '/pwa-icon-512.png',
 ];
 
 // Install the service worker and cache the app shell
@@ -16,6 +18,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('[SW] Caching app shell');
+        // Add core assets required for the app to run offline
         return cache.addAll(URLS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
@@ -38,7 +41,7 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Intercept fetch requests and serve from cache first
+// Intercept fetch requests and serve from cache first (Cache-First strategy)
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') {
@@ -47,18 +50,19 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // If we have a cached response, return it
+      // If we have a cached response, return it immediately.
       if (cachedResponse) {
         return cachedResponse;
       }
 
-      // Otherwise, fetch from the network, cache it, and return the network response
+      // If the resource is not in the cache, fetch it from the network.
       return fetch(event.request).then((networkResponse) => {
-        // Don't cache opaque responses (e.g., from CDNs without CORS) or API calls
-        if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic' || event.request.url.includes('googleapis.com')) {
+        // We don't cache API calls to Google or other dynamic resources.
+        if (!networkResponse || networkResponse.status !== 200 || event.request.url.includes('googleapis.com')) {
           return networkResponse;
         }
-
+        
+        // For other resources (like from the CDN), clone the response and cache it for future use.
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
@@ -66,8 +70,12 @@ self.addEventListener('fetch', (event) => {
 
         return networkResponse;
       }).catch(error => {
-        console.error('[SW] Fetch failed:', error);
-        // We could return an offline fallback page here if we had one.
+        console.error('[SW] Fetch failed; returning offline fallback if available.', error);
+        // As a last resort for navigation requests, return the cached root page.
+        if (event.request.mode === 'navigate') {
+          return caches.match('/');
+        }
+        // For other failed requests, the browser's default offline error will show.
         throw error;
       });
     })

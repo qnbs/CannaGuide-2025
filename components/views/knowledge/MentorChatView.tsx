@@ -1,11 +1,9 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, memo } from 'react';
 import { Plant, MentorMessage } from '@/types';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppDispatch } from '@/stores/store';
-// FIX: Removed unused import from obsolete aiSlice. Chat history is now local state.
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { useGetMentorResponseMutation } from '@/stores/api';
@@ -16,7 +14,7 @@ interface MentorChatViewProps {
     onClose: () => void;
 }
 
-const Message: React.FC<{ message: MentorMessage }> = ({ message }) => {
+const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
     const isUser = message.role === 'user';
     return (
         <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}>
@@ -27,7 +25,7 @@ const Message: React.FC<{ message: MentorMessage }> = ({ message }) => {
             </div>
         </div>
     );
-};
+});
 
 
 export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }) => {
@@ -71,7 +69,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
     }
 
     return (
-        <div className="flex flex-col h-full animate-fade-in">
+        <div className="flex flex-col animate-fade-in">
             <header className="flex-shrink-0 mb-4">
                  <div className="flex items-center justify-between">
                     <Button variant="secondary" onClick={onClose}>
@@ -88,7 +86,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                     <p className="text-slate-400">{t('knowledgeView.aiMentor.plantContext', { name: plant.name })}</p>
                 </div>
             </header>
-            <div className="flex-grow overflow-y-auto pr-2 -mr-4 space-y-4">
+            <div className="flex-grow overflow-y-auto pr-2 -mr-4 space-y-4 min-h-[calc(100vh-400px)]">
                 {history.map((msg, index) => (
                     <Message key={index} message={msg} />
                 ))}

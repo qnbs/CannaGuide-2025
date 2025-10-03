@@ -86,7 +86,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                     )}
                 </Button>
                 {isAnyFilterActive && (
-                    <Button onClick={onClearAllFilters} variant="secondary" size="sm" className="!py-1.5 !px-2.5">
+                    <Button onClick={onClearAllFilters} variant="secondary" size="sm" className="!py-1.5 !px-2.5" aria-label={t('strainsView.resetFilters')}>
                         <PhosphorIcons.X className="w-4 h-4" />
                     </Button>
                 )}

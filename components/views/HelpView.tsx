@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Tabs } from '@/components/common/Tabs';
@@ -12,7 +12,7 @@ import { LexiconCard } from './help/LexiconCard';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { Button } from '@/components/common/Button';
 
-const FAQSection: React.FC = () => {
+const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -61,9 +61,9 @@ const FAQSection: React.FC = () => {
             </div>
         </Card>
     );
-};
+});
 
-const VisualGuidesSection: React.FC = () => {
+const VisualGuidesSection: React.FC = memo(() => {
     const { t } = useTranslation();
     return (
         <Card>
@@ -80,9 +80,9 @@ const VisualGuidesSection: React.FC = () => {
             </div>
         </Card>
     );
-};
+});
 
-const LexiconSection: React.FC = () => {
+const LexiconSection: React.FC = memo(() => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory, setActiveCategory] = useState<'All' | 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General'>('All');
@@ -159,7 +159,7 @@ const LexiconSection: React.FC = () => {
             </div>
         </Card>
     );
-};
+});
 
 export const HelpView: React.FC = () => {
     const { t } = useTranslation();

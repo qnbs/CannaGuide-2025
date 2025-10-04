@@ -1,5 +1,4 @@
 import type React from 'react'
-// FIX: Update EntityState to include ID type argument
 import type { EntityState } from '@reduxjs/toolkit'
 import { z } from 'zod'
 import { GrowSetupSchema, PlantSchema, StrainSchema, WaterDataSchema } from './types/schemas'
@@ -48,7 +47,7 @@ export enum ProblemType {
     PH_TOO_LOW = 'PH_TOO_LOW',
     HUMIDITY_TOO_HIGH = 'HUMIDITY_TOO_HIGH',
     HUMIDITY_TOO_LOW = 'HUMIDITY_TOO_LOW',
-    TEMPERATURE_TOO_HIGH = 'TEMPERATURE_TOO_HIGH',
+    TEMPERATURE_TOO_HIGH = 'TEMPERATURE_TOO_LOW',
     TEMPERATURE_TOO_LOW = 'TEMPERATURE_TOO_LOW',
     NUTRIENT_BURN = 'NUTRIENT_BURN',
 }
@@ -525,14 +524,12 @@ export interface GeneticContribution {
 
 // Redux State Interfaces
 export interface SimulationState {
-    // FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Adding string as the ID type.
-    plants: EntityState<Plant, string>
-    plantSlots: (string | null)[]
-    selectedPlantId: string | null
-    devSpeedMultiplier: number
+    plants: EntityState<Plant, string>;
+    plantSlots: (string | null)[];
+    selectedPlantId: string | null;
+    devSpeedMultiplier: number;
 }
 
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Adding string as the ID type.
 export interface UserStrainsState extends EntityState<Strain, string> {}
 
 export interface BreedingState {

@@ -86,7 +86,6 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                 <EditResponseModal 
                     response={editingResponse} 
                     onClose={() => setEditingResponse(null)} 
-                    // FIX: Construct a valid ArchivedAdvisorResponse object for the action payload by merging the updated fields with the original object.
                     onSave={(updated) => {
                         if (editingResponse) {
                             dispatch(updateArchivedAdvisorResponse({ ...editingResponse, ...updated }));

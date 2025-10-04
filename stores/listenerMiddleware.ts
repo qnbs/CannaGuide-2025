@@ -1,8 +1,6 @@
 import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit';
-// FIX: Import AppDispatch to correctly type the listener middleware.
 import type { RootState, AppDispatch } from './store';
 import { i18nInstance, getT } from '@/i18n';
-// FIX: Import Strain type to resolve missing type error.
 import { Language, Strain } from '@/types';
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
 import { plantStateUpdated, resetPlants, addJournalEntry } from './slices/simulationSlice';
@@ -18,7 +16,6 @@ import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } f
 export const listenerMiddleware = createListenerMiddleware();
 const REDUX_STATE_KEY = 'cannaguide-redux-storage';
 
-// FIX: Create a typed version of startListening to provide correct types for listenerApi.
 type AppStartListening = TypedStartListening<RootState, AppDispatch>;
 const startAppListening = listenerMiddleware.startListening as AppStartListening;
 
@@ -89,7 +86,6 @@ startAppListening({
  * Listener to automatically change the i18n language when the setting is updated.
  */
 startAppListening({
-  // FIX: Use `actionCreator` for a single action to ensure correct type inference on the payload.
   actionCreator: setSetting,
   effect: async (action) => {
     if (action.payload.path === 'language') {

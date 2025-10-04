@@ -289,5 +289,7 @@ export const strainsView = {
       noDescendantsFound: 'Keine direkten Nachkommen in der Datenbank gefunden.',
       children: 'Kinder',
       grandchildren: 'Enkel',
+      toggleLayout: 'Baum-Layout umschalten',
   },
+  sortBy: 'Sortieren nach',
 };

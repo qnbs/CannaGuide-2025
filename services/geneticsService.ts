@@ -1,17 +1,17 @@
+// services/geneticsService.ts
 import { Strain, GenealogyNode, StrainType, GeneticContribution } from '@/types';
 
 class GeneticsService {
     private findAndBuildNode(
         strainName: string,
         allStrains: Strain[],
-        visited: Set<string>,
-        depth: number,
-        maxDepth: number
+        visited: Set<string>
     ): GenealogyNode {
         const trimmedName = strainName.trim().toLowerCase();
         const strain = allStrains.find(s => s.name.toLowerCase() === trimmedName);
 
         if (!strain) {
+            // Treat as a landrace if not found in the DB
             return {
                 name: strainName.trim(),
                 id: trimmedName.replace(/[^a-z0-9]/g, '-'),
@@ -22,13 +22,14 @@ class GeneticsService {
         }
         
         if (visited.has(strain.id)) {
+             // Circular dependency detected, return a placeholder to stop recursion
             return {
                 name: strain.name,
                 id: strain.id,
                 type: strain.type,
                 thc: strain.thc,
                 isLandrace: false,
-                isPlaceholder: true, // Mark as placeholder to prevent further expansion
+                isPlaceholder: true, 
             };
         }
 
@@ -41,27 +42,23 @@ class GeneticsService {
             thc: strain.thc,
             isLandrace: isLandrace,
         };
-
+        
         const newVisited = new Set(visited);
         newVisited.add(strain.id);
 
         if (!isLandrace && strain.genetics) {
             const parentNames = strain.genetics
                 .split(/\s+x\s+/i)
-                .map(p => p.trim())
+                .map(p => p.replace(/[()]/g, '').trim())
                 .filter(p => p.length > 0 && p.toLowerCase() !== 'unknown' && !p.toLowerCase().includes('phenotype'));
 
             if (parentNames.length > 0) {
                 const childrenNodes = parentNames
-                    .map(parentName => this.findAndBuildNode(parentName, allStrains, newVisited, depth + 1, maxDepth))
+                    .map(parentName => this.findAndBuildNode(parentName, allStrains, newVisited))
                     .filter((childNode): childNode is GenealogyNode => !!childNode);
 
                 if (childrenNodes.length > 0) {
-                    if (depth >= maxDepth) {
-                        node._children = childrenNodes; // Store as collapsed
-                    } else {
-                        node.children = childrenNodes; // Store as expanded
-                    }
+                    node.children = childrenNodes;
                 }
             }
         }
@@ -69,10 +66,10 @@ class GeneticsService {
         return node;
     }
 
-    public buildGenealogyTree(strainId: string, allStrains: Strain[], maxDepth = 2): GenealogyNode | null {
+    public buildGenealogyTree(strainId: string, allStrains: Strain[]): GenealogyNode | null {
         const rootStrain = allStrains.find(s => s.id === strainId);
         if (!rootStrain) return null;
-        return this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>(), 0, maxDepth);
+        return this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>());
     }
 
     public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {

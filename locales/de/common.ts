@@ -122,7 +122,6 @@ export const common = {
     italic: 'Kursiv',
     list: 'Aufzählung',
   },
-  loadMore: 'Mehr laden',
   regenerate: 'Erneut generieren',
   unchanged: 'Unverändert',
   simulationErrors: {

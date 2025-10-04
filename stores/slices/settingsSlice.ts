@@ -17,14 +17,6 @@ export const defaultSettings: AppSettings = {
         defaultSortKey: 'name',
         defaultSortDirection: 'asc',
         defaultViewMode: 'list',
-        visibleColumns: {
-            type: true,
-            thc: true,
-            cbd: true,
-            floweringTime: true,
-            yield: true,
-            difficulty: true,
-        },
     },
     notificationsEnabled: true,
     notificationSettings: {

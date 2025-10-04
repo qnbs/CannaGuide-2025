@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { GenealogyNode } from '@/types';
+import { GenealogyNode, Strain } from '@/types';
 import { geneticsService } from '@/services/geneticsService';
 import type { RootState } from '../store';
 
@@ -28,7 +28,7 @@ export const fetchAndBuildGenealogy = createAsyncThunk<
     // Dynamically import strain data to avoid circular dependencies at startup
     const { allStrainsData } = await import('@/data/strains');
     
-    const tree = geneticsService.buildGenealogyTree(strainId, allStrainsData, 2); // Start with an initial depth
+    const tree = geneticsService.buildGenealogyTree(strainId, allStrainsData);
     return { strainId, tree };
 });
 

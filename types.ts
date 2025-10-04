@@ -47,7 +47,7 @@ export enum ProblemType {
     PH_TOO_LOW = 'PH_TOO_LOW',
     HUMIDITY_TOO_HIGH = 'HUMIDITY_TOO_HIGH',
     HUMIDITY_TOO_LOW = 'HUMIDITY_TOO_LOW',
-    TEMPERATURE_TOO_HIGH = 'TEMPERATURE_TOO_LOW',
+    TEMPERATURE_TOO_HIGH = 'TEMPERATURE_TOO_HIGH',
     TEMPERATURE_TOO_LOW = 'TEMPERATURE_TOO_LOW',
     NUTRIENT_BURN = 'NUTRIENT_BURN',
 }
@@ -378,7 +378,6 @@ export interface AppSettings {
         defaultSortKey: SortKey
         defaultSortDirection: SortDirection
         defaultViewMode: 'list' | 'grid'
-        visibleColumns: Record<string, boolean>
     }
     notificationsEnabled: boolean
     notificationSettings: {

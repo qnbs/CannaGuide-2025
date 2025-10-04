@@ -27,8 +27,8 @@ interface FilterDrawerProps {
     isAnyFilterActive: boolean;
 }
 
-const FilterSection: React.FC<{ title: string, children: React.ReactNode, defaultOpen?: boolean }> = ({ title, children, defaultOpen = true }) => (
-    <details open={defaultOpen} className="group border-b border-slate-700/50 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
+    <details open className="group border-b border-slate-700/50 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
         <summary className="text-lg font-semibold text-primary-400 cursor-pointer list-none flex items-center gap-2">
             <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
             {title}
@@ -39,12 +39,7 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode, defaul
     </details>
 );
 
-export const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
-    const { 
-        isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, 
-        allAromas, allTerpenes, count, showFavorites, onToggleFavorites,
-        typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange, isAnyFilterActive
-    } = props;
+export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange, isAnyFilterActive }) => {
     const { t } = useTranslation();
     
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
@@ -72,8 +67,8 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
             size="2xl"
             footer={
                 <>
-                    <Button variant="secondary" onClick={onReset} disabled={!isAnyFilterActive}>{t('strainsView.resetFilters')}</Button>
-                    <Button onClick={onApply}>{t('strainsView.matchingStrains_other', { count })}</Button>
+                    <Button variant="secondary" onClick={() => onReset()}>{t('strainsView.resetFilters')}</Button>
+                    <Button onClick={() => onApply()}>{t('strainsView.matchingStrains_other', { count })}</Button>
                 </>
             }
         >
@@ -88,7 +83,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = (props) => {
                         {['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(char => (
                             <button
                                 key={char}
-                                onClick={() => onLetterFilterChange(letterFilter === char ? null : char)}
+                                onClick={() => onLetterFilterChange(char)}
                                 className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${letterFilter === char ? 'bg-primary-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
                             >
                                 {char}

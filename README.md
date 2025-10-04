@@ -12,7 +12,7 @@ This README file supports two languages.
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
-CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire cannabis cultivation lifecycle. Engineered for both novice enthusiasts and master growers, this state-of-the-art **Progressive Web App (PWA)** guides you from seed selection to a perfectly cured harvest. Simulate grows with an advanced VPD-based engine, explore a vast library of over 480 strains, diagnose plant issues with a photo, plan equipment with Gemini-powered intelligence, and master your craft with an interactive, data-driven guide.
+CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire cannabis cultivation lifecycle. Engineered for both novice enthusiasts and master growers, this state-of-the-art **Progressive Web App (PWA)** guides you from seed selection to a perfectly cured harvest. Simulate grows with an advanced VPD-based engine, explore a vast library of over 500 strains with a powerful genealogy tracker, diagnose plant issues with a photo, breed new genetics in the lab, plan equipment with Gemini-powered intelligence, and master your craft with an interactive, data-driven guide.
 
 ---
 
@@ -57,8 +57,8 @@ Your command center for managing and simulating up to three simultaneous grows.
 ### 2. The Strain Encyclopedia (`Strains` View)
 Your central knowledge hub, designed for deep exploration with **offline-first** access.
 
-*   **Vast Library**: Access detailed information on **over 480 cannabis strains**.
-*   **Interactive Genealogy Tree**: Visualize the complete genetic lineage of any strain in an interactive D3.js-powered tree diagram.
+*   **Vast Library**: Access detailed information on **over 500 cannabis strains**.
+*   **Interactive Genealogy Tree**: Visualize the complete genetic lineage of any strain in an interactive tree. Use analysis tools to highlight landraces, trace parentage, and discover known descendants.
 *   **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search and advanced multi-select filters for THC/CBD range, flowering time, aroma, and more.
 *   **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
 *   **AI Grow Tips**: Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals, then manage it in a dedicated "Tips" archive.
@@ -224,7 +224,7 @@ Please follow the existing code style and ensure your changes are well-documente
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 
-CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Cannabisanbaus. Entwickelt für sowohl neugierige Einsteiger als auch für erfahrene Meisterzüchter, führt Sie diese hochmoderne **Progressive Web App (PWA)** von der Samenauswahl bis zur perfekt ausgehärteten Ernte. Simulieren Sie Anbauvorgänge mit einer fortschrittlichen VPD-basierten Engine, erkunden Sie eine Bibliothek mit über 480 Sorten, diagnostizieren Sie Pflanzenprobleme per Foto, planen Sie Ihre Ausrüstung mit Gemini-gestützter Intelligenz und meistern Sie Ihr Handwerk mit einem interaktiven, datengesteuerten Leitfaden.
+CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Cannabisanbaus. Entwickelt für sowohl neugierige Einsteiger als auch für erfahrene Meisterzüchter, führt Sie diese hochmoderne **Progressive Web App (PWA)** von der Samenauswahl bis zur perfekt ausgehärteten Ernte. Simulieren Sie Anbauvorgänge mit einer fortschrittlichen VPD-basierten Engine, erkunden Sie eine Bibliothek mit über 500 Sorten mit einem leistungsstarken Genealogie-Tracker, diagnostizieren Sie Pflanzenprobleme per Foto, züchten Sie neue Genetiken im Labor, planen Sie Ihre Ausrüstung mit Gemini-gestützter Intelligenz und meistern Sie Ihr Handwerk mit einem interaktiven, datengesteuerten Leitfaden.
 
 ---
 
@@ -268,8 +268,8 @@ Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitig
 ### 2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)
 Ihr zentraler Wissens-Hub, konzipiert für tiefgehende Erkundungen mit **Offline-First**-Zugriff.
 
-*   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu **über 480 Cannabissorten** zu.
-*   **Interaktiver Stammbaum**: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte in einem interaktiven, D3.js-basierten Baumdiagramm.
+*   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu **über 500 Cannabissorten** zu.
+*   **Interaktiver Stammbaum**: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte in einem interaktiven Baum. Nutzen Sie Analysewerkzeuge, um Landrassen hervorzuheben, Abstammungslinien zu verfolgen und bekannte Nachkommen zu entdecken.
 *   **Hochleistungs-Suche & -Filter**: Finden Sie sofort Sorten mit einer IndexedDB-gestützten Volltextsuche und erweiterten Mehrfachauswahlfiltern für THC/CBD-Bereich, Blütezeit, Aroma und mehr.
 *   **Persönliche Sortensammlung**: Genießen Sie volle **CRUD (Erstellen, Lesen, Aktualisieren, Löschen)**-Funktionalität, um Ihre eigenen benutzerdefinierten Sorten hinzuzufügen und zu verwalten.
 *   **KI-Anbau-Tipps**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte basierend auf Ihrem Erfahrungslevel und Ihren Zielen und verwalten Sie diese in einem dedizierten "Tipps"-Archiv.

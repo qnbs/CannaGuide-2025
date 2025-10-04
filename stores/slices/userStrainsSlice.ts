@@ -4,9 +4,9 @@ import type { RootState } from '../store';
 import { addNotification, closeAddModal } from './uiSlice';
 import { getT } from '@/i18n';
 
-export const userStrainsAdapter = createEntityAdapter<Strain>();
+export const userStrainsAdapter = createEntityAdapter<Strain, string>();
 
-export type UserStrainsState = EntityState<Strain>;
+export type UserStrainsState = EntityState<Strain, string>;
 
 const initialState: UserStrainsState = userStrainsAdapter.getInitialState();
 
@@ -24,6 +24,14 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
         }
 
         dispatch(userStrainsSlice.actions.addUserStrain(strain));
+        dispatch(closeAddModal());
+    }
+);
+
+export const updateUserStrainAndCloseModal = createAsyncThunk<void, Strain, { state: RootState }>(
+    'userStrains/updateUserStrainAndCloseModal',
+    (strain, { dispatch }) => {
+        dispatch(userStrainsSlice.actions.updateUserStrain(strain));
         dispatch(closeAddModal());
     }
 );

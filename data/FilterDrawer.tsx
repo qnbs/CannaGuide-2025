@@ -1,10 +1,12 @@
 import React from 'react';
-import { DifficultyLevel, YieldLevel, HeightLevel, AdvancedFilterState } from '@/types';
+import { DifficultyLevel, YieldLevel, HeightLevel, AdvancedFilterState, StrainType } from '@/types';
 import { Button } from '@/components/common/Button';
 import { RangeSlider } from '@/components/common/RangeSlider';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Drawer } from '@/components/common/Drawer';
+import { SegmentedControl } from '@/components/common/SegmentedControl';
+import { Switch } from '@/components/common/Switch';
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -16,6 +18,13 @@ interface FilterDrawerProps {
     allAromas: string[];
     allTerpenes: string[];
     count: number;
+    showFavorites: boolean;
+    onToggleFavorites: () => void;
+    typeFilter: StrainType[];
+    onToggleTypeFilter: (type: StrainType) => void;
+    letterFilter: string | null;
+    onLetterFilterChange: (letter: string | null) => void;
+    isAnyFilterActive: boolean;
 }
 
 const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
@@ -30,12 +39,17 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({
     </details>
 );
 
-export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count }) => {
+export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange, isAnyFilterActive }) => {
     const { t } = useTranslation();
     
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
     const yieldLabels: Record<YieldLevel, string> = { Low: t('strainsView.addStrainModal.yields.low'), Medium: t('strainsView.addStrainModal.yields.medium'), High: t('strainsView.addStrainModal.yields.high') };
     const heightLabels: Record<HeightLevel, string> = { Short: t('strainsView.addStrainModal.heights.short'), Medium: t('strainsView.addStrainModal.heights.medium'), Tall: t('strainsView.addStrainModal.heights.tall') };
+    const typeOptions = [
+        { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
+        { value: 'Indica' as StrainType, label: t('strainsView.indica') },
+        { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
+    ];
     
     const handleToggleArray = (key: keyof AdvancedFilterState, value: string) => {
         const currentArray = (tempFilterState as any)[key] as string[];
@@ -53,8 +67,9 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
             size="2xl"
             footer={
                 <>
-                    <Button variant="secondary" onClick={onReset}>{t('strainsView.resetFilters')}</Button>
-                    <Button onClick={onApply}>{t('strainsView.matchingStrains', { count })}</Button>
+                    {/* FIX: Wrap onClick handlers in arrow functions to prevent passing event objects. */}
+                    <Button variant="secondary" onClick={() => onReset()}>{t('strainsView.resetFilters')}</Button>
+                    <Button onClick={() => onApply()}>{t('strainsView.matchingStrains_other', { count })}</Button>
                 </>
             }
         >

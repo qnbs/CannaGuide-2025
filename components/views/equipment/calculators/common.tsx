@@ -26,8 +26,7 @@ export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
                 )}
             </label>
             <div className="relative">
-                {/* FIX: Use className prop to apply custom classes */}
-                <PrimitiveInput id={id} {...props} className={props.className} />
+                <PrimitiveInput id={id} {...props} />
                 {unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{unit}</span>}
             </div>
         </div>

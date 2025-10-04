@@ -7,7 +7,7 @@ import { getT } from '@/i18n';
 import { z } from 'zod';
 import { GrowSetupSchema, WaterDataSchema, TrainingTypeSchema } from '@/types/schemas';
 
-export const plantsAdapter = createEntityAdapter<Plant>();
+export const plantsAdapter = createEntityAdapter<Plant, string>();
 
 const initialState: SimulationState = {
     plants: plantsAdapter.getInitialState(),

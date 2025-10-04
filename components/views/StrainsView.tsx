@@ -21,9 +21,9 @@ import {
     clearStrainSelection, 
     StrainsViewState
 } from '@/stores/slices/strainsViewSlice';
-import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification } from '@/stores/slices/uiSlice';
+import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
-import { addUserStrainWithValidation, updateUserStrain, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
+import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
 import { StrainToolbar } from './strains/StrainToolbar';
 import { StrainList } from './strains/StrainList';
 import { StrainGrid } from './strains/StrainGrid';
@@ -41,6 +41,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { FilterDrawer } from '@/data/FilterDrawer';
 import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
+import { GenealogyView } from './strains/GenealogyView';
 
 
 export const StrainsView: React.FC = () => {
@@ -51,25 +52,17 @@ export const StrainsView: React.FC = () => {
     const [selectedStrainForDetail, setSelectedStrainForDetail] = useState<Strain | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-    // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
     const settings = useAppSelector(selectSettings) as AppSettings;
-    // FIX: Cast result of useAppSelector to StrainsViewState to fix type inference issue.
     const { strainsViewTab, strainsViewMode, selectedStrainIds } = useAppSelector(selectStrainsView) as StrainsViewState;
-    // FIX: Cast result of useAppSelector to Strain[] to fix type inference issue.
     const userStrains = useAppSelector(selectUserStrains) as Strain[];
-    // FIX: Cast result of useAppSelector to Set<string> to fix type inference issue.
     const userStrainIds = useAppSelector(selectUserStrainIds) as Set<string>;
-    // FIX: Cast result of useAppSelector to Set<string> to fix type inference issue.
     const favoriteIds = useAppSelector(selectFavoriteIds) as Set<string>;
-    // FIX: Cast result of useAppSelector to SavedExport[] to fix type inference issue.
     const savedExports = useAppSelector(selectSavedExports) as SavedExport[];
-    // FIX: Cast result of useAppSelector to SavedStrainTip[] to fix type inference issue.
     const savedTips = useAppSelector(selectSavedStrainTips) as SavedStrainTip[];
     const isAddModalOpen = useAppSelector(state => state.ui.isAddModalOpen);
     const strainToEdit = useAppSelector(state => state.ui.strainToEdit);
     const isExportModalOpen = useAppSelector(state => state.ui.isExportModalOpen);
 
-    // FIX: Explicitly type `new Set()` as `Set<string>` to fix type inference issue.
     const selectedIdsSet = useMemo(() => new Set<string>(selectedStrainIds), [selectedStrainIds]);
 
     useEffect(() => {
@@ -119,7 +112,9 @@ export const StrainsView: React.FC = () => {
     const handleToggleAll = () => dispatch(toggleAllStrainSelection({ ids: filteredStrains.map(s => s.id), areAllCurrentlySelected: selectedIdsSet.size === filteredStrains.length && filteredStrains.length > 0 }));
     
     const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
-    const handleUpdateStrain = (strain: Strain) => dispatch(updateUserStrain(strain));
+    const handleUpdateStrain = (strain: Strain) => {
+        dispatch(updateUserStrainAndCloseModal(strain));
+    };
     const handleDeleteUserStrain = (id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
         if (strainToDelete && window.confirm(t('strainsView.addStrainModal.validation.deleteConfirm', { name: strainToDelete.name }))) {
@@ -153,6 +148,7 @@ export const StrainsView: React.FC = () => {
         { id: StrainViewTab.All, label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
         { id: StrainViewTab.MyStrains, label: t('strainsView.tabs.myStrains'), icon: <PhosphorIcons.Star /> },
         { id: StrainViewTab.Favorites, label: t('strainsView.tabs.favorites'), icon: <PhosphorIcons.Heart /> },
+        { id: StrainViewTab.Genealogy, label: t('strainsView.tabs.genealogy'), icon: <PhosphorIcons.TreeStructure /> },
         { id: StrainViewTab.Exports, label: t('strainsView.tabs.exports', { count: savedExports.length }), icon: <PhosphorIcons.DownloadSimple /> },
         { id: StrainViewTab.Tips, label: t('strainsView.tabs.tips', { count: savedTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
     ];
@@ -164,7 +160,7 @@ export const StrainsView: React.FC = () => {
         if (isLoading) {
             return <SkeletonLoader variant={strainsViewMode} count={10} columns={settings.strainsViewSettings.visibleColumns} />;
         }
-        if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab)) {
+        if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab as any)) {
              return (
                 <>
                     <StrainToolbar
@@ -173,17 +169,9 @@ export const StrainsView: React.FC = () => {
                         viewMode={strainsViewMode}
                         onViewModeChange={(mode) => dispatch(setStrainsViewMode(mode))}
                         onExport={() => dispatch(openExportModal())}
-                        onAdd={() => dispatch(openAddModal())}
-                        showFavorites={showFavoritesOnly}
-                        onToggleFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                        typeFilter={typeFilter}
-                        onToggleTypeFilter={handleToggleTypeFilter}
+                        onAdd={() => dispatch(openAddModal(null))}
                         onOpenDrawer={() => setIsDrawerOpen(true)}
                         activeFilterCount={activeFilterCount}
-                        isAnyFilterActive={isAnyFilterActive}
-                        onClearAllFilters={resetAllFilters}
-                        letterFilter={letterFilter}
-                        onLetterFilterChange={handleSetLetterFilter}
                     />
                     {filteredStrains.length === 0 && !isSearching ? (
                         <Card className="text-center py-10 text-slate-500">
@@ -250,6 +238,9 @@ export const StrainsView: React.FC = () => {
                         allStrains={allStrains}
                     />;
         }
+        if (strainsViewTab === StrainViewTab.Genealogy) {
+            return <GenealogyView allStrains={allStrains} onNodeClick={setSelectedStrainForDetail} />;
+        }
         return null;
     };
 
@@ -257,9 +248,26 @@ export const StrainsView: React.FC = () => {
         <div className="space-y-4">
             {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
             <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
-            <FilterDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} onApply={handleApplyFilters} onReset={handleResetFilters} tempFilterState={tempFilterState} setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} allAromas={allAromas} allTerpenes={allTerpenes} count={filteredStrains.length} />
+            <FilterDrawer 
+                isOpen={isDrawerOpen} 
+                onClose={() => setIsDrawerOpen(false)} 
+                onApply={handleApplyFilters} 
+                onReset={handleResetFilters} 
+                tempFilterState={tempFilterState} 
+                setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
+                allAromas={allAromas} 
+                allTerpenes={allTerpenes} 
+                count={filteredStrains.length}
+                showFavorites={showFavoritesOnly}
+                onToggleFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                typeFilter={typeFilter}
+                onToggleTypeFilter={handleToggleTypeFilter}
+                letterFilter={letterFilter}
+                onLetterFilterChange={handleSetLetterFilter}
+                isAnyFilterActive={isAnyFilterActive}
+            />
             
-            <Card><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
+            <Card><Tabs tabs={tabs} activeTab={strainsViewTab as string} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
             
             {renderContent()}
         </div>

@@ -3,14 +3,20 @@ import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter, Enti
 import { addNotification } from './uiSlice';
 import { getT } from '@/i18n';
 
-export const savedExportsAdapter = createEntityAdapter<SavedExport>();
-export const savedSetupsAdapter = createEntityAdapter<SavedSetup>();
-export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip>();
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+export const savedExportsAdapter = createEntityAdapter<SavedExport, string>();
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+export const savedSetupsAdapter = createEntityAdapter<SavedSetup, string>();
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip, string>();
 
 export interface SavedItemsState {
-    savedExports: EntityState<SavedExport>;
-    savedSetups: EntityState<SavedSetup>;
-    savedStrainTips: EntityState<SavedStrainTip>;
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+    savedExports: EntityState<SavedExport, string>;
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+    savedSetups: EntityState<SavedSetup, string>;
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+    savedStrainTips: EntityState<SavedStrainTip, string>;
 }
 
 const initialState: SavedItemsState = {
@@ -42,7 +48,8 @@ const savedItemsSlice = createSlice({
     name: 'savedItems',
     initialState,
     reducers: {
-        addExport: (state, action: PayloadAction<{ data: Omit<SavedExport, 'id' | 'createdAt' | 'count'>, strainIds: string[] }>) => {
+        // FIX: Correctly omit 'strainIds' from the 'data' object type, as it's passed separately.
+        addExport: (state, action: PayloadAction<{ data: Omit<SavedExport, 'id' | 'createdAt' | 'count' | 'strainIds'>, strainIds: string[] }>) => {
             const { data, strainIds } = action.payload;
             if (!data.name?.trim() || !strainIds || strainIds.length === 0) {
                 console.error('[savedItemsSlice] Attempted to add an empty or invalid export. Aborted.');

@@ -1,5 +1,6 @@
-import { createListenerMiddleware, isAnyOf } from '@reduxjs/toolkit';
-import type { RootState } from './store';
+import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit';
+// FIX: Import AppDispatch to correctly type the listener middleware.
+import type { RootState, AppDispatch } from './store';
 import { i18nInstance, getT } from '@/i18n';
 // FIX: Import Strain type to resolve missing type error.
 import { Language, Strain } from '@/types';
@@ -16,6 +17,11 @@ import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } f
 
 export const listenerMiddleware = createListenerMiddleware();
 const REDUX_STATE_KEY = 'cannaguide-redux-storage';
+
+// FIX: Create a typed version of startListening to provide correct types for listenerApi.
+type AppStartListening = TypedStartListening<RootState, AppDispatch>;
+const startAppListening = listenerMiddleware.startListening as AppStartListening;
+
 
 // --- State-of-the-art Persistence Logic ---
 
@@ -70,7 +76,7 @@ window.addEventListener('beforeunload', () => {
  * This implementation is highly performant by debouncing writes, but ensures
  * data integrity by flushing any pending saves when the user leaves the page.
  */
-listenerMiddleware.startListening({
+startAppListening({
   predicate: (action) => !action.type.startsWith('geminiApi/'), // Ignore internal RTK Query actions
   effect: async (action, listenerApi) => {
     lastState = listenerApi.getState() as RootState;
@@ -82,8 +88,9 @@ listenerMiddleware.startListening({
 /**
  * Listener to automatically change the i18n language when the setting is updated.
  */
-listenerMiddleware.startListening({
-  matcher: isAnyOf(setSetting),
+startAppListening({
+  // FIX: Use `actionCreator` for a single action to ensure correct type inference on the payload.
+  actionCreator: setSetting,
   effect: async (action) => {
     if (action.payload.path === 'language') {
       const newLang = action.payload.value as Language;
@@ -97,7 +104,7 @@ listenerMiddleware.startListening({
 /**
  * Listener to create notifications when a new plant problem is detected.
  */
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: plantStateUpdated,
   effect: async (action, listenerApi) => {
       const { updatedPlant } = action.payload;
@@ -123,7 +130,7 @@ listenerMiddleware.startListening({
 // --- Centralized Notification Listeners ---
 const t = getT();
 
-listenerMiddleware.startListening({
+startAppListening({
   matcher: isAnyOf(addUserStrain, updateUserStrain),
   effect: (action, { dispatch }) => {
     const type = action.type.includes('addUser') ? 'add' : 'update';
@@ -133,14 +140,14 @@ listenerMiddleware.startListening({
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: addSetup.fulfilled,
   effect: (action, { dispatch }) => {
     dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: action.payload.name }), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: addExport,
   effect: (action, { dispatch }) => {
       dispatch(addNotification({
@@ -150,7 +157,7 @@ listenerMiddleware.startListening({
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
     matcher: isAnyOf(deleteExport, deleteSetup, deleteStrainTip, deleteUserStrain),
     effect: (action, { dispatch }) => {
         let message = 'Item removed.';
@@ -160,7 +167,7 @@ listenerMiddleware.startListening({
     }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
     matcher: isAnyOf(updateExport, updateSetup, updateStrainTip),
     effect: (action, { dispatch }) => {
         const payload = (action.payload as any).changes || action.payload;
@@ -171,35 +178,35 @@ listenerMiddleware.startListening({
     }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: addStrainTip,
   effect: (action, { dispatch }) => {
     dispatch(addNotification({ message: t('strainsView.tips.saveSuccess', { name: action.payload.strain.name }), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: addMultipleToFavorites,
   effect: (action, { dispatch }) => {
     dispatch(addNotification({ message: t('strainsView.bulkActions.addedToFavorites', { count: action.payload.length }), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: removeMultipleFromFavorites,
   effect: (action, { dispatch }) => {
     dispatch(addNotification({ message: t('strainsView.bulkActions.removedFromFavorites', { count: action.payload.length }), type: 'info' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: addArchivedMentorResponse,
   effect: (_, { dispatch }) => {
     dispatch(addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: addJournalEntry,
   effect: (action, { dispatch }) => {
     if(action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
@@ -208,35 +215,35 @@ listenerMiddleware.startListening({
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: clearArchives,
   effect: (_, { dispatch }) => {
     dispatch(addNotification({ message: t('settingsView.data.clearArchivesSuccess'), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: resetPlants,
   effect: (_, { dispatch }) => {
     dispatch(addNotification({ message: t('settingsView.data.resetPlantsSuccess'), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: exportAllData.fulfilled,
   effect: (_, { dispatch }) => {
     dispatch(addNotification({ message: t('settingsView.data.exportSuccess'), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   actionCreator: resetAllData.fulfilled,
   effect: (_, { dispatch }) => {
       dispatch(addNotification({ message: t('settingsView.data.resetAllSuccess'), type: 'success' }));
   }
 });
 
-listenerMiddleware.startListening({
+startAppListening({
   matcher: isAnyOf(setOnboardingStep),
   effect: (action, listenerApi) => {
     if (action.payload === 0 && (listenerApi.getOriginalState() as RootState).settings.settings.onboardingCompleted) {

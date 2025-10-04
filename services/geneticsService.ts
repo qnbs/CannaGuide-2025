@@ -1,58 +1,67 @@
-import { Strain, GenealogyNode } from '@/types';
+import { Strain, GenealogyNode, StrainType, GeneticContribution } from '@/types';
 
 class GeneticsService {
-
     private findAndBuildNode(
         strainName: string,
         allStrains: Strain[],
-        visited: Set<string>
+        visited: Set<string>,
+        depth: number,
+        maxDepth: number
     ): GenealogyNode {
-        // Find the strain in the master list, case-insensitive and trimmed
-        const strain = allStrains.find(s => s.name.toLowerCase() === strainName.trim().toLowerCase());
+        const trimmedName = strainName.trim().toLowerCase();
+        const strain = allStrains.find(s => s.name.toLowerCase() === trimmedName);
 
-        // Base case 1: Strain not found in the database (e.g., landrace or unlisted parent)
         if (!strain) {
-            const trimmedName = strainName.trim();
             return {
-                name: trimmedName,
-                id: trimmedName.toLowerCase().replace(/[^a-z0-9]/g, '-')
+                name: strainName.trim(),
+                id: trimmedName.replace(/[^a-z0-9]/g, '-'),
+                isLandrace: true,
+                type: StrainType.Hybrid,
+                thc: 0,
             };
         }
-
-        // Base case 2: Circular dependency detected
+        
         if (visited.has(strain.id)) {
             return {
-                name: `${strain.name} (Circular)`,
+                name: strain.name,
                 id: strain.id,
+                type: strain.type,
+                thc: strain.thc,
+                isLandrace: false,
+                isPlaceholder: true, // Mark as placeholder to prevent further expansion
             };
         }
 
-        // Create the node for the current strain
+        const isLandrace = !strain.genetics || !strain.genetics.toLowerCase().includes(' x ');
+
         const node: GenealogyNode = {
             name: strain.name,
             id: strain.id,
+            type: strain.type,
+            thc: strain.thc,
+            isLandrace: isLandrace,
         };
 
-        // Add current strain to the visited set for this path
         const newVisited = new Set(visited);
         newVisited.add(strain.id);
 
-        // Recursive step: Parse genetics and find children
-        const genetics = strain.genetics;
-        if (genetics && genetics.toLowerCase().includes(' x ')) {
-            const parentNames = genetics
-                .replace(/[()\[\]]/g, '') // Remove parentheses and brackets
-                .split(/\s*x\s*/i)     // Split by 'x', case-insensitive with surrounding spaces
+        if (!isLandrace && strain.genetics) {
+            const parentNames = strain.genetics
+                .split(/\s+x\s+/i)
                 .map(p => p.trim())
                 .filter(p => p.length > 0 && p.toLowerCase() !== 'unknown' && !p.toLowerCase().includes('phenotype'));
 
             if (parentNames.length > 0) {
-                node.children = parentNames
-                    .map(parentName => this.findAndBuildNode(parentName, allStrains, newVisited))
+                const childrenNodes = parentNames
+                    .map(parentName => this.findAndBuildNode(parentName, allStrains, newVisited, depth + 1, maxDepth))
                     .filter((childNode): childNode is GenealogyNode => !!childNode);
-                
-                if(node.children.length === 0) {
-                    delete node.children;
+
+                if (childrenNodes.length > 0) {
+                    if (depth >= maxDepth) {
+                        node._children = childrenNodes; // Store as collapsed
+                    } else {
+                        node.children = childrenNodes; // Store as expanded
+                    }
                 }
             }
         }
@@ -60,22 +69,56 @@ class GeneticsService {
         return node;
     }
 
-    /**
-     * Builds a hierarchical genealogy tree for a given strain.
-     * @param strainId The ID of the strain to start the tree from.
-     * @param allStrains The complete list of all available strains.
-     * @returns A root GenealogyNode or null if the initial strain is not found.
-     */
-    public buildGenealogyTree(
-        strainId: string,
-        allStrains: Strain[]
-    ): GenealogyNode | null {
+    public buildGenealogyTree(strainId: string, allStrains: Strain[], maxDepth = 2): GenealogyNode | null {
         const rootStrain = allStrains.find(s => s.id === strainId);
-        if (!rootStrain) {
-            return null;
+        if (!rootStrain) return null;
+        return this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>(), 0, maxDepth);
+    }
+
+    public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {
+        if (!tree) return [];
+
+        const contributions: { [name: string]: number } = {};
+
+        function traverse(node: GenealogyNode, contribution: number) {
+            const children = node.children || node._children;
+            if (!children || children.length === 0) {
+                contributions[node.name] = (contributions[node.name] || 0) + contribution;
+                return;
+            }
+
+            const childContribution = contribution / children.length;
+            for (const child of children) {
+                traverse(child, childContribution);
+            }
         }
 
-        return this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>());
+        traverse(tree, 1.0);
+
+        return Object.entries(contributions)
+            .map(([name, contribution]) => ({ name, contribution: contribution * 100 }))
+            .sort((a, b) => b.contribution - a.contribution);
+    }
+
+    public findDescendants(strainId: string, allStrains: Strain[]): { children: Strain[], grandchildren: Strain[] } {
+        const rootStrain = allStrains.find(s => s.id === strainId);
+        if (!rootStrain) {
+            return { children: [], grandchildren: [] };
+        }
+
+        const findDirectChildren = (parentName: string): Strain[] => {
+            const lowerParentName = parentName.toLowerCase();
+            return allStrains.filter(s =>
+                s.genetics && s.genetics.toLowerCase().split(/\s+x\s+/i).map(p => p.trim()).includes(lowerParentName)
+            );
+        };
+
+        const children = findDirectChildren(rootStrain.name);
+        const grandchildren = children.flatMap(child => findDirectChildren(child.name));
+
+        const uniqueGrandchildren = [...new Map(grandchildren.map(item => [item.id, item])).values()];
+
+        return { children, grandchildren: uniqueGrandchildren };
     }
 }
 

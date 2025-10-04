@@ -1,4 +1,4 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import simulationReducer from './slices/simulationSlice';
@@ -15,12 +15,13 @@ import breedingReducer from './slices/breedingSlice';
 import ttsReducer from './slices/ttsSlice';
 import sandboxReducer from './slices/sandboxSlice';
 import filtersReducer from './slices/filtersSlice';
+import genealogyReducer from './slices/genealogySlice';
 import { geminiApi } from './api';
 import { listenerMiddleware } from './listenerMiddleware';
 import { indexedDBStorage } from './indexedDBStorage';
 import { migrateState, PersistedState } from '../services/migrationLogic';
 
-const rootReducer = combineReducers({
+const rootReducer = {
     simulation: simulationReducer,
     ui: uiReducer,
     settings: settingsReducer,
@@ -35,8 +36,9 @@ const rootReducer = combineReducers({
     tts: ttsReducer,
     sandbox: sandboxReducer,
     filters: filtersReducer,
+    genealogy: genealogyReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
-});
+};
 
 const tempStoreForTypes = configureStore({ reducer: rootReducer });
 export type RootState = ReturnType<typeof tempStoreForTypes.getState>;

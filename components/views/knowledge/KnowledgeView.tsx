@@ -1,21 +1,21 @@
-
 import React, { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '../common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+// FIX: Add SandboxState and Plant to imports for type casting.
 import { Plant, KnowledgeArticle, KnowledgeViewTab, SandboxState } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
-import { MentorChatView } from './MentorChatView';
+import { MentorChatView } from './knowledge/MentorChatView';
 import { Button } from '../common/Button';
 import { Tabs } from '../common/Tabs';
-import { GuideTab } from './GuideTab';
-import { MentorArchiveTab } from './MentorArchiveTab';
-import { BreedingView } from './BreedingView';
+import { GuideTab } from './knowledge/GuideTab';
+import { MentorArchiveTab } from './knowledge/MentorArchiveTab';
+import { BreedingView } from './knowledge/BreedingView';
 import { useActivePlants, usePlantById } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectUi, selectSandboxState } from '@/stores/selectors';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
-import { SandboxView } from './SandboxView';
+import { SandboxView } from './knowledge/SandboxView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
@@ -44,10 +44,12 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
+    // FIX: Removed unnecessary type cast. The selector is already typed.
     const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
 
     const [isTabLoading, startTabTransition] = useTransition();
     
+    // FIX: Removed unnecessary type cast. The selector is already typed.
     const activePlants = useActivePlants();
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 

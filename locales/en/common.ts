@@ -122,7 +122,6 @@ export const common = {
     italic: 'Italic',
     list: 'Bulleted List',
   },
-  loadMore: 'Load More',
   regenerate: 'Regenerate',
   unchanged: 'Unchanged',
   simulationErrors: {

@@ -7,7 +7,7 @@ import { getT } from '@/i18n';
 import { z } from 'zod';
 import { GrowSetupSchema, WaterDataSchema, TrainingTypeSchema } from '@/types/schemas';
 
-export const plantsAdapter = createEntityAdapter<Plant, string>();
+export const plantsAdapter = createEntityAdapter<Plant>();
 
 const initialState: SimulationState = {
     plants: plantsAdapter.getInitialState(),
@@ -143,21 +143,25 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
     }
 );
 
-export const initializeSimulation = createAsyncThunk<
-    { plants: SimulationState['plants'], plantSlots: (string | null)[] } | null,
-    void,
-    { state: RootState }
->(
+export const initializeSimulation = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/initializeSimulation',
-    async (_, { getState }) => {
-        const { simulation } = getState();
-        if (simulation && simulation.plants && simulation.plants.ids.length > 0) {
-            return {
-                plants: simulation.plants,
-                plantSlots: simulation.plantSlots
-            };
+    async (_, { getState, dispatch }) => {
+        const { plants } = getState().simulation;
+        const plantIds = plants.ids as string[];
+        const now = Date.now();
+
+        console.log(`[Simulation] Initializing and catching up ${plantIds.length} plants.`);
+
+        for (const plantId of plantIds) {
+            const plant = plants.entities[plantId];
+            if (plant) {
+                const deltaTime = now - plant.lastUpdated;
+                if (deltaTime > 10000) { // 10-second threshold
+                    const result = simulationService.calculateStateForTimeDelta(plant, deltaTime);
+                    dispatch(plantStateUpdated(result));
+                }
+            }
         }
-        return null;
     }
 );
 
@@ -335,15 +339,6 @@ const simulationSlice = createSlice({
                 plant.lastUpdated = Date.now();
             }
         },
-    },
-    extraReducers: (builder) => {
-        builder.addCase(initializeSimulation.fulfilled, (state, action) => {
-            const payload = action.payload;
-            if (payload && payload.plants.ids && payload.plants.entities) {
-                plantsAdapter.setAll(state.plants, payload.plants);
-                state.plantSlots = payload.plantSlots;
-            }
-        });
     },
 });
 

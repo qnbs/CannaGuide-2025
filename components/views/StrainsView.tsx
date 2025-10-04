@@ -45,7 +45,9 @@ import { GenealogyView } from './strains/GenealogyView';
 import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
 import { SegmentedControl } from '../common/SegmentedControl';
 import { Button } from '@/components/common/Button';
+import { Pagination } from '@/components/common/Pagination';
 
+const ITEMS_PER_PAGE = 25;
 
 export const StrainsView: React.FC = () => {
     const { t } = useTranslation();
@@ -54,6 +56,7 @@ export const StrainsView: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedStrainForDetail, setSelectedStrainForDetail] = useState<Strain | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const settings = useAppSelector(selectSettings) as AppSettings;
     const { strainsViewTab, strainsViewMode, selectedStrainIds } = useAppSelector(selectStrainsView) as StrainsViewState;
@@ -88,6 +91,17 @@ export const StrainsView: React.FC = () => {
         showFavoritesOnly, setShowFavoritesOnly, advancedFilters, setAdvancedFilters,
         letterFilter, handleSetLetterFilter, resetAllFilters, sort, handleSort, isAnyFilterActive, activeFilterCount
     } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filteredStrains.length, strainsViewTab]);
+
+    const totalPages = Math.ceil(filteredStrains.length / ITEMS_PER_PAGE);
+    const currentStrains = useMemo(() => {
+        const start = (currentPage - 1) * ITEMS_PER_PAGE;
+        const end = start + ITEMS_PER_PAGE;
+        return filteredStrains.slice(start, end);
+    }, [filteredStrains, currentPage]);
     
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
@@ -103,7 +117,17 @@ export const StrainsView: React.FC = () => {
         setIsDrawerOpen(false);
     };
     
-    const handleToggleAll = () => dispatch(toggleAllStrainSelection({ ids: filteredStrains.map(s => s.id), areAllCurrentlySelected: selectedIdsSet.size === filteredStrains.length && filteredStrains.length > 0 }));
+    const areAllOnPageSelected = useMemo(() => 
+        currentStrains.length > 0 && currentStrains.every(s => selectedIdsSet.has(s.id)),
+        [currentStrains, selectedIdsSet]
+    );
+
+    const handleToggleAll = () => {
+        dispatch(toggleAllStrainSelection({ 
+            ids: currentStrains.map(s => s.id), 
+            areAllCurrentlySelected: areAllOnPageSelected
+        }));
+    };
     
     const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
     const handleUpdateStrain = (strain: Strain) => {
@@ -160,11 +184,12 @@ export const StrainsView: React.FC = () => {
 
     const renderContent = () => {
         if (isLoading) {
-            return <SkeletonLoader variant={strainsViewMode} count={10} columns={settings.strainsViewSettings.visibleColumns} />;
+            // FIX: Removed `columns` prop from SkeletonLoader as it doesn't exist and `visibleColumns` was removed from settings.
+            return <SkeletonLoader variant={strainsViewMode} count={10} />;
         }
         if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab)) {
              return (
-                <>
+                <div className="space-y-4">
                     <StrainToolbar
                         searchTerm={searchTerm}
                         onSearchTermChange={setSearchTerm}
@@ -201,12 +226,12 @@ export const StrainsView: React.FC = () => {
                         </Card>
                     ) : strainsViewMode === 'list' ? (
                         <StrainList
-                            strains={filteredStrains}
+                            strains={currentStrains}
                             selectedIds={selectedIdsSet}
                             onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
                             onSelect={setSelectedStrainForDetail}
                             onToggleAll={handleToggleAll}
-                            visibleColumns={settings.strainsViewSettings.visibleColumns}
+                            areAllOnPageSelected={areAllOnPageSelected}
                             isUserStrain={(id) => userStrainIds.has(id)}
                             onDelete={handleDeleteUserStrain}
                             sort={sort}
@@ -217,7 +242,7 @@ export const StrainsView: React.FC = () => {
                         />
                     ) : (
                         <StrainGrid
-                            strains={filteredStrains}
+                            strains={currentStrains}
                             selectedIds={selectedIdsSet}
                             onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
                             onSelect={setSelectedStrainForDetail}
@@ -229,6 +254,8 @@ export const StrainsView: React.FC = () => {
                         />
                     )}
 
+                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+
                     {selectedIdsSet.size > 0 && (
                         <BulkActionsBar
                             selectedCount={selectedIdsSet.size}
@@ -239,7 +266,7 @@ export const StrainsView: React.FC = () => {
                             onDelete={strainsViewTab === StrainViewTab.MyStrains ? handleBulkDelete : undefined}
                         />
                     )}
-                </>
+                </div>
             );
         }
         if (strainsViewTab === StrainViewTab.Exports) {

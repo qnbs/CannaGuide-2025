@@ -1,32 +1,31 @@
-const CACHE_NAME = 'cannaguide-v11-pwa-cache'; // New version to force update
+const CACHE_NAME = 'cannaguide-v10-pwa-cache';
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
-  '/index.tsx', // CRITICAL FIX: The main app script must be cached for offline startup.
+  '/index.tsx', // Kritische Datei für die Offline-Funktionalität hinzugefügt
   '/manifest.json',
   '/icon.svg',
   '/pwa-icon.svg',
+  '/register-sw.js',
   '/pwa-icon-192.png',
   '/pwa-icon-512.png',
   '/pwa-icon-maskable-512.png',
-  '/register-sw.js',
   '/favicon.ico',
 ];
 
-// Install the service worker and cache the app shell
+// Install-Event: Cacht die grundlegende App-Shell.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Caching app shell');
-        // Add core assets required for the app to run offline
+        console.log('[SW] Caching app shell on install');
         return cache.addAll(URLS_TO_CACHE);
       })
       .then(() => self.skipWaiting())
   );
 });
 
-// Activate the service worker and clean up old caches
+// Activate-Event: Alte Caches löschen und Kontrolle übernehmen.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -42,43 +41,35 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Intercept fetch requests and serve from cache first (Cache-First strategy)
+// Fetch-Event: Implementiert die "Network-First, then Cache"-Strategie.
 self.addEventListener('fetch', (event) => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      // If we have a cached response, return it immediately.
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+  // Ignoriere Google API-Aufrufe, um immer frische Daten von Gemini sicherzustellen
+  if (event.request.url.includes('googleapis.com')) {
+    return; // Lässt den Browser die Anfrage normal ohne Service Worker handhaben.
+  }
 
-      // If the resource is not in the cache, fetch it from the network.
-      return fetch(event.request).then((networkResponse) => {
-        // We don't cache API calls to Google or other dynamic resources.
-        if (!networkResponse || networkResponse.status !== 200 || event.request.url.includes('googleapis.com')) {
-          return networkResponse;
-        }
-        
-        // For other resources (like from the CDN), clone the response and cache it for future use.
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Wenn erfolgreich, speichere eine Kopie im Cache für die Offline-Nutzung
         const responseToCache = networkResponse.clone();
         caches.open(CACHE_NAME).then((cache) => {
           cache.put(event.request, responseToCache);
         });
-
         return networkResponse;
-      }).catch(error => {
-        console.error('[SW] Fetch failed; returning offline fallback if available.', error);
-        // As a last resort for navigation requests, return the cached root page.
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
-        // For other failed requests, the browser's default offline error will show.
-        throw error;
-      });
-    })
+      })
+      .catch(() => {
+        // Wenn das Netzwerk fehlschlägt, versuche aus dem Cache zu antworten
+        return caches.match(event.request).then(cachedResponse => {
+          return cachedResponse || new Response("You are offline and this resource is not cached.", {
+            status: 404,
+            statusText: "Offline and not in cache"
+          });
+        });
+      })
   );
 });

@@ -140,7 +140,7 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
             svg.call(zoomBehavior.transform, transform);
         }
 
-    }, [dispatch, tree, layoutOrientation]); // Rerun setup when tree or layout changes
+    }, [dispatch, tree, layoutOrientation, zoomTransform]); // Rerun setup when tree or layout changes
 
     const handleResetZoom = useCallback(() => {
         if (svgRef.current && zoomRef.current) {
@@ -187,11 +187,9 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                         <Card className="!p-0 h-[60vh] overflow-hidden bg-slate-900/50">
                              <svg ref={svgRef} className="w-full h-full cursor-move">
                                 <g className="genealogy-content">
-                                    {/* FIX: Use a stable key for links based on source and target IDs instead of the array index. */}
-                                    {links.map((link) => <Link key={`${link.source.data.id}-${link.target.data.id}`} link={link} orientation={layoutOrientation} />)}
+                                    {links.map((link, i) => <Link key={`${link.source.data.id}-${link.target.data.id}-${i}`} link={link} orientation={layoutOrientation} />)}
                                     {nodes.map((node) => (
                                          <foreignObject
-                                            // FIX: Use a stable node ID for the key instead of relying on Math.random().
                                             key={node.data.id}
                                             x={layoutOrientation === 'horizontal' ? node.y - (nodeSize.width / 2) : node.x - (nodeSize.width / 2)}
                                             y={layoutOrientation === 'horizontal' ? node.x - (nodeSize.height / 2) : node.y - (nodeSize.height / 2)}

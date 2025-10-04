@@ -40,6 +40,7 @@ const saveState = () => {
     if (!lastState) return;
     try {
         const stateToSave = {
+            version: lastState.settings.version,
             settings: lastState.settings,
             simulation: lastState.simulation,
             strainsView: lastState.strainsView,
@@ -52,6 +53,7 @@ const saveState = () => {
             breeding: lastState.breeding,
             sandbox: lastState.sandbox,
             filters: lastState.filters,
+            genealogy: lastState.genealogy,
         };
         const serializedState = JSON.stringify(stateToSave);
         indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);

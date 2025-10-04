@@ -129,16 +129,11 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
 
         const deltaTime = Date.now() - plant.lastUpdated;
         
-        if (deltaTime > 1000) {
+        if (deltaTime > 1000) { // Only run if more than a second has passed
             const { updatedPlant, newJournalEntries, newTasks } = simulationService.calculateStateForTimeDelta(plant, deltaTime);
             
-            const daysSimulated = updatedPlant.age - plant.age;
-            if (daysSimulated > 0) {
-                const simulatedMilliseconds = daysSimulated * 24 * 60 * 60 * 1000;
-                updatedPlant.lastUpdated = plant.lastUpdated + simulatedMilliseconds;
-
-                dispatch(simulationSlice.actions.plantStateUpdated({ updatedPlant, newJournalEntries, newTasks }));
-            }
+            // The simulation service now handles age and lastUpdated internally for accuracy
+            dispatch(simulationSlice.actions.plantStateUpdated({ updatedPlant, newJournalEntries, newTasks }));
         }
     }
 );
@@ -152,15 +147,23 @@ export const initializeSimulation = createAsyncThunk<void, void, { state: RootSt
 
         console.log(`[Simulation] Initializing and catching up ${plantIds.length} plants.`);
 
+        let totalTimePassed = 0;
+
         for (const plantId of plantIds) {
             const plant = plants.entities[plantId];
             if (plant) {
                 const deltaTime = now - plant.lastUpdated;
-                if (deltaTime > 10000) { // 10-second threshold
+                if (deltaTime > 10000) { // 10-second threshold to avoid tiny updates
                     const result = simulationService.calculateStateForTimeDelta(plant, deltaTime);
                     dispatch(plantStateUpdated(result));
+                    totalTimePassed = Math.max(totalTimePassed, deltaTime);
                 }
             }
+        }
+
+        if (totalTimePassed > 60000) { // Only notify if more than a minute has passed
+            const hours = (totalTimePassed / (1000 * 60 * 60)).toFixed(1);
+            dispatch(addNotification({ message: `Welcome back! Your plants grew for ${hours} hours.`, type: 'info' }));
         }
     }
 );
@@ -183,16 +186,16 @@ const simulationSlice = createSlice({
         },
         plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
             const { updatedPlant, newJournalEntries, newTasks } = action.payload;
-            plantsAdapter.upsertOne(state.plants, updatedPlant);
             const currentPlant = state.plants.entities[updatedPlant.id];
             if (currentPlant) {
                 if (newJournalEntries.length > 0) {
-                    currentPlant.journal.push(...newJournalEntries);
+                    updatedPlant.journal = [...currentPlant.journal, ...newJournalEntries];
                 }
                 if (newTasks.length > 0) {
-                    currentPlant.tasks.push(...newTasks);
+                    updatedPlant.tasks = [...currentPlant.tasks, ...newTasks];
                 }
             }
+            plantsAdapter.upsertOne(state.plants, updatedPlant);
         },
         setSelectedPlantId: (state, action: PayloadAction<string | null>) => {
             state.selectedPlantId = action.payload;

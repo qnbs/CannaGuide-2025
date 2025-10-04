@@ -1,3 +1,4 @@
+
 import { createApi, BaseQueryFn } from '@reduxjs/toolkit/query/react'
 import { geminiService } from '@/services/geminiService'
 import {
@@ -40,7 +41,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -57,7 +58,7 @@ export const geminiApi = createApi({
                     )
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -68,7 +69,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getPlantAdvice(plant, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -79,7 +80,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getProactiveDiagnosis(plant, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -90,7 +91,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getMentorResponse(plant, query, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -101,7 +102,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getStrainTips(strain, context, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -112,7 +113,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.generateStrainImage(strain.name, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },
@@ -123,7 +124,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.generateDeepDive(topic, plant, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Let TypeScript infer the error type structurally, which satisfies the return type.
+                    // FIX: Corrected invalid type casting syntax for the error object.
                     return { error: { message: (err as Error).message } }
                 }
             },

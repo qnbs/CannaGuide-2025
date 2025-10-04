@@ -19,7 +19,7 @@ import genealogyReducer from './slices/genealogySlice';
 import { geminiApi } from './api';
 import { listenerMiddleware } from './listenerMiddleware';
 import { indexedDBStorage } from './indexedDBStorage';
-import { migrateState, PersistedState } from '../services/migrationLogic';
+import { migrateState } from '../services/migrationLogic';
 
 const rootReducer = {
     simulation: simulationReducer,

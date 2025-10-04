@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
-// FIX: Using a type-only import is the correct approach for TypeScript's inference engine to correctly type the RTK Query builder.
+// Using a type-only import is the correct approach for TypeScript's inference engine to correctly type the RTK Query builder.
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { geminiService } from '@/services/geminiService'
 import {

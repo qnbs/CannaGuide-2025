@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab, SavedSetup } from '@/types';
+import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab, SavedSetup, StrainViewTab } from '@/types';
 import type { RootState } from '../store';
 import { getT } from '@/i18n';
 

@@ -90,11 +90,12 @@ const StrainListItem: React.FC<StrainListItemProps> = memo(({ strain, isSelected
             {visibleColumns.floweringTime && <div className="hidden sm:flex items-center text-sm">{strain.floweringTimeRange || strain.floweringTime} {t('common.units.weeks')}</div>}
             {visibleColumns.yield && <div className="hidden sm:flex items-center text-sm">{t(`strainsView.addStrainModal.yields.${(strain.agronomic.yield || 'Medium').toLowerCase()}`)}</div>}
 
-            <div className="flex items-center justify-start" title={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)}>
+            {/* This column is now hidden on mobile via LIST_GRID_CLASS, but shown on sm+ */}
+            <div className="hidden sm:flex items-center justify-start" title={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)}>
                 <DifficultyMeter difficulty={strain.agronomic.difficulty} />
             </div>
 
-            <div className="flex gap-1 justify-end min-w-[5rem]" onClick={e => e.stopPropagation()}>
+            <div className="hidden sm:flex gap-1 justify-end min-w-[5rem]" onClick={e => e.stopPropagation()}>
                 <Button 
                     variant="ghost" 
                     size="sm" 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-import { Strain, GrowSetup } from '@/types';
+import { Strain, GrowSetup, AppSettings } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
@@ -33,7 +33,8 @@ const OptionButton: React.FC<{ label: string, isSelected: boolean, onClick: () =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
-  const settings = useAppSelector(selectSettings);
+  // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
+  const settings = useAppSelector(selectSettings) as AppSettings;
   
   const [setup, setSetup] = useState<GrowSetup>({
     lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,

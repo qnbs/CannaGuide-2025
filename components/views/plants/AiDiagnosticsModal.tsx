@@ -6,7 +6,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CameraModal } from '@/components/common/CameraModal';
 import { Modal } from '@/components/common/Modal';
-import { useAppDispatch } from '@/stores/store';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: The selector `selectDiagnosticsState` and thunk `startDiagnostics` were part of an old pattern.
 // Replaced with the RTK Query mutation hook which is the correct, modern approach used in the app.
 import { useDiagnosePlantMutation } from '@/stores/api';
@@ -16,6 +16,7 @@ import { Card } from '@/components/common/Card';
 import { geminiService } from '@/services/geminiService';
 import { dbService } from '@/services/dbService';
 import { Input } from '@/components/ui/ThemePrimitives';
+import { selectLanguage } from '@/stores/selectors';
 
 
 const base64ToMimeType = (base64: string): string => {
@@ -130,6 +131,7 @@ interface AiDiagnosticsModalProps {
 export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, onClose }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const lang = useAppSelector(selectLanguage);
     const [diagnosePlant, { isLoading, data: response, error }] = useDiagnosePlantMutation();
 
     const [step, setStep] = useState<'upload' | 'context' | 'result'>('upload');
@@ -181,7 +183,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
         setStep('result');
         const base64Data = image.split(',')[1];
         const mimeType = base64ToMimeType(base64Data);
-        diagnosePlant({ base64Image: base64Data, mimeType, plant, userNotes });
+        diagnosePlant({ base64Image: base64Data, mimeType, plant, userNotes, lang });
     };
     
     return (

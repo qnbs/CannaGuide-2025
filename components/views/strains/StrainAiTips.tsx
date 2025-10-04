@@ -5,10 +5,11 @@ import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch } from '@/stores/store';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stores/api';
+import { selectLanguage } from '@/stores/selectors';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
     const { t } = useTranslation();
@@ -49,6 +50,7 @@ interface StrainAiTipsProps {
 export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const lang = useAppSelector(selectLanguage);
     
     const [getStrainTips, { data: tip, isLoading: isTextLoading, error: textError }] = useGetStrainTipsMutation();
     const [generateStrainImage, { data: imageBase64, isLoading: isImageLoading, error: imageError }] = useGenerateStrainImageMutation();
@@ -97,8 +99,8 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
         const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
         const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
         const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
-        getStrainTips({strain, context: { focus: focusText, stage: stageText, experience: experienceText }});
-        generateStrainImage(strain);
+        getStrainTips({strain, context: { focus: focusText, stage: stageText, experience: experienceText }, lang});
+        generateStrainImage({ strain, lang });
     };
 
     const handleSaveTip = () => {

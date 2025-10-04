@@ -4,8 +4,9 @@ import type { RootState } from '../store';
 import { addNotification, closeAddModal } from './uiSlice';
 import { getT } from '@/i18n';
 
-export const userStrainsAdapter = createEntityAdapter<Strain, string>();
+export const userStrainsAdapter = createEntityAdapter<Strain>();
 
+// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s).
 export type UserStrainsState = EntityState<Strain, string>;
 
 const initialState: UserStrainsState = userStrainsAdapter.getInitialState();

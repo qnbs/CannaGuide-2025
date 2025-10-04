@@ -3,11 +3,12 @@ import { Plant, MentorMessage } from '@/types';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch } from '@/stores/store';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { useGetMentorResponseMutation } from '@/stores/api';
 import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice';
+import { selectLanguage } from '@/stores/selectors';
 
 interface MentorChatViewProps {
     plant: Plant;
@@ -31,6 +32,7 @@ const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
 export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const lang = useAppSelector(selectLanguage);
     const [getMentorResponse, { isLoading }] = useGetMentorResponseMutation();
     const [history, setHistory] = useState<MentorMessage[]>([]);
     
@@ -50,7 +52,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
             setInput('');
 
             try {
-                const response = await getMentorResponse({ plant, query: input.trim() }).unwrap();
+                const response = await getMentorResponse({ plant, query: input.trim(), lang }).unwrap();
                 const modelMessage: MentorMessage = { role: 'model', ...response };
                 setHistory(prev => [...prev, modelMessage]);
                 // Automatically archive successful responses

@@ -5,10 +5,11 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem, PlantCount } from '@/types';
 import { geminiService } from '@/services/geminiService';
-import { useAppDispatch } from '@/stores/store';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { openSaveSetupModal } from '@/stores/slices/uiSlice';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { useGetEquipmentRecommendationMutation } from '@/stores/api';
+import { selectLanguage } from '@/stores/selectors';
 
 interface SetupConfiguratorProps {
     onSaveSetup: () => void;
@@ -20,6 +21,7 @@ type Budget = 'value' | 'balanced' | 'premium';
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const lang = useAppSelector(selectLanguage);
     
     const [getEquipmentRecommendation, { data: recommendation, isLoading, error }] = useGetEquipmentRecommendationMutation();
 
@@ -67,7 +69,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             tentSize
         });
 
-        getEquipmentRecommendation({ prompt });
+        getEquipmentRecommendation({ prompt, lang });
     };
 
     const handleSaveSetup = () => {

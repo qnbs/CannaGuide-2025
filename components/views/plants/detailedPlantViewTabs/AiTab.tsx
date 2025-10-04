@@ -8,7 +8,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectArchivedAdvisorResponsesForPlant } from '@/stores/selectors';
+import { selectArchivedAdvisorResponsesForPlant, selectLanguage } from '@/stores/selectors';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { useGetPlantAdviceMutation, useGetProactiveDiagnosisMutation } from '@/stores/api';
 import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
@@ -20,6 +20,7 @@ interface AiTabProps {
 export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const lang = useAppSelector(selectLanguage);
     
     const archive = useAppSelector(state => selectArchivedAdvisorResponsesForPlant(state, plant.id));
     const [getPlantAdvice, advisorState] = useGetPlantAdviceMutation();
@@ -55,12 +56,12 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
 
     const handleGetAdvice = () => {
         setIsCurrentResponseSaved(false);
-        getPlantAdvice(plant);
+        getPlantAdvice({ plant, lang });
     };
     
     const handleGetDiagnosis = () => {
         setIsDiagnosisSaved(false);
-        getProactiveDiagnosis(plant);
+        getProactiveDiagnosis({ plant, lang });
     }
 
     const handleSaveResponse = () => {

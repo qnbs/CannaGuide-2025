@@ -54,7 +54,7 @@ export const StrainList: React.FC<StrainListProps> = ({
                 {visibleColumns.floweringTime && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('floweringTime')}>{t('strainsView.table.flowering')}<SortIndicator sortKey="floweringTime" /></button>}
                 {visibleColumns.yield && <button className="hidden sm:flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('yield')}>{t('strainsView.table.yield')}<SortIndicator sortKey="yield" /></button>}
                 <button className="flex items-center gap-1 hover:text-slate-100" onClick={() => handleSort('difficulty')}>{t('strainsView.table.level')}<SortIndicator sortKey="difficulty" /></button>
-                <div className="text-right">{t('common.actions')}</div>
+                <div className="text-right hidden sm:block">{t('common.actions')}</div>
             </div>
             <div className="space-y-2">
                 {strains.map((strain, index) => <StrainListItem

@@ -90,7 +90,7 @@ export const StrainsView: React.FC = () => {
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
 
     const handleApplyFilters = () => {
-        dispatch(setAdvancedFilters(tempFilterState));
+        setAdvancedFilters(tempFilterState);
         setIsDrawerOpen(false);
     };
 
@@ -99,16 +99,7 @@ export const StrainsView: React.FC = () => {
         setTempFilterState(initialAdvancedFilters);
         setIsDrawerOpen(false);
     };
-
-    if (selectedStrainForDetail) {
-        return <StrainDetailView 
-                    strain={selectedStrainForDetail} 
-                    allStrains={allStrains} 
-                    onBack={() => setSelectedStrainForDetail(null)} 
-                    onSaveTip={(strain, tip, imageUrl) => dispatch(addStrainTip({ strain, tip, imageUrl }))} 
-                />;
-    }
-
+    
     const handleToggleAll = () => dispatch(toggleAllStrainSelection({ ids: filteredStrains.map(s => s.id), areAllCurrentlySelected: selectedIdsSet.size === filteredStrains.length && filteredStrains.length > 0 }));
     
     const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
@@ -155,6 +146,14 @@ export const StrainsView: React.FC = () => {
     
     const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
     const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
+
+    if (selectedStrainForDetail) {
+        return <StrainDetailView 
+                    strain={selectedStrainForDetail}
+                    onBack={() => setSelectedStrainForDetail(null)} 
+                    onSaveTip={(strain, tip, imageUrl) => dispatch(addStrainTip({ strain, tip, imageUrl }))} 
+                />;
+    }
 
     const renderContent = () => {
         if (isLoading) {
@@ -267,7 +266,7 @@ export const StrainsView: React.FC = () => {
                 isAnyFilterActive={isAnyFilterActive}
             />
             
-            <Card><Tabs tabs={tabs} activeTab={strainsViewTab as string} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
+            <Card><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
             
             {renderContent()}
         </div>

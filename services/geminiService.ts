@@ -85,7 +85,6 @@ class GeminiService {
                 model: 'gemini-2.5-flash',
                 contents: localizedPrompt,
             })
-            // FIX: Access the `text` property directly on the response object.
             return response.text
         } catch (error) {
             console.error('Gemini API Error:', error)
@@ -198,7 +197,6 @@ class GeminiService {
                 },
             })
 
-            // FIX: Access the `text` property directly on the response object.
             return JSON.parse(response.text.trim()) as Recommendation
         } catch (error) {
             console.error('Gemini getEquipmentRecommendation Error:', error)
@@ -258,7 +256,6 @@ PLANT CONTEXT:
                 contents: { parts: [imagePart, textPart] },
             })
 
-            // FIX: Access the `text` property directly on the response object.
             return JSON.parse(response.text.trim()) as PlantDiagnosisResponse
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
@@ -327,7 +324,6 @@ PLANT CONTEXT:
                 },
             })
 
-            // FIX: Access the `text` property directly on the response object.
             return JSON.parse(response.text.trim()) as Omit<MentorMessage, 'role'>
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error)
@@ -367,7 +363,6 @@ PLANT CONTEXT:
                 },
             })
 
-            // FIX: Access the `text` property directly on the response object.
             return JSON.parse(response.text.trim()) as StructuredGrowTips
         } catch (e) {
             console.error('Gemini getStrainTips Error:', e)
@@ -378,8 +373,6 @@ PLANT CONTEXT:
     async generateStrainImage(strainName: string, lang: Language): Promise<string> {
         const t = getT()
         const prompt = t('ai.prompts.strainImage', { strainName })
-        // FIX: Image generation models do not need language instructions.
-        // const localizedPrompt = createLocalizedPrompt(prompt, lang);
 
         try {
             const response = await this.ai.models.generateImages({
@@ -437,7 +430,6 @@ PLANT CONTEXT:
                 },
             })
 
-            // FIX: Access the `text` property directly on the response object.
             return JSON.parse(response.text.trim()) as DeepDiveGuide
         } catch (e) {
             console.error('Gemini generateDeepDive Error:', e)

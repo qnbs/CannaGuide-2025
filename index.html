@@ -120,7 +120,7 @@
       }
       .favorite-btn-glow.is-favorite {
           color: rgb(var(--color-primary-400));
-          animation: favorite-glow 1.5s ease-in-out;
+          animation: favorite-glow 1.s ease-in-out;
       }
 
       @keyframes favorite-glow {
@@ -280,6 +280,27 @@
         scrollbar-width: thin;
         scrollbar-color: rgb(var(--color-bg-component)) rgb(var(--color-bg-primary));
       }
+      
+      /* Custom Horizontal Scrollbar for Alphabetical Filter */
+      .horizontal-scrollbar::-webkit-scrollbar {
+        height: 6px;
+      }
+      .horizontal-scrollbar::-webkit-scrollbar-track {
+        background: rgb(var(--color-bg-primary));
+        border-radius: 3px;
+      }
+      .horizontal-scrollbar::-webkit-scrollbar-thumb {
+        background-color: rgb(var(--color-neutral-800));
+        border-radius: 3px;
+        border: 1px solid rgb(var(--color-bg-primary));
+      }
+      .horizontal-scrollbar::-webkit-scrollbar-thumb:hover {
+        background-color: rgb(var(--color-neutral-700));
+      }
+      .horizontal-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: rgb(var(--color-neutral-800)) rgb(var(--color-bg-primary));
+      }
 
       kbd {
         background-color: rgb(var(--color-bg-primary));
@@ -374,78 +395,44 @@
         overflow: hidden;
         cursor: grab;
       }
-      .genealogy-node-container {
-        background-color: rgb(var(--color-bg-component) / 0.8);
-        border: 1px solid rgb(var(--color-border));
-        border-radius: 6px;
-        padding: 2px 6px;
-        font-size: 11px;
-        width: 140px;
-        transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.3s ease-out;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      .genealogy-node circle {
+        fill: rgb(var(--color-bg-component));
+        stroke: rgb(var(--color-border));
+        stroke-width: 1.5px;
+        transition: fill 0.2s ease, stroke 0.2s ease;
         cursor: pointer;
-        will-change: transform;
       }
-      .genealogy-node-container:hover {
-        border-color: rgb(var(--color-primary-500));
-        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+      .genealogy-node text {
+        font-size: 12px;
+        fill: rgb(var(--color-neutral-300));
+        paint-order: stroke;
+        stroke: rgb(var(--color-bg-primary));
+        stroke-width: 3px;
+        stroke-linejoin: round;
+        cursor: pointer;
       }
-      .genealogy-node-container.placeholder {
-        opacity: 0.7;
-        border-style: dashed;
+      .genealogy-node:hover circle {
+        stroke: rgb(var(--color-primary-400));
       }
-      .genealogy-node-thc-bar {
-        background-color: rgb(var(--color-neutral-700));
-        border-radius: 2px;
-        height: 3px;
-        width: 100%;
-        margin-top: 2px;
+      .genealogy-node.highlight-landrace circle {
+        fill: rgb(var(--color-accent-500));
+        stroke: rgb(var(--color-accent-300));
       }
-      .genealogy-node-thc-fill {
-        background-color: rgb(var(--color-accent-500));
-        height: 100%;
-        border-radius: 2px;
-        transition: width 0.3s ease;
+       .genealogy-node.highlight-indica circle {
+        fill: rgb(var(--color-primary-800));
+        stroke: rgb(var(--color-primary-500));
       }
-      .genealogy-node-expand-btn {
-          position: absolute;
-          bottom: -10px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background-color: rgb(var(--color-primary-500));
-          color: white;
-          border: 2px solid rgb(var(--color-bg-component));
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          line-height: 1;
-          z-index: 10;
-          transition: transform 0.2s ease, background-color 0.2s ease;
+       .genealogy-node.highlight-sativa circle {
+        fill: #d97706; /* amber-600 */
+        stroke: #fbbf24; /* amber-400 */
       }
-      .genealogy-node-expand-btn:hover {
-        background-color: rgb(var(--color-primary-400));
-        transform: translateX(-50%) scale(1.1);
-      }
-      .genealogy-node-wrapper.highlight .genealogy-node-container {
-        border-color: rgb(var(--color-accent-400));
-        box-shadow: 0 0 8px rgba(var(--color-accent-400), 0.7);
-        animation: pulse-glow 2s infinite;
-      }
+
       .genealogy-link {
         fill: none;
-        stroke: rgb(var(--color-border) / 0.6);
-        stroke-width: 1.5px;
-        transition: stroke 0.3s ease, stroke-opacity 0.3s ease, stroke-width 0.3s ease;
-      }
-      .genealogy-link.highlight-path {
-        stroke: rgb(var(--color-primary-400));
-        stroke-opacity: 1;
-        stroke-width: 2.5px;
+        stroke: rgb(var(--color-border));
+        stroke-width: 1px;
+        opacity: 0.6;
+        transition: stroke 0.3s ease, stroke-opacity 0.3s ease;
       }
       .genealogy-zoom-controls {
         position: absolute;

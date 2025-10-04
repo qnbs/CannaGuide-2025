@@ -1,4 +1,3 @@
-
 import { PlantStage } from '@/types'
 
 export const STAGES_ORDER: PlantStage[] = [
@@ -15,7 +14,6 @@ export const STAGES_ORDER: PlantStage[] = [
 
 export const FLOWERING_STAGES: PlantStage[] = [PlantStage.Flowering, PlantStage.Harvest]
 
-// FIX: Add missing PLANT_STAGE_DETAILS constant.
 export const PLANT_STAGE_DETAILS: Record<
     PlantStage,
     { duration: number; idealVitals: { ph: { min: number; max: number }; ec: { min: number; max: number } } }

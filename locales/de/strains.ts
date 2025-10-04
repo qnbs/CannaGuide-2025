@@ -282,6 +282,8 @@ export const strainsView = {
       traceIndica: 'Indica-Linie verfolgen',
       traceSativa: 'Sativa-Linie verfolgen',
       clearHighlight: 'Hervorhebung entfernen',
+      resetView: 'Ansicht zurücksetzen',
+      backToSelection: 'Zurück zur Auswahl',
       geneticInfluence: 'Genetischer Einfluss',
       topAncestors: 'Top 5 Vorfahren',
       showDescendants: 'Bekannte Nachkommen anzeigen',

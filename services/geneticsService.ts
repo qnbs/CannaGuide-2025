@@ -7,18 +7,22 @@ class GeneticsService {
         visited: Set<string>
     ): GenealogyNode {
         const trimmedName = strainName.trim().toLowerCase();
-        const strain = allStrains.find(s => s.name.toLowerCase() === trimmedName);
+        // Handle cases like "OG Kush (phenotype)"
+        const cleanedName = trimmedName.replace(/\s*\(.*\)/, '').trim();
+        const strain = allStrains.find(s => s.name.toLowerCase() === cleanedName);
 
         if (!strain) {
+            // Assume it's a landrace if not found
             return {
                 name: strainName.trim(),
-                id: trimmedName.replace(/[^a-z0-9]/g, '-'),
+                id: `landrace-${cleanedName.replace(/[^a-z0-9]/g, '-')}`,
                 isLandrace: true,
-                type: StrainType.Hybrid,
+                type: StrainType.Hybrid, // Default type
                 thc: 0,
             };
         }
         
+        // Circular dependency check
         if (visited.has(strain.id)) {
             return {
                 name: strain.name,
@@ -26,7 +30,7 @@ class GeneticsService {
                 type: strain.type,
                 thc: strain.thc,
                 isLandrace: false,
-                isPlaceholder: true, 
+                isPlaceholder: true, // Mark as placeholder to prevent infinite recursion
             };
         }
 
@@ -68,7 +72,7 @@ class GeneticsService {
         if (!rootStrain) return null;
         return this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>());
     }
-
+    
     public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {
         if (!tree) return [];
         const contributions: { [name: string]: number } = {};
@@ -97,7 +101,7 @@ class GeneticsService {
         const findDirectChildren = (parentName: string): Strain[] => {
             const lowerParentName = parentName.toLowerCase();
             return allStrains.filter(s =>
-                s.genetics && s.genetics.toLowerCase().split(/\s+x\s+/i).map(p => p.trim()).includes(lowerParentName)
+                s.genetics && s.genetics.toLowerCase().split(/\s+x\s+/i).map(p => p.trim().replace(/\s*\(.*\)/, '').trim()).includes(lowerParentName)
             );
         };
         const children = findDirectChildren(rootStrain.name);

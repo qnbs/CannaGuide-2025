@@ -14,7 +14,6 @@ import {
   selectSavedStrainTips
 } from '@/stores/selectors';
 import { 
-    setStrainsViewMode, 
     setStrainsViewTab, 
     toggleStrainSelection, 
     toggleAllStrainSelection, 
@@ -46,6 +45,7 @@ import { AlphabeticalFilter } from './AlphabeticalFilter';
 import { SegmentedControl } from '../common/SegmentedControl';
 import { Button } from '@/components/common/Button';
 import { Pagination } from '@/components/common/Pagination';
+import { StrainListHeader } from './StrainListHeader';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -184,78 +184,88 @@ export const StrainsView: React.FC = () => {
 
     const renderContent = () => {
         if (isLoading) {
-            // FIX: Removed invalid `columns` prop from SkeletonLoader.
             return <SkeletonLoader variant={strainsViewMode} count={10} />;
         }
         if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab)) {
              return (
-                <div className="space-y-4">
-                    <StrainToolbar
-                        searchTerm={searchTerm}
-                        onSearchTermChange={setSearchTerm}
-                        onExport={() => dispatch(openExportModal())}
-                        onAdd={() => dispatch(openAddModal(null))}
-                        onOpenDrawer={() => setIsDrawerOpen(true)}
-                        activeFilterCount={activeFilterCount}
-                    />
-                    
-                    <div className="hidden sm:flex items-center gap-4">
-                        <SegmentedControl 
-                            options={[
-                                { value: 'Sativa', label: t('strainsView.sativa') },
-                                { value: 'Indica', label: t('strainsView.indica') },
-                                { value: 'Hybrid', label: t('strainsView.hybrid') },
-                            ]}
-                            value={typeFilter}
-                            onToggle={handleToggleTypeFilter}
+                <>
+                    {/* Sticky Header Block */}
+                    <div className="sticky top-[-1rem] sm:top-[-1.5rem] z-20 bg-slate-900 pt-4 pb-2">
+                        <StrainToolbar
+                            searchTerm={searchTerm}
+                            onSearchTermChange={setSearchTerm}
+                            onExport={() => dispatch(openExportModal())}
+                            onAdd={() => dispatch(openAddModal(null))}
+                            onOpenDrawer={() => setIsDrawerOpen(true)}
+                            activeFilterCount={activeFilterCount}
                         />
-                        <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
-                             <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
-                             <span>{t('strainsView.advancedFilters')}</span>
-                             {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
-                        </Button>
-                        {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
+                        
+                        <div className="hidden sm:flex items-center gap-4 mt-4">
+                            <SegmentedControl 
+                                options={[
+                                    { value: 'Sativa', label: t('strainsView.sativa') },
+                                    { value: 'Indica', label: t('strainsView.indica') },
+                                    { value: 'Hybrid', label: t('strainsView.hybrid') },
+                                ]}
+                                value={typeFilter}
+                                onToggle={handleToggleTypeFilter}
+                            />
+                            <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
+                                 <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
+                                 <span>{t('strainsView.advancedFilters')}</span>
+                                 {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
+                            </Button>
+                            {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
+                        </div>
+                        
+                        <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+
+                        {strainsViewMode === 'list' && (
+                            <StrainListHeader
+                                sort={sort}
+                                handleSort={handleSort}
+                                areAllOnPageSelected={areAllOnPageSelected}
+                                onToggleAll={handleToggleAll}
+                            />
+                        )}
                     </div>
                     
-                    <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+                    {/* Scrollable Content */}
+                    <div className="mt-4 space-y-4">
+                        {filteredStrains.length === 0 && !isSearching ? (
+                            <Card className="text-center py-10 text-slate-500">
+                                 <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
+                                 <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
+                            </Card>
+                        ) : strainsViewMode === 'list' ? (
+                            <StrainList
+                                strains={currentStrains}
+                                selectedIds={selectedIdsSet}
+                                onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
+                                onSelect={setSelectedStrainForDetail}
+                                isUserStrain={(id) => userStrainIds.has(id)}
+                                onDelete={handleDeleteUserStrain}
+                                isPending={isSearching}
+                                favorites={favoriteIds}
+                                onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
+                            />
+                        ) : (
+                            <StrainGrid
+                                strains={currentStrains}
+                                selectedIds={selectedIdsSet}
+                                onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
+                                onSelect={setSelectedStrainForDetail}
+                                isUserStrain={(id) => userStrainIds.has(id)}
+                                onDelete={handleDeleteUserStrain}
+                                isPending={isSearching}
+                                favorites={favoriteIds}
+                                onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
+                            />
+                        )}
 
-                    {filteredStrains.length === 0 && !isSearching ? (
-                        <Card className="text-center py-10 text-slate-500">
-                             <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
-                             <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
-                        </Card>
-                    ) : strainsViewMode === 'list' ? (
-                        <StrainList
-                            strains={currentStrains}
-                            selectedIds={selectedIdsSet}
-                            onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                            onSelect={setSelectedStrainForDetail}
-                            onToggleAll={handleToggleAll}
-                            areAllOnPageSelected={areAllOnPageSelected}
-                            isUserStrain={(id) => userStrainIds.has(id)}
-                            onDelete={handleDeleteUserStrain}
-                            sort={sort}
-                            handleSort={handleSort}
-                            isPending={isSearching}
-                            favorites={favoriteIds}
-                            onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
-                        />
-                    ) : (
-                        <StrainGrid
-                            strains={currentStrains}
-                            selectedIds={selectedIdsSet}
-                            onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                            onSelect={setSelectedStrainForDetail}
-                            isUserStrain={(id) => userStrainIds.has(id)}
-                            onDelete={handleDeleteUserStrain}
-                            isPending={isSearching}
-                            favorites={favoriteIds}
-                            onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
-                        />
-                    )}
-
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-
+                        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                    </div>
+                    
                     {selectedIdsSet.size > 0 && (
                         <BulkActionsBar
                             selectedCount={selectedIdsSet.size}
@@ -266,7 +276,7 @@ export const StrainsView: React.FC = () => {
                             onDelete={strainsViewTab === StrainViewTab.MyStrains ? handleBulkDelete : undefined}
                         />
                     )}
-                </div>
+                </>
             );
         }
         if (strainsViewTab === StrainViewTab.Exports) {

@@ -292,4 +292,5 @@ export const strainsView = {
       toggleLayout: 'Toggle Tree Layout',
   },
   sortBy: 'Sort by',
+  showingCount: 'Showing {{count}} of {{total}}',
 };

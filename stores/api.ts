@@ -1,5 +1,6 @@
-
-import { createApi, BaseQueryFn } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+// FIX: QueryReturnValue is no longer used directly and can be removed from the import.
+import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { geminiService } from '@/services/geminiService'
 import {
     Recommendation,
@@ -17,19 +18,18 @@ interface ApiError {
     message: string
 }
 
-// A correctly typed but empty BaseQueryFn is necessary for RTK Query's builder
-// type inference to work correctly when all endpoints use `queryFn`.
+// FIX: A correctly typed `baseQuery` is necessary for RTK Query's builder type inference.
+// The previous implementation used an unsafe type assertion `{} as QueryReturnValue<...>`, which
+// broke TypeScript's type inference. This new version returns a valid, type-safe error object,
+// which resolves the "Untyped function calls may not accept type arguments" errors on the builder methods.
 const customFakeBaseQuery: BaseQueryFn<
-    // The `Args` type must be `any` (or `unknown`) for builder type inference with `queryFn` endpoints that have arguments.
-    any,
-    unknown, 
-    ApiError 
-> = async (_args, _api, _extraOptions) => {
-    // This function's body is never executed because all endpoints use `queryFn`.
-    // It exists solely to provide the correct type signature to `createApi`.
-    return { data: {} as unknown };
+  string | void,
+  unknown,
+  ApiError,
+  {}
+> = async () => {
+    return { error: { message: 'When using `queryFn`, `baseQuery` should not be called.' } };
 };
-
 
 export const geminiApi = createApi({
     reducerPath: 'geminiApi',
@@ -41,8 +41,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -58,8 +58,8 @@ export const geminiApi = createApi({
                     )
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -69,8 +69,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.getPlantAdvice(plant, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -80,8 +80,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.getProactiveDiagnosis(plant, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -91,8 +91,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.getMentorResponse(plant, query, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -102,8 +102,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.getStrainTips(strain, context, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -113,8 +113,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.generateStrainImage(strain.name, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),
@@ -124,8 +124,8 @@ export const geminiApi = createApi({
                     const data = await geminiService.generateDeepDive(topic, plant, lang)
                     return { data }
                 } catch (err) {
-                    // FIX: Corrected invalid type casting syntax for the error object.
-                    return { error: { message: (err as Error).message } }
+                    const message = err instanceof Error ? err.message : String(err);
+                    return { error: { message } };
                 }
             },
         }),

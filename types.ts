@@ -108,7 +108,7 @@ export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'Defoliation'
 export type Language = 'en' | 'de'
 export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz'
 export type UiDensity = 'comfortable' | 'compact'
-export type SortKey = 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'yield'
+export type SortKey = 'name' | 'type' | 'thc' | 'floweringTime' | 'difficulty' | 'yield'
 export type SortDirection = 'asc' | 'desc'
 export type ModalType =
     | 'watering'

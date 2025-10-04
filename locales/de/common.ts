@@ -132,6 +132,7 @@ export const common = {
     plantNotFoundTraining: 'Pflanze zum Trainieren nicht gefunden.',
     pestControlNotesEmpty: 'Notizen zur Schädlingsbekämpfung dürfen nicht leer sein.'
   },
+  loadMore: 'Weitere laden',
 };
 
 export const nav = {

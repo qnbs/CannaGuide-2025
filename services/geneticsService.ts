@@ -1,4 +1,3 @@
-// services/geneticsService.ts
 import { Strain, GenealogyNode, StrainType, GeneticContribution } from '@/types';
 
 class GeneticsService {
@@ -11,7 +10,6 @@ class GeneticsService {
         const strain = allStrains.find(s => s.name.toLowerCase() === trimmedName);
 
         if (!strain) {
-            // Treat as a landrace if not found in the DB
             return {
                 name: strainName.trim(),
                 id: trimmedName.replace(/[^a-z0-9]/g, '-'),
@@ -22,7 +20,6 @@ class GeneticsService {
         }
         
         if (visited.has(strain.id)) {
-             // Circular dependency detected, return a placeholder to stop recursion
             return {
                 name: strain.name,
                 id: strain.id,
@@ -74,24 +71,19 @@ class GeneticsService {
 
     public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {
         if (!tree) return [];
-
         const contributions: { [name: string]: number } = {};
-
         function traverse(node: GenealogyNode, contribution: number) {
             const children = node.children || node._children;
             if (!children || children.length === 0) {
                 contributions[node.name] = (contributions[node.name] || 0) + contribution;
                 return;
             }
-
             const childContribution = contribution / children.length;
             for (const child of children) {
                 traverse(child, childContribution);
             }
         }
-
         traverse(tree, 1.0);
-
         return Object.entries(contributions)
             .map(([name, contribution]) => ({ name, contribution: contribution * 100 }))
             .sort((a, b) => b.contribution - a.contribution);
@@ -102,20 +94,15 @@ class GeneticsService {
         if (!rootStrain) {
             return { children: [], grandchildren: [] };
         }
-
         const findDirectChildren = (parentName: string): Strain[] => {
             const lowerParentName = parentName.toLowerCase();
             return allStrains.filter(s =>
                 s.genetics && s.genetics.toLowerCase().split(/\s+x\s+/i).map(p => p.trim()).includes(lowerParentName)
             );
         };
-
         const children = findDirectChildren(rootStrain.name);
         const grandchildren = children.flatMap(child => findDirectChildren(child.name));
-
-        const uniqueGrandchildren = [...new Map(grandchildren.map(item => [item.id, item])).values()];
-
-        return { children, grandchildren: uniqueGrandchildren };
+        return { children, grandchildren: [...new Map(grandchildren.map(item => [item.id, item])).values()] };
     }
 }
 

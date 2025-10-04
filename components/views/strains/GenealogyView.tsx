@@ -1,19 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { Strain, GenealogyNode, GeneticContribution } from '@/types';
+import { Strain, GenealogyNode, GeneticContribution, StrainType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Select } from '@/components/ui/ThemePrimitives';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { 
-    fetchAndBuildGenealogy,
-    setSelectedGenealogyStrain,
-    toggleGenealogyNode,
-    setGenealogyZoom,
-    setGenealogyLayout
-} from '@/stores/slices/genealogySlice';
-import { hierarchy, tree } from 'd3-hierarchy';
+import { hierarchy, tree, HierarchyNode } from 'd3-hierarchy';
 import { StrainTreeNode } from './StrainTreeNode';
 import { geneticsService } from '@/services/geneticsService';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
@@ -29,11 +21,8 @@ const Link: React.FC<{ linkData: any; className?: string; orientation: 'vertical
   
   let path: string;
   if (orientation === 'vertical') {
-    // Path for a vertical tree layout
     path = `M${source.x},${source.y} C${source.x},${source.y + 50} ${target.x},${target.y - 50} ${target.x},${target.y}`;
   } else {
-    // Path for a horizontal tree layout (left-to-right)
-    // Here, d3's x is our vertical position, and y is our horizontal position
     path = `M${source.y},${source.x} C${source.y + 75},${source.x} ${target.y - 75},${target.x} ${target.y},${target.x}`;
   }
 
@@ -43,15 +32,12 @@ const Link: React.FC<{ linkData: any; className?: string; orientation: 'vertical
 
 export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNodeClick }) => {
     const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const { 
-        computedTrees, 
-        status, 
-        selectedStrainId, 
-        collapsedNodeIds, 
-        zoomTransform, 
-        layoutOrientation 
-    } = useAppSelector(state => state.genealogy);
+    const [selectedStrainId, setSelectedStrainId] = useState<string | null>('gorilla-glue-4');
+    const [treeData, setTreeData] = useState<GenealogyNode | null>(null);
+    const [status, setStatus] = useState<'idle' | 'loading' | 'succeeded' | 'failed'>('idle');
+    const [collapsedNodeIds, setCollapsedNodeIds] = useState<Set<string>>(new Set());
+    const [zoomTransform, setZoomTransform] = useState<{k: number, x: number, y: number} | null>(null);
+    const [layoutOrientation, setLayoutOrientation] = useState<'horizontal' | 'vertical'>('horizontal');
     
     const [treeLayout, setTreeLayout] = useState<any>(null);
     const [contributions, setContributions] = useState<GeneticContribution[]>([]);
@@ -60,14 +46,25 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     const svgRef = useRef<SVGSVGElement>(null);
     const gRef = useRef<SVGGElement>(null);
     const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown>>();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const strainOptions = useMemo(() => allStrains.map(s => ({ value: s.id, label: s.name })), [allStrains]);
 
     useEffect(() => {
-        if (selectedStrainId && !computedTrees[selectedStrainId]) {
-            dispatch(fetchAndBuildGenealogy(selectedStrainId));
+        if (selectedStrainId) {
+            setStatus('loading');
+            const tree = geneticsService.buildGenealogyTree(selectedStrainId, allStrains);
+            setTreeData(tree);
+            setStatus('succeeded');
         }
-    }, [selectedStrainId, computedTrees, dispatch]);
+    }, [selectedStrainId, allStrains]);
+    
+    const handleStrainSelect = (id: string) => {
+        setSelectedStrainId(id);
+        setCollapsedNodeIds(new Set());
+        setZoomTransform(null); // Reset zoom on new selection
+    };
 
     const handleNodeClick = (nodeData: GenealogyNode) => {
         const strain = allStrains.find(s => s.id === nodeData.id);
@@ -77,75 +74,97 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     };
 
     const handleToggle = useCallback((nodeId: string) => {
-        dispatch(toggleGenealogyNode(nodeId));
-    }, [dispatch]);
+        setCollapsedNodeIds(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(nodeId)) {
+                newSet.delete(nodeId);
+            } else {
+                newSet.add(nodeId);
+            }
+            return newSet;
+        });
+    }, []);
     
-    const collapsedNodesSet = useMemo(() => new Set(collapsedNodeIds), [collapsedNodeIds]);
-
     useEffect(() => {
-        if (selectedStrainId && computedTrees[selectedStrainId]) {
-            const rootNode = computedTrees[selectedStrainId];
-            if (rootNode) {
-                const clonedRootNode = JSON.parse(JSON.stringify(rootNode));
-                const hierarchyData = hierarchy(clonedRootNode);
+        if (treeData) {
+            const clonedRootNode = JSON.parse(JSON.stringify(treeData));
+            const hierarchyData = hierarchy(clonedRootNode);
 
-                hierarchyData.each(d => {
-                    if (collapsedNodesSet.has(d.data.id) && d.children) {
-                        d.data._children = d.children;
-                        (d as any).children = null;
-                    }
-                });
+            hierarchyData.each(d => {
+                if (collapsedNodeIds.has(d.data.id) && d.children) {
+                    d.data._children = d.children;
+                    (d as any).children = null;
+                }
+            });
+            
+            const treeGenerator = tree().nodeSize(layoutOrientation === 'vertical' ? [160, 150] : [150, 250]);
+            const layout = treeGenerator(hierarchyData);
+            setTreeLayout(layout);
 
-                const treeGenerator = tree().nodeSize(layoutOrientation === 'vertical' ? [160, 150] : [150, 250]);
-                const layout = treeGenerator(hierarchyData);
-                setTreeLayout(layout);
-
-                setContributions(geneticsService.calculateGeneticContribution(rootNode).slice(0, 5));
+            setContributions(geneticsService.calculateGeneticContribution(treeData).slice(0, 5));
+            if(selectedStrainId) {
                 setDescendants(geneticsService.findDescendants(selectedStrainId, allStrains));
             }
         } else {
             setTreeLayout(null);
         }
-    }, [selectedStrainId, computedTrees, collapsedNodesSet, allStrains, layoutOrientation]);
+    }, [treeData, collapsedNodeIds, allStrains, selectedStrainId, layoutOrientation]);
     
-    const handleZoomCallback = useCallback((event: D3ZoomEvent<SVGSVGElement, unknown>) => {
-        const { k, x, y } = event.transform;
-        if (gRef.current) {
-            select(gRef.current).attr('transform', event.transform.toString());
-        }
-        // Only dispatch if the transform differs from the one in the store to prevent loops.
-        if (k !== zoomTransform?.k || x !== zoomTransform?.x || y !== zoomTransform?.y) {
-            dispatch(setGenealogyZoom({ k, x, y }));
-        }
-    }, [dispatch, zoomTransform]);
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+        const resizeObserver = new ResizeObserver(entries => {
+            if (entries[0]) {
+                const { width, height } = entries[0].contentRect;
+                setDimensions({ width, height });
+            }
+        });
+        resizeObserver.observe(container);
+        return () => resizeObserver.disconnect();
+    }, []);
 
     useEffect(() => {
-        if (!svgRef.current || !gRef.current || !treeLayout) return;
-
-        const svg = select(svgRef.current);
+        const svg = svgRef.current;
+        if (!svg) return;
 
         const zoomBehavior = zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.1, 2])
-            .on('zoom', handleZoomCallback);
-        
+            .on('zoom', (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+                if (gRef.current) {
+                    select(gRef.current).attr('transform', event.transform.toString());
+                }
+            })
+            .on('end', (event: D3ZoomEvent<SVGSVGElement, unknown>) => {
+                const { k, x, y } = event.transform;
+                setZoomTransform({ k, x, y });
+            });
+
         zoomBehaviorRef.current = zoomBehavior;
-        svg.call(zoomBehavior);
+        select(svg).call(zoomBehavior);
 
-        const { width, height } = svgRef.current.getBoundingClientRect();
-        let initialTransform;
+        return () => {
+            select(svg).on('.zoom', null);
+        };
+    }, []);
 
-        if (zoomTransform) {
-            initialTransform = zoomIdentity.translate(zoomTransform.x, zoomTransform.y).scale(zoomTransform.k);
-        } else {
-             initialTransform = layoutOrientation === 'vertical'
-                ? zoomIdentity.translate(width / 2, 100)
-                : zoomIdentity.translate(150, height / 2);
-        }
+    useEffect(() => {
+        const svg = svgRef.current;
+        const zoomBehavior = zoomBehaviorRef.current;
+        if (!svg || !zoomBehavior || !treeLayout || dimensions.width === 0) return;
+
+        const svgSelection = select(svg);
         
-        // Use a transition for a smooth initial positioning or restoration.
-        svg.transition().duration(500).call(zoomBehavior.transform, initialTransform);
+        let transform: any;
+        if(zoomTransform) {
+            transform = zoomIdentity.translate(zoomTransform.x, zoomTransform.y).scale(zoomTransform.k);
+        } else {
+            transform = layoutOrientation === 'vertical'
+                ? zoomIdentity.translate(dimensions.width / 2, 100)
+                : zoomIdentity.translate(150, dimensions.height / 2);
+        }
+        svgSelection.call(zoomBehavior.transform, transform);
 
-    }, [treeLayout, layoutOrientation, handleZoomCallback]);
+    }, [treeLayout, dimensions, zoomTransform, layoutOrientation]);
 
     const handleZoomAction = (direction: 'in' | 'out' | 'reset') => {
         if (!svgRef.current || !zoomBehaviorRef.current) return;
@@ -161,11 +180,11 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                 svg.transition().duration(duration).call(zoomBehavior.scaleBy, 0.8);
                 break;
             case 'reset':
-                 const { width, height } = svgRef.current.getBoundingClientRect();
                 const initialTransform = layoutOrientation === 'vertical'
-                    ? zoomIdentity.translate(width / 2, 100)
-                    : zoomIdentity.translate(150, height / 2);
+                    ? zoomIdentity.translate(dimensions.width / 2, 100)
+                    : zoomIdentity.translate(150, dimensions.height / 2);
                 svg.transition().duration(duration).call(zoomBehavior.transform, initialTransform);
+                setZoomTransform(null);
                 break;
         }
     };
@@ -177,11 +196,14 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                 <p className="text-sm text-slate-400">{t('strainsView.genealogyView.description')}</p>
                 <div className="mt-4 flex items-center gap-2">
                     <div className="flex-grow">
-                         <Select options={strainOptions} value={selectedStrainId || ''} onChange={(e) => dispatch(setSelectedGenealogyStrain(e.target.value))} />
+                         <Select options={strainOptions} value={selectedStrainId || ''} onChange={(e) => handleStrainSelect(e.target.value)} />
                     </div>
                     <Button
                         variant="secondary"
-                        onClick={() => dispatch(setGenealogyLayout(layoutOrientation === 'vertical' ? 'horizontal' : 'vertical'))}
+                        onClick={() => {
+                            setLayoutOrientation(o => o === 'vertical' ? 'horizontal' : 'vertical');
+                            setZoomTransform(null);
+                        }}
                         title={t('strainsView.genealogyView.toggleLayout')}
                         className="!p-2.5"
                     >
@@ -202,8 +224,8 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
 
             {treeLayout && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <Card className="lg:col-span-2 genealogy-container">
-                        <svg ref={svgRef} width="100%" height="100%">
+                    <Card ref={containerRef} className="lg:col-span-2 genealogy-container">
+                        <svg ref={svgRef} className="w-full h-full">
                             <g ref={gRef}>
                                 {treeLayout.links().map((link: any, i: number) => <Link key={i} linkData={link} orientation={layoutOrientation}/>)}
                                 {treeLayout.descendants().map((node: any, i: number) => (
@@ -243,11 +265,11 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                                 <h4 className="font-bold text-lg text-primary-300 mb-2">{t('strainsView.genealogyView.knownDescendants', { name: treeLayout.data.name })}</h4>
                                 {descendants.children.length > 0 && <div className="mb-2">
                                     <h5 className="font-semibold text-slate-300 text-sm">{t('strainsView.genealogyView.children')}</h5>
-                                    <div className="flex flex-wrap gap-1 mt-1">{descendants.children.map(d => <Button size="sm" variant="secondary" key={d.id} onClick={() => dispatch(setSelectedGenealogyStrain(d.id))}>{d.name}</Button>)}</div>
+                                    <div className="flex flex-wrap gap-1 mt-1">{descendants.children.map(d => <Button size="sm" variant="secondary" key={d.id} onClick={() => handleStrainSelect(d.id)}>{d.name}</Button>)}</div>
                                 </div>}
                                 {descendants.grandchildren.length > 0 && <div>
                                     <h5 className="font-semibold text-slate-300 text-sm">{t('strainsView.genealogyView.grandchildren')}</h5>
-                                     <div className="flex flex-wrap gap-1 mt-1">{descendants.grandchildren.map(d => <Button size="sm" variant="secondary" key={d.id} onClick={() => dispatch(setSelectedGenealogyStrain(d.id))}>{d.name}</Button>)}</div>
+                                     <div className="flex flex-wrap gap-1 mt-1">{descendants.grandchildren.map(d => <Button size="sm" variant="secondary" key={d.id} onClick={() => handleStrainSelect(d.id)}>{d.name}</Button>)}</div>
                                 </div>}
                             </Card>
                         )}

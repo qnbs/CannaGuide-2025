@@ -5,6 +5,9 @@ import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
+import { selectHasAvailableSlots } from '@/stores/selectors';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -26,6 +29,13 @@ const typeIcons: Record<StrainType, React.ReactNode> = {
 
 const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
+
+    const handleStartGrow = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        dispatch(initiateGrowFromStrainList(strain));
+    };
 
     return (
         <Card 
@@ -41,18 +51,28 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     className="h-4 w-4 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500 self-end"
                     aria-label={`Select ${strain.name}`}
                 />
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="!p-1.5 rounded-full"
+                    onClick={handleStartGrow}
+                    disabled={!hasAvailableSlots}
+                    title={hasAvailableSlots ? t('strainsView.startGrowing') : t('plantsView.notifications.allSlotsFull')}
+                >
+                    <PhosphorIcons.Plant className="w-4 h-4" />
+                </Button>
                  <Button 
                     variant="ghost" 
                     size="sm" 
-                    className={`!p-1 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
+                    className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
                     onClick={onToggleFavorite} 
                     title={t('common.manageFavorites')}
                  >
-                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-3 h-3" />
+                    <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
                 </Button>
                  {isUserStrain && (
-                    <Button variant="danger" size="sm" className="!p-1 rounded-full" onClick={() => onDelete(strain.id)} title={t('common.delete')}>
-                        <PhosphorIcons.TrashSimple className="w-3 h-3" />
+                    <Button variant="danger" size="sm" className="!p-1.5 rounded-full" onClick={() => onDelete(strain.id)} title={t('common.delete')}>
+                        <PhosphorIcons.TrashSimple className="w-4 h-4" />
                     </Button>
                 )}
             </div>
@@ -66,10 +86,9 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             <h3 className="font-bold text-slate-100 truncate">{strain.name}</h3>
             <p className="text-xs text-slate-400 mb-2">{strain.type}</p>
 
-            <div className="mt-auto text-xs grid grid-cols-2 gap-x-2 gap-y-1 font-mono">
+            <div className="mt-auto text-xs grid grid-cols-1 gap-1 font-mono">
                 <div className="bg-slate-700/50 rounded p-1">THC: {strain.thc?.toFixed(1)}%</div>
-                <div className="bg-slate-700/50 rounded p-1">CBD: {strain.cbd?.toFixed(1)}%</div>
-                <div className="bg-slate-700/50 rounded p-1 col-span-2">
+                <div className="bg-slate-700/50 rounded p-1">
                     {strain.floweringTimeRange || strain.floweringTime} {t('common.units.weeks')}
                 </div>
             </div>

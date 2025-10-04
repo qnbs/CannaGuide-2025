@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Strain, AIResponse } from '@/types';
+import { Strain, AIResponse, StrainType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { strainService } from '@/services/strainService';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
 import { toggleFavorite } from '@/stores/slices/favoritesSlice';
@@ -143,53 +142,25 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     );
 };
 
-const SimilarStrainsSection: React.FC<{ currentStrain: Strain; onSelect: (strain: Strain) => void }> = ({ currentStrain, onSelect }) => {
-    const { t } = useTranslation();
-    const [similar, setSimilar] = useState<Strain[]>([]);
-
-    useEffect(() => {
-        strainService.getSimilarStrains(currentStrain, 4).then(setSimilar);
-    }, [currentStrain]);
-
-    if (similar.length === 0) return null;
-
-    return (
-        <InfoSection title={t('strainsView.strainDetail.similarStrains')} icon={<PhosphorIcons.Leafy />}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {similar.map(strain => (
-                    <Card key={strain.id} className="p-2 cursor-pointer" onClick={() => onSelect(strain)}>
-                        <h4 className="font-semibold text-primary-300">{strain.name}</h4>
-                        <p className="text-xs text-slate-400">{strain.type}</p>
-                    </Card>
-                ))}
-            </div>
-        </InfoSection>
-    );
-};
-
 
 interface StrainDetailViewProps {
     strain: Strain;
-    allStrains: Strain[];
     onBack: () => void;
     onSaveTip: (strain: Strain, tip: AIResponse, imageUrl?: string) => void;
 }
 
-export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allStrains, onBack, onSaveTip }) => {
+export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBack, onSaveTip }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const favoriteIds = useAppSelector(selectFavoriteIds);
     const isFavorite = favoriteIds.has(strain.id);
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
-
     const [activeTab, setActiveTab] = useState('overview');
-    const [currentStrain, setCurrentStrain] = useState(strain);
     
     useEffect(() => {
-        setCurrentStrain(strain);
         setActiveTab('overview');
     }, [strain]);
-
+    
     const tabs: { id: string; label: string; icon: React.ReactNode; }[] = [
         { id: 'overview', label: t('strainsView.strainDetail.tabs.overview'), icon: <PhosphorIcons.Book /> },
         { id: 'agronomics', label: t('strainsView.strainDetail.tabs.agronomics'), icon: <PhosphorIcons.Ruler /> },
@@ -199,8 +170,16 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
         { id: 'images', label: t('strainsView.strainDetail.tabs.images'), icon: <PhosphorIcons.Camera /> },
     ];
     
-    const typeClasses = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
-    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[currentStrain.type];
+    const typeClasses: Record<StrainType, string> = { 
+        [StrainType.Sativa]: 'text-amber-400', 
+        [StrainType.Indica]: 'text-indigo-400', 
+        [StrainType.Hybrid]: 'text-blue-400' 
+    };
+    const TypeIcon = { 
+        [StrainType.Sativa]: SativaIcon, 
+        [StrainType.Indica]: IndicaIcon, 
+        [StrainType.Hybrid]: HybridIcon 
+    }[strain.type];
 
     return (
         <div className="animate-fade-in space-y-6">
@@ -212,18 +191,18 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
                     </Button>
                     <div className="flex items-center gap-2">
                         <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                            <Button onClick={() => dispatch(initiateGrowFromStrainList(currentStrain))} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <Button onClick={() => dispatch(initiateGrowFromStrainList(strain))} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
                         </div>
-                        <Button variant="secondary" onClick={() => dispatch(toggleFavorite(currentStrain.id))} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
+                        <Button variant="secondary" onClick={() => dispatch(toggleFavorite(strain.id))} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                         </Button>
                     </div>
                 </div>
                 <div className="flex items-center gap-4 mt-4">
-                    {TypeIcon && <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[currentStrain.type]}`} />}
+                    {TypeIcon && <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type]}`} />}
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{currentStrain.name}</h1>
-                        <p className="text-slate-400">{currentStrain.type} {currentStrain.typeDetails && `- ${currentStrain.typeDetails}`}</p>
+                        <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{strain.name}</h1>
+                        <p className="text-slate-400">{strain.type} {strain.typeDetails && `- ${strain.typeDetails}`}</p>
                     </div>
                 </div>
             </header>
@@ -231,16 +210,13 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, allS
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
             
             <div className="mt-6">
-                {activeTab === 'overview' && <OverviewTab strain={currentStrain} />}
-                {activeTab === 'agronomics' && <AgronomicsTab strain={currentStrain} />}
-                {activeTab === 'profile' && <ProfileTab strain={currentStrain} />}
-                {activeTab === 'notes' && <NotesTab strain={currentStrain} />}
-                {activeTab === 'aiTips' && <StrainAiTips strain={currentStrain} onSaveTip={onSaveTip} />}
-                {activeTab === 'images' && <StrainImageGalleryTab strain={currentStrain} />}
+                {activeTab === 'overview' && <OverviewTab strain={strain} />}
+                {activeTab === 'agronomics' && <AgronomicsTab strain={strain} />}
+                {activeTab === 'profile' && <ProfileTab strain={strain} />}
+                {activeTab === 'notes' && <NotesTab strain={strain} />}
+                {activeTab === 'aiTips' && <StrainAiTips strain={strain} onSaveTip={onSaveTip} />}
+                {activeTab === 'images' && <StrainImageGalleryTab strain={strain} />}
             </div>
-            
-            <SimilarStrainsSection currentStrain={currentStrain} onSelect={setCurrentStrain} />
-
         </div>
     );
 };

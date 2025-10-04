@@ -10,7 +10,7 @@ import { useGenerateDeepDiveMutation } from '@/stores/api';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
-import { selectDeepDiveModalState, selectPlantById } from '@/stores/selectors';
+import { selectDeepDiveModalState, selectPlantById, selectLanguage } from '@/stores/selectors';
 import { runComparisonScenario } from '@/stores/slices/sandboxSlice';
 
 interface DeepDiveModalProps {
@@ -22,13 +22,14 @@ interface DeepDiveModalProps {
 
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
     const { t } = useTranslation();
+    const lang = useAppSelector(selectLanguage);
     const [generateDeepDive, { data: response, isLoading, error }] = useGenerateDeepDiveMutation();
 
     useEffect(() => {
         if (!response && !isLoading && !error) {
-            generateDeepDive({ topic, plant });
+            generateDeepDive({ topic, plant, lang });
         }
-    }, [plant, topic, response, isLoading, error, generateDeepDive]);
+    }, [plant, topic, response, isLoading, error, generateDeepDive, lang]);
 
     const loadingMessage = useMemo(() => {
         const messages = geminiService.getDynamicLoadingMessages({

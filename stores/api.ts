@@ -11,7 +11,6 @@ import {
     DeepDiveGuide,
     Language,
 } from '@/types'
-import { RootState } from './store'
 
 interface ApiError {
     message: string
@@ -21,14 +20,10 @@ export const geminiApi = createApi({
     reducerPath: 'geminiApi',
     baseQuery: fakeBaseQuery<ApiError>(),
     endpoints: (builder) => ({
-        getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string }>({
+        getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string; lang: Language }>({
             queryFn: async (
-                { prompt },
-                { getState }
+                { prompt, lang }
             ): Promise<{ data: Recommendation } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
@@ -39,22 +34,18 @@ export const geminiApi = createApi({
         }),
         diagnosePlant: builder.mutation<
             PlantDiagnosisResponse,
-            { base64Image: string; mimeType: string; plant: Plant; userNotes: string }
+            { base64Image: string; mimeType: string; plant: Plant; userNotes: string, lang: Language }
         >({
             queryFn: async (
-                args,
-                { getState }
+                args
             ): Promise<{ data: PlantDiagnosisResponse } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.diagnosePlant(
                         args.base64Image,
                         args.mimeType,
                         args.plant,
                         args.userNotes,
-                        lang
+                        args.lang
                     )
                     return { data }
                 } catch (error) {
@@ -62,14 +53,10 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        getPlantAdvice: builder.mutation<AIResponse, Plant>({
+        getPlantAdvice: builder.mutation<AIResponse, { plant: Plant, lang: Language }>({
             queryFn: async (
-                plant,
-                { getState }
+                { plant, lang }
             ): Promise<{ data: AIResponse } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.getPlantAdvice(plant, lang)
                     return { data }
@@ -78,14 +65,10 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        getProactiveDiagnosis: builder.mutation<AIResponse, Plant>({
+        getProactiveDiagnosis: builder.mutation<AIResponse, { plant: Plant, lang: Language }>({
             queryFn: async (
-                plant,
-                { getState }
+                { plant, lang }
             ): Promise<{ data: AIResponse } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.getProactiveDiagnosis(plant, lang)
                     return { data }
@@ -96,15 +79,11 @@ export const geminiApi = createApi({
         }),
         getMentorResponse: builder.mutation<
             Omit<MentorMessage, 'role'>,
-            { plant: Plant; query: string }
+            { plant: Plant; query: string, lang: Language }
         >({
             queryFn: async (
-                { plant, query },
-                { getState }
+                { plant, query, lang }
             ): Promise<{ data: Omit<MentorMessage, 'role'> } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.getMentorResponse(plant, query, lang)
                     return { data }
@@ -115,15 +94,11 @@ export const geminiApi = createApi({
         }),
         getStrainTips: builder.mutation<
             StructuredGrowTips,
-            { strain: Strain; context: { focus: string; stage: string; experience: string } }
+            { strain: Strain; context: { focus: string; stage: string; experience: string }, lang: Language }
         >({
             queryFn: async (
-                { strain, context },
-                { getState }
+                { strain, context, lang }
             ): Promise<{ data: StructuredGrowTips } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.getStrainTips(strain, context, lang)
                     return { data }
@@ -132,14 +107,10 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        generateStrainImage: builder.mutation<string, Strain>({
+        generateStrainImage: builder.mutation<string, { strain: Strain, lang: Language }>({
             queryFn: async (
-                strain,
-                { getState }
+                { strain, lang }
             ): Promise<{ data: string } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.generateStrainImage(strain.name, lang)
                     return { data }
@@ -148,14 +119,10 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        generateDeepDive: builder.mutation<DeepDiveGuide, { topic: string; plant: Plant }>({
+        generateDeepDive: builder.mutation<DeepDiveGuide, { topic: string; plant: Plant, lang: Language }>({
             queryFn: async (
-                { topic, plant },
-                { getState }
+                { topic, plant, lang }
             ): Promise<{ data: DeepDiveGuide } | { error: ApiError }> => {
-                // FIX: Cast getState() result to RootState in a separate variable to avoid untyped function call error.
-                const state = getState() as RootState;
-                const lang = state.settings.settings.language
                 try {
                     const data = await geminiService.generateDeepDive(topic, plant, lang)
                     return { data }

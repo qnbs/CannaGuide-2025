@@ -35,7 +35,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
             onClick={handleNodeClick}
         >
             <div className="flex items-center gap-2">
-                <div className={`w-6 h-6 flex-shrink-0 ${color}`}>{icon}</div>
+                <div className={`w-5 h-5 flex-shrink-0 ${color}`}>{icon}</div>
                 <div className="flex flex-col min-w-0">
                     <div className="font-bold text-slate-100 truncate" title={data.name}>
                         {data.name}

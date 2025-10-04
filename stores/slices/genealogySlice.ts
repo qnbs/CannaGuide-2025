@@ -15,7 +15,7 @@ export interface GenealogyState {
 const initialState: GenealogyState = {
     computedTrees: {},
     status: 'idle',
-    selectedStrainId: null,
+    selectedStrainId: 'gorilla-glue-4',
     collapsedNodeIds: [],
     zoomTransform: null,
     layoutOrientation: 'horizontal',
@@ -27,15 +27,10 @@ export const fetchAndBuildGenealogy = createAsyncThunk<
     { state: RootState }
 >('genealogy/fetchAndBuild', async (strainId, { getState }) => {
     const { genealogy } = getState();
-
-    // Return cached tree if it exists
     if (genealogy.computedTrees[strainId]) {
         return { strainId, tree: genealogy.computedTrees[strainId] };
     }
-    
-    // Dynamically import strain data to avoid circular dependencies at startup
     const { allStrainsData } = await import('@/data/strains');
-    
     const tree = geneticsService.buildGenealogyTree(strainId, allStrainsData);
     return { strainId, tree };
 });
@@ -44,8 +39,10 @@ const genealogySlice = createSlice({
     name: 'genealogy',
     initialState,
     reducers: {
+        setGenealogyState: (state, action: PayloadAction<GenealogyState>) => {
+            return action.payload;
+        },
         setSelectedGenealogyStrain: (state, action: PayloadAction<string | null>) => {
-            // Only reset if the strain actually changes
             if (state.selectedStrainId !== action.payload) {
                 state.selectedStrainId = action.payload;
                 state.collapsedNodeIds = [];
@@ -56,8 +53,10 @@ const genealogySlice = createSlice({
             const id = action.payload;
             const index = state.collapsedNodeIds.indexOf(id);
             if (index > -1) {
+                // If it was collapsed (in the list), un-collapse it by removing it.
                 state.collapsedNodeIds.splice(index, 1);
             } else {
+                // If it was expanded, collapse it by adding it.
                 state.collapsedNodeIds.push(id);
             }
         },
@@ -66,10 +65,7 @@ const genealogySlice = createSlice({
         },
         setGenealogyLayout: (state, action: PayloadAction<'horizontal' | 'vertical'>) => {
             state.layoutOrientation = action.payload;
-            state.zoomTransform = null; // Reset zoom on layout change
-        },
-        setGenealogyState: (state, action: PayloadAction<GenealogyState>) => {
-            return action.payload;
+            state.zoomTransform = null;
         },
     },
     extraReducers: (builder) => {
@@ -77,7 +73,7 @@ const genealogySlice = createSlice({
             .addCase(fetchAndBuildGenealogy.pending, (state) => {
                 state.status = 'loading';
             })
-            .addCase(fetchAndBuildGenealogy.fulfilled, (state, action: PayloadAction<{ strainId: string, tree: GenealogyNode | null }>) => {
+            .addCase(fetchAndBuildGenealogy.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 if (action.payload) {
                     state.computedTrees[action.payload.strainId] = action.payload.tree;
@@ -90,11 +86,11 @@ const genealogySlice = createSlice({
 });
 
 export const { 
+    setGenealogyState,
     setSelectedGenealogyStrain, 
     toggleGenealogyNode, 
     setGenealogyZoom, 
     setGenealogyLayout,
-    setGenealogyState,
 } = genealogySlice.actions;
 
 export default genealogySlice.reducer;

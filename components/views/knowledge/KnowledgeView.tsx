@@ -2,8 +2,8 @@ import React, { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '../common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
-// FIX: Add SandboxState and Plant to imports for type casting.
-import { Plant, KnowledgeArticle, KnowledgeViewTab, SandboxState } from '@/types';
+// FIX: Add Plant to imports for type casting.
+import { Plant, KnowledgeArticle, KnowledgeViewTab } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { MentorChatView } from './knowledge/MentorChatView';
 import { Button } from '../common/Button';
@@ -44,12 +44,12 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
-    // FIX: Removed unnecessary type cast. The selector is already typed.
+    // FIX: Removed unnecessary type cast. The selector is already correctly typed.
     const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
 
     const [isTabLoading, startTabTransition] = useTransition();
     
-    // FIX: Removed unnecessary type cast. The selector is already typed.
+    // FIX: Removed unnecessary type cast. The hook already returns a correctly typed array.
     const activePlants = useActivePlants();
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 

@@ -37,17 +37,20 @@ const strainsViewSlice = createSlice({
             }
             state.selectedStrainIds = Array.from(set);
         },
-        toggleAllStrainSelection: (state, action: PayloadAction<{ ids: string[], areAllCurrentlySelected: boolean }>) => {
-            const { ids, areAllCurrentlySelected } = action.payload;
-            if (areAllCurrentlySelected) {
-                 const currentSelection = new Set(state.selectedStrainIds);
-                 ids.forEach(id => currentSelection.delete(id));
-                 state.selectedStrainIds = Array.from(currentSelection);
+        toggleAllStrainSelection: (state, action: PayloadAction<{ ids: string[] }>) => {
+            const { ids } = action.payload;
+            const currentSelection = new Set(state.selectedStrainIds);
+            const areAllSelected = ids.every(id => currentSelection.has(id));
+
+            if (areAllSelected) {
+                // If all are selected, deselect them
+                ids.forEach(id => currentSelection.delete(id));
             } else {
-                const newSelection = new Set(state.selectedStrainIds);
-                ids.forEach(id => newSelection.add(id));
-                state.selectedStrainIds = Array.from(newSelection);
+                // If any are not selected, select them all
+                // FIX: Corrected variable name from 'newSelection' to 'currentSelection'.
+                ids.forEach(id => currentSelection.add(id));
             }
+            state.selectedStrainIds = Array.from(currentSelection);
         },
         clearStrainSelection: (state) => {
             state.selectedStrainIds = [];

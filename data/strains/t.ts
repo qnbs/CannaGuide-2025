@@ -555,6 +555,28 @@ export const strainsT: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
+        "id": "tropic-truffle",
+        "name": "Tropic Truffle",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Tropicana Cookies x Mint Chocolate Chip",
+        "floweringType": "Photoperiod",
+        "thc": 23.5,
+        "cbd": 1,
+        "thcRange": "20-27%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A sativa-dominant strain with a sweet, citrusy orange aroma combined with minty and chocolatey undertones. The effect is energetic, uplifting, and creative, making it a great choice for daytime use and social activities.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall"
+        },
+        "aromas": ["Orange", "Citrus", "Sweet", "Mint"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "tropical-runtz",
         "name": "Tropical Runtz",
         "type": StrainType.Hybrid,

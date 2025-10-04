@@ -4,6 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { selectHasAvailableSlots } from '@/stores/selectors';
+import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 
 interface StrainListItemProps {
     strain: Strain;
@@ -48,8 +51,15 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
     style, isFavorite, onToggleFavorite
 }) => {
     const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
-    const gridLayout = "grid items-center gap-x-4 px-4 grid-cols-[auto_minmax(0,1.5fr)_repeat(2,minmax(0,0.8fr))_auto] sm:grid-cols-[auto_minmax(0,3fr)_minmax(0,1fr)_repeat(5,minmax(0,1fr))_auto]";
+    const handleStartGrow = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        dispatch(initiateGrowFromStrainList(strain));
+    };
+
+    const gridLayout = "grid items-center gap-x-2 pl-4 pr-2 grid-cols-[auto_minmax(0,2fr)_minmax(0,0.8fr)_auto] sm:grid-cols-[auto_minmax(0,4fr)_minmax(0,1fr)_repeat(4,minmax(0,80px))_auto]";
 
     return (
         <div
@@ -71,9 +81,9 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
 
             {/* Main Info */}
             <div className="flex items-center gap-3 min-w-0">
-                <div className="flex-shrink-0">{typeIcons[strain.type]}</div>
+                <div className="flex-shrink-0 sm:hidden">{typeIcons[strain.type]}</div>
                 <div className="min-w-0">
-                    <p className="font-bold text-slate-100 truncate flex items-center gap-2">
+                    <p className="font-bold text-slate-100 truncate flex items-center gap-2 text-sm">
                         {strain.name}
                         {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" title={t('strainsView.tabs.myStrains')} />}
                     </p>
@@ -82,17 +92,29 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
             </div>
             
             {/* Desktop-only Type column */}
-            <Stat value={strain.type} className="hidden sm:flex"/>
+            <div className="hidden sm:flex items-center justify-center gap-2">
+                {typeIcons[strain.type]}
+                <span className="font-mono text-slate-200 text-sm">{strain.type}</span>
+            </div>
 
             {/* Stats Grid */}
             <Stat value={`${strain.thc?.toFixed(1)}%`} />
-            <Stat value={`${strain.cbd?.toFixed(1)}%`} />
             <Stat value={`${strain.floweringTimeRange || strain.floweringTime} w`} className="hidden sm:flex" />
             <Stat value={t(`strainsView.addStrainModal.yields.${strain.agronomic.yield.toLowerCase()}`)} className="hidden sm:flex" />
             <Stat value={<DifficultyRating difficulty={strain.agronomic.difficulty} />} className="hidden sm:flex" />
             
             {/* Actions */}
-            <div className="flex items-center gap-1.5 ml-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-0 ml-auto" onClick={(e) => e.stopPropagation()}>
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="!p-2 rounded-full"
+                    onClick={handleStartGrow}
+                    disabled={!hasAvailableSlots}
+                    title={hasAvailableSlots ? t('strainsView.startGrowing') : t('plantsView.notifications.allSlotsFull')}
+                >
+                    <PhosphorIcons.Plant className="w-5 h-5" />
+                </Button>
                 <Button 
                     variant="ghost" 
                     size="sm" 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip } from '@/types';
+import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip, StrainType } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -14,14 +14,13 @@ import {
   selectSavedStrainTips
 } from '@/stores/selectors';
 import { 
-    setStrainsViewMode, 
     setStrainsViewTab, 
     toggleStrainSelection, 
     toggleAllStrainSelection, 
     clearStrainSelection, 
     StrainsViewState
 } from '@/stores/slices/strainsViewSlice';
-import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
+import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
 import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
 import { StrainToolbar } from './strains/StrainToolbar';
@@ -45,7 +44,8 @@ import { GenealogyView } from './strains/GenealogyView';
 import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
 import { SegmentedControl } from '../common/SegmentedControl';
 import { Button } from '@/components/common/Button';
-import { Pagination } from '@/components/common/Pagination';
+import { StrainListHeader } from './strains/StrainListHeader';
+import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -56,7 +56,7 @@ export const StrainsView: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [selectedStrainForDetail, setSelectedStrainForDetail] = useState<Strain | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
     const settings = useAppSelector(selectSettings) as AppSettings;
     const { strainsViewTab, strainsViewMode, selectedStrainIds } = useAppSelector(selectStrainsView) as StrainsViewState;
@@ -93,15 +93,16 @@ export const StrainsView: React.FC = () => {
     } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
 
     useEffect(() => {
-        setCurrentPage(1);
+        setVisibleCount(ITEMS_PER_PAGE);
     }, [filteredStrains.length, strainsViewTab]);
 
-    const totalPages = Math.ceil(filteredStrains.length / ITEMS_PER_PAGE);
     const currentStrains = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE;
-        const end = start + ITEMS_PER_PAGE;
-        return filteredStrains.slice(start, end);
-    }, [filteredStrains, currentPage]);
+        return filteredStrains.slice(0, visibleCount);
+    }, [filteredStrains, visibleCount]);
+    
+    const handleLoadMore = () => {
+        setVisibleCount(prev => Math.min(prev + ITEMS_PER_PAGE, filteredStrains.length));
+    };
     
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
@@ -124,8 +125,7 @@ export const StrainsView: React.FC = () => {
 
     const handleToggleAll = () => {
         dispatch(toggleAllStrainSelection({ 
-            ids: currentStrains.map(s => s.id), 
-            areAllCurrentlySelected: areAllOnPageSelected
+            ids: currentStrains.map(s => s.id)
         }));
     };
     
@@ -159,7 +159,6 @@ export const StrainsView: React.FC = () => {
         } else {
              dispatch(addExport({ data: { name: exportName, source, format, notes: '' }, strainIds: strainsToExport.map(s => s.id) }));
         }
-        dispatch(addNotification({ message: t('common.successfullyExported_other', { count: strainsToExport.length, format: format.toUpperCase() }), type: 'success' }));
     };
 
     const tabs = [
@@ -184,78 +183,107 @@ export const StrainsView: React.FC = () => {
 
     const renderContent = () => {
         if (isLoading) {
-            // FIX: Removed `columns` prop from SkeletonLoader as it doesn't exist and `visibleColumns` was removed from settings.
             return <SkeletonLoader variant={strainsViewMode} count={10} />;
         }
         if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab)) {
              return (
-                <div className="space-y-4">
-                    <StrainToolbar
-                        searchTerm={searchTerm}
-                        onSearchTermChange={setSearchTerm}
-                        onExport={() => dispatch(openExportModal())}
-                        onAdd={() => dispatch(openAddModal(null))}
-                        onOpenDrawer={() => setIsDrawerOpen(true)}
-                        activeFilterCount={activeFilterCount}
-                    />
-                    
-                    <div className="hidden sm:flex items-center gap-4">
-                        <SegmentedControl 
-                            options={[
-                                { value: 'Sativa', label: t('strainsView.sativa') },
-                                { value: 'Indica', label: t('strainsView.indica') },
-                                { value: 'Hybrid', label: t('strainsView.hybrid') },
-                            ]}
-                            value={typeFilter}
-                            onToggle={handleToggleTypeFilter}
+                <>
+                    {/* Sticky Header Block */}
+                    <div className="sticky top-[-1rem] sm:top-[-1.5rem] z-20 bg-slate-900 pt-4 pb-2 space-y-4">
+                        <StrainToolbar
+                            searchTerm={searchTerm}
+                            onSearchTermChange={setSearchTerm}
+                            onExport={() => dispatch(openExportModal())}
+                            onAdd={() => dispatch(openAddModal(null))}
+                            onOpenDrawer={() => setIsDrawerOpen(true)}
+                            activeFilterCount={activeFilterCount}
                         />
-                        <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
-                             <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
-                             <span>{t('strainsView.advancedFilters')}</span>
-                             {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
-                        </Button>
-                        {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
+
+                        <div className="hidden sm:flex items-center gap-4">
+                            <SegmentedControl 
+                                options={[
+                                    { value: 'Sativa', label: t('strainsView.sativa') },
+                                    { value: 'Indica', label: t('strainsView.indica') },
+                                    { value: 'Hybrid', label: t('strainsView.hybrid') },
+                                ]}
+                                value={typeFilter}
+                                onToggle={handleToggleTypeFilter}
+                            />
+                            <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
+                                 <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
+                                 <span>{t('strainsView.advancedFilters')}</span>
+                                 {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
+                            </Button>
+                            {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
+                        </div>
+
+                        {/* Mobile type filter */}
+                         <div className="sm:hidden">
+                            <SegmentedControl 
+                                options={[
+                                    { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
+                                    { value: 'Indica' as StrainType, label: t('strainsView.indica') },
+                                    { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
+                                ]}
+                                value={typeFilter}
+                                onToggle={handleToggleTypeFilter}
+                            />
+                        </div>
+                        
+                        <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+
+                        {strainsViewMode === 'list' && (
+                            <StrainListHeader
+                                sort={sort}
+                                handleSort={handleSort}
+                                areAllOnPageSelected={areAllOnPageSelected}
+                                onToggleAll={handleToggleAll}
+                            />
+                        )}
                     </div>
                     
-                    <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
-
-                    {filteredStrains.length === 0 && !isSearching ? (
-                        <Card className="text-center py-10 text-slate-500">
-                             <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
-                             <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
-                        </Card>
-                    ) : strainsViewMode === 'list' ? (
-                        <StrainList
-                            strains={currentStrains}
-                            selectedIds={selectedIdsSet}
-                            onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                            onSelect={setSelectedStrainForDetail}
-                            onToggleAll={handleToggleAll}
-                            areAllOnPageSelected={areAllOnPageSelected}
-                            isUserStrain={(id) => userStrainIds.has(id)}
-                            onDelete={handleDeleteUserStrain}
-                            sort={sort}
-                            handleSort={handleSort}
-                            isPending={isSearching}
-                            favorites={favoriteIds}
-                            onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
-                        />
-                    ) : (
-                        <StrainGrid
-                            strains={currentStrains}
-                            selectedIds={selectedIdsSet}
-                            onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                            onSelect={setSelectedStrainForDetail}
-                            isUserStrain={(id) => userStrainIds.has(id)}
-                            onDelete={handleDeleteUserStrain}
-                            isPending={isSearching}
-                            favorites={favoriteIds}
-                            onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
-                        />
-                    )}
-
-                    <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
-
+                    {/* Scrollable Content */}
+                    <div className="space-y-4">
+                        {filteredStrains.length === 0 && !isSearching ? (
+                            <Card className="text-center py-10 text-slate-500">
+                                 <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
+                                 <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
+                            </Card>
+                        ) : strainsViewMode === 'list' ? (
+                            <StrainList
+                                strains={currentStrains}
+                                selectedIds={selectedIdsSet}
+                                onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
+                                onSelect={setSelectedStrainForDetail}
+                                isUserStrain={(id) => userStrainIds.has(id)}
+                                onDelete={handleDeleteUserStrain}
+                                isPending={isSearching}
+                                favorites={favoriteIds}
+                                onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
+                            />
+                        ) : (
+                            <StrainGrid
+                                strains={currentStrains}
+                                selectedIds={selectedIdsSet}
+                                onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
+                                onSelect={setSelectedStrainForDetail}
+                                isUserStrain={(id) => userStrainIds.has(id)}
+                                onDelete={handleDeleteUserStrain}
+                                isPending={isSearching}
+                                favorites={favoriteIds}
+                                onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
+                            />
+                        )}
+                        
+                        {visibleCount < filteredStrains.length && (
+                            <div className="mt-6 text-center">
+                                <Button onClick={handleLoadMore} variant="secondary" disabled={isSearching}>
+                                    {t('common.loadMore')} ({currentStrains.length} / {filteredStrains.length})
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                    
                     {selectedIdsSet.size > 0 && (
                         <BulkActionsBar
                             selectedCount={selectedIdsSet.size}
@@ -266,7 +294,7 @@ export const StrainsView: React.FC = () => {
                             onDelete={strainsViewTab === StrainViewTab.MyStrains ? handleBulkDelete : undefined}
                         />
                     )}
-                </div>
+                </>
             );
         }
         if (strainsViewTab === StrainViewTab.Exports) {
@@ -293,7 +321,7 @@ export const StrainsView: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4">
+        <div className="animate-fade-in">
             {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
             <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
             <FilterDrawer 
@@ -315,7 +343,7 @@ export const StrainsView: React.FC = () => {
                 isAnyFilterActive={isAnyFilterActive}
             />
             
-            <Card><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
+            <Card className="mb-4"><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
             
             {renderContent()}
         </div>

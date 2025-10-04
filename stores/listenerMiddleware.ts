@@ -22,64 +22,37 @@ const startAppListening = listenerMiddleware.startListening as AppStartListening
 
 // --- State-of-the-art Persistence Logic ---
 
-const debounce = <T extends (...args: any[]) => void>(func: T, wait: number) => {
-  let timeout: ReturnType<typeof setTimeout>;
-  const debounced = (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-  debounced.flush = () => {
-    clearTimeout(timeout);
-    func.apply(null); // Call immediately with last known state
-  };
-  return debounced;
-};
-
-let lastState: RootState;
-const saveState = () => {
-    if (!lastState) return;
+/**
+ * Listener to handle state persistence to IndexedDB.
+ * This is a more modern and robust approach than a manual store.subscribe().
+ */
+startAppListening({
+  // Listen to all actions, but not the ones from RTK Query which are internal
+  predicate: (action) => !action.type.startsWith('geminiApi/'),
+  effect: async (action, listenerApi) => {
+    const state = listenerApi.getState() as RootState;
     try {
         const stateToSave = {
-            version: lastState.settings.version,
-            settings: lastState.settings,
-            simulation: lastState.simulation,
-            strainsView: lastState.strainsView,
-            userStrains: lastState.userStrains,
-            favorites: lastState.favorites,
-            notes: lastState.notes,
-            archives: lastState.archives,
-            savedItems: lastState.savedItems,
-            knowledge: lastState.knowledge,
-            breeding: lastState.breeding,
-            sandbox: lastState.sandbox,
-            filters: lastState.filters,
-            genealogy: lastState.genealogy,
+            version: state.settings.version,
+            settings: state.settings,
+            simulation: state.simulation,
+            strainsView: state.strainsView,
+            userStrains: state.userStrains,
+            favorites: state.favorites,
+            notes: state.notes,
+            archives: state.archives,
+            savedItems: state.savedItems,
+            knowledge: state.knowledge,
+            breeding: state.breeding,
+            sandbox: state.sandbox,
+            filters: state.filters,
+            genealogy: state.genealogy,
         };
         const serializedState = JSON.stringify(stateToSave);
-        indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
+        await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
     } catch (e) {
         console.error("Could not save state to IndexedDB", e);
     }
-};
-
-// Debounced save function for performance
-const debouncedSave = debounce(saveState, 1000);
-
-// Ensure state is saved before the page unloads
-window.addEventListener('beforeunload', () => {
-    debouncedSave.flush();
-});
-
-/**
- * Listener to handle state persistence to IndexedDB.
- * This implementation is highly performant by debouncing writes, but ensures
- * data integrity by flushing any pending saves when the user leaves the page.
- */
-startAppListening({
-  predicate: (action) => !action.type.startsWith('geminiApi/'), // Ignore internal RTK Query actions
-  effect: async (action, listenerApi) => {
-    lastState = listenerApi.getState() as RootState;
-    debouncedSave();
   },
 });
 

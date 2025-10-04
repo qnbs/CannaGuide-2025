@@ -132,6 +132,7 @@ export const common = {
     plantNotFoundTraining: 'Plant not found for training.',
     pestControlNotesEmpty: 'Pest control notes cannot be empty.'
   },
+  loadMore: 'Load More',
 };
 
 export const nav = {

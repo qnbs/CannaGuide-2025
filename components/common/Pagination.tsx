@@ -12,7 +12,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
     const { t } = useTranslation();
 
     const getPageNumbers = () => {
-        const pageNumbers = [];
+        const pageNumbers: (number | string)[] = [];
         const maxPagesToShow = 5;
         const halfPages = Math.floor(maxPagesToShow / 2);
 

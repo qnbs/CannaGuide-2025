@@ -8,8 +8,12 @@ import { i18nPromise, i18nInstance } from './i18n'
 
 // A top-level Error Boundary to catch any unexpected rendering errors.
 // This prevents the user from seeing a blank screen and provides a graceful recovery path.
+// FIX: Extracted props to a dedicated interface for clearer typing.
+interface ErrorBoundaryProps {
+    children: React.ReactNode;
+}
 class ErrorBoundary extends React.Component<
-    { children: React.ReactNode },
+    ErrorBoundaryProps,
     { hasError: boolean }
 > {
     // FIX: Replaced constructor with a class property for state initialization to fix typing errors.

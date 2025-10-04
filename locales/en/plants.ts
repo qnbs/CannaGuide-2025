@@ -218,8 +218,8 @@ export const plantsView = {
   },
   mediums: {
     Soil: 'Soil',
-    Coco: 'Coco Coir',
-    Hydro: 'Hydroponics',
+    Coco: 'Coco',
+    Hydro: 'Hydro',
   },
   confirmationModal: {
       title: 'Confirm New Grow',

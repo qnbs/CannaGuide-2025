@@ -7,7 +7,7 @@ import type { HierarchyNode } from 'd3';
 interface StrainTreeNodeProps {
   node: HierarchyNode<GenealogyNode>;
   onNodeClick: (nodeData: GenealogyNode) => void;
-  onExpand: (nodeId: string) => void;
+  onToggle: (nodeId: string) => void;
 }
 
 const typeInfo: Record<StrainType, { icon: React.ReactNode; color: string }> = {
@@ -16,9 +16,10 @@ const typeInfo: Record<StrainType, { icon: React.ReactNode; color: string }> = {
     [StrainType.Hybrid]: { icon: <HybridIcon className="w-full h-full" />, color: 'text-blue-400' },
 };
 
-export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNodeClick, onExpand }) => {
+export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNodeClick, onToggle }) => {
     const { data } = node;
     const isExpandable = !!data._children && data._children.length > 0;
+    const isCollapsible = !!data.children && data.children.length > 0;
     const isPlaceholder = data.isPlaceholder;
     const { icon, color } = typeInfo[data.type] || typeInfo.Hybrid;
     const thcPercentage = Math.min(100, (data.thc / 35) * 100);
@@ -58,16 +59,16 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                     ></div>
                 </div>
             )}
-            {isExpandable && (
+            {(isExpandable || isCollapsible) && (
                 <button
                     className="genealogy-node-expand-btn"
                     onClick={(e) => {
                         e.stopPropagation();
-                        onExpand(data.id);
+                        onToggle(data.id);
                     }}
-                    title="Expand Ancestors"
+                    title={isCollapsible ? "Collapse Ancestors" : "Expand Ancestors"}
                 >
-                    <PhosphorIcons.Plus className="w-4 h-4" />
+                    {isCollapsible ? <PhosphorIcons.Minus className="w-4 h-4" /> : <PhosphorIcons.Plus className="w-4 h-4" />}
                 </button>
             )}
         </div>

@@ -193,6 +193,8 @@ export const App: React.FC = () => {
         // Hydration and migration are now handled by `createAppStore`.
         // This effect initializes services that depend on a hydrated store.
         await strainService.init()
+        // The `runDataMigrations` thunk is now obsolete and removed.
+        // The async store creation in `index.tsx` handles hydration and migration before app render.
         dispatch(initializeSimulation())
         ttsService.init()
 

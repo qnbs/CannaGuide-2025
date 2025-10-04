@@ -1,4 +1,4 @@
-import { createApi, fakeBaseQuery, type BaseQueryFn } from '@reduxjs/toolkit/query/react'
+import { createApi, BaseQueryFn } from '@reduxjs/toolkit/query/react'
 import { geminiService } from '@/services/geminiService'
 import {
     Recommendation,
@@ -16,9 +16,20 @@ interface ApiError {
     message: string
 }
 
+// Custom fake base query to provide strong types and fix builder type inference.
+const fakeBaseQueryWithApiError: BaseQueryFn<
+    string | object,
+    unknown,
+    ApiError
+> = async () => {
+    // This function is never called because all endpoints use `queryFn`.
+    // It exists to provide the correct types to `createApi`, which then correctly types the `builder`.
+    return { data: {} }
+}
+
 export const geminiApi = createApi({
     reducerPath: 'geminiApi',
-    baseQuery: fakeBaseQuery<ApiError>(),
+    baseQuery: fakeBaseQueryWithApiError,
     endpoints: (builder) => ({
         getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string; lang: Language }>({
             queryFn: async (

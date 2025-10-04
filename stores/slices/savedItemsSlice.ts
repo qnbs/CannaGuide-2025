@@ -3,19 +3,19 @@ import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter, Enti
 import { addNotification } from './uiSlice';
 import { getT } from '@/i18n';
 
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
-export const savedExportsAdapter = createEntityAdapter<SavedExport, string>();
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
-export const savedSetupsAdapter = createEntityAdapter<SavedSetup, string>();
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
-export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip, string>();
+// FIX: createEntityAdapter expects only one type argument for the entity. The ID type is inferred.
+export const savedExportsAdapter = createEntityAdapter<SavedExport>();
+// FIX: createEntityAdapter expects only one type argument for the entity. The ID type is inferred.
+export const savedSetupsAdapter = createEntityAdapter<SavedSetup>();
+// FIX: createEntityAdapter expects only one type argument for the entity. The ID type is inferred.
+export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip>();
 
 export interface SavedItemsState {
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+// Note: Generic type 'EntityState<T, Id>' correctly requires 2 type arguments.
     savedExports: EntityState<SavedExport, string>;
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+// Note: Generic type 'EntityState<T, Id>' correctly requires 2 type arguments.
     savedSetups: EntityState<SavedSetup, string>;
-// FIX: Generic type 'EntityState<T, Id>' requires 2 type argument(s). Added string as the ID type.
+// Note: Generic type 'EntityState<T, Id>' correctly requires 2 type arguments.
     savedStrainTips: EntityState<SavedStrainTip, string>;
 }
 

@@ -165,22 +165,35 @@ const ManualSection: React.FC = memo(() => {
     const { t } = useTranslation();
     const manualContent = t('helpView.manual', { returnObjects: true }) as Record<string, any>;
 
-    const renderSection = (section: any, isSubSection = false) => {
-        const title = section.title;
-        const content = section.content;
-        const subSections = Object.keys(section).filter(key => key !== 'title' && key !== 'content');
+    const renderSection = (sectionKey: string, sectionData: any, isSubSection = false, level = 0) => {
+        const title = sectionData.title;
+        const content = sectionData.content;
+        const subSections = Object.keys(sectionData).filter(key => key !== 'title' && key !== 'content');
+
+        const icons: Record<string, React.ReactNode> = {
+            strains: <PhosphorIcons.Leafy />,
+            plants: <PhosphorIcons.Plant />,
+            equipment: <PhosphorIcons.Wrench />,
+            knowledge: <PhosphorIcons.BookOpenText />,
+            general: <PhosphorIcons.Cube />,
+        };
 
         return (
-            <details key={title} open={!isSubSection} className="group">
-                <summary className={`list-none flex items-center gap-2 cursor-pointer ${isSubSection ? 'text-lg font-semibold text-primary-300' : 'text-xl font-bold font-display text-primary-400'}`}>
-                    <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
+            <details key={sectionKey} open={level < 1} className="group">
+                <summary className={`list-none flex items-center gap-2 cursor-pointer py-2 ${
+                    isSubSection 
+                        ? 'text-lg font-semibold text-primary-300' 
+                        : 'text-xl font-bold font-display text-primary-400'
+                }`}>
+                    <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
+                    {!isSubSection && icons[sectionKey] && <span className="w-6 h-6">{icons[sectionKey]}</span>}
                     {title}
                 </summary>
-                <div className={`pt-2 pb-4 ${isSubSection ? 'pl-8 border-l border-slate-700 ml-2' : 'pl-7'}`}>
+                <div className={`pt-2 pb-4 ${isSubSection ? 'pl-8 border-l border-slate-700 ml-5' : 'pl-7'}`}>
                     {content && <div className="prose prose-sm dark:prose-invert max-w-none mb-4" dangerouslySetInnerHTML={{ __html: content }} />}
                     {subSections.length > 0 && (
                         <div className="space-y-4">
-                            {subSections.map(key => renderSection(section[key], true))}
+                            {subSections.map(key => renderSection(key, sectionData[key], true, level + 1))}
                         </div>
                     )}
                 </div>
@@ -190,7 +203,7 @@ const ManualSection: React.FC = memo(() => {
 
     return (
         <Card>
-            {Object.keys(manualContent).filter(key => key !== 'title').map(key => renderSection(manualContent[key]))}
+            {Object.keys(manualContent).filter(key => key !== 'title').map(key => renderSection(key, manualContent[key]))}
         </Card>
     );
 });

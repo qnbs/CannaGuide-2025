@@ -81,58 +81,62 @@ export const helpView = {
     title: 'User Manual',
     introduction: {
       title: 'Introduction',
-      content: 'Welcome to CannaGuide 2025! This manual will guide you through all the major features of the app to help you get the most out of your cultivation experience.'
+      content: 'Welcome to CannaGuide 2025! This manual will guide you through all the major features of the app to help you get the most out of your cultivation experience. Each section is designed to be intuitive and powerful, whether you are a novice or an expert grower.'
     },
     strains: {
       title: 'The Strains View',
-      content: 'This is your encyclopedia. Here you can explore over 480 strains, add your own, and get AI-powered tips.',
+      content: 'This is your comprehensive encyclopedia. Here you can explore over 500 strains, add your own, and get AI-powered tips. This view is your starting point for planning your grow.',
       allStrains: {
         title: 'All Strains Tab',
-        content: 'Browse the entire database. Use the search bar, letter filter, and type toggles for quick navigation. Open the advanced filter drawer for more granular searches by THC, flowering time, aroma, and more.'
+        content: 'Browse the entire database of over 500 entries. Use the search bar for quick searches by name or aroma. Use the letter filters and type toggles for fast navigation. For a more detailed search, open the <strong>advanced filter drawer</strong> to filter by THC/CBD ranges, flowering time, aroma, terpenes, and cultivation traits.'
       },
       myStrains: {
         title: 'My Strains Tab',
-        content: 'Manage your custom-created or bred strains. You have full CRUD (Create, Read, Update, Delete) functionality here.'
+        content: 'This is where all strains you have created yourself or bred in the Breeding Lab are stored. You have full <strong>CRUD functionality</strong> (Create, Read, Update, Delete) here. Custom strains are marked with a star in the main list and can be selected for a new grow just like any other strain.'
       },
       favorites: {
         title: 'Favorites Tab',
-        content: 'A quick-access list of all strains you have marked with a heart. Ideal for creating a shortlist for your next grow.'
+        content: 'A quick-access list of all strains you have marked with a heart. This is the perfect place to create a shortlist for your next grow. When you start a new grow, your favorites will be shown first.'
+      },
+      genealogy: {
+        title: 'Genealogy Tab',
+        content: 'Visualize the genetic lineage of any strain in an interactive tree. Select a strain from the dropdown to see its family tree. Use the analysis tools to highlight <strong>landraces</strong> or trace the inheritance of <strong>Sativa/Indica lines</strong>. You can also view the genetic influence of the top ancestors.'
       },
       exports: {
         title: 'Exports Tab',
-        content: 'Manage all of your saved exports. You can re-download, rename, or delete them here. Exports in CSV, JSON, or XML format are stored here to preserve data integrity.'
+        content: 'Manage all your saved exports of strain data. You can re-download, rename, add notes to, or delete them here. Exports in CSV, JSON, or XML formats are stored as datasets to preserve data integrity, while PDFs are generated directly.'
       },
       tips: {
         title: 'Tips Tab',
-        content: 'This is where you find all the AI-generated grow tips you have saved. You can search, edit, delete, and export them.'
+        content: 'Here you will find all the AI-generated grow tips you have saved. This collection serves as your personal reference for strain-specific cultivation strategies. You can search, edit, delete, and export the tips.'
       },
       toolbar: {
         title: 'Toolbar & Filtering',
-        content: 'The toolbar lets you switch between list and grid view, export data, and add new strains. The filter bar below offers quick filtering, while the "Advanced Filters" button opens a detailed menu for precise searching.'
+        content: 'The toolbar at the top allows you to switch between <strong>list and grid view</strong>, <strong>export</strong> data (selected or all filtered strains), and <strong>add</strong> new custom strains. The filter bar below offers quick filtering options for favorites and strain types.'
       },
       detailView: {
         title: 'Strain Detail View',
-        content: 'Click any strain to see a detailed breakdown. Here you can find agronomic data, aroma profiles, add personal notes, and generate AI tips. You can also start a grow with this strain directly from here.'
+        content: 'Click on any strain to see a detailed breakdown. Here you will find agronomic data, aroma profiles, and you can add <strong>personal notes</strong>. The "AI Tips" tab allows you to generate tailored cultivation advice for this specific strain based on your experience level. You can also <strong>start a grow</strong> directly from here.'
       }
     },
     plants: {
       title: 'The Plants View',
-      content: 'The command center for your active grows. Manage up to three plants simultaneously in a realistic simulation.',
+      content: 'The command center for your active grows. Manage up to three plants simultaneously in a realistic simulation that continues to run in the background.',
       dashboard: {
         title: 'Dashboard & Vitals',
-        content: 'The main view gives you a summary of your garden vitals, a tip of the day, and an overview of your open tasks and warnings. You can also water all plants at once from here.'
+        content: 'The main view (when no plant is selected) shows you a summary of your <strong>garden vitals</strong>, a useful <strong>Tip of the Day</strong>, and an overview of your <strong>open tasks and warnings</strong>. From here, you can also water all plants at once, a time-saving feature.'
       },
       startingGrow: {
         title: 'Starting a New Grow',
-        content: 'Click an empty slot to begin the process. You first select a strain from the library, then configure your grow setup (e.g., pot size, light cycle).'
+        content: 'Click an empty slot to begin the process. You first select a strain from the library (your favorites are shown first), then configure your grow setup (e.g., pot size, light cycle). After confirmation, the plant is added to your garden and the simulation begins.'
       },
       detailView: {
         title: 'Detailed Plant View',
-        content: 'Click an active plant to go to its detailed view. Here you can log all actions, monitor real-time vitals, and use AI tools. Expert Mode (toggleable in the header) will show even more scientific data here.'
+        content: 'Click on an active plant to go to its detailed view. Here you can log all actions like watering, feeding, or training. Monitor all vitals in real-time, view the growth history in the chart, and use the AI tools. You can enable <strong>Expert Mode</strong> in the header at any time to see even more detailed scientific data, such as Vapor Pressure Deficit (VPD).'
       },
       aiDiagnostics: {
         title: 'AI Plant Doctor',
-        content: 'Take a photo of a problematic leaf or area on your plant. The AI will analyze the image along with your plant\'s current vitals to provide a diagnosis and recommended actions. You can save the diagnosis directly to the plant\'s journal.'
+        content: 'Take a photo of a problematic leaf or area on your plant. The AI will analyze the image along with your plant\'s current vitals to provide a diagnosis and recommended actions. You can save the diagnosis directly to the plant\'s journal to document the history.'
       }
     },
     equipment: {
@@ -140,19 +144,19 @@ export const helpView = {
       content: 'Your toolbox for planning and calculating your grow.',
       configurator: {
         title: 'AI Setup Configurator',
-        content: 'Answer two simple questions (plant count and your style), and the AI will generate a complete, brand-specific equipment recommendation, including rationales and a pro-tip. Save your configurations for later.'
+        content: 'Answer two simple questions (number of plants and your budget/style), and the AI will generate a complete, brand-specific equipment recommendation. This includes everything from the tent to the nutrients, along with rationales and a pro-tip. Save your configurations for later.'
       },
       savedSetups: {
         title: 'My Setups',
-        content: 'Manage your saved equipment setups. You can edit, delete, or export them as a detailed PDF report here.'
+        content: 'Manage your saved equipment setups. You can edit, delete, or export them as a detailed <strong>PDF</strong> to use as a shopping list.'
       },
       calculators: {
         title: 'Calculators',
-        content: 'A suite of useful calculators for ventilation, lighting, electricity cost, nutrient mixing, EC/PPM conversion, and a rough yield estimate.'
+        content: 'A suite of useful calculators for: <ul><li><strong>Ventilation:</strong> Calculate the required fan power.</li><li><strong>Lighting:</strong> Estimate the optimal LED wattage.</li><li><strong>Electricity Cost:</strong> Calculate running costs.</li><li><strong>Nutrients:</strong> Mix your nutrient solution precisely.</li><li><strong>EC/PPM:</strong> Easily convert values.</li><li><strong>Yield:</strong> Get a rough estimate of your potential harvest.</li></ul>'
       },
       growShops: {
         title: 'Grow Shops',
-        content: 'A curated list of recommended online grow shops for Europe and the USA, including a brief description of their strengths.'
+        content: 'A curated list of recommended online grow shops for Europe and the USA, including a brief description of their strengths and direct links.'
       }
     },
     knowledge: {
@@ -160,43 +164,43 @@ export const helpView = {
       content: 'The place to learn, experiment, and deepen your knowledge.',
       mentor: {
         title: 'AI Mentor',
-        content: 'Select one of your active plants and ask the Mentor specific questions. The AI uses your plant\'s real-time data to give tailored advice. All conversations can be saved to the archive.'
+        content: 'Select one of your active plants and ask the Mentor specific questions (e.g., "Should I defoliate now?"). The AI uses your plant\'s real-time data to give tailored advice. All conversations can be saved to the archive.'
       },
       guide: {
         title: 'Grow Guide',
-        content: 'An interactive guide that explains the key stages and techniques of cannabis cultivation in easy-to-digest, collapsible sections.'
+        content: 'An interactive guide that explains the key stages and techniques of cannabis cultivation in easy-to-digest, collapsible sections. The articles displayed adapt to the current stage of your selected plant.'
       },
       archive: {
         title: 'Archives',
-        content: 'Manage all of your saved responses from the AI Mentor and the proactive advice from the AI Plant Advisor.'
+        content: 'Manage all your saved responses from the AI Mentor and the proactive advice from the AI Plant Advisor in the plant view. Everything is searchable and exportable.'
       },
       breeding: {
-        title: 'Breeding Lab (Coming Soon)',
-        content: 'A future feature that will allow you to collect seeds from your best plants and cross them to create entirely new, unique strains.'
+        title: 'Breeding Lab',
+        content: 'Cross seeds from your best plants to create brand new, unique strains. These are permanently added to your personal library under "My Strains".'
       },
       sandbox: {
         title: 'Sandbox',
-        content: 'Run risk-free "what-if" scenarios. Select one of your plants as a clone and simulate the effect of different training techniques (e.g., Topping vs. LST) over an accelerated period to compare the outcomes.'
+        content: 'Run risk-free "what-if" scenarios. Select one of your plants as a clone and simulate the effect of different training techniques (e.g., Topping vs. LST) over an accelerated period to see the results in a visual comparison.'
       }
     },
     general: {
       title: 'General Features',
-      content: 'Features available throughout the app.',
+      content: 'Features available throughout the app that enhance your experience.',
       pwa: {
         title: 'PWA & Offline Use',
-        content: 'CannaGuide is a Progressive Web App. You can "install" it to your device via the button in the header. This makes it act like a native app and function 100% offline.'
+        content: 'CannaGuide is a <strong>Progressive Web App</strong>. You can "install" it to your device via the button in the header. This makes it behave like a native app and function 100% offline, including all data and archives.'
       },
       commandPalette: {
         title: 'Command Palette (Cmd/Ctrl + K)',
-        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the fastest way to navigate and perform actions without taking your hands off the keyboard.'
+        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the fastest way to navigate and perform actions like "Water All Plants" or "Add New Strain" without taking your hands off the keyboard.'
       },
       dataManagement: {
         title: 'Data Management',
-        content: 'Under <code>Settings > Data Management</code>, you can back up your entire app data (plants, settings, custom strains, etc.) to a single JSON file. This file can be imported later to restore your state.'
+        content: 'Under <code>Settings > Data Management</code>, you have full control. You can <strong>back up</strong> your entire app data (plants, settings, custom strains, etc.) to a single JSON file. This file can be <strong>imported</strong> later to restore your state on any device.'
       },
       accessibility: {
         title: 'Accessibility',
-        content: 'The app includes features like a dyslexia-friendly font and a reduced motion mode. Text-to-Speech (TTS) allows you to have content read aloud.'
+        content: 'The app is designed with accessibility in mind. In the settings, you will find options for a <strong>dyslexia-friendly font</strong> and a <strong>reduced motion mode</strong>. The integrated <strong>Text-to-Speech (TTS)</strong> allows you to have important content read aloud.'
       }
     }
   }

@@ -218,8 +218,8 @@ export const plantsView = {
   },
   mediums: {
     Soil: 'Erde',
-    Coco: 'Kokossubstrat',
-    Hydro: 'Hydrokultur',
+    Coco: 'Kokos',
+    Hydro: 'Hydro',
   },
   confirmationModal: {
       title: 'Neuen Anbau bestätigen',

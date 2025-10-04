@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v10-pwa-cache'; // New version to force update
+const CACHE_NAME = 'cannaguide-v11-pwa-cache'; // New version to force update
 const URLS_TO_CACHE = [
   '/',
   '/index.html',

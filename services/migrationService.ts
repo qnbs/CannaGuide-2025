@@ -21,12 +21,12 @@ const REDUX_STATE_KEY = 'cannaguide-redux-storage';
  * @deprecated The `runDataMigrations` thunk is now obsolete. State hydration and migration
  * are handled centrally and asynchronously within the `createAppStore` function in `stores/store.ts`.
  * This new approach ensures the store is fully hydrated and migrated before the application renders,
- * providing a more robust and streamlined initialization process.
+ * providing a more robust and streamlined initialization process. This thunk is empty and should not be used.
  */
 export const runDataMigrations = createAsyncThunk<void, void, { state: RootState }>(
     'data/runMigrations',
     async (_, { dispatch }) => {
-        console.warn('runDataMigrations thunk is deprecated and should not be used.');
+        console.warn('`runDataMigrations` thunk is deprecated and its call has been removed. State hydration is now handled by `createAppStore`.');
         // This thunk is now empty as its logic has been moved to the store creation process.
         // It's kept for now to avoid breaking imports but should be removed in the future.
     }

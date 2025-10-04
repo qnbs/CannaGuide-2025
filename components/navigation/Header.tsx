@@ -1,14 +1,22 @@
 import React from 'react'
-import { View, BeforeInstallPromptEvent } from '@/types'
+import {
+    View,
+    BeforeInstallPromptEvent,
+    StrainViewTab,
+    EquipmentViewTab,
+    KnowledgeViewTab,
+} from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { Button } from '../common/Button'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { selectActiveView, selectIsExpertMode } from '@/stores/selectors'
-import { setActiveView, setIsCommandPaletteOpen } from '@/stores/slices/uiSlice'
+import { setActiveView, setEquipmentViewTab, setKnowledgeViewTab } from '@/stores/slices/uiSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { Switch } from '../common/Switch'
+import { setSelectedPlantId } from '@/stores/slices/simulationSlice'
+import { setStrainsViewTab } from '@/stores/slices/strainsViewSlice'
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void
@@ -39,13 +47,35 @@ export const Header: React.FC<HeaderProps> = ({
 
     const currentTitle = viewTitles[activeView]
 
+    const handleHeaderClick = () => {
+        switch (activeView) {
+            case View.Strains:
+                dispatch(setStrainsViewTab(StrainViewTab.All))
+                break
+            case View.Plants:
+                dispatch(setSelectedPlantId(null))
+                break
+            case View.Equipment:
+                dispatch(setEquipmentViewTab(EquipmentViewTab.Configurator))
+                break
+            case View.Knowledge:
+                dispatch(setKnowledgeViewTab(KnowledgeViewTab.Mentor))
+                break
+            // Default behavior for views without sub-pages: go to main dashboard
+            default:
+                dispatch(setActiveView(View.Plants))
+                break
+        }
+    }
+
     return (
         <header className="glass-pane sticky top-0 z-30 flex-shrink-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <button
-                        onClick={() => dispatch(setActiveView(View.Plants))}
+                        onClick={handleHeaderClick}
                         className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1"
+                        aria-label="Go to main page"
                     >
                         <CannabisLeafIcon className="w-8 h-8 flex-shrink-0" />
                         <div className="flex items-baseline gap-2">
@@ -87,11 +117,11 @@ export const Header: React.FC<HeaderProps> = ({
                             />
                         </div>
                         <button
-                            onClick={() => dispatch(setIsCommandPaletteOpen(true))}
+                            onClick={onCommandPaletteOpen}
                             aria-label={t('commandPalette.open')}
                             className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300"
                         >
-                            <PhosphorIcons.DotsThreeVertical className="w-6 h-6" />
+                            <PhosphorIcons.CommandLine className="w-6 h-6" />
                         </button>
                         <button
                             onClick={() => dispatch(setActiveView(View.Help))}

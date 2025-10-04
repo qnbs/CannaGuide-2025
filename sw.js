@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v7-pwa-cache'; // New version to force update
+const CACHE_NAME = 'cannaguide-v8-pwa-cache'; // New version to force update
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
@@ -7,8 +7,6 @@ const URLS_TO_CACHE = [
   '/pwa-icon.svg',
   '/register-sw.js',
   '/favicon.ico',
-  '/pwa-icon-192.png', 
-  '/pwa-icon-512.png',
 ];
 
 // Install the service worker and cache the app shell

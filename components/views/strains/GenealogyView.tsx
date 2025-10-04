@@ -56,7 +56,7 @@ const GenealogyViewComponent: React.FC<GenealogyViewProps> = ({ allStrains, onNo
         }
     }, [selectedStrainId, dispatch]);
     
-    const handleNodeExpand = (nodeIdToExpand: string) => {
+    const handleToggleNode = (nodeIdToToggle: string) => {
         if (!baseTreeData || !selectedStrainId) return;
     
         const newTreeData = JSON.parse(JSON.stringify(baseTreeData));
@@ -64,8 +64,11 @@ const GenealogyViewComponent: React.FC<GenealogyViewProps> = ({ allStrains, onNo
     
         function findAndToggle(node: GenealogyNode) {
             if (found) return;
-            if (node.id === nodeIdToExpand) {
-                if (node._children) {
+            if (node.id === nodeIdToToggle) {
+                if (node.children) { // Collapse
+                    node._children = node.children;
+                    delete node.children;
+                } else if (node._children) { // Expand
                     node.children = node._children;
                     delete node._children;
                 }
@@ -76,6 +79,7 @@ const GenealogyViewComponent: React.FC<GenealogyViewProps> = ({ allStrains, onNo
         }
     
         findAndToggle(newTreeData);
+        // Dispatch the updated tree structure to Redux to trigger a re-render
         dispatch({ type: 'genealogy/fetchAndBuild/fulfilled', payload: { strainId: selectedStrainId, tree: newTreeData } });
     };
 
@@ -246,7 +250,7 @@ const GenealogyViewComponent: React.FC<GenealogyViewProps> = ({ allStrains, onNo
                                     <StrainTreeNode
                                         node={node}
                                         onNodeClick={handleNodeClick}
-                                        onExpand={handleNodeExpand}
+                                        onToggle={handleToggleNode}
                                     />
                                 </foreignObject>
                             ))}

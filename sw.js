@@ -1,7 +1,8 @@
-const CACHE_NAME = 'cannaguide-v9-pwa-cache'; // New version to force update
+const CACHE_NAME = 'cannaguide-v10-pwa-cache'; // New version to force update
 const URLS_TO_CACHE = [
   '/',
   '/index.html',
+  '/index.tsx', // CRITICAL FIX: The main app script must be cached for offline startup.
   '/manifest.json',
   '/icon.svg',
   '/pwa-icon.svg',

@@ -1,5 +1,5 @@
 import { createApi } from '@reduxjs/toolkit/query/react'
-// FIX: Changed to `import type` for `BaseQueryFn`. Using a type-only import is the correct approach for TypeScript's inference engine to correctly type the RTK Query builder. The builder was previously untyped, leading to errors on `builder.mutation`.
+// FIX: Using a type-only import is the correct approach for TypeScript's inference engine to correctly type the RTK Query builder.
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { geminiService } from '@/services/geminiService'
 import {
@@ -20,13 +20,14 @@ interface ApiError {
 
 // When using `queryFn` for all endpoints, RTK Query still needs a `baseQuery` for type inference.
 // Without it, the `builder` argument in the `endpoints` function is untyped, leading to "Untyped function calls may not accept type arguments" errors.
-// A properly typed fake base query is the standard pattern to resolve this.
+// FIX: A properly typed fake base query is the standard pattern to resolve this. The builder was previously untyped, leading to errors on `builder.mutation`.
 const fakeBaseQuery: BaseQueryFn<void, unknown, ApiError> = () => {
   return { error: { message: 'When using `queryFn`, `baseQuery` should not be called.' } };
 };
 
 export const geminiApi = createApi({
     reducerPath: 'geminiApi',
+    // FIX: Replaced the untyped inline function with the correctly typed `fakeBaseQuery`.
     baseQuery: fakeBaseQuery,
     endpoints: (builder) => ({
         getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string; lang: Language }>({

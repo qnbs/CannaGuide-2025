@@ -43,12 +43,10 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
-    // FIX: Removed unnecessary type cast. The `useAppSelector` hook with `selectSandboxState` is already correctly typed and returns `SandboxState`.
     const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
 
     const [isTabLoading, startTabTransition] = useTransition();
     
-    // FIX: Removed unnecessary type cast. The `useActivePlants` hook is already correctly typed and returns `Plant[]`.
     const activePlants = useActivePlants();
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 

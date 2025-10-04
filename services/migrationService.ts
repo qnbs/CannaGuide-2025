@@ -10,7 +10,7 @@ import { RootState } from '../stores/store';
 export const runDataMigrations = createAsyncThunk<void, void, { state: RootState }>(
     'data/runMigrations',
     async () => {
-        console.warn('`runDataMigrations` thunk is deprecated and its call has been removed. State hydration is now handled by `createAppStore`.');
+        console.warn('`runDataMigrations` thunk is deprecated. State hydration is now handled by `createAppStore`.');
         // This thunk is now empty as its logic has been moved to the store creation process.
     }
 );

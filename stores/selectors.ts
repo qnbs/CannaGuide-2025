@@ -16,6 +16,7 @@ const selectStrainsView = (state: RootState) => state.strainsView;
 const selectKnowledge = (state: RootState) => state.knowledge;
 const selectBreeding = (state: RootState) => state.breeding;
 const selectSandbox = (state: RootState) => state.sandbox;
+const selectGenealogy = (state: RootState) => state.genealogy;
 
 // --- Adapter Selectors ---
 import { userStrainsAdapter } from './slices/userStrainsSlice';
@@ -154,3 +155,6 @@ export const selectBreedingSlots = createSelector([selectBreeding], b => b.breed
 // --- Sandbox Selector ---
 export const selectSandboxState = createSelector([selectSandbox], (s) => s);
 export const selectSavedExperiments = createSelector([selectSandboxState], (s) => s.savedExperiments);
+
+// --- Genealogy Selector ---
+export const selectGenealogyState = selectGenealogy;

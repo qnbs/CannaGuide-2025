@@ -175,7 +175,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                         <FormInput label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`} type="number" step="0.5" value={values.floweringTime} onChange={(e) => handleChange('floweringTime', Number(e.target.value))} required />
                         <FormInput label={t('strainsView.addStrainModal.floweringTimeRange')} value={values.floweringTimeRange} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
                         <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.table.level')}</label>
+                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.table.difficulty')}</label>
                             <Select value={values.difficulty} onChange={(e) => handleChange('difficulty', e.target.value as DifficultyLevel)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
                         </div>
                          <div>

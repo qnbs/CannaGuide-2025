@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip } from '@/types';
@@ -42,6 +43,9 @@ import { FilterDrawer } from './FilterDrawer';
 import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
 import { GenealogyView } from './GenealogyView';
+import { AlphabeticalFilter } from './AlphabeticalFilter';
+import { SegmentedControl } from '../common/SegmentedControl';
+import { Button } from '@/components/common/Button';
 
 
 export const StrainsView: React.FC = () => {
@@ -99,7 +103,7 @@ export const StrainsView: React.FC = () => {
         setTempFilterState(initialAdvancedFilters);
         setIsDrawerOpen(false);
     };
-
+    
     const handleToggleAll = () => dispatch(toggleAllStrainSelection({ ids: filteredStrains.map(s => s.id), areAllCurrentlySelected: selectedIdsSet.size === filteredStrains.length && filteredStrains.length > 0 }));
     
     const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
@@ -147,6 +151,14 @@ export const StrainsView: React.FC = () => {
     const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
     const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
 
+    if (selectedStrainForDetail) {
+        return <StrainDetailView 
+                    strain={selectedStrainForDetail}
+                    onBack={() => setSelectedStrainForDetail(null)} 
+                    onSaveTip={(strain, tip, imageUrl) => dispatch(addStrainTip({ strain, tip, imageUrl }))} 
+                />;
+    }
+
     const renderContent = () => {
         if (isLoading) {
             return <SkeletonLoader variant={strainsViewMode} count={10} columns={settings.strainsViewSettings.visibleColumns} />;
@@ -157,13 +169,32 @@ export const StrainsView: React.FC = () => {
                     <StrainToolbar
                         searchTerm={searchTerm}
                         onSearchTermChange={setSearchTerm}
-                        viewMode={strainsViewMode}
-                        onViewModeChange={(mode) => dispatch(setStrainsViewMode(mode))}
                         onExport={() => dispatch(openExportModal())}
                         onAdd={() => dispatch(openAddModal(null))}
                         onOpenDrawer={() => setIsDrawerOpen(true)}
                         activeFilterCount={activeFilterCount}
                     />
+                    
+                    <div className="hidden sm:flex items-center gap-4">
+                        <SegmentedControl 
+                            options={[
+                                { value: 'Sativa', label: t('strainsView.sativa') },
+                                { value: 'Indica', label: t('strainsView.indica') },
+                                { value: 'Hybrid', label: t('strainsView.hybrid') },
+                            ]}
+                            value={typeFilter}
+                            onToggle={handleToggleTypeFilter}
+                        />
+                        <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
+                             <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
+                             <span>{t('strainsView.advancedFilters')}</span>
+                             {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
+                        </Button>
+                        {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
+                    </div>
+                    
+                    <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+
                     {filteredStrains.length === 0 && !isSearching ? (
                         <Card className="text-center py-10 text-slate-500">
                              <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
@@ -236,42 +267,31 @@ export const StrainsView: React.FC = () => {
     };
 
     return (
-        <>
-            {selectedStrainForDetail ? (
-                <StrainDetailView 
-                    strain={selectedStrainForDetail} 
-                    allStrains={allStrains} 
-                    onBack={() => setSelectedStrainForDetail(null)} 
-                    onSaveTip={(strain, tip, imageUrl) => dispatch(addStrainTip({ strain, tip, imageUrl }))} 
-                />
-            ) : (
-                <div className="space-y-4">
-                    {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
-                    <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
-                    <FilterDrawer 
-                        isOpen={isDrawerOpen} 
-                        onClose={() => setIsDrawerOpen(false)} 
-                        onApply={handleApplyFilters} 
-                        onReset={handleResetFilters} 
-                        tempFilterState={tempFilterState} 
-                        setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
-                        allAromas={allAromas} 
-                        allTerpenes={allTerpenes} 
-                        count={filteredStrains.length}
-                        showFavorites={showFavoritesOnly}
-                        onToggleFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                        typeFilter={typeFilter}
-                        onToggleTypeFilter={handleToggleTypeFilter}
-                        letterFilter={letterFilter}
-                        onLetterFilterChange={handleSetLetterFilter}
-                        isAnyFilterActive={isAnyFilterActive}
-                    />
-                    
-                    <Card><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
-                    
-                    {renderContent()}
-                </div>
-            )}
-        </>
+        <div className="space-y-4">
+            {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
+            <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
+            <FilterDrawer 
+                isOpen={isDrawerOpen} 
+                onClose={() => setIsDrawerOpen(false)} 
+                onApply={handleApplyFilters} 
+                onReset={handleResetFilters} 
+                tempFilterState={tempFilterState} 
+                setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
+                allAromas={allAromas} 
+                allTerpenes={allTerpenes} 
+                count={filteredStrains.length}
+                showFavorites={showFavoritesOnly}
+                onToggleFavorites={(val) => setShowFavoritesOnly(val)}
+                typeFilter={typeFilter}
+                onToggleTypeFilter={handleToggleTypeFilter}
+                letterFilter={letterFilter}
+                onLetterFilterChange={handleSetLetterFilter}
+                isAnyFilterActive={isAnyFilterActive}
+            />
+            
+            <Card><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
+            
+            {renderContent()}
+        </div>
     );
 };

@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { GenealogyNode, StrainType } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import type { HierarchyNode } from 'd3';
+import type { HierarchyNode } from 'd3-hierarchy';
 
 interface StrainTreeNodeProps {
   node: HierarchyNode<GenealogyNode>;

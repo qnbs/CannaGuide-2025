@@ -1,3 +1,4 @@
-// This constant defines the complex grid layout for the strain list and list items.
-// Centralizing it here ensures consistency and makes future updates easier.
-export const LIST_GRID_CLASS = "grid grid-cols-[auto_1fr] sm:grid-cols-[auto_minmax(120px,2fr)_0.75fr_0.5fr_0.5fr_1fr_1fr_0.75fr_auto] gap-x-2 md:gap-x-4 items-center";
+// This class defines the grid layout for the strain list view.
+// It's responsive, with a simpler layout for mobile and more columns for larger screens.
+export const LIST_GRID_CLASS =
+  'grid items-center gap-x-3 px-3 grid-cols-[20px_minmax(0,1fr)_auto] sm:grid-cols-[20px_minmax(0,3fr)_minmax(0,1fr)_80px_80px_100px_100px_120px_auto]';

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -7,8 +8,6 @@ import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CameraModal } from '@/components/common/CameraModal';
 import { Modal } from '@/components/common/Modal';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-// FIX: The selector `selectDiagnosticsState` and thunk `startDiagnostics` were part of an old pattern.
-// Replaced with the RTK Query mutation hook which is the correct, modern approach used in the app.
 import { useDiagnosePlantMutation } from '@/stores/api';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { addJournalEntry } from '@/stores/slices/simulationSlice';

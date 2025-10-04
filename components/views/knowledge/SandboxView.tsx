@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, memo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectActivePlants, selectSandboxState } from '@/stores/selectors';
@@ -127,10 +128,8 @@ const ExperimentResults: React.FC<{ experiment: Experiment }> = memo(({ experime
 export const SandboxView: React.FC = memo(() => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: Cast result of useAppSelector to Plant[] to fix type inference issue.
-    const activePlants = useAppSelector(selectActivePlants) as Plant[];
-    // FIX: Cast result of useAppSelector to SandboxState to fix type inference issue.
-    const { savedExperiments, isLoading, error } = useAppSelector(selectSandboxState) as SandboxState;
+    const activePlants = useAppSelector(selectActivePlants);
+    const { savedExperiments, isLoading, error } = useAppSelector(selectSandboxState);
     const [selectedExperimentId, setSelectedExperimentId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);

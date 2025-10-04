@@ -52,7 +52,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                 </div>
             </div>
             {!isPlaceholder && (
-                <div className="genealogy-node-thc-bar mt-1" title={`THC: ${data.thc?.toFixed(1)}%`}>
+                <div className="genealogy-node-thc-bar" title={`THC: ${data.thc?.toFixed(1)}%`}>
                     <div
                         className="genealogy-node-thc-fill"
                         style={{ width: `${thcPercentage}%` }}

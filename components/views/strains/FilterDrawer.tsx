@@ -35,7 +35,7 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode, isActi
         <summary className="text-lg font-semibold text-primary-400 cursor-pointer list-none flex items-center gap-2">
             <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
             {title}
-            {isActive && <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse-glow" title={t('strainsView.filters.active')}></div>}
+            {isActive && <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse" title={t('strainsView.filters.active')}></div>}
         </summary>
         <div className="pt-3 pl-7 space-y-4">
             {children}

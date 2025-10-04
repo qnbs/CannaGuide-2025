@@ -46,7 +46,6 @@ startAppListening({
             breeding: state.breeding,
             sandbox: state.sandbox,
             filters: state.filters,
-            genealogy: state.genealogy,
         };
         const serializedState = JSON.stringify(stateToSave);
         await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);

@@ -9,14 +9,14 @@ export const AlphabeticalFilter: React.FC<AlphabeticalFilterProps> = memo(({ act
     const alphabet = ['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('')];
 
     return (
-        <div className="hidden sm:flex flex-wrap justify-center gap-1.5 p-2 bg-slate-800/50 rounded-lg">
+        <div className="flex flex-nowrap overflow-x-auto horizontal-scrollbar py-2 -mx-4 px-4 space-x-2 overscroll-behavior-x-contain pb-2">
             {alphabet.map(char => (
                 <button
                     key={char}
                     onClick={() => onLetterClick(char)}
-                    className={`flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${
+                    className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg text-sm font-bold transition-colors ${
                         activeLetter === char 
-                            ? 'bg-primary-500 text-white' 
+                            ? 'bg-primary-500 text-white shadow-md' 
                             : 'bg-slate-700/50 text-slate-300 hover:bg-slate-700'
                     }`}
                     aria-pressed={activeLetter === char}

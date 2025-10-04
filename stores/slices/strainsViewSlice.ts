@@ -47,7 +47,6 @@ const strainsViewSlice = createSlice({
                 ids.forEach(id => currentSelection.delete(id));
             } else {
                 // If any are not selected, select them all
-                // FIX: Corrected variable name from 'newSelection' to 'currentSelection'.
                 ids.forEach(id => currentSelection.add(id));
             }
             state.selectedStrainIds = Array.from(currentSelection);

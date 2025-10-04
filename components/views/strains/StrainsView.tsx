@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip } from '@/types';
+import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip, StrainType } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -23,29 +23,29 @@ import {
 import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
 import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
-import { StrainToolbar } from './StrainToolbar';
-import { StrainList } from './StrainList';
-import { StrainGrid } from './StrainGrid';
-import { StrainDetailView } from './StrainDetailView';
-import { AddStrainModal } from './AddStrainModal';
+import { StrainToolbar } from './strains/StrainToolbar';
+import { StrainList } from './strains/StrainList';
+import { StrainGrid } from './strains/StrainGrid';
+import { StrainDetailView } from './strains/StrainDetailView';
+import { AddStrainModal } from './strains/AddStrainModal';
 import { DataExportModal } from '@/components/common/DataExportModal';
-import { ExportsManagerView } from './ExportsManagerView';
-import { StrainTipsView } from './StrainTipsView';
+import { ExportsManagerView } from './strains/ExportsManagerView';
+import { StrainTipsView } from './strains/StrainTipsView';
 import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip } from '@/stores/slices/savedItemsSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { Tabs } from '@/components/common/Tabs';
 import { Card } from '@/components/common/Card';
-import { BulkActionsBar } from './BulkActionsBar';
+import { BulkActionsBar } from './strains/BulkActionsBar';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { FilterDrawer } from './FilterDrawer';
+import { FilterDrawer } from './strains/FilterDrawer';
 import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
-import { GenealogyView } from './GenealogyView';
-import { AlphabeticalFilter } from './AlphabeticalFilter';
+import { GenealogyView } from './strains/GenealogyView';
+import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
 import { SegmentedControl } from '../common/SegmentedControl';
 import { Button } from '@/components/common/Button';
 import { Pagination } from '@/components/common/Pagination';
-import { StrainListHeader } from './StrainListHeader';
+import { StrainListHeader } from './strains/StrainListHeader';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -124,8 +124,7 @@ export const StrainsView: React.FC = () => {
 
     const handleToggleAll = () => {
         dispatch(toggleAllStrainSelection({ 
-            ids: currentStrains.map(s => s.id), 
-            areAllCurrentlySelected: areAllOnPageSelected
+            ids: currentStrains.map(s => s.id)
         }));
     };
     
@@ -190,7 +189,7 @@ export const StrainsView: React.FC = () => {
              return (
                 <>
                     {/* Sticky Header Block */}
-                    <div className="sticky top-[-1rem] sm:top-[-1.5rem] z-20 bg-slate-900 pt-4 pb-2">
+                    <div className="sticky top-[-1rem] sm:top-[-1.5rem] z-20 bg-slate-900 pt-2 sm:pt-4 pb-1 sm:pb-2 space-y-2 sm:space-y-4">
                         <StrainToolbar
                             searchTerm={searchTerm}
                             onSearchTermChange={setSearchTerm}
@@ -199,8 +198,10 @@ export const StrainsView: React.FC = () => {
                             onOpenDrawer={() => setIsDrawerOpen(true)}
                             activeFilterCount={activeFilterCount}
                         />
-                        
-                        <div className="hidden sm:flex items-center gap-4 mt-4">
+
+                        <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+
+                        <div className="hidden sm:flex items-center gap-4">
                             <SegmentedControl 
                                 options={[
                                     { value: 'Sativa', label: t('strainsView.sativa') },
@@ -217,9 +218,20 @@ export const StrainsView: React.FC = () => {
                             </Button>
                             {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
                         </div>
-                        
-                        <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
 
+                        {/* Mobile type filter */}
+                         <div className="sm:hidden">
+                            <SegmentedControl 
+                                options={[
+                                    { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
+                                    { value: 'Indica' as StrainType, label: t('strainsView.indica') },
+                                    { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
+                                ]}
+                                value={typeFilter}
+                                onToggle={handleToggleTypeFilter}
+                            />
+                        </div>
+                        
                         {strainsViewMode === 'list' && (
                             <StrainListHeader
                                 sort={sort}
@@ -231,7 +243,7 @@ export const StrainsView: React.FC = () => {
                     </div>
                     
                     {/* Scrollable Content */}
-                    <div className="mt-4 space-y-4">
+                    <div className="space-y-4">
                         {filteredStrains.length === 0 && !isSearching ? (
                             <Card className="text-center py-10 text-slate-500">
                                  <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
@@ -262,7 +274,7 @@ export const StrainsView: React.FC = () => {
                                 onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
                             />
                         )}
-
+                        
                         <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                     </div>
                     

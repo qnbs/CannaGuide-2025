@@ -24,6 +24,7 @@ import React from 'react';
 
 const difficultyOrder: Record<DifficultyLevel, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
 const yieldOrder: Record<YieldLevel, number> = { 'Low': 1, 'Medium': 2, 'High': 3 };
+const heightOrder: Record<HeightLevel, number> = { 'Short': 1, 'Medium': 2, 'Tall': 3 };
 
 export const useStrainFilters = (
     allStrains: Strain[],
@@ -185,24 +186,38 @@ export const useStrainFilters = (
             let aVal, bVal;
             let comparison = 0;
 
-            if (sort.key === 'difficulty') {
-                aVal = difficultyOrder[a.agronomic.difficulty];
-                bVal = difficultyOrder[b.agronomic.difficulty];
-                comparison = aVal - bVal;
-            } else if (sort.key === 'yield') {
-                aVal = yieldOrder[a.agronomic.yield];
-                bVal = yieldOrder[b.agronomic.yield];
-                comparison = aVal - bVal;
-            } else {
-                const key = sort.key as keyof Strain;
-                aVal = a.hasOwnProperty(key) ? a[key as keyof Strain] : a.agronomic[key as keyof typeof a.agronomic];
-                bVal = b.hasOwnProperty(key) ? b[key as keyof Strain] : b.agronomic[key as keyof typeof b.agronomic];
-                
-                if (typeof aVal === 'string' && typeof bVal === 'string') {
-                    comparison = aVal.localeCompare(bVal);
-                } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+            const key = sort.key as keyof Strain;
+
+            switch (key) {
+                case 'difficulty':
+                    aVal = difficultyOrder[a.agronomic.difficulty];
+                    bVal = difficultyOrder[b.agronomic.difficulty];
                     comparison = aVal - bVal;
-                }
+                    break;
+                case 'yield':
+                    aVal = yieldOrder[a.agronomic.yield];
+                    bVal = yieldOrder[b.agronomic.yield];
+                    comparison = aVal - bVal;
+                    break;
+                case 'name':
+                case 'type':
+                    aVal = a[key];
+                    bVal = b[key];
+                    if (typeof aVal === 'string' && typeof bVal === 'string') {
+                        comparison = aVal.localeCompare(bVal);
+                    }
+                    break;
+                case 'thc':
+                case 'cbd':
+                case 'floweringTime':
+                     aVal = a[key];
+                     bVal = b[key];
+                     if (typeof aVal === 'number' && typeof bVal === 'number') {
+                        comparison = aVal - bVal;
+                    }
+                    break;
+                default:
+                    return 0;
             }
 
             return sort.direction === 'asc' ? comparison : -comparison;

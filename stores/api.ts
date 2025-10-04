@@ -16,20 +16,19 @@ interface ApiError {
     message: string
 }
 
-// FIX: Changed BaseQueryFn args from `void` to `any` to ensure builder type inference works correctly
-// when all endpoints use `queryFn`. This is a common pattern to satisfy RTK Query's types.
+// A correctly typed but empty BaseQueryFn is necessary for RTK Query's builder
+// type inference to work correctly when all endpoints use `queryFn`.
 const customFakeBaseQuery: BaseQueryFn<
-    any, // Args type for the base query (not used here, but required)
+    any, // Args type for the base query (accepts anything, but is not used)
     unknown, // Result type
     ApiError // Error type
-> = async () => {
-    try {
-        // This function is never truly called because all endpoints use `queryFn`.
-        // It's a type placeholder. The logic is within each `queryFn`.
-        return { data: {} as unknown };
-    } catch (error) {
-        return { error: { message: (error as Error).message } as ApiError };
-    }
+// FIX: The function signature must match `BaseQueryFn` for correct type inference.
+// This requires `_args`, `_api`, and `_extraOptions` parameters, even if unused.
+// Without the full signature, the `builder` object becomes untyped, causing errors on builder methods.
+> = async (_args, _api, _extraOptions) => {
+    // This function's body is never executed because all endpoints use `queryFn`.
+    // It exists solely to provide the correct type signature to `createApi`.
+    return { data: {} as unknown };
 };
 
 

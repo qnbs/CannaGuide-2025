@@ -22,6 +22,9 @@ import {
 import { selectFavoriteIds } from '@/stores/selectors';
 import React from 'react';
 
+const difficultyOrder: Record<DifficultyLevel, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
+const yieldOrder: Record<YieldLevel, number> = { 'Low': 1, 'Medium': 2, 'High': 3 };
+
 export const useStrainFilters = (
     allStrains: Strain[],
     strainsViewSettings: AppSettings['strainsViewSettings']
@@ -179,16 +182,30 @@ export const useStrainFilters = (
             );
 
         strains.sort((a, b) => {
-            const aVal = a[sort.key as keyof Strain] ?? a.agronomic[sort.key as keyof Strain['agronomic']];
-            const bVal = b[sort.key as keyof Strain] ?? b.agronomic[sort.key as keyof Strain['agronomic']];
+            let aVal, bVal;
+            let comparison = 0;
 
-            if (typeof aVal === 'string' && typeof bVal === 'string') {
-                return sort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+            if (sort.key === 'difficulty') {
+                aVal = difficultyOrder[a.agronomic.difficulty];
+                bVal = difficultyOrder[b.agronomic.difficulty];
+                comparison = aVal - bVal;
+            } else if (sort.key === 'yield') {
+                aVal = yieldOrder[a.agronomic.yield];
+                bVal = yieldOrder[b.agronomic.yield];
+                comparison = aVal - bVal;
+            } else {
+                const key = sort.key as keyof Strain;
+                aVal = a.hasOwnProperty(key) ? a[key as keyof Strain] : a.agronomic[key as keyof typeof a.agronomic];
+                bVal = b.hasOwnProperty(key) ? b[key as keyof Strain] : b.agronomic[key as keyof typeof b.agronomic];
+                
+                if (typeof aVal === 'string' && typeof bVal === 'string') {
+                    comparison = aVal.localeCompare(bVal);
+                } else if (typeof aVal === 'number' && typeof bVal === 'number') {
+                    comparison = aVal - bVal;
+                }
             }
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sort.direction === 'asc' ? aVal - bVal : bVal - aVal;
-            }
-            return 0;
+
+            return sort.direction === 'asc' ? comparison : -comparison;
         });
 
         return strains;

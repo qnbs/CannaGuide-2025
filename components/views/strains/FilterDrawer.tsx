@@ -25,21 +25,25 @@ interface FilterDrawerProps {
     onToggleTypeFilter: (type: StrainType) => void;
     letterFilter: string | null;
     onLetterFilterChange: (letter: string | null) => void;
+    isAnyFilterActive: boolean;
 }
 
-const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
+const FilterSection: React.FC<{ title: string, children: React.ReactNode, isActive?: boolean }> = ({ title, children, isActive = false }) => {
+    const { t } = useTranslation();
+    return (
     <details open className="group border-b border-slate-700/50 pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
         <summary className="text-lg font-semibold text-primary-400 cursor-pointer list-none flex items-center gap-2">
             <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
             {title}
+            {isActive && <div className="w-2 h-2 bg-primary-500 rounded-full animate-pulse-glow" title={t('strainsView.filters.active')}></div>}
         </summary>
         <div className="pt-3 pl-7 space-y-4">
             {children}
         </div>
     </details>
-);
+)};
 
-export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange }) => {
+export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange, isAnyFilterActive }) => {
     const { t } = useTranslation();
     
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
@@ -59,6 +63,12 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
         setTempFilterState({ [key]: newArray });
     };
 
+    const isCannabinoidFilterActive = tempFilterState.thcRange[0] > 0 || tempFilterState.thcRange[1] < 35 || tempFilterState.cbdRange[0] > 0 || tempFilterState.cbdRange[1] < 20;
+    const isGrowDataFilterActive = tempFilterState.floweringRange[0] > 4 || tempFilterState.floweringRange[1] < 20 || tempFilterState.selectedDifficulties.length > 0 || tempFilterState.selectedYields.length > 0 || tempFilterState.selectedHeights.length > 0;
+    const isAromaFilterActive = tempFilterState.selectedAromas.length > 0;
+    const isTerpeneFilterActive = tempFilterState.selectedTerpenes.length > 0;
+    const isQuickFilterActive = showFavorites || typeFilter.length > 0 || letterFilter !== null;
+
     return (
         <Drawer
             isOpen={isOpen}
@@ -73,7 +83,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
             }
         >
             <div className="space-y-6">
-                <FilterSection title="Quick Filters">
+                <FilterSection title="Quick Filters" isActive={isQuickFilterActive}>
                      <div className="flex items-center justify-between">
                         <label className="font-semibold text-slate-300">{t('strainsView.favorites')}</label>
                         <Switch checked={showFavorites} onChange={onToggleFavorites} />
@@ -82,12 +92,12 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                     <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={onLetterFilterChange} />
                 </FilterSection>
 
-                <FilterSection title={t('strainsView.addStrainModal.cannabinoids')}>
+                <FilterSection title={t('strainsView.addStrainModal.cannabinoids')} isActive={isCannabinoidFilterActive}>
                     <RangeSlider label={t('strainsView.filters.thcMax')} min={0} max={35} step={1} value={tempFilterState.thcRange} onChange={val => setTempFilterState({ thcRange: val })} unit=" %" color="primary"/>
                     <RangeSlider label={t('strainsView.filters.cbdMax')} min={0} max={20} step={1} value={tempFilterState.cbdRange} onChange={val => setTempFilterState({ cbdRange: val })} unit=" %" color="green" />
                 </FilterSection>
 
-                <FilterSection title={t('strainsView.addStrainModal.growData')}>
+                <FilterSection title={t('strainsView.addStrainModal.growData')} isActive={isGrowDataFilterActive}>
                     <RangeSlider label={t('strainsView.filters.floweringTime')} min={4} max={20} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState({ floweringRange: val })} unit={` ${t('common.units.weeks')}`} color="blue"/>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
@@ -123,7 +133,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                     </div>
                 </FilterSection>
                  
-                <FilterSection title={t('strainsView.filters.aromas')}>
+                <FilterSection title={t('strainsView.filters.aromas')} isActive={isAromaFilterActive}>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allAromas.map(aroma => (
                             <button key={aroma} onClick={() => handleToggleArray('selectedAromas', aroma)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.includes(aroma) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
@@ -133,7 +143,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                     </div>
                 </FilterSection>
 
-                 <FilterSection title={t('strainsView.filters.terpenes')}>
+                 <FilterSection title={t('strainsView.filters.terpenes')} isActive={isTerpeneFilterActive}>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allTerpenes.map(terpene => (
                             <button key={terpene} onClick={() => handleToggleArray('selectedTerpenes', terpene)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.includes(terpene) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>

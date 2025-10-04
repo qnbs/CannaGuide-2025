@@ -6,9 +6,9 @@ export const savedSetupsAdapter = createEntityAdapter<SavedSetup>();
 export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip>();
 
 export interface SavedItemsState {
-    savedExports: EntityState<SavedExport>;
-    savedSetups: EntityState<SavedSetup>;
-    savedStrainTips: EntityState<SavedStrainTip>;
+    savedExports: EntityState<SavedExport, string>;
+    savedSetups: EntityState<SavedSetup, string>;
+    savedStrainTips: EntityState<SavedStrainTip, string>;
 }
 
 const initialState: SavedItemsState = {

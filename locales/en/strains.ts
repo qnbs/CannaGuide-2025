@@ -10,7 +10,6 @@ export const strainsView = {
   matchingStrains_one: '1 Matching Strain',
   matchingStrains_other: '{{count}} Matching Strains',
   weeks: 'weeks',
-  level: 'Level',
   startGrowing: 'Start Growing',
   clearSelection: 'Clear selection',
   selectedCount_one: '1 selected',
@@ -31,7 +30,7 @@ export const strainsView = {
     thc: 'THC',
     cbd: 'CBD',
     flowering: 'Flowering',
-    level: 'Level',
+    difficulty: 'Difficulty',
     yield: 'Yield',
   },
   tabs: {

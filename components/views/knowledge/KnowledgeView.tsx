@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect, useTransition } from 'react';
 import { Card } from '../common/Card';
 import { useTranslation } from 'react-i18next';
@@ -43,11 +44,11 @@ export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
-    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState) as SandboxState;
+    const { isLoading: isSandboxLoading } = useAppSelector(selectSandboxState);
 
     const [isTabLoading, startTabTransition] = useTransition();
     
-    const activePlants = useActivePlants() as Plant[];
+    const activePlants = useActivePlants();
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);

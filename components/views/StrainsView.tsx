@@ -44,7 +44,6 @@ import { exportService } from '@/services/exportService';
 import { GenealogyView } from './strains/GenealogyView';
 import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
 import { SegmentedControl } from '../common/SegmentedControl';
-// FIX: Added missing import for Button component
 import { Button } from '@/components/common/Button';
 
 
@@ -281,7 +280,7 @@ export const StrainsView: React.FC = () => {
                 allTerpenes={allTerpenes} 
                 count={filteredStrains.length}
                 showFavorites={showFavoritesOnly}
-                onToggleFavorites={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                onToggleFavorites={(val) => setShowFavoritesOnly(val)}
                 typeFilter={typeFilter}
                 onToggleTypeFilter={handleToggleTypeFilter}
                 letterFilter={letterFilter}

@@ -6,7 +6,7 @@ import { getT } from '@/i18n';
 
 export const userStrainsAdapter = createEntityAdapter<Strain>();
 
-export type UserStrainsState = EntityState<Strain>;
+export type UserStrainsState = EntityState<Strain, string>;
 
 const initialState: UserStrainsState = userStrainsAdapter.getInitialState();
 

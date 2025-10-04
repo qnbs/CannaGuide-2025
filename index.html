@@ -22,7 +22,8 @@
     "@reduxjs/toolkit": "https://aistudiocdn.com/@reduxjs/toolkit@^2.2.6",
     "react-redux": "https://aistudiocdn.com/react-redux@^9.1.2",
     "@reduxjs/toolkit/": "https://aistudiocdn.com/@reduxjs/toolkit@^2.2.6/",
-    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/"
+    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/",
+    "d3-hierarchy": "https://aistudiocdn.com/d3-hierarchy@^3.1.2"
   }
 }
 </script>
@@ -436,6 +437,9 @@
         animation: pulse-glow 2s infinite;
       }
       .genealogy-link {
+        fill: none;
+        stroke: rgb(var(--color-border) / 0.6);
+        stroke-width: 1.5px;
         transition: stroke 0.3s ease, stroke-opacity 0.3s ease, stroke-width 0.3s ease;
       }
       .genealogy-link.highlight-path {

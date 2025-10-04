@@ -33,7 +33,6 @@ const OptionButton: React.FC<{ label: string, isSelected: boolean, onClick: () =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
-  // FIX: Cast result of useAppSelector to AppSettings to fix type inference issue.
   const settings = useAppSelector(selectSettings) as AppSettings;
   
   const [setup, setSetup] = useState<GrowSetup>({

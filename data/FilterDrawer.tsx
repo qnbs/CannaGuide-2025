@@ -67,7 +67,6 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
             size="2xl"
             footer={
                 <>
-                    {/* FIX: Wrap onClick handlers in arrow functions to prevent passing event objects. */}
                     <Button variant="secondary" onClick={() => onReset()}>{t('strainsView.resetFilters')}</Button>
                     <Button onClick={() => onApply()}>{t('strainsView.matchingStrains_other', { count })}</Button>
                 </>
@@ -127,7 +126,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                         <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                             {allAromas.map(aroma => (
                                 <button key={aroma} onClick={() => handleToggleArray('selectedAromas', aroma)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.includes(aroma) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
-                                    {t(`common.aromas.${aroma}`, aroma)}
+                                    {t(`common.aromas.${aroma}`, { defaultValue: aroma })}
                                 </button>
                             ))}
                         </div>
@@ -140,7 +139,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                         <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                             {allTerpenes.map(terpene => (
                                 <button key={terpene} onClick={() => handleToggleArray('selectedTerpenes', terpene)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.includes(terpene) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
-                                    {t(`common.terpenes.${terpene}`, terpene)}
+                                    {t(`common.terpenes.${terpene}`, { defaultValue: terpene })}
                                 </button>
                             ))}
                         </div>

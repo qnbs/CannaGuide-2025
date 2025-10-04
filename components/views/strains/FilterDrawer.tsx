@@ -7,6 +7,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Drawer } from '@/components/common/Drawer';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Switch } from '@/components/common/Switch';
+import { AlphabeticalFilter } from './AlphabeticalFilter';
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -19,12 +20,11 @@ interface FilterDrawerProps {
     allTerpenes: string[];
     count: number;
     showFavorites: boolean;
-    onToggleFavorites: () => void;
+    onToggleFavorites: (val: boolean) => void;
     typeFilter: StrainType[];
     onToggleTypeFilter: (type: StrainType) => void;
     letterFilter: string | null;
     onLetterFilterChange: (letter: string | null) => void;
-    isAnyFilterActive: boolean;
 }
 
 const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({ title, children }) => (
@@ -39,7 +39,7 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode }> = ({
     </details>
 );
 
-export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange, isAnyFilterActive }) => {
+export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, letterFilter, onLetterFilterChange }) => {
     const { t } = useTranslation();
     
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
@@ -67,8 +67,8 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
             size="2xl"
             footer={
                 <>
-                    <Button variant="secondary" onClick={() => onReset()}>{t('strainsView.resetFilters')}</Button>
-                    <Button onClick={() => onApply()}>{t('strainsView.matchingStrains_other', { count })}</Button>
+                    <Button variant="secondary" onClick={onReset}>{t('strainsView.resetFilters')}</Button>
+                    <Button onClick={onApply}>{t('strainsView.matchingStrains_other', { count })}</Button>
                 </>
             }
         >
@@ -79,17 +79,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                         <Switch checked={showFavorites} onChange={onToggleFavorites} />
                     </div>
                     <SegmentedControl options={typeOptions} value={typeFilter} onToggle={onToggleTypeFilter} />
-                    <div className="grid grid-cols-9 gap-1">
-                        {['#', ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map(char => (
-                            <button
-                                key={char}
-                                onClick={() => onLetterFilterChange(char)}
-                                className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-md text-xs font-bold transition-colors ${letterFilter === char ? 'bg-primary-500 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-                            >
-                                {char}
-                            </button>
-                        ))}
-                    </div>
+                    <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={onLetterFilterChange} />
                 </FilterSection>
 
                 <FilterSection title={t('strainsView.addStrainModal.cannabinoids')}>
@@ -137,7 +127,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allAromas.map(aroma => (
                             <button key={aroma} onClick={() => handleToggleArray('selectedAromas', aroma)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedAromas.includes(aroma) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
-                                {t(`common.aromas.${aroma}`, aroma)}
+                                {t(`common.aromas.${aroma}`, { defaultValue: aroma })}
                             </button>
                         ))}
                     </div>
@@ -147,7 +137,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allTerpenes.map(terpene => (
                             <button key={terpene} onClick={() => handleToggleArray('selectedTerpenes', terpene)} className={`px-2 py-1 text-xs rounded-full transition-colors ${tempFilterState.selectedTerpenes.includes(terpene) ? 'bg-primary-600 text-white' : 'bg-slate-700 text-slate-200 hover:bg-slate-600'}`}>
-                                {t(`common.terpenes.${terpene}`, terpene)}
+                                {t(`common.terpenes.${terpene}`, { defaultValue: terpene })}
                             </button>
                         ))}
                     </div>

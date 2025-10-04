@@ -1,22 +1,14 @@
 import { SavedExport, SavedSetup, Strain, AIResponse, SavedStrainTip } from '../../types';
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter, EntityState } from '@reduxjs/toolkit';
-import { addNotification } from './uiSlice';
-import { getT } from '@/i18n';
 
-// FIX: createEntityAdapter expects only one type argument for the entity. The ID type is inferred.
 export const savedExportsAdapter = createEntityAdapter<SavedExport>();
-// FIX: createEntityAdapter expects only one type argument for the entity. The ID type is inferred.
 export const savedSetupsAdapter = createEntityAdapter<SavedSetup>();
-// FIX: createEntityAdapter expects only one type argument for the entity. The ID type is inferred.
 export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip>();
 
 export interface SavedItemsState {
-// Note: Generic type 'EntityState<T, Id>' correctly requires 2 type arguments.
-    savedExports: EntityState<SavedExport, string>;
-// Note: Generic type 'EntityState<T, Id>' correctly requires 2 type arguments.
-    savedSetups: EntityState<SavedSetup, string>;
-// Note: Generic type 'EntityState<T, Id>' correctly requires 2 type arguments.
-    savedStrainTips: EntityState<SavedStrainTip, string>;
+    savedExports: EntityState<SavedExport>;
+    savedSetups: EntityState<SavedSetup>;
+    savedStrainTips: EntityState<SavedStrainTip>;
 }
 
 const initialState: SavedItemsState = {
@@ -48,7 +40,6 @@ const savedItemsSlice = createSlice({
     name: 'savedItems',
     initialState,
     reducers: {
-        // FIX: Correctly omit 'strainIds' from the 'data' object type, as it's passed separately.
         addExport: (state, action: PayloadAction<{ data: Omit<SavedExport, 'id' | 'createdAt' | 'count' | 'strainIds'>, strainIds: string[] }>) => {
             const { data, strainIds } = action.payload;
             if (!data.name?.trim() || !strainIds || strainIds.length === 0) {

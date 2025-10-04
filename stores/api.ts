@@ -16,25 +16,29 @@ interface ApiError {
     message: string
 }
 
-// Custom fake base query to provide strong types and fix builder type inference.
-const fakeBaseQueryWithApiError: BaseQueryFn<
-    string | object,
-    unknown,
-    ApiError
+// FIX: Changed BaseQueryFn args from `void` to `any` to ensure builder type inference works correctly
+// when all endpoints use `queryFn`. This is a common pattern to satisfy RTK Query's types.
+const customFakeBaseQuery: BaseQueryFn<
+    any, // Args type for the base query (not used here, but required)
+    unknown, // Result type
+    ApiError // Error type
 > = async () => {
-    // This function is never called because all endpoints use `queryFn`.
-    // It exists to provide the correct types to `createApi`, which then correctly types the `builder`.
-    return { data: {} }
-}
+    try {
+        // This function is never truly called because all endpoints use `queryFn`.
+        // It's a type placeholder. The logic is within each `queryFn`.
+        return { data: {} as unknown };
+    } catch (error) {
+        return { error: { message: (error as Error).message } as ApiError };
+    }
+};
+
 
 export const geminiApi = createApi({
     reducerPath: 'geminiApi',
-    baseQuery: fakeBaseQueryWithApiError,
+    baseQuery: customFakeBaseQuery,
     endpoints: (builder) => ({
         getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string; lang: Language }>({
-            queryFn: async (
-                { prompt, lang }
-            ): Promise<{ data: Recommendation } | { error: ApiError }> => {
+            queryFn: async ({ prompt, lang }) => {
                 try {
                     const data = await geminiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
@@ -43,13 +47,8 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        diagnosePlant: builder.mutation<
-            PlantDiagnosisResponse,
-            { base64Image: string; mimeType: string; plant: Plant; userNotes: string, lang: Language }
-        >({
-            queryFn: async (
-                args
-            ): Promise<{ data: PlantDiagnosisResponse } | { error: ApiError }> => {
+        diagnosePlant: builder.mutation<PlantDiagnosisResponse, { base64Image: string; mimeType: string; plant: Plant; userNotes: string, lang: Language }>({
+            queryFn: async (args) => {
                 try {
                     const data = await geminiService.diagnosePlant(
                         args.base64Image,
@@ -65,9 +64,7 @@ export const geminiApi = createApi({
             },
         }),
         getPlantAdvice: builder.mutation<AIResponse, { plant: Plant, lang: Language }>({
-            queryFn: async (
-                { plant, lang }
-            ): Promise<{ data: AIResponse } | { error: ApiError }> => {
+            queryFn: async ({ plant, lang }) => {
                 try {
                     const data = await geminiService.getPlantAdvice(plant, lang)
                     return { data }
@@ -77,9 +74,7 @@ export const geminiApi = createApi({
             },
         }),
         getProactiveDiagnosis: builder.mutation<AIResponse, { plant: Plant, lang: Language }>({
-            queryFn: async (
-                { plant, lang }
-            ): Promise<{ data: AIResponse } | { error: ApiError }> => {
+            queryFn: async ({ plant, lang }) => {
                 try {
                     const data = await geminiService.getProactiveDiagnosis(plant, lang)
                     return { data }
@@ -88,13 +83,8 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        getMentorResponse: builder.mutation<
-            Omit<MentorMessage, 'role'>,
-            { plant: Plant; query: string, lang: Language }
-        >({
-            queryFn: async (
-                { plant, query, lang }
-            ): Promise<{ data: Omit<MentorMessage, 'role'> } | { error: ApiError }> => {
+        getMentorResponse: builder.mutation<Omit<MentorMessage, 'role'>, { plant: Plant; query: string, lang: Language }>({
+            queryFn: async ({ plant, query, lang }) => {
                 try {
                     const data = await geminiService.getMentorResponse(plant, query, lang)
                     return { data }
@@ -103,13 +93,8 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        getStrainTips: builder.mutation<
-            StructuredGrowTips,
-            { strain: Strain; context: { focus: string; stage: string; experience: string }, lang: Language }
-        >({
-            queryFn: async (
-                { strain, context, lang }
-            ): Promise<{ data: StructuredGrowTips } | { error: ApiError }> => {
+        getStrainTips: builder.mutation<StructuredGrowTips, { strain: Strain; context: { focus: string; stage: string; experience: string }, lang: Language }>({
+            queryFn: async ({ strain, context, lang }) => {
                 try {
                     const data = await geminiService.getStrainTips(strain, context, lang)
                     return { data }
@@ -119,9 +104,7 @@ export const geminiApi = createApi({
             },
         }),
         generateStrainImage: builder.mutation<string, { strain: Strain, lang: Language }>({
-            queryFn: async (
-                { strain, lang }
-            ): Promise<{ data: string } | { error: ApiError }> => {
+            queryFn: async ({ strain, lang }) => {
                 try {
                     const data = await geminiService.generateStrainImage(strain.name, lang)
                     return { data }
@@ -131,9 +114,7 @@ export const geminiApi = createApi({
             },
         }),
         generateDeepDive: builder.mutation<DeepDiveGuide, { topic: string; plant: Plant, lang: Language }>({
-            queryFn: async (
-                { topic, plant, lang }
-            ): Promise<{ data: DeepDiveGuide } | { error: ApiError }> => {
+            queryFn: async ({ topic, plant, lang }) => {
                 try {
                     const data = await geminiService.generateDeepDive(topic, plant, lang)
                     return { data }

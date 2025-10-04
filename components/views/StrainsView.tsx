@@ -38,10 +38,14 @@ import { Tabs } from '@/components/common/Tabs';
 import { Card } from '@/components/common/Card';
 import { BulkActionsBar } from './strains/BulkActionsBar';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { FilterDrawer } from '@/data/FilterDrawer';
+import { FilterDrawer } from './strains/FilterDrawer';
 import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
 import { GenealogyView } from './strains/GenealogyView';
+import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
+import { SegmentedControl } from '../common/SegmentedControl';
+// FIX: Added missing import for Button component
+import { Button } from '@/components/common/Button';
 
 
 export const StrainsView: React.FC = () => {
@@ -159,19 +163,38 @@ export const StrainsView: React.FC = () => {
         if (isLoading) {
             return <SkeletonLoader variant={strainsViewMode} count={10} columns={settings.strainsViewSettings.visibleColumns} />;
         }
-        if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab as any)) {
+        if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab)) {
              return (
                 <>
                     <StrainToolbar
                         searchTerm={searchTerm}
                         onSearchTermChange={setSearchTerm}
-                        viewMode={strainsViewMode}
-                        onViewModeChange={(mode) => dispatch(setStrainsViewMode(mode))}
                         onExport={() => dispatch(openExportModal())}
                         onAdd={() => dispatch(openAddModal(null))}
                         onOpenDrawer={() => setIsDrawerOpen(true)}
                         activeFilterCount={activeFilterCount}
                     />
+                    
+                    <div className="hidden sm:flex items-center gap-4">
+                        <SegmentedControl 
+                            options={[
+                                { value: 'Sativa', label: t('strainsView.sativa') },
+                                { value: 'Indica', label: t('strainsView.indica') },
+                                { value: 'Hybrid', label: t('strainsView.hybrid') },
+                            ]}
+                            value={typeFilter}
+                            onToggle={handleToggleTypeFilter}
+                        />
+                        <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
+                             <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
+                             <span>{t('strainsView.advancedFilters')}</span>
+                             {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
+                        </Button>
+                        {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
+                    </div>
+                    
+                    <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+
                     {filteredStrains.length === 0 && !isSearching ? (
                         <Card className="text-center py-10 text-slate-500">
                              <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>

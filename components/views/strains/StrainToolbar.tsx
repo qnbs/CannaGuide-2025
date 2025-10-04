@@ -3,12 +3,13 @@ import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/ThemePrimitives';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';
+import { selectStrainsViewMode } from '@/stores/selectors';
 
 interface StrainToolbarProps {
     searchTerm: string;
     onSearchTermChange: (term: string) => void;
-    viewMode: 'list' | 'grid';
-    onViewModeChange: (mode: 'list' | 'grid') => void;
     onExport: () => void;
     onAdd: () => void;
     onOpenDrawer: () => void;
@@ -17,8 +18,10 @@ interface StrainToolbarProps {
 
 export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
     const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const viewMode = useAppSelector(selectStrainsViewMode);
     const { 
-        searchTerm, onSearchTermChange, viewMode, onViewModeChange, onExport, onAdd, 
+        searchTerm, onSearchTermChange, onExport, onAdd, 
         onOpenDrawer, activeFilterCount
     } = props;
     
@@ -32,6 +35,10 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                 </div>
 
                 <div className="flex items-center gap-2">
+                     <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
+                       <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} onClick={() => dispatch(setStrainsViewMode('list'))} className="!p-1.5" aria-label={t('strainsView.viewModes.list')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
+                       <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} onClick={() => dispatch(setStrainsViewMode('grid'))} className="!p-1.5" aria-label={t('strainsView.viewModes.grid')}><PhosphorIcons.GridFour className="w-5 h-5" /></Button>
+                    </div>
                     <Button onClick={onExport} variant="secondary" className="!py-2 !px-3">
                         <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-1.5" />
                         <span>{t('common.export')}</span>
@@ -58,7 +65,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                             </span>
                         )}
                     </Button>
-                     <Button onClick={() => onViewModeChange(viewMode === 'list' ? 'grid' : 'list')} title={t('strainsView.toggleView')} variant="secondary" className="!p-2.5">
+                     <Button onClick={() => dispatch(setStrainsViewMode(viewMode === 'list' ? 'grid' : 'list'))} title={t('strainsView.toggleView')} variant="secondary" className="!p-2.5">
                         <span className="sr-only">{t('strainsView.toggleView')}</span>
                         {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5" /> : <PhosphorIcons.ListBullets className="w-5 h-5" />}
                     </Button>

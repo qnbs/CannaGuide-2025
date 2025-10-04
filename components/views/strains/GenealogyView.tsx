@@ -12,7 +12,7 @@ import {
     resetGenealogyZoom,
     setGenealogyLayout,
 } from '@/stores/slices/genealogySlice';
-import { Strain, GenealogyNode, GeneticContribution } from '@/types';
+import { Strain, GenealogyNode, GeneticContribution, StrainType } from '@/types';
 import { StrainTreeNode } from './StrainTreeNode';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -29,7 +29,8 @@ interface GenealogyViewProps {
 const nodeSize = { width: 220, height: 80 };
 const nodeSeparation = { x: 40, y: 40 };
 
-const Link = ({ link, orientation }: { link: d3.HierarchyLink<GenealogyNode>, orientation: 'horizontal' | 'vertical' }) => {
+// FIX: Explicitly type Link as React.FC to ensure TS treats it as a component and handles the `key` prop correctly.
+const Link: React.FC<{ link: d3.HierarchyLink<GenealogyNode>, orientation: 'horizontal' | 'vertical' }> = ({ link, orientation }) => {
     const d3PathHorizontal = d3.linkHorizontal()
         .x(d => (d as any).y)
         .y(d => (d as any).x);
@@ -81,7 +82,6 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         }
     }, [selectedStrainId, allStrains, computedTrees, dispatch]);
     
-    // FIX: Explicitly type the return value of useMemo to prevent incorrect type inference (e.g., `never[]`) on early returns.
     const { nodes, links } = useMemo<{ nodes: d3.HierarchyNode<GenealogyNode>[]; links: d3.HierarchyLink<GenealogyNode>[] }>(() => {
         if (!tree) return { nodes: [], links: [] };
 
@@ -124,7 +124,11 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                 g.attr('transform', event.transform.toString());
             })
             .on('end', (event) => {
-                dispatch(setGenealogyZoom(event.transform));
+                // FIX: Only update Redux state on user-initiated zoom events to prevent an infinite loop.
+                // Programmatic calls via .transform() do not have a sourceEvent.
+                if (event.sourceEvent) {
+                    dispatch(setGenealogyZoom(event.transform));
+                }
             });
         
         svg.call(zoomBehavior);
@@ -134,13 +138,13 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
             const { width, height } = svg.node()!.getBoundingClientRect();
             const initialTranslate = layoutOrientation === 'horizontal' ? [width * 0.1, height / 2] : [width / 2, height * 0.1];
             const initialTransform = d3.zoomIdentity.translate(initialTranslate[0], initialTranslate[1]);
-            svg.call(zoomBehavior.transform, initialTransform);
+            // Use a transition for smooth recentering. This programmatic call is now safe.
+            svg.transition().duration(750).call(zoomBehavior.transform, initialTransform);
         } else {
             const transform = d3.zoomIdentity.translate(zoomTransform.x, zoomTransform.y).scale(zoomTransform.k);
             svg.call(zoomBehavior.transform, transform);
         }
-
-    }, [dispatch, tree, layoutOrientation, zoomTransform]); // Rerun setup when tree or layout changes
+    }, [dispatch, tree, layoutOrientation, zoomTransform]);
 
     const handleResetZoom = useCallback(() => {
         if (svgRef.current && zoomRef.current) {

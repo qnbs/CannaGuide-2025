@@ -2,7 +2,9 @@
   "name": "CannaGuide 2025",
   "short_name": "CannaGuide",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0F172A",
   "theme_color": "#0F172A",
   "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle.",
@@ -30,6 +32,29 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Plants",
+      "short_name": "Plants",
+      "description": "View and manage your current grows",
+      "url": "/?view=Plants",
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Strain Library",
+      "short_name": "Strains",
+      "description": "Explore the strain encyclopedia",
+      "url": "/?view=Strains",
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Knowledge Hub",
+      "short_name": "Knowledge",
+      "description": "Access the AI Mentor and grow guides",
+      "url": "/?view=Knowledge",
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

@@ -1,8 +1,7 @@
-const CACHE_NAME = 'cannaguide-v10-pwa-cache';
-const URLS_TO_CACHE = [
+const CACHE_NAME = 'cannaguide-v11-pwa-cache';
+const APP_SHELL_URLS = [
   '/',
   '/index.html',
-  '/index.tsx', // Kritische Datei für die Offline-Funktionalität hinzugefügt
   '/manifest.json',
   '/icon.svg',
   '/pwa-icon.svg',
@@ -13,19 +12,19 @@ const URLS_TO_CACHE = [
   '/favicon.ico',
 ];
 
-// Install-Event: Cacht die grundlegende App-Shell.
+// On install, precache the app shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Caching app shell on install');
-        return cache.addAll(URLS_TO_CACHE);
+        console.log('[SW] Pre-caching App Shell');
+        return cache.addAll(APP_SHELL_URLS);
       })
       .then(() => self.skipWaiting())
   );
 });
 
-// Activate-Event: Alte Caches löschen und Kontrolle übernehmen.
+// On activate, clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -41,35 +40,72 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch-Event: Implementiert die "Network-First, then Cache"-Strategie.
+// Fetch event handler
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') {
+  const { request } = event;
+
+  // Ignore non-GET requests
+  if (request.method !== 'GET') {
     return;
   }
 
-  // Ignoriere Google API-Aufrufe, um immer frische Daten von Gemini sicherzustellen
-  if (event.request.url.includes('googleapis.com')) {
-    return; // Lässt den Browser die Anfrage normal ohne Service Worker handhaben.
+  // Ignore Google API calls
+  if (request.url.includes('googleapis.com')) {
+    return; // Let the browser handle it
   }
 
+  // For navigation requests (HTML pages), use Network Falling Back to Cache
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          // If the network is available, cache the new page and return it
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(request, responseToCache);
+          });
+          return response;
+        })
+        .catch(() => {
+          // If the network fails, serve the cached index.html
+          return caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // For CDN scripts and Tailwind, use Stale-While-Revalidate
+  if (request.url.includes('aistudiocdn.com') || request.url.includes('cdn.tailwindcss.com')) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(cache => {
+        return cache.match(request).then(cachedResponse => {
+          const fetchPromise = fetch(request).then(networkResponse => {
+            cache.put(request, networkResponse.clone());
+            return networkResponse;
+          });
+          // Return cached response immediately, then update cache in the background
+          return cachedResponse || fetchPromise;
+        });
+      })
+    );
+    return;
+  }
+
+  // For all other assets (app shell, icons), use Cache First
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Wenn erfolgreich, speichere eine Kopie im Cache für die Offline-Nutzung
+    caches.match(request).then(cachedResponse => {
+      // Return from cache if found
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Otherwise, fetch from network, cache it, and return it
+      return fetch(request).then(networkResponse => {
         const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(request, responseToCache);
         });
         return networkResponse;
-      })
-      .catch(() => {
-        // Wenn das Netzwerk fehlschlägt, versuche aus dem Cache zu antworten
-        return caches.match(event.request).then(cachedResponse => {
-          return cachedResponse || new Response("You are offline and this resource is not cached.", {
-            status: 404,
-            statusText: "Offline and not in cache"
-          });
-        });
-      })
+      });
+    })
   );
 });

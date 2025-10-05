@@ -1,3 +1,5 @@
+
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -76,8 +78,8 @@ class ErrorBoundary extends React.Component<
                             transition: 'background-color 0.2s',
                         }}
                         onClick={() => window.location.reload()}
-                        onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#B91C1C')}
-                        onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#DC2626')}
+                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#B91C1C'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#DC2626'; }}
                     >
                         Reload Application
                     </button>
@@ -85,7 +87,10 @@ class ErrorBoundary extends React.Component<
             )
         }
 
-        return this.props.children
+        // FIX: Destructure props to avoid potential 'this' context issues and satisfy stricter type checkers.
+        // FIX: Changed 'props' to 'this.props' to correctly access props in a React class component.
+        const { children } = this.props
+        return children
     }
 }
 

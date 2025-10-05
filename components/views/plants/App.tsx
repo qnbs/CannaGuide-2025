@@ -25,6 +25,7 @@ import {
   setAppReady,
   setIsCommandPaletteOpen,
   addNotification,
+  setActiveView,
 } from '@/stores/slices/uiSlice'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
@@ -198,6 +199,13 @@ export const App: React.FC = () => {
         dispatch(initializeSimulation());
         
         ttsService.init()
+
+        // Handle deep linking from PWA shortcuts
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view');
+        if (viewParam && Object.values(View).includes(viewParam as View)) {
+            dispatch(setActiveView(viewParam as View));
+        }
 
         // Signal that the app is fully ready to be displayed.
         dispatch(setAppReady(true))

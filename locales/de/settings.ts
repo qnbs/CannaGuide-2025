@@ -160,7 +160,6 @@ export const settingsView = {
     exportError: 'Export fehlgeschlagen.',
     importAll: 'Alle Daten importieren',
     importConfirm: 'Bist du sicher, dass du diese Daten importieren möchtest? Dies wird alle deine aktuellen Daten überschreiben.',
-    importSuccess: 'Daten erfolgreich importiert! Die App wird neu geladen.',
     importInvalidFile: 'Ungültige CannaGuide 2025 Backup-Datei.',
     clearArchives: 'KI-Archive leeren',
     clearArchivesDesc: 'Löscht alle gespeicherten Antworten vom KI-Mentor und -Berater.',

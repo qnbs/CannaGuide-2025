@@ -157,16 +157,11 @@ const settingsSlice = createSlice({
                     break;
             }
         },
-        toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
+        toggleSetting: (state, action: PayloadAction<{ path: keyof AppSettings }>) => {
             const { path } = action.payload;
-            const keys = path.split('.');
-            let currentLevel: any = state.settings;
-            for (let i = 0; i < keys.length - 1; i++) {
-                currentLevel = currentLevel[keys[i]];
-            }
-            const finalKey = keys[keys.length - 1];
-            if (typeof currentLevel[finalKey] === 'boolean') {
-                currentLevel[finalKey] = !currentLevel[finalKey];
+            const setting = state.settings[path];
+            if (typeof setting === 'boolean') {
+                (state.settings[path] as boolean) = !setting;
             }
         },
     },

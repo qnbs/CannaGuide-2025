@@ -160,7 +160,6 @@ export const settingsView = {
     exportError: 'Export failed.',
     importAll: 'Import All Data',
     importConfirm: 'Are you sure you want to import this data? This will overwrite all your current data.',
-    importSuccess: 'Data imported successfully! The app will now reload.',
     importInvalidFile: 'Invalid CannaGuide 2025 backup file.',
     clearArchives: 'Clear AI Archives',
     clearArchivesDesc: 'Deletes all saved responses from the AI Mentor and Advisor.',

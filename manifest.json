@@ -1,38 +1,43 @@
 {
-  "name": "CannaGuide 2025",
+  "name": "CannaGuide 2025 - Cannabis Grow Guide with Gemini",
   "short_name": "CannaGuide",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0F172A",
   "theme_color": "#0F172A",
-  "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle.",
+  "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore over 500 strains, get AI equipment advice, and master your grow with an interactive guide.",
   "icons": [
     {
-      "src": "/pwa-icon-192.png",
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgb(226, 232, 240)' stroke-width='1.5'%3e%3cdefs%3e%3clinearGradient id='cannaGuideLeafGradient' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3e%3cstop offset='0%25' stop-color='rgb(74, 222, 128)'/%3e%3cstop offset='100%25' stop-color='rgb(16, 185, 129)'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z'/%3e%3cg transform='translate(5.2, 5.2) scale(0.6)'%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z'/%3e%3c/g%3e%3c/svg%3e",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/pwa-icon-512.png",
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgb(226, 232, 240)' stroke-width='1.5'%3e%3cdefs%3e%3clinearGradient id='cannaGuideLeafGradient' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3e%3cstop offset='0%25' stop-color='rgb(74, 222, 128)'/%3e%3cstop offset='100%25' stop-color='rgb(16, 185, 129)'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z'/%3e%3cg transform='translate(5.2, 5.2) scale(0.6)'%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z'/%3e%3c/g%3e%3c/svg%3e",
       "sizes": "512x512",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/pwa-icon-maskable-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-3 -3 30 30' fill='none' stroke='rgb(226, 232, 240)' stroke-width='1.5'%3e%3cdefs%3e%3clinearGradient id='cannaGuideLeafGradient' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3e%3cstop offset='0%25' stop-color='rgb(74, 222, 128)'/%3e%3cstop offset='100%25' stop-color='rgb(16, 185, 129)'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z'/%3e%3cg transform='translate(5.2, 5.2) scale(0.6)'%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z'/%3e%3c/g%3e%3c/svg%3e",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
       "purpose": "maskable"
     },
     {
-      "src": "/pwa-icon.svg",
-      "sizes": "any",
+      "src": "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-3 -3 30 30' fill='none' stroke='rgb(226, 232, 240)' stroke-width='1.5'%3e%3cdefs%3e%3clinearGradient id='cannaGuideLeafGradient' x1='0%25' y1='0%25' x2='0%25' y2='100%25'%3e%3cstop offset='0%25' stop-color='rgb(74, 222, 128)'/%3e%3cstop offset='100%25' stop-color='rgb(16, 185, 129)'/%3e%3c/linearGradient%3e%3c/defs%3e%3cpath stroke-linecap='round' stroke-linejoin='round' d='m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z'/%3e%3cg transform='translate(5.2, 5.2) scale(0.6)'%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z'/%3e%3cpath fill='url(%23cannaGuideLeafGradient)' stroke='none' d='M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z'/%3e%3c/g%3e%3c/svg%3e",
+      "sizes": "512x512",
       "type": "image/svg+xml",
-      "purpose": "any"
+      "purpose": "maskable"
     }
+  ],
+  "categories": [
+    "education",
+    "lifestyle",
+    "tools",
+    "health_and_fitness"
   ],
   "shortcuts": [
     {
@@ -40,21 +45,36 @@
       "short_name": "Plants",
       "description": "View and manage your current grows",
       "url": "/?view=Plants",
-      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 256 256' fill='white'%3e%3cpath d='M218.3,115.7C203.1,105.3,160,88,160,40a8,8,0,0,0-16,0c0,16.4-15.6,29.9-30.3,40.3-15.1,10.7-33,21.8-33.7,46.9a8,8,0,0,0,8,8c32,0,32,16,32,16v8a8,8,0,0,0,16,0v-8s0-16,32-16c3.6,0,6.7.7,9.6,2a8,8,0,0,0,9.9-5.9C191,141.4,228.6,122.9,218.3,115.7ZM38.3,115.7C23.1,105.3,80,88,80,40a8,8,0,0,1,16,0c0,16.4,15.6,29.9,30.3,40.3,15.1,10.7,33,21.8,33.7,46.9a8,8,0,0,1-8,8c-32,0-32,16-32,16v8a8,8,0,0,1-16,0v-8s0-16-32-16c-3.6,0-6.7.7-9.6,2a8,8,0,0,1-9.9-5.9C39,141.4,2.6,122.9,38.3,115.7Z'/%3e%3c/svg%3e",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Strain Library",
       "short_name": "Strains",
       "description": "Explore the strain encyclopedia",
       "url": "/?view=Strains",
-      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 256 256' fill='white'%3e%3cpath d='M228.6,118.1,133.1,22.6a15.9,15.9,0,0,0-24.2-1.7l-.3.3L22.6,107.1a15.9,15.9,0,0,0,1.7,24.2l95.5,95.5a15.9,15.9,0,0,0,22.5,0l86.3-86.3A15.9,15.9,0,0,0,228.6,118.1ZM144,212.7,48.5,117.2,134.3,31.4l95.5,95.5Z'/%3e%3c/svg%3e",
+          "sizes": "96x96"
+        }
+      ]
     },
     {
       "name": "Knowledge Hub",
       "short_name": "Knowledge",
       "description": "Access the AI Mentor and grow guides",
       "url": "/?view=Knowledge",
-      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "data:image/svg+xml;utf8,%3csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 256 256' fill='white'%3e%3cpath d='M247.9,59.3l-40-40a8.1,8.1,0,0,0-11.4,0l-16,16A8.1,8.1,0,0,0,176,40.1v.2l-37-37.1a8,8,0,0,0-13.1,4.8l-12,72-12-72A8,8,0,0,0,88.9,8.1L51.8,45.3V45.1a8,8,0,0,0-4.6-4.8l-16-16a8.1,8.1,0,0,0-11.4,0l-40,40A8.1,8.1,0,0,0,8.1,70.7l40,40a8.3,8.3,0,0,0,5.7,2.3,8,8,0,0,0,5.6-2.4l.1-.1,31.5-31.5,12,72.1-45.9,45.9a8,8,0,0,0,11.3,11.3L120,160.4l51.9,51.9a8,8,0,0,0,11.3-11.3l-45.9-45.9,12-72.1,31.5,31.5.1.1a8.1,8.1,0,0,0,11.4,0l40-40A8.1,8.1,0,0,0,247.9,59.3ZM128,144.3,64.4,208,213.7,208ZM37.3,64.1,64,37.3,77.5,128H48.8ZM188.5,128l13.5-90.7,26.7,26.7ZM114.5,128,104,32l24,24ZM141.5,128l10.5-64,24,24ZM96,16H95.4l.3.2ZM160,16h.6l-.3.2ZM112,8l-1.1.6.5-.6ZM144,8l.5.6-1.1-.6Z'/%3e%3c/svg%3e",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }

@@ -1,5 +1,3 @@
-
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -87,8 +85,7 @@ class ErrorBoundary extends React.Component<
             )
         }
 
-        // FIX: Destructure props to avoid potential 'this' context issues and satisfy stricter type checkers.
-        // FIX: Changed 'props' to 'this.props' to correctly access props in a React class component.
+        // FIX: In a class component, props must be accessed via `this.props`, not as a standalone `props` variable.
         const { children } = this.props
         return children
     }

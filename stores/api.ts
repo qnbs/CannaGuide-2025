@@ -1,17 +1,19 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { createApi } from '@reduxjs/toolkit/query/react'
+// FIX: Import BaseQueryFn to correctly type the fake base query for RTK Query.
 import { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { geminiService } from '@/services/geminiService'
 import {
-    Recommendation,
     Plant,
+    Recommendation,
+    Strain,
     PlantDiagnosisResponse,
     AIResponse,
-    MentorMessage,
-    Strain,
     StructuredGrowTips,
     DeepDiveGuide,
+    MentorMessage,
     Language,
 } from '@/types'
+import { getT } from '@/i18n'
 
 interface ApiError {
     message: string
@@ -19,8 +21,9 @@ interface ApiError {
 
 // When using `queryFn` for all endpoints, RTK Query still needs a `baseQuery` for type inference.
 // Without it, the `builder` argument in the `endpoints` function is untyped, leading to "Untyped function calls may not accept type arguments" errors.
-// FIX: Replaced the untyped inline function with the correctly typed fakeBaseQuery.
-const fakeBaseQuery: BaseQueryFn = () => {
+// FIX: Correctly typed `fakeBaseQuery` with the `ApiError` type. This allows RTK Query
+// to properly infer the types for the endpoint builder, resolving multiple errors.
+const fakeBaseQuery: BaseQueryFn<any, unknown, ApiError> = () => {
     return { error: { message: 'When using `queryFn`, `baseQuery` should not be called.' } };
 };
 

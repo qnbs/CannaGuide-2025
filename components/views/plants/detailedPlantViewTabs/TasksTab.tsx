@@ -23,7 +23,7 @@ export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => 
                 <ul className="space-y-3">
                     {openTasks.length > 0 ? (
                         openTasks.map(task => (
-                           <li key={task.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-800">
+                           <li key={task.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-800 ring-1 ring-inset ring-white/20">
                                <div className="flex-grow">
                                    <p className="font-semibold text-slate-100">{t(task.title) || task.title}</p>
                                    <p className="text-sm text-slate-300">{t(task.description) || task.description}</p>
@@ -41,7 +41,7 @@ export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => 
                 <ul className="space-y-3">
                     {completedTasks.length > 0 ? (
                         completedTasks.map(task => (
-                           <li key={task.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-800 opacity-60">
+                           <li key={task.id} className="flex items-center gap-4 p-3 rounded-lg bg-slate-800 opacity-60 ring-1 ring-inset ring-white/20">
                                <PhosphorIcons.CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
                                <div className="flex-grow">
                                    <p className="font-semibold line-through text-slate-400">{t(task.title) || task.title}</p>

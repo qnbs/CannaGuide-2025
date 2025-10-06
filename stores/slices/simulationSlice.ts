@@ -1,11 +1,11 @@
-import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, ProblemType, JournalEntryType, AppSettings, HarvestData, TrainingType } from '@/types';
-import { simulationService } from '@/services/plantSimulationService';
-import type { RootState } from '../store';
-import { cancelNewGrow, addNotification } from './uiSlice';
+import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
+import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, JournalEntryType, TrainingType, AmendmentType } from '@/types';
+// FIX: Added missing import for PLANT_STAGE_DETAILS.
+import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { RootState } from '../store';
+import { addNotification, cancelNewGrow } from './uiSlice';
 import { getT } from '@/i18n';
-import { z } from 'zod';
-import { GrowSetupSchema, WaterDataSchema, TrainingTypeSchema } from '@/types/schemas';
+import { GrowSetupSchema, WaterDataSchema, TrainingDataSchema, PestControlDataSchema, AmendmentDataSchema, FeedDataSchema } from '@/types/schemas';
 
 export const plantsAdapter = createEntityAdapter<Plant>();
 
@@ -16,155 +16,108 @@ const initialState: SimulationState = {
     devSpeedMultiplier: 1,
 };
 
-// --- Async Thunks ---
-
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (arg, { dispatch, getState }) => {
-        const { ui, settings, simulation } = getState();
-        const { strain: strainForNewGrow, setup: setupForNewGrow, slotIndex: initiatingGrowForSlot } = ui.newGrowFlow;
+        const { newGrowFlow } = getState().ui;
+        const { settings } = getState().settings;
+        if (newGrowFlow.status === 'confirming' && newGrowFlow.strain && newGrowFlow.setup && newGrowFlow.slotIndex !== null) {
+            const validation = GrowSetupSchema.safeParse(newGrowFlow.setup);
+            if (!validation.success) {
+                console.error("Invalid Grow Setup:", validation.error);
+                dispatch(addNotification({ message: getT()('common.simulationErrors.invalidSetup'), type: 'error' }));
+                dispatch(cancelNewGrow());
+                return;
+            }
 
-        const validationResult = GrowSetupSchema.safeParse(setupForNewGrow);
-        if (!validationResult.success) {
-            console.error("GrowSetup validation failed:", validationResult.error.flatten());
-            dispatch(addNotification({ message: getT()('simulationErrors.invalidGrowSetup'), type: 'error' }));
-            dispatch(cancelNewGrow());
-            return;
-        }
-        
-        let targetSlot = initiatingGrowForSlot;
-        // If the flow didn't start by clicking a slot, find the first available one.
-        if (targetSlot === null) {
-            targetSlot = simulation.plantSlots.findIndex(slot => slot === null);
-        }
-        
-        if (strainForNewGrow && validationResult.data && targetSlot !== null && targetSlot !== -1) {
-            const name = `${strainForNewGrow.name} #${targetSlot + 1}`;
-            
-            const newPlant = simulationService.createPlant(
-                strainForNewGrow,
-                validationResult.data,
-                settings.settings.defaultGrowSetup.light,
-                name
-            );
-
-            dispatch(simulationSlice.actions._addPlant({ plant: newPlant, slotIndex: targetSlot }));
-            dispatch(cancelNewGrow());
-            dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name }), type: 'success' }));
-        } else {
-            dispatch(addNotification({ message: getT()('plantsView.notifications.allSlotsFull'), type: 'error' }));
+            const newPlant = plantSimulationService.createPlant(newGrowFlow.strain, validation.data, settings.defaultGrowSetup.light, `${newGrowFlow.strain.name} #${newGrowFlow.slotIndex + 1}`);
+            dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: newGrowFlow.slotIndex }));
+            dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name: newPlant.name }), type: 'success' }));
             dispatch(cancelNewGrow());
         }
     }
 );
-
-export const applyWateringAction = createAsyncThunk<void, { plantId: string, waterData: { amount: number, ph: number, ec?: number }, notes: string }, { state: RootState }>(
-    'simulation/applyWateringAction',
-    async ({ plantId, waterData, notes }, { dispatch, getState }) => {
-        const validation = WaterDataSchema.safeParse(waterData);
-        if (!validation.success) {
-            dispatch(addNotification({ message: getT()('simulationErrors.invalidWateringData'), type: 'error' }));
-            return;
-        }
-
-        const plant = getState().simulation.plants.entities[plantId];
-        if (!plant) {
-            dispatch(addNotification({ message: getT()('simulationErrors.plantNotFoundWatering'), type: 'error' }));
-            return;
-        }
-
-        dispatch(waterPlant({ plantId, ...validation.data }));
-        
-        const entryType = validation.data.ec ? JournalEntryType.Feeding : JournalEntryType.Watering;
-        dispatch(addJournalEntry({ plantId, entry: { type: entryType, notes, details: validation.data } }));
-    }
-);
-
-export const applyTrainingAction = createAsyncThunk<void, { plantId: string, trainingType: TrainingType, notes: string }, { state: RootState }>(
-    'simulation/applyTrainingAction',
-    async ({ plantId, trainingType, notes }, { dispatch, getState }) => {
-        const validation = TrainingTypeSchema.safeParse(trainingType);
-        if (!validation.success) {
-            dispatch(addNotification({ message: getT()('simulationErrors.invalidTrainingType'), type: 'error' }));
-            return;
-        }
-        const validatedTrainingType = validation.data;
-
-        const plant = getState().simulation.plants.entities[plantId];
-        if (!plant) {
-            dispatch(addNotification({ message: getT()('simulationErrors.plantNotFoundTraining'), type: 'error' }));
-            return;
-        }
-
-        if (validatedTrainingType === 'Topping') {
-            dispatch(topPlant({ plantId }));
-        } else if (validatedTrainingType === 'LST') {
-            dispatch(applyLst({ plantId }));
-        }
-        
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Training, notes, details: { trainingType: validatedTrainingType } } }));
-    }
-);
-
-const PestControlSchema = z.object({ notes: z.string().min(1, { message: getT()('simulationErrors.pestControlNotesEmpty') }) });
-export const applyPestControlAction = createAsyncThunk<void, { plantId: string, notes: string }, { state: RootState }>(
-    'simulation/applyPestControlAction',
-    async({ plantId, notes }, { dispatch }) => {
-        const validation = PestControlSchema.safeParse({ notes });
-        if(!validation.success){
-            dispatch(addNotification({ message: validation.error.issues[0].message, type: 'error' }));
-            return;
-        }
-        dispatch(applyPestControl({ plantId, notes: validation.data.notes }));
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes: validation.data.notes } }));
-    }
-);
-
 
 export const updatePlantToNow = createAsyncThunk<void, string, { state: RootState }>(
     'simulation/updatePlantToNow',
-    async (plantId, { getState, dispatch }) => {
-        const plant = getState().simulation.plants.entities[plantId];
-        if (!plant) return;
-
-        const deltaTime = Date.now() - plant.lastUpdated;
-        
-        if (deltaTime > 1000) { // Only run if more than a second has passed
-            const { updatedPlant, newJournalEntries, newTasks } = simulationService.calculateStateForTimeDelta(plant, deltaTime);
-            
-            // The simulation service now handles age and lastUpdated internally for accuracy
-            dispatch(simulationSlice.actions.plantStateUpdated({ updatedPlant, newJournalEntries, newTasks }));
+    async (plantId, { dispatch, getState }) => {
+        const state = getState();
+        const plant = state.simulation.plants.entities[plantId];
+        if (plant) {
+            const deltaTime = Date.now() - plant.lastUpdated;
+            if (deltaTime > 1000 * 60) { // Only update if more than a minute has passed
+                 const { updatedPlant, newJournalEntries, newTasks } = plantSimulationService.calculateStateForTimeDelta(plant, deltaTime);
+                 dispatch(plantStateUpdated({ updatedPlant }));
+                 newJournalEntries.forEach(entry => dispatch(addJournalEntry({ plantId, entry })));
+                 newTasks.forEach(task => dispatch(simulationSlice.actions.addTask({ plantId, task })));
+            }
         }
     }
 );
 
-export const initializeSimulation = createAsyncThunk<void, void, { state: RootState }>(
-    'simulation/initializeSimulation',
-    async (_, { getState, dispatch }) => {
-        const { plants } = getState().simulation;
-        const plantIds = plants.ids as string[];
-        const now = Date.now();
+// --- Validating Async Thunks for all interactions ---
 
-        console.log(`[Simulation] Initializing and catching up ${plantIds.length} plants.`);
-
-        let totalTimePassed = 0;
-
-        for (const plantId of plantIds) {
-            const plant = plants.entities[plantId];
-            if (plant) {
-                const deltaTime = now - plant.lastUpdated;
-                if (deltaTime > 10000) { // 10-second threshold to avoid tiny updates
-                    const result = simulationService.calculateStateForTimeDelta(plant, deltaTime);
-                    dispatch(plantStateUpdated(result));
-                    totalTimePassed = Math.max(totalTimePassed, deltaTime);
-                }
-            }
+export const applyWateringAction = createAsyncThunk<void, { plantId: string, data: { amountMl?: number, ph?: number }, notes: string }, { state: RootState }>(
+    'simulation/applyWatering',
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = WaterDataSchema.safeParse(data);
+        if (!validation.success) {
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Watering' }), type: 'error' }));
+            return;
         }
+        dispatch(simulationSlice.actions.applyWatering({ plantId, amountMl: validation.data.amountMl || 500, ph: validation.data.ph }));
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Watering, notes, details: validation.data } }));
+    }
+);
 
-        if (totalTimePassed > 60000) { // Only notify if more than a minute has passed
-            const hours = (totalTimePassed / (1000 * 60 * 60)).toFixed(1);
-            dispatch(addNotification({ message: `Welcome back! Your plants grew for ${hours} hours.`, type: 'info' }));
+export const applyFeedingAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
+    'simulation/applyFeeding',
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = FeedDataSchema.safeParse(data);
+        if (!validation.success) {
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Feeding' }), type: 'error' }));
+            return;
         }
+        dispatch(simulationSlice.actions.applyFeeding({ plantId, ...validation.data }));
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Feeding, notes, details: validation.data } }));
+    }
+);
+
+
+export const applyTrainingAction = createAsyncThunk<void, { plantId: string, data: { type: TrainingType }, notes: string }, { state: RootState }>(
+    'simulation/applyTraining',
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = TrainingDataSchema.safeParse(data);
+        if (!validation.success) {
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Training' }), type: 'error' }));
+            return;
+        }
+        dispatch(simulationSlice.actions.applyTraining({ plantId, type: validation.data.type }));
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Training, notes, details: validation.data } }));
+    }
+);
+
+export const applyPestControlAction = createAsyncThunk<void, { plantId: string, data: { method: string }, notes: string }, { state: RootState }>(
+    'simulation/applyPestControl',
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = PestControlDataSchema.safeParse(data);
+         if (!validation.success) {
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Pest Control' }), type: 'error' }));
+            return;
+        }
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes, details: validation.data } }));
+    }
+);
+
+export const applyAmendmentAction = createAsyncThunk<void, { plantId: string, data: { type: AmendmentType }, notes: string }, { state: RootState }>(
+    'simulation/applyAmendment',
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = AmendmentDataSchema.safeParse(data);
+         if (!validation.success) {
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Amendment' }), type: 'error' }));
+            return;
+        }
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Amendment, notes, details: validation.data } }));
     }
 );
 
@@ -174,195 +127,140 @@ const simulationSlice = createSlice({
     initialState,
     reducers: {
         setSimulationState: (state, action: PayloadAction<SimulationState>) => {
-            if (action.payload && action.payload.plants) {
-                plantsAdapter.setAll(state.plants, action.payload.plants);
-            }
-            if (action.payload && action.payload.plantSlots) {
-                state.plantSlots = action.payload.plantSlots;
-            }
-            if (action.payload && action.payload.selectedPlantId) {
-                state.selectedPlantId = action.payload.selectedPlantId;
-            }
+            return action.payload;
         },
-        plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
-            const { updatedPlant, newJournalEntries, newTasks } = action.payload;
-            const currentPlant = state.plants.entities[updatedPlant.id];
-            if (currentPlant) {
-                if (newJournalEntries.length > 0) {
-                    updatedPlant.journal = [...currentPlant.journal, ...newJournalEntries];
-                }
-                if (newTasks.length > 0) {
-                    updatedPlant.tasks = [...currentPlant.tasks, ...newTasks];
-                }
-            }
-            plantsAdapter.upsertOne(state.plants, updatedPlant);
+        addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
+            plantsAdapter.addOne(state.plants, action.payload.plant);
+            state.plantSlots[action.payload.slotIndex] = action.payload.plant.id;
         },
         setSelectedPlantId: (state, action: PayloadAction<string | null>) => {
             state.selectedPlantId = action.payload;
         },
-        _addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
-            const { plant, slotIndex } = action.payload;
-            plantsAdapter.addOne(state.plants, plant);
-            state.plantSlots[slotIndex] = plant.id;
-        },
-        waterPlant: (state, action: PayloadAction<{ plantId: string, amount: number, ph: number, ec?: number }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) {
-                plant.medium.moisture = 100;
-                plant.medium.ph = (plant.medium.ph + action.payload.ph) / 2;
-                if (action.payload.ec) {
-                    plant.medium.ec = (plant.medium.ec + action.payload.ec) / 2;
-                }
-                plant.lastUpdated = Date.now();
-            }
+        plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant }>) => {
+            plantsAdapter.updateOne(state.plants, { id: action.payload.updatedPlant.id, changes: action.payload.updatedPlant });
         },
         addJournalEntry: (state, action: PayloadAction<{ plantId: string, entry: Omit<JournalEntry, 'id' | 'createdAt'> }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if(plant) {
-                const newEntry: JournalEntry = {
-                    ...action.payload.entry,
-                    id: `journal-${plant.id}-${Date.now()}`,
-                    createdAt: Date.now(),
-                };
+            const { plantId, entry } = action.payload;
+            const plant = state.plants.entities[plantId];
+            if (plant) {
+                const newEntry: JournalEntry = { ...entry, id: `journal-${Date.now()}`, createdAt: Date.now() };
                 plant.journal.push(newEntry);
             }
         },
-        completeTask: (state, action: PayloadAction<{ plantId: string, taskId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            const task = plant?.tasks.find(t => t.id === action.payload.taskId);
-            if(task) {
-                task.isCompleted = true;
-                task.completedAt = Date.now();
+        addTask: (state, action: PayloadAction<{ plantId: string, task: Task }>) => {
+            const { plantId, task } = action.payload;
+            const plant = state.plants.entities[plantId];
+            if(plant && !plant.tasks.some(t => t.id === task.id)) {
+                plant.tasks.push(task);
             }
         },
-        resetPlants: (state) => {
-            plantsAdapter.removeAll(state.plants);
-            state.plantSlots = [null, null, null];
+        completeTask: (state, action: PayloadAction<{ plantId: string, taskId: string }>) => {
+            const { plantId, taskId } = action.payload;
+            const plant = state.plants.entities[plantId];
+            if (plant) {
+                const task = plant.tasks.find(t => t.id === taskId);
+                if (task) {
+                    task.isCompleted = true;
+                    task.completedAt = Date.now();
+                }
+            }
         },
         waterAllPlants: (state) => {
             state.plantSlots.forEach(plantId => {
                 if (plantId) {
                     const plant = state.plants.entities[plantId];
                     if (plant) {
-                       plant.medium.moisture = 100;
-                       plant.lastUpdated = Date.now();
-                       plant.journal.push({id: `journal-water-all-${Date.now()}`, createdAt: Date.now(), type: JournalEntryType.Watering, notes: 'Watered all plants.'});
+                        const waterCapacity = plant.strain.agronomic.height === 'Tall' ? 3000 : 2000;
+                        plant.medium.substrateWater = Math.min(waterCapacity, plant.medium.substrateWater + 1000);
+                        plant.medium.moisture = (plant.medium.substrateWater / waterCapacity) * 100;
                     }
                 }
             });
         },
-        topPlant: (state, action: PayloadAction<{ plantId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) {
-                plant.isTopped = true;
-                plant.structuralModel.branches *= 2;
-                plant.stressLevel = Math.min(100, plant.stressLevel + 15);
-                plant.lastUpdated = Date.now();
-            }
-        },
-        applyLst: (state, action: PayloadAction<{ plantId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) {
-                plant.lstApplied += 1;
-                plant.stressLevel = Math.min(100, plant.stressLevel + 5);
-                plant.lastUpdated = Date.now();
-            }
-        },
-        applyPestControl: (state, action: PayloadAction<{ plantId: string; notes: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if (plant) {
-                plant.problems = plant.problems.filter(p => p.type !== ProblemType.PestInfestation);
-                plant.health = Math.min(100, plant.health + 5);
-                plant.lastUpdated = Date.now();
-            }
-        },
-        harvestPlant: (state, action: PayloadAction<{ plantId: string }>) => {
-            const plant = state.plants.entities[action.payload.plantId];
-            if(plant) {
-                plant.stage = PlantStage.Harvest;
-                plant.lastUpdated = Date.now();
-                plant.harvestData = { 
-                    wetWeight: plant.biomass * 4,
-                    dryWeight: plant.biomass,
-                    terpeneRetentionPercent: 100,
-                    moldRiskPercent: 0,
-                    dryingEnvironment: { temperature: 20, humidity: 60 },
-                    currentDryDay: 0, 
-                    currentCureDay: 0, 
-                    jarHumidity: 75, 
-                    finalQuality: 0,
-                    chlorophyllPercent: 100,
-                    terpeneProfile: {},
-                    cannabinoidProfile: { thc: 0, cbn: 0 },
-                    lastBurpDay: 0,
-                };
-            }
-        },
-        processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'cure' | 'burp' }>) => {
-             const plant = state.plants.entities[action.payload.plantId];
-             if(plant && plant.harvestData) {
-                 switch(action.payload.action) {
-                     case 'dry':
-                         plant.harvestData.currentDryDay += 1;
-                         if(plant.harvestData.currentDryDay >= 10) {
-                             plant.stage = PlantStage.Curing;
-                         }
-                         break;
-                     case 'cure':
-                         plant.harvestData.currentCureDay += 1;
-                          plant.harvestData.jarHumidity = Math.max(55, plant.harvestData.jarHumidity - 0.5);
-                         if(plant.harvestData.currentCureDay >= 21) {
-                             plant.stage = PlantStage.Finished;
-                             plant.harvestData.finalQuality = plant.health + (Math.random() * 10);
-                         }
-                         break;
-                     case 'burp':
-                         plant.harvestData.jarHumidity = 62;
-                         break;
-                 }
-                 plant.lastUpdated = Date.now();
-             }
+        resetPlants: (state) => {
+            plantsAdapter.removeAll(state.plants);
+            state.plantSlots = [null, null, null];
+            state.selectedPlantId = null;
         },
         toggleLight: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if(plant) plant.equipment.light.isOn = !plant.equipment.light.isOn;
+            if (plant) plant.equipment.light.isOn = !plant.equipment.light.isOn;
         },
         toggleFan: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if(plant) plant.equipment.fan.isOn = !plant.equipment.fan.isOn;
+            if (plant) plant.equipment.fan.isOn = !plant.equipment.fan.isOn;
         },
         setFanSpeed: (state, action: PayloadAction<{ plantId: string, speed: number }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if(plant) plant.equipment.fan.speed = action.payload.speed;
+            if (plant) plant.equipment.fan.speed = action.payload.speed;
         },
-        setLightHours: (state, action: PayloadAction<{ plantId: string; hours: number }>) => {
+        setLightHours: (state, action: PayloadAction<{ plantId: string, hours: number }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if (plant) {
-                plant.equipment.light.lightHours = action.payload.hours;
-                plant.lastUpdated = Date.now();
+            if (plant) plant.equipment.light.lightHours = action.payload.hours;
+        },
+        processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'burp' | 'cure' }>) => {
+            const plant = state.plants.entities[action.payload.plantId];
+            if (!plant || !plant.harvestData) return;
+            if (plant.stage === PlantStage.Drying && action.payload.action === 'dry') {
+                plant.harvestData.currentDryDay++;
+                if (plant.harvestData.currentDryDay >= PLANT_STAGE_DETAILS[PlantStage.Drying].duration) plant.stage = PlantStage.Curing;
+            }
+            if (plant.stage === PlantStage.Curing) {
+                if (action.payload.action === 'burp') plant.harvestData.lastBurpDay = plant.harvestData.currentCureDay;
+                if (action.payload.action === 'cure') {
+                    plant.harvestData.currentCureDay++;
+                    if (plant.harvestData.currentCureDay >= PLANT_STAGE_DETAILS[PlantStage.Curing].duration) plant.stage = PlantStage.Finished;
+                }
             }
         },
-    },
+        initializeSimulation: (state) => {},
+        applyWatering: (state, action: PayloadAction<{ plantId: string; amountMl?: number; ph?: number }>) => {
+             const plant = state.plants.entities[action.payload.plantId];
+             if (plant) {
+                const waterCapacity = plant.strain.agronomic.height === 'Tall' ? 3000 : 2000;
+                plant.medium.substrateWater = Math.min(waterCapacity, plant.medium.substrateWater + (action.payload.amountMl || 500));
+                plant.medium.moisture = (plant.medium.substrateWater / waterCapacity) * 100;
+                if(action.payload.ph) plant.medium.ph = (plant.medium.ph + action.payload.ph) / 2; // Average pH
+             }
+        },
+        applyFeeding: (state, action: PayloadAction<{ plantId: string, ec: number, ph: number }>) => {
+            const plant = state.plants.entities[action.payload.plantId];
+            if (plant) {
+                plant.medium.ec = (plant.medium.ec + action.payload.ec) / 2;
+                plant.medium.ph = (plant.medium.ph + action.payload.ph) / 2;
+            }
+        },
+        applyTraining: (state, action: PayloadAction<{ plantId: string, type: TrainingType }>) => {
+            const plant = state.plants.entities[action.payload.plantId];
+            if (plant) {
+                let result;
+                if (action.payload.type === 'LST') result = plantSimulationService.applyLst(plant);
+                else if (action.payload.type === 'Topping' || action.payload.type === 'FIMing') result = plantSimulationService.topPlant(plant);
+                
+                if (result) {
+                    plantsAdapter.updateOne(state.plants, { id: action.payload.plantId, changes: result.updatedPlant });
+                }
+            }
+        },
+    }
 });
 
-export const { 
+export const {
     setSimulationState,
-    plantStateUpdated,
+    addPlant,
     setSelectedPlantId,
-    _addPlant,
-    waterPlant,
+    plantStateUpdated,
     addJournalEntry,
+    addTask,
     completeTask,
-    resetPlants,
     waterAllPlants,
-    topPlant,
-    applyLst,
-    applyPestControl,
-    harvestPlant,
-    processPostHarvest,
+    resetPlants,
     toggleLight,
     toggleFan,
     setFanSpeed,
     setLightHours,
+    processPostHarvest,
+    initializeSimulation
 } = simulationSlice.actions;
+
 export default simulationSlice.reducer;

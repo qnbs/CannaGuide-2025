@@ -135,7 +135,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "A legendary Indica strain with a citrusy, metallic, and earthy aroma. The effect is strong, physically relaxing, and almost narcotic.",
+        "description": "Sensi Star is a legendary, multi-award-winning, indica-dominant strain whose exact genetics are a secret of the breeder Paradise Seeds, but it has a strong Afghani influence. It is known for its dense, extremely resinous buds and a unique aroma that combines citrus and metallic notes with an earthy, pungent undertone. The effect is strong, both physically relaxing and cerebrally stimulating, often described as a 'body stone with a head high'.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -943,7 +943,7 @@ export const strainsS: Strain[] = [
         "name": "Swazi Gold",
         "type": StrainType.Sativa,
         "typeDetails": "Sativa 100%",
-        "genetics": "Afrikanische Landrasse (Eswatini)",
+        "genetics": "African Landrace (Eswatini)",
         "floweringType": "Photoperiod",
         "thc": 21,
         "cbd": 1,

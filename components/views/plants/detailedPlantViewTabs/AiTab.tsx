@@ -12,6 +12,7 @@ import { selectArchivedAdvisorResponsesForPlant, selectLanguage } from '@/stores
 import { addNotification } from '@/stores/slices/uiSlice';
 import { useGetPlantAdviceMutation, useGetProactiveDiagnosisMutation } from '@/stores/api';
 import { addArchivedAdvisorResponse, updateArchivedAdvisorResponse, deleteArchivedAdvisorResponse } from '@/stores/slices/archivesSlice';
+import { Speakable } from '@/components/common/Speakable';
 
 interface AiTabProps {
     plant: Plant;
@@ -108,7 +109,9 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                     {diagnosisState.data && !diagnosisState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{diagnosisState.data.title}</h4>
-                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: diagnosisState.data.content }}></div>
+                            <Speakable elementId={`proactive-diag-content-${plant.id}`}>
+                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: diagnosisState.data.content }}></div>
+                            </Speakable>
                              <div className="text-right mt-2">
                                    <Button size="sm" variant="secondary" onClick={handleSaveDiagnosisResponse} disabled={isDiagnosisSaved}>
                                        {isDiagnosisSaved ? 
@@ -136,7 +139,9 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                     {advisorState.data && !advisorState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
                             <h4 className="font-bold text-primary-300">{advisorState.data.title}</h4>
-                            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: advisorState.data.content }}></div>
+                             <Speakable elementId={`advisor-content-${plant.id}`}>
+                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: advisorState.data.content }}></div>
+                            </Speakable>
                             {!advisorState.error && (
                                 <div className="text-right mt-2">
                                    <Button size="sm" variant="secondary" onClick={handleSaveResponse} disabled={isCurrentResponseSaved}>
@@ -163,7 +168,9 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                              <Card key={res.id} className="bg-slate-800">
                                  <p className="text-xs text-slate-400">{new Date(res.createdAt).toLocaleString()} - {t(`plantStages.${res.plantStage}`)}</p>
                                 <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
-                                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
+                                 <Speakable elementId={`advisor-archive-${res.id}`}>
+                                    <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
+                                 </Speakable>
                                  <div className="flex justify-end items-center gap-2 mt-2">
                                     <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}>
                                         <PhosphorIcons.PencilSimple className="w-4 h-4"/>

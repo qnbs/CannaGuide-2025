@@ -53,7 +53,7 @@ export const strainsR: Strain[] = [
     createStrainObject({
         "id": "raspberry-cough",
         "name": "Raspberry Cough",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa - 70% Sativa / 30% Indica",
         "genetics": "Cambodian Landrace x Ice",
         "floweringType": "Photoperiod",

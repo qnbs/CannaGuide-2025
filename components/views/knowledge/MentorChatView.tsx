@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/ThemePrimitives';
 import { useGetMentorResponseMutation } from '@/stores/api';
 import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice';
 import { selectLanguage } from '@/stores/selectors';
+import { Speakable } from '@/components/common/Speakable';
 
 interface MentorChatViewProps {
     plant: Plant;
@@ -17,13 +18,17 @@ interface MentorChatViewProps {
 
 const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
     const isUser = message.role === 'user';
+    const content = (
+         <div className={`max-w-md p-3 rounded-lg ${isUser ? 'bg-slate-700 text-slate-100' : 'bg-slate-800'}`}>
+            {message.title && <h4 className="font-bold text-primary-300">{message.title}</h4>}
+            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: message.content }} />
+        </div>
+    );
+
     return (
         <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}>
             {!isUser && <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0"><PhosphorIcons.Brain className="w-5 h-5 text-primary-300"/></div>}
-            <div className={`max-w-md p-3 rounded-lg ${isUser ? 'bg-slate-700 text-slate-100' : 'bg-slate-800'}`}>
-                {message.title && <h4 className="font-bold text-primary-300">{message.title}</h4>}
-                <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: message.content }} />
-            </div>
+            {isUser ? content : <Speakable elementId={`mentor-${message.id}`}>{content}</Speakable>}
         </div>
     );
 });
@@ -47,18 +52,18 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
 
     const handleSend = async () => {
         if (input.trim() && !isLoading) {
-            const userMessage: MentorMessage = { role: 'user', content: input.trim(), title: '' };
+            const userMessage: MentorMessage = { id: `msg-user-${Date.now()}`, role: 'user', content: input.trim(), title: '' };
             setHistory(prev => [...prev, userMessage]);
             setInput('');
 
             try {
                 const response = await getMentorResponse({ plant, query: input.trim(), lang }).unwrap();
-                const modelMessage: MentorMessage = { role: 'model', ...response };
+                const modelMessage: MentorMessage = { id: `msg-model-${Date.now()}`, role: 'model', ...response };
                 setHistory(prev => [...prev, modelMessage]);
                 // Automatically archive successful responses
                 dispatch(addArchivedMentorResponse({ query: input.trim(), ...response }));
             } catch (error) {
-                const errorMessage: MentorMessage = { role: 'model', title: t('common.error'), content: (error as any).message || t('ai.error.unknown') };
+                const errorMessage: MentorMessage = { id: `msg-error-${Date.now()}`, role: 'model', title: t('common.error'), content: (error as any).message || t('ai.error.unknown') };
                 setHistory(prev => [...prev, errorMessage]);
             }
         }
@@ -90,7 +95,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
             </header>
             <div className="flex-grow overflow-y-auto pr-2 -mr-4 space-y-4 min-h-[calc(100vh-400px)]">
                 {history.map((msg, index) => (
-                    <Message key={index} message={msg} />
+                    <Message key={msg.id || index} message={msg} />
                 ))}
                 {isLoading && <AiLoadingIndicator loadingMessage={t('ai.generating')} />}
                  <div ref={messagesEndRef} />

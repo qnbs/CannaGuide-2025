@@ -4,7 +4,7 @@ const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
-  '/index.tsx',
+  '/index.js',
   '/manifest.json',
   '/icon-192.svg',
   '/icon-512.svg',
@@ -146,3 +146,22 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+// Background Sync event listener
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'data-sync') {
+    console.log('[SW] Sync event triggered for data-sync');
+    event.waitUntil(syncData());
+  }
+});
+
+async function syncData() {
+  // Placeholder for actual sync logic to a backend
+  console.log('[SW] Would now attempt to sync queued data to the server...');
+  // In a real app:
+  // 1. Open IndexedDB for queued actions.
+  // 2. Fetch and POST each action to the server.
+  // 3. On success, remove from queue.
+  // 4. If fetch fails, the sync will be retried later by the browser.
+  return Promise.resolve();
+}

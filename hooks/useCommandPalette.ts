@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
@@ -6,8 +5,7 @@ import { setActiveView, openAddModal, startGrowInSlot } from '@/stores/slices/ui
 import { setSetting, exportAllData } from '@/stores/slices/settingsSlice';
 import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';
 import { waterAllPlants } from '@/stores/slices/simulationSlice';
-import { Command, View, Language, Theme, AppSettings } from '@/types';
-import { CommandGroup } from '@/services/commandService';
+import { Command, View, Language, Theme, AppSettings, CommandGroup } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { i18nInstance } from '@/i18n';
 import { selectSettings, selectHasAvailableSlots, selectSimulation } from '@/stores/selectors';
@@ -36,7 +34,7 @@ export const useCommandPalette = () => {
             { id: 'nav-plants', title: t('nav.plants'), icon: PhosphorIcons.Plant, group: CommandGroup.Navigation, action: () => navigate(View.Plants), keywords: 'grow room dashboard garden' },
             { id: 'nav-strains', title: t('nav.strains'), icon: PhosphorIcons.Leafy, group: CommandGroup.Navigation, action: () => navigate(View.Strains), keywords: 'encyclopedia library search find' },
             { id: 'nav-equipment', title: t('nav.equipment'), icon: PhosphorIcons.Wrench, group: CommandGroup.Navigation, action: () => navigate(View.Equipment), keywords: 'gear tools configurator calculator' },
-            { id: 'nav-knowledge', title: t('nav.knowledge'), icon: PhosphorIcons.BookOpenText, group: CommandGroup.Navigation, action: () => navigate(View.Knowledge), keywords: 'guide mentor learn help' },
+            { id: 'nav-knowledge', title: t('nav.knowledge'), icon: PhosphorIcons.Brain, group: CommandGroup.Navigation, action: () => navigate(View.Knowledge), keywords: 'guide mentor learn help' },
             { id: 'nav-settings', title: t('nav.settings'), icon: PhosphorIcons.Gear, group: CommandGroup.Navigation, action: () => navigate(View.Settings), keywords: 'options configuration' },
             { id: 'nav-help', title: t('nav.help'), icon: PhosphorIcons.Question, group: CommandGroup.Navigation, action: () => navigate(View.Help), keywords: 'faq support lexicon' },
             

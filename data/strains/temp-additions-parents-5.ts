@@ -1,3 +1,4 @@
+
 import { Strain, StrainType } from '@/types';
 import { createStrainObject } from '@/services/strainFactory';
 
@@ -22,27 +23,6 @@ export const strains: Strain[] = [
         },
         "aromas": ["Strawberry", "Cherry", "Sweet", "Fizzy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "killer-new-haven",
-        "name": "Killer New Haven",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "Connecticut Heirloom",
-        "floweringType": "Photoperiod",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Short"
-        },
-        "aromas": ["Earthy", "Pungent", "Spicy", "Hash"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
         "id": "mendo-montage",

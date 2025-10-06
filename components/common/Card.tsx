@@ -1,4 +1,4 @@
-import React, { forwardRef, useRef, memo } from 'react'
+import React, { forwardRef, useRef, memo, useCallback } from 'react'
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
@@ -19,6 +19,13 @@ export const Card = memo(
             internalRef.current.style.setProperty('--y', `${y}px`)
         }
 
+        const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                (props.onClick as any)(e);
+            }
+        }, [isInteractive, props.onClick]);
+
         return (
             <div
                 ref={(node) => {
@@ -33,6 +40,9 @@ export const Card = memo(
                     isInteractive ? 'card-interactive-glow' : ''
                 } ${className}`}
                 onMouseMove={isInteractive ? handleMouseMove : undefined}
+                role={isInteractive ? 'button' : undefined}
+                tabIndex={isInteractive ? 0 : undefined}
+                onKeyDown={isInteractive ? handleKeyDown : undefined}
                 {...props}
             >
                 {children}

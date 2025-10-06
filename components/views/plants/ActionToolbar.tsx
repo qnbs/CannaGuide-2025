@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,7 @@ interface ActionToolbarProps {
     onLogAction: (type: ModalType) => void;
 }
 
-export const ActionToolbar: React.FC<ActionToolbarProps> = ({ onLogAction }) => {
+export const ActionToolbar: React.FC<ActionToolbarProps> = memo(({ onLogAction }) => {
     const { t } = useTranslation();
 
     const actions: { type: ModalType; label: string; icon: React.ReactNode }[] = [
@@ -21,13 +21,18 @@ export const ActionToolbar: React.FC<ActionToolbarProps> = ({ onLogAction }) => 
     ];
 
     return (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+        <div className="flex flex-wrap gap-3 justify-center">
             {actions.map(action => (
-                <Button key={action.type} onClick={() => onLogAction(action.type)} variant="secondary" className="flex-col !h-20">
-                    <div className="w-6 h-6 mb-1">{action.icon}</div>
-                    <span className="text-xs">{action.label}</span>
+                <Button
+                    key={action.type}
+                    onClick={() => onLogAction(action.type)}
+                    variant="secondary"
+                    className="flex items-center"
+                >
+                    <div className="w-5 h-5">{action.icon}</div>
+                    <span className="ml-2">{action.label}</span>
                 </Button>
             ))}
         </div>
     );
-};
+});

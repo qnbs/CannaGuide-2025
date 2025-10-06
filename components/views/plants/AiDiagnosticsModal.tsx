@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +7,6 @@ import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { CameraModal } from '@/components/common/CameraModal';
 import { Modal } from '@/components/common/Modal';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { useDiagnosePlantMutation } from '@/stores/api';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { addJournalEntry } from '@/stores/slices/simulationSlice';
 import { Card } from '@/components/common/Card';
@@ -125,20 +123,29 @@ ${response.prevention}
 interface AiDiagnosticsModalProps {
   plant: Plant;
   onClose: () => void;
+  diagnosePlant: (args: any) => void;
+  isLoading: boolean;
+  response: PlantDiagnosisResponse | undefined;
+  error: any;
+  resetDiagnosis: () => void;
 }
 
-export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, onClose }) => {
+export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, onClose, diagnosePlant, isLoading, response, error, resetDiagnosis }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
-    const [diagnosePlant, { isLoading, data: response, error }] = useDiagnosePlantMutation();
 
-    const [step, setStep] = useState<'upload' | 'context' | 'result'>('upload');
     const [image, setImage] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [isCameraOpen, setIsCameraOpen] = useState(false);
     const [userNotes, setUserNotes] = useState('');
     const [loadingMessage, setLoadingMessage] = useState('');
+    
+    const step = useMemo(() => {
+        if (isLoading || response || error) return 'result';
+        if (image) return 'context';
+        return 'upload';
+    }, [isLoading, response, error, image]);
 
      useEffect(() => {
         if (isLoading) {
@@ -154,6 +161,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
     }, [isLoading]);
 
     const handleFile = useCallback((file: File) => {
+        resetDiagnosis();
         if (!file.type.startsWith('image/')) {
             dispatch(addNotification({ message: t('plantsView.aiDiagnostics.validation.imageOnly'), type: 'error' }));
             return;
@@ -161,10 +169,9 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
         const reader = new FileReader();
         reader.onload = () => {
             setImage(reader.result as string);
-            setStep('context');
         };
         reader.readAsDataURL(file);
-    }, [dispatch, t]);
+    }, [dispatch, t, resetDiagnosis]);
 
     const handleDrag = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); }, []);
     const handleDragIn = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); }, []);
@@ -172,14 +179,13 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
     const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) { handleFile(e.dataTransfer.files[0]); } }, [handleFile]);
 
     const handleCapture = (dataUrl: string) => {
+        resetDiagnosis();
         setImage(dataUrl);
-        setStep('context');
         setIsCameraOpen(false);
     };
 
     const handleGetDiagnosis = () => {
         if (!image) return;
-        setStep('result');
         const base64Data = image.split(',')[1];
         const mimeType = base64ToMimeType(base64Data);
         diagnosePlant({ base64Image: base64Data, mimeType, plant, userNotes, lang });
@@ -208,7 +214,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in p-4">
                             <div className="relative">
                                 <img src={image} alt="plant preview" className="w-full h-auto rounded-lg max-h-64 object-contain" />
-                                <Button size="sm" variant="danger" className="absolute top-2 right-2 !p-1.5" onClick={() => { setImage(null); setStep('upload'); }} aria-label={t('common.removeImage')}><PhosphorIcons.X /></Button>
+                                <Button size="sm" variant="danger" className="absolute top-2 right-2 !p-1.5" onClick={() => { setImage(null); }} aria-label={t('common.removeImage')}><PhosphorIcons.X /></Button>
                             </div>
                              <div className="space-y-2">
                                  <h4 className="font-semibold text-slate-100">{t('plantsView.aiDiagnostics.stepContextTitle')}</h4>

@@ -26,7 +26,7 @@ class StrainService {
             } else {
                 console.log('[StrainService] Populating IndexedDB with fresh strain data.');
                 await dbService.addStrains(allStrainsData);
-                await dbService.setMetadata({ key: STRAIN_DATA_VERSION_KEY, value: CURRENT_STRAIN_DATA_VERSION });
+                await dbService.setMetadata(STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION);
                 this.allStrains = allStrainsData;
             }
             this.isInitialized = true;

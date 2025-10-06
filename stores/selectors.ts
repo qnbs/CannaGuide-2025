@@ -87,10 +87,10 @@ export const { selectAll: selectAllPlants, selectById: selectPlantEntityById } =
 export const selectPlantSlots = createSelector([selectSimulation], (sim) => sim.plantSlots);
 
 export const selectActivePlants = createSelector(
-  [selectPlantSlots, selectAllPlants],
-  (slots, allPlants) => slots
+  [selectPlantSlots, (state: RootState) => state.simulation.plants.entities],
+  (slots, plantEntities) => slots
     .filter((id): id is string => id !== null)
-    .map(id => allPlants.find(p => p.id === id))
+    .map(id => plantEntities[id])
     .filter((p): p is Plant => p !== undefined)
 );
 
@@ -105,7 +105,6 @@ export const selectPlantById = (id: string | null) => createSelector(
   [selectSimulation],
   (sim) => (id ? sim.plants.entities[id] : null)
 );
-
 
 export const selectOpenTasksSummary = createSelector(
   [selectActivePlants],

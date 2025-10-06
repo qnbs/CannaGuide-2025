@@ -10,8 +10,9 @@ import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stores/api';
 import { selectLanguage } from '@/stores/selectors';
+import { Speakable } from '@/components/common/Speakable';
 
-const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean }> = ({ tips, onSave, isSaved }) => {
+const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean; strainId: string; }> = ({ tips, onSave, isSaved, strainId }) => {
     const { t } = useTranslation();
 
     const tipCategories = [
@@ -29,7 +30,9 @@ const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => v
                         <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
                            {cat.icon} {cat.label}
                         </h4>
-                        <p className="text-sm text-slate-300 pl-8">{tips[cat.key as keyof StructuredGrowTips]}</p>
+                        <Speakable elementId={`strain-tip-${strainId}-${cat.key}`}>
+                            <p className="text-sm text-slate-300 pl-8">{tips[cat.key as keyof StructuredGrowTips]}</p>
+                        </Speakable>
                     </div>
                 ))}
             </div>
@@ -52,8 +55,12 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
     const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
     
-    const [getStrainTips, { data: tip, isLoading: isTextLoading, error: textError }] = useGetStrainTipsMutation();
-    const [generateStrainImage, { data: imageBase64, isLoading: isImageLoading, error: imageError }] = useGenerateStrainImageMutation();
+    const [getStrainTips, { data: tip, isLoading: isTextLoading, error: textError }] = useGetStrainTipsMutation({
+        fixedCacheKey: `strain-tip-text-${strain.id}`,
+    });
+    const [generateStrainImage, { data: imageBase64, isLoading: isImageLoading, error: imageError }] = useGenerateStrainImageMutation({
+        fixedCacheKey: `strain-tip-image-${strain.id}`,
+    });
     
     const isLoading = isTextLoading || isImageLoading;
     const error = textError || imageError;
@@ -63,7 +70,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
     const [tipRequest, setTipRequest] = useState({
         focus: 'overall',
         stage: 'all',
-        experience: 'advanced'
+        experienceLevel: 'advanced'
     });
 
     const hasGeneratedOnce = !!tip || !!imageBase64;
@@ -74,12 +81,14 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
     
     useEffect(() => {
         if (isLoading) {
+            const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experienceLevel}`);
             const messages = geminiService.getDynamicLoadingMessages({ 
                 useCase: 'growTips',
                 data: {
                     strainName: strain.name,
                     focus: t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`),
-                    stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`)
+                    stage: t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`),
+                    experienceLevel: experienceText,
                 }
             });
             let messageIndex = 0;
@@ -98,8 +107,8 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
         setIsTipSaved(false);
         const focusText = t(`strainsView.tips.form.focusOptions.${tipRequest.focus}`);
         const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
-        const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experience}`);
-        getStrainTips({strain, context: { focus: focusText, stage: stageText, experience: experienceText }, lang});
+        const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experienceLevel}`);
+        getStrainTips({strain, context: { focus: focusText, stage: stageText, experienceLevel: experienceText }, lang});
         generateStrainImage({ strain, lang });
     };
 
@@ -137,7 +146,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
                     </div>
                     <div>
                         <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
-                        <select value={tipRequest.experience} onChange={e => setTipRequest(p => ({...p, experience: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
+                        <select value={tipRequest.experienceLevel} onChange={e => setTipRequest(p => ({...p, experienceLevel: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
                             {Object.keys(t('strainsView.tips.form.experienceOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
                         </select>
                     </div>
@@ -163,7 +172,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
                      <div className="mt-4"><SkeletonLoader count={4} /></div>
                 ) : (
                     tip && (
-                        <StructuredTipDisplay tips={tip} onSave={handleSaveTip} isSaved={isTipSaved} />
+                        <StructuredTipDisplay tips={tip} onSave={handleSaveTip} isSaved={isTipSaved} strainId={strain.id} />
                     )
                 )}
             </div>

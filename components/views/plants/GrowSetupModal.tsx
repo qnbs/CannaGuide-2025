@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
@@ -64,7 +63,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   const footer = (
     <>
       <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-      <Button onClick={handleConfirm}>{t('plantsView.setupModal.confirm')}</Button>
+      <Button onClick={handleConfirm} glow={true}>{t('plantsView.setupModal.confirm')}</Button>
     </>
   );
 
@@ -81,9 +80,9 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
         <Card className="!p-3 bg-slate-800/50">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <InfoRow label={t('common.type')} value={strain.type} />
-                <InfoRow label="THC" value={`${strain.thc}%`} />
+                <InfoRow label={t('strainsView.table.thc')} value={`${strain.thc}%`} />
                 <InfoRow label={t('strainsView.table.flowering')} value={`${strain.floweringTime} ${t('common.units.weeks')}`} />
-                <InfoRow label={t('strainsView.difficulty.easy')} value={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)} />
+                <InfoRow label={t('strainsView.table.difficulty')} value={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)} />
             </div>
         </Card>
         

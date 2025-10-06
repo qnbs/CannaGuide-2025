@@ -29,26 +29,26 @@ export const strainsA: Strain[] = [
     createStrainObject({
         "id": "acapulco-gold",
         "name": "Acapulco Gold",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa - 100% Sativa",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Mexican Landrace",
         "floweringType": "Photoperiod",
-        "thc": 22.5,
-        "cbd": 1.5,
-        "thcRange": "18-27%",
-        "cbdRange": "<2%",
-        "floweringTime": 10.5,
-        "floweringTimeRange": "10-11",
-        "description": "A legendary landrace strain from Acapulco, Mexico, famous since the 1960s. Known for its golden-brown buds and an energizing, euphoric, and motivating effect. The taste is reminiscent of sweet, earthy toffee. A classic 'wake-and-bake' strain.",
+        "thc": 21,
+        "cbd": 0.7,
+        "thcRange": "19-23%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A legendary sativa-dominant landrace from the mountains near Acapulco, Mexico, renowned since the 1960s. It's famous for its beautiful buds that are dense with orange hairs, giving them a golden hue. The effect is highly cerebral, energizing, and euphoric, making it a classic 'wake-and-bake' strain that reduces stress and fatigue. Its unique flavor profile is often described as burnt toffee, coffee, and sweet earth.",
         "agronomic": {
             "difficulty": "Hard",
             "yield": "Medium",
             "height": "Tall",
-            "yieldDetails": { "indoor": "500 g/m²", "outdoor": "600 g/plant" },
+            "yieldDetails": { "indoor": "450 g/m²", "outdoor": "550 g/plant" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": "200-300 cm" }
         },
-        "aromas": ["Earthy", "Sweet", "Coffee", "Woody"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+        "aromas": ["Coffee", "Sweet", "Earthy", "Woody"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
         "id": "acid-dough",
@@ -145,6 +145,30 @@ export const strainsA: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Spicy", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "afghani-1",
+        "name": "Afghani #1",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica - 100% Indica",
+        "genetics": "Afghan Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "floweringTime": 7.5,
+        "description": "Afghani #1 is a classic, pure Indica strain directly descended from Afghani landraces, known for its robustness and high resin production. It forms the genetic basis for many modern hybrids, including the Skunk and Kush lines. The effect is strongly physical, deeply relaxing, and sedating, making it ideal for evening use to relieve pain, stress, and insomnia. The aroma is earthy and sweet with distinct notes of traditional hashish.",
+        "thcRange": "18-22%",
+        "cbdRange": "<2%",
+        "floweringTimeRange": "7-8",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "450-500 g/m²", "outdoor": "500-550 g/plant" },
+            "heightDetails": { "indoor": "70-110 cm", "outdoor": "100-160 cm" }
+        },
+        "aromas": ["Earthy", "Hash", "Spicy", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
         "id": "afgoo",
@@ -579,6 +603,30 @@ export const strainsA: Strain[] = [
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
+        "id": "appalachia",
+        "name": "Appalachia",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Green Crack x Tres Dawg",
+        "floweringType": "Photoperiod",
+        "thc": 21,
+        "cbd": 1,
+        "thcRange": "19-23%",
+        "cbdRange": "<2%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Appalachia is a balanced hybrid strain that combines the energetic, cerebral effects of Green Crack with the physical potency of Tres Dawg. The result is a versatile high that starts with a motivating and euphoric head rush and gradually transitions into a calming body relaxation without being heavily sedating. The aroma is a complex blend of sweet earth, pine, and a hint of diesel.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Earthy", "Sweet", "Pine", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
         "id": "appalachian-kush",
         "name": "Appalachian Kush",
         "type": StrainType.Hybrid,
@@ -769,6 +817,30 @@ export const strainsA: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Herbal", "Pungent"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "australian-sativa",
+        "name": "Australian Sativa",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa - 100% Sativa",
+        "genetics": "Australian Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<2%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Australian Sativa is a landrace strain adapted to the climate of Australia. It is most famous as the genetic origin of the 'DucksFoot' mutation, characterized by its unusual webbed leaves. The effect is typical for a sativa: uplifting, energetic, and creative, making it a good choice for daytime use. The aroma is earthy and piney with spicy and sweet notes.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Earthy", "Pine", "Spicy", "Sweet"],
+        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
         "id": "auto-duck",

@@ -1,3 +1,4 @@
+
 export const knowledgeView = {
     title: 'Knowledge Hub',
     subtitle: 'Your interactive guide to successful cultivation.',

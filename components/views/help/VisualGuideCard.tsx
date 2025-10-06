@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
 
 interface VisualGuideCardProps {
@@ -138,7 +138,7 @@ const GuideVisuals: React.FC<{ guideId: string }> = ({ guideId }) => {
 };
 
 
-export const VisualGuideCard: React.FC<VisualGuideCardProps> = ({ guideId, title, description }) => {
+export const VisualGuideCard: React.FC<VisualGuideCardProps> = memo(({ guideId, title, description }) => {
   return (
     <Card className="flex flex-col h-full">
       <div className="w-full h-32 bg-slate-800/50 rounded-md mb-4 flex items-center justify-center overflow-hidden">
@@ -148,4 +148,4 @@ export const VisualGuideCard: React.FC<VisualGuideCardProps> = ({ guideId, title
       <p className="text-sm text-slate-400 mt-1 flex-grow">{description}</p>
     </Card>
   );
-};
+});

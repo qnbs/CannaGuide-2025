@@ -5,12 +5,14 @@ export interface StrainsViewState {
     strainsViewTab: StrainViewTab;
     strainsViewMode: 'list' | 'grid';
     selectedStrainIds: string[];
+    selectedStrainId: string | null;
 }
 
 const initialState: StrainsViewState = {
     strainsViewTab: StrainViewTab.All,
     strainsViewMode: 'list',
     selectedStrainIds: [],
+    selectedStrainId: null,
 };
 
 const strainsViewSlice = createSlice({
@@ -23,6 +25,10 @@ const strainsViewSlice = createSlice({
         setStrainsViewTab: (state, action: PayloadAction<StrainViewTab>) => {
             state.strainsViewTab = action.payload;
             state.selectedStrainIds = []; // Clear selection when changing tabs
+            state.selectedStrainId = null;
+        },
+        setSelectedStrainId: (state, action: PayloadAction<string | null>) => {
+            state.selectedStrainId = action.payload;
         },
         setStrainsViewMode: (state, action: PayloadAction<'list' | 'grid'>) => {
             state.strainsViewMode = action.payload;
@@ -60,6 +66,7 @@ const strainsViewSlice = createSlice({
 export const {
     setStrainsViewState,
     setStrainsViewTab,
+    setSelectedStrainId,
     setStrainsViewMode,
     toggleStrainSelection,
     toggleAllStrainSelection,

@@ -17,21 +17,21 @@ const SortButton: React.FC<{
     onSort: (key: SortKey) => void;
     className?: string;
 }> = ({ sortKey, label, currentSort, onSort, className = '' }) => (
-    <button onClick={() => onSort(sortKey)} className={`flex items-center justify-center gap-1 text-xs font-semibold transition-colors ${className} ${currentSort.key === sortKey ? 'text-primary-300' : 'text-slate-400 hover:text-slate-100'}`}>
-        {label}
+    <button onClick={() => onSort(sortKey)} className={`flex items-center gap-1 transition-colors ${className} ${currentSort.key === sortKey ? 'text-primary-300' : 'text-slate-400 hover:text-slate-100'}`}>
+        <span>{label}</span>
         {currentSort.key === sortKey && (
             currentSort.direction === 'asc' ? <PhosphorIcons.ArrowUp className="w-3 h-3" /> : <PhosphorIcons.ArrowDown className="w-3 h-3" />
         )}
     </button>
 );
 
-const gridLayout = "grid items-center gap-x-2 pl-4 pr-2 grid-cols-[auto_minmax(0,2fr)_minmax(0,0.8fr)_auto] sm:grid-cols-[auto_minmax(0,4fr)_minmax(0,1fr)_repeat(4,minmax(0,80px))_auto]";
+const gridLayout = "grid items-center gap-x-4 pl-4 pr-2 grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_minmax(0,2.5fr)_repeat(6,minmax(0,1fr))_auto]";
 
 export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, handleSort, onToggleAll, areAllOnPageSelected }) => {
     const { t } = useTranslation();
 
     return (
-        <div className={`grid ${gridLayout} py-2`}>
+        <div className={`px-2 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
             <input
                 type="checkbox"
                 checked={areAllOnPageSelected}
@@ -40,12 +40,31 @@ export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, h
                 aria-label="Select all on page"
             />
             <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
-            <SortButton sortKey="type" label={t('strainsView.table.type')} currentSort={sort} onSort={handleSort} className="hidden sm:flex" />
-            <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
-            <SortButton sortKey="floweringTime" label={t('strainsView.table.flowering')} currentSort={sort} onSort={handleSort} className="hidden sm:flex" />
-            <SortButton sortKey="yield" label={t('strainsView.table.yield')} currentSort={sort} onSort={handleSort} className="hidden sm:flex" />
-            <SortButton sortKey="difficulty" label={t('strainsView.table.difficulty')} currentSort={sort} onSort={handleSort} className="hidden sm:flex" />
-            <div className="text-xs font-semibold text-slate-400 text-right pr-2">{t('common.actions')}</div>
+            
+            {/* Mobile Actions Placeholder */}
+            <div className="sm:hidden text-right pr-2">{t('common.actions')}</div>
+
+            {/* Desktop only headers */}
+            <div className="hidden sm:flex items-center justify-center">
+                <SortButton sortKey="type" label={t('strainsView.table.type')} currentSort={sort} onSort={handleSort} />
+            </div>
+            <div className="hidden sm:flex items-center justify-center">
+                <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
+            </div>
+            <div className="hidden sm:flex items-center justify-center">
+                <SortButton sortKey="cbd" label={t('strainsView.table.cbd')} currentSort={sort} onSort={handleSort} />
+            </div>
+            <div className="hidden sm:flex items-center justify-center">
+                <SortButton sortKey="floweringTime" label={t('strainsView.table.flowering')} currentSort={sort} onSort={handleSort} />
+            </div>
+            <div className="hidden sm:flex items-center justify-center">
+                <SortButton sortKey="yield" label={t('strainsView.table.yield')} currentSort={sort} onSort={handleSort} />
+            </div>
+            <div className="hidden sm:flex items-center justify-center">
+                <SortButton sortKey="difficulty" label={t('strainsView.table.difficulty')} currentSort={sort} onSort={handleSort} />
+            </div>
+            
+            <div className="hidden sm:block text-right pr-2">{t('common.actions')}</div>
         </div>
     );
 });

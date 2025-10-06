@@ -1,3 +1,4 @@
+
 import React, { memo } from 'react';
 import { Strain, StrainType } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -43,11 +44,12 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
         >
-            <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
+            <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-10">
                 <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => onToggleSelection(strain.id)}
+                    onChange={(e) => { e.stopPropagation(); onToggleSelection(strain.id); }}
+                    onClick={(e) => e.stopPropagation()}
                     className="h-4 w-4 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500 self-end"
                     aria-label={`Select ${strain.name}`}
                 />
@@ -57,7 +59,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     className="!p-1.5 rounded-full"
                     onClick={handleStartGrow}
                     disabled={!hasAvailableSlots}
-                    title={hasAvailableSlots ? t('strainsView.startGrowing') : t('plantsView.notifications.allSlotsFull')}
+                    aria-label={hasAvailableSlots ? t('strainsView.startGrowing') : t('plantsView.notifications.allSlotsFull')}
                 >
                     <PhosphorIcons.Plant className="w-4 h-4" />
                 </Button>
@@ -65,13 +67,13 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     variant="ghost" 
                     size="sm" 
                     className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
-                    onClick={onToggleFavorite} 
-                    title={t('common.manageFavorites')}
+                    onClick={(e) => { e.stopPropagation(); onToggleFavorite(); }}
+                    aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                  >
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
                 </Button>
                  {isUserStrain && (
-                    <Button variant="danger" size="sm" className="!p-1.5 rounded-full" onClick={() => onDelete(strain.id)} title={t('common.delete')}>
+                    <Button variant="danger" size="sm" className="!p-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); onDelete(strain.id); }} aria-label={`Delete ${strain.name}`}>
                         <PhosphorIcons.TrashSimple className="w-4 h-4" />
                     </Button>
                 )}
@@ -87,9 +89,9 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             <p className="text-xs text-slate-400 mb-2">{strain.type}</p>
 
             <div className="mt-auto text-xs grid grid-cols-1 gap-1 font-mono">
-                <div className="bg-slate-700/50 rounded p-1">THC: {strain.thc?.toFixed(1)}%</div>
+                <div className="bg-slate-700/50 rounded p-1">{t('strainsView.table.thc')}: {strain.thc?.toFixed(1)}%</div>
                 <div className="bg-slate-700/50 rounded p-1">
-                    {strain.floweringTimeRange || strain.floweringTime} {t('common.units.weeks')}
+                    {strain.floweringTimeRange || strain.floweringTime} w
                 </div>
             </div>
         </Card>

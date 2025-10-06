@@ -48,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 modal-overlay-animate"
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 modal-overlay-animate"
             onClick={onClose}
             role="dialog"
             aria-modal="true"

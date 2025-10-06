@@ -1,3 +1,4 @@
+import { seedbanks } from './seedbanks';
 
 export const equipmentView = {
   tabs: {
@@ -5,6 +6,7 @@ export const equipmentView = {
     setups: 'Meine Setups',
     calculators: 'Rechner',
     growShops: 'Grow Shops',
+    seedbanks: 'Saatgutbanken',
   },
   configurator: {
     title: 'KI-Ausrüstungs-Konfigurator',
@@ -65,6 +67,7 @@ export const equipmentView = {
   },
   savedSetups: {
     exportTitle: 'Gespeicherte Setups',
+    searchPlaceholder: 'Setups durchsuchen...',
     noSetups: {
       title: 'Keine gespeicherten Setups',
       subtitle: 'Nutze den Konfigurator, um dein erstes Setup zu generieren und zu speichern!',
@@ -183,5 +186,6 @@ export const equipmentView = {
         zamnesia: { name: 'Zamnesia', location: 'Niederlande', rating: 4.7, url: 'https://www.zamnesia.com/', description: 'Bekannter niederländischer Head- und Growshop.', strengths: ['Samen & Ausrüstung', 'Diskreter Versand', 'Große Community'], shipping: 'Weltweit', paymentMethods: ['credit_card', 'paypal', 'bank_transfer', 'crypto'] },
         royalQueen: { name: 'Royal Queen Seeds', location: 'Spanien', rating: 4.9, url: 'https://www.royalqueenseeds.com/', description: 'Samenbank, die auch hochwertige Ausrüstung anbietet.', strengths: ['Preisgekrönte Genetik', 'Hochwertiges Zubehör', 'Anleitungen'], shipping: 'EU-weit', paymentMethods: ['credit_card', 'bank_transfer', 'crypto'] }
     }
-  }
+  },
+  seedbanks,
 };

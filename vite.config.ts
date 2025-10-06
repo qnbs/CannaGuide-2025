@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
@@ -7,9 +7,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // FIX: Replaced `__dirname` which is unavailable in ES modules and pointed to a non-existent `src` directory.
-      // `path.resolve('./')` correctly resolves to the project root, matching the project's structure.
       '@': path.resolve('./'),
     },
+  },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './vitest.setup.ts',
   },
 })

@@ -96,6 +96,8 @@ export const plantsView = {
         pestControl: 'Schädlingsbekämpfung',
         environment: 'Umgebung',
         amendment: 'Zusatz',
+        harvest: 'Ernte',
+        postHarvest: 'Nachernte',
     },
     journalNoEntries: 'Keine Journaleinträge entsprechen dem aktuellen Filter.',
     tasksComplete: 'Abschließen',

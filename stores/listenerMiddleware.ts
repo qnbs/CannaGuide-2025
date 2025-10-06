@@ -1,3 +1,5 @@
+
+
 import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from './store';
 import { i18nInstance, getT } from '@/i18n';
@@ -158,14 +160,14 @@ startAppListening({
 startAppListening({
   actionCreator: addMultipleToFavorites,
   effect: (action, { dispatch }) => {
-    dispatch(addNotification({ message: t('strainsView.bulkActions.addedToFavorites', { count: action.payload.length }), type: 'success' }));
+    dispatch(addNotification({ message: t('strainsView.bulkActions.addedToFavorites_other', { count: action.payload.length }), type: 'success' }));
   }
 });
 
 startAppListening({
   actionCreator: removeMultipleFromFavorites,
   effect: (action, { dispatch }) => {
-    dispatch(addNotification({ message: t('strainsView.bulkActions.removedFromFavorites', { count: action.payload.length }), type: 'info' }));
+    dispatch(addNotification({ message: t('strainsView.bulkActions.removedFromFavorites_other', { count: action.payload.length }), type: 'info' }));
   }
 });
 
@@ -178,9 +180,22 @@ startAppListening({
 
 startAppListening({
   actionCreator: addJournalEntry,
-  effect: (action, { dispatch }) => {
+  effect: async (action, { dispatch }) => {
     if(action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
         dispatch(addNotification({ message: t('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
+    }
+
+    // Background Sync demonstration
+    if (!navigator.onLine) {
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            if ('sync' in registration) {
+                await (registration.sync as any).register('data-sync');
+                dispatch(addNotification({ message: 'Offline. Action queued for sync.', type: 'info' }));
+            }
+        } catch (err) {
+            console.error('Background sync registration failed:', err);
+        }
     }
   }
 });

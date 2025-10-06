@@ -96,6 +96,8 @@ export const plantsView = {
         pestControl: 'Pest Control',
         environment: 'Environment',
         amendment: 'Amendment',
+        harvest: 'Harvest',
+        postHarvest: 'Post-Harvest',
     },
     journalNoEntries: 'No journal entries match the current filter.',
     tasksComplete: 'Complete',

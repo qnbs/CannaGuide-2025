@@ -18,7 +18,7 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = memo(({ strai
     return (
         <button
             onClick={onClick}
-            className="w-full text-left p-2 rounded-md hover:bg-slate-700/50 transition-colors flex items-center gap-3"
+            className="w-full text-left p-2 rounded-md hover:bg-slate-700/50 transition-colors flex items-center gap-3 ring-1 ring-inset ring-white/20"
         >
             {isUserStrain && (
                 <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />

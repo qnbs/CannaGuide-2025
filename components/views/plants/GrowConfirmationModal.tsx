@@ -18,7 +18,7 @@ export const GrowConfirmationModal: React.FC = () => {
     const footer = (
         <>
             <Button variant="secondary" onClick={() => dispatch(cancelNewGrow())}>{t('common.cancel')}</Button>
-            <Button onClick={handleConfirm}>{t('plantsView.confirmationModal.confirmButton')}</Button>
+            <Button onClick={handleConfirm} glow={true}>{t('plantsView.confirmationModal.confirmButton')}</Button>
         </>
     );
 

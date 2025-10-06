@@ -50,8 +50,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
     ]
 
     const handleExportClick = () => {
-        onExport(source, format)
-        onClose()
+        onExport(source, format);
     }
 
     const footer = (
@@ -69,7 +68,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
     )
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg" footer={footer}>
+        <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg" footer={footer} containerClassName="ring-1 ring-white">
             <div className="space-y-6">
                 <div>
                     <h3 className="text-lg font-semibold text-slate-200 mb-2">
@@ -81,7 +80,7 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
                                 key={s.id}
                                 onClick={() => !s.disabled && setSource(s.id)}
                                 disabled={s.disabled}
-                                className={`p-3 text-left rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                className={`p-3 text-left rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ring-1 ring-inset ring-white/20 ${
                                     source === s.id
                                         ? 'bg-primary-600 text-white font-bold'
                                         : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
@@ -98,15 +97,15 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({
                     <h3 className="text-lg font-semibold text-slate-200 mb-2">
                         {t('strainsView.exportModal.format')}
                     </h3>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 pb-2">
                         {formats.map((f) => (
                             <button
                                 key={f.id}
                                 onClick={() => setFormat(f.id)}
-                                className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors ${
+                                className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors border border-transparent ${
                                     format === f.id
-                                        ? 'bg-primary-600 text-white font-bold'
-                                        : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+                                        ? 'bg-primary-600 text-white font-bold ring-1 ring-white'
+                                        : 'bg-slate-800 text-slate-200 hover:bg-slate-700 ring-1 ring-inset ring-white/20'
                                 }`}
                             >
                                 {f.label}

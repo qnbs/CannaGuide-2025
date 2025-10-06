@@ -183,38 +183,27 @@ export const useStrainFilters = (
             );
 
         strains.sort((a, b) => {
-            let aVal, bVal;
             let comparison = 0;
-
-            const key = sort.key as keyof Strain;
+            const key = sort.key;
 
             switch (key) {
                 case 'difficulty':
-                    aVal = difficultyOrder[a.agronomic.difficulty];
-                    bVal = difficultyOrder[b.agronomic.difficulty];
-                    comparison = aVal - bVal;
+                    comparison = difficultyOrder[a.agronomic.difficulty] - difficultyOrder[b.agronomic.difficulty];
                     break;
                 case 'yield':
-                    aVal = yieldOrder[a.agronomic.yield];
-                    bVal = yieldOrder[b.agronomic.yield];
-                    comparison = aVal - bVal;
+                    comparison = yieldOrder[a.agronomic.yield] - yieldOrder[b.agronomic.yield];
+                    break;
+                case 'height':
+                    comparison = heightOrder[a.agronomic.height] - heightOrder[b.agronomic.height];
                     break;
                 case 'name':
                 case 'type':
-                    aVal = a[key];
-                    bVal = b[key];
-                    if (typeof aVal === 'string' && typeof bVal === 'string') {
-                        comparison = aVal.localeCompare(bVal);
-                    }
+                    comparison = a[key].localeCompare(b[key]);
                     break;
                 case 'thc':
                 case 'cbd':
                 case 'floweringTime':
-                     aVal = a[key];
-                     bVal = b[key];
-                     if (typeof aVal === 'number' && typeof bVal === 'number') {
-                        comparison = aVal - bVal;
-                    }
+                    comparison = a[key] - b[key];
                     break;
                 default:
                     return 0;

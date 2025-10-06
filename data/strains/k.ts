@@ -268,7 +268,7 @@ export const strainsK: Strain[] = [
     createStrainObject({
         "id": "kings-kush",
         "name": "King's Kush",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "OG Kush x Grape",
         "floweringType": "Photoperiod",
@@ -316,7 +316,7 @@ export const strainsK: Strain[] = [
     createStrainObject({
         "id": "kush-sorbet",
         "name": "Kush Sorbet",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "Sunset Sherbet x Triangle Kush",
         "floweringType": "Photoperiod",

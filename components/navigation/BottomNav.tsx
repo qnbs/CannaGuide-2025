@@ -10,7 +10,7 @@ const navIcons: Record<string, React.ReactNode> = {
     [View.Strains]: <PhosphorIcons.Leafy />,
     [View.Plants]: <PhosphorIcons.Plant />,
     [View.Equipment]: <PhosphorIcons.Wrench />,
-    [View.Knowledge]: <PhosphorIcons.BookOpenText />,
+    [View.Knowledge]: <PhosphorIcons.Brain />,
 }
 
 const mainNavViews: View[] = [View.Strains, View.Plants, View.Equipment, View.Knowledge]
@@ -30,7 +30,7 @@ export const BottomNav: React.FC = () => {
     }
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 sm:relative glass-pane border-t sm:border-t-0 flex-shrink-0 z-20 pb-[env(safe-area-inset-bottom)]">
+        <nav className="fixed bottom-0 left-0 right-0 sm:relative bg-[rgb(var(--color-bg-primary))]/80 backdrop-blur-lg border-t border-[rgba(var(--color-border),0.5)] sm:border-t-0 flex-shrink-0 z-20 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_30px_rgba(0,0,0,0.2)]">
             <div className="flex justify-around max-w-5xl mx-auto">
                 {mainNavViews.map((view) => (
                     <button

@@ -27,6 +27,30 @@ export const strainsC: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
+        "id": "cactus",
+        "name": "Cactus",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Afghani x Northern Lights",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<2%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Cactus is an indica-dominant hybrid strain known for its robust nature and relaxing effects. It is a cross of the classic strains Afghani and Northern Lights. The effect is typically calming and physically relaxing, making it a good choice for the evening. The aroma is a mix of pine, sweet earth, and spicy notes.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Pine", "Sweet", "Earthy", "Spicy"],
+        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "cactus-cooler",
         "name": "Cactus Cooler",
         "type": StrainType.Hybrid,
@@ -79,9 +103,9 @@ export const strainsC: Strain[] = [
         "name": "Cali-O (California Orange)",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-        "genetics": "California Orange (phenotype)",
+        "genetics": "Californian Landrace Hybrid",
         "floweringType": "Photoperiod",
-        "description": "A classic hybrid known since the 1980s. It offers a clear, uplifting, and happy effect and a strong orange aroma.",
+        "description": "California Orange, also known as Cali-O, is a classic, balanced hybrid strain that has been known since the 1980s. It is famous for its intense, sweet orange and citrus aroma. The effect is clear, uplifting, and provides a happy, energetic feeling without being overly stimulating, making it suitable for use at any time of day.",
         "thc": 20,
         "cbd": 1,
         "thcRange": "18-24%",

@@ -5,7 +5,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "bangi-haze",
         "name": "Bangi Haze",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Congolese Sativa x Nepalese Indica",
         "floweringType": "Photoperiod",
@@ -27,7 +27,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "bay-11",
         "name": "Bay 11",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 80% / Indica 20%",
         "genetics": "Appalachia (Green Crack x Tres Dawg)",
         "floweringType": "Photoperiod",

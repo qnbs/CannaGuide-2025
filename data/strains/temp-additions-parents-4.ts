@@ -1,3 +1,4 @@
+
 import { Strain, StrainType } from '@/types';
 import { createStrainObject } from '@/services/strainFactory';
 
@@ -64,26 +65,5 @@ export const strains: Strain[] = [
         },
         "aromas": ["Blueberry", "Berry", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
-    createStrainObject({
-        "id": "og-badazz",
-        "name": "OG Badazz",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "OG Kush x Afghani x Skunk",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "thcRange": "20-24%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Diesel", "Earthy", "Spicy", "Pine"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     })
 ];

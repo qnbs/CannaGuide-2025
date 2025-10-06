@@ -20,24 +20,26 @@ interface DeepDiveModalProps {
   onRunScenario: (scenario: Scenario) => void;
 }
 
-export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
+export const DeepDiveModal: React.FC<DeepDiveModalProps & ReturnType<typeof useGenerateDeepDiveMutation>[1]> = ({ 
+    plant, 
+    topic, 
+    onClose, 
+    onRunScenario,
+    data: response,
+    isLoading,
+    error
+}) => {
     const { t } = useTranslation();
     const lang = useAppSelector(selectLanguage);
-    const [generateDeepDive, { data: response, isLoading, error }] = useGenerateDeepDiveMutation();
-
-    useEffect(() => {
-        if (!response && !isLoading && !error) {
-            generateDeepDive({ topic, plant, lang });
-        }
-    }, [plant, topic, response, isLoading, error, generateDeepDive, lang]);
-
+    
     const loadingMessage = useMemo(() => {
+        if (!isLoading) return '';
         const messages = geminiService.getDynamicLoadingMessages({
             useCase: 'deepDive',
             data: { topic, plantName: plant.name }
         });
         return messages[Math.floor(Math.random() * messages.length)];
-    }, [topic, plant.name]);
+    }, [topic, plant.name, isLoading, t]);
 
 
     const relevantScenario = useMemo(() => {
@@ -105,13 +107,29 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
 
 export const DeepDiveModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();
+    const lang = useAppSelector(selectLanguage);
     const { isOpen, plantId, topic } = useAppSelector(selectDeepDiveModalState);
     const plant = useAppSelector(selectPlantById(plantId));
+
+    const [generateDeepDive, { reset, ...mutationState }] = useGenerateDeepDiveMutation(
+        (plantId && topic) ? { fixedCacheKey: `deep-dive-${plantId}-${topic}` } : {}
+    );
+
+     useEffect(() => {
+        if (isOpen && plant && topic && !mutationState.data && !mutationState.isLoading && !mutationState.error) {
+            generateDeepDive({ topic, plant, lang });
+        }
+    }, [isOpen, plant, topic, mutationState, generateDeepDive, lang]);
+    
+    const handleClose = () => {
+        dispatch(closeDeepDiveModal());
+        reset();
+    };
     
     const handleRunScenario = (scenario: Scenario) => {
         if(plantId) {
             dispatch(runComparisonScenario({ plantId, scenario }));
-            dispatch(closeDeepDiveModal());
+            handleClose();
         }
     };
 
@@ -121,8 +139,9 @@ export const DeepDiveModalContainer: React.FC = () => {
         <DeepDiveModal
             plant={plant}
             topic={topic}
-            onClose={() => dispatch(closeDeepDiveModal())}
+            onClose={handleClose}
             onRunScenario={handleRunScenario}
+            {...mutationState}
         />
     );
 };

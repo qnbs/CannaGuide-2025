@@ -2,12 +2,12 @@ import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
     "ya-hemi": {
-        "description": "Eine sativa-dominante Sorte mit einem fruchtigen, dieselartigen und süßen Aroma. Die Wirkung ist stark, euphorisch und kreativ."
+        "description": "Eine sativa-dominante Hybride mit einem starken, fruchtigen Aroma, untermalt von gasartigen und erdigen Noten. Ya Hemi bietet ein potentes, euphorisches und kreatives High, das perfekt für den Tagesgebrauch ist und dich energetisiert und fokussiert hält."
     },
     "yeti-og": {
-        "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen und dieselartigen Aroma. Die Wirkung ist stark, entspannend und sedierend."
+        "description": "Eine indica-dominante Hybride mit einem klassischen OG-Aroma von Erde, Kiefer und Diesel. Yeti OG liefert ein schweres, entspannendes Körper-High, das hervorragend zur Linderung von Schmerzen und Stress geeignet ist und oft zu einem schläfrigen Zustand führt."
     },
     "yumboldt": {
-        "description": "Eine Indica-Landrasse aus Humboldt County, Kalifornien. Sie bietet eine entspannende und beruhigende Wirkung und ein süßes, erdiges Aroma."
+        "description": "Eine Old-School-Indica-Landrasse aus Humboldt County, Kalifornien. Sie bietet ein tief entspannendes und beruhigendes High mit einem süßen, erdigen Aroma, das an Haschisch und Beeren erinnert. Eine gute Wahl für eine klassische, beruhigende Indica-Erfahrung."
     }
 };

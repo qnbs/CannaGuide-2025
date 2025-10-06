@@ -1,0 +1,84 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Button } from '@/components/common/Button';
+import { useActivePlants } from '@/hooks/useSimulationBridge';
+import { useAppDispatch } from '@/stores/store';
+import { setActiveMentorPlantId } from '@/stores/slices/uiSlice';
+import { KnowledgeArticle, Plant } from '@/types';
+import { knowledgeBase } from '@/data/knowledgebase';
+import { GuideTab } from './GuideTab';
+
+const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
+    return knowledgeBase.filter(article => {
+        const { triggers } = article;
+        let isRelevant = true;
+        if (triggers.plantStage) {
+            const stages = Array.isArray(triggers.plantStage) ? triggers.plantStage : [triggers.plantStage];
+            if (!stages.includes(plant.stage)) isRelevant = false;
+        }
+        if (isRelevant && triggers.ageInDays) {
+            if (plant.age < triggers.ageInDays.min || plant.age > triggers.ageInDays.max) isRelevant = false;
+        }
+        if (isRelevant && triggers.activeProblems) {
+            const activeProblemTypes = plant.problems.filter(p => p.status === 'active').map(p => p.type);
+            if (!triggers.activeProblems.some(p => activeProblemTypes.includes(p))) isRelevant = false;
+        }
+        return isRelevant;
+    });
+};
+
+export const MentorView: React.FC = () => {
+    const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const activePlants = useActivePlants();
+    const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
+    
+    useEffect(() => {
+        if (activePlants.length > 0 && (!selectedPlantId || !activePlants.some(p => p.id === selectedPlantId))) {
+            setSelectedPlantId(activePlants[0].id);
+        } else if (activePlants.length === 0) {
+            setSelectedPlantId(null);
+        }
+    }, [activePlants, selectedPlantId]);
+    
+    const selectedPlantForHub = useMemo(() => activePlants.find(p => p.id === selectedPlantId), [activePlants, selectedPlantId]);
+    
+    const relevantArticles = useMemo(() => {
+        if (!selectedPlantForHub) return [];
+        return getRelevantArticles(selectedPlantForHub);
+    }, [selectedPlantForHub]);
+
+    return (
+        <div className="space-y-6">
+            <div>
+                <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">
+                    <PhosphorIcons.Brain className="w-6 h-6"/> {t('knowledgeView.aiMentor.title')}
+                </h3>
+                <p className="text-sm text-slate-400 mt-2">{t('knowledgeView.aiMentor.plantContextSubtitle')}</p>
+            </div>
+            
+            {activePlants.length > 0 ? (
+                <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-800/50 p-3 rounded-lg ring-1 ring-inset ring-white/20">
+                    <label htmlFor="mentor-plant-selector" className="text-sm font-semibold text-slate-300 flex-shrink-0">{t('knowledgeView.hub.selectPlant')}:</label>
+                    <select id="mentor-plant-selector" value={selectedPlantId || ''} onChange={e => setSelectedPlantId(e.target.value)} className="w-full sm:flex-grow select-input">
+                        {activePlants.map(p => <option key={p.id} value={p.id}>{p.name} ({t(`plantStages.${p.stage}`)})</option>)}
+                    </select>
+                    <Button onClick={() => dispatch(setActiveMentorPlantId(selectedPlantId))} disabled={!selectedPlantId} className="w-full sm:w-auto">
+                       {t('knowledgeView.aiMentor.startChat')} <PhosphorIcons.ArrowRight className="w-4 h-4 ml-1.5" />
+                    </Button>
+                </div>
+            ) : (
+                <p className="text-slate-400 text-sm text-center py-4">{t('knowledgeView.hub.noPlants')}</p>
+            )}
+
+            {selectedPlantForHub && relevantArticles.length > 0 && (
+                <div className="mt-6">
+                    <h3 className="text-lg font-bold text-slate-200 mb-2">{t('knowledgeView.hub.todaysFocus', { plantName: selectedPlantForHub.name })}</h3>
+                    <GuideTab articles={relevantArticles} />
+                </div>
+            )}
+        </div>
+    );
+};
+export default MentorView;

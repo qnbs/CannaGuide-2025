@@ -37,6 +37,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "afghani": {
     "description": "A fundamental landrace from Afghanistan that forms the genetic basis for many modern Indicas. It offers a deeply relaxing and sedating effect that relieves stress and helps with insomnia. The aroma is earthy, sweet, and skunky."
   },
+  "afghani-1": {
+    "description": "Afghani #1 is a classic, pure Indica strain directly descended from Afghani landraces, known for its robustness and high resin production. It forms the genetic basis for many modern hybrids, including the Skunk and Kush lines. The effect is strongly physical, deeply relaxing, and sedating, making it ideal for evening use to relieve pain, stress, and insomnia. The aroma is earthy and sweet with distinct notes of traditional hashish."
+  },
   "afgoo": {
     "description": "Also known as Afgooey. A potent indica-dominant strain known for its extremely resinous, sticky buds. The effect is strongly physical and relaxing, almost sedating, and leads to a euphoric, happy state. Ideal for evening use for stress and insomnia."
   },
@@ -95,6 +98,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "animal-mints": {
     "description": "Bred by Seed Junky Genetics. A highly potent hybrid with a complex aroma of mint, cookie dough, vanilla, and a hint of diesel. The effect is strong and balanced, starting with a euphoric head high that transitions into a deep, sedating body relaxation."
   },
+  "appalachia": {
+    "description": "Appalachia is a balanced hybrid strain that combines the energetic, cerebral effects of Green Crack with the physical potency of Tres Dawg. The result is a versatile high that starts with a motivating and euphoric head rush and gradually transitions into a calming body relaxation without being heavily sedating. The aroma is a complex blend of sweet earth, pine, and a hint of diesel."
+  },
   "appalachian-kush": {
     "description": "A potent hybrid with an earthy, sweet, and slightly spicy aroma. It offers a balanced effect that begins with a cerebral, energetic boost and transitions into a relaxing body high. Ideal for relieving stress and pain without being overly sedating."
   },
@@ -118,6 +124,9 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "aurora-indica": {
     "description": "Bred by Nirvana Seeds. A potent F1 hybrid that produces heavy full-body effects and a sedating cerebral calm. Ideal for evening treatment of insomnia and pain. The plants are short, sturdy, and produce dense, resinous buds."
+  },
+  "australian-sativa": {
+    "description": "Australian Sativa is a landrace strain adapted to the climate of Australia. It is most famous as the genetic origin of the 'DucksFoot' mutation, characterized by its unusual webbed leaves. The effect is typical for a sativa: uplifting, energetic, and creative, making it a good choice for daytime use. The aroma is earthy and piney with spicy and sweet notes."
   },
   "auto-duck": {
     "description": "A unique 'stealth' strain from Dutch Passion with a natural leaf mutation (webbed, like a duck's foot), making it inconspicuous. The smell is subtle. The effect is balanced and moderate, ideal for daytime use. Very robust and easy to grow."

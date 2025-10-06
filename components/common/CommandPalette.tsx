@@ -55,6 +55,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     const handleCommandClick = (command: Command) => {
         if (!command.isHeader) {
             command.action()
+            onClose()
         }
     }
 
@@ -62,7 +63,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
     return ReactDOM.createPortal(
         <div
-            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[100] flex items-start justify-center p-4 pt-[15vh]"
+            className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[100] flex items-start justify-center p-4 pt-[15vh]"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -70,16 +71,16 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         >
             <div
                 ref={modalRef as React.RefObject<HTMLDivElement>}
-                className="w-full max-w-xl bg-slate-800/90 backdrop-blur-lg rounded-lg shadow-2xl border border-slate-700 modal-content-animate"
+                className="w-full max-w-xl glass-pane !p-0 rounded-lg shadow-2xl modal-content-animate"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center gap-3 p-4 border-b border-slate-700">
+                <div className="flex items-center gap-3 p-4 border-b border-slate-700/50">
                     <PhosphorIcons.CommandLine className="w-6 h-6 flex-shrink-0" />
                     <h2 className="text-lg font-bold font-display text-slate-100">
                         {t('commandPalette.title')}
                     </h2>
                 </div>
-                <div className="p-3 border-b border-slate-700 relative hidden sm:block">
+                <div className="p-3 border-b border-slate-700/50 relative">
                     <PhosphorIcons.MagnifyingGlass className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                     <Input
                         ref={inputRef}
@@ -87,7 +88,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={t('commandPalette.placeholder')}
-                        className="w-full bg-slate-800 pl-10 pr-4 py-2 !rounded-md"
+                        className="w-full pl-10 input-base"
                     />
                 </div>
                 {displayedCommands.length > 0 ? (

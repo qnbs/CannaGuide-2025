@@ -39,7 +39,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
     return (
         <button
             onClick={onClick}
-            className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 border border-transparent hover:border-slate-600"
+            className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 ring-1 ring-inset ring-white/20"
         >
             <div className="flex-shrink-0">
                 {TypeIcon && <TypeIcon className={`w-10 h-10 ${typeClasses[strain.type]}`} />}

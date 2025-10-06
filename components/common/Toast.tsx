@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
-import { Notification, NotificationType } from '@/types'
+import { Notification } from '@/types'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
@@ -12,7 +12,7 @@ interface ToastProps {
     onClose: (id: number) => void
 }
 
-const toastIcons: Record<NotificationType, React.ReactNode> = {
+const toastIcons: Record<Notification['type'], React.ReactNode> = {
     success: <PhosphorIcons.CheckCircle className="w-6 h-6 text-green-500" />,
     error: <PhosphorIcons.XCircle className="w-6 h-6 text-red-500" />,
     info: <PhosphorIcons.Info className="w-6 h-6 text-blue-500" />,

@@ -1,3 +1,4 @@
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -6,20 +7,20 @@ import { App } from '@/components/views/plants/App'
 import { createAppStore } from '@/stores/store'
 import { i18nPromise, i18nInstance } from './i18n'
 
+// FIX: Refactored props and state into explicit type aliases for clarity and to resolve potential TypeScript inference issues.
+type ErrorBoundaryProps = { children: React.ReactNode };
+type ErrorBoundaryState = { hasError: boolean };
+
 // A top-level Error Boundary to catch any unexpected rendering errors.
 // This prevents the user from seeing a blank screen and provides a graceful recovery path.
-// FIX: Extracted props to a dedicated interface for clearer typing.
-interface ErrorBoundaryProps {
-    children: React.ReactNode;
-}
 class ErrorBoundary extends React.Component<
     ErrorBoundaryProps,
-    { hasError: boolean }
+    ErrorBoundaryState
 > {
-    // FIX: Replaced constructor with a class property for state initialization to fix typing errors.
-    state = { hasError: false };
+    // FIX: Removed a redundant constructor. The presence of both an empty constructor and a state class property initializer was causing conflicting TypeScript errors. Direct state initialization is the cleaner and correct modern approach.
+    state: ErrorBoundaryState = { hasError: false };
 
-    static getDerivedStateFromError(error: Error) {
+    static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
         // Update state so the next render will show the fallback UI.
         return { hasError: true }
     }
@@ -38,7 +39,7 @@ class ErrorBoundary extends React.Component<
                         display: 'flex',
                         flexDirection: 'column',
                         height: '100vh',
-                        backgroundColor: '#0F172A', // Corresponds to slate-900
+                        backgroundColor: '#172554', // Corresponds to primary-950 (midnight theme)
                         color: '#CBD5E1', // Corresponds to slate-300
                         fontFamily: 'sans-serif',
                         alignItems: 'center',
@@ -85,9 +86,7 @@ class ErrorBoundary extends React.Component<
             )
         }
 
-        // FIX: In a class component, props must be accessed via `this.props`, not as a standalone `props` variable.
-        const { children } = this.props
-        return children
+        return this.props.children
     }
 }
 

@@ -1,15 +1,5 @@
-
 import React from 'react';
-import { Command } from '@/types';
-
-export enum CommandGroup {
-    Navigation = 'Navigation',
-    Plants = 'Plants',
-    Strains = 'Strains',
-    Knowledge = 'Knowledge',
-    Settings = 'Settings',
-    General = 'General Actions'
-}
+import { Command, CommandGroup } from '@/types';
 
 const groupOrder: CommandGroup[] = [
     CommandGroup.Navigation,

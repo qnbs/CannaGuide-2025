@@ -49,7 +49,7 @@ const EditResponseModalComponent = <T extends EditableResponse>({
             <Button variant="secondary" onClick={onClose}>
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleSave}>{t('common.save')}</Button>
+            <Button onClick={handleSave} glow={true}>{t('common.save')}</Button>
         </>
     )
 

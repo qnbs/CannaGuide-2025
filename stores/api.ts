@@ -1,6 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react'
-// FIX: Import BaseQueryFn to correctly type the fake base query for RTK Query.
-import { BaseQueryFn } from '@reduxjs/toolkit/query'
+
+
+import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react';
 import { geminiService } from '@/services/geminiService'
 import {
     Plant,
@@ -15,36 +15,27 @@ import {
 } from '@/types'
 import { getT } from '@/i18n'
 
-interface ApiError {
-    message: string
-}
-
-// When using `queryFn` for all endpoints, RTK Query still needs a `baseQuery` for type inference.
-// Without it, the `builder` argument in the `endpoints` function is untyped, leading to "Untyped function calls may not accept type arguments" errors.
-// FIX: Correctly typed `fakeBaseQuery` with the `ApiError` type. This allows RTK Query
-// to properly infer the types for the endpoint builder, resolving multiple errors.
-const fakeBaseQuery: BaseQueryFn<any, unknown, ApiError> = () => {
-    return { error: { message: 'When using `queryFn`, `baseQuery` should not be called.' } };
-};
-
+// This API slice uses a custom `queryFn` for all endpoints to interact with the Gemini service.
+// `fakeBaseQuery` is used as a placeholder to satisfy RTK Query's `baseQuery` requirement
+// and ensure the endpoint builder is correctly typed.
 export const geminiApi = createApi({
     reducerPath: 'geminiApi',
-    // FIX: Using the correctly typed fakeBaseQuery ensures the builder's error type matches the custom error shape returned by the `queryFn` implementations, resolving type inference issues.
-    baseQuery: fakeBaseQuery,
+    baseQuery: fakeBaseQuery(),
     endpoints: (builder) => ({
-        getEquipmentRecommendation: builder.mutation<Recommendation, { prompt: string; lang: Language }>({
-            queryFn: async ({ prompt, lang }) => {
+        getEquipmentRecommendation: builder.mutation({
+            queryFn: async ({ prompt, lang }: { prompt: string; lang: Language }) => {
                 try {
                     const data = await geminiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        diagnosePlant: builder.mutation<PlantDiagnosisResponse, { base64Image: string; mimeType: string; plant: Plant; userNotes: string, lang: Language }>({
-            queryFn: async ({ base64Image, mimeType, plant, userNotes, lang }) => {
+        diagnosePlant: builder.mutation({
+            queryFn: async ({ base64Image, mimeType, plant, userNotes, lang }: { base64Image: string; mimeType: string; plant: Plant; userNotes: string, lang: Language }) => {
                 try {
                     const data = await geminiService.diagnosePlant(
                         base64Image,
@@ -55,73 +46,81 @@ export const geminiApi = createApi({
                     )
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        getPlantAdvice: builder.mutation<AIResponse, { plant: Plant, lang: Language }>({
-            queryFn: async ({ plant, lang }) => {
+        getPlantAdvice: builder.mutation({
+            queryFn: async ({ plant, lang }: { plant: Plant, lang: Language }) => {
                 try {
                     const data = await geminiService.getPlantAdvice(plant, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        getProactiveDiagnosis: builder.mutation<AIResponse, { plant: Plant, lang: Language }>({
-            queryFn: async ({ plant, lang }) => {
+        getProactiveDiagnosis: builder.mutation({
+            queryFn: async ({ plant, lang }: { plant: Plant, lang: Language }) => {
                 try {
                     const data = await geminiService.getProactiveDiagnosis(plant, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        getMentorResponse: builder.mutation<Omit<MentorMessage, 'role'>, { plant: Plant; query: string, lang: Language }>({
-            queryFn: async ({ plant, query, lang }) => {
+        getMentorResponse: builder.mutation({
+            queryFn: async ({ plant, query, lang }: { plant: Plant; query: string, lang: Language }) => {
                 try {
                     const data = await geminiService.getMentorResponse(plant, query, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        getStrainTips: builder.mutation<StructuredGrowTips, { strain: Strain; context: { focus: string; stage: string; experience: string }, lang: Language }>({
-            queryFn: async ({ strain, context, lang }) => {
+        getStrainTips: builder.mutation({
+            // FIX: Corrected the type for `context` to use `experienceLevel` instead of `experience` to match the service function signature.
+            queryFn: async ({ strain, context, lang }: { strain: Strain; context: { focus: string; stage: string; experienceLevel: string }, lang: Language }) => {
                 try {
                     const data = await geminiService.getStrainTips(strain, context, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        generateStrainImage: builder.mutation<string, { strain: Strain, lang: Language }>({
-            queryFn: async ({ strain, lang }) => {
+        generateStrainImage: builder.mutation({
+            queryFn: async ({ strain, lang }: { strain: Strain, lang: Language }) => {
                 try {
-                    const data = await geminiService.generateStrainImage(strain.name, lang)
+                    const data = await geminiService.generateStrainImage(strain, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },
         }),
-        generateDeepDive: builder.mutation<DeepDiveGuide, { topic: string; plant: Plant, lang: Language }>({
-            queryFn: async ({ topic, plant, lang }) => {
+        generateDeepDive: builder.mutation({
+            queryFn: async ({ topic, plant, lang }: { topic: string; plant: Plant, lang: Language }) => {
                 try {
                     const data = await geminiService.generateDeepDive(topic, plant, lang)
                     return { data }
                 } catch (err) {
-                    const message = err instanceof Error ? err.message : String(err);
+                    const t = getT();
+                    const message = err instanceof Error ? t(err.message) || err.message : String(err);
                     return { error: { message } };
                 }
             },

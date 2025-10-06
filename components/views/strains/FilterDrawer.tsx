@@ -78,7 +78,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
             footer={
                 <>
                     <Button variant="secondary" onClick={onReset}>{t('strainsView.resetFilters')}</Button>
-                    <Button onClick={onApply}>{t('strainsView.matchingStrains_other', { count })}</Button>
+                    <Button onClick={onApply} glow={true}>{t('strainsView.matchingStrains_other', { count })}</Button>
                 </>
             }
         >

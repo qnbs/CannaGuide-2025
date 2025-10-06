@@ -36,10 +36,13 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 
 CannaGuide 2025 is built upon a set of core principles designed to deliver a best-in-class experience:
 
-*   **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**, ensuring you always have access to your data and tools.
-*   **Performance is Key**: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex plant simulation, is offloaded to a **Web Worker** to keep the interface smooth and instantaneous.
-*   **Data Sovereignty**: Your data is yours. The ability to **export and import your entire application state** gives you complete control, ownership, and peace of mind.
-*   **AI as a Co-pilot**: We leverage AI not as a gimmick, but as a powerful tool to provide **actionable, context-aware insights** that truly assist the grower at every stage.
+> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**, ensuring you always have access to your data and tools.
+
+> **Performance is Key**: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex plant simulation, is offloaded to a **Web Worker** to keep the interface smooth and instantaneous.
+
+> **Data Sovereignty**: Your data is yours. The ability to **export and import your entire application state** gives you complete control, ownership, and peace of mind.
+
+> **AI as a Co-pilot**: We leverage AI not as a gimmick, but as a powerful tool to provide **actionable, context-aware insights** that truly assist the grower at every stage.
 
 ---
 
@@ -48,35 +51,36 @@ CannaGuide 2025 is built upon a set of core principles designed to deliver a bes
 ### 1. The Grow Room (`Plants` View)
 Your command center for managing and simulating up to three simultaneous grows.
 
-*   **Dynamic Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model.
-*   **AI-Powered Diagnostics**: Upload a photo of your plant to get an instant AI-based diagnosis, complete with immediate actions, long-term solutions, and preventative advice.
-*   **AI Plant Advisor**: Get proactive, data-driven advice from Gemini AI based on your plant's real-time vitals. All recommendations can be archived with full **CRUD** functionality.
-*   **Comprehensive Logging**: Track every action—from watering and feeding to training and pest control—in a detailed, filterable journal for each plant.
-*   **Dynamic Task & Problem Generation**: The simulation engine automatically creates tasks (e.g., "Water Plant") and flags problems (e.g., "Nutrient Deficiency") based on the plant's evolving condition.
+-   **Dynamic Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model.
+-   **AI-Powered Diagnostics**:
+    -   **Photo Diagnosis**: Upload a photo of your plant to get an instant AI-based diagnosis, complete with immediate actions, long-term solutions, and preventative advice.
+    -   **Proactive Advisor**: Get data-driven advice from Gemini AI based on your plant's real-time vitals. All recommendations can be archived with full **CRUD** functionality.
+-   **Comprehensive Logging**: Track every action—from watering and feeding to training and pest control—in a detailed, filterable journal for each plant.
+-   **Dynamic Task & Problem Generation**: The simulation engine automatically creates tasks (e.g., "Water Plant") and flags problems (e.g., "Nutrient Deficiency") based on the plant's evolving condition.
 
 ### 2. The Strain Encyclopedia (`Strains` View)
 Your central knowledge hub, designed for deep exploration with **offline-first** access.
 
-*   **Vast Library**: Access detailed information on **over 500 cannabis strains**.
-*   **Interactive Genealogy Tree**: Visualize the complete genetic lineage of any strain in an interactive tree. Use analysis tools to highlight landraces, trace parentage, and discover known descendants.
-*   **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search and advanced multi-select filters for THC/CBD range, flowering time, aroma, and more.
-*   **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
-*   **AI Grow Tips**: Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals, then manage it in a dedicated "Tips" archive.
-*   **Flexible Data Export**: Export your selected or filtered strain lists in multiple formats, including **PDF, CSV, JSON, TXT, and XML**.
+-   **Vast Library**: Access detailed information on **over 500 cannabis strains**.
+-   **Interactive Genealogy Tree**: Visualize the complete genetic lineage of any strain. Use analysis tools to highlight landraces, trace parentage, and discover known descendants.
+-   **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search and advanced multi-select filters for THC/CBD range, flowering time, aroma, and more.
+-   **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
+-   **AI Grow Tips**: Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals, then manage it in a dedicated "Tips" archive.
+-   **Flexible Data Export**: Export your selected or filtered strain lists in multiple formats, including **PDF, CSV, JSON, TXT, and XML**.
 
 ### 3. The Library (`Knowledge` & `Help` Views)
 Your complete resource for learning and problem-solving.
 
-*   **Context-Aware AI Mentor**: Ask growing questions to the AI Mentor, which leverages your active plant's data for tailored advice. All conversations are archived with full **CRUD** support.
-*   **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, unique hybrid strains that are permanently added to your personal library.
-*   **Interactive Sandbox**: Run "what-if" scenarios, like comparing Topping vs. LST on a clone of your plant, to visualize the impact of different training techniques over an accelerated 14-day simulation without risking your real plants.
-*   **Comprehensive Guides**: Access a built-in grower's lexicon, visual guides for common techniques, and an extensive FAQ section.
+-   **Context-Aware AI Mentor**: Ask growing questions to the AI Mentor, which leverages your active plant's data for tailored advice. All conversations are archived with full **CRUD** support.
+-   **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, unique hybrid strains that are permanently added to your personal library.
+-   **Interactive Sandbox**: Run "what-if" scenarios, like comparing Topping vs. LST on a clone of your plant, to visualize the impact of different training techniques over an accelerated simulation without risking your real plants.
+-   **Comprehensive Guides**: Access a built-in grower's lexicon, visual guides for common techniques, and an extensive, searchable FAQ section and user manual.
 
 ### 4. Platform-Wide Features
-*   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
-*   **Command Palette (`Cmd/Ctrl + K`)**: A power-user tool for instant, click-free navigation and actions across the entire application.
-*   **Complete Data Sovereignty**: Export *all* your app data (plants, settings, archives, custom strains) to a single JSON file for **backup**. Import it later to **restore** your state on any device.
-*   **Advanced Accessibility**: Features a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and integrated **Text-to-Speech (TTS)** functionality for key content.
+-   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
+-   **Command Palette (`Cmd/Ctrl + K`)**: A power-user tool for instant, click-free navigation and actions across the entire application.
+-   **Complete Data Sovereignty**: Export *all* your app data (plants, settings, archives, custom strains) to a single JSON file for **backup**. Import it later to **restore** your state on any device.
+-   **Advanced Accessibility**: Features a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and integrated **Text-to-Speech (TTS)** functionality for key content.
 
 ---
 
@@ -84,17 +88,16 @@ Your complete resource for learning and problem-solving.
 
 CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed for performance and offline-first reliability.
 
-*   **Core Framework**: **React 19 & TypeScript** provide a modern, type-safe, and performant user interface.
-*   **State Management**: **Redux Toolkit (^2.2)** serves as the single source of truth for the entire application state. This centralized approach ensures predictable state transitions, simplifies debugging, and makes state persistence straightforward.
-*   **AI Integration**: **Google Gemini API (`@google/genai` ^1.19)** powers all intelligent features, using the `gemini-2.5-flash` model for its optimal balance of speed, cost, and its powerful ability to deliver structured JSON output.
-*   **Asynchronous Operations**:
-    *   **RTK Query** manages all interactions with the Gemini API, providing caching, automatic re-fetching, and streamlined loading/error state management.
-    *   The plant growth simulation runs in a **Web Worker (`simulation.worker.ts`)**, ensuring the main UI thread remains responsive and smooth, even during intensive background calculations.
-*   **Data Persistence**: A robust **IndexedDB** strategy ensures data integrity and offline availability.
-    *   The entire Redux state is persisted to a dedicated IndexedDB database via a **listener middleware**, providing seamless state hydration on app startup.
-    *   A separate IndexedDB database (`dbService.ts`) manages large static assets, like the strain library, user-uploaded images, and the full-text search index, for optimal performance.
-*   **PWA & Offline Capability**: A **Service Worker (`sw.js`)** implements a "Cache First, then Network" strategy, making the application fully installable and functional without an internet connection.
-*   **Styling**: **Tailwind CSS** enables a rapid, utility-first approach to building a consistent and responsive design system.
+-   **Frontend Framework**: **React 19** with **TypeScript** for a modern, type-safe, and performant user interface.
+-   **State Management**: **Redux Toolkit (^2.2)** serves as the single source of truth, ensuring predictable state transitions and simplifying debugging.
+-   **Asynchronous Operations & AI**:
+    -   **RTK Query** manages all interactions with the **Google Gemini API (`@google/genai` ^1.19)**, providing caching and streamlined state management. The `gemini-2.5-flash` model is used for its optimal balance of speed, cost, and structured JSON output capabilities.
+    -   The plant growth simulation runs in a dedicated **Web Worker**, ensuring the main UI thread remains responsive and smooth.
+-   **Data Persistence**: A robust **IndexedDB** strategy ensures complete offline availability.
+    -   The entire Redux state is persisted via a **listener middleware**, providing seamless state hydration on app startup.
+    -   Large static assets, such as the strain library and search index, are managed in a separate IndexedDB database for optimal performance.
+-   **PWA & Offline Capability**: A **Service Worker** implements a "Cache First, then Network" strategy, making the application fully installable and functional without an internet connection.
+-   **Styling**: **Tailwind CSS (via CDN)** enables a rapid, utility-first approach to building a consistent and responsive design system, configured directly in `index.html`.
 
 ---
 
@@ -247,10 +250,13 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 
 CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt sind, ein erstklassiges Erlebnis zu bieten:
 
-*   **Offline First**: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie **100% offline funktionsfähig** ist, sodass Sie immer Zugriff auf Ihre Daten und Werkzeuge haben.
-*   **Leistung ist entscheidend**: Eine flüssige, reaktionsschnelle Benutzeroberfläche ist unerlässlich. Rechenintensive Aufgaben, wie die komplexe Pflanzensimulation, werden in einen **Web Worker** ausgelagert, um die Hauptoberfläche geschmeidig und reaktionsschnell zu halten.
-*   **Datensouveränität**: Ihre Daten gehören Ihnen. Die Möglichkeit, Ihren **gesamten Anwendungszustand zu exportieren und zu importieren**, gibt Ihnen vollständige Kontrolle, Eigentum und Sicherheit.
-*   **KI als Co-Pilot**: Wir nutzen KI nicht als Gimmick, sondern als leistungsstarkes Werkzeug, um **umsetzbare, kontextbezogene Einblicke** zu liefern, die den Züchter in jeder Phase wirklich unterstützen.
+> **Offline First**: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie **100% offline funktionsfähig** ist, sodass Sie immer Zugriff auf Ihre Daten und Werkzeuge haben.
+
+> **Leistung ist entscheidend**: Eine flüssige, reaktionsschnelle Benutzeroberfläche ist unerlässlich. Rechenintensive Aufgaben, wie die komplexe Pflanzensimulation, werden in einen **Web Worker** ausgelagert, um die Hauptoberfläche geschmeidig und reaktionsschnell zu halten.
+
+> **Datensouveränität**: Ihre Daten gehören Ihnen. Die Möglichkeit, Ihren **gesamten Anwendungszustand zu exportieren und zu importieren**, gibt Ihnen vollständige Kontrolle, Eigentum und Sicherheit.
+
+> **KI als Co-Pilot**: Wir nutzen KI nicht als Gimmick, sondern als leistungsstarkes Werkzeug, um **umsetzbare, kontextbezogene Einblicke** zu liefern, die den Züchter in jeder Phase wirklich unterstützen.
 
 ---
 
@@ -259,35 +265,36 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 ### 1. Der Grow Room (`Pflanzen`-Ansicht)
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.
 
-*   **Dynamische Simulations-Engine**: Erleben Sie eine hochmoderne Simulation, die auf **VPD (Dampfdruckdefizit)**, biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
-*   **KI-gestützte Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose zu erhalten, komplett mit Sofortmaßnahmen, langfristigen Lösungen und präventiven Ratschlägen.
-*   **KI-Pflanzenberater**: Erhalten Sie proaktive, datengesteuerte Ratschläge von Gemini AI basierend auf den Echtzeit-Vitalwerten Ihrer Pflanze. Alle Empfehlungen können mit voller **CRUD**-Funktionalität archiviert werden.
-*   **Umfassendes Protokoll**: Verfolgen Sie jede Aktion – von der Bewässerung über die Düngung bis hin zum Training und zur Schädlingsbekämpfung – in einem detaillierten, filterbaren Journal für jede Pflanze.
-*   **Dynamische Aufgaben- & Problemgenerierung**: Die Simulations-Engine erstellt automatisch Aufgaben (z. B. "Pflanze wässern") und meldet Probleme (z. B. "Nährstoffmangel") basierend auf dem sich entwickelnden Zustand der Pflanze.
+-   **Dynamische Simulations-Engine**: Erleben Sie eine hochmoderne Simulation, die auf **VPD (Dampfdruckdefizit)**, biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
+-   **KI-gestützte Diagnose**:
+    -   **Foto-Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose zu erhalten, komplett mit Sofortmaßnahmen, langfristigen Lösungen und präventiven Ratschlägen.
+    -   **Proaktiver Berater**: Erhalten Sie datengesteuerte Ratschläge von Gemini AI basierend auf den Echtzeit-Vitalwerten Ihrer Pflanze. Alle Empfehlungen können mit voller **CRUD**-Funktionalität archiviert werden.
+-   **Umfassendes Protokoll**: Verfolgen Sie jede Aktion – von der Bewässerung über die Düngung bis hin zum Training und zur Schädlingsbekämpfung – in einem detaillierten, filterbaren Journal für jede Pflanze.
+-   **Dynamische Aufgaben- & Problemgenerierung**: Die Simulations-Engine erstellt automatisch Aufgaben (z. B. "Pflanze wässern") und meldet Probleme (z. B. "Nährstoffmangel") basierend auf dem sich entwickelnden Zustand der Pflanze.
 
 ### 2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)
 Ihr zentraler Wissens-Hub, konzipiert für tiefgehende Erkundungen mit **Offline-First**-Zugriff.
 
-*   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu **über 500 Cannabissorten** zu.
-*   **Interaktiver Stammbaum**: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte in einem interaktiven Baum. Nutzen Sie Analysewerkzeuge, um Landrassen hervorzuheben, Abstammungslinien zu verfolgen und bekannte Nachkommen zu entdecken.
-*   **Hochleistungs-Suche & -Filter**: Finden Sie sofort Sorten mit einer IndexedDB-gestützten Volltextsuche und erweiterten Mehrfachauswahlfiltern für THC/CBD-Bereich, Blütezeit, Aroma und mehr.
-*   **Persönliche Sortensammlung**: Genießen Sie volle **CRUD (Erstellen, Lesen, Aktualisieren, Löschen)**-Funktionalität, um Ihre eigenen benutzerdefinierten Sorten hinzuzufügen und zu verwalten.
-*   **KI-Anbau-Tipps**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte basierend auf Ihrem Erfahrungslevel und Ihren Zielen und verwalten Sie diese in einem dedizierten "Tipps"-Archiv.
-*   **Flexible Datenexport**: Exportieren Sie Ihre ausgewählten oder gefilterten Sortenlisten in mehreren Formaten, einschließlich **PDF, CSV, JSON, TXT und XML**.
+-   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu **über 500 Cannabissorten** zu.
+-   **Interaktiver Stammbaum**: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte. Nutzen Sie Analysewerkzeuge, um Landrassen hervorzuheben, Abstammungslinien zu verfolgen und bekannte Nachkommen zu entdecken.
+-   **Hochleistungs-Suche & -Filter**: Finden Sie sofort Sorten mit einer IndexedDB-gestützten Volltextsuche und erweiterten Mehrfachauswahlfiltern für THC/CBD-Bereich, Blütezeit, Aroma und mehr.
+-   **Persönliche Sortensammlung**: Genießen Sie volle **CRUD (Erstellen, Lesen, Aktualisieren, Löschen)**-Funktionalität, um Ihre eigenen benutzerdefinierten Sorten hinzuzufügen und zu verwalten.
+-   **KI-Anbau-Tipps**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte basierend auf Ihrem Erfahrungslevel und Ihren Zielen und verwalten Sie diese in einem dedizierten "Tipps"-Archiv.
+-   **Flexible Datenexport**: Exportieren Sie Ihre ausgewählten oder gefilterten Sortenlisten in mehreren Formaten, einschließlich **PDF, CSV, JSON, TXT und XML**.
 
 ### 3. Die Bibliothek (`Wissen`- & `Hilfe`-Ansichten)
 Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
-*   **Kontextsensitiver KI-Mentor**: Stellen Sie dem KI-Mentor Anbaufragen, der die Daten Ihrer aktiven Pflanze für maßgeschneiderte Ratschläge nutzt. Alle Gespräche werden mit voller **CRUD**-Unterstützung archiviert.
-*   **Zuchtlabor**: Kreuzen Sie Ihre hochwertigen, gesammelten Samen, um völlig neue, einzigartige Hybridsorten zu schaffen, die dauerhaft Ihrer persönlichen Bibliothek hinzugefügt werden.
-*   **Interaktive Sandbox**: Führen Sie "Was-wäre-wenn"-Szenarien durch, wie z. B. den Vergleich von Topping vs. LST an einem Klon Ihrer Pflanze, um die Auswirkungen verschiedener Trainingstechniken über eine beschleunigte 14-tägige Simulation zu visualisieren, ohne Ihre echten Pflanzen zu riskieren.
-*   **Umfassende Anleitungen**: Greifen Sie auf ein integriertes Grower-Lexikon, visuelle Anleitungen für gängige Techniken und einen umfangreichen FAQ-Bereich zu.
+-   **Kontextsensitiver KI-Mentor**: Stellen Sie dem KI-Mentor Anbaufragen, der die Daten Ihrer aktiven Pflanze für maßgeschneiderte Ratschläge nutzt. Alle Gespräche werden mit voller **CRUD**-Unterstützung archiviert.
+-   **Zuchtlabor**: Kreuzen Sie Ihre hochwertigen, gesammelten Samen, um völlig neue, einzigartige Hybridsorten zu schaffen, die dauerhaft Ihrer persönlichen Bibliothek hinzugefügt werden.
+-   **Interaktive Sandbox**: Führen Sie "Was-wäre-wenn"-Szenarien durch, wie z. B. den Vergleich von Topping vs. LST an einem Klon Ihrer Pflanze, um die Auswirkungen verschiedener Trainingstechniken über eine beschleunigte Simulation zu visualisieren, ohne Ihre echten Pflanzen zu riskieren.
+-   **Umfassende Anleitungen**: Greifen Sie auf ein integriertes Grower-Lexikon, visuelle Anleitungen für gängige Techniken und einen umfangreichen, durchsuchbaren FAQ-Bereich sowie ein Benutzerhandbuch zu.
 
 ### 4. Plattformweite Funktionen
-*   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich Zugriff auf alle Daten und KI-Archive.
-*   **Befehlspalette (`Cmd/Ctrl + K`)**: Ein Power-User-Tool für sofortige, klickfreie Navigation und Aktionen in der gesamten Anwendung.
-*   **Vollständige Datensouveränität**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Archive, eigene Sorten) in eine einzige JSON-Datei zur **Sicherung**. Importieren Sie sie später, um Ihren Zustand auf jedem Gerät **wiederherzustellen**.
-*   **Erweiterte Barrierefreiheit**: Bietet eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und eine integrierte **Text-zu-Sprache (TTS)**-Funktionalität für wichtige Inhalte.
+-   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich Zugriff auf alle Daten und KI-Archive.
+-   **Befehlspalette (`Cmd/Ctrl + K`)**: Ein Power-User-Tool für sofortige, klickfreie Navigation und Aktionen in der gesamten Anwendung.
+-   **Vollständige Datensouveränität**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Archive, eigene Sorten) in eine einzige JSON-Datei zur **Sicherung**. Importieren Sie sie später, um Ihren Zustand auf jedem Gerät **wiederherzustellen**.
+-   **Erweiterte Barrierefreiheit**: Bietet eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und eine integrierte **Text-zu-Sprache (TTS)**-Funktionalität für wichtige Inhalte.
 
 ---
 
@@ -295,17 +302,16 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
 CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack, der auf Leistung und Offline-First-Zuverlässigkeit ausgelegt ist.
 
-*   **Kern-Framework**: **React 19 & TypeScript** bieten eine moderne, typsichere und performante Benutzeroberfläche.
-*   **Zustandsverwaltung**: **Redux Toolkit (^2.2)** dient als zentrale Datenquelle ("Single Source of Truth") für den gesamten Anwendungszustand. Dieser zentralisierte Ansatz gewährleistet vorhersagbare Zustandsübergänge, vereinfacht das Debugging und erleichtert die Persistenz des Zustands.
-*   **KI-Integration**: Die **Google Gemini API (`@google/genai` ^1.19)** treibt alle intelligenten Funktionen an und verwendet das `gemini-2.5-flash`-Modell für seine optimale Balance aus Geschwindigkeit, Kosten und seiner Fähigkeit, strukturierte JSON-Ausgaben zu liefern.
-*   **Asynchrone Operationen**:
-    *   **RTK Query** verwaltet alle Interaktionen mit der Gemini-API und bietet Caching, automatisches Neuladen und ein optimiertes Lade-/Fehlerzustandsmanagement.
-    *   Die komplexe Pflanzenwachstumssimulation läuft in einem **Web Worker (`simulation.worker.ts`)**, wodurch sichergestellt wird, dass der Haupt-UI-Thread auch bei intensiven Hintergrundberechnungen reaktionsschnell und flüssig bleibt.
-*   **Datenpersistenz**: Eine robuste **IndexedDB**-Strategie gewährleistet Datenintegrität und Offline-Verfügbarkeit.
-    *   Der gesamte Redux-Zustand wird über eine **Listener-Middleware** in einer dedizierten IndexedDB-Datenbank persistiert, was eine nahtlose Zustandshydratisierung beim Start der App ermöglicht.
-    *   Große statische Daten wie die Sortenbibliothek, benutzerseitig hochgeladene Bilder und der Volltext-Suchindex werden in einer separaten IndexedDB-Datenbank (`dbService.ts`) verwaltet, um die Leistung zu optimieren.
-*   **PWA & Offline-Fähigkeit**: Ein **Service Worker (`sw.js`)** implementiert eine "Cache First, then Network"-Strategie, wodurch die Anwendung vollständig installierbar und ohne Internetverbindung funktionsfähig ist.
-*   **Styling**: **Tailwind CSS** ermöglicht einen schnellen, Utility-First-Ansatz zum Erstellen eines konsistenten und responsiven Designsystems.
+-   **Frontend-Framework**: **React 19** mit **TypeScript** für eine moderne, typsichere und performante Benutzeroberfläche.
+-   **Zustandsverwaltung**: **Redux Toolkit (^2.2)** dient als zentrale Datenquelle ("Single Source of Truth"), was vorhersagbare Zustandsübergänge gewährleistet und das Debugging vereinfacht.
+-   **Asynchrone Operationen & KI**:
+    -   **RTK Query** verwaltet alle Interaktionen mit der **Google Gemini API (`@google/genai` ^1.19)** und bietet Caching sowie ein optimiertes Lade-/Fehlerzustandsmanagement. Das `gemini-2.5-flash`-Modell wird für seine optimale Balance aus Geschwindigkeit, Kosten und der Fähigkeit zur strukturierten JSON-Ausgabe verwendet.
+    -   Die Pflanzenwachstumssimulation läuft in einem dedizierten **Web Worker**, wodurch der Haupt-UI-Thread reaktionsschnell und flüssig bleibt.
+-   **Datenpersistenz**: Eine robuste **IndexedDB**-Strategie gewährleistet vollständige Offline-Verfügbarkeit.
+    -   Der gesamte Redux-Zustand wird über eine **Listener-Middleware** persistiert, was eine nahtlose Zustandshydratisierung beim App-Start ermöglicht.
+    -   Große statische Daten wie die Sortenbibliothek und der Suchindex werden zur Leistungsoptimierung in einer separaten IndexedDB verwaltet.
+-   **PWA & Offline-Fähigkeit**: Ein **Service Worker** implementiert eine "Cache First, then Network"-Strategie, wodurch die Anwendung vollständig installierbar und ohne Internetverbindung funktionsfähig ist.
+-   **Styling**: **Tailwind CSS (über CDN)** ermöglicht einen schnellen, Utility-First-Ansatz zum Erstellen eines konsistenten und responsiven Designsystems, das direkt in `index.html` konfiguriert wird.
 
 ---
 

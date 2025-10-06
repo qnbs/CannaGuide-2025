@@ -86,7 +86,25 @@ export const Header: React.FC<HeaderProps> = ({
                             <h2 className="text-lg font-semibold text-slate-300">{currentTitle}</h2>
                         </div>
                     </button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        {activeView === View.Plants && (
+                            <>
+                                <div
+                                    className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-800/50"
+                                    title={t('settingsView.general.expertModeTitle')}
+                                >
+                                    <label className="text-sm font-semibold text-slate-300 cursor-pointer hidden sm:inline" onClick={() => dispatch(setSetting({ path: 'isExpertMode', value: !isExpertMode }))}>
+                                        {t('settingsView.general.expertModeTitle')}
+                                    </label>
+                                    <Switch
+                                        checked={isExpertMode}
+                                        onChange={(val) => dispatch(setSetting({ path: 'isExpertMode', value: val }))}
+                                        aria-label={t('settingsView.general.expertModeTitle')}
+                                    />
+                                </div>
+                                <div className="w-px h-6 bg-slate-700 mx-1"></div>
+                            </>
+                        )}
                         {deferredPrompt && !isInstalled && (
                             <Button
                                 onClick={onInstallClick}
@@ -99,29 +117,13 @@ export const Header: React.FC<HeaderProps> = ({
                                 <span className="hidden sm:inline">{t('common.installPwa')}</span>
                             </Button>
                         )}
-                        <div
-                            className="flex items-center gap-2 pr-2"
-                            title={t('settingsView.general.expertModeTitle')}
-                        >
-                            <PhosphorIcons.GraduationCap
-                                className={`hidden sm:block w-5 h-5 transition-colors ${
-                                    isExpertMode ? 'text-primary-300' : 'text-slate-400'
-                                }`}
-                            />
-                            <Switch
-                                checked={isExpertMode}
-                                onChange={(val) =>
-                                    dispatch(setSetting({ path: 'isExpertMode', value: val }))
-                                }
-                                aria-label={t('settingsView.general.expertModeTitle')}
-                            />
-                        </div>
                         <button
                             onClick={onCommandPaletteOpen}
                             aria-label={t('commandPalette.open')}
-                            className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300"
+                            className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300 flex items-center gap-1.5"
                         >
                             <PhosphorIcons.CommandLine className="w-6 h-6" />
+                            <span className="hidden lg:inline text-sm">{t('commandPalette.open')}</span>
                         </button>
                         <button
                             onClick={() => dispatch(setActiveView(View.Help))}

@@ -20,7 +20,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "Eine ausgewogene Hybride mit einem süßen, fruchtigen und leicht käsigen Aroma. Die Wirkung ist entspannend und erhebend, ideal für den späten Nachmittag."
   },
   "sensi-star": {
-    "description": "Eine legendäre Indica-Sorte mit einem zitrusartigen, metallischen und erdigen Aroma. Die Wirkung ist stark, körperlich entspannend und fast narkotisch."
+    "description": "Sensi Star ist eine legendäre, mehrfach preisgekrönte, indica-dominante Sorte, deren genaue Genetik ein Geheimnis des Züchters Paradise Seeds ist, aber einen starken afghanischen Einfluss aufweist. Sie ist bekannt für ihre dichten, extrem harzigen Buds und ein einzigartiges Aroma, das zitrusartige und metallische Noten mit einem erdigen, scharfen Unterton kombiniert. Die Wirkung ist stark, sowohl körperlich entspannend als auch zerebral anregend, was oft als 'Körper-Stein mit einem Kopf-High' beschrieben wird."
   },
   "sfv-og": {
     "description": "Ein OG-Kush-Phänotyp aus dem San Fernando Valley. Bekannt für sein erdiges, kiefernartiges und zitrusartiges Aroma und eine erhebende, kreative Wirkung."

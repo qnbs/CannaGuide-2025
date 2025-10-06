@@ -1,4 +1,3 @@
-
 import React, { useState, memo, useEffect } from 'react';
 import { Plant, PlantStage, ModalType, Task, TaskPriority } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -91,7 +90,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     </Card>
                     
                     <Card>
-                        <ActionToolbar onLogAction={(type: ModalType) => dispatch(openActionModalAction({ plantId: plant.id, type }))} />
+                        <ActionToolbar plant={plant} onLogAction={(type: ModalType) => dispatch(openActionModalAction({ plantId: plant.id, type }))} />
                     </Card>
                     
                     <Card>

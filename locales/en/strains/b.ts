@@ -1,6 +1,9 @@
 import { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "banana-fire-cookies": {
+        "description": "Banana Fire Cookies is a potent, indica-dominant hybrid strain known for its intense aroma and flavor profile. It combines the sweet, tropical banana notes of Banana OG with the earthy potency of Fire OG and the complex sweetness of GSC. The effect is strongly relaxing and euphoric, ideal for evening use to relieve stress and promote relaxation."
+    },
     "b-52": {
         "description": "A Skunk hybrid known for its large, dense buds and high yields. The effect is balanced, starting with a cerebral, uplifting feeling that transitions into a gentle body relaxation. The aroma is sweet and skunky.",
     },
@@ -70,6 +73,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "black-dahlia": {
         "description": "An indica-dominant strain known for its dark, almost black leaves and its sweet, berry-like aroma. The effect is relaxing and calming, ideal for relieving stress and pain in the evening.",
     },
+    "black-dawg": {
+        "description": "Black Dawg is a balanced hybrid strain that combines the sweet berry aroma of Blackberry Kush with the cerebral energy of Emerald Headband (Headband line). The effect is typically uplifting and creative, accompanied by a pleasant physical relaxation. The aroma is a mix of sweet berry fruits with earthy and diesel-like undertones."
+    },
     "black-domina": {
         "description": "A potent, almost pure Indica from Sensi Seeds. Known for its fast flowering time, compact structure, and extremely resinous buds. The effect is strong, sedating, and physically relaxing. Ideal for the evening and for insomnia.",
     },
@@ -93,6 +99,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "blackwater": {
         "description": "A heavily indica-dominant strain known for its deep purple coloration and calming effects. Blackwater offers a sweet grape aroma with undertones of lemon and pine. The high begins with a euphoric uplift that soon melts into a full-body relaxation, making it excellent for evening use to alleviate pain and stress.",
+    },
+    "brazilian-sativa": {
+        "description": "Brazilian Sativa is a pure landrace that has adapted over generations to the tropical climate of the Brazilian Amazon. It is historically significant as one of the parent strains of the legendary White Widow. This strain is known for its resistance to heat and high humidity. The effect is a classic Sativa experience: a clear, energetic, and long-lasting cerebral high that promotes euphoria, creativity, and sociability without weighing down the body. The aroma is distinctly tropical and fruity, often with dominant notes of sweet mango and papaya, earning it the local nickname 'Manga Rosa' (Pink Mango). Agronomically, it grows tall and slender with a long flowering time of 10-14 weeks."
     },
     "blue-cheese": {
         "description": "A classic indica-dominant hybrid that combines the sweet, fruity aroma of Blueberry with the pungent, cheesy aroma of UK Cheese. The effect is deeply relaxing and calming, ideal for stress relief and pain management.",
@@ -150,9 +159,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "booger": {
         "description": "A potent indica-dominant strain with a skunky, earthy aroma and a hint of sweetness. The effect is strong, physically relaxing, and sedating, ideal for relieving pain, stress, and insomnia.",
-    },
-    "brazilian-sativa": {
-        "description": "Brazilian Sativa is a pure landrace that has adapted over generations to the tropical climate of the Brazilian Amazon. It is historically significant as one of the parent strains of the legendary White Widow. This strain is known for its resistance to heat and high humidity. The effect is a classic Sativa experience: a clear, energetic, and long-lasting cerebral high that promotes euphoria, creativity, and sociability without weighing down the body. The aroma is distinctly tropical and fruity, often with dominant notes of sweet mango and papaya, earning it the local nickname 'Manga Rosa' (Pink Mango). Agronomically, it grows tall and slender with a long flowering time of 10-14 weeks.",
     },
     "bruce-banger": {
         "description": "A potent sativa-dominant hybrid from Growers Choice. It combines the diesel aroma of Bruce Banner with the fruity taste of Strawberry Diesel. The effect is strong, euphoric, and energizing, ideal for daytime use.",

@@ -125,7 +125,7 @@ export const strainsF: Strain[] = [
     createStrainObject({
         "id": "freakshow",
         "name": "Freakshow",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "Unknown (mutant phenotype)",
         "floweringType": "Photoperiod",

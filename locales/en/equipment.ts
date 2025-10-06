@@ -1,3 +1,4 @@
+import { seedbanks } from './seedbanks';
 
 export const equipmentView = {
   tabs: {
@@ -5,6 +6,7 @@ export const equipmentView = {
     setups: 'My Setups',
     calculators: 'Calculators',
     growShops: 'Grow Shops',
+    seedbanks: 'Seed Banks',
   },
   configurator: {
     title: 'AI Equipment Configurator',
@@ -65,6 +67,7 @@ export const equipmentView = {
   },
   savedSetups: {
     exportTitle: 'Saved Setups',
+    searchPlaceholder: 'Search setups...',
     noSetups: {
       title: 'No Saved Setups',
       subtitle: 'Use the configurator to generate and save your first setup!',
@@ -183,5 +186,6 @@ export const equipmentView = {
         zamnesia: { name: 'Zamnesia', location: 'Netherlands', rating: 4.7, url: 'https://www.zamnesia.com/', description: 'Well-known Dutch head and grow shop.', strengths: ['Seeds & equipment', 'Discreet shipping', 'Large community'], shipping: 'Worldwide', paymentMethods: ['credit_card', 'paypal', 'bank_transfer', 'crypto'] },
         royalQueen: { name: 'Royal Queen Seeds', location: 'Spain', rating: 4.9, url: 'https://www.royalqueenseeds.com/', description: 'Seed bank that also offers high-quality equipment.', strengths: ['Award-winning genetics', 'High-quality accessories', 'Guides'], shipping: 'EU-wide', paymentMethods: ['credit_card', 'bank_transfer', 'crypto'] }
     }
-  }
+  },
+  seedbanks,
 };

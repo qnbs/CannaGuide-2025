@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useRef, lazy, Suspense } from 'react'
 import { View, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
@@ -18,8 +20,11 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { useAppDispatch, useAppSelector, RootState } from '@/stores/store'
 import {
   selectActiveView,
+  selectSelectedPlantId,
   selectIsCommandPaletteOpen,
   selectSettings,
+  selectStrainsView,
+  selectUi,
 } from '@/stores/selectors'
 import {
   setAppReady,
@@ -55,12 +60,10 @@ const KnowledgeView = lazy(() =>
   }))
 )
 const SettingsView = lazy(() =>
-  import('@/components/views/settings/SettingsView').then(module => ({ default: module.SettingsView }))
+  import('@/components/views/settings/SettingsView')
 )
 const HelpView = lazy(() =>
-  import('@/components/views/HelpView').then((module) => ({
-    default: module.HelpView,
-  }))
+  import('@/components/views/HelpView')
 )
 
 const LoadingGate: React.FC = () => {
@@ -87,6 +90,9 @@ const AppContent: React.FC = () => {
   const dispatch = useAppDispatch()
   const settings = useAppSelector(selectSettings);
   const activeView = useAppSelector(selectActiveView)
+  const selectedPlantId = useAppSelector(selectSelectedPlantId);
+  const { activeMentorPlantId } = useAppSelector(selectUi);
+  const { selectedStrainId } = useAppSelector(selectStrainsView);
   const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
   const onboardingCompleted = settings.onboardingCompleted
 
@@ -100,9 +106,9 @@ const AppContent: React.FC = () => {
 
   useEffect(() => {
     if (mainContentRef.current) {
-      mainContentRef.current.scrollTo(0, 0)
+        mainContentRef.current.scrollTo(0, 0);
     }
-  }, [activeView])
+  }, [activeView, selectedPlantId, activeMentorPlantId, selectedStrainId]);
 
   useEffect(() => {
     if (isOffline) {

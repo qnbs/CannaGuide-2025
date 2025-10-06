@@ -200,7 +200,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                 </div>
                  <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
                     <Button type="button" variant="secondary" onClick={props.onClose}>{t('common.cancel')}</Button>
-                    <Button type="submit" form="add-strain-form">{t('common.save')}</Button>
+                    <Button type="submit" form="add-strain-form" glow={true}>{t('common.save')}</Button>
                 </div>
             </form>
         </Modal>

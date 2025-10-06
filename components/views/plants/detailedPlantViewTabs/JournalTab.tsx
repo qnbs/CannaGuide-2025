@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -28,6 +27,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
         [JournalEntryType.PestControl]: <PhosphorIcons.WarningCircle />,
         [JournalEntryType.Environment]: <PhosphorIcons.Fan />,
         [JournalEntryType.Amendment]: <PhosphorIcons.Flask />,
+        [JournalEntryType.Harvest]: <PhosphorIcons.ArchiveBox />,
+        [JournalEntryType.PostHarvest]: <PhosphorIcons.ArchiveBox />,
     };
 
     const journalFilterOptions: { label: string, value: JournalEntryType | 'ALL', icon: React.ReactNode }[] = [
@@ -55,7 +56,7 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
             <ul className="space-y-4">
                 {filteredJournal.length > 0 ? (
                     [...filteredJournal].reverse().map(entry => (
-                        <li key={entry.id} className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg">
+                        <li key={entry.id} className="flex items-start gap-4 p-3 bg-slate-800 rounded-lg ring-1 ring-inset ring-white/20">
                              <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-slate-700 rounded-full text-primary-400">
                                 {journalTypeIcons[entry.type]}
                             </div>

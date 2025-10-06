@@ -20,7 +20,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "A balanced hybrid with a sweet, fruity, and slightly cheesy aroma. The effect is relaxing and uplifting, ideal for the late afternoon."
   },
   "sensi-star": {
-    "description": "A legendary Indica strain with a citrusy, metallic, and earthy aroma. The effect is strong, physically relaxing, and almost narcotic."
+    "description": "Sensi Star is a legendary, multi-award-winning, indica-dominant strain whose exact genetics are a secret of the breeder Paradise Seeds, but it has a strong Afghani influence. It is known for its dense, extremely resinous buds and a unique aroma that combines citrus and metallic notes with an earthy, pungent undertone. The effect is strong, both physically relaxing and cerebrally stimulating, often described as a 'body stone with a head high'."
   },
   "sfv-og": {
     "description": "An OG Kush phenotype from the San Fernando Valley. Known for its earthy, piney, and citrusy aroma and an uplifting, creative effect."

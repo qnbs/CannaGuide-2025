@@ -75,6 +75,30 @@ export const strainsB: Strain[] = [
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
+        "id": "banana-fire-cookies",
+        "name": "Banana Fire Cookies",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Banana OG x Fire OG x GSC",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "24-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Banana Fire Cookies is a potent, indica-dominant hybrid strain known for its intense aroma and flavor profile. It combines the sweet, tropical banana notes of Banana OG with the earthy potency of Fire OG and the complex sweetness of GSC. The effect is strongly relaxing and euphoric, ideal for evening use to relieve stress and promote relaxation.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Banana", "Sweet", "Fruity", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
         "id": "banana-kush",
         "name": "Banana Kush",
         "type": StrainType.Hybrid,
@@ -457,6 +481,30 @@ export const strainsB: Strain[] = [
         },
         "aromas": ["Berry", "Sweet", "Earthy", "Floral"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Linalool"]
+    }),
+    createStrainObject({
+        "id": "black-dawg",
+        "name": "Black Dawg",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Blackberry Kush x Emerald Headband",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Black Dawg is a balanced hybrid strain that combines the sweet berry aroma of Blackberry Kush with the cerebral energy of Emerald Headband (Headband line). The effect is typically uplifting and creative, accompanied by a pleasant physical relaxation. The aroma is a mix of sweet berry fruits with earthy and diesel-like undertones.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Berry", "Diesel", "Earthy", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
         "id": "black-domina",
@@ -965,7 +1013,7 @@ export const strainsB: Strain[] = [
     createStrainObject({
         "id": "blueberry",
         "name": "Blueberry",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica - 80% Indica / 20% Sativa",
         "genetics": "Afghani x Thai",
         "floweringType": "Photoperiod",
@@ -1157,7 +1205,7 @@ export const strainsB: Strain[] = [
     createStrainObject({
         "id": "bubba-kush",
         "name": "Bubba Kush",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica - 80% Indica / 20% Sativa",
         "genetics": "OG Kush x Unknown Indica",
         "floweringType": "Photoperiod",

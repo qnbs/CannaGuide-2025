@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Strain, SavedExport, ExportFormat } from '@/types';
 import { Card } from '@/components/common/Card';
@@ -58,15 +57,17 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     }, [savedExports, searchTerm, sort]);
 
     const handleRedownload = (savedExport: SavedExport) => {
-        const strainsToExport = allStrains.filter(s => savedExport.strainIds.includes(s.id));
-        if (strainsToExport.length === 0) {
-            dispatch(addNotification({ message: t('strainsView.exportsManager.strainsNotFound'), type: 'error' }));
-            return;
-        }
+        if (window.confirm(t('common.exportConfirm'))) {
+            const strainsToExport = allStrains.filter(s => savedExport.strainIds.includes(s.id));
+            if (strainsToExport.length === 0) {
+                dispatch(addNotification({ message: t('strainsView.exportsManager.strainsNotFound'), type: 'error' }));
+                return;
+            }
 
-        const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt|xml)$/, '');
-        exportService.exportStrains(strainsToExport, savedExport.format, fileNameWithoutExt);
-        dispatch(addNotification({ message: t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), type: 'success' }));
+            const fileNameWithoutExt = savedExport.name.replace(/\.(json|csv|pdf|txt|xml)$/, '');
+            exportService.exportStrains(strainsToExport, savedExport.format, fileNameWithoutExt);
+            dispatch(addNotification({ message: t('strainsView.exportsManager.downloadingExport', { name: fileNameWithoutExt, format: savedExport.format }), type: 'success' }));
+        }
     };
     
     const handleDelete = (id: string) => {
@@ -147,7 +148,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                             <span>{t('strainsView.selectedCount', { count: selectedIds.size })}</span>
                         </div>
                         {processedExports.map(item => (
-                            <div key={item.id} className={`p-3 rounded-lg flex items-center gap-3 transition-colors ${selectedIds.has(item.id) ? 'bg-primary-900/40' : 'bg-slate-800'}`}>
+                            <div key={item.id} className={`p-3 rounded-lg flex items-center gap-3 transition-colors ring-1 ring-inset ring-white/20 ${selectedIds.has(item.id) ? 'bg-primary-900/40' : 'bg-slate-800'}`}>
                                  <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
                                 <div className="flex-grow">
                                     <p className="font-bold text-slate-100">{item.name}</p>

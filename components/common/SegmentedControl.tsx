@@ -5,6 +5,7 @@ interface SegmentedControlProps<T extends string> {
     value: T[]
     onToggle: (value: T) => void
     className?: string
+    buttonClassName?: string
 }
 
 export function SegmentedControl<T extends string>({
@@ -12,6 +13,7 @@ export function SegmentedControl<T extends string>({
     value,
     onToggle,
     className = '',
+    buttonClassName = '',
 }: SegmentedControlProps<T>) {
     return (
         <div
@@ -25,11 +27,11 @@ export function SegmentedControl<T extends string>({
                         key={option.value}
                         type="button"
                         onClick={() => onToggle(option.value)}
-                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ${
+                        className={`flex-1 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-all whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 ring-1 ring-inset ring-white/20 ${
                             isActive
                                 ? 'bg-slate-700 text-primary-300 shadow-sm'
                                 : 'text-slate-300 hover:bg-slate-700/50'
-                        }`}
+                        } ${buttonClassName}`}
                         aria-pressed={isActive}
                     >
                         {option.icon}

@@ -1,12 +1,13 @@
+
 import { Plant, Scenario, ScenarioAction, PlantHistoryEntry } from '@/types'
-import { simulationService } from '@/services/plantSimulationService'
+import { plantSimulationService } from '@/services/plantSimulationService'
 
 const applyAction = (plant: Plant, action: ScenarioAction): Plant => {
     switch (action) {
         case 'TOP':
-            return simulationService.topPlant(plant).updatedPlant
+            return plantSimulationService.topPlant(plant).updatedPlant
         case 'LST':
-            return simulationService.applyLst(plant).updatedPlant
+            return plantSimulationService.applyLst(plant).updatedPlant
         case 'NONE':
         default:
             return plant
@@ -14,8 +15,8 @@ const applyAction = (plant: Plant, action: ScenarioAction): Plant => {
 }
 
 self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => {
-    let plantA = structuredClone(e.data.basePlant)
-    let plantB = structuredClone(e.data.basePlant)
+    let plantA = plantSimulationService.clonePlant(e.data.basePlant)
+    let plantB = plantSimulationService.clonePlant(e.data.basePlant)
     const { scenario } = e.data
 
     const historyA: PlantHistoryEntry[] = []
@@ -31,7 +32,7 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => 
             plantB = applyAction(plantB, scenario.plantBModifier.action)
         }
 
-        const resultA = simulationService.calculateStateForTimeDelta(plantA, oneDayInMillis)
+        const resultA = plantSimulationService.calculateStateForTimeDelta(plantA, oneDayInMillis)
         plantA = resultA.updatedPlant
         historyA.push({
             day: plantA.age,
@@ -41,7 +42,7 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => 
             medium: plantA.medium
         })
 
-        const resultB = simulationService.calculateStateForTimeDelta(plantB, oneDayInMillis)
+        const resultB = plantSimulationService.calculateStateForTimeDelta(plantB, oneDayInMillis)
         plantB = resultB.updatedPlant
         historyB.push({
             day: plantB.age,

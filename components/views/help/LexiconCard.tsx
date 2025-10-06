@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { LexiconEntry } from '@/types';
 import { useTranslation } from 'react-i18next';
+import { Speakable } from '@/components/common/Speakable';
 
 const getCategoryKey = (category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General') => {
     const lower = category.toLowerCase();
     return lower === 'general' ? 'general' : `${lower}s`;
 };
 
-export const LexiconCard: React.FC<{ entry: LexiconEntry }> = ({ entry }) => {
+export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) => {
     const { t } = useTranslation();
 
     const categoryKey = getCategoryKey(entry.category);
@@ -21,7 +22,9 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = ({ entry }) => {
         <Card className="bg-slate-800/50">
             <h3 className="text-lg font-bold text-primary-300">{term}</h3>
             <p className="text-xs uppercase text-slate-400 mb-2">{entry.category}</p>
-            <p className="text-sm text-slate-300">{definition}</p>
+            <Speakable elementId={`lexicon-${entry.key}`}>
+                <p className="text-sm text-slate-300">{definition}</p>
+            </Speakable>
             {detailsObject && (
                 <div className="mt-3 pt-3 border-t border-slate-700/50 text-xs text-slate-400 space-y-1">
                     {Object.entries(detailsObject).map(([key, value]) => (
@@ -33,4 +36,4 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = ({ entry }) => {
             )}
         </Card>
     );
-};
+});

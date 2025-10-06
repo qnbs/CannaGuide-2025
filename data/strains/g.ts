@@ -653,7 +653,7 @@ export const strainsG: Strain[] = [
     createStrainObject({
         "id": "grandmommy",
         "name": "Grandmommy Purple",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
         "genetics": "Granddaddy Purple x Big Bud",
         "floweringType": "Photoperiod",
@@ -677,7 +677,7 @@ export const strainsG: Strain[] = [
     createStrainObject({
         "id": "grape-ape",
         "name": "Grape Ape",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "Mendocino Purps x Skunk x Afghani",
         "floweringType": "Photoperiod",
@@ -797,7 +797,7 @@ export const strainsG: Strain[] = [
     createStrainObject({
         "id": "green-crack",
         "name": "Green Crack",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 65% / Indica 35%",
         "genetics": "Skunk #1 x an unknown Indica",
         "floweringType": "Photoperiod",

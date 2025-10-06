@@ -60,7 +60,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     if (step === 0) {
         return (
             <Modal isOpen={true} onClose={() => {}} showCloseButton={false}>
-                <div className="text-center">
+                <div className="text-center p-2">
                     <div className="flex items-center justify-center gap-3 mb-6">
                         <CannabisLeafIcon className="w-10 h-10" />
                         <h1 className="text-3xl font-bold font-display text-slate-100">
@@ -73,7 +73,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                     <p className="text-slate-400 mb-6">
                         Select your preferred language / Wähle deine bevorzugte Sprache
                     </p>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 p-2">
                         <Button
                             onClick={() => handleLanguageSelect('de')}
                             className="flex-1 flex items-center justify-center"
@@ -106,13 +106,15 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                 {[...Array(steps.length)].map((_, i) => (
                     <div
                         key={i}
-                        className={`w-2 h-2 rounded-full ${
-                            i === step - 1 ? 'bg-primary-400' : 'bg-slate-600'
+                        className={`rounded-full transition-all duration-300 ${
+                            i === step - 1
+                                ? 'w-2.5 h-2.5 bg-primary-400'
+                                : 'w-2 h-2 border border-slate-600'
                         }`}
                     ></div>
                 ))}
             </div>
-            <Button onClick={isLastStep ? onClose : handleNext}>
+            <Button onClick={isLastStep ? onClose : handleNext} glow={true}>
                 {isLastStep ? t('onboarding.startGrow') : t('common.next')}
             </Button>
         </div>

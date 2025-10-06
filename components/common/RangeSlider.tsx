@@ -78,7 +78,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = ({
                 <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-300">
                     {label}
                 </label>
-                <span className="text-sm font-mono bg-slate-700 px-2 py-0.5 rounded-md">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
+                <span className="text-sm font-mono bg-slate-700 px-2 py-0.5 rounded-md ring-1 ring-inset ring-white/20">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
             </div>
             <div className="relative h-4 flex items-center">
                 <div className="relative w-full h-1 bg-slate-600 rounded-full">

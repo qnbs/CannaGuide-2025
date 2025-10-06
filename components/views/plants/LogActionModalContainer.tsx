@@ -1,5 +1,5 @@
 import React from 'react';
-import { LogActionModal, ModalType } from './LogActionModal';
+import { LogActionModal } from './LogActionModal';
 import { selectPlantById, selectActionModalState } from '@/stores/selectors';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { closeActionModal, openDeepDiveModal } from '@/stores/slices/uiSlice';

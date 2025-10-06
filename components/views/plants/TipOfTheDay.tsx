@@ -1,17 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 
-export const TipOfTheDay: React.FC = () => {
+export const TipOfTheDay: React.FC = memo(() => {
     const { t } = useTranslation();
     const [tip, setTip] = useState('');
 
     const allTips = useMemo(() => {
-        // The translation function t() might return the key if not found,
-        // or it might return an object/array if the key points to one.
-        // We need to handle the case where it returns the array of tips.
-        const tipsOrKey = t('tipOfTheDay.tips');
+        const tipsOrKey = t('tipOfTheDay.tips', { returnObjects: true });
         return Array.isArray(tipsOrKey) ? tipsOrKey : [];
     }, [t]);
 
@@ -35,4 +32,4 @@ export const TipOfTheDay: React.FC = () => {
             <p className="text-primary-300 text-sm">{tip}</p>
         </Card>
     );
-};
+});

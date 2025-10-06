@@ -26,7 +26,7 @@ export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({ isOpen, onClose,
     const footer = (
         <>
             <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-            <Button onClick={handleSave} disabled={!name.trim()}>{t('common.save')}</Button>
+            <Button onClick={handleSave} disabled={!name.trim()} glow={true}>{t('common.save')}</Button>
         </>
     );
 

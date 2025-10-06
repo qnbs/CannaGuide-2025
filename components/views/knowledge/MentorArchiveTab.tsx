@@ -72,14 +72,16 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
     };
 
     const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
-        const dataToExport = source === 'selected' 
-            ? archivedResponses.filter(res => selectedIds.has(res.id))
-            : filteredArchive;
-        if (dataToExport.length === 0) {
-            dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
-            return;
+        if (window.confirm(t('common.exportConfirm'))) {
+            const dataToExport = source === 'selected' 
+                ? archivedResponses.filter(res => selectedIds.has(res.id))
+                : filteredArchive;
+            if (dataToExport.length === 0) {
+                dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
+                return;
+            }
+            exportService.exportMentorArchive(dataToExport, format, `CannaGuide_Mentor_Archive_${new Date().toISOString().slice(0, 10)}`);
         }
-        exportService.exportMentorArchive(dataToExport, format, `CannaGuide_Mentor_Archive_${new Date().toISOString().slice(0, 10)}`);
     };
 
     const handleUpdate = (response: ArchivedMentorResponse) => {

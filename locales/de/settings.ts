@@ -4,7 +4,6 @@ export const settingsView = {
     general: 'Allgemein & UI',
     accessibility: 'Barrierefreiheit',
     strains: 'Sorten-Ansicht',
-    plants: 'Pflanzen & Simulation',
     notifications: 'Benachrichtigungen',
     defaults: 'Standardwerte',
     data: 'Datenverwaltung',
@@ -92,33 +91,6 @@ export const settingsView = {
       asc: 'Aufsteigend',
       desc: 'Absteigend',
     }
-  },
-  plants: {
-      title: 'Pflanzen & Simulation',
-      autoAdvance: 'Simulation automatisch fortsetzen',
-      autoAdvanceDesc: 'Aktualisiert den Pflanzenstatus alle 5 Minuten im Hintergrund.',
-      autoJournaling: 'Automatisches Journaling',
-      autoJournalingDesc: 'Automatisch System-Einträge im Journal für bestimmte Ereignisse erstellen.',
-      logStageChanges: 'Phasenwechsel protokollieren',
-      logProblems: 'Erkannte Probleme protokollieren',
-      logTasks: 'Erstellte Aufgaben protokollieren',
-      speed: 'Simulationsgeschwindigkeit',
-      simulationProfile: {
-        title: 'Simulationsprofil',
-        description: 'Wähle ein Profil, um die Simulationsparameter schnell anzupassen.',
-        profiles: {
-          beginner: 'Anfänger',
-          expert: 'Experte',
-          experimental: 'Experimentell',
-          custom: 'Benutzerdefiniert',
-        }
-      },
-      pestPressure: 'Schädlingsdruck',
-      pestPressureDesc: 'Beeinflusst die Wahrscheinlichkeit von Schädlingsproblemen.',
-      nutrientSensitivity: 'Nährstoffempfindlichkeit',
-      nutrientSensitivityDesc: 'Beeinflusst, wie stark die Pflanze auf Über- oder Unterdüngung reagiert.',
-      environmentalStability: 'Umweltstabilität',
-      environmentalStabilityDesc: 'Beeinflusst, wie stark die Umgebung (Temp/Feuchte) schwankt.',
   },
   notifications: {
     title: 'Benachrichtigungen',

@@ -66,15 +66,19 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
     };
 
     const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
+        if (!window.confirm(t('common.exportConfirm'))) return;
+
         const dataToExport = source === 'selected' 
             ? allAdvice.filter(advice => selectedIds.has(advice.id))
             : filteredAdvice;
             
         if (dataToExport.length === 0) {
             dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
+            setIsExportModalOpen(false);
             return;
         }
         exportService.exportAdvisorArchive(dataToExport, format, `CannaGuide_Advisor_Archive_${new Date().toISOString().slice(0, 10)}`);
+        setIsExportModalOpen(false);
     };
 
 

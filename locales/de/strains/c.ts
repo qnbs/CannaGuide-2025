@@ -1,9 +1,13 @@
-
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
     "cactus-breath": {
         "description": "Eine potente indica-dominante Hybride mit einem erdigen, kiefernartigen und würzigen Aroma. Cactus Breath liefert ein starkes, entspannendes und euphorisches High, das perfekt zum Entspannen am Ende des Tages ist.",
+    },
+    "cactus": {
+        "description": "Cactus ist eine indica-dominante Hybridsorte, die für ihre robuste Natur und ihre entspannende Wirkung bekannt ist. Sie ist eine Kreuzung aus den klassischen Sorten Afghani und Northern Lights. Die Wirkung ist typischerweise beruhigend und körperlich entspannend, was sie zu einer guten Wahl für den Abend macht. Das Aroma ist eine Mischung aus Kiefer, süßer Erde und würzigen Noten.",
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Afghani x Northern Lights"
     },
     "cactus-cooler": {
         "description": "Eine sativa-dominante Hybride mit einem süßen, tropischen Ananas- und Zitrusaroma. Cactus Cooler liefert ein erhebendes, energetisches und kreatives High, das perfekt für den Tagesgebrauch ist.",
@@ -18,7 +22,9 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "Eine CBD-reiche Version der klassischen California Orange. Sie bietet ein Verhältnis von ~1:2 THC zu CBD und sorgt für eine milde, erhebende und funktionale Wirkung mit erheblichen therapeutischen Vorteilen. Das Aroma ist ein süßer und spritziger Ausbruch von frischen Orangen und Zitrusfrüchten."
     },
     "cali-o-california-orange": {
-        "description": "Eine klassische Hybride, die seit den 1980ern bekannt ist. Sie bietet eine klare, erhebende und glückliche Wirkung und ein starkes Orangenaroma.",
+        "description": "California Orange, auch bekannt als Cali-O, ist eine klassische, ausgewogene Hybridsorte, die seit den 1980er Jahren bekannt ist. Sie ist berühmt für ihr intensives, süßes Orangen- und Zitrusaroma. Die Wirkung ist klar, erhebend und sorgt für ein glückliches, energetisches Gefühl, ohne dabei übermäßig stimulierend zu sein, was sie für den Gebrauch zu jeder Tageszeit geeignet macht.",
+        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Kalifornische Landrassen-Hybride"
     },
     "candy-jack": {
         "description": "Eine sativa-dominante Hybride mit einem süßen, bonbonartigen und zitrusartigen Aroma. Candy Jack liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",

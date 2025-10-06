@@ -1,202 +1,182 @@
-
 import React, { useState } from 'react';
-import { Plant, JournalEntry, TrainingType, JournalEntryType, PhotoCategory, AppSettings } from '@/types';
-import { useTranslation } from 'react-i18next';
+import {
+  Plant,
+  ModalType,
+  JournalEntryType,
+  TrainingType,
+  AmendmentType,
+  PhotoCategory,
+} from '@/types';
 import { Button } from '@/components/common/Button';
+import { useTranslation } from 'react-i18next';
 import { Modal } from '@/components/common/Modal';
-import { dbService } from '@/services/dbService';
-import { CameraModal } from '@/components/common/CameraModal';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectSettings } from '@/stores/selectors';
-import { addNotification } from '@/stores/slices/uiSlice';
-import { waterPlant, topPlant, applyLst, addJournalEntry, applyPestControl } from '@/stores/slices/simulationSlice';
+import { useAppDispatch } from '@/stores/store';
+import { addJournalEntry, applyWateringAction, applyTrainingAction, applyPestControlAction, applyAmendmentAction } from '@/stores/slices/simulationSlice';
 import { Input, Select } from '@/components/ui/ThemePrimitives';
-
-export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo' | 'amendment';
+import { CameraModal } from '@/components/common/CameraModal';
+import { dbService } from '@/services/dbService';
+import { addNotification } from '@/stores/slices/uiSlice';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface LogActionModalProps {
-    plant: Plant;
-    type: ModalType;
-    onClose: () => void;
-    onLearnMore: (topic: string) => void;
+  plant: Plant;
+  type: ModalType;
+  onClose: () => void;
+  onLearnMore: (topic: string) => void;
 }
 
-const Textarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-        <Input as="textarea" {...props} className="min-h-[80px]" />
-    </div>
-);
+export const LogActionModal: React.FC<LogActionModalProps> = ({
+  plant,
+  type,
+  onClose,
+  onLearnMore,
+}) => {
+  const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const [notes, setNotes] = useState('');
+  const [details, setDetails] = useState<any>({});
+  const [image, setImage] = useState<string | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
-export const LogActionModal: React.FC<LogActionModalProps> = ({ plant, type, onClose, onLearnMore }) => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
-    
-    const [notes, setNotes] = useState(t(settings.defaultJournalNotes[type as keyof typeof settings.defaultJournalNotes] || '') || '');
-    const [waterAmount, setWaterAmount] = useState(500);
-    const [ph, setPh] = useState(6.5);
-    const [ec, setEc] = useState(1.2);
-    const [trainingType, setTrainingType] = useState<TrainingType>('LST');
-    const [amendmentType, setAmendmentType] = useState('Mycorrhizae');
-    const [isCameraOpen, setIsCameraOpen] = useState(false);
-    const [imageData, setImageData] = useState<{id: string, url: string} | null>(null);
-    const [details, setDetails] = useState<{ photoCategory: PhotoCategory }>({ photoCategory: PhotoCategory.FullPlant });
+  const handleSubmit = async () => {
+    let entryType: JournalEntryType;
+    let finalDetails = { ...details };
 
-
-    const titleMap: Record<ModalType, string> = {
-        watering: t('plantsView.actionModals.logWatering'),
-        feeding: t('plantsView.actionModals.logFeeding'),
-        training: t('plantsView.actionModals.logTraining'),
-        pestControl: t('plantsView.actionModals.logPestControl'),
-        observation: t('plantsView.actionModals.logObservation'),
-        photo: t('plantsView.actionModals.logPhoto'),
-        amendment: t('plantsView.actionModals.logAmendment'),
-    };
-    
-    const handleSave = () => {
-        let entry: Omit<JournalEntry, 'id' | 'createdAt'> | null = null;
-        switch(type) {
-            case 'watering':
-                dispatch(waterPlant({ plantId: plant.id, amount: waterAmount, ph }));
-                entry = { type: JournalEntryType.Watering, notes, details: { waterAmount, ph } };
-                break;
-            case 'feeding':
-                dispatch(waterPlant({ plantId: plant.id, amount: waterAmount, ph, ec }));
-                entry = { type: JournalEntryType.Feeding, notes, details: { waterAmount, ph, ec } };
-                break;
-            case 'training':
-                if (trainingType === 'Topping') dispatch(topPlant({ plantId: plant.id }));
-                else if (trainingType === 'LST') dispatch(applyLst({ plantId: plant.id }));
-                entry = { type: JournalEntryType.Training, notes, details: { trainingType } };
-                break;
-             case 'pestControl':
-                dispatch(applyPestControl({ plantId: plant.id, notes }));
-                entry = { type: JournalEntryType.PestControl, notes };
-                break;
-            case 'observation':
-                entry = { type: JournalEntryType.Observation, notes };
-                break;
-            case 'photo':
-                if (imageData) {
-                     entry = { type: JournalEntryType.Photo, notes, details: { imageId: imageData.id, photoCategory: details.photoCategory } };
-                }
-                break;
-            case 'amendment':
-                entry = { type: JournalEntryType.Amendment, notes, details: { amendmentType } };
-                break;
+    if (type === 'photo' && image) {
+      entryType = JournalEntryType.Photo;
+      const imageId = `photo-${plant.id}-${Date.now()}`;
+      try {
+        await dbService.addImage({ id: imageId, data: image, createdAt: Date.now() });
+        finalDetails.imageId = imageId;
+        finalDetails.imageUrl = image; // For immediate optimistic UI update
+      } catch (e) {
+        dispatch(addNotification({ message: t('plantsView.aiDiagnostics.saveImageError'), type: 'error'}));
+      }
+    } else {
+        const typeMapping: Record<ModalType, JournalEntryType> = {
+            'watering': JournalEntryType.Watering,
+            'feeding': JournalEntryType.Feeding,
+            'training': JournalEntryType.Training,
+            'pestControl': JournalEntryType.PestControl,
+            'observation': JournalEntryType.Observation,
+            'photo': JournalEntryType.Photo,
+            'amendment': JournalEntryType.Amendment,
         }
-        if (entry) {
-            dispatch(addJournalEntry({ plantId: plant.id, entry }));
-        }
-        onClose();
-    };
-    
-    const handleCapture = async (dataUrl: string) => {
-        const imageId = `photo-${plant.id}-${Date.now()}`;
-        try {
-            await dbService.addImage({ id: imageId, data: dataUrl, createdAt: Date.now() });
-            setImageData({ id: imageId, url: dataUrl });
-            setIsCameraOpen(false);
-            if (notes.trim() === '') {
-                setNotes(`Photo on day ${plant.age}`);
-            }
-        } catch (error) {
-            console.error("Failed to save image to DB", error);
-            dispatch(addNotification({ message: t('plantsView.aiDiagnostics.saveImageError'), type: 'error' }));
-        }
-    };
-
-    const handleLearnMoreClick = (topic: string) => {
-        onClose();
-        onLearnMore(topic);
+        entryType = typeMapping[type] || JournalEntryType.Observation;
     }
     
-    const renderContent = () => {
-        switch(type) {
-            case 'watering': return <>
-                <Input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" />
-                <Input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" />
-            </>;
-            case 'feeding': return <>
-                <Input type="number" value={waterAmount} onChange={e => setWaterAmount(Number(e.target.value))} placeholder="Amount (ml)" />
-                <Input type="number" value={ph} step="0.1" onChange={e => setPh(Number(e.target.value))} placeholder="pH" />
-                <Input type="number" value={ec} step="0.1" onChange={e => setEc(Number(e.target.value))} placeholder="EC" />
-            </>;
-            case 'training': return <div className="flex items-end gap-2">
-                <div className="flex-grow">
-                     <label className="block text-sm font-semibold text-slate-300 mb-1">{t('common.type')}</label>
-                     <Select
-                        value={trainingType}
-                        onChange={e => setTrainingType(e.target.value as TrainingType)}
-                        options={[
-                            { value: 'LST', label: t('plantsView.actionModals.trainingTypes.LST') },
-                            { value: 'Topping', label: t('plantsView.actionModals.trainingTypes.Topping') },
-                            { value: 'FIMing', label: t('plantsView.actionModals.trainingTypes.FIMing') },
-                            { value: 'Defoliation', label: t('plantsView.actionModals.trainingTypes.Defoliation') },
-                        ]}
-                    />
+    const finalNotes = notes || t(`plantsView.actionModals.defaultNotes.${type}`, { defaultValue: `${type} logged.` });
+
+    // --- RING 3 GATEWAY ---
+    // Instead of dispatching addJournalEntry directly, call the validating thunks for actions that affect simulation state.
+    switch (type) {
+        case 'watering':
+            // The modal doesn't collect specific data yet, so we pass an empty object.
+            // The thunk's schema will validate it (and pass if fields are optional).
+            dispatch(applyWateringAction({ plantId: plant.id, data: {}, notes: finalNotes }));
+            break;
+        case 'training':
+            dispatch(applyTrainingAction({ plantId: plant.id, data: finalDetails, notes: finalNotes }));
+            break;
+        case 'pestControl':
+            // The modal only has notes for this, so we'll pass that as the 'method'.
+            dispatch(applyPestControlAction({ plantId: plant.id, data: { method: finalNotes }, notes: finalNotes }));
+            break;
+        case 'amendment':
+             dispatch(applyAmendmentAction({ plantId: plant.id, data: finalDetails, notes: finalNotes }));
+             break;
+        case 'feeding':
+        case 'observation':
+        case 'photo':
+        default:
+             // For actions without specific simulation effects or complex validation, we can still use addJournalEntry.
+             dispatch(
+              addJournalEntry({
+                plantId: plant.id,
+                entry: {
+                  type: entryType,
+                  notes: finalNotes,
+                  details: finalDetails,
+                },
+              })
+            );
+    }
+
+    onClose();
+  };
+
+  const title = t(`plantsView.actionModals.log${type.charAt(0).toUpperCase() + type.slice(1)}`);
+    
+  const footer = (
+    <>
+      <Button variant="secondary" onClick={onClose}>
+        {t('common.cancel')}
+      </Button>
+      <Button onClick={handleSubmit} glow={true}>{t('common.save')}</Button>
+    </>
+  );
+
+  return (
+    <>
+      {isCameraOpen && <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={(data) => { setImage(data); setIsCameraOpen(false); }} />}
+      <Modal isOpen={true} onClose={onClose} title={title} footer={footer}>
+        <div className="space-y-4">
+          {type === 'training' && (
+            <Select
+              label="Training Type"
+              value={details.type || ''}
+              onChange={(e) => setDetails({ type: e.target.value })}
+              options={(['LST', 'Topping', 'FIMing', 'Defoliation'] as TrainingType[]).map((tValue) => ({ value: tValue, label: t(`plantsView.actionModals.trainingTypes.${tValue}`) }))}
+            />
+          )}
+          {type === 'amendment' && (
+             <Select
+                label="Amendment Type"
+                value={details.type || ''}
+                onChange={(e) => setDetails({ type: e.target.value })}
+                options={(['Mycorrhizae', 'WormCastings'] as AmendmentType[]).map((a) => ({ value: a, label: t(`plantsView.actionModals.amendmentTypes.${a}`) }))}
+            />
+          )}
+          {type === 'photo' && (
+            <>
+              <Select
+                label={t('plantsView.actionModals.photo.category')}
+                value={details.photoCategory || ''}
+                onChange={(e) => setDetails({ ...details, photoCategory: e.target.value })}
+                options={Object.values(PhotoCategory).map((c) => ({ value: c, label: t(`plantsView.actionModals.photo.categories.${c}`) }))}
+              />
+              {image ? (
+                <div className="relative">
+                  <img src={image} alt="preview" className="rounded-md" />
+                  <Button variant="danger" size="sm" className="!p-1 absolute top-2 right-2" onClick={() => setImage(null)}><PhosphorIcons.X /></Button>
                 </div>
-                <Button variant="secondary" onClick={() => handleLearnMoreClick(trainingType)}>
-                    <PhosphorIcons.GraduationCap className="w-4 h-4 mr-1.5"/> {t('common.learnMore')}
-                </Button>
-            </div>;
-            case 'amendment': return <>
-                <label className="block text-sm font-semibold text-slate-300 mb-1">{t('common.type')}</label>
-                <Select
-                    value={amendmentType}
-                    onChange={e => setAmendmentType(e.target.value)}
-                    options={[
-                        { value: 'Mycorrhizae', label: t('plantsView.actionModals.amendmentTypes.Mycorrhizae') },
-                        { value: 'Worm Castings', label: t('plantsView.actionModals.amendmentTypes.WormCastings') },
-                    ]}
-                />
-            </>;
-            case 'photo': return <div className="space-y-4">
-                {imageData ? (
-                    <div className="relative">
-                        <img src={imageData.url} alt="Preview" className="rounded-lg w-full" />
-                        <Button size="sm" variant="danger" onClick={() => setImageData(null)} className="absolute top-2 right-2 !p-1.5"><PhosphorIcons.X/></Button>
-                    </div>
-                ) : (
-                    <Button onClick={() => setIsCameraOpen(true)} variant="secondary" className="w-full">
-                        <PhosphorIcons.Camera className="w-5 h-5 mr-2" />
-                        {t('plantsView.actionModals.photo.selectImage')}
+              ) : (
+                <div className="flex gap-2">
+                    <Button variant="secondary" className="flex-1" onClick={() => document.getElementById('photo-upload')?.click()}>
+                        <PhosphorIcons.UploadSimple/> {t('plantsView.actionModals.photo.selectImage')}
                     </Button>
-                )}
-
-                <div>
-                    <label htmlFor="photo-category" className="block text-sm font-semibold mb-1">
-                        {t('plantsView.actionModals.photo.category')}
-                    </label>
-                    <Select 
-                      id="photo-category"
-                      value={details.photoCategory}
-                      onChange={(e) => setDetails(prev => ({ ...prev, photoCategory: e.target.value as PhotoCategory }))}
-                      options={Object.values(PhotoCategory).map(cat => ({ value: cat, label: t(`plantsView.actionModals.photo.categories.${cat}`) }))}
-                    />
+                    <input id="photo-upload" type="file" accept="image/*" className="hidden" onChange={e => {
+                        if(e.target.files?.[0]) {
+                            const reader = new FileReader();
+                            reader.onload = () => setImage(reader.result as string);
+                            reader.readAsDataURL(e.target.files[0]);
+                        }
+                    }} />
+                    <Button variant="secondary" className="flex-1" onClick={() => setIsCameraOpen(true)}><PhosphorIcons.Camera/> {t('plantsView.aiDiagnostics.capture')}</Button>
                 </div>
-            </div>;
-            default: return null;
-        }
-    };
-
-    if (isCameraOpen && type === 'photo') {
-        return <CameraModal isOpen={isCameraOpen} onClose={() => setIsCameraOpen(false)} onCapture={handleCapture} />;
-    }
-
-    return (
-        <Modal isOpen={true} onClose={onClose} title={titleMap[type]} footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={handleSave}>{t('common.save')}</Button></>}>
-            <div className="space-y-4">
-                {renderContent()}
-                 <Textarea
-                    label={t('common.notes')}
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    placeholder={type === 'photo' ? t('plantsView.actionModals.photo.notesPlaceholder') : t('common.notes')}
-                />
-            </div>
-        </Modal>
-    );
+              )}
+            </>
+          )}
+          <Input
+            as="textarea"
+            label={t('common.notes')}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder={t('plantsView.actionModals.photo.notesPlaceholder')}
+            rows={3}
+          />
+        </div>
+      </Modal>
+    </>
+  );
 };

@@ -11,6 +11,7 @@ import { VisualGuideCard } from './help/VisualGuideCard';
 import { LexiconCard } from './help/LexiconCard';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { Button } from '@/components/common/Button';
+import { Speakable } from '@/components/common/Speakable';
 
 const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
@@ -47,12 +48,14 @@ const FAQSection: React.FC = memo(() => {
             <div className="space-y-3">
                 {filteredFaq.length > 0 ? (
                     filteredFaq.map(item => (
-                        <details key={item.id} className="group glass-pane rounded-lg overflow-hidden">
-                            <summary className="list-none flex justify-between items-center p-3 cursor-pointer">
-                                <h4 className="font-semibold text-slate-100">{item.question}</h4>
+                        <details key={item.id} className="group bg-slate-800/60 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20">
+                            <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
+                                <span className="text-lg font-bold text-slate-100">{item.question}</span>
                                 <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
                             </summary>
-                            <div className="p-3 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                            <Speakable elementId={`faq-${item.id}`}>
+                                <div className="p-4 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                            </Speakable>
                         </details>
                     ))
                 ) : (
@@ -171,28 +174,42 @@ const ManualSection: React.FC = memo(() => {
         const subSections = Object.keys(sectionData).filter(key => key !== 'title' && key !== 'content');
 
         const icons: Record<string, React.ReactNode> = {
-            strains: <PhosphorIcons.Leafy />,
-            plants: <PhosphorIcons.Plant />,
-            equipment: <PhosphorIcons.Wrench />,
-            knowledge: <PhosphorIcons.BookOpenText />,
-            general: <PhosphorIcons.Cube />,
+            strains: <PhosphorIcons.Leafy className="w-6 h-6"/>,
+            plants: <PhosphorIcons.Plant className="w-6 h-6"/>,
+            equipment: <PhosphorIcons.Wrench className="w-6 h-6"/>,
+            knowledge: <PhosphorIcons.BookOpenText className="w-6 h-6"/>,
+            general: <PhosphorIcons.Cube className="w-6 h-6"/>,
         };
 
+        if (isSubSection) {
+            // Render subsections as simpler, nested details
+            return (
+                 <details key={sectionKey} open={false} className="group bg-slate-900/40 rounded-lg ring-1 ring-inset ring-slate-700/50">
+                    <summary className="list-none flex items-center gap-2 cursor-pointer p-3 text-md font-semibold text-primary-300">
+                        <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
+                        {title}
+                    </summary>
+                    <div className="p-3 border-t border-slate-700/50">
+                        {content && <Speakable elementId={`manual-sub-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
+                    </div>
+                </details>
+            );
+        }
+
+        // Render top-level sections styled like SettingsSection
         return (
-            <details key={sectionKey} open={level < 1} className="group">
-                <summary className={`list-none flex items-center gap-2 cursor-pointer py-2 ${
-                    isSubSection 
-                        ? 'text-lg font-semibold text-primary-300' 
-                        : 'text-xl font-bold font-display text-primary-400'
-                }`}>
-                    <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
-                    {!isSubSection && icons[sectionKey] && <span className="w-6 h-6">{icons[sectionKey]}</span>}
-                    {title}
+            <details key={sectionKey} open={level < 1} className="group bg-slate-800/60 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20">
+                <summary className="list-none flex justify-between items-center p-4 cursor-pointer font-bold text-slate-100">
+                    <div className="flex items-center gap-3">
+                        {icons[sectionKey]}
+                        <span className="text-lg">{title}</span>
+                    </div>
+                    <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
-                <div className={`pt-2 pb-4 ${isSubSection ? 'pl-8 border-l border-slate-700 ml-5' : 'pl-7'}`}>
-                    {content && <div className="prose prose-sm dark:prose-invert max-w-none mb-4" dangerouslySetInnerHTML={{ __html: content }} />}
+                <div className="px-4 pb-2 border-t border-slate-700/50">
+                    {content && <Speakable elementId={`manual-main-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none my-4" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
                     {subSections.length > 0 && (
-                        <div className="space-y-4">
+                        <div className="space-y-2 py-2">
                             {subSections.map(key => renderSection(key, sectionData[key], true, level + 1))}
                         </div>
                     )}
@@ -202,9 +219,9 @@ const ManualSection: React.FC = memo(() => {
     };
 
     return (
-        <Card>
+        <div className="space-y-4">
             {Object.keys(manualContent).filter(key => key !== 'title').map(key => renderSection(key, manualContent[key]))}
-        </Card>
+        </div>
     );
 });
 
@@ -232,10 +249,11 @@ export const HelpView: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <Card>
-                <h2 className="text-3xl font-bold font-display text-slate-100">{t('helpView.title')}</h2>
+            <div className="text-center mb-6 animate-fade-in">
+                <PhosphorIcons.Question className="w-16 h-16 mx-auto text-primary-400" />
+                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('helpView.title')}</h2>
                 <p className="text-slate-400 mt-1">{t('helpView.subtitle')}</p>
-            </Card>
+            </div>
 
             <Card>
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />

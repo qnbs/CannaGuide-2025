@@ -4,7 +4,6 @@ export const settingsView = {
     general: 'General & UI',
     accessibility: 'Accessibility',
     strains: 'Strains View',
-    plants: 'Plants & Simulation',
     notifications: 'Notifications',
     defaults: 'Defaults',
     data: 'Data Management',
@@ -92,33 +91,6 @@ export const settingsView = {
       asc: 'Ascending',
       desc: 'Descending',
     }
-  },
-  plants: {
-      title: 'Plants & Simulation',
-      autoAdvance: 'Auto-Advance Simulation',
-      autoAdvanceDesc: 'Updates plant state every 5 minutes in the background.',
-      autoJournaling: 'Automatic Journaling',
-      autoJournalingDesc: 'Automatically create system journal entries for certain events.',
-      logStageChanges: 'Log stage changes',
-      logProblems: 'Log detected problems',
-      logTasks: 'Log created tasks',
-      speed: 'Simulation Speed',
-      simulationProfile: {
-        title: 'Simulation Profile',
-        description: 'Select a profile to quickly adjust simulation parameters.',
-        profiles: {
-          beginner: 'Beginner',
-          expert: 'Expert',
-          experimental: 'Experimental',
-          custom: 'Custom',
-        }
-      },
-      pestPressure: 'Pest Pressure',
-      pestPressureDesc: 'Affects the likelihood of pest-related problems.',
-      nutrientSensitivity: 'Nutrient Sensitivity',
-      nutrientSensitivityDesc: 'Affects how strongly the plant reacts to over/under-feeding.',
-      environmentalStability: 'Environmental Stability',
-      environmentalStabilityDesc: 'Affects how much the environment (temp/humidity) fluctuates.',
   },
   notifications: {
       title: 'Notifications',

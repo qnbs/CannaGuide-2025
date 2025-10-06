@@ -759,7 +759,7 @@ export const strainsP: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "The original 'Bubba Kush' from before 1998. A classic Indica known for its heavily calming and physically relaxing effects. The aroma is a distinctive mix of earthy coffee and sweet, hash-like notes. Ideal for relieving stress, pain, and insomnia.",
+        "description": "The original 'Bubba Kush' from before 1998. A classic Indica known for its powerfully calming and physically relaxing effects. The aroma is a distinctive blend of earthy coffee and sweet, hash-like notes. Ideal for relieving stress, pain, and insomnia.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -941,7 +941,7 @@ export const strainsP: Strain[] = [
     createStrainObject({
         "id": "purple-haze",
         "name": "Purple Haze",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 85% / Indica 15%",
         "genetics": "Purple Thai x Haze",
         "floweringType": "Photoperiod",

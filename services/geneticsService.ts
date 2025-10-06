@@ -98,15 +98,24 @@ class GeneticsService {
         if (!rootStrain) {
             return { children: [], grandchildren: [] };
         }
+
         const findDirectChildren = (parentName: string): Strain[] => {
-            const lowerParentName = parentName.toLowerCase();
-            return allStrains.filter(s =>
-                s.genetics && s.genetics.toLowerCase().split(/\s+x\s+/i).map(p => p.trim().replace(/\s*\(.*\)/, '').trim()).includes(lowerParentName)
-            );
+            const lowerParentName = parentName.toLowerCase().trim();
+            return allStrains.filter(s => {
+                if (!s.genetics) return false;
+                const parents = s.genetics.toLowerCase().split(/\s+x\s+/i)
+                    .map(p => p.replace(/[()]/g, '').trim().replace(/\s*#\d+/, '').trim());
+                return parents.includes(lowerParentName.replace(/\s*#\d+/, '').trim());
+            });
         };
+
         const children = findDirectChildren(rootStrain.name);
         const grandchildren = children.flatMap(child => findDirectChildren(child.name));
-        return { children, grandchildren: [...new Map(grandchildren.map(item => [item.id, item])).values()] };
+
+        // Remove duplicates from grandchildren
+        const uniqueGrandchildren = [...new Map(grandchildren.map(item => [item.id, item])).values()];
+
+        return { children, grandchildren: uniqueGrandchildren };
     }
 }
 

@@ -1,9 +1,11 @@
-
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
     "cactus-breath": {
-        "description": "A potent indica-dominant hybrid with an earthy, piney, and spicy aroma. Cactus Breath delivers a strong, relaxing, and euphoric high that is perfect for unwinding at the end of the day.",
+        "description": "A potent indica-dominant hybrid with an earthy, pine, and spicy aroma. Cactus Breath delivers a strong, relaxing, and euphoric high that is perfect for unwinding at the end of the day.",
+    },
+    "cactus": {
+        "description": "Cactus is an indica-dominant hybrid strain known for its robust nature and relaxing effects. It is a cross of the classic strains Afghani and Northern Lights. The effect is typically calming and physically relaxing, making it a good choice for the evening. The aroma is a mix of pine, sweet earth, and spicy notes.",
     },
     "cactus-cooler": {
         "description": "A sativa-dominant hybrid with a sweet, tropical pineapple and citrus aroma. Cactus Cooler delivers an uplifting, energetic, and creative high that is perfect for daytime use.",
@@ -18,7 +20,7 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "A CBD-rich version of the classic California Orange. It offers a ~1:2 THC to CBD ratio, providing a mild, uplifting, and functional effect with significant therapeutic benefits. The aroma is a sweet and tangy burst of fresh oranges and citrus."
     },
     "cali-o-california-orange": {
-        "description": "A classic hybrid known since the 1980s. It offers a clear, uplifting, and happy effect and a strong orange aroma.",
+        "description": "California Orange, also known as Cali-O, is a classic, balanced hybrid strain that has been known since the 1980s. It is famous for its intense, sweet orange and citrus aroma. The effect is clear, uplifting, and provides a happy, energetic feeling without being overly stimulating, making it suitable for use at any time of day.",
     },
     "candy-jack": {
         "description": "A sativa-dominant hybrid with a sweet, candy-like, and citrusy aroma. Candy Jack delivers an energetic, uplifting, and creative high that is perfect for daytime use.",

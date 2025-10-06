@@ -365,7 +365,7 @@ export const strainsT: Strain[] = [
     createStrainObject({
         "id": "trainwreck",
         "name": "Trainwreck",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "Mexican Sativa x Thai Sativa x Afghani Indica",
         "floweringType": "Photoperiod",

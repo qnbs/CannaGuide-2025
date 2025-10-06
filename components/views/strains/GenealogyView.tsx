@@ -20,6 +20,9 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Select } from '@/components/ui/ThemePrimitives';
 import { geneticsService } from '@/services/geneticsService';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import { Modal } from '@/components/common/Modal';
+import { StrainCompactItem } from './StrainCompactItem';
+
 
 interface GenealogyViewProps {
     allStrains: Strain[];
@@ -29,13 +32,12 @@ interface GenealogyViewProps {
 const nodeSize = { width: 220, height: 80 };
 const nodeSeparation = { x: 40, y: 40 };
 
-// FIX: Explicitly type Link as React.FC to ensure TS treats it as a component and handles the `key` prop correctly.
 const Link: React.FC<{ link: d3.HierarchyLink<GenealogyNode>, orientation: 'horizontal' | 'vertical' }> = ({ link, orientation }) => {
-    const d3PathHorizontal = d3.linkHorizontal()
+    const d3PathHorizontal = d3.linkHorizontal<d3.HierarchyLink<GenealogyNode>, d3.HierarchyPointNode<GenealogyNode>>()
         .x(d => (d as any).y)
         .y(d => (d as any).x);
     
-     const d3PathVertical = d3.linkVertical()
+     const d3PathVertical = d3.linkVertical<d3.HierarchyLink<GenealogyNode>, d3.HierarchyPointNode<GenealogyNode>>()
         .x(d => (d as any).x)
         .y(d => (d as any).y);
 
@@ -44,7 +46,7 @@ const Link: React.FC<{ link: d3.HierarchyLink<GenealogyNode>, orientation: 'hori
     return <path className="genealogy-link" d={pathGenerator(link) || ''} />;
 };
 
-const AnalysisPanel: React.FC<{ tree: GenealogyNode | null }> = ({ tree }) => {
+const AnalysisPanel: React.FC<{ tree: GenealogyNode | null, onShowDescendants: () => void }> = ({ tree, onShowDescendants }) => {
     const { t } = useTranslation();
     const contributions = useMemo(() => {
         if (!tree) return [];
@@ -62,6 +64,9 @@ const AnalysisPanel: React.FC<{ tree: GenealogyNode | null }> = ({ tree }) => {
                     </li>
                 ))}
             </ul>
+             <Button variant="secondary" size="sm" className="w-full mt-4" onClick={onShowDescendants}>
+                {t('strainsView.genealogyView.showDescendants')}
+            </Button>
         </Card>
     );
 };
@@ -70,6 +75,7 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { computedTrees, status, selectedStrainId, zoomTransform, layoutOrientation } = useAppSelector(selectGenealogyState);
+    const [descendants, setDescendants] = useState<{ children: Strain[], grandchildren: Strain[] } | null>(null);
     
     const svgRef = useRef<SVGSVGElement>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>();
@@ -110,6 +116,18 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setSelectedGenealogyStrain(e.target.value || null));
     };
+    
+    const handleShowDescendants = () => {
+        if (selectedStrainId) {
+            const data = geneticsService.findDescendants(selectedStrainId, allStrains);
+            setDescendants(data);
+        }
+    };
+    
+    const handleDescendantClick = (strain: Strain) => {
+        setDescendants(null);
+        onNodeClick(strain);
+    };
 
     const sortedStrains = useMemo(() => [...allStrains].sort((a,b) => a.name.localeCompare(b.name)), [allStrains]);
 
@@ -124,8 +142,6 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                 g.attr('transform', event.transform.toString());
             })
             .on('end', (event) => {
-                // FIX: Only update Redux state on user-initiated zoom events to prevent an infinite loop.
-                // Programmatic calls via .transform() do not have a sourceEvent.
                 if (event.sourceEvent) {
                     dispatch(setGenealogyZoom(event.transform));
                 }
@@ -159,6 +175,40 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
 
     return (
         <div className="space-y-4">
+             {descendants && selectedStrainId && (
+                <Modal
+                    isOpen={!!descendants}
+                    onClose={() => setDescendants(null)}
+                    title={`${t('strainsView.genealogyView.knownDescendants', { name: computedTrees[selectedStrainId]?.name })}`}
+                    size="lg"
+                >
+                    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+                        {descendants.children.length > 0 && (
+                            <div>
+                                <h3 className="font-bold text-lg text-primary-300 mb-2">{t('strainsView.genealogyView.children')}</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {descendants.children.map(strain => (
+                                        <StrainCompactItem key={strain.id} strain={strain} onClick={() => handleDescendantClick(strain)} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {descendants.grandchildren.length > 0 && (
+                            <div>
+                                <h3 className="font-bold text-lg text-primary-300 mb-2 mt-4">{t('strainsView.genealogyView.grandchildren')}</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {descendants.grandchildren.map(strain => (
+                                        <StrainCompactItem key={strain.id} strain={strain} onClick={() => handleDescendantClick(strain)} />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {descendants.children.length === 0 && descendants.grandchildren.length === 0 && (
+                            <p className="text-slate-400 text-center py-8">{t('strainsView.genealogyView.noDescendantsFound')}</p>
+                        )}
+                    </div>
+                </Modal>
+            )}
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.genealogyView.title')}</h3>
                 <p className="text-sm text-slate-400 mt-1">{t('strainsView.genealogyView.description')}</p>
@@ -208,7 +258,7 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                         </Card>
                     </div>
                     <div className="lg:col-span-1 space-y-4">
-                        <AnalysisPanel tree={tree} />
+                        <AnalysisPanel tree={tree} onShowDescendants={handleShowDescendants} />
                     </div>
                 </div>
             )}

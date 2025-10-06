@@ -1,3 +1,5 @@
+
+
 import { GoogleGenAI, GenerateContentResponse, Type, FunctionDeclaration } from '@google/genai'
 import {
     Plant,
@@ -242,7 +244,6 @@ PLANT CONTEXT:
             Analyze the following image of a cannabis plant.
             ${contextString}
             Based on the image and the detailed context, provide a comprehensive diagnosis.
-            Respond in JSON format only, adhering strictly to the provided schema. The schema is: { "title": "string", "confidence": "number (0.0-1.0)", "diagnosis": "string", "immediateActions": "string (markdown)", "longTermSolution": "string (markdown)", "prevention": "string (markdown)" }.
         `
 
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
@@ -254,6 +255,21 @@ PLANT CONTEXT:
             const response = await this.ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: { parts: [imagePart, textPart] },
+                config: {
+                    responseMimeType: 'application/json',
+                    responseSchema: {
+                        type: Type.OBJECT,
+                        properties: {
+                            title: { type: Type.STRING, description: "A short, clear title for the diagnosis (e.g., 'Early Nitrogen Deficiency')." },
+                            content: { type: Type.STRING, description: "The main diagnosis text, explaining what the issue appears to be based on the visual evidence and data provided. This field corresponds to the 'diagnosis' requested in older prompt versions." },
+                            confidence: { type: Type.NUMBER, description: "A value from 0.0 to 1.0 indicating the model's confidence in the diagnosis." },
+                            immediateActions: { type: Type.STRING, description: "Markdown formatted string of immediate, actionable steps the user should take within the next 24-48 hours." },
+                            longTermSolution: { type: Type.STRING, description: "Markdown formatted string explaining the long-term solution or adjustments needed to fix the root cause." },
+                            prevention: { type: Type.STRING, description: "Markdown formatted string with advice on how to prevent this issue in the future." },
+                        },
+                        required: ['title', 'content', 'confidence', 'immediateActions', 'longTermSolution', 'prevention'],
+                    },
+                },
             })
 
             return JSON.parse(response.text.trim()) as PlantDiagnosisResponse
@@ -308,12 +324,11 @@ PLANT CONTEXT:
                             content: { type: Type.STRING },
                             uiHighlights: {
                                 type: Type.ARRAY,
-                                nullable: true,
                                 items: {
                                     type: Type.OBJECT,
                                     properties: {
                                         elementId: { type: Type.STRING },
-                                        plantId: { type: Type.STRING, nullable: true },
+                                        plantId: { type: Type.STRING },
                                     },
                                     required: ['elementId'],
                                 },
@@ -333,7 +348,7 @@ PLANT CONTEXT:
 
     async getStrainTips(
         strain: Strain,
-        context: { focus: string; stage: string; experience: string },
+        context: { focus: string; stage: string; experienceLevel: string },
         lang: Language
     ): Promise<StructuredGrowTips> {
         const t = getT()
@@ -341,7 +356,7 @@ PLANT CONTEXT:
             strain: JSON.stringify(strain),
             focus: context.focus,
             stage: context.stage,
-            experience: context.experience,
+            experienceLevel: context.experienceLevel,
         })
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
         try {
@@ -370,9 +385,20 @@ PLANT CONTEXT:
         }
     }
 
-    async generateStrainImage(strainName: string, lang: Language): Promise<string> {
+    async generateStrainImage(strain: Strain, lang: Language): Promise<string> {
         const t = getT()
-        const prompt = t('ai.prompts.strainImage', { strainName })
+        const aromas = (strain.aromas || []).join(', ')
+        const description_snippet =
+            strain.description?.split('.').slice(0, 2).join('.') + '.' || 'uplifting and creative'
+
+        const prompt = t('ai.prompts.strainImage', {
+            strainName: strain.name,
+            type: strain.type,
+            aromas: aromas,
+            description_snippet: description_snippet,
+            agronomic_yield: strain.agronomic.yield,
+            agronomic_height: strain.agronomic.height,
+        })
 
         try {
             const response = await this.ai.models.generateImages({

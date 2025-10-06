@@ -1,12 +1,12 @@
 
 import { Plant, Scenario, ScenarioAction } from '@/types';
-import { simulationService } from '@/services/plantSimulationService';
+import { plantSimulationService } from '@/services/plantSimulationService';
 
 const scenarios: Record<string, Scenario> = {
     'topping-vs-lst': {
         id: 'topping-vs-lst',
-        titleKey: 'scenarios.toppingVsLst.title',
-        descriptionKey: 'scenarios.toppingVsLst.description',
+        titleKey: 'knowledgeView.scenarios.toppingVsLst.title',
+        descriptionKey: 'knowledgeView.scenarios.toppingVsLst.description',
         durationDays: 14,
         plantAModifier: { action: 'LST', day: 1 },
         plantBModifier: { action: 'TOP', day: 1 },
@@ -23,9 +23,9 @@ class ScenarioService {
     applyAction(plant: Plant, action: ScenarioAction): Plant {
         switch (action) {
             case 'TOP':
-                return simulationService.topPlant(plant).updatedPlant;
+                return plantSimulationService.topPlant(plant).updatedPlant;
             case 'LST':
-                return simulationService.applyLst(plant).updatedPlant;
+                return plantSimulationService.applyLst(plant).updatedPlant;
             case 'NONE':
             default:
                 return plant;
@@ -36,8 +36,8 @@ class ScenarioService {
         return new Promise(resolve => {
             // Use setTimeout to make it non-blocking, simulating a background process
             setTimeout(() => {
-                let plantA = simulationService.clonePlant(basePlant);
-                let plantB = simulationService.clonePlant(basePlant);
+                let plantA = plantSimulationService.clonePlant(basePlant);
+                let plantB = plantSimulationService.clonePlant(basePlant);
                 
                 plantA.name = `${basePlant.name} (A)`;
                 plantB.name = `${basePlant.name} (B)`;
@@ -52,8 +52,8 @@ class ScenarioService {
                         plantB = this.applyAction(plantB, scenario.plantBModifier.action);
                     }
                     
-                    plantA = simulationService.calculateStateForTimeDelta(plantA, oneDayInMillis).updatedPlant;
-                    plantB = simulationService.calculateStateForTimeDelta(plantB, oneDayInMillis).updatedPlant;
+                    plantA = plantSimulationService.calculateStateForTimeDelta(plantA, oneDayInMillis).updatedPlant;
+                    plantB = plantSimulationService.calculateStateForTimeDelta(plantB, oneDayInMillis).updatedPlant;
                 }
                 
                 resolve({ plantA, plantB });

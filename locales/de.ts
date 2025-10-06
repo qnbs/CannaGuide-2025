@@ -1,13 +1,13 @@
-import { common, nav, plantStages, problemMessages, ai } from './common';
-import { commandPalette } from './commandPalette';
-import { equipmentView } from './equipment';
-import { helpView, visualGuides, faq } from './help';
-import { knowledgeView, tipOfTheDay } from './knowledge';
-import { onboarding } from './onboarding';
-import { plantsView } from './plants';
-import { settingsView } from './settings';
-import { strainsView } from './strains';
-import { strainsData } from './strainsData';
+import { common, nav, plantStages, problemMessages, ai } from './de/common';
+import { commandPalette } from './de/commandPalette';
+import { equipmentView } from './de/equipment';
+import { helpView, visualGuides, faq } from './de/help';
+import { knowledgeView, tipOfTheDay } from './de/knowledge';
+import { onboarding } from './de/onboarding';
+import { plantsView } from './de/plants';
+import { settingsView } from './de/settings';
+import { strainsView } from './de/strains';
+import { strainsData } from './de/strainsData';
 
 
 export const de = {

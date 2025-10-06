@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, memo } from 'react';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectActivePlants, selectSandboxState } from '@/stores/selectors';
 import { runComparisonScenario } from '@/stores/slices/sandboxSlice';
-import { Plant, Experiment, Scenario, ScenarioAction, SandboxState } from '@/types';
+import { Plant, Experiment, Scenario, PlantHistoryEntry } from '@/types';
 import { scenarioService } from '@/services/scenarioService';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -29,28 +28,22 @@ const ExperimentResults: React.FC<{ experiment: Experiment }> = memo(({ experime
         return () => clearInterval(interval);
     }, [isPlaying, experiment.durationDays]);
 
-    // Create a temporary full plant object for visualization based on history
-    const createPlantFromHistory = (basePlant: Plant, historyEntry: any): Plant => {
+    const createPlantFromHistory = (basePlant: Plant, historyEntry: PlantHistoryEntry | undefined): Plant => {
         return {
             ...basePlant,
-            height: historyEntry.height,
-            stressLevel: historyEntry.stressLevel,
-            health: historyEntry.health,
-            // We can add more properties from history if needed for more complex visualizations
+            height: historyEntry?.height ?? basePlant.height,
+            stressLevel: historyEntry?.stressLevel ?? basePlant.stressLevel,
+            health: historyEntry?.health ?? basePlant.health,
         };
     };
 
-    const plantAatDay = createPlantFromHistory(experiment.originalFinalState, experiment.originalHistory[day] || {});
-    const plantBatDay = createPlantFromHistory(experiment.modifiedFinalState, experiment.modifiedHistory[day] || {});
+    const plantAatDay = createPlantFromHistory(experiment.originalFinalState, experiment.originalHistory[day]);
+    const plantBatDay = createPlantFromHistory(experiment.modifiedFinalState, experiment.modifiedHistory[day]);
     
-    const metrics: (keyof Plant | 'substrate.ph' | 'substrate.ec')[] = [ 'biomass', 'height', 'health', 'stressLevel' ];
+    const metrics: (keyof Pick<Plant, 'biomass' | 'height' | 'health' | 'stressLevel'>)[] = [ 'biomass', 'height', 'health', 'stressLevel' ];
     
-    const getMetricValue = (plant: Plant, key: string): number => {
-        if (key.includes('.')) {
-            const keys = key.split('.');
-            return (plant as any)[keys[0]][keys[1]];
-        }
-        return (plant as any)[key];
+    const getMetricValue = (plant: Plant, key: typeof metrics[number]): number => {
+        return plant[key] as number;
     }
 
     const calculateDiff = (valA: number, valB: number) => {
@@ -86,34 +79,34 @@ const ExperimentResults: React.FC<{ experiment: Experiment }> = memo(({ experime
 
             <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-2 bg-slate-800/50 rounded-lg">
-                    <h4 className="font-bold">Original</h4>
+                    <h4 className="font-bold">{experiment.scenarioDescription.split('vs.')[0].trim()}</h4>
                     <PlantVisualizer plant={plantAatDay} className="w-full h-48 mx-auto" />
                 </div>
                  <div className="text-center p-2 bg-slate-800/50 rounded-lg">
-                    <h4 className="font-bold">Modifiziert</h4>
+                    <h4 className="font-bold">{experiment.scenarioDescription.split('vs.')[1].trim()}</h4>
                     <PlantVisualizer plant={plantBatDay} className="w-full h-48 mx-auto" />
                 </div>
             </div>
             
             <div className="mt-6">
-                 <h4 className="text-lg font-bold mb-2">Finale Metriken-Analyse</h4>
+                 <h4 className="text-lg font-bold mb-2">Final Metrics Analysis</h4>
                  <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-800">
                             <tr>
-                                <th className="p-2">Metrik</th>
+                                <th className="p-2">Metric</th>
                                 <th className="p-2 text-right">Original</th>
-                                <th className="p-2 text-right">Modifiziert</th>
-                                <th className="p-2 text-right">Differenz</th>
+                                <th className="p-2 text-right">Modified</th>
+                                <th className="p-2 text-right">Difference</th>
                             </tr>
                         </thead>
                         <tbody>
                             {metrics.map(key => (
-                                <tr key={key.toString()} className="border-b border-slate-700">
-                                    <td className="p-2 font-semibold">{key.toString()}</td>
-                                    <td className="p-2 text-right font-mono">{getMetricValue(experiment.originalFinalState, key.toString()).toFixed(2)}</td>
-                                    <td className="p-2 text-right font-mono">{getMetricValue(experiment.modifiedFinalState, key.toString()).toFixed(2)}</td>
-                                    <td className="p-2 text-right font-mono">{calculateDiff(getMetricValue(experiment.originalFinalState, key.toString()), getMetricValue(experiment.modifiedFinalState, key.toString()))}</td>
+                                <tr key={key} className="border-b border-slate-700">
+                                    <td className="p-2 font-semibold">{key}</td>
+                                    <td className="p-2 text-right font-mono">{getMetricValue(experiment.originalFinalState, key).toFixed(2)}</td>
+                                    <td className="p-2 text-right font-mono">{getMetricValue(experiment.modifiedFinalState, key).toFixed(2)}</td>
+                                    <td className="p-2 text-right font-mono">{calculateDiff(getMetricValue(experiment.originalFinalState, key), getMetricValue(experiment.modifiedFinalState, key))}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -129,16 +122,16 @@ export const SandboxView: React.FC = memo(() => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const activePlants = useAppSelector(selectActivePlants);
-    const { savedExperiments, isLoading, error } = useAppSelector(selectSandboxState);
+    const { savedExperiments, isLoading } = useAppSelector(selectSandboxState);
     const [selectedExperimentId, setSelectedExperimentId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
     
     useEffect(() => {
-        if(activePlants.length > 0) {
+        if(activePlants.length > 0 && !selectedPlantId) {
             setSelectedPlantId(activePlants[0].id);
         }
-    }, [activePlants]);
+    }, [activePlants, selectedPlantId]);
 
     useEffect(() => {
         if (savedExperiments.length > 0 && !selectedExperimentId) {
@@ -178,23 +171,24 @@ export const SandboxView: React.FC = memo(() => {
                     </div>
                 </Modal>
             )}
-            <Card>
+            <div>
                  <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold font-display text-primary-400">{t('knowledgeView.sandbox.title')}</h3>
                     <Button onClick={() => setIsModalOpen(true)} disabled={isLoading || activePlants.length === 0}>
-                         {isLoading ? t('knowledgeView.sandbox.runningSimulation') : t('knowledgeView.sandbox.startExperiment')}
+                         <PhosphorIcons.Flask className="w-5 h-5 mr-2" />
+                         {t('knowledgeView.sandbox.startExperiment')}
                     </Button>
                 </div>
-                 {isLoading && <AiLoadingIndicator loadingMessage={t('knowledgeView.sandbox.runningSimulation')} />}
-            </Card>
+                 {isLoading && <div className="mt-4"><AiLoadingIndicator loadingMessage={t('knowledgeView.sandbox.runningSimulation')} /></div>}
+            </div>
 
             <Card>
                 <h4 className="text-lg font-bold mb-2">{t('knowledgeView.sandbox.savedExperiments')}</h4>
                 {savedExperiments.length === 0 && !isLoading ? (
-                    <p className="text-slate-400">{t('knowledgeView.sandbox.noExperiments')}</p>
+                    <p className="text-slate-400 text-center py-4">{t('knowledgeView.sandbox.noExperiments')}</p>
                 ) : (
                     <div className="space-y-2">
-                        {savedExperiments.map(exp => (
+                        {[...savedExperiments].reverse().map(exp => (
                             <button 
                                 key={exp.id}
                                 onClick={() => setSelectedExperimentId(exp.id)}
@@ -214,3 +208,5 @@ export const SandboxView: React.FC = memo(() => {
         </div>
     );
 });
+
+export default SandboxView;

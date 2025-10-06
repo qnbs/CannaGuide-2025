@@ -1,5 +1,5 @@
-import { de } from '@/locales/de/index';
-import { en } from '@/locales/en/index';
+import { de } from './de';
+import { en } from './en';
 
 export { de, en };
 

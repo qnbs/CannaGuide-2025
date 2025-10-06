@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "banana-fire-cookies": {
+        "description": "Banana Fire Cookies ist eine potente, indica-dominante Hybridsorte, die für ihr intensives Aroma- und Geschmacksprofil bekannt ist. Sie kombiniert die süßen, tropischen Bananennoten von Banana OG mit der erdigen Potenz von Fire OG und der komplexen Süße von GSC. Die Wirkung ist stark entspannend und euphorisch, ideal für den Abendgebrauch zur Linderung von Stress und zur Förderung der Entspannung."
+    },
     "b-52": {
         "description": "Eine Skunk-Hybride, die für ihre großen, dichten Knospen und hohen Erträge bekannt ist. Die Wirkung ist ausgewogen, beginnend mit einem zerebralen, erhebenden Gefühl, das in eine sanfte Körperentspannung übergeht. Das Aroma ist süß und skunkig.",
     },
@@ -70,6 +73,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "black-dahlia": {
         "description": "Eine indica-dominante Sorte, die für ihre dunklen, fast schwarzen Blätter und ihr süßes, beerenartiges Aroma bekannt ist. Die Wirkung ist entspannend und beruhigend, ideal zur Linderung von Stress und Schmerzen am Abend.",
     },
+    "black-dawg": {
+        "description": "Black Dawg ist eine ausgewogene Hybridsorte, die das süße Beerenaroma von Blackberry Kush mit der zerebralen Energie von Emerald Headband (Headband-Linie) verbindet. Die Wirkung ist typischerweise erhebend und kreativ, begleitet von einer angenehmen körperlichen Entspannung. Das Aroma ist eine Mischung aus süßen Beerenfrüchten mit erdigen und dieselartigen Untertönen."
+    },
     "black-domina": {
         "description": "Eine potente, fast reine Indica von Sensi Seeds. Bekannt für ihre schnelle Blütezeit, ihre kompakte Struktur und ihre extrem harzigen Knospen. Die Wirkung ist stark, sedierend und körperlich entspannend. Ideal für den Abend und bei Schlaflosigkeit.",
     },
@@ -93,6 +99,9 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "blackwater": {
         "description": "Eine stark indica-dominante Sorte, die für ihre tiefviolette Färbung und ihre beruhigende Wirkung bekannt ist. Blackwater bietet ein süßes Traubenaroma mit Untertönen von Zitrone und Kiefer. Das High beginnt mit einem euphorischen Auftrieb, der bald in eine Ganzkörperentspannung übergeht, was sie hervorragend für den abendlichen Gebrauch zur Linderung von Schmerzen und Stress macht.",
+    },
+    "brazilian-sativa": {
+        "description": "Brazilian Sativa ist eine reine Landrasse, die sich über Generationen an das tropische Klima des brasilianischen Amazonas angepasst hat. Sie ist historisch bedeutsam als einer der Elternteile der legendären White Widow. Diese Sorte ist bekannt für ihre Resistenz gegen Hitze und hohe Luftfeuchtigkeit. Die Wirkung ist ein klassisches Sativa-Erlebnis: ein klares, energetisches und langanhaltendes zerebrales High, das Euphorie, Kreativität und Geselligkeit fördert, ohne den Körper zu beschweren. Das Aroma ist ausgeprägt tropisch und fruchtig, oft mit dominanten Noten von süßer Mango und Papaya, was ihr den lokalen Spitznamen 'Manga Rosa' (Rosa Mango) eingebracht hat. Agronomisch wächst sie hoch und schlank mit einer langen Blütezeit von 10-14 Wochen."
     },
     "blue-cheese": {
         "description": "Eine klassische indica-dominante Hybride, die das süße, fruchtige Aroma von Blueberry mit dem würzigen, käsigen Aroma von UK Cheese kombiniert. Die Wirkung ist tief entspannend und beruhigend, ideal zum Stressabbau und zur Schmerzbehandlung.",
@@ -150,9 +159,6 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "booger": {
         "description": "Eine potente indica-dominante Sorte mit einem skunkigen, erdigen Aroma und einem Hauch von Süße. Die Wirkung ist stark, körperlich entspannend und sedierend, ideal zur Linderung von Schmerzen, Stress und Schlaflosigkeit.",
-    },
-    "brazilian-sativa": {
-        "description": "Die brasilianische Sativa ist eine reine Landrasse, die sich über Generationen an das tropische Klima des brasilianischen Amazonas angepasst hat. Sie ist historisch bedeutsam als eine der Elternsorten der legendären White Widow. Diese Sorte ist bekannt für ihre Resistenz gegen Hitze und hohe Luftfeuchtigkeit. Die Wirkung ist ein klassisches Sativa-Erlebnis: ein klares, energetisches und langanhaltendes zerebrales High, das Euphorie, Kreativität und Geselligkeit fördert, ohne den Körper zu belasten. Das Aroma ist ausgeprägt tropisch und fruchtig, oft mit dominanten Noten von süßer Mango und Papaya, was ihr den lokalen Spitznamen 'Manga Rosa' (Rosa Mango) eingebracht hat. Agronomisch wächst sie hoch und schlank mit einer langen Blütezeit von 10-14 Wochen.",
     },
     "bruce-banger": {
         "description": "Eine potente sativa-dominante Hybride von Growers Choice. Sie kombiniert das Dieselaroma von Bruce Banner mit dem fruchtigen Geschmack von Strawberry Diesel. Die Wirkung ist stark, euphorisch und energetisierend, ideal für den Tagesgebrauch.",

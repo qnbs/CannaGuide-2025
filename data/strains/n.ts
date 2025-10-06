@@ -5,7 +5,7 @@ export const strainsN: Strain[] = [
     createStrainObject({
         "id": "northern-lights",
         "name": "Northern Lights",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica - 95% Indica / 5% Sativa",
         "genetics": "Afghani x Thai Landrace",
         "floweringType": "Photoperiod",

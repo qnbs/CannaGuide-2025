@@ -27,7 +27,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "afghani-bullrider",
         "name": "Afghani Bullrider",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 95% / Sativa 5%",
         "genetics": "Afghani landrace phenotype",
         "floweringType": "Photoperiod",

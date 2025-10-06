@@ -47,16 +47,19 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 
 const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
+    const description = t(`strainsData.${strain.id}.description`, { defaultValue: strain.description || 'No description available.' });
+    const genetics = t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics });
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InfoSection title={t('common.description')}>
                 <Speakable elementId={`strain-desc-${strain.id}`}>
-                    <p className="text-slate-300 italic text-sm">{strain.description || 'No description available.'}</p>
+                    <p className="text-slate-300 italic text-sm">{description}</p>
                 </Speakable>
             </InfoSection>
             <InfoSection title={t('strainsView.strainDetail.cannabinoidProfile')}>
                 <div className="space-y-2">
-                    <AttributeDisplay label={t('common.genetics')} value={strain.genetics} />
+                    <AttributeDisplay label={t('common.genetics')} value={genetics} />
                     <AttributeDisplay label={t('strainsView.table.thc')} value={strain.thcRange || `${strain.thc?.toFixed(1)}%`} />
                     <AttributeDisplay label={t('strainsView.table.cbd')} value={strain.cbdRange || `${strain.cbd?.toFixed(1)}%`} />
                 </div>
@@ -67,14 +70,18 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 
 const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
+    const yieldIndoor = t(`strainsData.${strain.id}.yieldDetails.indoor`, { defaultValue: strain.agronomic?.yieldDetails?.indoor });
+    const yieldOutdoor = t(`strainsData.${strain.id}.yieldDetails.outdoor`, { defaultValue: strain.agronomic?.yieldDetails?.outdoor });
+    const heightIndoor = t(`strainsData.${strain.id}.heightDetails.indoor`, { defaultValue: strain.agronomic?.heightDetails?.indoor });
+    const heightOutdoor = t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic?.heightDetails?.outdoor });
     return (
         <InfoSection title={t('strainsView.strainModal.agronomicData')}>
             <div className="space-y-2">
                 <AttributeDisplay label={t('strainsView.strainModal.difficulty')} value={<DifficultyMeter difficulty={strain.agronomic?.difficulty || 'Medium'} />} />
-                <AttributeDisplay label={t('strainsView.strainModal.yieldIndoor')} value={strain.agronomic?.yieldDetails?.indoor} />
-                <AttributeDisplay label={t('strainsView.strainModal.yieldOutdoor')} value={strain.agronomic?.yieldDetails?.outdoor} />
-                <AttributeDisplay label={t('strainsView.strainModal.heightIndoor')} value={strain.agronomic?.heightDetails?.indoor} />
-                <AttributeDisplay label={t('strainsView.strainModal.heightOutdoor')} value={strain.agronomic?.heightDetails?.outdoor} />
+                <AttributeDisplay label={t('strainsView.strainModal.yieldIndoor')} value={yieldIndoor} />
+                <AttributeDisplay label={t('strainsView.strainModal.yieldOutdoor')} value={yieldOutdoor} />
+                <AttributeDisplay label={t('strainsView.strainModal.heightIndoor')} value={heightIndoor} />
+                <AttributeDisplay label={t('strainsView.strainModal.heightOutdoor')} value={heightOutdoor} />
                 <AttributeDisplay label={t('strainsView.strainModal.floweringTime')} value={`${strain.floweringTimeRange || strain.floweringTime} ${t('common.units.weeks')}`} />
             </div>
         </InfoSection>
@@ -181,6 +188,8 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
         [StrainType.Hybrid]: HybridIcon 
     }[strain.type];
 
+    const typeDetails = t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails });
+
     return (
         <div className="animate-fade-in space-y-6">
             <header>
@@ -202,7 +211,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                     {TypeIcon && <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type]}`} />}
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{strain.name}</h1>
-                        <p className="text-slate-400">{strain.type} {strain.typeDetails && `- ${strain.typeDetails}`}</p>
+                        <p className="text-slate-400">{strain.type} {typeDetails && `- ${typeDetails}`}</p>
                     </div>
                 </div>
             </header>

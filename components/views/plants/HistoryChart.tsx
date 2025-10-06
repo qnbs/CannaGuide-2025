@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, memo, useRef } from 'react';
 import { PlantHistoryEntry, JournalEntry, JournalEntryType } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -24,6 +23,8 @@ const eventIcons: Record<JournalEntryType, React.ReactNode> = {
     [JournalEntryType.System]: <></>,
     [JournalEntryType.Environment]: <></>,
     [JournalEntryType.Amendment]: <></>,
+    [JournalEntryType.Harvest]: <PhosphorIcons.ArchiveBox />,
+    [JournalEntryType.PostHarvest]: <PhosphorIcons.ArchiveBox />,
 };
 
 type Metric = 'height' | 'stressLevel' | 'ph' | 'ec' | 'moisture';
@@ -109,8 +110,8 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     return (
         <div className="w-full h-full">
             <div className="flex justify-center gap-1 mb-2">
-                <button onClick={() => setView('growth')} className={`px-2 py-0.5 text-xs rounded-md ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.history')}</button>
-                <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
+                <button onClick={() => setView('growth')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-white/20 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.history')}</button>
+                <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-white/20 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
             </div>
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
                 <g className="history-chart-grid" transform={`translate(0, ${height - padding.bottom})`}>

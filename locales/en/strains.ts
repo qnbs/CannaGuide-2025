@@ -4,6 +4,7 @@ export const strainsView = {
   hybrid: 'Hybrid',
   addStrain: 'Add Strain',
   searchPlaceholder: 'Search strains by name, type, aroma...',
+  clearSearch: 'Clear search',
   favorites: 'Favorites',
   advancedFilters: 'Advanced Filters',
   resetFilters: 'Reset Filters',

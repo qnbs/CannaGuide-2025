@@ -23,7 +23,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "Eine berühmte CBD-dominante Sorte, gezüchtet für therapeutische Zwecke ohne starke psychoaktive Wirkung. Der Name steht für 'Alternative Cannabinoid Dietary Cannabis'. Wirkt entspannend und angstlösend, während der Geist klar bleibt. Ideal bei Schmerzen und Angstzuständen."
   },
   "acapulco-gold": {
-    "description": "Eine legendäre Landrassen-Sorte aus Acapulco, Mexiko, berühmt seit den 1960ern. Bekannt für ihre gold-braunen Knospen und eine energetisierende, euphorische und motivierende Wirkung. Der Geschmack erinnert an süßes, erdiges Toffee. Eine klassische 'Wake-and-Bake'-Sorte."
+    "description": "Eine legendäre sativa-dominante Landrasse aus den Bergen bei Acapulco, Mexiko, die seit den 1960er Jahren berühmt ist. Sie ist bekannt für ihre wunderschönen, dichten Blüten mit orangefarbenen Haaren, die ihr einen goldenen Schimmer verleihen. Die Wirkung ist stark zerebral, energetisierend und euphorisch, was sie zu einer klassischen 'Wake-and-Bake'-Sorte macht, die Stress und Müdigkeit reduziert. Ihr einzigartiges Geschmacksprofil wird oft als verbranntes Toffee, Kaffee und süße Erde beschrieben."
   },
   "acid-dough": {
     "description": "Eine preisgekrönte sativa-dominante Sorte von Ripper Seeds. Bietet einen schnell einsetzenden, euphorischen und kichernden Rausch, der den Geist beflügelt und den Körper leicht entspannt. Die Knospen sind dicht, dunkelgrün mit orangefarbenen Haaren und violetten Trichomen."
@@ -36,6 +36,9 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "afghani": {
     "description": "Eine fundamentale Landrasse aus Afghanistan, die die genetische Grundlage für viele moderne Indicas bildet. Bietet eine tief entspannende und sedierende Wirkung, die Stress abbaut und bei Schlaflosigkeit hilft. Das Aroma ist erdig, süß und skunkig."
+  },
+  "afghani-1": {
+    "description": "Afghani #1 ist eine klassische, reine Indica-Sorte, die direkt von afghanischen Landrassen abstammt und für ihre Robustheit und hohe Harzproduktion bekannt ist. Sie bildet die genetische Grundlage für viele moderne Hybriden, einschließlich der Skunk- und Kush-Linien. Die Wirkung ist stark körperlich, tief entspannend und sedierend, was sie ideal für den abendlichen Gebrauch zur Linderung von Schmerzen, Stress und Schlaflosigkeit macht. Das Aroma ist erdig und süß mit deutlichen Noten von traditionellem Haschisch."
   },
   "afgoo": {
     "description": "Auch bekannt als Afgooey. Eine potente indica-dominante Sorte, die für ihre extrem harzigen, klebrigen Knospen bekannt ist. Die Wirkung ist stark körperlich entspannend, fast sedierend, und führt zu einem euphorischen, glücklichen Zustand. Ideal für den Abendgebrauch bei Stress und Schlaflosigkeit."
@@ -95,6 +98,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "animal-mints": {
     "description": "Gezüchtet von Seed Junky Genetics. Eine hochpotente Hybride mit einem komplexen Aroma von Minze, Keksteig, Vanille und einem Hauch Diesel. Die Wirkung ist stark und ausgewogen, beginnend mit einem euphorischen Kopf-High, das in eine tiefe, sedierende Körperentspannung übergeht."
   },
+  "appalachia": {
+    "description": "Appalachia ist eine ausgewogene Hybridsorte, die die energetische, zerebrale Wirkung von Green Crack mit der körperlichen Potenz von Tres Dawg kombiniert. Das Ergebnis ist ein vielseitiges High, das mit einem motivierenden und euphorischen Kopfschub beginnt und allmählich in eine beruhigende Körperentspannung übergeht, ohne stark sedierend zu wirken. Das Aroma ist eine komplexe Mischung aus süßer Erde, Kiefer und einem Hauch von Diesel."
+  },
   "appalachian-kush": {
     "description": "Eine potente Hybride mit einem erdigen, süßen und leicht würzigen Aroma. Sie bietet eine ausgewogene Wirkung, die mit einem zerebralen, energetischen Schub beginnt und in eine entspannende Körperwirkung übergeht. Ideal zur Linderung von Stress und Schmerzen, ohne völlig zu sedieren."
   },
@@ -118,6 +124,9 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "aurora-indica": {
     "description": "Gezüchtet von Nirvana Seeds. Eine potente F1-Hybride, die schwere Ganzkörpereffekte und eine sedierende zerebrale Ruhe erzeugt. Ideal für die abendliche Behandlung von Schlaflosigkeit und Schmerzen. Die Pflanzen sind kurz, robust und produzieren dichte, harzige Knospen."
+  },
+  "australian-sativa": {
+    "description": "Australian Sativa ist eine Landrassensorte, die sich an das Klima Australiens angepasst hat. Sie ist vor allem als genetischer Ursprung der 'DucksFoot'-Mutation bekannt, die durch ihre ungewöhnlichen, schwimmhautartigen Blätter gekennzeichnet ist. Die Wirkung ist typisch für eine Sativa: erhebend, energetisch und kreativ, was sie zu einer guten Wahl für den Tagesgebrauch macht. Das Aroma ist erdig und kiefernartig mit würzigen und süßen Noten."
   },
   "auto-duck": {
     "description": "Eine einzigartige 'Stealth'-Sorte von Dutch Passion mit einer natürlichen Blattmutation (Entenfußform), die sie unauffällig macht. Der Geruch ist subtil. Die Wirkung ist ausgewogen und moderat, ideal für den Tagesgebrauch. Sehr robust und einfach anzubauen."

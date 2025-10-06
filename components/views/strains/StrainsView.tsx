@@ -1,4 +1,6 @@
-import React, { useState, useMemo, useEffect } from 'react';
+
+
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip, StrainType } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
@@ -18,7 +20,8 @@ import {
     toggleStrainSelection, 
     toggleAllStrainSelection, 
     clearStrainSelection, 
-    StrainsViewState
+    StrainsViewState,
+    setSelectedStrainId
 } from '@/stores/slices/strainsViewSlice';
 import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
@@ -42,9 +45,8 @@ import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
 import { GenealogyView } from './strains/GenealogyView';
 import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
-import { SegmentedControl } from '../common/SegmentedControl';
+import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Button } from '@/components/common/Button';
-import { Pagination } from '@/components/common/Pagination';
 import { StrainListHeader } from './strains/StrainListHeader';
 
 const ITEMS_PER_PAGE = 25;
@@ -54,12 +56,12 @@ export const StrainsView: React.FC = () => {
     const dispatch = useAppDispatch();
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedStrainForDetail, setSelectedStrainForDetail] = useState<Strain | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
     const settings = useAppSelector(selectSettings) as AppSettings;
-    const { strainsViewTab, strainsViewMode, selectedStrainIds } = useAppSelector(selectStrainsView) as StrainsViewState;
+    const { strainsViewTab, strainsViewMode, selectedStrainIds, selectedStrainId } = useAppSelector(selectStrainsView) as StrainsViewState;
+    const selectedStrainForDetail = useMemo(() => allStrains.find(s => s.id === selectedStrainId) || null, [allStrains, selectedStrainId]);
     const userStrains = useAppSelector(selectUserStrains) as Strain[];
     const userStrainIds = useAppSelector(selectUserStrainIds) as Set<string>;
     const favoriteIds = useAppSelector(selectFavoriteIds) as Set<string>;
@@ -91,17 +93,14 @@ export const StrainsView: React.FC = () => {
         showFavoritesOnly, setShowFavoritesOnly, advancedFilters, setAdvancedFilters,
         letterFilter, handleSetLetterFilter, resetAllFilters, sort, handleSort, isAnyFilterActive, activeFilterCount
     } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
-
+    
     useEffect(() => {
-        setCurrentPage(1);
-    }, [filteredStrains.length, strainsViewTab]);
+        setVisibleCount(ITEMS_PER_PAGE);
+    }, [filteredStrains, strainsViewTab]);
 
-    const totalPages = Math.ceil(filteredStrains.length / ITEMS_PER_PAGE);
     const currentStrains = useMemo(() => {
-        const start = (currentPage - 1) * ITEMS_PER_PAGE;
-        const end = start + ITEMS_PER_PAGE;
-        return filteredStrains.slice(start, end);
-    }, [filteredStrains, currentPage]);
+        return filteredStrains.slice(0, visibleCount);
+    }, [filteredStrains, visibleCount]);
     
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
@@ -132,20 +131,24 @@ export const StrainsView: React.FC = () => {
     const handleUpdateStrain = (strain: Strain) => {
         dispatch(updateUserStrainAndCloseModal(strain));
     };
-    const handleDeleteUserStrain = (id: string) => {
+    
+    const handleDeleteUserStrain = useCallback((id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
         if (strainToDelete && window.confirm(t('strainsView.addStrainModal.validation.deleteConfirm', { name: strainToDelete.name }))) {
             dispatch(deleteUserStrain(id));
         }
-    };
-    const handleBulkDelete = () => {
+    }, [dispatch, userStrains, t]);
+
+    const handleBulkDelete = useCallback(() => {
         if (strainsViewTab === StrainViewTab.MyStrains && window.confirm(t('strainsView.exportsManager.deleteConfirmPlural', { count: selectedIdsSet.size }))) {
             selectedIdsSet.forEach(id => dispatch(deleteUserStrain(id)));
             dispatch(clearStrainSelection());
         }
-    };
+    }, [strainsViewTab, selectedIdsSet, t, dispatch]);
 
      const handleExport = (source: 'selected' | 'all', format: 'pdf' | 'csv' | 'json' | 'txt' | 'xml') => {
+        if (!window.confirm(t('common.exportConfirm'))) return;
+
         const strainsToExport = source === 'selected' ? allStrains.filter(s => selectedIdsSet.has(s.id)) : filteredStrains;
         if (strainsToExport.length === 0) {
             dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
@@ -153,13 +156,22 @@ export const StrainsView: React.FC = () => {
         }
         
         const exportName = `CannaGuide_Strains_${new Date().toISOString().slice(0, 10)}`;
-        if(format === 'pdf' || format === 'txt') {
-             exportService.exportStrains(strainsToExport, format, exportName);
-        } else {
+        
+        // Always trigger a direct download for immediate user feedback.
+        exportService.exportStrains(strainsToExport, format, exportName);
+
+        // For data-heavy formats, also save the export configuration to the manager.
+        if (['csv', 'json', 'xml'].includes(format)) {
              dispatch(addExport({ data: { name: exportName, source, format, notes: '' }, strainIds: strainsToExport.map(s => s.id) }));
         }
+        
         dispatch(addNotification({ message: t('common.successfullyExported_other', { count: strainsToExport.length, format: format.toUpperCase() }), type: 'success' }));
+        dispatch(closeExportModal());
     };
+
+    const handleToggleFavorite = useCallback((id: string) => {
+        dispatch(toggleFavorite(id));
+    }, [dispatch]);
 
     const tabs = [
         { id: StrainViewTab.All, label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
@@ -176,7 +188,7 @@ export const StrainsView: React.FC = () => {
     if (selectedStrainForDetail) {
         return <StrainDetailView 
                     strain={selectedStrainForDetail}
-                    onBack={() => setSelectedStrainForDetail(null)} 
+                    onBack={() => dispatch(setSelectedStrainId(null))} 
                     onSaveTip={(strain, tip, imageUrl) => dispatch(addStrainTip({ strain, tip, imageUrl }))} 
                 />;
     }
@@ -197,40 +209,14 @@ export const StrainsView: React.FC = () => {
                             onAdd={() => dispatch(openAddModal(null))}
                             onOpenDrawer={() => setIsDrawerOpen(true)}
                             activeFilterCount={activeFilterCount}
+                            viewMode={strainsViewMode}
+                            typeFilter={typeFilter}
+                            onToggleTypeFilter={handleToggleTypeFilter}
+                            isAnyFilterActive={isAnyFilterActive}
+                            onResetFilters={resetAllFilters}
                         />
 
                         <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
-
-                        <div className="hidden sm:flex items-center gap-4">
-                            <SegmentedControl 
-                                options={[
-                                    { value: 'Sativa', label: t('strainsView.sativa') },
-                                    { value: 'Indica', label: t('strainsView.indica') },
-                                    { value: 'Hybrid', label: t('strainsView.hybrid') },
-                                ]}
-                                value={typeFilter}
-                                onToggle={handleToggleTypeFilter}
-                            />
-                            <Button onClick={() => setIsDrawerOpen(true)} variant="secondary" className="relative !py-2">
-                                 <PhosphorIcons.FunnelSimple className="w-5 h-5 mr-1.5"/>
-                                 <span>{t('strainsView.advancedFilters')}</span>
-                                 {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
-                            </Button>
-                            {isAnyFilterActive && <Button variant="ghost" onClick={resetAllFilters}>{t('strainsView.resetFilters')}</Button>}
-                        </div>
-
-                        {/* Mobile type filter */}
-                         <div className="sm:hidden">
-                            <SegmentedControl 
-                                options={[
-                                    { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
-                                    { value: 'Indica' as StrainType, label: t('strainsView.indica') },
-                                    { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
-                                ]}
-                                value={typeFilter}
-                                onToggle={handleToggleTypeFilter}
-                            />
-                        </div>
                         
                         {strainsViewMode === 'list' && (
                             <StrainListHeader
@@ -254,28 +240,37 @@ export const StrainsView: React.FC = () => {
                                 strains={currentStrains}
                                 selectedIds={selectedIdsSet}
                                 onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                                onSelect={setSelectedStrainForDetail}
+                                onSelect={(strain) => dispatch(setSelectedStrainId(strain.id))}
                                 isUserStrain={(id) => userStrainIds.has(id)}
                                 onDelete={handleDeleteUserStrain}
                                 isPending={isSearching}
                                 favorites={favoriteIds}
-                                onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
+                                onToggleFavorite={handleToggleFavorite}
                             />
                         ) : (
                             <StrainGrid
                                 strains={currentStrains}
                                 selectedIds={selectedIdsSet}
                                 onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                                onSelect={setSelectedStrainForDetail}
+                                onSelect={(strain) => dispatch(setSelectedStrainId(strain.id))}
                                 isUserStrain={(id) => userStrainIds.has(id)}
                                 onDelete={handleDeleteUserStrain}
                                 isPending={isSearching}
                                 favorites={favoriteIds}
-                                onToggleFavorite={(id) => dispatch(toggleFavorite(id))}
+                                onToggleFavorite={handleToggleFavorite}
                             />
                         )}
                         
-                        <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
+                        {visibleCount < filteredStrains.length && (
+                            <div className="mt-6 text-center">
+                                <Button
+                                    variant="secondary"
+                                    onClick={() => setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
+                                >
+                                    {t('common.loadMore', { count: visibleCount, total: filteredStrains.length })}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                     
                     {selectedIdsSet.size > 0 && (
@@ -309,13 +304,18 @@ export const StrainsView: React.FC = () => {
                     />;
         }
         if (strainsViewTab === StrainViewTab.Genealogy) {
-            return <GenealogyView allStrains={allStrains} onNodeClick={setSelectedStrainForDetail} />;
+            return <GenealogyView allStrains={allStrains} onNodeClick={(strain) => dispatch(setSelectedStrainId(strain.id))} />;
         }
         return null;
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
+            <div className="text-center mb-6 animate-fade-in">
+                <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-primary-400" />
+                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.strains')}</h2>
+            </div>
+            
             {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
             <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
             <FilterDrawer 
@@ -337,7 +337,9 @@ export const StrainsView: React.FC = () => {
                 isAnyFilterActive={isAnyFilterActive}
             />
             
-            <Card><Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} /></Card>
+            <Card>
+                <Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} />
+            </Card>
             
             {renderContent()}
         </div>

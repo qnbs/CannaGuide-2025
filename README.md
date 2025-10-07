@@ -3,6 +3,7 @@ This README file supports two languages.
 - English version is first.
 - Deutsche Version (German version) follows below.
 -->
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 # 🌿 CannaGuide 2025 (English)
 

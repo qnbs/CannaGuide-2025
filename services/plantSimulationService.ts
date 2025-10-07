@@ -30,9 +30,10 @@ export const PLANT_STAGE_DETAILS: Record<PlantStage, {
 };
 
 class PlantSimulationService {
-    createPlant(strain: Strain, setup: GrowSetup, light: { wattage: number }, name: string): Plant {
+    createPlant(strain: Strain, setup: GrowSetup, name: string): Plant {
         const now = Date.now();
-        const waterHoldingCapacity = setup.potSize * 1000 * 0.3; // Assume 30% of pot volume is water
+        // Fabric pots have better aeration and thus a slightly lower water holding capacity compared to plastic.
+        const waterHoldingCapacity = setup.potSize * 1000 * (setup.potType === 'Fabric' ? 0.28 : 0.35);
         return {
             id: `plant-${now}`,
             name,
@@ -65,8 +66,19 @@ class PlantSimulationService {
             nutrientPool: { nitrogen: 5, phosphorus: 5, potassium: 5 },
             rootSystem: { health: 100 },
             equipment: {
-                light: { isOn: true, wattage: light.wattage, lightHours: setup.lightHours },
-                fan: { isOn: true, speed: 50 },
+                light: {
+                    type: setup.lightType,
+                    wattage: setup.lightWattage,
+                    isOn: true,
+                    lightHours: setup.lightHours,
+                },
+                exhaustFan: {
+                    power: setup.ventilation,
+                    isOn: true,
+                },
+                circulationFan: {
+                    isOn: setup.hasCirculationFan,
+                },
             },
             problems: [],
             journal: [],
@@ -125,7 +137,16 @@ class PlantSimulationService {
     private _runDailyMetabolism(plant: Plant): Plant {
         const p = this.clonePlant(plant);
         
+        // --- EQUIPMENT MODIFIERS ---
+        // Exhaust fan power directly influences how quickly temperature and humidity can be corrected.
+        const ventilationFactor = { low: 0.8, medium: 1.0, high: 1.5 }[p.equipment.exhaustFan.power];
+        // HPS lights generate more heat
+        const heatFromLight = p.equipment.light.wattage * (p.equipment.light.type === 'HPS' ? 0.2 : 0.1);
+        // Lack of circulation fan can create humidity pockets, slightly increasing effective humidity
+        const circulationFactor = p.equipment.circulationFan.isOn ? 1.0 : 1.05;
+
         // 1. Environment & VPD
+        // Simplified temp/humidity logic would be applied here based on factors above
         p.environment.vpd = this._calculateVPD(p.environment.internalTemperature, p.environment.internalHumidity, -2);
         
         // 2. Transpiration (driven by VPD and plant size)
@@ -160,7 +181,9 @@ class PlantSimulationService {
         const p = this.clonePlant(plant);
         
         // 4. Photosynthesis & Biomass Accumulation
-        const dailyLightIntegral = (p.equipment.light.wattage * PAR_PER_WATT_LED * p.equipment.light.lightHours * 3600) / 1000000; // mol/m²/day
+        // LED lights are more efficient in converting watts to PAR
+        const parEfficiency = p.equipment.light.type === 'LED' ? PAR_PER_WATT_LED : PAR_PER_WATT_LED * 0.8;
+        const dailyLightIntegral = (p.equipment.light.wattage * parEfficiency * p.equipment.light.lightHours * 3600) / 1000000; // mol/m²/day
         const lightAbsorbed = 1 - Math.exp(-LIGHT_EXTINCTION_COEFFICIENT_K * p.leafAreaIndex);
         const potentialBiomassGain = (dailyLightIntegral / 4) * lightAbsorbed * p.strain.geneticModifiers.rue; // Simplified conversion from DLI to MJ
         

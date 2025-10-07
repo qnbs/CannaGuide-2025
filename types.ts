@@ -1,124 +1,28 @@
-import { EntityState } from '@reduxjs/toolkit';
+
+
 import React from 'react';
 
-// =================================================================================================
-// I. ENUMS & CORE TYPES
-// =================================================================================================
+// --- Basic types ---
+export type Language = 'en' | 'de';
+export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz';
 
-export enum View {
-    Strains = 'strains',
-    Plants = 'plants',
-    Equipment = 'equipment',
-    Knowledge = 'knowledge',
-    Settings = 'settings',
-    Help = 'help',
-}
-
+// --- Strain related types ---
 export enum StrainType {
     Sativa = 'Sativa',
     Indica = 'Indica',
     Hybrid = 'Hybrid',
 }
-
-export enum PlantStage {
-    Seed = 'SEED',
-    Germination = 'GERMINATION',
-    Seedling = 'SEEDLING',
-    Vegetative = 'VEGETATIVE',
-    Flowering = 'FLOWERING',
-    Harvest = 'HARVEST',
-    Drying = 'DRYING',
-    Curing = 'CURING',
-    Finished = 'FINISHED',
-}
-
-export enum ProblemType {
-    NutrientDeficiency = 'NutrientDeficiency',
-    NutrientBurn = 'NutrientBurn',
-    Overwatering = 'Overwatering',
-    Underwatering = 'Underwatering',
-    PestInfestation = 'PestInfestation',
-    VpdHigh = 'VpdHigh',
-    VpdLow = 'VpdLow',
-    PhOutOfRange = 'PhOutOfRange',
-}
-
-export enum JournalEntryType {
-    Watering = 'Watering',
-    Feeding = 'Feeding',
-    Training = 'Training',
-    Observation = 'Observation',
-    System = 'System',
-    Photo = 'Photo',
-    PestControl = 'PestControl',
-    Environment = 'Environment',
-    Amendment = 'Amendment',
-    Harvest = 'Harvest',
-    PostHarvest = 'PostHarvest',
-}
-
-export enum PhotoCategory {
-    FullPlant = 'FullPlant',
-    Bud = 'Bud',
-    Leaf = 'Leaf',
-    Roots = 'Roots',
-    ProblemArea = 'ProblemArea',
-    Trichomes = 'Trichomes',
-    Setup = 'Setup',
-}
-
-export enum StrainViewTab {
-    All = 'allStrains',
-    MyStrains = 'myStrains',
-    Favorites = 'favorites',
-    Genealogy = 'genealogy',
-    Exports = 'exports',
-    Tips = 'tips',
-}
-
-export enum EquipmentViewTab {
-    Configurator = 'configurator',
-    Setups = 'setups',
-    Calculators = 'calculators',
-    GrowShops = 'growShops',
-    Seedbanks = 'seedbanks',
-}
-
-export enum KnowledgeViewTab {
-    Mentor = 'mentor',
-    Guide = 'guide',
-    Archive = 'archive',
-    Breeding = 'breeding',
-    Sandbox = 'sandbox',
-}
-
-export enum CommandGroup {
-    Navigation = 'Navigation',
-    Plants = 'Plants',
-    Strains = 'Strains',
-    Knowledge = 'Knowledge',
-    Settings = 'Settings',
-    General = 'General Actions'
-}
-
-export type Language = 'en' | 'de';
-export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz';
-
-// =================================================================================================
-// II. DOMAIN: STRAINS, GENEALOGY & BREEDING
-// =================================================================================================
-
 export type DifficultyLevel = 'Easy' | 'Medium' | 'Hard';
 export type YieldLevel = 'Low' | 'Medium' | 'High';
 export type HeightLevel = 'Short' | 'Medium' | 'Tall';
 
 export interface GeneticModifiers {
-    pestResistance: number; // Factor > 1 is better
-    nutrientUptakeRate: number; // Factor > 1 is better
-    stressTolerance: number; // Factor > 1 is better
-    rue: number; // Radiation Use Efficiency (g/MJ)
-    vpdTolerance: { min: number; max: number }; // ideal VPD range in kPa
-    transpirationFactor: number; // base rate modifier
+    pestResistance: number;
+    nutrientUptakeRate: number;
+    stressTolerance: number;
+    rue: number; // Radiation Use Efficiency
+    vpdTolerance: { min: number; max: number };
+    transpirationFactor: number;
 }
 
 export interface Strain {
@@ -139,182 +43,25 @@ export interface Strain {
         difficulty: DifficultyLevel;
         yield: YieldLevel;
         height: HeightLevel;
-        yieldDetails?: { indoor: string; outdoor: string };
-        heightDetails?: { indoor: string; outdoor: string };
+        yieldDetails?: { indoor?: string; outdoor?: string };
+        heightDetails?: { indoor?: string; outdoor?: string };
     };
     aromas?: string[];
     dominantTerpenes?: string[];
     geneticModifiers: GeneticModifiers;
 }
 
-export interface StrainTranslationData {
-    description: string;
-    typeDetails?: string;
-    genetics?: string;
-    yieldDetails?: { indoor: string; outdoor: string };
-    heightDetails?: { indoor: string; outdoor: string };
-}
-
-export type SortKey = 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'yield' | 'height';
-export type SortDirection = 'asc' | 'desc';
-
-export interface AdvancedFilterState {
-    thcRange: [number, number];
-    cbdRange: [number, number];
-    floweringRange: [number, number];
-    selectedDifficulties: DifficultyLevel[];
-    selectedYields: YieldLevel[];
-    selectedHeights: HeightLevel[];
-    selectedAromas: string[];
-    selectedTerpenes: string[];
-}
-
-export interface GenealogyNode {
-    id: string;
-    name: string;
-    type: StrainType;
-    thc: number;
-    isLandrace: boolean;
-    children?: GenealogyNode[];
-    _children?: GenealogyNode[]; // For d3 expand/collapse
-    isPlaceholder?: boolean;
-}
-
-export interface GeneticContribution {
-    name: string;
-    contribution: number;
-}
-
-export interface Seed {
-    id: string;
-    strainId: string;
-    strainName: string;
-    quality: number; // 0-1
-    createdAt: number;
-}
-
-// =================================================================================================
-// III. DOMAIN: PLANTS & SIMULATION
-// =================================================================================================
-
-export interface GrowSetup {
-    lightHours: number;
-    potSize: number; // in Liters
-    medium: 'Soil' | 'Coco' | 'Hydro';
-}
-
-export interface HarvestData {
-    wetWeight: number;
-    dryWeight: number;
-    terpeneRetentionPercent: number;
-    moldRiskPercent: number;
-    dryingEnvironment: { temperature: number; humidity: number };
-    currentDryDay: number;
-    currentCureDay: number;
-    jarHumidity: number;
-    finalQuality: number;
-    chlorophyllPercent: number;
-    terpeneProfile: Record<string, number>;
-    cannabinoidProfile: { thc: number; cbn: number };
-    lastBurpDay: number;
-}
-
-export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'Defoliation';
-export type AmendmentType = 'Mycorrhizae' | 'WormCastings';
-
-export interface PhotoDetails {
-    imageId?: string;
-    imageUrl?: string;
-    photoCategory: PhotoCategory;
-}
-
-export interface JournalEntry {
-    id: string;
-    createdAt: number;
-    type: JournalEntryType;
-    notes: string;
-    details?: { [key: string]: any } | PhotoDetails;
-}
-
-export interface Task {
-    id: string;
-    title: string;
-    description: string;
-    isCompleted: boolean;
-    createdAt: number;
-    completedAt?: number;
-    priority: TaskPriority;
-}
-
-export type TaskPriority = 'high' | 'medium' | 'low';
-
-export interface PlantProblem {
-    type: ProblemType;
-    severity: number;
-    status: 'active' | 'resolved';
-}
-
-export interface Plant {
-    id: string;
-    name: string;
-    strain: Strain;
-    createdAt: number;
-    lastUpdated: number;
-    age: number; // in days
-    stage: PlantStage;
-    health: number; // 0-100
-    stressLevel: number; // 0-100
-    height: number; // in cm
-    biomass: {
-        total: number;
-        roots: number;
-        stem: number;
-        leaves: number;
-        flowers: number;
-    };
-    leafAreaIndex: number; // LAI
-    isTopped: boolean;
-    lstApplied: number;
-    environment: {
-        internalTemperature: number;
-        internalHumidity: number;
-        vpd: number;
-        co2Level: number;
-    };
-    medium: {
-        ph: number;
-        ec: number;
-        moisture: number; // % of water holding capacity
-        microbeHealth: number; // 0-100
-        substrateWater: number; // available water in ml
-        nutrientConcentration: { // N-P-K in abstract units
-            nitrogen: number;
-            phosphorus: number;
-            potassium: number;
-        };
-    };
-    nutrientPool: { // Internal plant reserves
-        nitrogen: number;
-        phosphorus: number;
-        potassium: number;
-    };
-    rootSystem: {
-        health: number; // health of the roots
-        // root mass is now biomass.roots
-    };
-    equipment: {
-        light: { wattage: number; isOn: boolean; lightHours: number };
-        fan: { isOn: boolean; speed: number };
-    };
-    problems: PlantProblem[];
-    journal: JournalEntry[];
-    tasks: Task[];
-    harvestData: HarvestData | null;
-    structuralModel: {
-        branches: number;
-        nodes: number;
-    };
-    history: PlantHistoryEntry[];
+// --- Plant and Simulation types ---
+export enum PlantStage {
+    Seed = 'SEED',
+    Germination = 'GERMINATION',
+    Seedling = 'SEEDLING',
+    Vegetative = 'VEGETATIVE',
+    Flowering = 'FLOWERING',
+    Harvest = 'HARVEST',
+    Drying = 'DRYING',
+    Curing = 'CURING',
+    Finished = 'FINISHED',
 }
 
 export interface PlantHistoryEntry {
@@ -329,21 +76,195 @@ export interface PlantHistoryEntry {
     };
 }
 
-// =================================================================================================
-// IV. DOMAIN: UI, STATE & APP SETTINGS
-// =================================================================================================
+export enum JournalEntryType {
+    Watering = 'WATERING',
+    Feeding = 'FEEDING',
+    Training = 'TRAINING',
+    Observation = 'OBSERVATION',
+    System = 'SYSTEM',
+    Photo = 'PHOTO',
+    PestControl = 'PEST_CONTROL',
+    Environment = 'ENVIRONMENT',
+    Amendment = 'AMENDMENT',
+    Harvest = 'HARVEST',
+    PostHarvest = 'POST_HARVEST',
+}
 
-export interface Command {
+export type TrainingType = 'LST' | 'Topping' | 'FIMing' | 'Defoliation';
+export type AmendmentType = 'Mycorrhizae' | 'WormCastings';
+// FIX: Converted PhotoCategory from a type alias to an enum.
+// This allows it to be used as a value (e.g., `Object.values(PhotoCategory)`) at runtime,
+// fixing errors in LogActionModal.tsx and AiDiagnosticsModal.tsx.
+export enum PhotoCategory {
+    FullPlant = 'FullPlant',
+    Bud = 'Bud',
+    Leaf = 'Leaf',
+    Roots = 'Roots',
+    ProblemArea = 'ProblemArea',
+    Trichomes = 'Trichomes',
+    Setup = 'Setup',
+}
+
+
+export interface PhotoDetails {
+    imageId?: string;
+    imageUrl?: string;
+    photoCategory: PhotoCategory;
+}
+
+export interface JournalEntry {
+    id: string;
+    createdAt: number;
+    type: JournalEntryType;
+    notes: string;
+    details?: any; // Could be more specific, but 'any' will work for now
+}
+
+export type TaskPriority = 'high' | 'medium' | 'low';
+
+export interface Task {
     id: string;
     title: string;
-    subtitle?: string;
-    icon: React.FC;
-    group: CommandGroup;
-    action: () => void;
-    keywords?: string;
-    isHeader?: boolean;
-    shortcut?: string[];
+    description: string;
+    isCompleted: boolean;
+    createdAt: number;
+    completedAt?: number;
+    priority: TaskPriority;
 }
+
+export enum ProblemType {
+    NutrientDeficiency = 'NUTRIENT_DEFICIENCY',
+    Overwatering = 'OVERWATERING',
+    Underwatering = 'UNDERWATERING',
+    PestInfestation = 'PEST_INFESTATION',
+}
+
+export interface PlantProblem {
+    type: ProblemType;
+    status: 'active' | 'resolved';
+    detectedAt: number;
+}
+
+export type LightType = 'LED' | 'HPS';
+export type VentilationPower = 'low' | 'medium' | 'high';
+export type PotType = 'Plastic' | 'Fabric';
+
+export interface GrowSetup {
+    lightType?: LightType;
+    lightWattage?: number;
+    lightHours: number;
+    ventilation?: VentilationPower;
+    hasCirculationFan?: boolean;
+    potSize: number; // in Liters
+    potType?: PotType;
+    medium: 'Soil' | 'Coco' | 'Hydro';
+}
+
+export interface HarvestData {
+    wetWeight: number;
+    dryWeight: number;
+    finalQuality: number;
+    currentDryDay: number;
+    currentCureDay: number;
+    lastBurpDay: number;
+    terpeneRetentionPercent: number;
+    moldRiskPercent: number;
+    chlorophyllPercent: number;
+    cannabinoidProfile: {
+        thc: number;
+        cbd: number;
+        cbn: number;
+    };
+    terpeneProfile: Record<string, number>;
+}
+
+export interface Plant {
+    id: string;
+    name: string;
+    strain: Strain;
+    createdAt: number;
+    lastUpdated: number;
+    age: number;
+    stage: PlantStage;
+    health: number; // 0-100
+    stressLevel: number; // 0-100
+    height: number; // in cm
+    biomass: { total: number; roots: number; stem: number; leaves: number; flowers: number; }; // in grams
+    leafAreaIndex: number;
+    isTopped: boolean;
+    lstApplied: number; // count of LST applications
+    environment: {
+        internalTemperature: number; // C
+        internalHumidity: number; // %
+        vpd: number; // kPa
+        co2Level: number; // ppm
+    };
+    medium: {
+        ph: number;
+        ec: number;
+        moisture: number; // %
+        microbeHealth: number; // %
+        substrateWater: number; // mL
+        nutrientConcentration: { nitrogen: number; phosphorus: number; potassium: number; };
+    };
+    nutrientPool: { nitrogen: number; phosphorus: number; potassium: number; }; // in grams
+    rootSystem: { health: number; };
+    equipment: {
+        light: { type: LightType; wattage: number; isOn: boolean; lightHours: number; };
+        exhaustFan: { power: VentilationPower; isOn: boolean; };
+        circulationFan: { isOn: boolean; };
+    };
+    problems: PlantProblem[];
+    journal: JournalEntry[];
+    tasks: Task[];
+    harvestData: HarvestData | null;
+    structuralModel: { branches: number; nodes: number };
+    history: PlantHistoryEntry[];
+}
+
+export interface SimulationState {
+    plants: {
+        ids: string[];
+        entities: Record<string, Plant | undefined>;
+    };
+    plantSlots: (string | null)[];
+    selectedPlantId: string | null;
+    devSpeedMultiplier: number;
+}
+
+
+// UI and App State types
+export enum View {
+    Strains = 'strains',
+    Plants = 'plants',
+    Equipment = 'equipment',
+    Knowledge = 'knowledge',
+    Settings = 'settings',
+    Help = 'help',
+}
+export enum StrainViewTab {
+    All = 'all',
+    MyStrains = 'my-strains',
+    Favorites = 'favorites',
+    Genealogy = 'genealogy',
+    Exports = 'exports',
+    Tips = 'tips',
+}
+export enum EquipmentViewTab {
+    Configurator = 'configurator',
+    Setups = 'setups',
+    Calculators = 'calculators',
+    GrowShops = 'grow-shops',
+    Seedbanks = 'seedbanks',
+}
+export enum KnowledgeViewTab {
+    Mentor = 'mentor',
+    Guide = 'guide',
+    Archive = 'archive',
+    Breeding = 'breeding',
+    Sandbox = 'sandbox',
+}
+export type ModalType = 'watering' | 'feeding' | 'training' | 'observation' | 'photo' | 'pestControl' | 'amendment';
 
 export interface Notification {
     id: number;
@@ -351,7 +272,9 @@ export interface Notification {
     type: 'success' | 'error' | 'info';
 }
 
-export type ModalType = 'watering' | 'feeding' | 'training' | 'pestControl' | 'observation' | 'photo' | 'amendment';
+// Settings
+export type SortKey = 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'yield' | 'height';
+export type SortDirection = 'asc' | 'desc';
 
 export interface TTSSettings {
     enabled: boolean;
@@ -377,17 +300,13 @@ export interface AppSettings {
     strainsViewSettings: {
         defaultSortKey: SortKey;
         defaultSortDirection: SortDirection;
-        visibleColumns: (keyof Strain | 'agronomic')[];
+        visibleColumns: ('type' | 'thc' | 'cbd' | 'floweringTime')[];
     };
     simulationSettings: {
         autoAdvance: boolean;
-        autoJournaling: {
-            logStageChanges: boolean;
-            logProblems: boolean;
-            logTasks: boolean;
-        };
+        autoJournaling: { logStageChanges: boolean; logProblems: boolean; logTasks: boolean };
         speedMultiplier: number;
-        simulationProfile: 'beginner' | 'expert' | 'experimental' | 'custom';
+        simulationProfile: 'beginner' | 'expert';
         pestPressure: number;
         nutrientSensitivity: number;
         environmentalStability: number;
@@ -398,41 +317,68 @@ export interface AppSettings {
         problemDetected: boolean;
         harvestReady: boolean;
         newTask: boolean;
-        quietHours: {
-            enabled: boolean;
-            start: string; // "HH:mm"
-            end: string;   // "HH:mm"
-        };
+        quietHours: { enabled: boolean; start: string; end: string };
     };
-    defaultGrowSetup: GrowSetup & { light: { wattage: number } };
+    // FIX: Removed the `Omit` utility type. The default settings object includes these properties,
+    // so the type definition must also include them to resolve the type mismatch error in settingsSlice.ts.
+    defaultGrowSetup: GrowSetup;
     defaultExportFormat: ExportFormat;
-    defaultJournalNotes: {
-        watering: string;
-        feeding: string;
-    };
+    defaultJournalNotes: { watering: string; feeding: string };
     onboardingCompleted: boolean;
     showArchivedInPlantsView: boolean;
 }
 
-export interface BeforeInstallPromptEvent extends Event {
-    readonly platforms: Array<string>;
-    readonly userChoice: Promise<{
-        outcome: 'accepted' | 'dismissed';
-        platform: string;
-    }>;
-    prompt(): Promise<void>;
+export interface StrainsViewState {
+    strainsViewTab: StrainViewTab;
+    strainsViewMode: 'list' | 'grid';
+    selectedStrainIds: string[];
+    selectedStrainId: string | null;
 }
 
-export interface SpeechQueueItem {
+// AI related types
+export interface AIResponse {
+    title: string;
+    content: string;
+}
+export interface PlantDiagnosisResponse extends AIResponse {
+    confidence: number;
+    immediateActions: string;
+    longTermSolution: string;
+    prevention: string;
+    diagnosis?: string;
+}
+export interface StructuredGrowTips {
+    nutrientTip: string;
+    trainingTip: string;
+    environmentalTip: string;
+    proTip: string;
+}
+export interface DeepDiveGuide {
+    introduction: string;
+    stepByStep: string[];
+    prosAndCons: { pros: string[]; cons: string[] };
+    proTip: string;
+}
+export interface MentorMessage {
+    id?: string;
+    role: 'user' | 'model';
+    title: string;
+    content: string;
+    uiHighlights?: { elementId: string; plantId?: string }[];
+}
+
+// Data and Archive types
+export type ExportFormat = 'pdf' | 'csv' | 'json' | 'txt' | 'xml';
+export interface SavedExport {
     id: string;
-    text: string;
+    createdAt: number;
+    name: string;
+    source: 'selected' | 'all';
+    format: ExportFormat;
+    count: number;
+    strainIds: string[];
+    notes?: string;
 }
-
-// =================================================================================================
-// V. DOMAIN: AI, KNOWLEDGE & MENTOR
-// =================================================================================================
-
-export type PlantCount = '1' | '2-3';
 
 export interface RecommendationItem {
     name: string;
@@ -440,68 +386,28 @@ export interface RecommendationItem {
     rationale: string;
     watts?: number;
 }
-export interface Recommendation {
-    tent: RecommendationItem;
-    light: RecommendationItem;
-    ventilation: RecommendationItem;
-    circulationFan: RecommendationItem;
-    pots: RecommendationItem;
-    soil: RecommendationItem;
-    nutrients: RecommendationItem;
-    extra: RecommendationItem;
-    proTip: string;
-}
-export type RecommendationCategory = keyof Omit<Recommendation, 'proTip'>;
+export type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'circulationFan' | 'pots' | 'soil' | 'nutrients' | 'extra';
+export type Recommendation = Record<RecommendationCategory, RecommendationItem> & { proTip: string };
+export type PlantCount = '1' | '2-3';
 
-export interface AIResponse {
-    title: string;
-    content: string;
-}
-
-export interface PlantDiagnosisResponse extends AIResponse {
-    confidence: number;
-    immediateActions: string;
-    longTermSolution: string;
-    prevention: string;
-}
-
-export interface StructuredGrowTips {
-    nutrientTip: string;
-    trainingTip: string;
-    environmentalTip: string;
-    proTip: string;
-}
-
-export interface DeepDiveGuide {
-    introduction: string;
-    stepByStep: string[];
-    prosAndCons: {
-        pros: string[];
-        cons: string[];
-    };
-    proTip: string;
-}
-
-export interface MentorMessage {
+export interface SavedSetup {
     id: string;
-    role: 'user' | 'model';
-    title: string;
-    content: string;
-    uiHighlights?: { elementId: string, plantId?: string }[];
+    name: string;
+    createdAt: number;
+    recommendation: Recommendation;
+    totalCost: number;
+    sourceDetails: {
+        area: string;
+        budget: string;
+        growStyle: string;
+        plantCount?: PlantCount;
+    };
 }
 
-export interface ArchivedMentorResponse extends MentorMessage {
+export interface ArchivedMentorResponse extends Omit<MentorMessage, 'role'> {
     id: string;
     createdAt: number;
     query: string;
-}
-
-export interface SavedStrainTip extends AIResponse {
-    id: string;
-    createdAt: number;
-    strainId: string;
-    strainName: string;
-    imageUrl?: string;
 }
 
 export interface ArchivedAdvisorResponse extends AIResponse {
@@ -512,21 +418,34 @@ export interface ArchivedAdvisorResponse extends AIResponse {
     query: string;
 }
 
-export interface KnowledgeArticle {
+export interface SavedStrainTip extends StructuredGrowTips {
     id: string;
-    titleKey: string;
-    contentKey: string;
-    tags: string[];
-    triggers: {
-        plantStage?: PlantStage | PlantStage[];
-        ageInDays?: { min: number, max: number };
-        activeProblems?: ProblemType[];
-    }
+    createdAt: number;
+    strainId: string;
+    strainName: string;
+    imageUrl?: string;
+    title: string;
+}
+
+// Misc UI
+export interface BeforeInstallPromptEvent extends Event {
+    readonly platforms: Array<string>;
+    readonly userChoice: Promise<{
+        outcome: 'accepted' | 'dismissed';
+        platform: string;
+    }>;
+    prompt(): Promise<void>;
+}
+
+export interface StoredImageData {
+    id: string;
+    data: string; // base64 data URL
+    createdAt: number;
 }
 
 export interface LexiconEntry {
-  key: string;
-  category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General';
+    key: string;
+    category: 'Cannabinoid' | 'Terpene' | 'Flavonoid' | 'General';
 }
 
 export interface VisualGuide {
@@ -543,93 +462,131 @@ export interface FAQItem {
         plantStage?: PlantStage | PlantStage[];
     };
 }
+export interface KnowledgeArticle {
+    id: string;
+    titleKey: string;
+    contentKey: string;
+    tags: string[];
+    triggers: {
+      ageInDays?: { min: number; max: number };
+      plantStage?: PlantStage | PlantStage[];
+      activeProblems?: ProblemType[];
+    };
+}
+
+export interface Command {
+    id: string;
+    title: string;
+    subtitle?: string;
+    icon: React.FC<any>;
+    action: () => void;
+    group: CommandGroup;
+    keywords?: string;
+    isHeader?: boolean;
+    shortcut?: string[];
+}
+export enum CommandGroup {
+    Navigation = 'Navigation',
+    General = 'General Actions',
+    Plants = 'Plant Actions',
+    Strains = 'Strain Actions',
+    Knowledge = 'Knowledge Base',
+    Settings = 'Settings & Data',
+}
+
+export interface AdvancedFilterState {
+    thcRange: [number, number];
+    cbdRange: [number, number];
+    floweringRange: [number, number];
+    selectedDifficulties: DifficultyLevel[];
+    selectedYields: YieldLevel[];
+    selectedHeights: HeightLevel[];
+    selectedAromas: string[];
+    selectedTerpenes: string[];
+}
+
+export interface SpeechQueueItem {
+    id: string;
+    text: string;
+}
+
+export interface Seed {
+    id: string;
+    strainId: string;
+    strainName: string;
+    quality: number; // 0-1
+    createdAt: number;
+}
+  
+export interface BreedingState {
+    collectedSeeds: Seed[];
+    breedingSlots: {
+        parentA: string | null; // seed ID
+        parentB: string | null; // seed ID
+    };
+}
+
+export interface KnowledgeProgress {
+    [sectionId: string]: string[]; // Array of completed item IDs
+}
+
+export type ScenarioAction = 'TOP' | 'LST' | 'NONE';
 
 export interface Scenario {
     id: string;
     titleKey: string;
     descriptionKey: string;
     durationDays: number;
-    plantAModifier: { action: ScenarioAction; day: number };
-    plantBModifier: { action: ScenarioAction; day: number };
+    plantAModifier: {
+        day: number;
+        action: ScenarioAction;
+    };
+    plantBModifier: {
+        day: number;
+        action: ScenarioAction;
+    };
 }
-export type ScenarioAction = 'TOP' | 'LST' | 'NONE';
 
-export interface Experiment {
-    id: string;
-    createdAt: number;
-    name: string;
-    basePlantId: string;
-    basePlantName: string;
-    scenarioDescription: string;
-    durationDays: number;
-    originalHistory: any[];
-    modifiedHistory: any[];
+export interface ExperimentResult {
+    originalHistory: PlantHistoryEntry[];
+    modifiedHistory: PlantHistoryEntry[];
     originalFinalState: Plant;
     modifiedFinalState: Plant;
 }
 
-// =================================================================================================
-// VI. DOMAIN: STORAGE & EXPORTS
-// =================================================================================================
-
-export type ExportFormat = 'pdf' | 'csv' | 'json' | 'txt' | 'xml';
-
-export interface SavedExport {
+export interface SavedExperiment extends ExperimentResult {
     id: string;
+    scenarioId: string;
+    basePlantName: string;
     createdAt: number;
+}
+
+export interface GenealogyNode {
     name: string;
-    source: 'selected' | 'all';
-    format: ExportFormat;
-    count: number;
-    strainIds: string[];
-    notes?: string;
+    id: string;
+    children?: GenealogyNode[];
+    _children?: GenealogyNode[];
+    isLandrace: boolean;
+    type: StrainType;
+    thc: number;
+    isPlaceholder?: boolean;
 }
 
-export interface SavedSetup {
-    id: string;
-    createdAt: number;
+export interface GeneticContribution {
     name: string;
-    recommendation: Recommendation;
-    totalCost: number;
-    sourceDetails: {
-        area: string;
-        plantCount: string;
-        growStyle: string;
-        budget: string;
+    contribution: number;
+}
+
+export interface StrainTranslationData {
+    description: string;
+    typeDetails?: string;
+    genetics?: string;
+    yieldDetails?: {
+      indoor?: string;
+      outdoor?: string;
     };
-}
-
-export interface StoredImageData {
-    id: string;
-    data: string; // base64 data URL
-    createdAt: number;
-}
-
-// =================================================================================================
-// VII. REDUX STATE SHAPES
-// =================================================================================================
-
-export interface SimulationState {
-    plants: EntityState<Plant, string>;
-    plantSlots: (string | null)[];
-    selectedPlantId: string | null;
-    devSpeedMultiplier: number;
-}
-
-export interface BreedingState {
-    collectedSeeds: Seed[];
-    breedingSlots: {
-        parentA: string | null;
-        parentB: string | null;
+    heightDetails?: {
+      indoor?: string;
+      outdoor?: string;
     };
-}
-
-export interface SandboxState {
-    savedExperiments: Experiment[];
-    isLoading: boolean;
-    error: string | null;
-}
-
-export interface KnowledgeProgress {
-    [sectionId: string]: string[];
 }

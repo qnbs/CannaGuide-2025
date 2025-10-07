@@ -25,18 +25,24 @@ import {
   selectSettings,
   selectStrainsView,
   selectUi,
+  selectNavigation,
+  selectActiveStrainViewTab,
 } from '@/stores/selectors'
 import {
   setAppReady,
   setIsCommandPaletteOpen,
   addNotification,
   setActiveView,
+  setEquipmentViewTab,
+  setKnowledgeViewTab,
 } from '@/stores/slices/uiSlice'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
 import { toggleSetting } from '@/stores/slices/settingsSlice'
 import { ToastContainer } from '@/components/common/Toast'
 import { AiDiagnosticsModalContainer } from '@/components/views/plants/AiDiagnosticsModalContainer'
 import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupModalContainer'
+import { cacheViewState } from '@/stores/slices/navigationSlice'
+import { setStrainsViewTab } from '@/stores/slices/strainsViewSlice'
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
@@ -90,25 +96,91 @@ const AppContent: React.FC = () => {
   const dispatch = useAppDispatch()
   const settings = useAppSelector(selectSettings);
   const activeView = useAppSelector(selectActiveView)
-  const selectedPlantId = useAppSelector(selectSelectedPlantId);
-  const { activeMentorPlantId } = useAppSelector(selectUi);
-  const { selectedStrainId } = useAppSelector(selectStrainsView);
-  const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
+  const uiState = useAppSelector(selectUi);
+  const strainsViewState = useAppSelector(selectStrainsView);
+  const navigationState = useAppSelector(selectNavigation);
   const onboardingCompleted = settings.onboardingCompleted
+  const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
 
   const mainContentRef = useRef<HTMLElement | null>(null)
+  const previousViewRef = useRef<View>(activeView);
 
   const { t } = useTranslation()
   const isOffline = useOnlineStatus()
   const { deferredPrompt, handleInstallClick, isInstalled } = usePwaInstall()
 
   useDocumentEffects(settings)
+  
+  // A ref to hold a snapshot of states that could cause render loops.
+  // This gives us access to the latest values inside the main effect without adding them as dependencies.
+  const stateSnapshotRef = useRef({
+      strainsViewTab: strainsViewState.strainsViewTab,
+      equipmentViewTab: uiState.equipmentViewTab,
+      knowledgeViewTab: uiState.knowledgeViewTab,
+      navigationViewStates: navigationState.viewStates,
+  });
 
+  // Update the ref whenever these values change.
   useEffect(() => {
-    if (mainContentRef.current) {
-        mainContentRef.current.scrollTo(0, 0);
+      stateSnapshotRef.current = {
+          strainsViewTab: strainsViewState.strainsViewTab,
+          equipmentViewTab: uiState.equipmentViewTab,
+          knowledgeViewTab: uiState.knowledgeViewTab,
+          navigationViewStates: navigationState.viewStates,
+      };
+  }, [strainsViewState.strainsViewTab, uiState.equipmentViewTab, uiState.knowledgeViewTab, navigationState.viewStates]);
+
+
+  // Main navigation effect. This now ONLY runs when the activeView changes, preventing the infinite loop.
+  useEffect(() => {
+    const prevView = previousViewRef.current;
+    const currentView = activeView;
+    const scrollableElement = mainContentRef.current;
+
+    // Only run if the view has actually changed
+    if (!scrollableElement || prevView === currentView) return;
+
+    // --- CACHE STATE for the view we are LEAVING ---
+    // Use the latest state from the snapshot ref
+    const scrollY = scrollableElement.scrollTop;
+    let viewSpecificState: any = {};
+    switch (prevView) {
+        case View.Strains:
+            viewSpecificState = { activeTabId: stateSnapshotRef.current.strainsViewTab };
+            break;
+        case View.Equipment:
+            viewSpecificState = { activeTabId: stateSnapshotRef.current.equipmentViewTab };
+            break;
+        case View.Knowledge:
+             viewSpecificState = { activeTabId: stateSnapshotRef.current.knowledgeViewTab };
+            break;
     }
-  }, [activeView, selectedPlantId, activeMentorPlantId, selectedStrainId]);
+    dispatch(cacheViewState({ view: prevView, state: { scrollY, ...viewSpecificState } }));
+
+    // --- RESTORE STATE for the view we are ENTERING ---
+    // Use the latest state from the snapshot ref
+    const cachedState = stateSnapshotRef.current.navigationViewStates[currentView];
+    if (cachedState) {
+        switch (currentView) {
+            case View.Strains:
+                if (cachedState.activeTabId) dispatch(setStrainsViewTab(cachedState.activeTabId as any));
+                break;
+            case View.Equipment:
+                if (cachedState.activeTabId) dispatch(setEquipmentViewTab(cachedState.activeTabId as any));
+                break;
+            case View.Knowledge:
+                if (cachedState.activeTabId) dispatch(setKnowledgeViewTab(cachedState.activeTabId as any));
+                break;
+        }
+        setTimeout(() => scrollableElement.scrollTo({ top: cachedState.scrollY }), 0);
+    } else {
+        scrollableElement.scrollTo({ top: 0 });
+    }
+
+    // Update the ref for the next navigation
+    previousViewRef.current = activeView;
+  }, [activeView, dispatch]); // The dependency array is now clean and correct.
+
 
   useEffect(() => {
     if (isOffline) {

@@ -10,6 +10,7 @@ import { BulkActionsBar } from './BulkActionsBar';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { Input } from '@/components/ui/ThemePrimitives';
+import { SearchBar } from '@/components/common/SearchBar';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -125,9 +126,13 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-2">
                      <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.tabs.exports', { count: savedExports.length })}</h3>
                      <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <div className="relative flex-grow">
-                            <Input type="text" placeholder={t('strainsView.tips.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8 !py-1.5" />
-                            <PhosphorIcons.MagnifyingGlass className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <div className="flex-grow">
+                            <SearchBar
+                                placeholder={t('strainsView.tips.searchPlaceholder')}
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className="!py-1.5"
+                            />
                         </div>
                         <Button variant="secondary" onClick={() => setSort(s => ({ ...s, direction: s.direction === 'asc' ? 'desc' : 'asc' }))} className="!p-2">
                            {sort.direction === 'asc' ? <PhosphorIcons.ArrowUp /> : <PhosphorIcons.ArrowDown />}

@@ -1,8 +1,6 @@
-
-
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip, StrainType } from '@/types';
+import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip, StrainType, StructuredGrowTips } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -184,14 +182,18 @@ export const StrainsView: React.FC = () => {
     const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
     const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
 
+    // This preserves the list view's scroll position and state when navigating to a detail view and back.
     if (selectedStrainForDetail) {
-        return <StrainDetailView 
+        return (
+            <div style={{ display: !selectedStrainForDetail ? 'none' : 'block' }}>
+                <StrainDetailView 
                     strain={selectedStrainForDetail}
                     onBack={() => dispatch(setSelectedStrainId(null))} 
-                    onSaveTip={(strain, tip, imageUrl) => dispatch(addStrainTip({ strain, tip, imageUrl }))} 
-                />;
+                />
+            </div>
+        );
     }
-
+    
     const renderContent = () => {
         if (isLoading) {
             return <SkeletonLoader variant={strainsViewMode} count={10} />;
@@ -309,38 +311,40 @@ export const StrainsView: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
-            <div className="text-center mb-6 animate-fade-in">
-                <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-primary-400" />
-                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.strains')}</h2>
+        <div style={{ display: selectedStrainForDetail ? 'none' : 'block' }}>
+            <div className="space-y-6">
+                <div className="text-center mb-6 animate-fade-in">
+                    <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-primary-400" />
+                    <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.strains')}</h2>
+                </div>
+                
+                {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
+                <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
+                <FilterDrawer 
+                    isOpen={isDrawerOpen} 
+                    onClose={() => setIsDrawerOpen(false)} 
+                    onApply={handleApplyFilters} 
+                    onReset={handleResetFilters} 
+                    tempFilterState={tempFilterState} 
+                    setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
+                    allAromas={allAromas} 
+                    allTerpenes={allTerpenes} 
+                    count={filteredStrains.length}
+                    showFavorites={showFavoritesOnly}
+                    onToggleFavorites={(val) => setShowFavoritesOnly(val)}
+                    typeFilter={typeFilter}
+                    onToggleTypeFilter={handleToggleTypeFilter}
+                    letterFilter={letterFilter}
+                    onLetterFilterChange={handleSetLetterFilter}
+                    isAnyFilterActive={isAnyFilterActive}
+                />
+                
+                <Card>
+                    <Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} />
+                </Card>
+                
+                {renderContent()}
             </div>
-            
-            {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
-            <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
-            <FilterDrawer 
-                isOpen={isDrawerOpen} 
-                onClose={() => setIsDrawerOpen(false)} 
-                onApply={handleApplyFilters} 
-                onReset={handleResetFilters} 
-                tempFilterState={tempFilterState} 
-                setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
-                allAromas={allAromas} 
-                allTerpenes={allTerpenes} 
-                count={filteredStrains.length}
-                showFavorites={showFavoritesOnly}
-                onToggleFavorites={(val) => setShowFavoritesOnly(val)}
-                typeFilter={typeFilter}
-                onToggleTypeFilter={handleToggleTypeFilter}
-                letterFilter={letterFilter}
-                onLetterFilterChange={handleSetLetterFilter}
-                isAnyFilterActive={isAnyFilterActive}
-            />
-            
-            <Card>
-                <Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} />
-            </Card>
-            
-            {renderContent()}
         </div>
     );
-}
+};

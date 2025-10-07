@@ -31,10 +31,10 @@ export const Tabs: React.FC<TabsProps> = ({
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex-shrink-0 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-md transition-colors whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ring-1 ring-inset ring-white/20 ${
+                        className={`flex-shrink-0 flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ring-1 ring-inset ring-white/20 ${
                             activeTab === tab.id
-                                ? 'bg-slate-700 text-primary-300 shadow-sm'
-                                : 'text-slate-300 bg-slate-800/60 hover:bg-slate-700/80'
+                                ? 'bg-primary-900/50 text-primary-300'
+                                : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700/80'
                         } ${buttonClassName}`}
                         role="tab"
                         aria-selected={activeTab === tab.id}

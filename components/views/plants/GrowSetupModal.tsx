@@ -2,10 +2,15 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-import { Strain, GrowSetup, AppSettings } from '@/types';
+import { Strain, GrowSetup, LightType, VentilationPower, PotType } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
+import { FormSection, Select } from '@/components/ui/ThemePrimitives';
+import { RangeSlider } from '@/components/common/RangeSlider';
+import { Switch } from '@/components/common/Switch';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { SegmentedControl } from '@/components/common/SegmentedControl';
 
 interface GrowSetupModalProps {
   strain: Strain;
@@ -20,25 +25,13 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
   </div>
 );
 
-const OptionButton: React.FC<{ label: string, isSelected: boolean, onClick: () => void, disabled?: boolean }> = ({ label, isSelected, onClick, disabled = false }) => (
-    <Button
-        onClick={onClick}
-        variant={isSelected ? 'primary' : 'secondary'}
-        className={`w-full transition-all duration-200 ${isSelected ? 'scale-105' : 'scale-100'}`}
-        disabled={disabled}
-    >
-        {label}
-    </Button>
-);
-
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
   const settings = useAppSelector(selectSettings);
   
   const [setup, setSetup] = useState<GrowSetup>({
+    ...settings.defaultGrowSetup,
     lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
-    potSize: settings.defaultGrowSetup.potSize,
-    medium: settings.defaultGrowSetup.medium,
   });
   
   const isPhotoperiod = strain.floweringType === 'Photoperiod';
@@ -46,37 +39,23 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   const handleConfirm = () => {
     onConfirm(setup);
   };
-  
-  const potSizes = [5, 11, 15, 25, 35];
-  const lightCycles = [
-      { hours: 18, label: t('plantsView.setupModal.cycles.veg') },
-      { hours: 12, label: t('plantsView.setupModal.cycles.flower'), disabled: !isPhotoperiod },
-      { hours: 24, label: t('plantsView.setupModal.cycles.auto'), disabled: isPhotoperiod },
-  ];
-  const mediums: { value: GrowSetup['medium'], label: string }[] = [
-      { value: 'Soil', label: t('plantsView.mediums.Soil') },
-      { value: 'Coco', label: t('plantsView.mediums.Coco') },
-      { value: 'Hydro', label: t('plantsView.mediums.Hydro') },
-  ];
-
 
   const footer = (
     <>
       <Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button>
-      <Button onClick={handleConfirm} glow={true}>{t('plantsView.setupModal.confirm')}</Button>
+      <Button onClick={handleConfirm} glow>{t('plantsView.setupModal.confirm')}</Button>
     </>
   );
-
+  
   return (
     <Modal
       isOpen={true}
       onClose={onClose}
       title={t('plantsView.setupModal.title', { strainName: strain.name })}
       footer={footer}
-      size="lg"
+      size="2xl"
     >
-      <p className="text-sm text-slate-400 mb-6">{t('plantsView.setupModal.subtitle')}</p>
-      <div className="space-y-6">
+      <div className="space-y-4">
         <Card className="!p-3 bg-slate-800/50">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <InfoRow label={t('common.type')} value={strain.type} />
@@ -85,58 +64,97 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                 <InfoRow label={t('strainsView.table.difficulty')} value={t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`)} />
             </div>
         </Card>
-        
-        <div>
-            <h3 className="font-semibold text-slate-200 mb-2">{t('plantsView.setupModal.lightCycle')}</h3>
-            <div className="grid grid-cols-3 gap-2">
-                {lightCycles.map(cycle => (
-                    <OptionButton 
-                        key={cycle.hours}
-                        label={cycle.label}
-                        isSelected={setup.lightHours === cycle.hours}
-                        onClick={() => setSetup(s => ({ ...s, lightHours: cycle.hours }))}
-                        disabled={cycle.disabled}
-                    />
-                ))}
-            </div>
-             {isPhotoperiod ? (
-                <p className="text-xs text-slate-400 mt-2">
-                    {t('plantsView.setupModal.photoperiodInfo')}
-                </p>
-            ) : (
-                <p className="text-xs text-slate-400 mt-2">
-                    {t('plantsView.setupModal.autoflowerInfo')}
-                </p>
-            )}
-        </div>
 
-        <div>
-            <h3 className="font-semibold text-slate-200 mb-2">{t('plantsView.setupModal.potSize')}</h3>
-            <div className="grid grid-cols-5 gap-2">
-                {potSizes.map(size => (
-                     <OptionButton 
-                        key={size}
-                        label={`${size}L`}
-                        isSelected={setup.potSize === size}
-                        onClick={() => setSetup(s => ({ ...s, potSize: size }))}
-                    />
-                ))}
+        <FormSection title={t('plantsView.setupModal.lightingTitle')} icon={<PhosphorIcons.LightbulbFilament />} defaultOpen>
+            <div className="sm:col-span-2">
+                <SegmentedControl
+                    value={[setup.lightType]}
+                    onToggle={(val) => setSetup(s => ({ ...s, lightType: val as LightType }))}
+                    options={[
+                        { value: 'LED', label: t('plantsView.setupModal.lightTypes.led') },
+                        { value: 'HPS', label: t('plantsView.setupModal.lightTypes.hps') },
+                    ]}
+                />
             </div>
-        </div>
+             <div className="sm:col-span-2">
+                <RangeSlider 
+                    label={t('plantsView.setupModal.wattage')}
+                    min={50} max={1000} step={10}
+                    singleValue={true}
+                    value={setup.lightWattage}
+                    onChange={val => setSetup(s => ({ ...s, lightWattage: val }))}
+                    unit="W"
+                />
+            </div>
+            <div className="sm:col-span-2">
+                 <Select
+                    label={t('plantsView.setupModal.lightCycle')}
+                    value={setup.lightHours}
+                    onChange={(e) => setSetup(s => ({ ...s, lightHours: Number(e.target.value) }))}
+                    options={[
+                        { value: 18, label: t('plantsView.setupModal.cycles.veg') },
+                        { value: 12, label: t('plantsView.setupModal.cycles.flower') },
+                        { value: 24, label: t('plantsView.setupModal.cycles.auto') },
+                    ]}
+                    disabled={isPhotoperiod && setup.lightHours === 24}
+                 />
+                 <p className="text-xs text-slate-400 mt-1">
+                    {isPhotoperiod ? t('plantsView.setupModal.photoperiodInfo') : t('plantsView.setupModal.autoflowerInfo')}
+                </p>
+            </div>
+        </FormSection>
+
+        <FormSection title={t('plantsView.setupModal.environmentTitle')} icon={<PhosphorIcons.Fan />}>
+             <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.setupModal.exhaustFanPower')}</label>
+                <SegmentedControl
+                    value={[setup.ventilation]}
+                    onToggle={(val) => setSetup(s => ({ ...s, ventilation: val as VentilationPower }))}
+                    options={[
+                        { value: 'low', label: t('plantsView.setupModal.ventilationLevels.low') },
+                        { value: 'medium', label: t('plantsView.setupModal.ventilationLevels.medium') },
+                        { value: 'high', label: t('plantsView.setupModal.ventilationLevels.high') },
+                    ]}
+                />
+            </div>
+            <Switch label={t('plantsView.setupModal.circulationFan')} checked={setup.hasCirculationFan} onChange={val => setSetup(s => ({...s, hasCirculationFan: val}))} />
+        </FormSection>
         
-        <div>
-            <h3 className="font-semibold text-slate-200 mb-2">{t('plantsView.setupModal.medium')}</h3>
-            <div className="grid grid-cols-3 gap-2">
-                {mediums.map(med => (
-                    <OptionButton 
-                        key={med.value}
-                        label={med.label}
-                        isSelected={setup.medium === med.value}
-                        onClick={() => setSetup(s => ({ ...s, medium: med.value }))}
-                    />
-                ))}
+        <FormSection title={t('plantsView.setupModal.containerTitle')} icon={<PhosphorIcons.Cube />}>
+             <div className="sm:col-span-2">
+                <RangeSlider 
+                    label={t('plantsView.setupModal.potSize')}
+                    min={3} max={50} step={1}
+                    singleValue={true}
+                    value={setup.potSize}
+                    onChange={val => setSetup(s => ({ ...s, potSize: val }))}
+                    unit="L"
+                />
             </div>
-        </div>
+             <div className="sm:col-span-2">
+                 <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.setupModal.potType')}</label>
+                <SegmentedControl
+                    value={[setup.potType]}
+                    onToggle={(val) => setSetup(s => ({ ...s, potType: val as PotType }))}
+                    options={[
+                        { value: 'Plastic', label: t('plantsView.setupModal.potTypes.plastic') },
+                        { value: 'Fabric', label: t('plantsView.setupModal.potTypes.fabric') },
+                    ]}
+                />
+            </div>
+            <div className="sm:col-span-2">
+                <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.setupModal.medium')}</label>
+                <SegmentedControl
+                    value={[setup.medium]}
+                    onToggle={(val) => setSetup(s => ({ ...s, medium: val as GrowSetup['medium'] }))}
+                    options={[
+                        { value: 'Soil', label: t('plantsView.mediums.Soil') },
+                        { value: 'Coco', label: t('plantsView.mediums.Coco') },
+                        { value: 'Hydro', label: t('plantsView.mediums.Hydro') },
+                    ]}
+                />
+            </div>
+        </FormSection>
       </div>
     </Modal>
   );

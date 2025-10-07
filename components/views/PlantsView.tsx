@@ -25,7 +25,7 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     return (
         <Card
             onClick={onStart}
-            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all card-interactive-glow"
+            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all card-interactive-glow empty-slot-pulse"
         >
             <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
             <h3 className="font-semibold text-slate-300">{t('plantsView.emptySlot.title')}</h3>
@@ -75,74 +75,78 @@ export const PlantsView: React.FC = () => {
     const { tasks, problems } = useGardenSummary();
     const selectedPlant = useSelectedPlant();
     
-    if (selectedPlant) {
-        return <DetailedPlantView plant={selectedPlant} onClose={() => dispatch(setSelectedPlantId(null))} />;
-    }
-
     const showGrowFromStrainBanner = newGrowFlow.strain && newGrowFlow.status === 'selectingSlot';
 
     return (
-        <div className="space-y-6">
-            <div className="text-center mb-6 animate-fade-in">
-                <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-primary-400" />
-                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.plants')}</h2>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
-                    <GrowSetupModal
-                        strain={newGrowFlow.strain}
-                        onClose={() => dispatch(cancelNewGrow())}
-                        onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
-                    />
-                )}
-                {newGrowFlow.status === 'confirming' && (
-                    <GrowConfirmationModal />
-                )}
+        <>
+            {/* Detail View - Rendered on top when active */}
+            {selectedPlant && <DetailedPlantView plant={selectedPlant} onClose={() => dispatch(setSelectedPlantId(null))} />}
 
-                <div className="lg:col-span-2 space-y-6">
-                    <GardenVitals 
-                        openTasksCount={tasks.length}
-                    />
-                    <TipOfTheDay />
-                    {showGrowFromStrainBanner && (
-                        <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="flex-grow">
-                                <h3 className="font-bold text-primary-300">{t('plantsView.inlineSelector.title')}</h3>
-                                <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {newGrowFlow.strain?.name}.</p>
-                            </div>
-                            <Button variant="secondary" size="sm" onClick={() => dispatch(cancelNewGrow())}>
-                                {t('common.cancel')}
-                            </Button>
-                        </Card>
-                    )}
-                    {isLoading ? (
-                        <PlantSlotsSkeleton />
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                            {slotsWithData.map((plant, index) => {
-                                if (newGrowFlow.status === 'selectingStrain' && newGrowFlow.slotIndex === index) {
-                                    return (
-                                        <InlineStrainSelector 
-                                            key={`selector-${index}`}
-                                            onClose={() => dispatch(cancelNewGrow())}
-                                            onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
-                                        />
-                                    );
-                                }
-                                return plant ? (
-                                    <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
-                                ) : (
-                                    <EmptyPlantSlot key={`empty-${index}`} onStart={() => dispatch(startGrowInSlot(index))} />
-                                );
-                            })}
+            {/* Main Dashboard View - Hidden when a plant is selected to preserve state */}
+            <div style={{ display: selectedPlant ? 'none' : 'block' }}>
+                <div className="space-y-6">
+                    <div className="text-center mb-6 animate-fade-in">
+                        <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-primary-400" />
+                        <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.plants')}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
+                            <GrowSetupModal
+                                strain={newGrowFlow.strain}
+                                onClose={() => dispatch(cancelNewGrow())}
+                                onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
+                            />
+                        )}
+                        {newGrowFlow.status === 'confirming' && (
+                            <GrowConfirmationModal />
+                        )}
+
+                        <div className="lg:col-span-2 space-y-6">
+                            <GardenVitals 
+                                openTasksCount={tasks.length}
+                            />
+                            <TipOfTheDay />
+                            {showGrowFromStrainBanner && (
+                                <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    <div className="flex-grow">
+                                        <h3 className="font-bold text-primary-300">{t('plantsView.inlineSelector.title')}</h3>
+                                        <p className="text-sm text-slate-300">{t('plantsView.inlineSelector.subtitle')} {newGrowFlow.strain?.name}.</p>
+                                    </div>
+                                    <Button variant="secondary" size="sm" onClick={() => dispatch(cancelNewGrow())}>
+                                        {t('common.cancel')}
+                                    </Button>
+                                </Card>
+                            )}
+                            {isLoading ? (
+                                <PlantSlotsSkeleton />
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                    {slotsWithData.map((plant, index) => {
+                                        if (newGrowFlow.status === 'selectingStrain' && newGrowFlow.slotIndex === index) {
+                                            return (
+                                                <InlineStrainSelector 
+                                                    key={`selector-${index}`}
+                                                    onClose={() => dispatch(cancelNewGrow())}
+                                                    onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}
+                                                />
+                                            );
+                                        }
+                                        return plant ? (
+                                            <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
+                                        ) : (
+                                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => dispatch(startGrowInSlot(index))} />
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
-                    )}
-                </div>
-                <div className="lg:col-span-1 space-y-6">
-                    <TasksAndWarnings tasks={tasks} problems={problems} />
-                    <GlobalAdvisorArchiveView />
+                        <div className="lg:col-span-1 space-y-6">
+                            <TasksAndWarnings tasks={tasks} problems={problems} />
+                            <GlobalAdvisorArchiveView />
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        </>
     );
 };

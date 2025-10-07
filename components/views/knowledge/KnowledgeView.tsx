@@ -1,6 +1,5 @@
-
-
-import React, { useTransition, Suspense, lazy } from 'react';
+// FIX: Add `useMemo` to the `react` import to resolve the "Cannot find name 'useMemo'" error.
+import React, { useTransition, Suspense, lazy, useRef, useLayoutEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
 import { KnowledgeViewTab } from '@/types';
@@ -28,6 +27,34 @@ export const KnowledgeView: React.FC = () => {
 
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 
+    const navRef = useRef<HTMLDivElement>(null);
+    const [indicatorStyle, setIndicatorStyle] = useState({});
+
+    const tabs = useMemo(() => [
+        { id: KnowledgeViewTab.Mentor, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
+        { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
+        { id: KnowledgeViewTab.Archive, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
+        { id: KnowledgeViewTab.Breeding, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
+        { id: KnowledgeViewTab.Sandbox, label: t('knowledgeView.tabs.sandbox'), icon: <PhosphorIcons.Flask /> },
+    ], [t]);
+    
+    useLayoutEffect(() => {
+        if (navRef.current) {
+            const activeIndex = tabs.findIndex(tab => tab.id === activeTab);
+            // FIX: Corrected index to account for the indicator div being the first child.
+            // This prevents an error when trying to access offsetTop on an undefined element,
+            // which was the likely cause of the infinite render loop (React Error #185).
+            const activeButton = navRef.current.children[activeIndex + 1] as HTMLElement;
+            if (activeButton) {
+                setIndicatorStyle({
+                    top: `${activeButton.offsetTop}px`,
+                    height: `${activeButton.offsetHeight}px`,
+                });
+            }
+        }
+    }, [activeTab, tabs]);
+
+
     // If a chat is active, render the chat view exclusively
     if (activeMentorPlant) {
         return <MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} />;
@@ -38,14 +65,6 @@ export const KnowledgeView: React.FC = () => {
             dispatch(setKnowledgeViewTab(id as KnowledgeViewTab));
         });
     };
-
-    const tabs = [
-        { id: KnowledgeViewTab.Mentor, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
-        { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
-        { id: KnowledgeViewTab.Archive, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
-        { id: KnowledgeViewTab.Breeding, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
-        { id: KnowledgeViewTab.Sandbox, label: t('knowledgeView.tabs.sandbox'), icon: <PhosphorIcons.Flask /> },
-    ];
 
     const renderContent = () => {
         switch (activeTab) {
@@ -67,16 +86,17 @@ export const KnowledgeView: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <nav className="lg:col-span-1 space-y-2">
+                <nav ref={navRef} className="lg:col-span-1 space-y-2 side-nav-container">
+                     <div className="side-nav-indicator" style={indicatorStyle}></div>
                     {tabs.map(tab => {
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => handleSetTab(tab.id)}
-                                className={`w-full p-3 rounded-lg text-left transition-all duration-200 flex items-center gap-3 ring-1 ring-inset ring-white/20 ${
+                                className={`w-full p-3 rounded-lg text-left transition-all duration-200 flex items-center gap-3 relative ring-1 ring-inset ring-white/20 ${
                                     activeTab === tab.id
                                         ? 'bg-slate-700 text-primary-300 font-semibold'
-                                        : 'bg-slate-800/50 hover:bg-slate-700/50'
+                                        : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-200'
                                 }`}
                             >
                                 <div className="w-6 h-6">{tab.icon}</div>

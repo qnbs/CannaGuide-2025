@@ -3,7 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 
 import simulationReducer from './slices/simulationSlice';
-import uiReducer from './slices/uiSlice';
+import uiReducer, { setActiveView, initialState as initialUiState } from './slices/uiSlice';
 import settingsReducer from './slices/settingsSlice';
 import strainsViewReducer from './slices/strainsViewSlice';
 import userStrainsReducer from './slices/userStrainsSlice';
@@ -17,6 +17,7 @@ import ttsReducer from './slices/ttsSlice';
 import sandboxReducer from './slices/sandboxSlice';
 import filtersReducer from './slices/filtersSlice';
 import genealogyReducer from './slices/genealogySlice';
+import navigationReducer from './slices/navigationSlice'; // New navigation slice
 import { geminiApi } from './api';
 import { listenerMiddleware } from './listenerMiddleware';
 import { indexedDBStorage } from './indexedDBStorage';
@@ -38,6 +39,7 @@ const rootReducer = {
     sandbox: sandboxReducer,
     filters: filtersReducer,
     genealogy: genealogyReducer,
+    navigation: navigationReducer, // Add navigation reducer
     [geminiApi.reducerPath]: geminiApi.reducer,
 };
 
@@ -58,7 +60,14 @@ export const createAppStore = async () => {
         if (persistedString) {
             console.log('[Store] Hydrating state from IndexedDB.');
             const persistedState = JSON.parse(persistedString);
-            preloadedState = migrateState(persistedState) as Partial<RootState>;
+            const migrated = migrateState(persistedState) as Partial<RootState>;
+            
+            // Merge partial UI state from storage with the full initial state
+            if (migrated.ui) {
+                migrated.ui = { ...initialUiState, ...migrated.ui };
+            }
+            
+            preloadedState = migrated;
         }
     } catch (e) {
         console.error("Could not load or migrate state from IndexedDB, starting fresh.", e);
@@ -72,6 +81,11 @@ export const createAppStore = async () => {
             serializableCheck: false,
         }).concat(geminiApi.middleware).prepend(listenerMiddleware.middleware),
     });
+
+    // After store creation, check for a persisted last active view and set it.
+    if (preloadedState?.ui?.lastActiveView) {
+        store.dispatch(setActiveView(preloadedState.ui.lastActiveView));
+    }
 
     return store;
 };

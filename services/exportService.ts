@@ -9,6 +9,7 @@ import {
     ArchivedAdvisorResponse,
     Recommendation,
     RecommendationItem,
+    StructuredGrowTips,
 } from '@/types';
 import { getT } from '@/i18n';
 import jsPDF from 'jspdf';
@@ -126,7 +127,7 @@ const exportDataLogic = <T extends { [key: string]: any }>(
         xmlItem: string;
         txtFormatter: (item: T) => string;
         pdfHeaders: string[];
-        pdfRows: (item: T) => string[];
+        pdfRows: (item: T) => (string | number | boolean | null | undefined)[];
         t: (key: string, options?: Record<string, unknown>) => string;
     }
 ) => {
@@ -572,27 +573,53 @@ const exportStrainTipsLogic = (
     filename: string,
     t: (key: string, options?: Record<string, unknown>) => string
 ) => {
+    const toSerializable = (item: SavedStrainTip) => ({
+        Strain: item.strainName,
+        Created: new Date(item.createdAt).toLocaleString(),
+        Title: item.title,
+        'Nutrient Tip': item.nutrientTip,
+        'Training Tip': item.trainingTip,
+        'Environmental Tip': item.environmentalTip,
+        'Pro Tip': item.proTip,
+    });
+
+    const txtFormatter = (item: SavedStrainTip) => (
+        `[${item.strainName} - ${item.title}]\n` +
+        `Date: ${new Date(item.createdAt).toLocaleString()}\n` +
+        `- Nutrient: ${item.nutrientTip}\n` +
+        `- Training: ${item.trainingTip}\n` +
+        `- Environment: ${item.environmentalTip}\n` +
+        `- Pro-Tip: ${item.proTip}\n`
+    );
+
+    const pdfHeaders = [
+        t('strainsView.table.strain'),
+        'Title',
+        'Date',
+        t('strainsView.tips.form.categories.nutrientTip'),
+        t('strainsView.tips.form.categories.trainingTip'),
+        t('strainsView.tips.form.categories.environmentalTip'),
+        t('strainsView.tips.form.categories.proTip'),
+    ];
+
+    const pdfRows = (item: SavedStrainTip) => [
+        item.strainName,
+        item.title,
+        new Date(item.createdAt).toLocaleDateString(),
+        item.nutrientTip,
+        item.trainingTip,
+        item.environmentalTip,
+        item.proTip,
+    ];
+
     exportDataLogic(tips, format, filename, {
         title: t('strainsView.tips.title'),
-        toSerializable: (item) => ({
-            Strain: item.strainName,
-            Created: new Date(item.createdAt).toLocaleString(),
-            Title: item.title,
-            Content: cleanHtml(item.content),
-        }),
+        toSerializable,
         xmlRoot: 'strain_tips',
         xmlItem: 'tip',
-        txtFormatter: (item) =>
-            `Strain: ${item.strainName}\nDate: ${new Date(
-                item.createdAt
-            ).toLocaleString()}\nTitle: ${item.title}\n---\n${cleanHtml(item.content)}\n`,
-        pdfHeaders: [t('strainsView.table.strain'), 'Title', 'Date', 'Content'],
-        pdfRows: (item) => [
-            item.strainName,
-            item.title,
-            new Date(item.createdAt).toLocaleDateString(),
-            cleanHtml(item.content),
-        ],
+        txtFormatter,
+        pdfHeaders,
+        pdfRows,
         t,
     });
 };

@@ -12,6 +12,7 @@ import { selectArchivedMentorResponses } from '@/stores/selectors';
 import { updateArchivedMentorResponse, deleteArchivedMentorResponse } from '@/stores/slices/archivesSlice';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import { SearchBar } from '@/components/common/SearchBar';
 
 interface MentorArchiveTabProps {
     archivedResponses?: ArchivedMentorResponse[];
@@ -112,15 +113,12 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
             />
 
             <div className="flex justify-between items-center mb-4">
-                <div className="relative flex-grow">
-                     <input
-                        type="text"
+                <div className="flex-grow">
+                    <SearchBar
                         placeholder={t('strainsView.tips.searchPlaceholder')}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-slate-700 rounded-lg bg-slate-900 focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
-                    <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                 </div>
                 <Button variant="secondary" onClick={() => setIsExportModalOpen(true)} className="ml-2">
                     <PhosphorIcons.DownloadSimple className="w-5 h-5"/>

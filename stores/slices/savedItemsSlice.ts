@@ -1,4 +1,4 @@
-import { SavedExport, SavedSetup, Strain, AIResponse, SavedStrainTip } from '../../types';
+import { SavedExport, SavedSetup, Strain, AIResponse, SavedStrainTip, StructuredGrowTips } from '../../types';
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter, EntityState } from '@reduxjs/toolkit';
 
 export const savedExportsAdapter = createEntityAdapter<SavedExport>();
@@ -67,10 +67,10 @@ const savedItemsSlice = createSlice({
         deleteSetup: (state, action: PayloadAction<string>) => {
             savedSetupsAdapter.removeOne(state.savedSetups, action.payload);
         },
-        addStrainTip: (state, action: PayloadAction<{ strain: Strain, tip: AIResponse, imageUrl?: string }>) => {
-            const { strain, tip, imageUrl } = action.payload;
-            if (!tip || !tip.title?.trim() || !tip.content?.trim()) {
-                console.error("[savedItemsSlice] Attempted to save an empty or invalid strain tip. Aborted.");
+        addStrainTip: (state, action: PayloadAction<{ strain: Strain, tip: StructuredGrowTips, title: string, imageUrl?: string }>) => {
+            const { strain, tip, title, imageUrl } = action.payload;
+             if (!tip || !tip.nutrientTip || !tip.trainingTip || !tip.environmentalTip || !tip.proTip) {
+                console.error("[savedItemsSlice] Attempted to save an empty or invalid structured strain tip. Aborted.");
                 return;
             }
             const newTip: SavedStrainTip = {
@@ -79,6 +79,7 @@ const savedItemsSlice = createSlice({
                 createdAt: Date.now(),
                 strainId: strain.id,
                 strainName: strain.name,
+                title,
                 imageUrl,
             };
             savedStrainTipsAdapter.addOne(state.savedStrainTips, newTip);

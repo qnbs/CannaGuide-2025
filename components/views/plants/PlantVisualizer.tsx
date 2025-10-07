@@ -14,8 +14,8 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
     const { stage, height, stressLevel } = plant;
     const health = 1 - (stressLevel / 100);
 
-    const baseColor = `rgba(74, 222, 128, ${mapRange(health, 0, 1, 0.4, 1)})`;
-    const stemColor = `rgba(139, 92, 246, ${mapRange(health, 0, 1, 0.5, 1)})`;
+    const baseColor = `rgba(var(--color-accent-500), ${mapRange(health, 0, 1, 0.4, 1)})`;
+    const stemColor = `rgba(var(--color-primary-500), ${mapRange(health, 0, 1, 0.5, 1)})`;
 
     const stageScale = {
         [PlantStage.Seed]: 0.1,
@@ -30,7 +30,7 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
     }[stage];
 
     const showBuds = [PlantStage.Flowering, PlantStage.Harvest].includes(stage);
-    const budColor = `rgba(192, 132, 252, ${stage === PlantStage.Harvest ? 1 : 0.8})`;
+    const budColor = `rgba(var(--color-secondary-500), ${stage === PlantStage.Harvest ? 1 : 0.8})`;
 
     const stem = <path d="M12 22 V2" stroke={stemColor} strokeWidth="1.5" strokeLinecap="round" />;
     

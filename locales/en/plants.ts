@@ -70,6 +70,13 @@ export const plantsView = {
         light: 'Light',
         fan: 'Fan',
         fanSpeed: 'Fan Speed',
+        exhaustFan: 'Exhaust Fan',
+        circulationFan: 'Circulation Fan',
+        lighting: 'Lighting',
+        ventilation: 'Ventilation',
+        dailyLightIntegral: 'Daily Light Integral (DLI)',
+        dliTooltip: 'The total amount of light your plant receives per day. Seedlings: 10-15, Veg: 15-30, Flower: 30-40+ are good targets.',
+        circulationFanTooltip: 'Improves stem strength and prevents mold.',
     },
     substrateAndRoots: 'Substrate & Roots',
     rootHealth: 'Root Health',
@@ -202,21 +209,38 @@ export const plantsView = {
   },
   setupModal: {
       title: 'Configure Grow Setup for {{strainName}}',
-      subtitle: 'Choose the starting conditions for your new grow cycle.',
-      light: 'Light Type',
-      wattage: 'Wattage',
-      potSize: 'Pot Size',
-      medium: 'Medium',
+      subtitle: 'Set the key parameters for your new grow.',
       confirm: 'Start Growing',
-      lightHours: 'Light Hours / Day',
+      lightingTitle: 'Lighting',
+      wattage: 'Wattage',
       lightCycle: 'Light Cycle',
+      photoperiodInfo: 'Photoperiod plants require a 12/12 light schedule to induce flowering.',
+      autoflowerInfo: 'For Autoflowers, an 18/6 or 24/0 cycle is recommended.',
+      environmentTitle: 'Environment',
+      exhaustFanPower: 'Exhaust Fan Power',
+      circulationFan: 'Circulation Fan',
+      containerTitle: 'Container',
+      potSize: 'Pot Size (Liters)',
+      potType: 'Pot Type',
+      medium: 'Medium',
+      lightTypes: {
+        led: 'LED',
+        hps: 'HPS'
+      },
+      ventilationLevels: {
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High'
+      },
+      potTypes: {
+        plastic: 'Plastic',
+        fabric: 'Fabric'
+      },
       cycles: {
         veg: '18/6 (Veg/Auto)',
         flower: '12/12 (Flower)',
         auto: '24/0 (Auto)',
       },
-      autoflowerInfo: 'For Autoflowers, an 18/6 or 24/0 cycle is recommended. The 12/12 cycle is not necessary.',
-      photoperiodInfo: 'Photoperiod plants require a 12/12 light schedule to induce flowering. The 24/0 cycle is not suitable for them.'
   },
   mediums: {
     Soil: 'Soil',

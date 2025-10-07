@@ -14,10 +14,8 @@ export const CannabisLeafIcon: React.FC<{ className?: string }> = ({ className }
     >
         <defs>
             <linearGradient id="cannaGuideLeafGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                {/* --color-primary-400 from forest theme */}
-                <stop offset="0%" style={{ stopColor: 'rgb(74, 222, 128)' }} />
-                {/* --color-accent-500 from forest theme */}
-                <stop offset="100%" style={{ stopColor: 'rgb(16, 185, 129)' }} />
+                <stop offset="0%" style={{ stopColor: 'rgb(163, 230, 53)' }} />
+                <stop offset="100%" style={{ stopColor: 'rgb(101, 163, 13)' }} />
             </linearGradient>
         </defs>
 

@@ -40,9 +40,9 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
         primary:
             'bg-primary-500 hover:bg-primary-400 focus-visible:ring-primary-400 text-on-accent font-bold shadow-md shadow-primary-500/20 hover:shadow-lg hover:shadow-primary-500/30 border border-primary-600',
         secondary:
-            'bg-slate-700 hover:bg-slate-600 focus-visible:ring-primary-500 text-slate-100 border border-slate-600',
+            'bg-primary-900/40 hover:bg-primary-800/60 focus-visible:ring-primary-500 text-slate-100 border border-primary-700',
         danger: 'bg-red-600 hover:bg-red-700 focus-visible:ring-red-500 text-white border border-red-700',
-        ghost: 'bg-transparent hover:bg-slate-700 focus-visible:ring-primary-500 text-slate-300 hover:text-primary-300 border border-transparent',
+        ghost: 'bg-transparent hover:bg-primary-900/50 focus-visible:ring-primary-500 text-slate-300 hover:text-primary-300 border border-transparent',
     }
 
     const sizeClasses = {

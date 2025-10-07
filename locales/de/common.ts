@@ -44,6 +44,8 @@ export const common = {
     units: {
         weeks: 'Wochen',
         days: 'Tage',
+        hours: 'Stunden',
+        minutes: 'Minuten',
         h_day: 'h/Tag',
         price_kwh: '€/kWh',
         currency_eur: '€',

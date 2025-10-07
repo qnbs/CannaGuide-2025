@@ -571,26 +571,44 @@ export const exportStrainTipsLogic = (
     filename: string,
     t: (key: string, options?: Record<string, unknown>) => string
 ) => {
+// FIX: Updated `exportStrainTipsLogic` to handle the `SavedStrainTip` type which has structured properties (`nutrientTip`, `trainingTip`, etc.) instead of a single `content` property. This resolves errors where the non-existent `content` property was being accessed for CSV, TXT, and PDF exports.
     exportDataLogic(tips, format, filename, {
         title: t('strainsView.tips.title'),
         toSerializable: (item) => ({
             Strain: item.strainName,
             Created: new Date(item.createdAt).toLocaleString(),
             Title: item.title,
-            Content: cleanHtml(item.content),
+            'Nutrient Tip': item.nutrientTip,
+            'Training Tip': item.trainingTip,
+            'Environmental Tip': item.environmentalTip,
+            'Pro Tip': item.proTip,
         }),
         xmlRoot: 'strain_tips',
         xmlItem: 'tip',
         txtFormatter: (item) =>
-            `Strain: ${item.strainName}\nDate: ${new Date(
-                item.createdAt
-            ).toLocaleString()}\nTitle: ${item.title}\n---\n${cleanHtml(item.content)}\n`,
-        pdfHeaders: [t('strainsView.table.strain'), 'Title', 'Date', 'Content'],
+            `[${item.strainName} - ${item.title}]\n` +
+            `Date: ${new Date(item.createdAt).toLocaleString()}\n` +
+            `- Nutrient: ${item.nutrientTip}\n` +
+            `- Training: ${item.trainingTip}\n` +
+            `- Environment: ${item.environmentalTip}\n` +
+            `- Pro-Tip: ${item.proTip}\n`,
+        pdfHeaders: [
+            t('strainsView.table.strain'),
+            'Title',
+            'Date',
+            t('strainsView.tips.form.categories.nutrientTip'),
+            t('strainsView.tips.form.categories.trainingTip'),
+            t('strainsView.tips.form.categories.environmentalTip'),
+            t('strainsView.tips.form.categories.proTip'),
+        ],
         pdfRows: (item) => [
             item.strainName,
             item.title,
             new Date(item.createdAt).toLocaleDateString(),
-            cleanHtml(item.content),
+            item.nutrientTip,
+            item.trainingTip,
+            item.environmentalTip,
+            item.proTip,
         ],
         t,
     });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Strain, AIResponse, StructuredGrowTips } from '@/types';
+import { Strain, StructuredGrowTips } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { geminiService } from '@/services/geminiService';
 import { Card } from '@/components/common/Card';
@@ -11,6 +11,7 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stores/api';
 import { selectLanguage } from '@/stores/selectors';
 import { Speakable } from '@/components/common/Speakable';
+import { addStrainTip } from '@/stores/slices/savedItemsSlice';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean; strainId: string; }> = ({ tips, onSave, isSaved, strainId }) => {
     const { t } = useTranslation();
@@ -47,10 +48,9 @@ const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => v
 
 interface StrainAiTipsProps {
     strain: Strain;
-    onSaveTip: (strain: Strain, tip: AIResponse, imageUrl?: string) => void;
 }
 
-export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip }) => {
+export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
@@ -98,7 +98,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
             };
             
             updateLoadingMessage();
-            const intervalId = setInterval(updateLoadingMessage, 2000);
+            const intervalId = setInterval(updateLoadingMessage, 2500);
             return () => clearInterval(intervalId);
         }
     }, [isLoading, t, strain.name, tipRequest]);
@@ -115,14 +115,8 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain, onSaveTip })
     const handleSaveTip = () => {
         if (!tip) return;
         const title = t('strainsView.tips.getTipsFor', { name: strain.name });
-        const content = `
-            <h3>${t('strainsView.tips.form.categories.nutrientTip')}</h3><p>${tip.nutrientTip}</p>
-            <h3>${t('strainsView.tips.form.categories.trainingTip')}</h3><p>${tip.trainingTip}</p>
-            <h3>${t('strainsView.tips.form.categories.environmentalTip')}</h3><p>${tip.environmentalTip}</p>
-            <h3>${t('strainsView.tips.form.categories.proTip')}</h3><p>${tip.proTip}</p>
-        `;
         const imageUrl = imageBase64 ? `data:image/jpeg;base64,${imageBase64}` : undefined;
-        onSaveTip(strain, { title, content }, imageUrl);
+        dispatch(addStrainTip({ strain, tip, title, imageUrl }));
         setIsTipSaved(true);
     };
 

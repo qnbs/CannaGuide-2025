@@ -45,6 +45,7 @@ import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
 import { GenealogyView } from './strains/GenealogyView';
 import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
+// FIX: Moved invalid import statements from the end of the file to the top to resolve component-not-found errors.
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Button } from '@/components/common/Button';
 import { StrainListHeader } from './strains/StrainListHeader';
@@ -157,10 +158,8 @@ export const StrainsView: React.FC = () => {
         
         const exportName = `CannaGuide_Strains_${new Date().toISOString().slice(0, 10)}`;
         
-        // Always trigger a direct download for immediate user feedback.
         exportService.exportStrains(strainsToExport, format, exportName);
 
-        // For data-heavy formats, also save the export configuration to the manager.
         if (['csv', 'json', 'xml'].includes(format)) {
              dispatch(addExport({ data: { name: exportName, source, format, notes: '' }, strainIds: strainsToExport.map(s => s.id) }));
         }

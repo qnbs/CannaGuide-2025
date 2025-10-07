@@ -1,3 +1,4 @@
+
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab, SavedSetup, StrainViewTab } from '@/types';
 import type { RootState } from '../store';
@@ -5,6 +6,7 @@ import { getT } from '@/i18n';
 
 export interface UIState {
     activeView: View;
+    lastActiveView: View; // To persist the last main view
     onboardingStep: number;
     highlightedElement: string | null;
     isCommandPaletteOpen: boolean;
@@ -30,8 +32,10 @@ export interface UIState {
     setupToSave: Omit<SavedSetup, 'id' | 'createdAt' | 'name'> | null;
 }
 
-const initialState: UIState = {
+// FIX: Export the initialState so it can be imported in the store setup.
+export const initialState: UIState = {
     activeView: View.Plants,
+    lastActiveView: View.Plants,
     onboardingStep: 0,
     highlightedElement: null,
     isCommandPaletteOpen: false,
@@ -78,6 +82,7 @@ const uiSlice = createSlice({
     reducers: {
         setActiveView: (state, action: PayloadAction<View>) => {
             state.activeView = action.payload;
+            state.lastActiveView = action.payload;
         },
         setOnboardingStep: (state, action: PayloadAction<number>) => {
             state.onboardingStep = action.payload;

@@ -55,10 +55,14 @@ export const defaultSettings: AppSettings = {
         },
     },
     defaultGrowSetup: {
-        light: { wattage: 150 },
-        potSize: 15,
-        medium: 'Soil',
+        lightType: 'LED',
+        lightWattage: 150,
         lightHours: 18,
+        ventilation: 'medium',
+        hasCirculationFan: true,
+        potSize: 15,
+        potType: 'Fabric',
+        medium: 'Soil',
     },
     defaultExportFormat: 'pdf',
     defaultJournalNotes: {

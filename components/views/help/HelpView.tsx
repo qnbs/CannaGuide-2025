@@ -12,6 +12,7 @@ import { LexiconCard } from './help/LexiconCard';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { Button } from '@/components/common/Button';
 import { Speakable } from '@/components/common/Speakable';
+import { SearchBar } from '@/components/common/SearchBar';
 
 const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
@@ -35,26 +36,23 @@ const FAQSection: React.FC = memo(() => {
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('helpView.faq.title')}</h3>
-            <div className="relative mb-4">
-                <Input
-                    type="text"
+            <div className="mb-4">
+                <SearchBar
                     placeholder={t('helpView.faq.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
                 />
-                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             </div>
             <div className="space-y-3">
                 {filteredFaq.length > 0 ? (
                     filteredFaq.map(item => (
-                        <details key={item.id} className="group bg-slate-800/60 border border-slate-700/50 rounded-lg overflow-hidden">
-                            <summary className="list-none flex justify-between items-center p-3 cursor-pointer">
-                                <h4 className="font-semibold text-slate-100">{item.question}</h4>
+                        <details key={item.id} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
+                            <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
+                                <span className="text-lg font-bold text-slate-100">{item.question}</span>
                                 <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
                             </summary>
                             <Speakable elementId={`faq-${item.id}`}>
-                                <div className="p-3 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                                <div className="p-4 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.answer }} />
                             </Speakable>
                         </details>
                     ))
@@ -143,15 +141,12 @@ const LexiconSection: React.FC = memo(() => {
                 ))}
             </div>
 
-            <div className="relative mb-4">
-                <Input
-                    type="text"
+            <div className="mb-4">
+                <SearchBar
                     placeholder={t('helpView.lexicon.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
                 />
-                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredLexicon.length > 0 ? (
@@ -183,13 +178,13 @@ const ManualSection: React.FC = memo(() => {
 
         if (isSubSection) {
             // Render subsections as simpler, nested details
-            return (
-                <details key={sectionKey} open={false} className="group pl-4">
-                    <summary className="list-none flex items-center gap-2 cursor-pointer py-2 text-md font-semibold text-primary-300">
-                        <PhosphorIcons.ChevronDown className="w-4 h-4 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
+             return (
+                 <details key={sectionKey} open={false} className="group bg-slate-900 rounded-lg ring-1 ring-inset ring-slate-700/50">
+                    <summary className="list-none flex items-center gap-2 cursor-pointer p-3 text-md font-semibold text-primary-300">
+                        <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
                         {title}
                     </summary>
-                    <div className="pt-2 pb-4 pl-6 border-l-2 border-slate-700/50 ml-1">
+                    <div className="p-3 border-t border-slate-700/50">
                         {content && <Speakable elementId={`manual-sub-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
                     </div>
                 </details>
@@ -198,7 +193,7 @@ const ManualSection: React.FC = memo(() => {
 
         // Render top-level sections styled like SettingsSection
         return (
-            <details key={sectionKey} open={level < 1} className="bg-slate-800/30 rounded-xl border border-slate-700/50 group">
+            <details key={sectionKey} open={level < 1} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
                 <summary className="list-none flex justify-between items-center p-4 cursor-pointer font-bold text-slate-100">
                     <div className="flex items-center gap-3">
                         {icons[sectionKey]}
@@ -209,7 +204,7 @@ const ManualSection: React.FC = memo(() => {
                 <div className="px-4 pb-2 border-t border-slate-700/50">
                     {content && <Speakable elementId={`manual-main-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none my-4" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
                     {subSections.length > 0 && (
-                        <div className="space-y-1 py-2">
+                        <div className="space-y-2 py-2">
                             {subSections.map(key => renderSection(key, sectionData[key], true, level + 1))}
                         </div>
                     )}

@@ -1,87 +1,92 @@
+import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
+import { ExperimentResult, SavedExperiment, Scenario, Plant } from '@/types';
+import { RootState } from '../store';
 
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
-import { Plant, SandboxState, Experiment, Scenario } from '@/types';
-import { getT } from '@/i18n';
+export interface SandboxState {
+    currentExperiment: ExperimentResult | null;
+    status: 'idle' | 'running' | 'succeeded' | 'failed';
+    savedExperiments: SavedExperiment[];
+}
 
 const initialState: SandboxState = {
+    currentExperiment: null,
+    status: 'idle',
     savedExperiments: [],
-    isLoading: false,
-    error: null,
 };
 
-export const runComparisonScenario = createAsyncThunk<
-    Omit<Experiment, 'id' | 'createdAt'>,
-    { plantId: string; scenario: Scenario },
-    { state: RootState }
->('sandbox/runScenario', async ({ plantId, scenario }, { getState, rejectWithValue }) => {
-    const t = getT();
-    const basePlant = getState().simulation.plants.entities[plantId];
-    if (!basePlant) {
-        return rejectWithValue('Plant not found');
+export const runComparisonScenario = createAsyncThunk<ExperimentResult, { plantId: string, scenario: Scenario }, { state: RootState }>(
+    'sandbox/runComparison',
+    async ({ plantId, scenario }, { getState }) => {
+        return new Promise((resolve, reject) => {
+            const state = getState();
+            const basePlant = state.simulation.plants.entities[plantId];
+
+            if (!basePlant) {
+                return reject(new Error('Base plant not found for scenario.'));
+            }
+
+            const worker = new Worker(new URL('/workers/scenario.worker.ts', import.meta.url), { type: 'module' });
+            
+            worker.onmessage = (e: MessageEvent<ExperimentResult>) => {
+                resolve(e.data);
+                worker.terminate();
+            };
+
+            worker.onerror = (e) => {
+                reject(e);
+                worker.terminate();
+            };
+
+            worker.postMessage({ basePlant, scenario });
+        });
     }
+);
 
-    const plantToSimulate = structuredClone(basePlant);
-
-    return new Promise((resolve, reject) => {
-        const worker = new Worker(new URL('../../workers/scenario.worker.ts', import.meta.url), { type: 'module' });
-
-        worker.onmessage = (e) => {
-            const { originalHistory, modifiedHistory, originalFinalState, modifiedFinalState } = e.data;
-            resolve({
-                name: t('knowledgeView.sandbox.experimentOn', { name: basePlant.name }),
-                basePlantId: plantId,
-                basePlantName: basePlant.name,
-                scenarioDescription: t('knowledgeView.sandbox.scenarioDescription', { actionA: scenario.plantAModifier.action, actionB: scenario.plantBModifier.action, duration: scenario.durationDays }),
-                durationDays: scenario.durationDays,
-                originalHistory,
-                modifiedHistory,
-                originalFinalState,
-                modifiedFinalState,
-            });
-            worker.terminate();
-        };
-
-        worker.onerror = (e) => {
-            reject(e.message);
-            worker.terminate();
-        };
-        
-        worker.postMessage({ basePlant: plantToSimulate, scenario });
-    });
-});
 
 const sandboxSlice = createSlice({
     name: 'sandbox',
     initialState,
     reducers: {
+        saveExperiment: (state, action: PayloadAction<{ scenario: Scenario, basePlantName: string }>) => {
+            if (state.currentExperiment) {
+                const newSavedExperiment: SavedExperiment = {
+                    ...state.currentExperiment,
+                    id: `exp-${Date.now()}`,
+                    scenarioId: action.payload.scenario.id,
+                    basePlantName: action.payload.basePlantName,
+                    createdAt: Date.now(),
+                };
+                state.savedExperiments.unshift(newSavedExperiment); // Add to the top
+                state.currentExperiment = null;
+                state.status = 'idle';
+            }
+        },
+        clearCurrentExperiment: (state) => {
+            state.currentExperiment = null;
+            state.status = 'idle';
+        },
+        deleteExperiment: (state, action: PayloadAction<string>) => {
+            state.savedExperiments = state.savedExperiments.filter(exp => exp.id !== action.payload);
+        },
         setSandboxState: (state, action: PayloadAction<SandboxState>) => {
-            // Only hydrate persistent data
-            state.savedExperiments = action.payload.savedExperiments || [];
+            return action.payload;
         }
     },
     extraReducers: (builder) => {
         builder
             .addCase(runComparisonScenario.pending, (state) => {
-                state.isLoading = true;
-                state.error = null;
+                state.status = 'running';
+                state.currentExperiment = null;
             })
-            .addCase(runComparisonScenario.fulfilled, (state, action: PayloadAction<Omit<Experiment, 'id' | 'createdAt'>>) => {
-                state.isLoading = false;
-                const newExperiment: Experiment = {
-                    ...action.payload,
-                    id: `exp-${Date.now()}`,
-                    createdAt: Date.now(),
-                };
-                state.savedExperiments.push(newExperiment);
+            .addCase(runComparisonScenario.fulfilled, (state, action: PayloadAction<ExperimentResult>) => {
+                state.status = 'succeeded';
+                state.currentExperiment = action.payload;
             })
-            .addCase(runComparisonScenario.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = action.error.message || 'Scenario failed to run.';
+            .addCase(runComparisonScenario.rejected, (state) => {
+                state.status = 'failed';
             });
-    },
+    }
 });
 
-export const { setSandboxState } = sandboxSlice.actions;
-
+export const { saveExperiment, clearCurrentExperiment, deleteExperiment, setSandboxState } = sandboxSlice.actions;
 export default sandboxSlice.reducer;

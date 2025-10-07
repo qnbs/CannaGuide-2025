@@ -3,6 +3,7 @@ import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Modal } from './Modal'
+import { Input } from '@/components/ui/ThemePrimitives'
 
 interface EditableResponse {
     id: string
@@ -62,17 +63,16 @@ const EditResponseModalComponent = <T extends EditableResponse>({
             footer={footer}
         >
             <div className="space-y-4">
-                <input
+                <Input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="w-full bg-slate-800 border border-slate-600 rounded-md p-2 text-slate-100 focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     aria-label={t('common.name')}
                 />
 
                 {content && (
-                    <div className="bg-slate-800 border border-slate-600 rounded-md">
-                        <div className="flex items-center gap-1 p-1 border-b border-slate-600">
+                    <div className="bg-primary-950/50 border-transparent ring-1 ring-inset ring-white/20 rounded-md">
+                        <div className="flex items-center gap-1 p-1 border-b border-primary-800/50">
                             <Button
                                 type="button"
                                 variant="secondary"

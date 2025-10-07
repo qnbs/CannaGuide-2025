@@ -1,4 +1,3 @@
-
 import React, { memo } from 'react';
 import { Strain, StrainType } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -40,7 +39,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
 
     return (
         <Card 
-            className={`flex flex-col h-full text-center relative cursor-pointer ${isSelected ? 'ring-2 ring-primary-500' : ''}`}
+            className={`flex flex-col h-full text-center relative cursor-pointer !p-3 ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
         >
@@ -50,7 +49,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     checked={isSelected}
                     onChange={(e) => { e.stopPropagation(); onToggleSelection(strain.id); }}
                     onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500 self-end"
+                    className="h-4 w-4 self-end"
                     aria-label={`Select ${strain.name}`}
                 />
                 <Button 

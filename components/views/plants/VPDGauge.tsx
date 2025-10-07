@@ -21,9 +21,9 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }
 
     // Define ideal ranges for different stages (in kPa)
     const idealRanges = {
-        seedling: { min: 0.4, max: 0.8, color: 'text-blue-400' },
-        vegetative: { min: 0.8, max: 1.2, color: 'text-green-400' },
-        flowering: { min: 1.2, max: 1.6, color: 'text-purple-400' },
+        seedling: { min: 0.4, max: 0.8, color: 'text-primary-400' },
+        vegetative: { min: 0.8, max: 1.2, color: 'text-accent-400' },
+        flowering: { min: 1.2, max: 1.6, color: 'text-secondary-400' },
         late_flower: { min: 1.4, max: 1.8, color: 'text-orange-400' }
     };
 

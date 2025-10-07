@@ -70,6 +70,13 @@ export const plantsView = {
         light: 'Licht',
         fan: 'Lüfter',
         fanSpeed: 'Lüftergeschwindigkeit',
+        exhaustFan: 'Abluftventilator',
+        circulationFan: 'Umluftventilator',
+        lighting: 'Beleuchtung',
+        ventilation: 'Belüftung',
+        dailyLightIntegral: 'Tägliches Lichtintegral (DLI)',
+        dliTooltip: 'Die Gesamtmenge an Licht, die deine Pflanze pro Tag erhält. Sämlinge: 10-15, Veg: 15-30, Blüte: 30-40+ sind gute Zielwerte.',
+        circulationFanTooltip: 'Verbessert die Stielstärke und beugt Schimmel vor.',
     },
     substrateAndRoots: 'Substrat & Wurzeln',
     rootHealth: 'Wurzelgesundheit',
@@ -202,21 +209,38 @@ export const plantsView = {
   },
   setupModal: {
       title: 'Grow-Setup für {{strainName}} konfigurieren',
-      subtitle: 'Wähle die Startbedingungen für deinen neuen Anbauzyklus.',
-      light: 'Lichttyp',
-      wattage: 'Leistung (Watt)',
-      potSize: 'Topfgröße',
-      medium: 'Medium',
+      subtitle: 'Lege die wichtigsten Parameter für deinen neuen Anbau fest.',
       confirm: 'Anbau starten',
-      lightHours: 'Lichtstunden / Tag',
+      lightingTitle: 'Beleuchtung',
+      wattage: 'Leistung (Watt)',
       lightCycle: 'Lichtzyklus',
+      photoperiodInfo: 'Photoperiodische Pflanzen benötigen eine 12/12 Lichtphase, um die Blüte einzuleiten.',
+      autoflowerInfo: 'Für Autoflowers wird ein 18/6- oder 24/0-Zyklus empfohlen.',
+      environmentTitle: 'Umgebung',
+      exhaustFanPower: 'Abluft-Leistung',
+      circulationFan: 'Umluftventilator',
+      containerTitle: 'Behälter',
+      potSize: 'Topfgröße (Liter)',
+      potType: 'Topfart',
+      medium: 'Medium',
+      lightTypes: {
+        led: 'LED',
+        hps: 'HPS'
+      },
+      ventilationLevels: {
+        low: 'Niedrig',
+        medium: 'Mittel',
+        high: 'Hoch'
+      },
+      potTypes: {
+        plastic: 'Plastik',
+        fabric: 'Stoff'
+      },
       cycles: {
-        veg: '18/6 (Wachstum/Auto)',
+        veg: '18/6 (Wuchs/Auto)',
         flower: '12/12 (Blüte)',
         auto: '24/0 (Auto)',
       },
-      autoflowerInfo: 'Für Autoflowers wird ein 18/6- oder 24/0-Zyklus empfohlen. Der 12/12-Zyklus ist nicht notwendig.',
-      photoperiodInfo: 'Photoperiodische Pflanzen benötigen eine 12/12 Lichtphase, um die Blüte einzuleiten. Der 24/0-Zyklus ist für sie nicht geeignet.'
   },
   mediums: {
     Soil: 'Erde',

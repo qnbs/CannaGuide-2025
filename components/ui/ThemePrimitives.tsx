@@ -1,5 +1,5 @@
 import React, { forwardRef, memo, useId, useState, useEffect, useRef } from 'react';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
 
 // --- TYPOGRAPHY ---
@@ -67,7 +67,7 @@ export const Input = memo(
     forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
         ({ as = 'input', className, label, ...props }, ref) => {
             const id = useId();
-            const commonClassName = `w-full bg-primary-950/50 border-transparent ring-1 ring-inset ring-white/20 rounded-md px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200 ${className || ''}`;
+            const commonClassName = `w-full bg-slate-800 ring-1 ring-inset ring-slate-700/50 rounded-md px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-colors duration-200 ${className || ''}`;
 
             const inputElement =
                 as === 'textarea' ? (
@@ -102,8 +102,8 @@ export const Input = memo(
 
 type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> & {
     options: { value: string | number; label: string }[];
-    value: string | number;
-    onChange: (e: { target: { value: string | number } }) => void;
+    value?: string | number;
+    onChange?: (e: { target: { value: string | number } }) => void;
     label?: string;
 };
 
@@ -132,7 +132,7 @@ export const Select = memo(
         }, [isOpen, highlightedIndex]);
 
         const handleSelect = (optionValue: string | number) => {
-            if (props.disabled) return;
+            if (props.disabled || !onChange) return;
             onChange({ target: { value: optionValue } });
             setIsOpen(false);
         };
@@ -184,7 +184,7 @@ export const Select = memo(
                         ref={ref}
                         id={id}
                         type="button"
-                        className={`w-full bg-primary-950/50 border-transparent ring-1 ring-inset ring-white/20 rounded-md px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-left flex justify-between items-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${className || ''}`}
+                        className={`w-full bg-slate-800 ring-1 ring-inset ring-slate-700/50 rounded-md px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 text-left flex justify-between items-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${className || ''}`}
                         onClick={() => !props.disabled && setIsOpen(!isOpen)}
                         onKeyDown={handleKeyDown}
                         aria-haspopup="listbox"
@@ -227,13 +227,17 @@ export const FormSection: React.FC<{
     title: string;
     children: React.ReactNode;
     defaultOpen?: boolean;
-}> = memo(({ title, children, defaultOpen = false }) => (
+    icon?: React.ReactNode;
+}> = memo(({ title, children, defaultOpen = false, icon }) => (
     <details open={defaultOpen} className='group bg-slate-800/30 rounded-xl p-4 ring-1 ring-inset ring-white/20'>
-        <summary className='text-lg font-semibold text-primary-400 cursor-pointer mb-3 list-none flex items-center gap-2 -ml-2'>
-            <PhosphorIcons.ChevronDown className='w-5 h-5 transition-transform duration-200 group-open:rotate-90' />
-            {title}
+        <summary className='text-lg font-semibold text-primary-400 cursor-pointer mb-3 list-none flex justify-between items-center'>
+            <div className="flex items-center gap-2">
+                {icon}
+                {title}
+            </div>
+            <PhosphorIcons.ChevronDown className='w-5 h-5 transition-transform duration-200 group-open:rotate-180' />
         </summary>
-        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 ml-4 border-l-2 border-slate-700 pl-5'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-700/50 pt-4'>
             {children}
         </div>
     </details>

@@ -27,6 +27,7 @@ const startAppListening = listenerMiddleware.startListening as AppStartListening
 /**
  * Listener to handle state persistence to IndexedDB.
  * This is a more modern and robust approach than a manual store.subscribe().
+ * It now intelligently persists only the necessary slices and fields.
  */
 startAppListening({
   // Listen to all actions, but not the ones from RTK Query which are internal
@@ -34,11 +35,13 @@ startAppListening({
   effect: async (action, listenerApi) => {
     const state = listenerApi.getState() as RootState;
     try {
+        // Construct a state object with only the slices we want to persist.
+        // This prevents ephemeral UI state (like modals, loading states) from being saved.
         const stateToSave = {
             version: state.settings.version,
+            // Slices to persist entirely
             settings: state.settings,
             simulation: state.simulation,
-            strainsView: state.strainsView,
             userStrains: state.userStrains,
             favorites: state.favorites,
             notes: state.notes,
@@ -48,6 +51,14 @@ startAppListening({
             breeding: state.breeding,
             sandbox: state.sandbox,
             filters: state.filters,
+            // Selectively persist only specific fields from the UI slice
+            ui: {
+                lastActiveView: state.ui.lastActiveView,
+                onboardingStep: state.ui.onboardingStep,
+                equipmentViewTab: state.ui.equipmentViewTab,
+                knowledgeViewTab: state.ui.knowledgeViewTab,
+            },
+            // The 'navigation' slice is intentionally excluded to keep it session-only.
         };
         const serializedState = JSON.stringify(stateToSave);
         await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);

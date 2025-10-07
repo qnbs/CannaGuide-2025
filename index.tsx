@@ -1,4 +1,3 @@
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
@@ -7,41 +6,35 @@ import { App } from '@/components/views/plants/App'
 import { createAppStore } from '@/stores/store'
 import { i18nPromise, i18nInstance } from './i18n'
 
-// FIX: Refactored props and state into explicit type aliases for clarity and to resolve potential TypeScript inference issues.
 type ErrorBoundaryProps = { children: React.ReactNode };
 type ErrorBoundaryState = { hasError: boolean };
 
-// A top-level Error Boundary to catch any unexpected rendering errors.
-// This prevents the user from seeing a blank screen and provides a graceful recovery path.
 class ErrorBoundary extends React.Component<
     ErrorBoundaryProps,
     ErrorBoundaryState
 > {
-    // FIX: Removed a redundant constructor. The presence of both an empty constructor and a state class property initializer was causing conflicting TypeScript errors. Direct state initialization is the cleaner and correct modern approach.
+    declare readonly props: ErrorBoundaryProps;
     state: ErrorBoundaryState = { hasError: false };
 
     static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
-        // Update state so the next render will show the fallback UI.
         return { hasError: true }
     }
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        // Log the error to the console for debugging purposes.
         console.error('Uncaught error:', error, errorInfo)
     }
 
     render() {
         if (this.state.hasError) {
-            // Render a user-friendly fallback UI.
             return (
                 <div
                     style={{
                         display: 'flex',
                         flexDirection: 'column',
-                        height: '100vh',
-                        backgroundColor: '#172554', // Corresponds to primary-950 (midnight theme)
-                        color: '#CBD5E1', // Corresponds to slate-300
-                        fontFamily: 'sans-serif',
+                        height: '100dvh',
+                        backgroundColor: 'rgb(2, 6, 23)',
+                        color: '#CBD5E1',
+                        fontFamily: 'Inter, sans-serif',
                         alignItems: 'center',
                         justifyContent: 'center',
                         padding: '1rem',
@@ -54,20 +47,20 @@ class ErrorBoundary extends React.Component<
                         height="6rem"
                         fill="currentColor"
                         viewBox="0 0 256 256"
-                        style={{ color: '#F87171', marginBottom: '1rem' }}
+                        style={{ color: 'rgb(239, 68, 68)', marginBottom: '1rem' }}
                     >
                         <rect width="256" height="256" fill="none"></rect>
                         <path d="M128,24A104,104,0,1,0,232,128,104.2,104.2,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-88a8,8,0,0,1,16,0v48a8,8,0,0,1-16,0Zm8-32a12,12,0,1,1-12-12A12,12,0,0,1,128,96Z"></path>
                     </svg>
-                    <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#F87171', marginBottom: '0.5rem' }}>
+                    <h1 style={{ fontSize: '2rem', fontWeight: '700', fontFamily: 'Lexend, sans-serif', color: 'rgb(248, 113, 113)', marginBottom: '0.5rem' }}>
                         Something went wrong.
                     </h1>
-                    <p style={{ color: '#94A3B8', marginBottom: '1.5rem' }}>
-                        An unexpected error occurred. Please try reloading the application.
+                    <p style={{ color: '#94A3B8', marginBottom: '1.5rem', maxWidth: '400px' }}>
+                        An unexpected error occurred. Please try reloading the application. If the problem persists, you may need to clear your site data.
                     </p>
                     <button
                         style={{
-                            backgroundColor: '#DC2626',
+                            backgroundColor: 'rgb(220, 38, 38)',
                             color: 'white',
                             padding: '0.75rem 1.5rem',
                             border: 'none',
@@ -77,8 +70,8 @@ class ErrorBoundary extends React.Component<
                             transition: 'background-color 0.2s',
                         }}
                         onClick={() => window.location.reload()}
-                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#B91C1C'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = '#DC2626'; }}
+                        onMouseOver={(e) => { e.currentTarget.style.backgroundColor = 'rgb(185, 28, 28)'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'rgb(220, 38, 38)'; }}
                     >
                         Reload Application
                     </button>
@@ -94,9 +87,6 @@ const root = ReactDOM.createRoot(document.getElementById('root')!)
 
 const initialize = async () => {
     await i18nPromise
-
-    // The store is now created asynchronously to allow for pre-hydration
-    // and migration of persisted state from IndexedDB before the app mounts.
     const store = await createAppStore()
 
     root.render(

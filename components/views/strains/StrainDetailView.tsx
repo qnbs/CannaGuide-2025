@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Strain, AIResponse, StrainType } from '@/types';
+import { Strain, AIResponse, StrainType, StructuredGrowTips } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -153,10 +153,9 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 interface StrainDetailViewProps {
     strain: Strain;
     onBack: () => void;
-    onSaveTip: (strain: Strain, tip: AIResponse, imageUrl?: string) => void;
 }
 
-export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBack, onSaveTip }) => {
+export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBack }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const favoriteIds = useAppSelector(selectFavoriteIds);
@@ -223,7 +222,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                 {activeTab === 'agronomics' && <AgronomicsTab strain={strain} />}
                 {activeTab === 'profile' && <ProfileTab strain={strain} />}
                 {activeTab === 'notes' && <NotesTab strain={strain} />}
-                {activeTab === 'aiTips' && <StrainAiTips strain={strain} onSaveTip={onSaveTip} />}
+                {activeTab === 'aiTips' && <StrainAiTips strain={strain} />}
                 {activeTab === 'images' && <StrainImageGalleryTab strain={strain} />}
             </div>
         </div>

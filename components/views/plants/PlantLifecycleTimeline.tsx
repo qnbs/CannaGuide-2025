@@ -10,15 +10,15 @@ interface TimelineProps {
 }
 
 const stageColors: Record<PlantStage, string> = {
-    [PlantStage.Seed]: 'bg-yellow-400',
-    [PlantStage.Germination]: 'bg-yellow-500',
-    [PlantStage.Seedling]: 'bg-lime-500',
-    [PlantStage.Vegetative]: 'bg-green-500',
-    [PlantStage.Flowering]: 'bg-purple-500',
+    [PlantStage.Seed]: 'bg-amber-400',
+    [PlantStage.Germination]: 'bg-amber-500',
+    [PlantStage.Seedling]: 'bg-accent-500',
+    [PlantStage.Vegetative]: 'bg-accent-400',
+    [PlantStage.Flowering]: 'bg-secondary-500',
     [PlantStage.Harvest]: 'bg-orange-500',
     [PlantStage.Drying]: 'bg-amber-700',
-    [PlantStage.Curing]: 'bg-stone-500',
-    [PlantStage.Finished]: 'bg-sky-500',
+    [PlantStage.Curing]: 'bg-slate-500',
+    [PlantStage.Finished]: 'bg-primary-500',
 };
 
 

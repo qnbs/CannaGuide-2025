@@ -1,6 +1,8 @@
+
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from './store';
-import { Plant, ArchivedAdvisorResponse, Experiment, SimulationState, AppSettings, Task, PlantProblem } from '@/types';
+// FIX: Removed 'Experiment' from this import as it is not exported from '@/types', causing an error.
+import { Plant, ArchivedAdvisorResponse, SimulationState, AppSettings, Task, PlantProblem } from '@/types';
 import { SavedItemsState } from './slices/savedItemsSlice';
 
 // --- Base Selectors (for each slice) ---
@@ -17,6 +19,7 @@ const selectKnowledge = (state: RootState) => state.knowledge;
 const selectBreeding = (state: RootState) => state.breeding;
 const selectSandbox = (state: RootState) => state.sandbox;
 const selectGenealogy = (state: RootState) => state.genealogy;
+export const selectNavigation = (state: RootState) => state.navigation; // New selector for navigation state
 
 // --- Adapter Selectors ---
 import { userStrainsAdapter } from './slices/userStrainsSlice';

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, JournalEntryType, TrainingType, AmendmentType } from '@/types';
+import { Plant, GrowSetup, Strain, JournalEntry, Task, SimulationState, PlantStage, JournalEntryType, TrainingType, AmendmentType, VentilationPower } from '@/types';
 // FIX: Added missing import for PLANT_STAGE_DETAILS.
 import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { RootState } from '../store';
@@ -20,7 +20,6 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (arg, { dispatch, getState }) => {
         const { newGrowFlow } = getState().ui;
-        const { settings } = getState().settings;
         if (newGrowFlow.status === 'confirming' && newGrowFlow.strain && newGrowFlow.setup && newGrowFlow.slotIndex !== null) {
             const validation = GrowSetupSchema.safeParse(newGrowFlow.setup);
             if (!validation.success) {
@@ -30,7 +29,7 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 return;
             }
 
-            const newPlant = plantSimulationService.createPlant(newGrowFlow.strain, validation.data, settings.defaultGrowSetup.light, `${newGrowFlow.strain.name} #${newGrowFlow.slotIndex + 1}`);
+            const newPlant = plantSimulationService.createPlant(newGrowFlow.strain, validation.data, `${newGrowFlow.strain.name} #${newGrowFlow.slotIndex + 1}`);
             dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: newGrowFlow.slotIndex }));
             dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name: newPlant.name }), type: 'success' }));
             dispatch(cancelNewGrow());
@@ -170,7 +169,7 @@ const simulationSlice = createSlice({
                 if (plantId) {
                     const plant = state.plants.entities[plantId];
                     if (plant) {
-                        const waterCapacity = plant.strain.agronomic.height === 'Tall' ? 3000 : 2000;
+                        const waterCapacity = (plant.setup as GrowSetup)?.potSize * 1000 * ((plant.setup as GrowSetup)?.potType === 'Fabric' ? 0.28 : 0.35) || 5000;
                         plant.medium.substrateWater = Math.min(waterCapacity, plant.medium.substrateWater + 1000);
                         plant.medium.moisture = (plant.medium.substrateWater / waterCapacity) * 100;
                     }
@@ -188,11 +187,19 @@ const simulationSlice = createSlice({
         },
         toggleFan: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.fan.isOn = !plant.equipment.fan.isOn;
+            if (plant) plant.equipment.exhaustFan.isOn = !plant.equipment.exhaustFan.isOn;
         },
-        setFanSpeed: (state, action: PayloadAction<{ plantId: string, speed: number }>) => {
+        toggleCirculationFan: (state, action: PayloadAction<{ plantId: string }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if (plant) plant.equipment.fan.speed = action.payload.speed;
+            if (plant) plant.equipment.circulationFan.isOn = !plant.equipment.circulationFan.isOn;
+        },
+        setLightWattage: (state, action: PayloadAction<{ plantId: string; wattage: number }>) => {
+            const plant = state.plants.entities[action.payload.plantId];
+            if (plant) plant.equipment.light.wattage = action.payload.wattage;
+        },
+        setVentilationPower: (state, action: PayloadAction<{ plantId: string; power: VentilationPower }>) => {
+            const plant = state.plants.entities[action.payload.plantId];
+            if (plant) plant.equipment.exhaustFan.power = action.payload.power;
         },
         setLightHours: (state, action: PayloadAction<{ plantId: string, hours: number }>) => {
             const plant = state.plants.entities[action.payload.plantId];
@@ -217,7 +224,7 @@ const simulationSlice = createSlice({
         applyWatering: (state, action: PayloadAction<{ plantId: string; amountMl?: number; ph?: number }>) => {
              const plant = state.plants.entities[action.payload.plantId];
              if (plant) {
-                const waterCapacity = plant.strain.agronomic.height === 'Tall' ? 3000 : 2000;
+                const waterCapacity = (plant.setup as GrowSetup)?.potSize * 1000 * ((plant.setup as GrowSetup)?.potType === 'Fabric' ? 0.28 : 0.35) || 5000;
                 plant.medium.substrateWater = Math.min(waterCapacity, plant.medium.substrateWater + (action.payload.amountMl || 500));
                 plant.medium.moisture = (plant.medium.substrateWater / waterCapacity) * 100;
                 if(action.payload.ph) plant.medium.ph = (plant.medium.ph + action.payload.ph) / 2; // Average pH
@@ -257,7 +264,9 @@ export const {
     resetPlants,
     toggleLight,
     toggleFan,
-    setFanSpeed,
+    toggleCirculationFan,
+    setLightWattage,
+    setVentilationPower,
     setLightHours,
     processPostHarvest,
     initializeSimulation

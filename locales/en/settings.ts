@@ -1,5 +1,6 @@
 export const settingsView = {
   title: 'Settings',
+  saveSuccess: 'Settings saved!',
   categories: {
     general: 'General & UI',
     accessibility: 'Accessibility',
@@ -20,6 +21,7 @@ export const settingsView = {
       purpleHaze: 'Purple Haze',
       desertSky: 'Desert Sky',
       roseQuartz: 'Rose Quartz',
+      rainbowKush: 'Rainbow Kush',
     },
     fontSize: 'Font Size',
     fontSizes: {

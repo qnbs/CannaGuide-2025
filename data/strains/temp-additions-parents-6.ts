@@ -26,7 +26,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "the-original",
         "name": "The Original",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica - 85% Indica / 15% Sativa",
         "genetics": "Original OG Kush phenotype",
         "floweringType": "Photoperiod",

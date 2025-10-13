@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input } from './common';
 
-export const ConverterCalculator: React.FC = () => {
+export const ConverterCalculator: React.FC = memo(() => {
     const { t } = useTranslation();
     const [values, setValues] = useState({ ec: 1.2, ppm500: 600, ppm700: 840 });
 
@@ -26,4 +26,4 @@ export const ConverterCalculator: React.FC = () => {
             <p className="text-xs text-slate-400 text-center">{t('equipmentView.calculators.converter.resultInfo')}</p>
         </CalculatorSection>
     );
-};
+});

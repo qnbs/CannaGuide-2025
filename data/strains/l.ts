@@ -183,7 +183,7 @@ export const strainsL: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "9-10",
-        "description": "An Indica strain known for its deep purple colors and its strong, lavender-like, floral aroma. The effect is deeply relaxing and sedating.",
+        "description": "An Indica strain known for its deep purple colors and its strong, lavender-like, floral aroma. The 'Big Buddy's Lavender' phenotype is a well-known variation of this strain. The effect is deeply relaxing and sedating.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",

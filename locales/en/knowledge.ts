@@ -1,4 +1,5 @@
 
+
 export const knowledgeView = {
     title: 'Knowledge Hub',
     subtitle: 'Your interactive guide to successful cultivation.',
@@ -111,7 +112,7 @@ export const knowledgeView = {
     sandbox: {
         title: 'Experimental Sandbox',
         experimentOn: 'Experiment on {{name}}',
-        scenarioDescription: 'Compared {{actionA}} vs {{actionB}} over {{duration}} days.',
+        scenarioDescription: 'Compared {{actionA}} vs. {{actionB}} over {{duration}} days.',
         runningSimulation: 'Running accelerated simulation...',
         startExperiment: 'New Experiment',
         modal: {
@@ -122,7 +123,6 @@ export const knowledgeView = {
         },
         savedExperiments: 'Saved Experiments',
         noExperiments: 'No experiments saved yet.',
-        experimentMeta: 'Based on {{basePlantName}} - Run on {{date}}',
     },
 };
 

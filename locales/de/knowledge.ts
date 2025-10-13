@@ -1,4 +1,5 @@
 
+
 export const knowledgeView = {
     title: 'Wissens-Hub',
     subtitle: 'Dein interaktiver Leitfaden für den erfolgreichen Anbau.',
@@ -122,7 +123,6 @@ export const knowledgeView = {
         },
         savedExperiments: 'Gespeicherte Experimente',
         noExperiments: 'Noch keine Experimente gespeichert.',
-        experimentMeta: 'Basiert auf {{basePlantName}} - Gelaufen am {{date}}',
     },
 };
 

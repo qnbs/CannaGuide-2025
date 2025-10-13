@@ -48,7 +48,7 @@ export const Modal: React.FC<ModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4 modal-overlay-animate"
+            className="fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-4 modal-overlay-animate modal-overlay-aurora"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -60,10 +60,10 @@ export const Modal: React.FC<ModalProps> = ({
                 onClick={(e) => e.stopPropagation()}
             >
                 {title && (
-                    <header className="flex justify-between items-start flex-shrink-0 mb-4 pb-4 border-b border-slate-700/50">
+                    <header className="flex justify-between items-start flex-shrink-0 mb-4 pb-4 border-b border-primary-500/20">
                         <h2
                             id="modal-title"
-                            className="text-2xl font-bold font-display text-primary-400"
+                            className="text-2xl font-bold font-display text-primary-300"
                         >
                             {title}
                         </h2>

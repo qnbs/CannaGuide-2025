@@ -3,7 +3,7 @@ import { ExperimentResult, SavedExperiment, Scenario, Plant } from '@/types';
 import { RootState } from '../store';
 
 export interface SandboxState {
-    currentExperiment: ExperimentResult | null;
+    currentExperiment: (ExperimentResult & { basePlantId?: string, scenarioId?: string }) | null;
     status: 'idle' | 'running' | 'succeeded' | 'failed';
     savedExperiments: SavedExperiment[];
 }
@@ -14,7 +14,7 @@ const initialState: SandboxState = {
     savedExperiments: [],
 };
 
-export const runComparisonScenario = createAsyncThunk<ExperimentResult, { plantId: string, scenario: Scenario }, { state: RootState }>(
+export const runComparisonScenario = createAsyncThunk<ExperimentResult & { basePlantId: string, scenarioId: string }, { plantId: string, scenario: Scenario }, { state: RootState }>(
     'sandbox/runComparison',
     async ({ plantId, scenario }, { getState }) => {
         return new Promise((resolve, reject) => {
@@ -28,7 +28,7 @@ export const runComparisonScenario = createAsyncThunk<ExperimentResult, { plantI
             const worker = new Worker(new URL('/workers/scenario.worker.ts', import.meta.url), { type: 'module' });
             
             worker.onmessage = (e: MessageEvent<ExperimentResult>) => {
-                resolve(e.data);
+                resolve({ ...e.data, basePlantId: plantId, scenarioId: scenario.id });
                 worker.terminate();
             };
 
@@ -78,7 +78,7 @@ const sandboxSlice = createSlice({
                 state.status = 'running';
                 state.currentExperiment = null;
             })
-            .addCase(runComparisonScenario.fulfilled, (state, action: PayloadAction<ExperimentResult>) => {
+            .addCase(runComparisonScenario.fulfilled, (state, action: PayloadAction<ExperimentResult & { basePlantId: string; scenarioId: string; }>) => {
                 state.status = 'succeeded';
                 state.currentExperiment = action.payload;
             })

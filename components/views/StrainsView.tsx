@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Strain, StrainViewTab, AIResponse, AppSettings, SavedExport, SavedStrainTip, StrainType, StructuredGrowTips } from '@/types';
+import { Strain, StrainViewTab, AppSettings, SavedExport, SavedStrainTip, StrainType } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -21,7 +21,7 @@ import {
     StrainsViewState,
     setSelectedStrainId
 } from '@/stores/slices/strainsViewSlice';
-import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
+import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
 import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
 import { StrainToolbar } from './strains/StrainToolbar';
@@ -34,7 +34,6 @@ import { ExportsManagerView } from './strains/ExportsManagerView';
 import { StrainTipsView } from './strains/StrainTipsView';
 import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip } from '@/stores/slices/savedItemsSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-import { Tabs } from '@/components/common/Tabs';
 import { Card } from '@/components/common/Card';
 import { BulkActionsBar } from './strains/BulkActionsBar';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -43,10 +42,9 @@ import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
 import { GenealogyView } from './strains/GenealogyView';
 import { AlphabeticalFilter } from './strains/AlphabeticalFilter';
-// FIX: Moved invalid import statements from the end of the file to the top to resolve component-not-found errors.
-import { SegmentedControl } from '@/components/common/SegmentedControl';
-import { Button } from '@/components/common/Button';
+import { StrainSubNav } from './strains/StrainSubNav';
 import { StrainListHeader } from './strains/StrainListHeader';
+import { Pagination } from '@/components/common/Pagination';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -56,7 +54,7 @@ export const StrainsView: React.FC = () => {
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const settings = useAppSelector(selectSettings) as AppSettings;
     const { strainsViewTab, strainsViewMode, selectedStrainIds, selectedStrainId } = useAppSelector(selectStrainsView) as StrainsViewState;
@@ -94,15 +92,19 @@ export const StrainsView: React.FC = () => {
     } = useStrainFilters(strainsForCurrentTab, settings.strainsViewSettings);
     
     useEffect(() => {
-        setVisibleCount(ITEMS_PER_PAGE);
+        setCurrentPage(1);
     }, [filteredStrains, strainsViewTab]);
 
     const currentStrains = useMemo(() => {
-        return filteredStrains.slice(0, visibleCount);
-    }, [filteredStrains, visibleCount]);
+        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+        const endIndex = startIndex + ITEMS_PER_PAGE;
+        return filteredStrains.slice(startIndex, endIndex);
+    }, [filteredStrains, currentPage]);
     
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
+
+    const totalPages = Math.ceil(filteredStrains.length / ITEMS_PER_PAGE);
 
     const handleApplyFilters = () => {
         setAdvancedFilters(tempFilterState);
@@ -169,28 +171,16 @@ export const StrainsView: React.FC = () => {
     const handleToggleFavorite = useCallback((id: string) => {
         dispatch(toggleFavorite(id));
     }, [dispatch]);
-
-    const tabs = [
-        { id: StrainViewTab.All, label: t('strainsView.tabs.allStrains'), icon: <PhosphorIcons.Leafy /> },
-        { id: StrainViewTab.MyStrains, label: t('strainsView.tabs.myStrains'), icon: <PhosphorIcons.Star /> },
-        { id: StrainViewTab.Favorites, label: t('strainsView.tabs.favorites'), icon: <PhosphorIcons.Heart /> },
-        { id: StrainViewTab.Genealogy, label: t('strainsView.tabs.genealogy'), icon: <PhosphorIcons.TreeStructure /> },
-        { id: StrainViewTab.Exports, label: t('strainsView.tabs.exports', { count: savedExports.length }), icon: <PhosphorIcons.DownloadSimple /> },
-        { id: StrainViewTab.Tips, label: t('strainsView.tabs.tips', { count: savedTips.length }), icon: <PhosphorIcons.LightbulbFilament /> },
-    ];
     
     const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
     const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
 
-    // This preserves the list view's scroll position and state when navigating to a detail view and back.
     if (selectedStrainForDetail) {
         return (
-            <div style={{ display: !selectedStrainForDetail ? 'none' : 'block' }}>
-                <StrainDetailView 
-                    strain={selectedStrainForDetail}
-                    onBack={() => dispatch(setSelectedStrainId(null))} 
-                />
-            </div>
+            <StrainDetailView 
+                strain={selectedStrainForDetail}
+                onBack={() => dispatch(setSelectedStrainId(null))} 
+            />
         );
     }
     
@@ -200,9 +190,8 @@ export const StrainsView: React.FC = () => {
         }
         if ([StrainViewTab.All, StrainViewTab.MyStrains, StrainViewTab.Favorites].includes(strainsViewTab)) {
              return (
-                <>
-                    {/* Sticky Header Block */}
-                    <div className="sticky top-[-1rem] sm:top-[-1.5rem] z-20 bg-slate-900 pt-2 sm:pt-4 pb-1 sm:pb-2 space-y-2 sm:space-y-4">
+                <Card>
+                    <div className="space-y-4">
                         <StrainToolbar
                             searchTerm={searchTerm}
                             onSearchTermChange={setSearchTerm}
@@ -229,13 +218,12 @@ export const StrainsView: React.FC = () => {
                         )}
                     </div>
                     
-                    {/* Scrollable Content */}
-                    <div className="space-y-4">
+                    <div className="mt-4">
                         {filteredStrains.length === 0 && !isSearching ? (
-                            <Card className="text-center py-10 text-slate-500">
+                            <div className="text-center py-10 text-slate-500">
                                  <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
                                  <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
-                            </Card>
+                            </div>
                         ) : strainsViewMode === 'list' ? (
                             <StrainList
                                 strains={currentStrains}
@@ -262,16 +250,14 @@ export const StrainsView: React.FC = () => {
                             />
                         )}
                         
-                        {visibleCount < filteredStrains.length && (
-                            <div className="mt-6 text-center">
-                                <Button
-                                    variant="secondary"
-                                    onClick={() => setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
-                                >
-                                    {t('common.loadMore', { count: visibleCount, total: filteredStrains.length })}
-                                </Button>
+                         <div className="mt-6 text-center space-y-4">
+                            <p className="text-sm text-slate-400">
+                                {t('strainsView.showingCount', { count: currentStrains.length, total: filteredStrains.length })}
+                            </p>
+                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
                             </div>
-                        )}
+                        </div>
                     </div>
                     
                     {selectedIdsSet.size > 0 && (
@@ -311,40 +297,43 @@ export const StrainsView: React.FC = () => {
     };
 
     return (
-        <div style={{ display: selectedStrainForDetail ? 'none' : 'block' }}>
-            <div className="space-y-6">
-                <div className="text-center mb-6 animate-fade-in">
-                    <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-primary-400" />
-                    <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.strains')}</h2>
-                </div>
-                
-                {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
-                <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
-                <FilterDrawer 
-                    isOpen={isDrawerOpen} 
-                    onClose={() => setIsDrawerOpen(false)} 
-                    onApply={handleApplyFilters} 
-                    onReset={handleResetFilters} 
-                    tempFilterState={tempFilterState} 
-                    setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
-                    allAromas={allAromas} 
-                    allTerpenes={allTerpenes} 
-                    count={filteredStrains.length}
-                    showFavorites={showFavoritesOnly}
-                    onToggleFavorites={(val) => setShowFavoritesOnly(val)}
-                    typeFilter={typeFilter}
-                    onToggleTypeFilter={handleToggleTypeFilter}
-                    letterFilter={letterFilter}
-                    onLetterFilterChange={handleSetLetterFilter}
-                    isAnyFilterActive={isAnyFilterActive}
-                />
-                
-                <Card>
-                    <Tabs tabs={tabs} activeTab={strainsViewTab} setActiveTab={(id) => dispatch(setStrainsViewTab(id as StrainViewTab))} />
-                </Card>
-                
-                {renderContent()}
+        <div className="space-y-6">
+             <div className="text-center mb-6 animate-fade-in">
+                <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-green-400" />
+                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.strains')}</h2>
             </div>
+            
+            <StrainSubNav 
+                activeTab={strainsViewTab} 
+                onTabChange={(id) => dispatch(setStrainsViewTab(id))} 
+                counts={{
+                    exports: savedExports.length,
+                    tips: savedTips.length,
+                }}
+            />
+            
+            {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
+            <DataExportModal isOpen={isExportModalOpen} onClose={() => dispatch(closeExportModal())} onExport={handleExport} title={t('strainsView.exportModal.title')} selectionCount={selectedIdsSet.size} totalCount={filteredStrains.length} />
+            <FilterDrawer 
+                isOpen={isDrawerOpen} 
+                onClose={() => setIsDrawerOpen(false)} 
+                onApply={handleApplyFilters} 
+                onReset={handleResetFilters} 
+                tempFilterState={tempFilterState} 
+                setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
+                allAromas={allAromas} 
+                allTerpenes={allTerpenes} 
+                count={filteredStrains.length}
+                showFavorites={showFavoritesOnly}
+                onToggleFavorites={(val) => setShowFavoritesOnly(val)}
+                typeFilter={typeFilter}
+                onToggleTypeFilter={handleToggleTypeFilter}
+                letterFilter={letterFilter}
+                onLetterFilterChange={handleSetLetterFilter}
+                isAnyFilterActive={isAnyFilterActive}
+            />
+            
+            {renderContent()}
         </div>
     );
 };

@@ -6,7 +6,7 @@ import { Button } from '@/components/common/Button';
 import { PlantSlot } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';
 import { TipOfTheDay } from './plants/TipOfTheDay';
-import { GardenVitals } from './plants/DashboardSummary';
+import { DashboardSummary } from './plants/DashboardSummary';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
@@ -86,8 +86,8 @@ export const PlantsView: React.FC = () => {
             <div style={{ display: selectedPlant ? 'none' : 'block' }}>
                 <div className="space-y-6">
                     <div className="text-center mb-6 animate-fade-in">
-                        <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-primary-400" />
-                        <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.plants')}</h2>
+                        <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-green-400" />
+                        <h2 className="text-3xl font-bold font-display text-primary-400 mt-2">{t('nav.plants')}</h2>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
@@ -102,7 +102,7 @@ export const PlantsView: React.FC = () => {
                         )}
 
                         <div className="lg:col-span-2 space-y-6">
-                            <GardenVitals 
+                            <DashboardSummary
                                 openTasksCount={tasks.length}
                             />
                             <TipOfTheDay />

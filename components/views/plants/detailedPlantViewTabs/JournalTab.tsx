@@ -61,10 +61,10 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
                                 {journalTypeIcons[entry.type]}
                             </div>
                             <div className="flex-grow">
-                                <p className="font-semibold text-slate-100">{entry.notes}</p>
+                                <p className="font-semibold text-slate-100">{t(entry.notes, { ...entry.details, from: t(`plantStages.${entry.details?.from}`), to: t(`plantStages.${entry.details?.to}`) })}</p>
                                 {entry.details && (
                                     <p className="text-xs text-slate-400">
-                                        {Object.entries(entry.details).map(([key, value]) => value && !['imageUrl', 'imageId'].includes(key) && `${key}: ${value}`).filter(Boolean).join(' | ')}
+                                        {Object.entries(entry.details).map(([key, value]) => value && !['imageUrl', 'imageId', 'from', 'to'].includes(key) && `${key}: ${value}`).filter(Boolean).join(' | ')}
                                     </p>
                                 )}
                                  <p className="text-xs text-slate-500 mt-1">{new Date(entry.createdAt).toLocaleString()}</p>

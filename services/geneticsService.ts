@@ -1,14 +1,31 @@
 import { Strain, GenealogyNode, StrainType, GeneticContribution } from '@/types';
+import { strainAliases } from '@/data/strainAliases';
+
+// Helper to collapse nodes beyond a certain depth for a cleaner initial view
+const collapseNodes = (node: GenealogyNode, depth: number, maxDepth: number) => {
+    if (depth >= maxDepth && node.children) {
+        node._children = node.children;
+        delete node.children;
+    }
+    if (node.children) {
+        node.children.forEach(child => collapseNodes(child, depth + 1, maxDepth));
+    }
+};
 
 class GeneticsService {
+    private _getCanonicalName(name: string): string {
+        const lowerName = name.trim().toLowerCase();
+        return strainAliases[lowerName] || name.trim();
+    }
+
     private findAndBuildNode(
         strainName: string,
         allStrains: Strain[],
         visited: Set<string>
     ): GenealogyNode {
-        const trimmedName = strainName.trim().toLowerCase();
+        const canonicalName = this._getCanonicalName(strainName);
         // Handle cases like "OG Kush (phenotype)"
-        const cleanedName = trimmedName.replace(/\s*\(.*\)/, '').trim();
+        const cleanedName = canonicalName.toLowerCase().replace(/\s*\(.*\)/, '').trim();
         const strain = allStrains.find(s => s.name.toLowerCase() === cleanedName);
 
         if (!strain) {
@@ -70,7 +87,13 @@ class GeneticsService {
     public buildGenealogyTree(strainId: string, allStrains: Strain[]): GenealogyNode | null {
         const rootStrain = allStrains.find(s => s.id === strainId);
         if (!rootStrain) return null;
-        return this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>());
+        
+        const tree = this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>());
+        
+        // Collapse nodes beyond depth 2 for initial view
+        collapseNodes(tree, 0, 2);
+    
+        return tree;
     }
     
     public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {
@@ -100,12 +123,12 @@ class GeneticsService {
         }
 
         const findDirectChildren = (parentName: string): Strain[] => {
-            const lowerParentName = parentName.toLowerCase().trim();
+            const lowerParentName = this._getCanonicalName(parentName).toLowerCase();
             return allStrains.filter(s => {
                 if (!s.genetics) return false;
-                const parents = s.genetics.toLowerCase().split(/\s+x\s+/i)
-                    .map(p => p.replace(/[()]/g, '').trim().replace(/\s*#\d+/, '').trim());
-                return parents.includes(lowerParentName.replace(/\s*#\d+/, '').trim());
+                const parents = s.genetics.split(/\s+x\s+/i)
+                    .map(p => this._getCanonicalName(p.replace(/[()]/g, '').trim()).toLowerCase());
+                return parents.includes(lowerParentName);
             });
         };
 

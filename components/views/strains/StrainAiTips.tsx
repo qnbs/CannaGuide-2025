@@ -12,6 +12,7 @@ import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stor
 import { selectLanguage } from '@/stores/selectors';
 import { Speakable } from '@/components/common/Speakable';
 import { addStrainTip } from '@/stores/slices/savedItemsSlice';
+import { Select } from '@/components/ui/ThemePrimitives';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean; strainId: string; }> = ({ tips, onSave, isSaved, strainId }) => {
     const { t } = useTranslation();
@@ -26,16 +27,20 @@ const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => v
     return (
         <Card className="bg-slate-800 animate-fade-in">
             <div className="space-y-4">
-                {tipCategories.map(cat => (
-                    <div key={cat.key}>
-                        <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
-                           {cat.icon} {cat.label}
-                        </h4>
-                        <Speakable elementId={`strain-tip-${strainId}-${cat.key}`}>
-                            <p className="text-sm text-slate-300 pl-8">{tips[cat.key as keyof StructuredGrowTips]}</p>
-                        </Speakable>
-                    </div>
-                ))}
+                {tipCategories.map(cat => {
+                    const tipContent = tips[cat.key as keyof StructuredGrowTips];
+                    if (!tipContent) return null;
+                    return (
+                        <div key={cat.key}>
+                            <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
+                               {cat.icon} {cat.label}
+                            </h4>
+                            <Speakable elementId={`strain-tip-${strainId}-${cat.key}`}>
+                                <p className="text-sm text-slate-300 pl-8">{tipContent}</p>
+                            </Speakable>
+                        </div>
+                    )
+                 })}
             </div>
             <div className="text-right mt-4">
                 <Button size="sm" variant="secondary" onClick={onSave} disabled={isSaved}>
@@ -126,24 +131,24 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
             <p className="text-sm text-slate-400 mb-4">{t('strainsView.tips.form.description')}</p>
             <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.focus')}</label>
-                        <select value={tipRequest.focus} onChange={e => setTipRequest(p => ({...p, focus: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                            {Object.keys(t('strainsView.tips.form.focusOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.focusOptions.${k}`)}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.stage')}</label>
-                        <select value={tipRequest.stage} onChange={e => setTipRequest(p => ({...p, stage: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                            {Object.keys(t('strainsView.tips.form.stageOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.stageOptions.${k}`)}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.experience')}</label>
-                        <select value={tipRequest.experienceLevel} onChange={e => setTipRequest(p => ({...p, experienceLevel: e.target.value}))} className="w-full bg-slate-800 border border-slate-700 rounded-md px-2 py-1.5 text-sm">
-                            {Object.keys(t('strainsView.tips.form.experienceOptions', { returnObjects: true })).map(k => <option key={k} value={k}>{t(`strainsView.tips.form.experienceOptions.${k}`)}</option>)}
-                        </select>
-                    </div>
+                    <Select
+                        label={t('strainsView.tips.form.focus')}
+                        value={tipRequest.focus}
+                        onChange={e => setTipRequest(p => ({ ...p, focus: e.target.value as string }))}
+                        options={Object.keys(t('strainsView.tips.form.focusOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.focusOptions.${k}`) }))}
+                    />
+                    <Select
+                        label={t('strainsView.tips.form.stage')}
+                        value={tipRequest.stage}
+                        onChange={e => setTipRequest(p => ({ ...p, stage: e.target.value as string }))}
+                        options={Object.keys(t('strainsView.tips.form.stageOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.stageOptions.${k}`) }))}
+                    />
+                    <Select
+                        label={t('strainsView.tips.form.experience')}
+                        value={tipRequest.experienceLevel}
+                        onChange={e => setTipRequest(p => ({ ...p, experienceLevel: e.target.value as string }))}
+                        options={Object.keys(t('strainsView.tips.form.experienceOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.experienceOptions.${k}`) }))}
+                    />
                 </div>
                 <Button size="sm" onClick={handleGetAiTips} disabled={isLoading} className="w-full">
                     {isLoading ? loadingMessage : (hasGeneratedOnce ? t('common.regenerate') : t('strainsView.tips.form.generate'))}

@@ -1,4 +1,3 @@
-
 import { Strain, StrainType } from '@/types';
 import { createStrainObject } from '@/services/strainFactory';
 
@@ -27,7 +26,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "gupta-kush",
         "name": "Gupta Kush",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 100%",
         "genetics": "Ghost OG x (likely another OG Kush phenotype)",
         "floweringType": "Photoperiod",
@@ -48,7 +47,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "blue-moonshine",
         "name": "Blue Moonshine",
-        "type": StrainType.Indica,
+        "type": StrainType.Hybrid,
         "typeDetails": "Indica 100%",
         "genetics": "Blueberry phenotype",
         "floweringType": "Photoperiod",

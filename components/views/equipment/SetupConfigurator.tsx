@@ -5,14 +5,13 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { SavedSetup, Recommendation, RecommendationCategory, RecommendationItem, PlantCount } from '@/types';
 import { geminiService } from '@/services/geminiService';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { openSaveSetupModal } from '@/stores/slices/uiSlice';
+import { useAppSelector } from '@/stores/store';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { useGetEquipmentRecommendationMutation } from '@/stores/api';
 import { selectLanguage } from '@/stores/selectors';
 
 interface SetupConfiguratorProps {
-    onSaveSetup: () => void;
+    onSaveSetup: (setupData: Omit<SavedSetup, 'id' | 'createdAt' | 'name'>) => void;
 }
 
 type Step = 'plants' | 'budget';
@@ -37,7 +36,7 @@ const SetupResultDisplay: React.FC<{
     return (
         <div className="animate-fade-in">
              <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.configurator.resultsTitle')}</h2>
-            <p className="text-slate-400 mb-4 text-sm">{t('equipmentView.configurator.resultsSubtitleNew', {
+            <p className="text-slate-300 mb-4 text-sm">{t('equipmentView.configurator.resultsSubtitleNew', {
                 plants: plantCount,
                 budget: t(`equipmentView.configurator.budgets.${budget}`),
             })}</p>
@@ -88,7 +87,6 @@ const SetupResultDisplay: React.FC<{
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslation();
-    const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
     
     const [getEquipmentRecommendation, { data: recommendation, isLoading, error, reset }] = useGetEquipmentRecommendationMutation({
@@ -155,7 +153,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             return sum;
         }, 0);
         
-        dispatch(openSaveSetupModal({
+        onSaveSetup({
             recommendation,
             totalCost,
             sourceDetails: {
@@ -164,7 +162,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                 growStyle: '', // Obsolete, but kept for type consistency
                 plantCount: plantCount,
             }
-        }));
+        });
     };
 
     const resetFlow = () => {
@@ -208,15 +206,18 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
     
     return (
         <div> 
+            <h2 className="text-2xl font-bold font-display text-primary-400">{t('equipmentView.configurator.title')}</h2>
+            <p className="text-slate-300 mb-6">{t('equipmentView.configurator.subtitleNew')}</p>
+            
             {step === 'plants' && (
                 <div className="animate-fade-in">
-                    <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step1TitleNew')}</h3>
-                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <h3 className="text-xl font-semibold text-slate-100 mb-3">{t('equipmentView.configurator.step1TitleNew')}</h3>
+                     <div className="space-y-4">
                         {plantOptions.map(opt => (
                              <Card 
                                 key={opt.value} 
                                 onClick={() => { setPlantCount(opt.value); setStep('budget'); }}
-                                className="p-4 text-center cursor-pointer ring-1 ring-inset ring-white/20"
+                                className="p-4 text-center cursor-pointer bg-slate-800/50 hover:bg-slate-700/50"
                             >
                                 <div className="flex justify-center items-center h-10 mb-2 text-primary-400">{opt.icon}</div>
                                 <span className="font-bold text-lg">{opt.label}</span>
@@ -231,13 +232,13 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                     <button onClick={() => setStep('plants')} className="text-sm flex items-center gap-1 text-slate-400 hover:text-primary-300 mb-4">
                         <PhosphorIcons.ArrowLeft /> {t('common.back')}
                     </button>
-                    <h3 className="text-xl font-semibold text-slate-200 mb-3">{t('equipmentView.configurator.step2TitleNew')}</h3>
+                    <h3 className="text-xl font-semibold text-slate-100 mb-3">{t('equipmentView.configurator.step2TitleNew')}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {budgetOptions.map(opt => (
                             <Card 
                                 key={opt.value} 
                                 onClick={() => setBudget(opt.value)}
-                                className={`p-4 text-left h-full flex flex-col cursor-pointer ring-1 ring-inset ring-white/20 ${budget === opt.value ? 'ring-2 ring-primary-500' : ''}`}
+                                className={`p-4 text-left h-full flex flex-col cursor-pointer bg-slate-800/50 hover:bg-slate-700/50 ${budget === opt.value ? 'ring-2 ring-primary-500' : 'ring-1 ring-inset ring-transparent'}`}
                             >
                                 <div className="flex items-center gap-2 mb-2">
                                     <div className="text-primary-400 w-5 h-5">{opt.icon}</div>

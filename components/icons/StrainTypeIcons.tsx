@@ -3,7 +3,7 @@ import React from 'react'
 const IconBase: React.FC<{ children: React.ReactNode; className?: string; viewBox?: string }> = ({
     children,
     className,
-    viewBox = '0 0 24 24',
+    viewBox = '0 0 32 32',
 }) => (
     <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -16,23 +16,28 @@ const IconBase: React.FC<{ children: React.ReactNode; className?: string; viewBo
     </svg>
 )
 
+// Gold circle with a triangle pointing up for Sativa
 export const SativaIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <IconBase className={className} viewBox="0 0 64 64">
-        <path d="M32,2 C15.4,2,2,15.4,2,32s13.4,30,30,30s30-13.4,30-30S48.6,2,32,2z M32,58 C17.7,58,6,46.3,6,32S17.7,6,32,6 s26,11.7,26,26S46.3,58,32,58z" />
-        <path d="M48.2,34.4l-14-19c-0.8-1.1-2.5-1.1-3.4,0l-14,19c-1,1.3,0.1,3.3,1.7,3.3h28C48.1,37.7,49.2,35.7,48.2,34.4z M32,32.7 L22.4,19.8h19.2L32,32.7z" />
+    <IconBase className={className}>
+        <circle cx="16" cy="16" r="15" fill="rgb(var(--color-accent-400))" />
+        <path d="M16 10 L10 21 L22 21 Z" fill="white" />
     </IconBase>
-)
+);
 
+// Purple/blue circle with a horizontal bar for Indica
 export const IndicaIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <IconBase className={className} viewBox="0 0 64 64">
-        <path d="M32,2 C15.4,2,2,15.4,2,32s13.4,30,30,30s30-13.4,30-30S48.6,2,32,2z M32,58 C17.7,58,6,46.3,6,32S17.7,6,32,6 s26,11.7,26,26S46.3,58,32,58z" />
-        <rect x="18" y="24" width="28" height="16" rx="3" />
+    <IconBase className={className}>
+        <circle cx="16" cy="16" r="15" fill="rgb(var(--color-secondary-500))" />
+        <rect x="9" y="14.5" width="14" height="3" rx="1.5" fill="white" />
     </IconBase>
-)
+);
 
+
+// Green circle with combined Sativa/Indica symbols for Hybrid
 export const HybridIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <IconBase className={className} viewBox="0 0 64 64">
-        <path d="M32,2c-1.3,0-2.6,0-3.9,0.2c-0.1,0-0.2,0-0.3,0.1l-0.3,0.1c-1.1,0.2-2.2,0.5-3.3,0.8l-0.3,0.1 c-1,0.3-2,0.6-3,0.9l-0.3,0.1c-1,0.3-1.9,0.7-2.8,1.1l-0.2,0.1c-0.9,0.4-1.8,0.8-2.6,1.2l-0.2,0.1c-0.8,0.4-1.6,0.8-2.4,1.3 l-0.1,0.1c-0.8,0.4-1.5,0.9-2.3,1.3l-0.1,0.1C4.3,11,3.1,12.2,2,13.4V32c0,16.6,13.4,30,30,30s30-13.4,30-30S48.6,2,32,2z" />
-        <path fill="#FFF" d="M13,51L51,13v38H13z" className="dark:fill-gray-800" />
+    <IconBase className={className} viewBox="0 0 32 32">
+       <circle cx="16" cy="16" r="15" fill="rgb(var(--color-primary-500))" />
+       <path d="M16 10 L10 21 L22 21 Z" fill="rgba(255,255,255,0.7)" transform="translate(0, -2)"/>
+       <rect x="9" y="16" width="14" height="3" rx="1.5" fill="rgba(255,255,255,0.7)" />
     </IconBase>
-)
+);

@@ -14,40 +14,20 @@ export const CannabisLeafIcon: React.FC<{ className?: string }> = ({ className }
     >
         <defs>
             <linearGradient id="cannaGuideLeafGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" style={{ stopColor: 'rgb(163, 230, 53)' }} />
-                <stop offset="100%" style={{ stopColor: 'rgb(101, 163, 13)' }} />
+                <stop offset="0%" stopColor="rgb(var(--color-primary-400))" />
+                <stop offset="100%" stopColor="rgb(var(--color-accent-500))" />
             </linearGradient>
         </defs>
-
-        {/* Magnifying glass shape, using currentColor for its stroke to match the text color */}
         <path
             strokeLinecap="round"
             strokeLinejoin="round"
             d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
         />
-
-        {/* Stylized cannabis leaf inside the lens, filled with the defined gradient */}
         <g transform="translate(5.2, 5.2) scale(0.6)">
-            <path
-                fill="url(#cannaGuideLeafGradient)"
-                stroke="none"
-                d="M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z"
-            />
-            <path
-                fill="url(#cannaGuideLeafGradient)"
-                stroke="none"
-                d="M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z"
-            />
-            <path
-                fill="url(#cannaGuideLeafGradient)"
-                stroke="none"
-                d="M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z"
-            />
-            <path
-                fill="url(#cannaGuideLeafGradient)"
-                stroke="none"
-                d="M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z"
-            />
+            <path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z"/>
+            <path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z"/>
+            <path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z"/>
+            <path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z"/>
         </g>
     </svg>
 )

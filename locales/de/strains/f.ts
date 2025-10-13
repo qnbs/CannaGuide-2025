@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "florida-kush": {
+    "description": "Eine potente indica-dominante Sorte aus Florida, eng verwandt mit OG Kush und Triangle Kush. Sie liefert ein starkes, entspannendes und euphorisches High. Das Aroma ist ein klassisches OG-Profil aus Kiefer, Erde und Zitrone. Sie ist einer der Elternteile von Pink Panties."
+  },
+  "forum-cut-cookies": {
+    "description": "Der 'Forum Cut' ist einer der ursprünglichen, legendären Klon-Phänotypen von Girl Scout Cookies. Er wird für seine klassischen GSC-Effekte geschätzt: ein potentes, euphorisches Kopf-High, das in einen entspannenden Körper-Rausch übergeht. Er hat ein charakteristisches süßes, erdiges und teigiges Aroma. Er ist ein Elternteil von Mandarin Cookies."
+  },
   "face-off-og": {
     "description": "Eine extrem potente indica-dominante Sorte, bekannt für ihre stark sedierende und körperlich entspannende Wirkung. Ideal für den Abendgebrauch und bei starken Schmerzen oder Schlaflosigkeit.",
   },

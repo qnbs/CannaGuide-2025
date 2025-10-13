@@ -4,7 +4,7 @@ import React from 'react';
 
 // --- Basic types ---
 export type Language = 'en' | 'de';
-export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz';
+export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz' | 'rainbowKush';
 
 // --- Strain related types ---
 export enum StrainType {

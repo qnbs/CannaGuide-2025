@@ -186,6 +186,9 @@ export const strainsView = {
         noImagesTitle: 'No Images Yet',
         noImagesSubtitle: 'Generate AI tips with images to populate this gallery.',
     },
+    notes: {
+        saveSuccess: 'Note saved!',
+    }
   },
   exportsManager: {
     createExport: 'Create New Export',

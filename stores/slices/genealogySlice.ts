@@ -40,6 +40,27 @@ export const fetchAndBuildGenealogy = createAsyncThunk<
     return { strainId, tree };
 });
 
+// Helper function to find and toggle a node in the tree
+const findAndToggleNode = (node: GenealogyNode, nodeId: string): boolean => {
+    if (node.id === nodeId) {
+        if (node.children) {
+            node._children = node.children;
+            delete node.children;
+        } else if (node._children) {
+            node.children = node._children;
+            delete node._children;
+        }
+        return true;
+    }
+    const children = node.children || node._children;
+    if (children) {
+        for (const child of children) {
+            if (findAndToggleNode(child, nodeId)) return true;
+        }
+    }
+    return false;
+};
+
 
 const genealogySlice = createSlice({
     name: 'genealogy',
@@ -63,6 +84,13 @@ const genealogySlice = createSlice({
         setGenealogyLayout: (state, action: PayloadAction<'horizontal' | 'vertical'>) => {
             state.layoutOrientation = action.payload;
             state.zoomTransform = null; // Signal to recenter view
+        },
+        toggleGenealogyNode: (state, action: PayloadAction<{ strainId: string; nodeId: string }>) => {
+            const { strainId, nodeId } = action.payload;
+            const tree = state.computedTrees[strainId];
+            if (tree) {
+                findAndToggleNode(tree, nodeId);
+            }
         },
         resetGenealogy: () => initialState,
     },
@@ -89,6 +117,7 @@ export const {
     setGenealogyZoom,
     resetGenealogyZoom,
     setGenealogyLayout,
+    toggleGenealogyNode,
     resetGenealogy,
 } = genealogySlice.actions;
 

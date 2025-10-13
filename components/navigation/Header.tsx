@@ -1,22 +1,14 @@
 import React from 'react'
-import {
-    View,
-    BeforeInstallPromptEvent,
-    StrainViewTab,
-    EquipmentViewTab,
-    KnowledgeViewTab,
-} from '@/types'
+import { View, BeforeInstallPromptEvent } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { Button } from '../common/Button'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { selectActiveView, selectIsExpertMode } from '@/stores/selectors'
-import { setActiveView, setEquipmentViewTab, setKnowledgeViewTab } from '@/stores/slices/uiSlice'
+import { setActiveView } from '@/stores/slices/uiSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { Switch } from '../common/Switch'
-import { setSelectedPlantId } from '@/stores/slices/simulationSlice'
-import { setStrainsViewTab } from '@/stores/slices/strainsViewSlice'
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void
@@ -48,97 +40,73 @@ export const Header: React.FC<HeaderProps> = ({
     const currentTitle = viewTitles[activeView]
 
     const handleHeaderClick = () => {
-        switch (activeView) {
-            case View.Strains:
-                dispatch(setStrainsViewTab(StrainViewTab.All))
-                break
-            case View.Plants:
-                dispatch(setSelectedPlantId(null))
-                break
-            case View.Equipment:
-                dispatch(setEquipmentViewTab(EquipmentViewTab.Configurator))
-                break
-            case View.Knowledge:
-                dispatch(setKnowledgeViewTab(KnowledgeViewTab.Mentor))
-                break
-            // Default behavior for views without sub-pages: go to main dashboard
-            default:
-                dispatch(setActiveView(View.Plants))
-                break
-        }
+        // Act as a "home" button, returning to the main dashboard
+        dispatch(setActiveView(View.Plants))
     }
 
     return (
-        <header className="bg-slate-950 sticky top-0 z-30 flex-shrink-0 border-b border-white/10">
+        <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0 border-b border-slate-800 shadow-md relative">
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <button
                         onClick={handleHeaderClick}
                         className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1"
-                        aria-label="Go to main page"
+                        aria-label="Go to Plants Dashboard"
                     >
-                        <CannabisLeafIcon className="w-8 h-8 flex-shrink-0" />
+                        <CannabisLeafIcon className="w-8 h-8 flex-shrink-0 text-primary-400" />
                         <div className="flex items-baseline gap-2">
-                            <h1 className="text-xl font-bold font-display text-slate-100 hidden sm:block">
-                                CannaGuide 2025
+                            <h1 className="text-xl font-bold font-display text-primary-300">
+                                {currentTitle}
                             </h1>
-                            <span className="text-slate-400 hidden sm:inline">/</span>
-                            <h2 className="text-lg font-semibold text-slate-300">{currentTitle}</h2>
                         </div>
                     </button>
                     <div className="flex items-center gap-1 sm:gap-2">
-                        {activeView === View.Plants && (
-                            <>
-                                <div
-                                    className="flex items-center gap-2 p-1.5 rounded-lg bg-slate-800/50"
-                                    title={t('settingsView.general.expertModeTitle')}
-                                >
-                                    <label className="text-sm font-semibold text-slate-300 cursor-pointer hidden sm:inline" onClick={() => dispatch(setSetting({ path: 'isExpertMode', value: !isExpertMode }))}>
-                                        {t('settingsView.general.expertModeTitle')}
-                                    </label>
-                                    <Switch
-                                        checked={isExpertMode}
-                                        onChange={(val) => dispatch(setSetting({ path: 'isExpertMode', value: val }))}
-                                        aria-label={t('settingsView.general.expertModeTitle')}
-                                    />
-                                </div>
-                                <div className="w-px h-6 bg-slate-700 mx-1"></div>
-                            </>
-                        )}
-                        {deferredPrompt && !isInstalled && (
+                        <div title={t('settingsView.general.expertModeTitle')}>
+                            <Switch
+                                checked={isExpertMode}
+                                onChange={(val) =>
+                                    dispatch(setSetting({ path: 'isExpertMode', value: val }))
+                                }
+                                aria-label={t('settingsView.general.expertModeTitle')}
+                            />
+                        </div>
+
+                        {!isInstalled && deferredPrompt && (
                             <Button
+                                variant="ghost"
+                                className="!p-2 rounded-full hidden sm:flex"
                                 onClick={onInstallClick}
-                                size="sm"
-                                className="flex items-center gap-1.5 animate-pulse-glow"
-                                variant={'primary'}
                                 title={t('common.installPwa')}
                             >
-                                <PhosphorIcons.DownloadSimple className="w-4 h-4" />
-                                <span className="hidden sm:inline">{t('common.installPwa')}</span>
+                                <PhosphorIcons.DownloadSimple className="w-6 h-6" />
                             </Button>
                         )}
-                        <button
+                        
+                        <Button
+                            variant="ghost"
+                            className="!p-2 rounded-full"
                             onClick={onCommandPaletteOpen}
-                            aria-label={t('commandPalette.open')}
-                            className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300 flex items-center gap-1.5"
+                            title={t('commandPalette.open')}
                         >
                             <PhosphorIcons.CommandLine className="w-6 h-6" />
-                            <span className="hidden lg:inline text-sm">{t('commandPalette.open')}</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            className="!p-2 rounded-full"
                             onClick={() => dispatch(setActiveView(View.Help))}
-                            aria-label={t('nav.help')}
-                            className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300"
+                            title={t('nav.help')}
                         >
                             <PhosphorIcons.Question className="w-6 h-6" />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            className="!p-2 rounded-full"
                             onClick={() => dispatch(setActiveView(View.Settings))}
-                            aria-label={t('nav.settings')}
-                            className="p-2 rounded-md hover:bg-slate-700 transition-colors text-slate-300"
+                            title={t('nav.settings')}
                         >
                             <PhosphorIcons.Gear className="w-6 h-6" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

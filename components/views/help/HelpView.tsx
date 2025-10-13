@@ -9,7 +9,6 @@ import { lexiconData } from '@/data/lexicon';
 import { LexiconEntry, VisualGuide, FAQItem } from '@/types';
 import { VisualGuideCard } from './help/VisualGuideCard';
 import { LexiconCard } from './help/LexiconCard';
-import { Input } from '@/components/ui/ThemePrimitives';
 import { Button } from '@/components/common/Button';
 import { Speakable } from '@/components/common/Speakable';
 import { SearchBar } from '@/components/common/SearchBar';
@@ -232,6 +231,13 @@ export const HelpView: React.FC = () => {
         { id: 'faq', label: t('helpView.tabs.faq'), icon: <PhosphorIcons.Question /> },
     ];
 
+     const viewIcons = useMemo(() => ({
+        manual: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-blue-400" />,
+        lexicon: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-indigo-400" />,
+        guides: <PhosphorIcons.GraduationCap className="w-16 h-16 mx-auto text-green-400" />,
+        faq: <PhosphorIcons.Question className="w-16 h-16 mx-auto text-yellow-400" />,
+    }), []);
+
     const renderContent = () => {
         switch (activeTab) {
             case 'manual': return <ManualSection />;
@@ -245,7 +251,7 @@ export const HelpView: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="text-center mb-6 animate-fade-in">
-                <PhosphorIcons.Question className="w-16 h-16 mx-auto text-primary-400" />
+                {viewIcons[activeTab as keyof typeof viewIcons]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('helpView.title')}</h2>
                 <p className="text-slate-400 mt-1">{t('helpView.subtitle')}</p>
             </div>

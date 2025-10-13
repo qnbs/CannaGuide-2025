@@ -70,6 +70,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "cereal-milk": {
         "description": "A balanced hybrid with a unique aroma reminiscent of sweet milk and ice cream. The effect is calming, creative, and provides a feeling of well-being.",
     },
+    "champagne": {
+        "description": "Champagne Kush, often just called Champagne, is an indica-dominant hybrid known for its uplifting, 'bubbly' effect reminiscent of its namesake sparkling wine. It provides a happy, social high that settles into a gentle body relaxation. The aroma is typically sweet and grape-like with floral and earthy undertones. It is a parent of Rainbow Sherbet."
+    },
     "charlie-sheen": {
         "description": "A potent hybrid that combines the best qualities of its parents. It offers a strong, euphoric, and simultaneously relaxing effect.",
     },
@@ -97,6 +100,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "chemdawg-91": {
         "description": "One of the original and most potent phenotypes of the Chemdawg line. Known for its extremely pungent, diesel-like aroma and a strong, cerebral effect that transitions into deep body relaxation. A legendary strain that served as a parent for many famous hybrids like OG Kush and Sour Diesel."
     },
+    "chemdawg-sour-diesel": {
+        "description": "Chemdawg Sour Diesel is a phenotype that emphasizes the most potent characteristics of its parent strains. It is known for its extremely pungent diesel and sour citrus aroma. This sativa-dominant strain delivers a fast-acting, energetic, and dreamy cerebral high, perfect for daytime use to boost creativity and focus. It is a parent of Grape Stomper."
+    },
     "chemdog-millionaire": {
         "description": "A potent hybrid with a lemony, diesel-like, and earthy aroma. Chemdog Millionaire delivers a strong, euphoric, and relaxing high that is perfect for unwinding.",
     },
@@ -109,8 +115,14 @@ export const strains: Record<string, StrainTranslationData> = {
     "cherry-pie": {
         "description": "An indica-dominant hybrid with a sweet, cherry-like, and earthy aroma. Cherry Pie delivers a relaxing and happy high that is perfect for unwinding.",
     },
+    "chimera-2": {
+        "description": "Chimera #2 is a highly potent and sought-after hybrid strain from BeLeaf Cannabis. Known for its complex aroma profile blending port wine, citrus, and gassy notes. The effect is potent, offering a euphoric and creative high that settles into a comfortable body relaxation. It is a parent of Permanent Chimera."
+    },
     "chiquita-banana": {
         "description": "A potent hybrid with a sweet, fruity banana aroma. Chiquita Banana delivers a strong, euphoric, and relaxing high that is perfect for unwinding.",
+    },
+    "chocolate-diesel": {
+        "description": "Chocolate Diesel is a potent sativa-dominant hybrid, famous for its unique and complex aroma profile that blends pungent diesel with rich notes of coffee and dark chocolate. This strain is a genetic parent to the legendary Original Glue (GG4). It delivers a powerful, fast-acting cerebral high that is uplifting, energetic, and euphoric, making it a great choice for daytime use to combat fatigue and stimulate creativity. Due to its strong effects, it's best suited for experienced consumers."
     },
     "chocolate-thai": {
         "description": "A legendary landrace sativa from the 1960s, famous for its unique chocolate and coffee-like aroma. The effect is purely cerebral, energizing, and creative, but without the sometimes overwhelming rush of other sativas. Due to its long flowering time and low yield, it is rarely found in its pure form today."
@@ -127,17 +139,29 @@ export const strains: Record<string, StrainTranslationData> = {
     "colombian-gold": {
         "description": "A classic sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1"
     },
-    "cosmic-charlie": {
-        "description": "A sativa-dominant strain with a highly psychedelic and creative effect. The aroma is a mix of citrus, sweetness, and earthy notes.",
+    "colombian": {
+        "description": "A classic Sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1 and is known for its uplifting, energizing, and clear-headed effects without paranoia. The aroma is a sweet mix of citrus, lime, and skunk."
     },
     "colt-45": {
         "description": "A sativa-dominant hybrid with an earthy, piney, and woody aroma. Colt 45 delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
     },
+    "congo-3": {
+        "description": "Congo #3 is a specific phenotype of Congolese landrace, likely selected for certain desirable traits. It is one of the parents of the Congo strain. It provides a classic sativa high: clear, energetic, and uplifting with a spicy, fruity aroma."
+    },
+    "congo-pointe-noire": {
+        "description": "A pure sativa landrace from the Pointe-Noire region of the Republic of Congo. Known for its energetic, long-lasting cerebral high that stimulates creativity. It has a fruity, spicy, and earthy aroma and is a parent of the Congo strain."
+    },
     "congo": {
         "description": "A pure Sativa with a sweet, fruity, and earthy aroma. Congo delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
     },
+    "cookie-monster": {
+        "description": "An award-winning indica-dominant hybrid. It delivers a powerful, relaxing, and sleepy high, true to its OG and Cookies lineage. The aroma is sweet and minty with woody, earthy undertones. It is a parent of Pineapple Upside Down Cake."
+    },
     "cookies-and-cream": {
         "description": "A balanced hybrid with a sweet, vanilla-like, and nutty aroma. Cookies and Cream delivers a strong, euphoric, and relaxing high that is suitable for various occasions.",
+    },
+    "cosmic-charlie": {
+        "description": "A sativa-dominant strain with a highly psychedelic and creative effect. The aroma is a mix of citrus, sweetness, and earthy notes."
     },
     "critical-mass": {
         "description": "An indica-dominant strain known for its massive yields and dense buds that tend to break under their own weight. The effect is deeply relaxing.",

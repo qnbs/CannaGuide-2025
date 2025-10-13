@@ -18,7 +18,7 @@ export const common = {
     actions: 'Actions',
     page: 'Page',
     generated: 'Generated',
-    loadMore: 'Load More... {{count}} of {{total}}',
+    loadMore: 'Load More',
     regenerate: 'Regenerate',
     confirm: 'Confirm',
     exportConfirm: 'Are you sure you want to export this data?',

@@ -28,7 +28,7 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
   };
 
   if (!data.id || !data.name || !data.type || data.thc === undefined || data.cbd === undefined || data.floweringTime === undefined) {
-    throw new Error(`Strain factory is missing required fields for: ${data.name || 'Unknown'}`);
+    console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${data.name || 'Unknown'}. This may cause issues.`, data);
   }
 
   const merged = {

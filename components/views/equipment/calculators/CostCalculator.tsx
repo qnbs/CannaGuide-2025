@@ -1,8 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input } from './common';
 
-export const CostCalculator: React.FC = () => {
+export const CostCalculator: React.FC = memo(() => {
     const { t } = useTranslation();
     const [inputs, setInputs] = useState({ lightPower: 300, lightHours: 12, fanPower: 40, fanHours: 24, otherPower: 20, price: 0.30 });
 
@@ -56,4 +56,4 @@ export const CostCalculator: React.FC = () => {
             </div>
         </CalculatorSection>
     );
-};
+});

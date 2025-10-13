@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from "@/types";
 
 export const strains: Record<string, StrainTranslationData> = {
+  "joseph-og": {
+    "description": "Joseph OG ist ein potenter indica-dominanter Phänotyp von OG Kush, bekannt für seine starke Harzproduktion und sein klassisches OG-Aroma. Er liefert ein kraftvolles, entspannendes Körper-High mit einem euphorischen zerebralen Rausch. Er ist eine der Elternsorten von Grateful Breath."
+  },
   "jack-frost": {
     "description": "Eine sativa-dominante Sorte mit einem süßen, zitrusartigen und kiefernartigen Aroma. Die Wirkung ist erhebend, kreativ und energetisierend, ideal für den Tagesgebrauch.",
     "typeDetails": "Sativa 60% / Indica 40%",
@@ -83,5 +86,11 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Orange Velvet x Space Queen",
     "yieldDetails": { "indoor": "~400 g/m²", "outdoor": "~500 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "bis 1.8 m" }
+  },
+  "juanita-la-lagrimosa": {
+    "description": "Eine wegweisende CBD-reiche Sorte aus Spanien, oft mit einem 1:1 THC:CBD-Verhältnis. 'Juanita die Weinende' bietet eine klare, funktionale Wirkung mit erheblichen therapeutischen Vorteilen, was sie ideal zur Behandlung von Angstzuständen und Schmerzen ohne starkes High macht. Ihr Aroma ist zitrusartig und hazig. Sie ist ein Elternteil von Dance World."
+  },
+  "juicy-fruit": {
+    "description": "Eine klassische Hybride aus den 1970er Jahren, auch bekannt als Fruity Juice. Sie ist berühmt für ihr süßes, fruchtiges Aroma, das an tropischen Punsch und Beeren erinnert. Die Wirkung ist erhebend und euphorisch, mit einem sanften Körper-Summen. Sie ist ein Elternteil von Orange Cream Sicle."
   }
 };

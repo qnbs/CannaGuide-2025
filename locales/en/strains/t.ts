@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "the-creature": {
+    "description": "The Creature is a highly potent and mysterious indica-dominant strain, rumored to have emerged from OG Kush genetics. It's known for its monstrously dense, resin-caked buds and a pungent, gassy aroma. The effects are heavy and sedating, providing a powerful body stone. It is a parent of the acclaimed Chimera #2."
+  },
   "the-original": {
     "description": "Often referring to a foundational OG Kush phenotype, 'The Original' is a potent indica celebrated for its classic earthy, pine, and pungent aroma. It delivers a heavy, tranquilizing body high, making it a go-to for stress relief and deep relaxation."
   },
@@ -58,20 +61,23 @@ export const strains: Record<string, StrainTranslationData> = {
   "tres-dawg": {
     "description": "A potent indica-dominant strain with a strong, chemical, and diesel-like aroma. The effect is strong, relaxing, and long-lasting."
   },
+  "triangle-kush": {
+    "description": "Triangle Kush is a legendary and highly potent indica strain originating from Florida, named after the state's three major cannabis-producing cities: Jacksonville, Miami, and Tampa. Believed to be a direct descendant or a very close phenotype of the original OG Kush, it is considered a cornerstone of many modern Kush and OG varieties. The effect is powerful and balanced, starting with an uplifting cerebral rush that sparks creativity and conversation, before settling into a deep, full-body relaxation that can effectively manage pain and stress without being completely incapacitating. Its aroma is a classic and complex OG profile, dominated by notes of spicy fuel, earthy pine, and sour lemon."
+  },
   "triangle-mints": {
     "description": "A balanced hybrid with a minty, earthy, and sweet aroma. The effect is strong, euphoric, and relaxing."
   },
   "triple-og": {
     "description": "A pure Indica with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and sedating."
   },
-  "tropicana-banana": {
-    "description": "Tropicana Banana combines the citrus profile of Tropicana Cookies with the creamy sweetness of Banana Kush. The result is an exotic fruit cocktail aroma. The effect is happy, euphoric, and relaxing, perfect for social gatherings or creative afternoon activities."
-  },
   "tropicana-cherry": {
     "description": "A balanced hybrid with a sweet, fruity aroma of cherries and citrus. The effect is uplifting, happy, and relaxing."
   },
   "tropicana-cookies": {
     "description": "Tropicana Cookies is a sativa-dominant strain famous for its incredibly intense aroma of fresh oranges and sweet cookie dough. It produces a strong, energetic, and uplifting high that boosts creativity and focus, making it ideal for daytime use."
+  },
+  "trophy-wife": {
+    "description": "While often known as a high-CBD strain, Trophy Wife also has high-THC phenotypes that are used for breeding. This version offers a balanced, relaxing high with a sweet and earthy cherry aroma. It is a parent of the popular Point Break strain."
   },
   "truffle-butter": {
     "description": "An indica-dominant strain with a sweet, buttery, and earthy aroma. The effect is strong, relaxing, and sedating."

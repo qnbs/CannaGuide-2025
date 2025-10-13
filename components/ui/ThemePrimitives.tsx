@@ -56,6 +56,7 @@ const ParagraphComponent = <E extends React.ElementType = typeof defaultParagrap
 };
 export const Paragraph = memo(ParagraphComponent);
 
+
 // --- FORM ELEMENTS ---
 
 type InputProps =
@@ -100,7 +101,7 @@ export const Input = memo(
     )
 );
 
-type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> & {
+type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange' | 'value'> & {
     options: { value: string | number; label: string }[];
     value?: string | number;
     onChange?: (e: { target: { value: string | number } }) => void;

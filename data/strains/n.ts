@@ -55,7 +55,7 @@ export const strainsN: Strain[] = [
         "name": "Nuken",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
-        "genetics": "God Bud x Kish",
+        "genetics": "God Bud x Shishkaberry",
         "floweringType": "Photoperiod",
         "thc": 25,
         "cbd": 1,

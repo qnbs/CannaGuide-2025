@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { SavedStrainTip, Strain, ExportFormat, StructuredGrowTips } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -11,7 +11,6 @@ import { exportService } from '@/services/exportService';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { BulkActionsBar } from './BulkActionsBar';
-import { Input } from '@/components/ui/ThemePrimitives';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Speakable } from '@/components/common/Speakable';
 import { SearchBar } from '@/components/common/SearchBar';
@@ -19,7 +18,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 
 type TipCategory = 'all' | keyof StructuredGrowTips;
 
-const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => void, onDelete: (id: string) => void, showStrainName?: boolean }> = ({ tip, onEdit, onDelete, showStrainName = false }) => {
+const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => void, onDelete: (id: string) => void, showStrainName?: boolean }> = memo(({ tip, onEdit, onDelete, showStrainName = false }) => {
     const { t } = useTranslation();
 
     const tipCategories = [
@@ -63,7 +62,7 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
             </div>
         </Card>
     );
-};
+});
 
 
 export const StrainTipsView: React.FC<{
@@ -211,13 +210,17 @@ export const StrainTipsView: React.FC<{
             </Card>
 
              {savedTips.length === 0 ? (
-                <Card className="text-center py-10 text-slate-500 mt-4"><PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" /><h3 className="font-semibold">{t('strainsView.tips.noTips.title')}</h3><p className="text-sm">{t('strainsView.tips.noTips.subtitle')}</p></Card>
+                 <Card className="text-center py-10 text-slate-500 mt-4">
+                    <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
+                    <h3 className="font-semibold text-slate-300">{t('strainsView.tips.noTips.title')}</h3>
+                    <p className="text-sm">{t('strainsView.tips.noTips.subtitle')}</p>
+                </Card>
             ) : filteredTips.length === 0 ? (
                  <Card className="text-center py-10 text-slate-500 mt-4"><p>{t('strainsView.tips.noResults', { term: searchTerm })}</p></Card>
             ) : (
                 <div className="space-y-4 mt-4">
                     <div className="px-3 flex items-center gap-3">
-                        <input type="checkbox" checked={selectedIds.size === allVisibleIds.length && allVisibleIds.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                        <input type="checkbox" checked={selectedIds.size === allVisibleIds.length && allVisibleIds.length > 0} onChange={handleToggleAll} className="custom-checkbox" />
                         <label className="text-sm text-slate-400">{t('strainsView.selectedCount', { count: selectedIds.size })}</label>
                     </div>
                     {sortMode === 'grouped' ? (
@@ -227,13 +230,13 @@ export const StrainTipsView: React.FC<{
                                 <details key={strainName} open className="group ring-1 ring-inset ring-slate-700/50 rounded-lg overflow-hidden">
                                      <summary className="list-none"><div className="flex justify-between items-center p-3 bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>
                                     <div className="p-3 space-y-3 bg-slate-800/40">
-                                        {tips.map(tip => (<div key={tip.id} className="flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" /><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></div>))}
+                                        {tips.map(tip => (<div key={tip.id} className="flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="custom-checkbox mt-1 flex-shrink-0" /><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} /></div></div>))}
                                     </div>
                                 </details>
                             )
                         })
                     ) : (
-                        (sortedAndGrouped as SavedStrainTip[]).map(tip => (<div key={tip.id} className="flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" /><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} showStrainName /></div></div>))
+                        (sortedAndGrouped as SavedStrainTip[]).map(tip => (<div key={tip.id} className="flex gap-3 items-start"><input type="checkbox" checked={selectedIds.has(tip.id)} onChange={() => handleToggleSelection(tip.id)} className="custom-checkbox mt-1 flex-shrink-0" /><div className="flex-1"><TipItem tip={tip} onEdit={setEditingTip} onDelete={deleteTip} showStrainName /></div></div>))
                     )}
                 </div>
             )}

@@ -8,7 +8,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { Input } from '@/components/ui/ThemePrimitives';
+import { SearchBar } from '@/components/common/SearchBar';
 
 interface InlineStrainSelectorProps {
   onClose: () => void;
@@ -134,14 +134,11 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({ onCl
                     <PhosphorIcons.X className="w-5 h-5" />
                 </button>
             </div>
-            <div className="relative mb-4 flex-shrink-0">
-                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-                <Input
-                    type="text"
+            <div className="mb-4 flex-shrink-0">
+                <SearchBar
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     placeholder={t('strainsView.searchPlaceholder')}
-                    className="pl-10"
                     autoFocus
                 />
             </div>

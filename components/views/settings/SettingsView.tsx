@@ -91,10 +91,10 @@ const SettingsView: React.FC = () => {
         <div className="space-y-6">
             <div className="text-center mb-6 animate-fade-in">
                 <PhosphorIcons.Gear className="w-16 h-16 mx-auto text-primary-400" />
-                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('settingsView.title')}</h2>
+                <h2 className="text-3xl font-bold font-display text-primary-400 mt-2">{t('settingsView.title')}</h2>
             </div>
 
-            <SettingsSection title={t('settingsView.categories.general')} icon={<PhosphorIcons.Gear />} defaultOpen>
+            <SettingsSection title={t('settingsView.categories.general')} icon={<PhosphorIcons.Gear className="text-primary-400" />} defaultOpen>
                 <SettingsRow label={t('settingsView.general.language')}>
                     <SegmentedButtons
                         value={settings.language}
@@ -132,7 +132,7 @@ const SettingsView: React.FC = () => {
                 </SettingsRow>
             </SettingsSection>
 
-            <SettingsSection title={t('settingsView.categories.accessibility')} icon={<PhosphorIcons.Person />}>
+            <SettingsSection title={t('settingsView.categories.accessibility')} icon={<PhosphorIcons.Person className="text-accent-400" />}>
                  <SettingsRow label={t('settingsView.accessibility.dyslexiaFont')} description={t('settingsView.accessibility.dyslexiaFontDesc')}>
                     <Switch
                         checked={settings.accessibility.dyslexiaFont}
@@ -157,7 +157,7 @@ const SettingsView: React.FC = () => {
                 </SettingsRow>
             </SettingsSection>
             
-             <SettingsSection title={t('settingsView.categories.tts')} icon={<PhosphorIcons.SpeakerHigh />}>
+             <SettingsSection title={t('settingsView.categories.tts')} icon={<PhosphorIcons.SpeakerHigh className="text-secondary-400" />}>
                 <SettingsRow label={t('settingsView.tts.enabled')} description={t('settingsView.tts.enabledDesc')}>
                     <Switch
                         checked={settings.tts.enabled}
@@ -167,7 +167,7 @@ const SettingsView: React.FC = () => {
                 <SettingsRow label={t('settingsView.tts.voice')}>
                      <Select
                         value={settings.tts.voiceName || ''}
-                        onChange={(e) => handleSettingChange('tts.voiceName', e.target.value)}
+                        onChange={(e) => handleSettingChange('tts.voiceName', e.target.value as string)}
                         options={availableVoices.length > 0 ? availableVoices.map(v => ({ value: v.name, label: v.name })) : [{ value: '', label: t('settingsView.tts.noVoices') }]}
                         disabled={!settings.tts.enabled || availableVoices.length === 0}
                         className="w-48"
@@ -193,7 +193,7 @@ const SettingsView: React.FC = () => {
                 </SettingsRow>
             </SettingsSection>
 
-            <SettingsSection title={t('settingsView.categories.data')} icon={<PhosphorIcons.ArchiveBox />}>
+            <SettingsSection title={t('settingsView.categories.data')} icon={<PhosphorIcons.ArchiveBox className="text-orange-400" />}>
                  <div className="py-3 border-b border-slate-700/50">
                     <p className="font-semibold text-slate-200">{t('settingsView.data.storageUsage')}</p>
                     {isEstimating ? <p className="text-sm text-slate-400 mt-2">Calculating...</p> : (
@@ -224,7 +224,7 @@ const SettingsView: React.FC = () => {
                 </SettingsRow>
             </SettingsSection>
 
-             <SettingsSection title={t('settingsView.about.title')} icon={<PhosphorIcons.Info />}>
+             <SettingsSection title={t('settingsView.about.title')} icon={<PhosphorIcons.Info className="text-sky-400" />}>
                 <SettingsRow label="" className="!items-start">
                     <p className="text-sm text-slate-300">{t('common.metadataDescription')}</p>
                 </SettingsRow>

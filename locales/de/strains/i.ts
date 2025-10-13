@@ -4,6 +4,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "ice": {
     "description": "Eine ausgewogene Hybride, bekannt für ihre extrem harzigen, 'eisigen' Knospen. Die Wirkung ist stark, erhebend und entspannend.",
   },
+  "ice-2": {
+    "description": "Ice #2 ist ein ausgewählter indica-dominanter Phänotyp, der für seine starke Harzproduktion und entspannende Wirkung bekannt ist. Er ist eine entscheidende Elternsorte für Papaya und trägt sein süßes, erdiges Aroma und sein beruhigendes High bei."
+  },
   "ice-cream-cake": {
     "description": "Eine indica-dominante Sorte mit einem süßen, cremigen und vanilleartigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch.",
   },

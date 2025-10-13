@@ -1,4 +1,5 @@
-import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority } from '@/types';
+import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType } from '@/types';
+import { STAGES_ORDER } from '@/constants';
 
 // --- SIMULATION CONSTANTS ---
 const PAR_PER_WATT_LED = 2.5; // µmol/s/W (Photosynthetically Active Radiation)
@@ -139,7 +140,7 @@ class PlantSimulationService {
         
         // --- EQUIPMENT MODIFIERS ---
         // Exhaust fan power directly influences how quickly temperature and humidity can be corrected.
-        const ventilationFactor = { low: 0.8, medium: 1.0, high: 1.5 }[p.equipment.exhaustFan.power];
+        const ventilationFactor = { low: 0.8, medium: 1.0, high: 1.5 }[p.equipment.exhaustFan.power || 'medium'];
         // HPS lights generate more heat
         const heatFromLight = p.equipment.light.wattage * (p.equipment.light.type === 'HPS' ? 0.2 : 0.1);
         // Lack of circulation fan can create humidity pockets, slightly increasing effective humidity
@@ -157,7 +158,7 @@ class PlantSimulationService {
         
         const waterUsed = Math.min(p.medium.substrateWater, transpirationRate * 100); // 100 is an arbitrary factor
         p.medium.substrateWater -= waterUsed;
-        const waterCapacity = p.equipment.light.wattage * 1000 * 0.3; // Simplification
+        const waterCapacity = (p.equipment as any).potSize * 1000 * ((p.equipment as any).potType === 'Fabric' ? 0.28 : 0.35);
         p.medium.moisture = (p.medium.substrateWater / waterCapacity) * 100;
 
         // 3. Nutrient Uptake (driven by water uptake and root health)
@@ -246,6 +247,38 @@ class PlantSimulationService {
         const p = this.clonePlant(plant);
         const journalEntries: JournalEntry[] = [];
         const tasks: Task[] = [];
+        const originalStage = p.stage;
+    
+        // STAGE TRANSITION LOGIC
+        const currentStageIndex = STAGES_ORDER.indexOf(p.stage);
+        if (currentStageIndex < STAGES_ORDER.length - 1 && ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(p.stage)) {
+            let cumulativeDuration = 0;
+            for (let i = 0; i <= currentStageIndex; i++) {
+                cumulativeDuration += PLANT_STAGE_DETAILS[STAGES_ORDER[i]].duration;
+            }
+    
+            let shouldAdvance = p.age >= cumulativeDuration;
+            const nextStage = STAGES_ORDER[currentStageIndex + 1];
+    
+            // Special check for flowering transition
+            if (nextStage === PlantStage.Flowering && p.strain.floweringType === 'Photoperiod' && p.equipment.light.lightHours > 12) {
+                shouldAdvance = false; // Hold in vegetative
+            }
+            
+            if (shouldAdvance) {
+                p.stage = nextStage;
+            }
+        }
+    
+        if (p.stage !== originalStage) {
+            journalEntries.push({
+                id: '', // will be added by slice
+                createdAt: 0, // will be added by slice
+                type: JournalEntryType.System,
+                notes: `Stage changed from ${originalStage} to ${p.stage}`,
+                details: { from: originalStage, to: p.stage }
+            });
+        }
         
         if (p.medium.moisture < 30 && !p.tasks.some(t => t.title === 'Task: Water Plant')) {
             tasks.push({ id: `task-water-${p.id}`, title: 'Task: Water Plant', description: `${p.name} is thirsty!`, isCompleted: false, createdAt: Date.now(), priority: 'high' });

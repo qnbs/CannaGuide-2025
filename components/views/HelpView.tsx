@@ -9,9 +9,9 @@ import { lexiconData } from '@/data/lexicon';
 import { LexiconEntry, VisualGuide, FAQItem } from '@/types';
 import { VisualGuideCard } from './help/VisualGuideCard';
 import { LexiconCard } from './help/LexiconCard';
-import { Input } from '@/components/ui/ThemePrimitives';
 import { Button } from '@/components/common/Button';
 import { Speakable } from '@/components/common/Speakable';
+import { SearchBar } from '@/components/common/SearchBar';
 
 const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
@@ -35,20 +35,17 @@ const FAQSection: React.FC = memo(() => {
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('helpView.faq.title')}</h3>
-            <div className="relative mb-4">
-                <Input
-                    type="text"
+            <div className="mb-4">
+                <SearchBar
                     placeholder={t('helpView.faq.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
                 />
-                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             </div>
             <div className="space-y-3">
                 {filteredFaq.length > 0 ? (
                     filteredFaq.map(item => (
-                        <details key={item.id} className="group bg-slate-800/60 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20">
+                        <details key={item.id} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
                             <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
                                 <span className="text-lg font-bold text-slate-100">{item.question}</span>
                                 <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
@@ -143,15 +140,12 @@ const LexiconSection: React.FC = memo(() => {
                 ))}
             </div>
 
-            <div className="relative mb-4">
-                <Input
-                    type="text"
+            <div className="mb-4">
+                <SearchBar
                     placeholder={t('helpView.lexicon.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
                 />
-                <PhosphorIcons.MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredLexicon.length > 0 ? (
@@ -183,8 +177,8 @@ const ManualSection: React.FC = memo(() => {
 
         if (isSubSection) {
             // Render subsections as simpler, nested details
-            return (
-                 <details key={sectionKey} open={false} className="group bg-slate-900/40 rounded-lg ring-1 ring-inset ring-slate-700/50">
+             return (
+                 <details key={sectionKey} open={false} className="group bg-slate-900 rounded-lg ring-1 ring-inset ring-slate-700/50">
                     <summary className="list-none flex items-center gap-2 cursor-pointer p-3 text-md font-semibold text-primary-300">
                         <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
                         {title}
@@ -198,7 +192,7 @@ const ManualSection: React.FC = memo(() => {
 
         // Render top-level sections styled like SettingsSection
         return (
-            <details key={sectionKey} open={level < 1} className="group bg-slate-800/60 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20">
+            <details key={sectionKey} open={level < 1} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
                 <summary className="list-none flex justify-between items-center p-4 cursor-pointer font-bold text-slate-100">
                     <div className="flex items-center gap-3">
                         {icons[sectionKey]}
@@ -237,6 +231,13 @@ export const HelpView: React.FC = () => {
         { id: 'faq', label: t('helpView.tabs.faq'), icon: <PhosphorIcons.Question /> },
     ];
 
+     const viewIcons = useMemo(() => ({
+        manual: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-blue-400" />,
+        lexicon: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-indigo-400" />,
+        guides: <PhosphorIcons.GraduationCap className="w-16 h-16 mx-auto text-green-400" />,
+        faq: <PhosphorIcons.Question className="w-16 h-16 mx-auto text-yellow-400" />,
+    }), []);
+
     const renderContent = () => {
         switch (activeTab) {
             case 'manual': return <ManualSection />;
@@ -250,12 +251,12 @@ export const HelpView: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="text-center mb-6 animate-fade-in">
-                <PhosphorIcons.Question className="w-16 h-16 mx-auto text-primary-400" />
+                {viewIcons[activeTab as keyof typeof viewIcons]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('helpView.title')}</h2>
                 <p className="text-slate-400 mt-1">{t('helpView.subtitle')}</p>
             </div>
 
-            <Card>
+            <Card className="!p-2">
                 <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
             </Card>
 

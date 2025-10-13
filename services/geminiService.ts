@@ -1,6 +1,6 @@
 
 
-import { GoogleGenAI, GenerateContentResponse, Type, FunctionDeclaration } from '@google/genai'
+import { GoogleGenAI, GenerateContentResponse, Type } from '@google/genai'
 import {
     Plant,
     Recommendation,
@@ -22,13 +22,11 @@ const formatPlantContextForPrompt = (
     const problems =
         plant.problems.length > 0
             ? plant.problems
-                  .map((p) =>
-                      t(
-                          `problemMessages.${
-                              p.type.charAt(0).toLowerCase() + p.type.slice(1)
-                          }.message`
-                      )
-                  )
+                  .map((p) => {
+                      // FIX: Convert problem type from SCREAMING_SNAKE_CASE to camelCase for i18n key.
+                      const problemKey = p.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
+                      return t(`problemMessages.${problemKey}.message`);
+                  })
                   .join(', ')
             : t('common.none')
 
@@ -217,14 +215,11 @@ class GeminiService {
         const problems =
             plant.problems.length > 0
                 ? plant.problems
-                      .map((p) =>
-                          t(
-                              `problemMessages.${
-                                  p.type.charAt(0).toLowerCase() + p.type.slice(1)
-                              }.message`,
-                              p.type
-                          )
-                      )
+                      .map((p) => {
+                          // FIX: Convert problem type from SCREAMING_SNAKE_CASE to camelCase for i18n key.
+                          const problemKey = p.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
+                          return t(`problemMessages.${problemKey}.message`);
+                      })
                       .join(', ')
                 : t('common.none')
 

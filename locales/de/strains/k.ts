@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from "@/types";
 
 export const strains: Record<string, StrainTranslationData> = {
+  "kish": {
+    "description": "Kish, oft bekannt als Shishkaberry, ist eine potente indica-dominante Hybride. Sie liefert ein glückliches, glückseliges High, das mit einem zerebralen Auftrieb beginnt, bevor es in eine Ganzkörperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Beeren und erdigen Noten."
+  },
   "killer-new-haven": {
     "description": "Eine potente und legendäre Indica-Heirloom-Sorte aus Connecticut. Sie ist ein Schlüssel-Elternteil von Herijuana und liefert eine schwere, fast narkotische Körperwirkung. Ihr Aroma ist stechend, erdig und haschartig."
   },

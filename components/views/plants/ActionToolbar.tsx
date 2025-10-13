@@ -12,12 +12,12 @@ export const ActionToolbar: React.FC<ActionToolbarProps> = memo(({ onLogAction }
     const { t } = useTranslation();
 
     const actions: { type: ModalType; label: string; icon: React.ReactNode }[] = [
-        { type: 'watering', label: t('plantsView.detailedView.journalFilters.watering'), icon: <PhosphorIcons.Drop /> },
-        { type: 'feeding', label: t('plantsView.detailedView.journalFilters.feeding'), icon: <PhosphorIcons.TestTube /> },
-        { type: 'training', label: t('plantsView.detailedView.journalFilters.training'), icon: <PhosphorIcons.Scissors /> },
-        { type: 'observation', label: t('plantsView.detailedView.journalFilters.observation'), icon: <PhosphorIcons.MagnifyingGlass /> },
-        { type: 'photo', label: t('plantsView.detailedView.journalFilters.photo'), icon: <PhosphorIcons.Camera /> },
-        { type: 'pestControl', label: t('plantsView.detailedView.journalFilters.pestControl'), icon: <PhosphorIcons.WarningCircle /> },
+        { type: 'watering', label: t('plantsView.detailedView.journalFilters.watering'), icon: <PhosphorIcons.Drop className="text-blue-400" /> },
+        { type: 'feeding', label: t('plantsView.detailedView.journalFilters.feeding'), icon: <PhosphorIcons.TestTube className="text-amber-400" /> },
+        { type: 'training', label: t('plantsView.detailedView.journalFilters.training'), icon: <PhosphorIcons.Scissors className="text-purple-400" /> },
+        { type: 'observation', label: t('plantsView.detailedView.journalFilters.observation'), icon: <PhosphorIcons.MagnifyingGlass className="text-slate-300" /> },
+        { type: 'photo', label: t('plantsView.detailedView.journalFilters.photo'), icon: <PhosphorIcons.Camera className="text-cyan-400" /> },
+        { type: 'pestControl', label: t('plantsView.detailedView.journalFilters.pestControl'), icon: <PhosphorIcons.WarningCircle className="text-red-400" /> },
     ];
 
     return (

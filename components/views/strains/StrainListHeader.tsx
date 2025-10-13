@@ -25,46 +25,29 @@ const SortButton: React.FC<{
     </button>
 );
 
-const gridLayout = "grid items-center gap-x-4 pl-4 pr-2 grid-cols-[auto_1fr_auto] sm:grid-cols-[auto_minmax(0,2.5fr)_repeat(6,minmax(0,1fr))_auto]";
+const gridLayout = "grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-4";
 
 export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, handleSort, onToggleAll, areAllOnPageSelected }) => {
     const { t } = useTranslation();
 
     return (
-        <div className={`px-2 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
+        <div className={`p-3 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
             <input
                 type="checkbox"
                 checked={areAllOnPageSelected}
                 onChange={onToggleAll}
-                className="h-5 w-5 rounded border-slate-500 bg-slate-700/50 text-primary-500 focus:ring-primary-500"
+                className="custom-checkbox"
                 aria-label="Select all on page"
             />
-            <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
-            
-            {/* Mobile Actions Placeholder */}
-            <div className="sm:hidden text-right pr-2">{t('common.actions')}</div>
-
-            {/* Desktop only headers */}
-            <div className="hidden sm:flex items-center justify-center">
-                <SortButton sortKey="type" label={t('strainsView.table.type')} currentSort={sort} onSort={handleSort} />
-            </div>
-            <div className="hidden sm:flex items-center justify-center">
-                <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
-            </div>
-            <div className="hidden sm:flex items-center justify-center">
-                <SortButton sortKey="cbd" label={t('strainsView.table.cbd')} currentSort={sort} onSort={handleSort} />
-            </div>
-            <div className="hidden sm:flex items-center justify-center">
-                <SortButton sortKey="floweringTime" label={t('strainsView.table.flowering')} currentSort={sort} onSort={handleSort} />
-            </div>
-            <div className="hidden sm:flex items-center justify-center">
-                <SortButton sortKey="yield" label={t('strainsView.table.yield')} currentSort={sort} onSort={handleSort} />
-            </div>
-            <div className="hidden sm:flex items-center justify-center">
-                <SortButton sortKey="difficulty" label={t('strainsView.table.difficulty')} currentSort={sort} onSort={handleSort} />
+            {/* The invisible div helps align the Sorte header correctly with the content below it */}
+            <div className="flex items-center">
+                 <div className="w-8 mr-4"></div> {/* Spacer for icon column */}
+                <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
             </div>
             
-            <div className="hidden sm:block text-right pr-2">{t('common.actions')}</div>
+            <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
+            
+            <div className="text-right">{t('common.actions')}</div>
         </div>
     );
 });

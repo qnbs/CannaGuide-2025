@@ -37,6 +37,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "wonder-woman": {
         "description": "A sativa-dominant strain known for its extremely high yields and sweet, skunky aroma. The effect is uplifting and creative."
     },
+    "wookie-15": {
+        "description": "Wookie #15 is a potent indica-dominant hybrid, famous for its unique aroma profile that blends lavender, mint, and diesel. It provides a happy, relaxing high that soothes the body while keeping the mind euphoric. It is a parent of Monkey Glue."
+    },
     "wu-5": {
         "description": "A CBD-rich strain with an earthy, herbal, and sweet aroma. The effect is mild, clear, and functional, ideal for medical users."
     }

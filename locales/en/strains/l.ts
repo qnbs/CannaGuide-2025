@@ -1,11 +1,20 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+    "la-reunion": {
+        "description": "La Reunion is a pure sativa landrace from Réunion Island in the Indian Ocean. It is known for its classic long-flowering sativa characteristics and a powerful, energetic, and long-lasting cerebral high. Its aroma is typically spicy and hazy. It is a key parent in the breeding of the famous Queen Mother strain."
+    },
+    "lemonnade": {
+        "description": "Lemonnade, sometimes spelled Lemonade, is a sativa-dominant hybrid known for its overwhelmingly sweet and zesty lemon flavor. It delivers an energetic, uplifting, and happy high that is perfect for daytime use and creative activities. It is a parent of the popular Lemonchello strain."
+    },
     "lemon-pebbles": {
         "description": "A balanced hybrid known for its delicious flavor profile that combines the sweet, fruity notes of Fruity Pebbles OG with a sharp, zesty lemon kick. The effect is happy, uplifting, and creative, providing a gentle body relaxation that makes it suitable for daytime use."
     },
     "lemon-cooler": {
         "description": "A sativa-dominant hybrid known for its refreshing and vibrant citrus profile, reminiscent of a cool lemon beverage on a hot day. It typically provides an energizing and uplifting high that encourages creativity and focus, making it an excellent choice for daytime use."
+    },
+    "lemon-joy": {
+        "description": "Lemon Joy is a sativa-dominant hybrid known for its vibrant and uplifting effects, along with a sweet, zesty lemon aroma. It provides a happy and energetic high, making it a key parent in the breeding of Lemon Kush."
     },
     "la-cake": {
         "description": "An indica-dominant strain with a sweet, cake-like, and earthy aroma. The effect is strong, relaxing, and sedating.",
@@ -83,20 +92,6 @@ export const strains: Record<string, StrainTranslationData> = {
         "genetics": "Dabney Blue x Lemon Thai",
         "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-    },
-    "lemon-cherry-gelato": {
-        "description": "A potent hybrid with a sweet, fruity aroma of lemons and cherries. The effect is relaxing, happy, and uplifting.",
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Sunset Sherbet x GSC x Unknown",
-        "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-        "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-    },
-    "lemon-haze": {
-        "description": "A popular Sativa with a strong, fresh lemon aroma. It produces an energizing, happy, and uplifting effect, ideal for daytime use.",
-        "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Lemon Skunk x Silver Haze",
-        "yieldDetails": { "indoor": "450-500 g/m²", "outdoor": "500-600 g/plant" },
-        "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
     },
     "lemon-thai": {
         "description": "A sativa-dominant strain with a strong lemon and mint aroma. The effect is uplifting, creative, and energizing.",

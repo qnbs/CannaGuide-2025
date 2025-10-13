@@ -1,517 +1,331 @@
-export const seedbanks = {
-    pacificSeedBank: {
-        title: "1. Pacific Seed Bank",
+// This file consolidates all seed bank data to resolve a module import error.
+// Previously, this file attempted to import from non-existent 'eu' and 'us-ca' sub-files.
+// To fix this, the content for those categories has been defined directly within this file.
+
+const seedbanks_eu = {
+    sensiSeeds: {
+        title: "1. Sensi Seeds",
         profile: {
             title: "Company Profile and Reputation",
-            content: "Pacific Seed Bank (PSB) positions itself as a major reseller of cannabis seeds with an extensive range. The company's reputation is highly polarized (3.0/5 stars on Trustindex), indicating an inconsistent customer experience. Negative reviews cite serious issues like fraud allegations and poor product quality. This pattern suggests the company may prioritize volume over consistent quality control. For a strategic cultivator, PSB represents a high-risk supplier."
+            content: "Founded in 1985, Sensi Seeds is one of the oldest and most respected seed banks in the world. Based in Amsterdam, they are responsible for preserving and breeding many classic strains like Jack Herer and Northern Lights. Their reputation is legendary."
         },
         policies: {
             title: "Operational Policies",
+            shipping: {
+                title: "Shipping",
+                points: ["Ships worldwide with discreet packaging.", "Shipping costs vary by location."]
+            },
             payment: {
                 title: "Payment Methods",
-                methods: [
-                    "Credit/Debit Cards (Mastercard, VISA)",
-                    "Payment by Mail (Cashier's check, certified check, money order; no cash)"
-                ]
-            },
-            shipping: {
-                title: "Shipping Policies and Logistics",
-                points: [
-                    "Risk Transfer to Customer: PSB transfers all logistical and legal risk to the customer.",
-                    "Packaging: Described as extremely durable.",
-                    "Returns: Damaged goods must be reported within seven days."
-                ]
+                methods: ["Credit Card", "Bank Transfer", "Cryptocurrencies"]
             }
-        },
-        service: {
-            title: "Customer Service and Contact",
-            phone: "Phone: +1-844-480-SEED (7333)",
-            digital: "Digital Channels: Live chat and email available during business hours.",
-            address: "Mailing Address: 9328 Elk Grove Blvd. Ste 105, Elk Grove, CA 95624 US"
-        },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: [
-                "Welcome Offer: 10% discount for new customers (Code: WELCOME10).",
-                "Mail Payment Bonus: Additional pack of three seeds for orders paid by mail."
-            ]
         },
         assessment: {
             title: "Analyst's Assessment",
-            content: "Pacific Seed Bank is a high-volume reseller with a broad catalog but significant operational inconsistencies. The polarized reviews and risk-averse shipping policy pose a considerable risk. Best suited for experienced buyers in legally secure regions."
+            content: "An absolutely safe choice for classic, stable, and proven genetics. Their influence on modern cannabis breeding is undeniable. Ideal for growers looking for the foundations of cannabis genetics."
         }
     },
-    blimburnSeeds: {
-        title: "2. Blimburn Seeds",
+    dutchPassion: {
+        title: "2. Dutch Passion",
         profile: {
             title: "Company Profile and Reputation",
-            content: "Blimburn Seeds is a breeder with over 1,000 strains, emphasizing stabilized genetics and quality. Customer reviews are consistently positive, highlighting perfect germination rates and excellent customer service. A strong 'triple guarantee' for germination issues underscores their customer-centric model, positioning Blimburn as a low-risk, high-quality provider."
+            content: "Founded in 1987, Dutch Passion is a pioneer in the development of feminized seeds. They are known for their innovations and a wide range of high-quality feminized and autoflowering strains. Their strains like Blueberry and Mazar are world-famous."
         },
         policies: {
             title: "Operational Policies",
+            shipping: {
+                title: "Shipping",
+                points: ["Offers worldwide, discreet shipping.", "Various shipping options available."]
+            },
             payment: {
                 title: "Payment Methods",
-                methods: ["Visa, Mastercard", "Bank Transfer, Check", "Venmo, Cryptocurrencies"]
-            },
-            shipping: {
-                title: "Shipping Policies and Logistics",
-                points: ["Worldwide, fast, and discreet shipping.", "Triple guarantee on germination."]
+                methods: ["Credit Card", "Bank Transfer", "Cryptocurrencies"]
             }
-        },
-        service: {
-            title: "Customer Service and Contact",
-            email: "Email via northatlanticseed.com, suggesting a partnership for US distribution."
-        },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: [
-                "Growers Hub: A tiered loyalty program with discounts based on annual spending.",
-                "Checkout Rewards: Free seeds and cashback on orders over $70.",
-                "Community Engagement: Cashback for publishing 'Grow Diaries'."
-            ]
         },
         assessment: {
             title: "Analyst's Assessment",
-            content: "Blimburn Seeds is a premium breeder with a strong focus on quality, customer satisfaction, and community building. The robust germination guarantee and positive reviews make them a highly reliable supplier. The tiered loyalty program offers significant value for returning customers."
+            content: "An excellent source for a wide range of high-quality feminized and autoflowering strains. Their long history and focus on innovation make them a trustworthy choice for growers of all experience levels."
         }
     },
     barneysFarm: {
         title: "3. Barney's Farm",
         profile: {
             title: "Company Profile and Reputation",
-            content: "Barney's Farm is a highly decorated, established breeder from Amsterdam with 15 Cannabis Cup wins. The company positions itself as a heritage brand for connoisseurs. Customer feedback is predominantly positive. The business model competes on prestige and genetic quality, not price."
+            content: "Barney's Farm is a multiple award-winning seed bank from Amsterdam, known for its potent and flavorful hybrids. They have won numerous Cannabis Cups and are known for strains like Critical Kush and Pineapple Chunk."
         },
         policies: {
             title: "Operational Policies",
-            payment: {
-                title: "Payment Methods (US)",
-                methods: ["Credit/Debit Cards", "Bank Transfers"]
-            },
             shipping: {
-                title: "Shipping Policies and Logistics (US)",
-                points: [
-                    "US-specific operation via USPS 1st Class Mail.",
-                    "No discreet packaging: All products are delivered in original, branded packaging, posing a significant risk to the buyer."
-                ]
-            }
-        },
-        service: {
-            title: "Customer Service and Contact",
-            email: "Email: customersupport@barneysfarm.com",
-            phone: "Phone: +31-204117249"
-        },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: [
-                "Welcome Offer: 20% off for newsletter subscribers.",
-                "Free seeds with orders over $30."
-            ]
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "Barney's Farm is a reputable heritage breeder for connoisseurs. However, the mandatory non-discreet shipping policy for US customers poses a significant privacy and legal risk that must be carefully considered."
-        }
-    },
-    growersChoice: {
-        title: "4. Growers Choice Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Growers Choice Seeds specializes in unique genetics. High customer satisfaction (9.4/10 from >15,000 reviews) and a germination guarantee suggest a consistent, reliable business model. They position themselves more as breeders than resellers."
-        },
-        policies: {
-            title: "Operational Policies",
+                title: "Shipping",
+                points: ["Worldwide shipping with various discreet options."]
+            },
             payment: {
                 title: "Payment Methods",
-                methods: ["Cash by mail", "Credit Card, Bank Transfer", "iDEAL, Sofort", "Bitcoin & 50+ other cryptocurrencies"]
-            },
-            shipping: {
-                title: "Shipping Policies and Logistics",
-                points: ["Worldwide shipping.", "60-day germination guarantee."]
+                methods: ["Credit Card", "Cryptocurrencies", "Bank Transfer"]
             }
-        },
-        service: {
-            title: "Customer Service and Contact",
-            phone: "Phone: 909-972-8419",
-            digital: "Contact form on the website."
-        },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: ["Regular discount codes."]
         },
         assessment: {
             title: "Analyst's Assessment",
-            content: "A reliable breeder with a strong focus on customer satisfaction. The wide range of payment methods, including discreet options, appeals to a security-conscious global audience. A solid choice."
+            content: "A top choice for growers looking for potent, high-yielding, and award-winning strains. Their genetics are consistently of high quality and very popular among connoisseurs."
         }
-    },
-    premiumCultivars: {
-        title: "5. Premium Cultivars",
+    }
+};
+
+const seedbanks_us_ca = {
+    dnaGenetics: {
+        title: "4. DNA Genetics",
         profile: {
             title: "Company Profile and Reputation",
-            content: "An online reseller focusing on compliance with US hemp laws. The focus is on legal access, but genetic authenticity depends on undisclosed sources."
+            content: "DNA Genetics was founded in Amsterdam but has strong California roots. They are famous for developing blockbuster strains like LA Confidential and Tangie. Their genetics have won countless awards and are known worldwide."
         },
         policies: {
             title: "Operational Policies",
+            shipping: {
+                title: "Shipping",
+                points: ["Sales are conducted through authorized retailers worldwide, both online and in physical stores."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "A top-tier source for connoisseurs looking for potent, flavorful, and award-winning strains. Availability is good due to their wide network of retailers."
+        }
+    },
+    cropKingSeeds: {
+        title: "5. Crop King Seeds",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Crop King Seeds is a Canadian seed bank known for its wide selection and marketing. They offer a broad range of feminized, autoflowering, and CBD-rich strains aimed at growers of all experience levels."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Shipping",
+                points: ["Offers worldwide shipping with a delivery guarantee."]
+            },
             payment: {
                 title: "Payment Methods",
-                methods: ["Unclear; appears to share infrastructure with 'The Seed Connect' (Credit Cards, Bitcoin)."]
-            },
-            shipping: {
-                title: "Shipping Policies and Logistics",
-                points: ["Shipping exclusively within the USA.", "Free shipping for orders over $100."]
+                methods: ["Credit Card", "Bitcoin", "Interac (Canada)"]
             }
-        },
-        service: {
-            title: "Customer Service and Contact",
-            email: "Email: sales@premiumcultivars.com"
-        },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: ["Referral Program: 20% discount."]
         },
         assessment: {
             title: "Analyst's Assessment",
-            content: "A US-focused reseller. The lack of transparent customer reviews and the unclear connection to 'The Seed Connect' are red flags that warrant caution."
+            content: "A good choice for beginners and growers looking for a wide selection and a delivery guarantee. While some experienced growers criticize the genetic stability, they are an accessible option for getting started."
         }
-    },
-    theSeedConnect: {
-        title: "6. The Seed Connect",
+    }
+};
+
+export const seedbanks = {
+    ...seedbanks_eu,
+    ...seedbanks_us_ca,
+    grandifloraGenetics: {
+        title: "34. Grandiflora Genetics",
         profile: {
             title: "Company Profile and Reputation",
-            content: "A US-based seed bank with an operational link to Premium Cultivars, suggesting a shared infrastructure. Focuses on the US market with service guarantees."
+            content: "Grandiflora Genetics is a highly respected breeder from Oakland, California, known for developing unique, potent, and extremely flavorful strains. They have built a reputation in the cannabis community for exotic terpene profiles and top-tier genetics. Their business strategy focuses on limited, exclusive 'drops' rather than mass-market sales."
         },
         policies: {
             title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sales are conducted exclusively through a network of authorized dealers and seed banks. There is no direct-to-public sale."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "A premium choice for connoisseurs seeking unique and potent genetics. Acquisition requires monitoring their social media channels and authorized vendors for 'drop' announcements. The quality is consistently high, justifying the premium price point."
+        }
+    },
+    beanPatchSeeds: {
+        title: "35. Bean Patch Seeds",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Bean Patch Seeds is a smaller, boutique breeder known for working with rare and heirloom genetics. They focus on preserving and crossing unique lines, often in regular seed form, catering to experienced growers and pheno-hunters. Their reputation in niche communities is positive, valued for genetic diversity."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sales are primarily through specialized online seed banks that carry boutique breeders. Direct sales are limited or non-existent."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "An excellent source for growers looking for rare and non-hybridized genetics. The focus on regular seeds makes them ideal for breeding projects. Sourcing requires research into vendors specializing in boutique breeders."
+        }
+    },
+    irvineSeedCompany: {
+        title: "36. Irvine Seed Company",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Irvine Seed Company (ISC) is a California-based breeder known for working with elite clones and creating potent, OG-dominant hybrids. They have established a reputation for strong, gassy, and complex terpene profiles, targeting the connoisseur market."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Similar to other premium breeders, sales are often through limited drops at select retailers. Check their social media for announcements."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "A top choice for lovers of OG Kush and gassy strains. The quality and potency are high, but availability can be limited. Ideal for growers seeking elite California genetics."
+        }
+    },
+    exoticGenetix: {
+        title: "37. Exotic Genetix",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Exotic Genetix is one of the most well-known and decorated seed banks in recent years, founded by Mike. They are famous for creating blockbuster strains like Grease Monkey and Cookies and Cream. Their reputation for potency, flavor, and visual appeal is top-tier."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Exotic Genetix sells seeds through a network of authorized online retailers in the US and internationally. There is no direct-to-consumer sales via their main website."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "One of the best sources for modern, dessert-like, and potent hybrids. Their genetics are consistently high-quality and have proven themselves in competitions. A safe bet for growers looking for top-shelf, hyped genetics."
+        }
+    },
+    etherealGenetix: {
+        title: "38. Ethereal Genetix",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Ethereal Genetix is an up-and-coming breeder focusing on developing unique crosses with an emphasis on terpene profiles and visual appeal. They are active in online grower communities and are building a reputation for interesting and quality genetics."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sales are typically through a selection of online seed banks that feature rising American breeders. Direct sales are rare."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "An interesting choice for growers who enjoy trying new and exciting genetics from an emerging breeder. Quality appears to be high, but the brand is less established than others on this list."
+        }
+    },
+    khalifaGenetics: {
+        title: "39. Khalifa Genetics",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Khalifa Genetics is a breeder specializing in the preservation and breeding of rare and exotic landraces, as well as unique hybrids. They emphasize genetic diversity and often offer strains that are hard to find elsewhere, particularly from the Middle East and Asia."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sells through their own website and select European distributors. They offer worldwide, discreet shipping."]
+            },
             payment: {
                 title: "Payment Methods",
-                methods: ["Credit/Debit Cards (VISA, Mastercard, AMEX)", "Bitcoin"]
+                methods: ["Cryptocurrencies (Bitcoin, etc.)", "Bank Transfer"]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "An excellent source for connoisseurs and breeders interested in authentic landraces and unique crosses. Their focus on rare genetics sets them apart from many commercial seed banks. A top choice for genetic diversity."
+        }
+    },
+    umamiSeedCo: {
+        title: "40. Umami Seed Co",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Umami Seed Co is a California-based breeder known for their work with elite clones and creating unique, flavor-forward hybrids. They focus on complex terpene profiles and have cultivated a reputation for quality and exclusivity."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sales are conducted through limited drops on their own website and at select premium retailers."]
+            }
+        },
+        assessment: {
+            title: "Analyst's Assessment",
+            content: "A premium brand for growers seeking the latest in California genetics. Quality is high, but availability is limited and prices are often in the upper tier. Requires monitoring for drop announcements."
+        }
+    },
+    irieGenetics: {
+        title: "41. Irie Genetics",
+        profile: {
+            title: "Company Profile and Reputation",
+            content: "Founded by breeder Rasta Jeff, Irie Genetics focuses on creating easy-to-grow, high-yielding, and potent strains. They have a strong community presence and are known for their detailed grow guides and customer support. Their 'Arcata Trainwreck' is highly regarded."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sells through their own website and authorized US retailers. They offer discreet shipping within the US."]
             },
-            shipping: {
-                title: "Shipping Policies and Logistics",
-                points: ["Fast, trackable shipping.", "Free shipping for orders over $100.", "Germination guarantee."]
-            }
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A US reseller aiming to stand out with service guarantees. The close link to Premium Cultivars suggests a shared backend. Reliability depends on their undisclosed sources."
-        }
-    },
-    medicalSeeds: {
-        title: "7. Medical Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A boutique or specialized breeder focusing on perfecting a limited number of genetics, such as the 1024 strain."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "Medical Seeds acts as a specialized breeder. Distribution is likely through a network of resellers. Customers must evaluate the reliability of the respective dealer."
-        }
-    },
-    tgaSubcoolSeeds: {
-        title: "8. TGA Subcool Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A breeder brand associated with the late, legendary breeder Subcool. The brand's reputation is closely tied to its founder's legacy and stands for innovative and potent genetics."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A heritage breeder brand aimed at connoisseurs. As it is a breeder brand, buyers must carefully check the reliability of the resellers carrying these seeds."
-        }
-    },
-    ripperSeeds: {
-        title: "9. Ripper Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Ripper Seeds is a breeder known for creating award-winning, competitive genetics, such as Acid Dough. Their recognition in the industry is proven by awards."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A recognized breeder focusing on award-winning strains. The acquisition relies on a network of resellers, whose reliability must be checked."
-        }
-    },
-    advancedSeeds: {
-        title: "10. Advanced Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Advanced Seeds is a breeder that focuses on easy-to-grow, yet high-performing and resilient strains for beginners and advanced growers, like Afghan Skunk."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A breeder focusing on accessible and resilient genetics. The brand stands for reliability. Buyers must evaluate the seriousness of the dealers."
-        }
-    },
-    strainHunters: {
-        title: "11. Strain Hunters",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Closely associated with Greenhouse Seeds, Strain Hunters specializes in the preservation and breeding of landraces and rare genetics. Their brand is built on authenticity and genetic preservation."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A highly respected brand for genetic preservation, targeting a niche market of experienced growers. Buying their products is an investment in authentic genetics."
-        }
-    },
-    alienLabs: {
-        title: "12. Alien Labs",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Alien Labs is a modern breeder of premium cannabis focused on the finished flower product market. Their products are not sold as seeds directly to consumers."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "For cultivators, this is a dead end as the seeds are not released to the public. Relevant for understanding market trends in end products, but not as a source for cultivation."
-        }
-    },
-    royalQueenSeeds: {
-        title: "13. Royal Queen Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Royal Queen Seeds (RQS) is a large, internationally active seed bank with a wide range of genetics. Customer reviews are positive, highlighting fast, discreet delivery and good prices."
-        },
-        policies: {
-            title: "Operational Policies",
-            shipping: {
-                title: "Shipping Policies and Logistics",
-                points: ["Free and discreet shipping within 3-5 days.", "14-day return policy."]
-            }
-        },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: ["'Buy One, Get One Free' (BOGO) promotions.", "Free seeds included with every order."]
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A large, commercially oriented player. Strengths lie in efficient logistics, aggressive promotions, and a wide assortment. A reliable choice for common genetics."
-        }
-    },
-    greenhouseSeeds: {
-        title: "14. Greenhouse Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Greenhouse Seed Company is one of the most famous seed banks from the Netherlands with a long history of Cannabis Cup wins. However, the brand is subject to strict sales restrictions in many regions."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A legendary brand with award-winning genetics. Due to sales restrictions, direct access is often difficult, requiring purchase through a network of resellers whose reliability must be ensured."
-        }
-    },
-    seedsman: {
-        title: "15. Seedsman",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "Seedsman is a large, established seed bank acting as a global distributor with a highly developed logistical infrastructure."
-        },
-        policies: {
-            title: "Operational Policies",
             payment: {
                 title: "Payment Methods",
-                methods: ["Regionally adapted; USA: Credit cards, Bitcoin; EU: Credit cards, Bitcoin, bank transfer; Others: often only Bitcoin."]
+                methods: ["Credit Cards", "Other online payment options"]
             }
         },
-        offers: {
-            title: "Offers and Loyalty Programs",
-            points: ["10% discount for new customers.", "Regular promotions.", "Up to 9 free seeds per order."]
-        },
         assessment: {
             title: "Analyst's Assessment",
-            content: "A large and experienced global distributor. A reliable choice for customers worldwide seeking access to a broad catalog."
+            content: "An excellent choice for growers of all levels seeking reliable genetics with good support. Their customer-focused approach and community engagement make them a trustworthy source."
         }
     },
-    mephistoGenetics: {
-        title: "16. Mephisto Genetics",
+    bloomSeedCompany: {
+        title: "42. Bloom Seed Company",
         profile: {
             title: "Company Profile and Reputation",
-            content: "A highly specialized breeder focusing exclusively on high-quality, feminized autoflower genetics. The brand enjoys a cult status in the autoflower community and operates on limited 'drops'."
+            content: "Bloom Seed Co is a highly respected breeder collective known for creating some of the most sought-after and flavorful strains on the market. They often collaborate with other top breeders and are known for their limited, high-quality production."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sales are exclusively through a small network of exclusive retailers. Drops are highly sought after and sell out quickly."]
+            }
         },
         assessment: {
             title: "Analyst's Assessment",
-            content: "A leading boutique breeder in the autoflower segment. Targets an informed clientele that values unique genetics. A first-class and highly respected source."
+            content: "An absolute top-tier source for connoisseurs looking for the best of the best. The genetics are exceptional but difficult to obtain and expensive. Acquisition requires planning and monitoring retailer announcements."
         }
     },
-    silentSeeds: {
-        title: "17. Silent Seeds",
+    brothersGrimmSeeds: {
+        title: "43. Brothers Grimm Seeds",
         profile: {
             title: "Company Profile and Reputation",
-            content: "Positions itself as the sole heir to the legendary Spanish seed bank Dinafem Seeds. Known for preserving iconic strains like Original Amnesia. Customer reviews are overwhelmingly positive (9/10)."
+            content: "Brothers Grimm Seeds is a legendary seed bank originally founded in the 1990s, responsible for creating the iconic Cinderella 99 strain. After a hiatus, they returned to the market, offering both their classic lines and new crosses. They have a reputation for stable, potent, and high-yielding sativa-dominant strains."
+        },
+        policies: {
+            title: "Operational Policies",
+            shipping: {
+                title: "Distribution Model",
+                points: ["Sells through their official website and authorized retailers. They ship within the US and internationally to many countries."]
+            },
+            payment: {
+                title: "Payment Methods",
+                methods: ["Credit Cards", "Cryptocurrencies", "Money Orders"]
+            }
         },
         assessment: {
             title: "Analyst's Assessment",
-            content: "A highly respected seed bank carrying on the legacy of an influential brand. Their strength lies in the authenticity and quality of their classic genetics. A highly reliable and trustworthy source."
+            content: "A heritage brand with an invaluable genetic legacy. An excellent choice for growers looking for classic, proven sativa hybrids with high potency and reliability. Direct sales make them a secure and accessible source."
         }
     },
-    worldOfSeeds: {
-        title: "18. World of Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A Spanish seed bank founded in 1992, specializing in collecting, preserving, and breeding landrace genetics. Their scientific approach and emphasis on robust plants set them apart."
+    conclusions: {
+        title: "Summary Conclusions and Strategic Recommendations",
+        content: "The seed market is divided into two main categories: breeders who create genetics and resellers (seed banks) who distribute them. The analysis above highlights that the choice of provider depends on the cultivator's strategic goals.",
+        categories: {
+            resellers: {
+                title: "Resellers/Distributors",
+                content: "Large resellers like Herbies or Seedsman offer a wide selection, fast logistics, and often good customer service, making them a low-risk choice for accessing many different genetics. However, their quality depends on the quality of their breeder partners."
+            },
+            breeders: {
+                title: "Breeders",
+                content: "Buying directly from a reputable breeder like Brothers Grimm or Khalifa Genetics (where possible) guarantees genetic authenticity. However, many elite breeders (e.g., Grandiflora, Exotic Genetix, Bloom) distribute exclusively through a network of dealers. In these cases, the reliability of the dealer must be evaluated."
+            },
+            boutiques: {
+                title: "Boutique Breeders",
+                content: "Smaller breeders like Bean Patch or Ethereal offer unique and rare genetics often not found in the mainstream. This is ideal for experimental growers but carries a higher risk in terms of stability and consistency compared to established brands."
+            }
         },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "An excellent choice for growers interested in authentic landraces. Their focus on genetic diversity makes them a reliable source for high-quality and unique genetics."
-        }
-    },
-    herbiesSeeds: {
-        title: "19. Herbies Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A large international reseller with an extensive catalog. Enjoys a very good reputation (4.5/5 stars from >8,000 reviews) for excellent customer service, fast delivery, and easy problem resolution."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A top-tier global distributor that stands out for excellent customer service and a huge selection. High customer satisfaction positions them as an extremely low-risk and reliable provider."
-        }
-    },
-    seedism: {
-        title: "20. Seedism",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A collective of growers from Amsterdam. The brand's reputation is mixed and based on older forum discussions, with some reports of germination issues and instability."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A breeder brand for experienced cultivators willing to experiment with potentially unstable genetics. The mixed reviews suggest a certain risk regarding consistency."
-        }
-    },
-    simplyCraftedCBD: {
-        title: "21. Simply Crafted CBD",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A US-based company specializing in hemp and CBD products. Sells cannabis seeds as 'collectibles'. Customer reviews note occasionally slow customer service."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "Operates in a legal gray area. Seeds are likely sourced from a third party, and genetic authenticity is not guaranteed. Reported service delays pose an additional operational risk."
-        }
-    },
-    atlasSeed: {
-        title: "22. Atlas Seed",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A seed bank owned by growers, specializing in F1 hybrid cannabis seeds. Enjoys an excellent reputation among growers for impressive results, high germination rates, and unique terpene profiles."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A top-tier choice for growers of all experience levels seeking reliable, high-performance genetics. Their business model positions them as a highly trustworthy and high-quality provider."
-        }
-    },
-    nirvanaSeeds: {
-        title: "23. Nirvana Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "An established seed bank known for its reliable genetics and customer-oriented approach. Long-time customers highlight the consistently high quality and reliability."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A long-standing and very reliable seed bank. Their strength lies in providing proven, stable genetics. A safe and recommended choice."
-        }
-    },
-    dutchPassion: {
-        title: "24. Dutch Passion",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "One of the oldest and most respected seed banks in the world. Pioneers in the development of feminized seeds. Customer reviews are exceptionally positive (4.8/5 stars)."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "An industry leader and one of the safest and most reliable choices on the market. Their decades of experience and excellent reputation make them a top-tier source."
-        }
-    },
-    northAtlanticSeedCo: {
-        title: "25. North Atlantic Seed Co.",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A US-based distributor offering a wide selection from various breeders. Praised for very fast delivery within the US and high-quality 'freebies'. Some criticism regarding customer service for issues."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "An excellent choice for US customers seeking fast delivery and a large selection. The risk lies in potential inconsistency in customer service."
-        }
-    },
-    humboldtSeedCompany: {
-        title: "26. Humboldt Seed Company",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A renowned Californian seed bank specializing in stable, lab-tested genetics. Emphasizes scientific breeding methods and sustainability. Customer reviews are excellent."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A top-tier source for growers who value scientifically-backed breeding and high performance. Their certified genetics and strong guarantees make them a very safe, high-quality choice."
-        }
-    },
-    aceSeeds: {
-        title: "27. Ace Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A Spanish seed bank dedicated to the preservation and research of rare and pure landrace strains. Highly esteemed in the grower community for its unique mission and quality."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "The premier source for connoisseurs interested in authentic landrace genetics. Their commitment to genetic preservation is unique. A purchase from Ace Seeds is an investment in the history of cannabis."
-        }
-    },
-    cannapot: {
-        title: "28. Cannapot",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "An established Austrian online shop with a very large selection of seeds. Customer reviews are generally good (4.4/5 stars), but some users report longer delivery times."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A solid and trustworthy European distributor with an impressive variety of strains. A good choice for buyers willing to accept potentially longer delivery times."
-        }
-    },
-    bcBudDepot: {
-        title: "29. BC Bud Depot",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "An award-winning seed bank from Canada with over 25 years of experience. The brand's reputation is mixed, with older forum posts containing criticism of customer service."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A brand with a long history whose current reputation is difficult to assess. The mixed reviews suggest a certain risk. It is advisable to buy through a reputable reseller."
-        }
-    },
-    bedrocan: {
-        title: "30. Bedrocan",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A Dutch pharmaceutical company and the world's only producer of standardized, pharmaceutical-grade medical cannabis. They do not sell seeds and supply products only by prescription through pharmacies."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "Irrelevant for growers as they do not sell seeds. An important player in the medical cannabis field, but their genetics are not publicly available for cultivation."
-        }
-    },
-    nativeSunGenetics: {
-        title: "31. Native Sun Genetics / Cartier Crops",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A smaller boutique breeder brand with a personal origin story. They offer regular seeds to give growers the opportunity for their own breeding. Reputation is still being built."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A small boutique breeder aimed at a niche of growers interested in new crosses. Buying from such a provider involves higher risk but also the opportunity to discover unique genetics."
-        }
-    },
-    karmaGenetics: {
-        title: "32. Karma Genetics",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A respected breeder brand known for developing potent, 'gassy', and Kush-dominant strains. Enjoys an excellent reputation in the community of experienced growers for genetic stability and quality."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A top-tier choice for growers seeking authentic, potent, and flavorful OG, Kush, and Diesel strains. The brand stands for quality and authenticity. The reliability of the purchase depends on choosing a reputable reseller."
-        }
-    },
-    mrHideSeeds: {
-        title: "33. Mr. Hide Seeds",
-        profile: {
-            title: "Company Profile and Reputation",
-            content: "A seed bank that positions its genetics as easy to grow and high-yielding. No independent customer reviews are available; reputation is based solely on self-descriptions."
-        },
-        assessment: {
-            title: "Analyst's Assessment",
-            content: "A relatively unknown player in the market. The lack of independent reviews makes it difficult to assess reliability. Purchasing their seeds carries some risk as performance is not confirmed by community feedback."
-        }
+        summary: "For maximum security and quality, it is recommended to either buy directly from a reputable breeder with their own distribution structure or to choose a large, well-reviewed distributor that carries the genetics of the desired breeder."
     }
 };

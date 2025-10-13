@@ -6,7 +6,7 @@ import { Strain, GrowSetup, LightType, VentilationPower, PotType } from '@/types
 import { useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
-import { FormSection, Select } from '@/components/ui/ThemePrimitives';
+import { FormSection } from '@/components/ui/ThemePrimitives';
 import { RangeSlider } from '@/components/common/RangeSlider';
 import { Switch } from '@/components/common/Switch';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -35,6 +35,15 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   });
   
   const isPhotoperiod = strain.floweringType === 'Photoperiod';
+
+  const lightCycleOptions = [
+      { value: '18', label: t('plantsView.setupModal.cycles.veg') },
+      { value: '12', label: t('plantsView.setupModal.cycles.flower') },
+      { value: '24', label: t('plantsView.setupModal.cycles.auto') },
+  ].filter(opt => {
+      if (isPhotoperiod) return opt.value !== '24';
+      return true;
+  });
 
   const handleConfirm = () => {
     onConfirm(setup);
@@ -68,7 +77,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
         <FormSection title={t('plantsView.setupModal.lightingTitle')} icon={<PhosphorIcons.LightbulbFilament />} defaultOpen>
             <div className="sm:col-span-2">
                 <SegmentedControl
-                    value={[setup.lightType]}
+                    value={[setup.lightType || 'LED']}
                     onToggle={(val) => setSetup(s => ({ ...s, lightType: val as LightType }))}
                     options={[
                         { value: 'LED', label: t('plantsView.setupModal.lightTypes.led') },
@@ -81,23 +90,18 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                     label={t('plantsView.setupModal.wattage')}
                     min={50} max={1000} step={10}
                     singleValue={true}
-                    value={setup.lightWattage}
+                    value={setup.lightWattage || 150}
                     onChange={val => setSetup(s => ({ ...s, lightWattage: val }))}
                     unit="W"
                 />
             </div>
             <div className="sm:col-span-2">
-                 <Select
-                    label={t('plantsView.setupModal.lightCycle')}
-                    value={setup.lightHours}
-                    onChange={(e) => setSetup(s => ({ ...s, lightHours: Number(e.target.value) }))}
-                    options={[
-                        { value: 18, label: t('plantsView.setupModal.cycles.veg') },
-                        { value: 12, label: t('plantsView.setupModal.cycles.flower') },
-                        { value: 24, label: t('plantsView.setupModal.cycles.auto') },
-                    ]}
-                    disabled={isPhotoperiod && setup.lightHours === 24}
-                 />
+                 <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.setupModal.lightCycle')}</label>
+                 <SegmentedControl
+                    value={[`${setup.lightHours}`]}
+                    onToggle={(val) => setSetup(s => ({ ...s, lightHours: Number(val) }))}
+                    options={lightCycleOptions}
+                />
                  <p className="text-xs text-slate-400 mt-1">
                     {isPhotoperiod ? t('plantsView.setupModal.photoperiodInfo') : t('plantsView.setupModal.autoflowerInfo')}
                 </p>
@@ -108,7 +112,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
              <div className="sm:col-span-2">
                 <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.setupModal.exhaustFanPower')}</label>
                 <SegmentedControl
-                    value={[setup.ventilation]}
+                    value={[setup.ventilation || 'medium']}
                     onToggle={(val) => setSetup(s => ({ ...s, ventilation: val as VentilationPower }))}
                     options={[
                         { value: 'low', label: t('plantsView.setupModal.ventilationLevels.low') },
@@ -117,7 +121,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                     ]}
                 />
             </div>
-            <Switch label={t('plantsView.setupModal.circulationFan')} checked={setup.hasCirculationFan} onChange={val => setSetup(s => ({...s, hasCirculationFan: val}))} />
+            <Switch label={t('plantsView.setupModal.circulationFan')} checked={!!setup.hasCirculationFan} onChange={val => setSetup(s => ({...s, hasCirculationFan: val}))} />
         </FormSection>
         
         <FormSection title={t('plantsView.setupModal.containerTitle')} icon={<PhosphorIcons.Cube />}>
@@ -134,7 +138,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
              <div className="sm:col-span-2">
                  <label className="block text-sm font-semibold text-slate-300 mb-1">{t('plantsView.setupModal.potType')}</label>
                 <SegmentedControl
-                    value={[setup.potType]}
+                    value={[setup.potType || 'Fabric']}
                     onToggle={(val) => setSetup(s => ({ ...s, potType: val as PotType }))}
                     options={[
                         { value: 'Plastic', label: t('plantsView.setupModal.potTypes.plastic') },

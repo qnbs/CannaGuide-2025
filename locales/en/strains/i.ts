@@ -4,6 +4,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "ice": {
     "description": "A balanced hybrid, known for its extremely resinous, 'icy' buds. The effect is strong, uplifting, and relaxing.",
   },
+  "ice-2": {
+    "description": "Ice #2 is a select indica-dominant phenotype known for its heavy resin production and relaxing effects. It is a crucial parent strain for Papaya, contributing its sweet, earthy aroma and calming high."
+  },
   "ice-cream-cake": {
     "description": "An indica-dominant strain with a sweet, creamy, and vanilla-like aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
   },

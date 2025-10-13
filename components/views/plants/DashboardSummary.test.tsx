@@ -1,7 +1,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GardenVitals } from './DashboardSummary';
+import { DashboardSummary } from './DashboardSummary';
 import * as reduxHooks from '@/stores/store';
 import { waterAllPlants } from '@/stores/slices/simulationSlice';
 import { RootState } from '@/stores/store';
@@ -43,7 +43,7 @@ vi.mock('@/services/strainService', () => ({
 const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.spyOn(reduxHooks, 'useAppSelector');
 
-describe('GardenVitals (DashboardSummary)', () => {
+describe('DashboardSummary', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(mockDispatch);
@@ -57,7 +57,7 @@ describe('GardenVitals (DashboardSummary)', () => {
             return undefined;
         });
 
-        render(<GardenVitals openTasksCount={3} />);
+        render(<DashboardSummary openTasksCount={3} />);
 
         expect(screen.getByText('90%')).toBeInTheDocument();
         expect(screen.getByText('1')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('GardenVitals (DashboardSummary)', () => {
             return undefined;
         });
 
-        render(<GardenVitals openTasksCount={0} />);
+        render(<DashboardSummary openTasksCount={0} />);
 
         expect(screen.getByText('100%')).toBeInTheDocument();
         expect(screen.getByText('0')).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe('GardenVitals (DashboardSummary)', () => {
             return undefined;
         });
 
-        render(<GardenVitals openTasksCount={0} />);
+        render(<DashboardSummary openTasksCount={0} />);
         
         fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }));
 

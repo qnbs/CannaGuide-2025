@@ -15,7 +15,7 @@ export const strains: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9,
         "floweringTimeRange": "8-10",
-        "description": "Gelato #45 is a popular indica-dominant phenotype of the Gelato line. It is known for its strong, relaxing effects and a sweet, earthy aroma with hints of lavender and citrus. This strain is a parent to Project 4516 and Tiramisu, passing on its potent effects and complex flavor profile.",
+        "description": "Gelato #45, often referred to simply as 'Gelato 45', is a popular indica-dominant phenotype of the Gelato line. It is known for its strong, relaxing effects and a sweet, earthy aroma with hints of lavender and citrus. This strain is a parent to Project 4516 and Tiramisu, passing on its potent effects and complex flavor profile.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",

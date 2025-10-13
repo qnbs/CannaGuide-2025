@@ -1,11 +1,20 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "la-reunion": {
+    "description": "La Reunion ist eine reine Sativa-Landrasse von der Insel Réunion im Indischen Ozean. Sie ist bekannt für ihre klassischen, lang blühenden Sativa-Eigenschaften und ein starkes, energetisches und langanhaltendes zerebrales High. Ihr Aroma ist typischerweise würzig und haschig. Sie ist ein Schlüssel-Elternteil bei der Züchtung der berühmten Sorte Queen Mother."
+  },
+  "lemonnade": {
+    "description": "Lemonnade, manchmal auch Lemonade geschrieben, ist eine sativa-dominante Hybride, die für ihren überwältigend süßen und spritzigen Zitronengeschmack bekannt ist. Sie liefert ein energetisches, erhebendes und fröhliches High, das sich perfekt für den Tagesgebrauch und kreative Aktivitäten eignet. Sie ist ein Elternteil der beliebten Sorte Lemonchello."
+  },
   "lemon-pebbles": {
     "description": "Eine ausgewogene Hybride, die für ihr köstliches Geschmacksprofil bekannt ist, das die süßen, fruchtigen Noten von Fruity Pebbles OG mit einem scharfen, pikanten Zitronenkick kombiniert. Die Wirkung ist fröhlich, erhebend und kreativ und bietet eine sanfte Körperentspannung, die sie für den Tagesgebrauch geeignet macht."
   },
   "lemon-cooler": {
     "description": "Eine Sativa-dominante Hybride, die für ihr erfrischendes und lebhaftes Zitrusprofil bekannt ist und an ein kühles Zitronengetränk an einem heißen Tag erinnert. Sie bietet typischerweise eine energetisierende und erhebende Wirkung, die Kreativität und Konzentration fördert, was sie zu einer ausgezeichneten Wahl für den Tagesgebrauch macht."
+  },
+  "lemon-joy": {
+    "description": "Lemon Joy ist eine sativa-dominante Hybride, die für ihre lebhafte und erhebende Wirkung sowie ihr süßes, spritziges Zitronenaroma bekannt ist. Sie sorgt für ein fröhliches und energetisches High, was sie zu einem wichtigen Elternteil bei der Züchtung von Lemon Kush macht."
   },
   "la-confidential": {
     "description": "Eine berühmte Indica aus Kalifornien mit einem erdigen, kiefernartigen und skunkigen Aroma. Die Wirkung ist stark, entspannend und ideal bei Schmerzen und Schlaflosigkeit.",

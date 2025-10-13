@@ -38,6 +38,19 @@ import { strains as strainsTempParents8 } from './temp-additions-parents-8';
 import { strains as strainsTempParents9 } from './temp-additions-parents-9';
 import { strains as strainsTempParents10 } from './temp-additions-parents-10';
 import { strains as strainsTempParents11 } from './temp-additions-parents-11';
+import { strains as strainsTempTriangleKush } from './temp-additions-trianglekush';
+import { strains as strainsTempChocoDiesel } from './temp-additions-chocodiesel';
+import { strains as strainsTempN11 } from './temp-additions-n11';
+import { strains as strainsTempU5 } from './temp-additions-u5';
+import { strains as strainsTempNew12 } from './temp-additions-new-12';
+import { strains as strainsTempNew09 } from './temp-additions-new09';
+import { strains as strainsTempParentsM14 } from './temp-additions-parents-m14';
+import { strains as strainsTempParents313 } from './temp-additions-parents-313';
+import { strains as strainsTempParentsHij12 } from './temp-additions-parents-hij12';
+import { strains as strainsTempParents411 } from './temp-additions-parents-411';
+import { strains as strainsTempParentsEf10 } from './temp-additions-parents-ef10';
+import { strains as strainsTempParentsCc9 } from './temp-additions-parents-cc9';
+import { strains as strainsTempParentsJTW } from './temp-additions-parents-jtw';
 
 
 export const allStrainsData: Strain[] = [
@@ -80,4 +93,17 @@ export const allStrainsData: Strain[] = [
     ...strainsTempParents9,
     ...strainsTempParents10,
     ...strainsTempParents11,
+    ...strainsTempTriangleKush,
+    ...strainsTempChocoDiesel,
+    ...strainsTempN11,
+    ...strainsTempU5,
+    ...strainsTempNew12,
+    ...strainsTempNew09,
+    ...strainsTempParentsM14,
+    ...strainsTempParents313,
+    ...strainsTempParentsHij12,
+    ...strainsTempParents411,
+    ...strainsTempParentsEf10,
+    ...strainsTempParentsCc9,
+    ...strainsTempParentsJTW,
 ];

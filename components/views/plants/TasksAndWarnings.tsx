@@ -1,4 +1,5 @@
 
+
 import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -46,12 +47,16 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(({ tasks, 
                 </h3>
                 {problems.length > 0 ? (
                     <div className="space-y-3">
-                        {problems.map((problem, index) => (
-                            <div key={`${problem.plantId}-${index}`} className="p-2 border-l-4 border-amber-500/50 bg-amber-500/10 rounded-r-md">
-                                <p className="font-bold text-sm text-slate-100">{t(`problemMessages.${problem.type.charAt(0).toLowerCase() + problem.type.slice(1)}.message`)}</p>
-                                <p className="text-xs text-slate-300">{problem.plantName}</p>
-                            </div>
-                        ))}
+                        {problems.map((problem, index) => {
+                            // FIX: Correctly convert problem type from SCREAMING_SNAKE_CASE to camelCase for i18n key.
+                            const problemKey = problem.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
+                            return (
+                                <div key={`${problem.plantId}-${index}`} className="p-2 border-l-4 border-amber-500/50 bg-amber-500/10 rounded-r-md">
+                                    <p className="font-bold text-sm text-slate-100">{t(`problemMessages.${problemKey}.message`)}</p>
+                                    <p className="text-xs text-slate-300">{problem.plantName}</p>
+                                </div>
+                            );
+                        })}
                     </div>
                 ) : (
                     <p className="text-slate-300 text-sm">{t('plantsView.warnings.none')}</p>

@@ -7,7 +7,8 @@ import { useAppDispatch } from '@/stores/store';
 import { setActiveMentorPlantId } from '@/stores/slices/uiSlice';
 import { KnowledgeArticle, Plant } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
-import { GuideTab } from './GuideTab';
+import { Select } from '@/components/ui/ThemePrimitives';
+import { Card } from '@/components/common/Card';
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
     return knowledgeBase.filter(article => {
@@ -59,23 +60,35 @@ export const MentorView: React.FC = () => {
             </div>
             
             {activePlants.length > 0 ? (
-                <div className="flex flex-col sm:flex-row items-center gap-3 bg-slate-800/50 p-3 rounded-lg ring-1 ring-inset ring-white/20">
-                    <label htmlFor="mentor-plant-selector" className="text-sm font-semibold text-slate-300 flex-shrink-0">{t('knowledgeView.hub.selectPlant')}:</label>
-                    <select id="mentor-plant-selector" value={selectedPlantId || ''} onChange={e => setSelectedPlantId(e.target.value)} className="w-full sm:flex-grow select-input">
-                        {activePlants.map(p => <option key={p.id} value={p.id}>{p.name} ({t(`plantStages.${p.stage}`)})</option>)}
-                    </select>
-                    <Button onClick={() => dispatch(setActiveMentorPlantId(selectedPlantId))} disabled={!selectedPlantId} className="w-full sm:w-auto">
-                       {t('knowledgeView.aiMentor.startChat')} <PhosphorIcons.ArrowRight className="w-4 h-4 ml-1.5" />
-                    </Button>
-                </div>
+                <Card className="!p-4 bg-slate-800/50">
+                    <div className="space-y-3">
+                        <Select
+                            label={t('knowledgeView.hub.selectPlant')}
+                            value={selectedPlantId || ''}
+                            onChange={e => setSelectedPlantId(e.target.value as string)}
+                            options={activePlants.map(p => ({ value: p.id, label: `${p.name} (${t(`plantStages.${p.stage}`)})` }))}
+                        />
+                        <Button onClick={() => dispatch(setActiveMentorPlantId(selectedPlantId))} disabled={!selectedPlantId} className="w-full">
+                           {t('knowledgeView.aiMentor.startChat')} <PhosphorIcons.ArrowRight className="w-4 h-4 ml-1.5" />
+                        </Button>
+                    </div>
+                </Card>
             ) : (
                 <p className="text-slate-400 text-sm text-center py-4">{t('knowledgeView.hub.noPlants')}</p>
             )}
 
             {selectedPlantForHub && relevantArticles.length > 0 && (
-                <div className="mt-6">
-                    <h3 className="text-lg font-bold text-slate-200 mb-2">{t('knowledgeView.hub.todaysFocus', { plantName: selectedPlantForHub.name })}</h3>
-                    <GuideTab articles={relevantArticles} />
+                <div className="mt-4">
+                    <h3 className="text-xl font-bold font-display text-slate-100 mb-2">{t('knowledgeView.hub.todaysFocus', { plantName: selectedPlantForHub.name })}</h3>
+                    <details className="group glass-pane rounded-lg overflow-hidden ring-1 ring-inset ring-white/20" open>
+                        <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
+                            <h4 className="font-semibold text-slate-100">{t(relevantArticles[0].titleKey)}</h4>
+                            <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
+                        </summary>
+                        <div className="p-4 border-t border-slate-700/50">
+                            <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100" dangerouslySetInnerHTML={{ __html: t(relevantArticles[0].contentKey) }} />
+                        </div>
+                    </details>
                 </div>
             )}
         </div>

@@ -1,5 +1,6 @@
 export const settingsView = {
   title: 'Einstellungen',
+  saveSuccess: 'Einstellungen gespeichert!',
   categories: {
     general: 'Allgemein & UI',
     accessibility: 'Barrierefreiheit',
@@ -20,6 +21,7 @@ export const settingsView = {
       purpleHaze: 'Purpurnebel',
       desertSky: 'Wüstenhimmel',
       roseQuartz: 'Rosenquarz',
+      rainbowKush: 'Regenbogen Kush',
     },
     fontSize: 'Schriftgröße',
     fontSizes: {

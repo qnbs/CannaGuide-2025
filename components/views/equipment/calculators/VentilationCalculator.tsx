@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input, ResultDisplay } from './common';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
-export const VentilationCalculator: React.FC = () => {
+export const VentilationCalculator: React.FC = memo(() => {
     const { t } = useTranslation();
     const [dimensions, setDimensions] = useState({ width: 80, depth: 80, height: 180 });
     const [wattage, setWattage] = useState(150);
@@ -50,4 +50,4 @@ export const VentilationCalculator: React.FC = () => {
             <ResultDisplay label={t('equipmentView.calculators.ventilation.result')} value={result.toString()} unit="m³/h" />
         </CalculatorSection>
     );
-};
+});

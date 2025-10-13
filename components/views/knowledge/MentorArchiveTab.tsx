@@ -95,7 +95,7 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
     }
 
     return (
-        <Card>
+        <div>
             {editingResponse && (
                 <EditResponseModal 
                     response={{ ...editingResponse, title: editingResponse.title || '' }} 
@@ -129,13 +129,13 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
                 {filteredArchive.length > 0 ? (
                     <>
                         <div className="px-1 flex items-center gap-3">
-                            <input type="checkbox" checked={selectedIds.size === filteredArchive.length && filteredArchive.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                            <input type="checkbox" checked={selectedIds.size === filteredArchive.length && filteredArchive.length > 0} onChange={handleToggleAll} className="custom-checkbox" />
                             <label className="text-sm text-slate-400">{t('strainsView.selectedCount', { count: selectedIds.size })}</label>
                         </div>
                          {filteredArchive.map(res => (
                             (res && res.title) && (
                                 <Card key={res.id} className="bg-slate-800/70 p-3 flex items-start gap-3">
-                                    <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="mt-1.5 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
+                                    <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="custom-checkbox mt-1.5 flex-shrink-0" />
                                     <div className="flex-grow">
                                         <p className="text-xs text-slate-400 italic">{t('knowledgeView.archive.queryLabel')}: "{res.query}"</p>
                                         <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
@@ -152,10 +152,10 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
                 ) : (
                     <div className="text-center py-10 text-slate-500">
                         <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                        <h3 className="font-semibold">{t('knowledgeView.archive.empty')}</h3>
+                        <h3 className="font-semibold text-slate-300">{t('knowledgeView.archive.empty')}</h3>
                     </div>
                 )}
             </div>
-        </Card>
+        </div>
     );
 };

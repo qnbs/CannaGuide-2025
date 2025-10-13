@@ -96,7 +96,7 @@ const TraitComparison: React.FC<{ label: string, valA: string, valB: string, val
     </div>
 );
 
-export const BreedingView: React.FC = () => {
+const BreedingView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
@@ -162,7 +162,10 @@ export const BreedingView: React.FC = () => {
                 <Card className="lg:col-span-1">
                     <h4 className="font-bold text-lg text-slate-200 mb-2">{t('knowledgeView.breeding.collectedSeeds')} ({collectedSeeds.length})</h4>
                     {collectedSeeds.length === 0 ? (
-                        <p className="text-sm text-slate-500 py-4 text-center">{t('knowledgeView.breeding.noSeeds')}</p>
+                        <div className="text-center py-8 text-slate-500">
+                            <PhosphorIcons.TestTube className="w-16 h-16 mx-auto text-slate-400 mb-4" />
+                            <p className="text-sm font-semibold text-slate-300">{t('knowledgeView.breeding.noSeeds')}</p>
+                        </div>
                     ) : (
                         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                             {collectedSeeds.map(seed => <SeedCard key={seed.id} seed={seed} onClick={() => handleSeedClick(seed.id)} isSelected={seed.id === parentA_id || seed.id === parentB_id} strain={allStrains.find(s => s.id === seed.strainId)} />)}

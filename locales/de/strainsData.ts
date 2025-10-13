@@ -29,6 +29,8 @@ import { strains as strainsZ } from './strains/z';
 import { strains as strainsNumeric } from './strains/numeric';
 import { strains as strainsTempParents10 } from './strains/temp-additions-parents-10';
 import { strains as strainsTempParents11 } from './strains/temp-additions-parents-11';
+import { strains as strainsTempNew09 } from './strains/temp-additions-new09';
+import { strains as strainsTempParentsM14 } from './strains/temp-additions-parents-m14';
 
 export const strainsData: Record<string, StrainTranslationData> = {
     ...strainsNumeric,
@@ -60,4 +62,6 @@ export const strainsData: Record<string, StrainTranslationData> = {
     ...strainsZ,
     ...strainsTempParents10,
     ...strainsTempParents11,
+    ...strainsTempNew09,
+    ...strainsTempParentsM14,
 };

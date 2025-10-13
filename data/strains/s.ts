@@ -519,7 +519,7 @@ export const strainsS: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A balanced hybrid with a sour, fruity, and diesel-like aroma. The effect is strong, euphoric, and relaxing.",
+        "description": "Sour Dubble, also known as 'Sour Dubb', is a balanced hybrid strain, and the different spellings are used interchangeably in the cannabis community. It originates from a cross between a Sour Diesel variety and Sour Bubble. This strain is known for its sweet and sour aroma with diesel notes and its balanced effect, which is both euphoric and relaxing. It is one of the key parent strains of the legendary Gorilla Glue #4.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -865,6 +865,30 @@ export const strainsS: Strain[] = [
         },
         "aromas": ["Sweet", "Spicy", "Earthy", "Skunk"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "super-glue",
+        "name": "Super Glue",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
+        "genetics": "Afghani x Northern Lights",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "thcRange": "20-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "Super Glue is an indica-dominant hybrid known for its deeply relaxing and calming effects. It produces a sense of tranquility that melts away stress and pain, while retaining a touch of cerebral clarity. The aroma is primarily pine and earthy notes.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Pine", "Earthy", "Pungent", "Sweet"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Pinene"]
     }),
     createStrainObject({
         "id": "super-lemon-haze",

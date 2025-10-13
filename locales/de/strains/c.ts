@@ -74,6 +74,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "cereal-milk": {
         "description": "Eine ausgewogene Hybride mit einem einzigartigen Aroma, das an süße Milch und Eiscreme erinnert. Die Wirkung ist beruhigend, kreativ und sorgt für ein wohliges Gefühl.",
     },
+    "champagne": {
+        "description": "Champagne Kush, oft einfach als Champagne bezeichnet, ist eine Indica-dominante Hybride, die für ihre erhebende, 'prickelnde' Wirkung bekannt ist, die an den gleichnamigen Sekt erinnert. Sie bietet ein glückliches, geselliges High, das sich in eine sanfte Körperentspannung verwandelt. Das Aroma ist typischerweise süß und traubenartig mit blumigen und erdigen Untertönen. Sie ist ein Elternteil von Rainbow Sherbet."
+    },
     "charlie-sheen": {
         "description": "Eine potente Hybride, die die besten Eigenschaften ihrer Eltern vereint. Sie bietet eine starke, euphorische und gleichzeitig entspannende Wirkung.",
     },
@@ -101,6 +104,9 @@ export const strains: Record<string, StrainTranslationData> = {
     "chemdawg-91": {
         "description": "Einer der ursprünglichen und potentesten Phänotypen der Chemdawg-Linie. Bekannt für sein extrem scharfes, dieselartiges Aroma und eine starke, zerebrale Wirkung, die in eine tiefe Körperentspannung übergeht. Eine legendäre Sorte, die als Elternteil für viele berühmte Hybriden wie OG Kush und Sour Diesel diente."
     },
+    "chemdawg-sour-diesel": {
+        "description": "Chemdawg Sour Diesel ist ein Phänotyp, der die potentesten Eigenschaften seiner Elternstämme hervorhebt. Er ist bekannt für sein extrem scharfes Diesel- und saures Zitrusaroma. Diese Sativa-dominante Sorte liefert einen schnell wirkenden, energetischen und traumhaften zerebralen Rausch, der sich perfekt für den Tagesgebrauch eignet, um Kreativität und Konzentration zu fördern. Sie ist ein Elternteil von Grape Stomper."
+    },
     "chemdog-millionaire": {
         "description": "Eine potente Hybride mit einem zitronigen, dieselartigen und erdigen Aroma. Chemdog Millionaire liefert ein starkes, euphorisches und entspannendes High, das perfekt zum Entspannen ist.",
     },
@@ -108,13 +114,19 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "Eine sativa-dominante Hybride mit einem süßen, kirschartigen und erdigen Aroma. Cherry AK-47 liefert ein erhebendes, kreatives und energetisches High, das perfekt für den Tagesgebrauch ist.",
     },
     "cherry-cookies": {
-        "description": "Eine indica-dominante Hybride, die Cherry Pie mit Girl Scout Cookies kreuzt. Sie liefert ein potentes, euphorisches Kopf-High, das in eine tiefe Körperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Kirschen und erdigen, teigigen Noten ihrer Cookies-Abstammung, was sie zu einer geschmackvollen Wahl zum Entspannen macht.",
+        "description": "Eine indica-dominante Hybride, die Cherry Pie mit Girl Scout Cookies kreuzt. Sie liefert ein potentes, euphorisches Kopf-High, das in eine tiefe Körperentspannung übergeht. Ihr Aroma ist eine köstliche Mischung aus süßen Kirschen und erdigen, teigigen Noten ihrer Cookies-Abstammung, was sie zu einer geschmackvollen Wahl zum Entspannen macht."
     },
     "cherry-pie": {
         "description": "Eine indica-dominante Hybride mit einem süßen, kirschartigen und erdigen Aroma. Cherry Pie liefert ein entspannendes und glückliches High, das perfekt zum Entspannen ist.",
     },
+    "chimera-2": {
+        "description": "Chimera #2 ist eine hochpotente und begehrte Hybridsorte von BeLeaf Cannabis. Bekannt für ihr komplexes Aromaprofil, das Portwein, Zitrusfrüchte und gasartige Noten vereint. Die Wirkung ist potent und bietet ein euphorisches und kreatives High, das in eine angenehme Körperentspannung übergeht. Sie ist ein Elternteil von Permanent Chimera."
+    },
     "chiquita-banana": {
         "description": "Eine potente Hybride mit einem süßen, fruchtigen Bananenaroma. Chiquita Banana liefert ein starkes, euphorisches und entspannendes High, das perfekt zum Entspannen ist.",
+    },
+    "chocolate-diesel": {
+        "description": "Chocolate Diesel ist eine potente Sativa-dominante Hybride, berühmt für ihr einzigartiges und komplexes Aromaprofil, das scharfen Diesel mit reichen Noten von Kaffee und dunkler Schokolade mischt. Diese Sorte ist ein genetischer Elternteil des legendären Original Glue (GG4). Sie liefert ein starkes, schnell einsetzendes zerebrales High, das erhebend, energetisch und euphorisch ist, was sie zu einer großartigen Wahl für den Tagesgebrauch zur Bekämpfung von Müdigkeit und zur Anregung der Kreativität macht. Aufgrund ihrer starken Wirkung ist sie am besten für erfahrene Konsumenten geeignet."
     },
     "chocolate-thai": {
         "description": "Eine legendäre Landrassen-Sativa aus den 1960er Jahren, berühmt für ihr einzigartiges schokoladen- und kaffeeartiges Aroma. Die Wirkung ist rein zerebral, energetisierend und kreativ, aber ohne die manchmal überwältigende Rasanz anderer Sativas. Aufgrund ihrer langen Blütezeit und ihres geringen Ertrags ist sie heute selten in ihrer reinen Form zu finden."
@@ -137,11 +149,23 @@ export const strains: Record<string, StrainTranslationData> = {
     "colt-45": {
         "description": "Eine sativa-dominante Hybride mit einem erdigen, kiefernartigen und holzigen Aroma. Colt 45 liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
     },
+    "congo-3": {
+        "description": "Congo #3 ist ein spezifischer Phänotyp einer kongolesischen Landrasse, der wahrscheinlich für bestimmte wünschenswerte Merkmale selektiert wurde. Er ist einer der Elternteile der Sorte Congo. Er bietet ein klassisches Sativa-High: klar, energetisch und erhebend mit einem würzigen, fruchtigen Aroma."
+    },
+    "congo-pointe-noire": {
+        "description": "Eine reine Sativa-Landrasse aus der Region Pointe-Noire in der Republik Kongo. Bekannt für ihr energetisches, langanhaltendes zerebrales High, das die Kreativität anregt. Sie hat ein fruchtiges, würziges und erdiges Aroma und ist ein Elternteil der Sorte Congo."
+    },
     "congo": {
         "description": "Eine reine Sativa mit einem süßen, fruchtigen und erdigen Aroma. Congo liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
     },
+    "cookie-monster": {
+        "description": "Eine preisgekrönte Indica-dominante Hybride. Sie liefert ein starkes, entspannendes und schläfriges High, das ihrer OG- und Cookies-Abstammung treu bleibt. Das Aroma ist süß und minzig mit holzigen, erdigen Untertönen. Sie ist ein Elternteil von Pineapple Upside Down Cake."
+    },
     "cookies-and-cream": {
         "description": "Eine ausgewogene Hybride mit einem süßen, vanilleartigen und nussigen Aroma. Cookies and Cream liefert ein starkes, euphorisches und entspannendes High, das für verschiedene Anlässe geeignet ist.",
+    },
+    "cosmic-charlie": {
+        "description": "Eine sativa-dominante Sorte mit einer hoch psychedelischen und kreativen Wirkung. Das Aroma ist eine Mischung aus Zitrus, Süße und erdigen Noten."
     },
     "critical-mass": {
         "description": "Eine indica-dominante Sorte, die für ihre massiven Erträge und dichten Knospen bekannt ist, die dazu neigen, unter ihrem eigenen Gewicht zu brechen. Die Wirkung ist tief entspannend.",

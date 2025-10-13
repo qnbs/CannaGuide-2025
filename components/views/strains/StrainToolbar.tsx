@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/stores/store';
 import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';
 import { StrainType } from '@/types';
-import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { SearchBar } from '@/components/common/SearchBar';
 
 interface StrainToolbarProps {
@@ -26,81 +25,62 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { 
-        searchTerm, onSearchTermChange, onExport, onAdd, 
-        onOpenDrawer, activeFilterCount, viewMode, typeFilter,
-        onToggleTypeFilter, isAnyFilterActive, onResetFilters
+        searchTerm, onSearchTermChange, onOpenDrawer, activeFilterCount, viewMode, typeFilter, onToggleTypeFilter, isAnyFilterActive, onResetFilters
     } = props;
     
-    const isOnlyOneTypeFilterActive =
-        searchTerm.trim() === '' &&
-        activeFilterCount === 0 &&
-        typeFilter.length === 1 &&
-        isAnyFilterActive; 
-
-    const shouldShowResetButton = isAnyFilterActive && !isOnlyOneTypeFilterActive;
-
+    const typeOptions: { value: StrainType, label: string }[] = [
+        { value: StrainType.Sativa, label: t('strainsView.sativa') },
+        { value: StrainType.Indica, label: t('strainsView.indica') },
+        { value: StrainType.Hybrid, label: t('strainsView.hybrid') },
+    ];
 
     return (
         <div className="space-y-4">
-            {/* Desktop Toolbar - Compact Layout */}
-            <div className="hidden sm:flex items-center gap-4">
-                 <div className="flex-grow min-w-[250px] max-w-xs">
+            <div className="flex items-center gap-2">
+                <div className="flex-grow">
                     <SearchBar
                         placeholder={t('strainsView.searchPlaceholder')}
                         value={searchTerm}
                         onChange={(e) => onSearchTermChange(e.target.value)}
                     />
                 </div>
-                
-                <Button onClick={onOpenDrawer} variant="secondary" className="relative !py-2.5">
+                <Button onClick={onOpenDrawer} variant="secondary" className="relative !p-2.5">
                     <PhosphorIcons.FunnelSimple className="w-5 h-5" />
-                    {activeFilterCount > 0 && <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">{activeFilterCount}</span>}
+                    {activeFilterCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-white text-[10px] font-bold ring-2 ring-slate-800">
+                            {activeFilterCount}
+                        </span>
+                    )}
                 </Button>
-
-                <div className="ml-auto flex items-center gap-2">
-                    <div className="flex items-center gap-1 bg-slate-800 rounded-lg p-0.5">
-                        <Button variant={viewMode === 'list' ? 'secondary' : 'ghost'} onClick={() => dispatch(setStrainsViewMode('list'))} className="!p-1.5" aria-label={t('strainsView.viewModes.list')}><PhosphorIcons.ListBullets className="w-5 h-5" /></Button>
-                        <Button variant={viewMode === 'grid' ? 'secondary' : 'ghost'} onClick={() => dispatch(setStrainsViewMode('grid'))} className="!p-1.5" aria-label={t('strainsView.viewModes.grid')}><PhosphorIcons.GridFour className="w-5 h-5" /></Button>
-                    </div>
-
-                    <Button onClick={onExport} variant="secondary" className="!py-2.5 !px-3" title={t('common.export')}>
-                        <PhosphorIcons.DownloadSimple className="w-5 h-5" />
-                    </Button>
-                    <Button onClick={onAdd} variant="primary" className="!py-2.5 !px-3" title={t('strainsView.addStrain')}>
-                        <PhosphorIcons.PlusCircle className="w-5 h-5" />
-                    </Button>
-                </div>
+                 <Button 
+                    onClick={() => dispatch(setStrainsViewMode(viewMode === 'list' ? 'grid' : 'list'))} 
+                    variant="secondary" 
+                    className="!p-2.5"
+                    title={t('strainsView.toggleView')}
+                >
+                    {viewMode === 'list' ? <PhosphorIcons.GridFour className="w-5 h-5"/> : <PhosphorIcons.ListBullets className="w-5 h-5"/>}
+                </Button>
             </div>
-
-             {/* Mobile Toolbar */}
-            <div className="sm:hidden space-y-4">
-                <div className="flex items-center gap-2">
-                    <div className="flex-grow">
-                        <SearchBar
-                            placeholder={t('strainsView.searchPlaceholder')}
-                            value={searchTerm}
-                            onChange={e => onSearchTermChange(e.target.value)}
-                        />
-                    </div>
-                    <Button onClick={onOpenDrawer} variant="secondary" className="relative !p-2.5">
-                        <PhosphorIcons.FunnelSimple className="w-5 h-5"/>
-                        {activeFilterCount > 0 && (
-                            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
-                                {activeFilterCount}
-                            </span>
-                        )}
+            
+            <div className="flex flex-wrap items-center gap-2">
+                {typeOptions.map(opt => (
+                    <Button 
+                        key={opt.value} 
+                        variant={typeFilter.includes(opt.value) ? 'primary' : 'secondary'}
+                        onClick={() => onToggleTypeFilter(opt.value)}
+                        size="sm"
+                        className="flex-1"
+                    >
+                        {opt.label}
                     </Button>
-                </div>
+                ))}
+                {isAnyFilterActive && (
+                    <Button variant="ghost" size="sm" onClick={onResetFilters} className="text-red-400 hover:bg-red-500/10 hover:text-red-300">
+                        <PhosphorIcons.X className="w-4 h-4 mr-1" />
+                        {t('strainsView.resetFilters')}
+                    </Button>
+                )}
             </div>
-             <SegmentedControl
-                options={[
-                    { value: 'Sativa', label: t('strainsView.sativa') },
-                    { value: 'Indica', label: t('strainsView.indica') },
-                    { value: 'Hybrid', label: t('strainsView.hybrid') },
-                ]}
-                value={typeFilter}
-                onToggle={onToggleTypeFilter}
-            />
         </div>
     );
 };

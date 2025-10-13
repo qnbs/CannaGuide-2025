@@ -21,6 +21,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     const { t } = useTranslation()
     const modalRef = useFocusTrap(isOpen)
     const inputRef = useRef<HTMLInputElement>(null)
+    const listRef = useRef<HTMLUListElement>(null)
     const [query, setQuery] = useState('')
     const { allCommands } = useCommandPalette()
 
@@ -28,10 +29,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         if (isOpen) {
             setTimeout(() => inputRef.current?.focus(), 100)
             setQuery('')
+            listRef.current?.scrollTo({ top: 0 })
         }
     }, [isOpen])
 
     const displayedCommands = useMemo(() => {
+        if (listRef.current) {
+            listRef.current.scrollTop = 0;
+        }
         if (!query.trim()) return groupAndSortCommands(allCommands)
 
         const lowerCaseQuery = query.toLowerCase()
@@ -63,7 +68,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
     return ReactDOM.createPortal(
         <div
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-[100] flex items-start justify-center p-4 pt-[15vh]"
+            className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-start justify-center p-4 pt-[15vh]"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -94,6 +99,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 {displayedCommands.length > 0 ? (
                     <ul
                         id="command-results-list"
+                        ref={listRef}
                         role="listbox"
                         className="max-h-[50vh] overflow-y-auto p-2"
                     >

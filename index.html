@@ -41,7 +41,7 @@
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#0F172A" />
+    <meta name="theme-color" content="#0A1927" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -56,7 +56,24 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <style>
-      :root, :root.dark.theme-midnight { color-scheme: dark; --color-bg-primary: 15 23 42; --color-bg-component: 30 41 59; --color-border: 51 65 85; --color-primary-50: 236 254 255; --color-primary-100: 207 250 254; --color-primary-200: 165 243 252; --color-primary-300: 103 232 249; --color-primary-400: 34 211 238; --color-primary-500: 6 182 212; --color-primary-600: 8 145 178; --color-primary-700: 14 116 144; --color-primary-800: 21 94 117; --color-primary-900: 22 78 99; --color-primary-950: 8 51 68; --color-accent-50: 247 254 231; --color-accent-100: 236 252 203; --color-accent-200: 217 249 157; --color-accent-300: 190 242 100; --color-accent-400: 163 230 53; --color-accent-500: 132 204 22; --color-accent-600: 101 163 13; --color-accent-700: 77 124 15; --color-accent-800: 63 98 18; --color-accent-900: 53 79 22; --color-accent-950: 24 39 12; --color-secondary-50: 245 243 255; --color-secondary-100: 237 233 254; --color-secondary-200: 221 214 254; --color-secondary-300: 196 181 253; --color-secondary-400: 167 139 250; --color-secondary-500: 139 92 246; --color-secondary-600: 124 58 237; --color-secondary-700: 109 40 217; --color-secondary-800: 91 33 182; --color-secondary-900: 76 29 149; --color-secondary-950: 46 16 101; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 3 7 18; --color-text-on-accent: 255 255 255; --color-success: 74 222 128; --color-warning: 250 204 21; --color-danger: 239 68 68; --color-info: 59 130 246; }
+      /* --- THEMES --- */
+      /* Midnight (Default) */
+      :root, :root.dark.theme-midnight { color-scheme: dark; --color-bg-primary: 15 23 42; --color-bg-component: 30 41 59; --color-border: 51 65 85; --color-primary-50: 239 246 255; --color-primary-100: 219 234 254; --color-primary-200: 191 219 254; --color-primary-300: 147 197 253; --color-primary-400: 96 165 250; --color-primary-500: 59 130 246; --color-primary-600: 37 99 235; --color-primary-700: 29 78 216; --color-primary-800: 30 64 175; --color-primary-900: 30 58 138; --color-primary-950: 23 37 84; --color-accent-50: 240 253 250; --color-accent-100: 204 251 241; --color-accent-200: 153 246 228; --color-accent-300: 94 234 212; --color-accent-400: 45 212 191; --color-accent-500: 20 184 166; --color-accent-600: 13 148 136; --color-accent-700: 15 118 110; --color-accent-800: 19 94 88; --color-accent-900: 20 78 74; --color-accent-950: 12 52 49; --color-secondary-50: 238 242 255; --color-secondary-100: 224 231 255; --color-secondary-200: 199 210 254; --color-secondary-300: 165 180 252; --color-secondary-400: 129 140 248; --color-secondary-500: 99 102 241; --color-secondary-600: 79 70 229; --color-secondary-700: 67 56 202; --color-secondary-800: 55 48 163; --color-secondary-900: 49 46 129; --color-secondary-950: 30 27 75; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 10 25 39; --color-text-on-accent: 255 255 255; --color-success: 74 222 128; --color-warning: 251 176 60; --color-danger: 248 113 113; --color-info: 59 130 246; }
+      
+      /* Forest Theme */
+      :root.dark.theme-forest { color-scheme: dark; --color-bg-primary: 18 29 27; --color-bg-component: 28 41 39; --color-border: 41 57 54; --color-primary-50: 236 253 245; --color-primary-100: 209 250 229; --color-primary-200: 167 243 208; --color-primary-300: 110 231 183; --color-primary-400: 52 211 153; --color-primary-500: 16 185 129; --color-primary-600: 5 150 105; --color-primary-700: 4 120 87; --color-primary-800: 6 95 70; --color-primary-900: 6 78 59; --color-primary-950: 4 47 35; --color-accent-50: 254 252 232; --color-accent-100: 254 249 195; --color-accent-200: 254 240 138; --color-accent-300: 253 224 71; --color-accent-400: 250 204 21; --color-accent-500: 234 179 8; --color-accent-600: 202 138 4; --color-accent-700: 161 98 7; --color-accent-800: 133 77 14; --color-accent-900: 113 63 18; --color-accent-950: 69 36 6; --color-secondary-50: 239 246 255; --color-secondary-100: 219 234 254; --color-secondary-200: 191 219 254; --color-secondary-300: 147 197 253; --color-secondary-400: 96 165 250; --color-secondary-500: 59 130 246; --color-secondary-600: 37 99 235; --color-secondary-700: 29 78 216; --color-secondary-800: 30 64 175; --color-secondary-900: 30 58 138; --color-secondary-950: 23 37 84; --color-neutral-200: 229 231 235; --color-neutral-300: 209 213 219; --color-neutral-400: 156 163 175; --color-neutral-500: 100 116 139; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-success: 134 239 172; --color-warning: 251 191 36; --color-danger: 252 165 165; --color-info: 96 165 250; }
+      
+      /* Purple Haze Theme */
+      :root.dark.theme-purpleHaze { color-scheme: dark; --color-bg-primary: 28 18 43; --color-bg-component: 44 28 69; --color-border: 64 41 97; --color-primary-50: 250 245 255; --color-primary-100: 243 232 255; --color-primary-200: 233 213 255; --color-primary-300: 216 180 254; --color-primary-400: 192 132 252; --color-primary-500: 168 85 247; --color-primary-600: 147 51 234; --color-primary-700: 126 34 206; --color-primary-800: 107 33 168; --color-primary-900: 88 28 135; --color-primary-950: 59 7 100; --color-accent-50: 255 240 245; --color-accent-100: 254 226 231; --color-accent-200: 252 199 212; --color-accent-300: 251 171 193; --color-accent-400: 244 114 182; --color-accent-500: 236 72 153; --color-accent-600: 219 39 119; --color-accent-700: 190 24 93; --color-accent-800: 157 23 77; --color-accent-900: 131 24 67; --color-accent-950: 86 11 38; --color-secondary-50: 236 254 255; --color-secondary-100: 207 250 254; --color-secondary-200: 165 243 252; --color-secondary-300: 103 232 249; --color-secondary-400: 34 211 238; --color-secondary-500: 6 182 212; --color-secondary-600: 8 145 178; --color-secondary-700: 14 116 144; --color-secondary-800: 21 94 117; --color-secondary-900: 24 81 101; --color-secondary-950: 8 51 68; --color-neutral-200: 233 213 255; --color-neutral-300: 216 180 254; --color-neutral-400: 192 132 252; --color-neutral-500: 126 34 206; --color-neutral-700: 88 28 135; --color-neutral-800: 59 7 100; --color-neutral-900: 44 28 69; --color-success: 74 222 128; --color-warning: 251 176 60; --color-danger: 248 113 113; --color-info: 34 211 238; }
+      
+      /* Desert Sky Theme */
+      :root.dark.theme-desertSky { color-scheme: dark; --color-bg-primary: 17 24 39; --color-bg-component: 31 41 55; --color-border: 55 65 81; --color-primary-50: 255 247 237; --color-primary-100: 255 237 213; --color-primary-200: 254 215 170; --color-primary-300: 253 186 116; --color-primary-400: 251 146 60; --color-primary-500: 249 115 22; --color-primary-600: 234 88 12; --color-primary-700: 194 65 12; --color-primary-800: 154 52 18; --color-primary-900: 124 45 18; --color-primary-950: 70 25 7; --color-accent-50: 254 252 232; --color-accent-100: 254 249 195; --color-accent-200: 254 240 138; --color-accent-300: 253 224 71; --color-accent-400: 250 204 21; --color-accent-500: 234 179 8; --color-accent-600: 202 138 4; --color-accent-700: 161 98 7; --color-accent-800: 133 77 14; --color-accent-900: 113 63 18; --color-accent-950: 69 36 6; --color-secondary-50: 239 246 255; --color-secondary-100: 219 234 254; --color-secondary-200: 191 219 254; --color-secondary-300: 147 197 253; --color-secondary-400: 96 165 250; --color-secondary-500: 59 130 246; --color-secondary-600: 37 99 235; --color-secondary-700: 29 78 216; --color-secondary-800: 30 64 175; --color-secondary-900: 30 58 138; --color-secondary-950: 23 37 84; --color-neutral-200: 229 231 235; --color-neutral-300: 209 213 219; --color-neutral-400: 156 163 175; --color-neutral-500: 100 116 139; --color-neutral-700: 55 65 81; --color-neutral-800: 31 41 55; --color-neutral-900: 17 24 39; --color-success: 74 222 128; --color-warning: 250 204 21; --color-danger: 248 113 113; --color-info: 96 165 250; }
+      
+      /* Rose Quartz Theme */
+      :root.dark.theme-roseQuartz { color-scheme: dark; --color-bg-primary: 44 32 37; --color-bg-component: 69 44 54; --color-border: 97 64 77; --color-primary-50: 255 240 245; --color-primary-100: 254 226 231; --color-primary-200: 252 199 212; --color-primary-300: 251 171 193; --color-primary-400: 249 116 162; --color-primary-500: 244 63 136; --color-primary-600: 219 39 119; --color-primary-700: 190 24 93; --color-primary-800: 157 23 77; --color-primary-900: 131 24 67; --color-primary-950: 86 11 38; --color-accent-50: 238 242 255; --color-accent-100: 224 231 255; --color-accent-200: 199 210 254; --color-accent-300: 165 180 252; --color-accent-400: 129 140 248; --color-accent-500: 99 102 241; --color-accent-600: 79 70 229; --color-accent-700: 67 56 202; --color-accent-800: 55 48 163; --color-accent-900: 49 46 129; --color-accent-950: 30 27 75; --color-secondary-50: 255 247 237; --color-secondary-100: 255 237 213; --color-secondary-200: 254 215 170; --color-secondary-300: 253 186 116; --color-secondary-400: 251 146 60; --color-secondary-500: 249 115 22; --color-secondary-600: 234 88 12; --color-secondary-700: 194 65 12; --color-secondary-800: 154 52 18; --color-secondary-900: 124 45 18; --color-secondary-950: 70 25 7; --color-neutral-200: 254 226 226; --color-neutral-300: 254 202 202; --color-neutral-400: 252 165 165; --color-neutral-500: 157 23 77; --color-neutral-700: 97 64 77; --color-neutral-800: 69 44 54; --color-neutral-900: 44 32 37; --color-success: 134 239 172; --color-warning: 251 146 60; --color-danger: 248 113 113; --color-info: 129 140 248; }
+
+      /* Rainbow Kush Theme (New) */
+      :root.dark.theme-rainbowKush { color-scheme: dark; --color-bg-primary: 26 18 43; --color-bg-component: 43 29 69; --color-border: 63 45 97; --color-primary-50: 240 253 244; --color-primary-100: 220 252 231; --color-primary-200: 187 247 208; --color-primary-300: 134 239 172; --color-primary-400: 74 222 128; --color-primary-500: 34 197 94; --color-primary-600: 22 163 74; --color-primary-700: 21 128 61; --color-primary-800: 22 101 52; --color-primary-900: 20 83 45; --color-primary-950: 5 46 22; --color-accent-50: 255 247 237; --color-accent-100: 255 237 213; --color-accent-200: 254 215 170; --color-accent-300: 253 186 116; --color-accent-400: 251 146 60; --color-accent-500: 249 115 22; --color-accent-600: 234 88 12; --color-accent-700: 194 65 12; --color-accent-800: 154 52 18; --color-accent-900: 124 45 18; --color-accent-950: 70 25 7; --color-secondary-50: 250 245 255; --color-secondary-100: 243 232 255; --color-secondary-200: 233 213 255; --color-secondary-300: 216 180 254; --color-secondary-400: 192 132 252; --color-secondary-500: 168 85 247; --color-secondary-600: 147 51 234; --color-secondary-700: 126 34 206; --color-secondary-800: 107 33 168; --color-secondary-900: 88 28 135; --color-secondary-950: 59 7 100; --color-neutral-50: 248 250 252; --color-neutral-100: 241 245 249; --color-neutral-200: 226 232 240; --color-neutral-300: 203 213 225; --color-neutral-400: 148 163 184; --color-neutral-500: 100 116 139; --color-neutral-600: 71 85 105; --color-neutral-700: 51 65 85; --color-neutral-800: 30 41 59; --color-neutral-900: 15 23 42; --color-neutral-950: 10 25 39; --color-text-on-accent: 255 255 255; --color-success: 74 222 128; --color-warning: 251 146 60; --color-danger: 248 113 113; --color-info: 59 130 246; }
     </style>
     <script>
       tailwind.config = {
@@ -76,35 +93,25 @@
               'on-accent': 'rgb(var(--color-text-on-accent) / <alpha-value>)',
             },
             fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-              display: ['Lexend', 'sans-serif'],
+              sans: 'var(--font-sans)',
+              display: 'var(--font-display)',
               mono: ['IBM Plex Mono', 'monospace'],
             },
             boxShadow: {
-                'glow-primary': '0 0 15px rgb(var(--color-primary-500) / 0.5), 0 0 5px rgb(var(--color-primary-500) / 0.6)',
+                'glow-primary': '0 0 12px rgb(var(--color-primary-500) / 0.4), 0 0 4px rgb(var(--color-primary-500) / 0.5)',
                 'inner-glow': 'inset 0 1px 2px rgb(255 255 255 / 0.1)',
             },
             keyframes: {
               pulse: { '50%': { opacity: '0.5' } },
               'fade-in': { from: { opacity: 0, transform: 'translateY(-10px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
               'slide-down-fade-in': { from: { opacity: 0, transform: 'translateY(-0.5rem) scale(0.98)' }, to: { opacity: 1, transform: 'translateY(0) scale(1)' } },
-              'favorite-glow': {
-                '0%': { textShadow: '0 0 5px rgba(var(--color-primary-400), 0)' },
-                '50%': { textShadow: '0 0 20px rgba(var(--color-primary-400), 0.8)' },
-                '100%': { textShadow: '0 0 5px rgba(var(--color-primary-400), 0)' },
-              },
+              'favorite-glow': { '0%': { textShadow: '0 0 5px rgba(var(--color-accent-400), 0)' }, '50%': { textShadow: '0 0 20px rgba(var(--color-accent-400), 0.8)' }, '100%': { textShadow: '0 0 5px rgba(var(--color-accent-400), 0)' }, },
               'fade-in-overlay': { from: { opacity: 0 }, to: { opacity: 1 } },
               'slide-in-up': { from: { transform: 'translateY(100%)' }, to: { transform: 'translateY(0)' } },
               'fade-in-stagger': { from: { opacity: 0, transform: 'translateY(10px)' }, to: { opacity: 1, transform: 'translateY(0)' } },
               'pulse-border': { '50%': { borderColor: 'rgba(var(--color-primary-500), 0.6)' } },
-              'shimmer': {
-                '0%': { backgroundPosition: '-100% 0' },
-                '100%': { backgroundPosition: '100% 0' },
-              },
-              'aurora': {
-                  from: { backgroundPosition: '50% 50%, 50% 50%' },
-                  to: { backgroundPosition: '350% 50%, 350% 50%' },
-              },
+              'shimmer': { '0%': { backgroundPosition: '-100% 0' }, '100%': { backgroundPosition: '100% 0' }, },
+              'aurora': { '0%': { backgroundPosition: '0% 50%' }, '50%': { backgroundPosition: '100% 50%' }, '100%': { backgroundPosition: '0% 50%' } },
             },
             animation: {
               'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -112,12 +119,12 @@
               'slide-down-fade-in': 'slide-down-fade-in 0.15s ease-out forwards',
               'favorite-glow': 'favorite-glow 1.s ease-in-out',
               'modal-overlay-animate': 'fade-in-overlay 0.3s ease-out forwards',
-              'modal-content-animate': 'fade-in 0.3s ease-out forwards',
+              'modal-content-animate': 'slide-down-fade-in 0.3s ease-out forwards',
               'slide-in-up': 'slide-in-up 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
               'fade-in-stagger': 'fade-in-stagger 0.4s ease-out forwards',
               'pulse-glow': 'pulse-glow 2.5s ease-in-out infinite',
               'shimmer': 'shimmer 1.5s infinite linear',
-              'aurora': 'aurora 8s linear infinite',
+              'aurora': 'aurora 20s ease infinite',
             },
           }
         },
@@ -125,57 +132,108 @@
           tailwind.plugins.typography,
           function({ addBase, addComponents }) {
             addBase({
+              ':root': {
+                '--font-sans': 'Inter, sans-serif',
+                '--font-display': 'Lexend, sans-serif',
+              },
+              'html.dyslexia-font': {
+                '--font-sans': "'IBM Plex Mono', monospace",
+                '--font-display': "'IBM Plex Mono', monospace",
+              },
               'body': {
                 backgroundColor: 'rgb(var(--color-bg-primary))',
                 color: 'rgb(var(--color-neutral-200))',
                 transition: 'background-color 0.3s ease, color 0.3s ease',
+                position: 'relative',
+                zIndex: 1,
               },
-              '::-webkit-scrollbar': { width: '8px', height: '8px' },
-              '::-webkit-scrollbar-track': { background: 'rgb(var(--color-bg-primary))' },
-              '::-webkit-scrollbar-thumb': { backgroundColor: 'rgb(var(--color-bg-component))', borderRadius: '4px' },
-              '::-webkit-scrollbar-thumb:hover': { backgroundColor: 'rgb(var(--color-border))' },
-              '*': { scrollbarWidth: 'thin', scrollbarColor: 'rgb(var(--color-bg-component)) rgb(var(--color-bg-primary))' },
+              'body::before': {
+                  content: '""',
+                  position: 'fixed',
+                  top: '0',
+                  left: '0',
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(-45deg, rgba(var(--color-primary-950), 0.3), rgba(var(--color-secondary-950), 0.3), rgba(var(--color-accent-950), 0.3), rgba(var(--color-primary-950), 0.3))',
+                  backgroundSize: '400% 400%',
+                  animation: 'aurora 40s ease infinite',
+                  zIndex: -1,
+                  opacity: 0.8,
+              },
               'kbd': { backgroundColor: 'rgb(var(--color-bg-primary))', border: '1px solid rgb(var(--color-border))', borderRadius: '4px', padding: '2px 6px', fontSize: '0.75em', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace', color: 'rgb(var(--color-neutral-300))' },
-              'html.dyslexia-font *': { fontFamily: "'IBM Plex Mono', monospace !important" },
               'button, [role="button"]': {
                   'transition-property': 'transform, background-color, border-color, color, box-shadow, filter',
                   'transition-timing-function': 'cubic-bezier(0.4, 0, 0.2, 1)',
                   'transition-duration': '150ms'
               },
+              'button:not([disabled]):hover, [role="button"]:not([disabled]):hover': {
+                  transform: 'translateY(-1px)'
+              },
               'button:active, [role="button"]:active': {
-                  transform: 'scale(0.97)',
+                  transform: 'scale(0.97) translateY(0)',
                   filter: 'brightness(0.9)',
                   'transition-duration': '75ms'
               },
             });
             addComponents({
+              '.custom-checkbox': {
+                'appearance': 'none',
+                '-webkit-appearance': 'none',
+                'height': '1.25rem',
+                'width': '1.25rem',
+                'border': '2px solid rgb(var(--color-neutral-600))',
+                'borderRadius': '0.375rem',
+                'display': 'inline-block',
+                'position': 'relative',
+                'cursor': 'pointer',
+                'transition': 'all 0.2s ease',
+                'backgroundColor': 'transparent',
+                'vertical-align': 'middle',
+              },
+              '.custom-checkbox:checked': {
+                'backgroundColor': 'rgb(var(--color-primary-500))',
+                'borderColor': 'rgb(var(--color-primary-500))',
+              },
+              '.custom-checkbox:checked::after': {
+                'content': '""',
+                'display': 'block',
+                'width': '0.75rem',
+                'height': '0.75rem',
+                'backgroundImage': `url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e")`,
+                'backgroundSize': 'contain',
+                'backgroundRepeat': 'no-repeat',
+                'position': 'absolute',
+                'left': '50%',
+                'top': '50%',
+                'transform': 'translate(-50%, -50%)',
+              },
+              '.custom-checkbox:focus-visible': {
+                  'outline': '2px solid rgb(var(--color-primary-400))',
+                  'outline-offset': '2px',
+              },
               '.glass-pane': { 
-                backgroundColor: 'rgb(var(--color-bg-component))',
+                backgroundColor: 'rgb(var(--color-bg-component), 0.9)',
+                backdropFilter: 'blur(16px)',
+                '-webkit-backdrop-filter': 'blur(16px)',
                 border: '1px solid rgb(var(--color-border))',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
                 position: 'relative',
                 overflow: 'hidden',
               },
+               '.modal-overlay-aurora': {
+                background: 'linear-gradient(-45deg, rgba(var(--color-primary-800), 0.2), rgba(var(--color-secondary-800), 0.2), rgba(var(--color-accent-800), 0.2))',
+                backgroundSize: '400% 400%',
+                animation: 'aurora 20s ease infinite',
+               },
               '.card-interactive': {
-                transitionProperty: 'transform, box-shadow',
+                transitionProperty: 'transform, box-shadow, border-color',
                 transitionDuration: '200ms',
-                willChange: 'transform'
+                willChange: 'transform',
+                border: '1px solid transparent',
               },
-              '.card-interactive::after': {
-                content: '""',
-                position: 'absolute',
-                left: 'var(--x, 50%)',
-                top: 'var(--y, 50%)',
-                transform: 'translate(-50%, -50%)',
-                width: '300px',
-                height: '300px',
-                background: 'radial-gradient(circle, rgb(var(--color-primary-700) / 0.2) 0%, transparent 70%)',
-                opacity: 0,
-                transition: 'opacity 0.5s',
-                pointerEvents: 'none',
-              },
-              '.card-interactive:hover::after': {
-                opacity: 1
+              '.card-interactive:hover': {
+                borderColor: 'rgba(var(--color-primary-500), 0.3)',
+                boxShadow: '0 0 12px rgb(var(--color-primary-500) / 0.4), 0 0 4px rgb(var(--color-primary-500) / 0.5)',
               },
               '#toast-container': { position: 'fixed', top: '1rem', right: '1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' },
               '.toast': { backgroundColor: 'rgb(var(--color-bg-component))', border: '1px solid rgb(var(--color-border))', backdropFilter: 'blur(8px)', '-webkit-backdrop-filter': 'blur(8px)', transition: 'all 0.3s ease-in-out' },
@@ -183,10 +241,10 @@
               '.toast-entered': { opacity: 1, transform: 'translateX(0)' },
               '.toast-exiting': { opacity: 0, transform: 'scale(0.9)' },
               '.favorite-btn-glow': { transition: 'color 0.3s ease' },
-              '.favorite-btn-glow.is-favorite': { color: 'rgb(var(--color-primary-400))', animation: 'favorite-glow 1s ease-in-out' },
+              '.favorite-btn-glow.is-favorite': { color: 'rgb(var(--color-accent-400))', filter: 'drop-shadow(0 0 8px rgb(var(--color-accent-400) / 0.7))' },
               '.history-chart-grid line, .history-chart-grid path': { stroke: 'rgb(var(--color-border))', strokeOpacity: '0.5' },
               '.history-chart-labels': { fill: 'rgb(var(--color-neutral-400))', fontSize: '10px', fontFamily: "'IBM Plex Mono', monospace" },
-              '.offline-banner': { backgroundColor: 'rgb(var(--color-primary-800))', color: 'rgb(var(--color-primary-100))', textAlign: 'center', padding: '0.5rem', fontSize: '0.875rem', fontWeight: '500' },
+              '.offline-banner': { backgroundColor: 'rgb(var(--color-accent-800))', color: 'rgb(var(--color-accent-100))', textAlign: 'center', padding: '0.5rem', fontSize: '0.875rem', fontWeight: '500' },
               '.empty-slot-pulse': { animation: 'pulse-border 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' },
               '.no-scrollbar::-webkit-scrollbar': { display: 'none' },
               '.no-scrollbar': { '-ms-overflow-style': 'none', 'scrollbar-width': 'none' },
@@ -203,7 +261,63 @@
               '.ui-density-compact .text-xs': { fontSize: '0.7rem' },
               '.tts-disabled .speakable-button': { display: 'none !important' },
               '.speakable-highlight': { backgroundColor: 'rgb(var(--color-primary-800) / 0.4)', boxShadow: 'inset 0 0 0 2px rgb(var(--color-primary-500))', borderRadius: '4px', transition: 'background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out' },
-              '.genealogy-link': { fill: 'none', stroke: 'rgb(var(--color-border))', strokeWidth: '1px', opacity: '0.5' },
+              '.genealogy-link': { fill: 'none', stroke: 'rgb(var(--color-border))', strokeWidth: '1px', opacity: '0.5', transition: 'opacity 0.3s ease-in-out' },
+              '.genealogy-node-container': {
+                width: '220px',
+                height: '80px',
+                padding: '8px',
+                backgroundColor: 'rgba(var(--color-neutral-800), 0.8)',
+                backdropFilter: 'blur(4px)',
+                border: '1px solid rgb(var(--color-border))',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s, box-shadow 0.2s',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                position: 'relative',
+                overflow: 'hidden',
+                fontSize: '14px',
+              },
+              '.genealogy-node-container:hover': {
+                backgroundColor: 'rgba(var(--color-neutral-700), 0.9)',
+                boxShadow: '0 0 10px rgba(var(--color-primary-500), 0.3)',
+              },
+              '.genealogy-node-container.placeholder': {
+                borderStyle: 'dashed',
+                opacity: 0.7,
+              },
+              '.genealogy-node-thc-bar': {
+                position: 'absolute',
+                bottom: '0',
+                left: '0',
+                right: '0',
+                height: '4px',
+                backgroundColor: 'rgb(var(--color-neutral-700))',
+              },
+              '.genealogy-node-thc-fill': {
+                height: '100%',
+                backgroundColor: 'rgb(var(--color-accent-500))',
+                borderRadius: '0 0 0 4px',
+              },
+              '.genealogy-node-expand-btn': {
+                position: 'absolute',
+                bottom: '4px',
+                right: '4px',
+                width: '20px',
+                height: '20px',
+                borderRadius: '9999px',
+                backgroundColor: 'rgba(var(--color-neutral-900), 0.7)',
+                color: 'rgb(var(--color-neutral-300))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid rgb(var(--color-border))',
+              },
+              '.genealogy-node-expand-btn:hover': {
+                backgroundColor: 'rgb(var(--color-primary-600))',
+                color: 'white',
+              },
               '.side-nav-container': { position: 'relative' },
               '.side-nav-indicator': { position: 'absolute', left: '-0.5rem', width: '4px', backgroundColor: 'rgb(var(--color-primary-400))', borderRadius: '4px', transition: 'top 0.3s cubic-bezier(0.4, 0, 0.2, 1), height 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 0 10px rgb(var(--color-primary-400))' },
             })
@@ -212,6 +326,29 @@
       }
     </script>
     <style>
+      /* Modern, App-Themed Scrollbar */
+      ::-webkit-scrollbar {
+        width: 12px;
+        height: 12px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: rgb(var(--color-border));
+        border-radius: 10px;
+        border: 3px solid transparent;
+        background-clip: content-box;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: rgb(var(--color-primary-500));
+      }
+      /* Firefox */
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: rgb(var(--color-border)) transparent;
+      }
+      
       @keyframes pulse-glow {
         50% {
           filter: drop-shadow(0 0 10px rgba(var(--color-primary-400), 0.8));
@@ -219,6 +356,31 @@
       }
       .animate-pulse-glow {
         animation: pulse-glow 2.5s ease-in-out infinite;
+      }
+
+      /* Custom Range Slider Styles */
+      .range-slider-input::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--thumb-color, rgb(var(--color-primary-500)));
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: transform 0.15s ease-out;
+        transform: scale(var(--thumb-scale, 1));
+        border: 2px solid white;
+        margin-top: -3px;
+      }
+      .range-slider-input::-moz-range-thumb {
+        width: 1rem;
+        height: 1rem;
+        background-color: var(--thumb-color, rgb(var(--color-primary-500)));
+        border-radius: 9999px;
+        cursor: pointer;
+        transition: transform 0.15s ease-out;
+        transform: scale(var(--thumb-scale, 1));
+        border: 2px solid white;
       }
     </style>
   </head>

@@ -391,7 +391,7 @@ export const strainsG: Strain[] = [
         "name": "GMO Cookies",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 90% / Sativa 10%",
-        "genetics": "Chemdawg x GSC",
+        "genetics": "Chemdawg x Girl Scout Cookies",
         "floweringType": "Photoperiod",
         "thc": 28,
         "cbd": 1,

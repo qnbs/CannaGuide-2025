@@ -4,21 +4,11 @@ import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { PlantVisualizer } from './PlantVisualizer';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface PlantSlotProps {
     plant: Plant;
     onInspect: () => void;
 }
-
-const VitalSign: React.FC<{ value: string; color: string; label: string, icon: React.ReactNode }> = ({ value, color, label, icon }) => {
-    return (
-        <div className="flex flex-col items-center gap-1 text-center" title={label}>
-            <div className={`w-6 h-6 ${color}`}>{icon}</div>
-            <span className="text-xs font-mono text-slate-200">{value}</span>
-        </div>
-    );
-};
 
 export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) => {
     const { t } = useTranslation();
@@ -48,24 +38,18 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
             </div>
 
             <div className="flex justify-around items-center text-slate-300 border-t border-slate-700/50 pt-3 mt-auto">
-                <VitalSign 
-                    label="pH" 
-                    value={plant.medium.ph.toFixed(1)} 
-                    color={isPhIdeal ? 'text-green-400' : 'text-amber-400'} 
-                    icon={<PhosphorIcons.Drop />} 
-                />
-                <VitalSign 
-                    label="EC" 
-                    value={plant.medium.ec.toFixed(1)} 
-                    color={isEcIdeal ? 'text-green-400' : 'text-amber-400'} 
-                    icon={<PhosphorIcons.Lightning />} 
-                />
-                <VitalSign 
-                    label={t('plantsView.vitals.moisture')} 
-                    value={`${plant.medium.moisture.toFixed(0)}%`}
-                    color={isMoistureIdeal ? 'text-blue-400' : 'text-red-400'} 
-                    icon={<PhosphorIcons.Thermometer />} 
-                />
+                <div className="flex items-center gap-1.5 text-sm font-mono" title="pH">
+                    <div className={`w-2 h-2 rounded-full ${isPhIdeal ? 'bg-success' : 'bg-warning'}`}></div>
+                    <span>{plant.medium.ph.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-mono" title="EC">
+                    <div className={`w-2 h-2 rounded-full ${isEcIdeal ? 'bg-success' : 'bg-warning'}`}></div>
+                    <span>{plant.medium.ec.toFixed(1)}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-mono" title={t('plantsView.vitals.moisture')}>
+                    <div className={`w-2 h-2 rounded-full ${isMoistureIdeal ? 'bg-info' : 'bg-danger'}`}></div>
+                    <span>{plant.medium.moisture.toFixed(0)}%</span>
+                </div>
             </div>
         </Card>
     );

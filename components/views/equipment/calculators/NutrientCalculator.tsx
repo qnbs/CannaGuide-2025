@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CalculatorSection, Input, ResultDisplay } from './common';
 import { Button } from '@/components/common/Button';
@@ -10,7 +10,7 @@ interface Component {
     dose: number; // in ml/L
 }
 
-export const NutrientCalculator: React.FC = () => {
+export const NutrientCalculator: React.FC = memo(() => {
     const { t } = useTranslation();
     const [waterAmount, setWaterAmount] = useState(5); // in Liters
     const [components, setComponents] = useState<Component[]>([
@@ -82,4 +82,4 @@ export const NutrientCalculator: React.FC = () => {
             </Button>
         </CalculatorSection>
     );
-};
+});

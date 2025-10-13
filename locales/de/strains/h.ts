@@ -1,13 +1,8 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-    "himalayan-kush": {
-        "description": "Eine reine Indica-Landrasse aus der Himalaya-Gebirgskette. Sie wird für ihre Widerstandsfähigkeit gegenüber kalten Klimazonen und ihr tief entspannendes, fast meditatives Körper-High geschätzt. Ihr Aroma ist eine klassische Mischung aus erdigen, holzigen und süßen Haschischnoten."
-    },
-    "han-solo-burger": {
-        "description": "Eine potente indica-dominante Hybride, bekannt für ihre starke, entspannende Wirkung und ein komplexes Aroma, das würzige, erdige Noten mit einem scharfen Diesel-Kick verbindet. Eine gute Wahl für erfahrene Konsumenten, die tiefe Entspannung suchen.",
-        "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "700-800 g/Pflanze" },
-        "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-200 cm" },
+    "han-solo-hash-plant": {
+        "description": "Eine potente indica-dominante Hybride, die für ihre entspannende, schwere Wirkung bekannt ist. Sie besticht durch ein klassisches, scharfes Aromaprofil aus Erde, Gewürzen und traditionellem Haschisch. Sie ist eine wichtige Elternsorte von Hash Burger."
     },
     "harle-tsu": {
         "description": "Eine herausragende CBD-reiche Sorte, die fast keine psychoaktiven Effekte erzeugt. Harle-Tsu ist perfekt für Anwender, die Linderung von Schmerzen, Entzündungen und Angstzuständen ohne ein High suchen. Ihr Aroma ist eine angenehme Mischung aus erdigen, holzigen und süßen Noten.",
@@ -28,6 +23,9 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "Eine klassische indica-dominante Sorte, bekannt für ihre hohe Harzproduktion, was sie ideal für die Haschherstellung macht. Sie bietet ein tief entspannendes, fast narkotisches Körper-High mit einem scharfen, haschartigen und würzigen Aroma.",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" },
+    },
+    "hawaiian": {
+        "description": "Eine klassische Sativa-Landrasse aus den vulkanischen Böden Hawaiis. Sie liefert ein typisches Sativa-High: energetisch, kreativ und glücklich, perfekt für Tagesaktivitäten. Das Aroma ist eine süße und tropische Mischung aus Ananas und Zitrus."
     },
     "hawaiian-sativa": {
         "description": "Eine reine Sativa-Landrasse aus den vulkanischen Böden Hawaiis. Sie liefert ein klassisches Sativa-High: energetisch, kreativ und glücklich, perfekt für Tagesaktivitäten. Das Aroma ist eine süße und tropische Mischung aus Ananas und Zitrus.",
@@ -63,6 +61,12 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "Eine legendäre indica-dominante Sorte, bekannt für ihre extrem potente, fast narkotische Wirkung. Sie liefert ein schweres, sedierendes Körper-High, was sie zu einer erstklassigen Wahl bei starken Schmerzen und Schlaflosigkeit macht. Das Aroma ist erdig, holzig und scharf.",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "70-110 cm", "outdoor": "100-150 cm" },
+    },
+    "high-country-diesel": {
+        "description": "Eine sativa-dominante Hybride mit einem starken Diesel-Aroma und erhebender Wirkung. Sie liefert einen Schub an Energie und Euphorie und ist damit eine wichtige Elternsorte für die beliebte Sorte Jet Fuel (G6)."
+    },
+    "himalayan-kush": {
+        "description": "Eine reine Indica-Landrasse aus der Himalaya-Gebirgskette. Sie wird für ihre Widerstandsfähigkeit gegenüber kalten Klimazonen und ihr tief entspannendes, fast meditatives Körper-High geschätzt. Ihr Aroma ist eine klassische Mischung aus erdigen, holzigen und süßen Haschischnoten."
     },
     "hindu-kush": {
         "description": "Eine reine Indica-Landrasse aus der Gebirgskette zwischen Pakistan und Afghanistan. Sie ist bekannt für ihr klassisches schweres Körper-High und ein süßes, erdiges Aroma. Eine grundlegende Sorte für viele moderne Hybriden.",

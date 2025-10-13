@@ -169,7 +169,7 @@ const simulationSlice = createSlice({
                 if (plantId) {
                     const plant = state.plants.entities[plantId];
                     if (plant) {
-                        const waterCapacity = (plant.setup as GrowSetup)?.potSize * 1000 * ((plant.setup as GrowSetup)?.potType === 'Fabric' ? 0.28 : 0.35) || 5000;
+                        const waterCapacity = (plant.setup as unknown as GrowSetup)?.potSize * 1000 * ((plant.setup as unknown as GrowSetup)?.potType === 'Fabric' ? 0.28 : 0.35) || 5000;
                         plant.medium.substrateWater = Math.min(waterCapacity, plant.medium.substrateWater + 1000);
                         plant.medium.moisture = (plant.medium.substrateWater / waterCapacity) * 100;
                     }
@@ -224,7 +224,7 @@ const simulationSlice = createSlice({
         applyWatering: (state, action: PayloadAction<{ plantId: string; amountMl?: number; ph?: number }>) => {
              const plant = state.plants.entities[action.payload.plantId];
              if (plant) {
-                const waterCapacity = (plant.setup as GrowSetup)?.potSize * 1000 * ((plant.setup as GrowSetup)?.potType === 'Fabric' ? 0.28 : 0.35) || 5000;
+                const waterCapacity = (plant.setup as unknown as GrowSetup)?.potSize * 1000 * ((plant.setup as unknown as GrowSetup)?.potType === 'Fabric' ? 0.28 : 0.35) || 5000;
                 plant.medium.substrateWater = Math.min(waterCapacity, plant.medium.substrateWater + (action.payload.amountMl || 500));
                 plant.medium.moisture = (plant.medium.substrateWater / waterCapacity) * 100;
                 if(action.payload.ph) plant.medium.ph = (plant.medium.ph + action.payload.ph) / 2; // Average pH

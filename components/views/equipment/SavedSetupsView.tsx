@@ -4,12 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { EditSetupModal } from './EditSetupModal';
 import { SetupCard } from './SetupCard';
-import { Input } from '@/components/ui/ThemePrimitives';
 import { Button } from '@/components/common/Button';
 import { exportService } from '@/services/exportService';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
+import { SearchBar } from '@/components/common/SearchBar';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
@@ -73,8 +73,7 @@ const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups,
                 <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.tabs.setups')}</h2>
                 <div className="flex items-center gap-2">
                     <div className="relative flex-grow">
-                        <Input type="text" placeholder={t('equipmentView.savedSetups.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-8 !py-1.5 w-full sm:w-auto" />
-                        <PhosphorIcons.MagnifyingGlass className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <SearchBar placeholder={t('equipmentView.savedSetups.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full sm:w-auto" />
                     </div>
                      <Button variant="secondary" onClick={() => setIsExportModalOpen(true)} disabled={filteredSetups.length === 0}><PhosphorIcons.DownloadSimple className="w-5 h-5"/></Button>
                 </div>
@@ -83,7 +82,7 @@ const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups,
             {savedSetups.length === 0 ? (
                 <div className="text-center py-10 text-slate-500">
                     <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                    <h3 className="font-semibold">{t('equipmentView.savedSetups.noSetups.title')}</h3>
+                    <h3 className="font-semibold text-slate-300">{t('equipmentView.savedSetups.noSetups.title')}</h3>
                     <p className="text-sm">{t('equipmentView.savedSetups.noSetups.subtitle')}</p>
                 </div>
             ) : (

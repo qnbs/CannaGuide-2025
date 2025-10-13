@@ -1,8 +1,8 @@
-import React, { useId } from 'react';
+import React, { useId, memo } from 'react';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Input as PrimitiveInput, Select as PrimitiveSelect } from '@/components/ui/ThemePrimitives';
 
-export const CalculatorSection: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
+export const CalculatorSection: React.FC<{ title: string; description: string; children: React.ReactNode }> = memo(({ title, description, children }) => (
     <div className="space-y-4">
         <div>
             <h3 className="text-xl font-bold font-display text-primary-400">{title}</h3>
@@ -10,7 +10,7 @@ export const CalculatorSection: React.FC<{ title: string; description: string; c
         </div>
         <div className="space-y-4">{children}</div>
     </div>
-);
+));
 
 export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string; unit?: string; tooltip?: string }> = ({ label, unit, tooltip, ...props }) => {
     const id = useId();
@@ -43,10 +43,10 @@ export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { 
     );
 };
 
-export const ResultDisplay: React.FC<{ label: string; value: string; unit?: string; children?: React.ReactNode }> = ({ label, value, unit, children }) => (
+export const ResultDisplay: React.FC<{ label: string; value: string; unit?: string; children?: React.ReactNode }> = memo(({ label, value, unit, children }) => (
     <div className="bg-slate-800/50 p-4 rounded-lg text-center">
         <p className="text-sm font-semibold text-slate-400 uppercase tracking-wider">{label}</p>
         <p className="text-3xl font-bold text-primary-400 my-1">{value} <span className="text-xl">{unit}</span></p>
         {children}
     </div>
-);
+));

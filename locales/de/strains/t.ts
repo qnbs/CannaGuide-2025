@@ -1,6 +1,9 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "the-creature": {
+    "description": "The Creature ist eine hochpotente und mysteriöse indica-dominante Sorte, die Gerüchten zufolge aus der OG-Kush-Genetik stammt. Sie ist bekannt für ihre monströs dichten, harzüberzogenen Knospen und ein scharfes, gasartiges Aroma. Die Wirkung ist schwer und sedierend und sorgt für einen starken Körper-Rausch. Sie ist ein Elternteil der gefeierten Sorte Chimera #2."
+  },
   "the-original": {
     "description": "Oft als foundationaler OG-Kush-Phänotyp bezeichnet, ist 'The Original' eine potente Indica, die für ihr klassisches erdiges, kiefernartiges und scharfes Aroma gefeiert wird. Sie liefert ein schweres, beruhigendes Körper-High, was sie zu einer ersten Wahl für Stressabbau und tiefe Entspannung macht."
   },
@@ -58,6 +61,9 @@ export const strains: Record<string, StrainTranslationData> = {
   "tres-dawg": {
     "description": "Eine potente indica-dominante Sorte mit einem starken, chemischen und dieselartigen Aroma. Die Wirkung ist stark, entspannend und langanhaltend."
   },
+  "triangle-kush": {
+    "description": "Triangle Kush ist eine legendäre und hochpotente Indica-Sorte, die aus Florida stammt und nach den drei großen Cannabis-produzierenden Städten des Bundesstaates benannt ist: Jacksonville, Miami und Tampa. Sie gilt als direkter Nachkomme oder sehr naher Phänotyp der ursprünglichen OG Kush und wird als Eckpfeiler vieler moderner Kush- und OG-Sorten angesehen. Die Wirkung ist kraftvoll und ausgewogen, beginnend mit einem erhebenden zerebralen Rausch, der Kreativität und Gesprächigkeit anregt, bevor er in eine tiefe Ganzkörperentspannung übergeht, die Schmerzen und Stress wirksam lindern kann, ohne vollständig außer Gefecht zu setzen. Ihr Aroma ist ein klassisches und komplexes OG-Profil, das von Noten von würzigem Treibstoff, erdiger Kiefer und saurer Zitrone dominiert wird."
+  },
   "triangle-mints": {
     "description": "Eine ausgewogene Hybride mit einem minzigen, erdigen und süßen Aroma. Die Wirkung ist stark, euphorisch und entspannend."
   },
@@ -72,6 +78,9 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "tropicana-cookies": {
     "description": "Tropicana Cookies ist eine Sativa-dominante Sorte, die für ihr unglaublich intensives Aroma nach frischen Orangen und süßem Keksteig berühmt ist. Sie erzeugt ein starkes, energetisches und erhebendes High, das die Kreativität und Konzentration fördert und ideal für den Tagesgebrauch ist."
+  },
+  "trophy-wife": {
+    "description": "Obwohl oft als Sorte mit hohem CBD-Gehalt bekannt, hat Trophy Wife auch Phänotypen mit hohem THC-Gehalt, die zur Züchtung verwendet werden. Diese Version bietet ein ausgewogenes, entspannendes High mit einem süßen und erdigen Kirscharoma. Sie ist ein Elternteil der beliebten Sorte Point Break."
   },
   "truffle-butter": {
     "description": "Eine indica-dominante Sorte mit einem süßen, butterartigen und erdigen Aroma. Die Wirkung ist stark, entspannend und sedierend."

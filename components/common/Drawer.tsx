@@ -43,7 +43,7 @@ export const Drawer: React.FC<DrawerProps> = ({
 
     return (
         <div
-            className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-end justify-center modal-overlay-animate"
+            className="fixed inset-0 bg-slate-900/90 z-50 flex items-end justify-center modal-overlay-animate modal-overlay-aurora"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
@@ -51,7 +51,7 @@ export const Drawer: React.FC<DrawerProps> = ({
         >
             <Card
                 ref={drawerRef as React.RefObject<HTMLDivElement>}
-                className={`w-full ${sizeClasses[size]} max-h-[85vh] flex flex-col rounded-t-2xl glass-pane !border-b-0 animate-slide-in-up`}
+                className={`w-full ${sizeClasses[size]} max-h-[85vh] flex flex-col rounded-t-2xl glass-pane !border-b-0 animate-slide-in-up !bg-slate-800/95 !backdrop-blur-lg !border-slate-700/50`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {title && (

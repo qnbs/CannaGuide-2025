@@ -1,13 +1,8 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-    "himalayan-kush": {
-        "description": "A pure indica landrace from the Himalayan mountain range. It is prized for its resilience to cold climates and its deeply relaxing, almost meditative body high. Its aroma is a classic mix of earthy, woody, and sweet hash notes."
-    },
-    "han-solo-burger": {
-        "description": "A potent indica-dominant hybrid known for its strong, relaxing effects and a complex aroma that blends spicy, earthy notes with a pungent diesel kick. It's a great choice for experienced users seeking deep relaxation.",
-        "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "700-800 g/plant" },
-        "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-200 cm" },
+    "han-solo-hash-plant": {
+        "description": "A potent indica-dominant hybrid known for its relaxing, heavy effects. It boasts a classic, pungent aroma profile of earth, spice, and traditional hash. It is a key parent strain of Hash Burger."
     },
     "harle-tsu": {
         "description": "An outstanding CBD-rich strain that produces almost no psychoactive effects. Harle-Tsu is perfect for users seeking relief from pain, inflammation, and anxiety without a high. Its aroma is a pleasant mix of earthy, woody, and sweet notes.",
@@ -28,6 +23,9 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "A classic indica-dominant strain known for its high resin production, making it ideal for hash making. It offers a deeply relaxing, almost narcotic body high with a pungent, hashy, and spicy aroma.",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
         "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" },
+    },
+    "hawaiian": {
+        "description": "A classic sativa landrace from the volcanic soils of Hawaii. It delivers a quintessential sativa high: energetic, creative, and happy, perfect for daytime activities. The aroma is a sweet and tropical blend of pineapple and citrus."
     },
     "hawaiian-sativa": {
         "description": "A pure sativa landrace from the volcanic soils of Hawaii. It delivers a classic sativa high: energetic, creative, and happy, perfect for daytime activities. The aroma is a sweet and tropical blend of pineapple and citrus.",
@@ -64,9 +62,15 @@ export const strains: Record<string, StrainTranslationData> = {
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
         "heightDetails": { "indoor": "70-110 cm", "outdoor": "100-150 cm" },
     },
+    "high-country-diesel": {
+        "description": "A sativa-dominant hybrid with a strong diesel aroma and uplifting effects. It provides a surge of energy and euphoria, making it a key parent to the popular Jet Fuel (G6) strain."
+    },
+    "himalayan-kush": {
+        "description": "A pure indica landrace from the Himalayan mountain range. It is prized for its resilience to cold climates and its deeply relaxing, almost meditative body high. Its aroma is a classic mix of earthy, woody, and sweet hash notes."
+    },
     "hindu-kush": {
         "description": "A pure indica landrace from the mountain range between Pakistan and Afghanistan. It's known for its classic heavy body high and a sweet, earthy aroma. A foundational strain for many modern hybrids.",
-        "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+        "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "90-130 cm", "outdoor": "120-180 cm" },
     },
     "horchata": {

@@ -22,9 +22,9 @@ interface StrainGridItemProps {
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
-    [StrainType.Sativa]: <SativaIcon className="w-10 h-10 text-amber-400" />,
-    [StrainType.Indica]: <IndicaIcon className="w-10 h-10 text-indigo-400" />,
-    [StrainType.Hybrid]: <HybridIcon className="w-10 h-10 text-blue-400" />,
+    [StrainType.Sativa]: <SativaIcon className="w-10 h-10" />,
+    [StrainType.Indica]: <IndicaIcon className="w-10 h-10" />,
+    [StrainType.Hybrid]: <HybridIcon className="w-10 h-10" />,
 };
 
 const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index, isFavorite, onToggleFavorite }) => {
@@ -49,7 +49,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     checked={isSelected}
                     onChange={(e) => { e.stopPropagation(); onToggleSelection(strain.id); }}
                     onClick={(e) => e.stopPropagation()}
-                    className="h-4 w-4 self-end"
+                    className="custom-checkbox self-end"
                     aria-label={`Select ${strain.name}`}
                 />
                 <Button 
@@ -78,7 +78,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                 )}
             </div>
             
-            {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" /></span>}
+            {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-accent-400" /></span>}
 
             <div className="mx-auto mb-2">
                 {typeIcons[strain.type]}

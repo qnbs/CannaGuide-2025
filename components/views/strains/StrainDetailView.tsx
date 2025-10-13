@@ -30,7 +30,7 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
         Medium: t('strainsView.difficulty.medium'),
         Hard: t('strainsView.difficulty.hard'),
     };
-    const difficultyMap = { Easy: { level: 1, color: 'text-green-500' }, Medium: { level: 2, color: 'text-amber-500' }, Hard: { level: 3, color: 'text-red-500' },};
+    const difficultyMap = { Easy: { level: 1, color: 'text-success' }, Medium: { level: 2, color: 'text-warning' }, Hard: { level: 3, color: 'text-danger' },};
     const { level, color } = difficultyMap[difficulty || 'Medium'];
 
     return (
@@ -177,9 +177,9 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
     ];
     
     const typeClasses: Record<StrainType, string> = { 
-        [StrainType.Sativa]: 'text-amber-400', 
-        [StrainType.Indica]: 'text-indigo-400', 
-        [StrainType.Hybrid]: 'text-blue-400' 
+        [StrainType.Sativa]: 'text-accent-400', 
+        [StrainType.Indica]: 'text-secondary-400', 
+        [StrainType.Hybrid]: 'text-primary-400' 
     };
     const TypeIcon = { 
         [StrainType.Sativa]: SativaIcon, 
@@ -210,7 +210,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                     {TypeIcon && <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type]}`} />}
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{strain.name}</h1>
-                        <p className="text-slate-400">{strain.type} {typeDetails && `- ${typeDetails}`}</p>
+                        <p className="text-slate-300">{strain.type} {typeDetails && `- ${typeDetails}`}</p>
                     </div>
                 </div>
             </header>

@@ -9,7 +9,6 @@ import { EditResponseModal } from '@/components/common/EditResponseModal';
 import { BulkActionsBar } from './BulkActionsBar';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
-import { Input } from '@/components/ui/ThemePrimitives';
 import { SearchBar } from '@/components/common/SearchBar';
 
 interface ExportsManagerViewProps {
@@ -106,7 +105,7 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
     };
 
     return (
-        <div className="mt-4 animate-fade-in">
+        <div className="animate-fade-in">
             {editingExport && <EditResponseModal
                 response={{ ...editingExport, title: editingExport.name, content: editingExport.notes || '' }}
                 onClose={() => setEditingExport(null)}
@@ -143,18 +142,18 @@ export const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExp
                  {savedExports.length === 0 ? (
                     <div className="text-center py-10 text-slate-500">
                         <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                        <h3 className="font-semibold">{t('strainsView.exportsManager.noExports.title')}</h3>
+                        <h3 className="font-semibold text-slate-300">{t('strainsView.exportsManager.noExports.title')}</h3>
                         <p className="text-sm">{t('strainsView.exportsManager.noExports.subtitle')}</p>
                     </div>
                 ) : (
                      <div className="space-y-3">
                         <div className="flex items-center gap-3 px-2 text-sm text-slate-400">
-                           <input type="checkbox" checked={selectedIds.size === processedExports.length && processedExports.length > 0} onChange={handleToggleAll} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500" />
+                           <input type="checkbox" checked={selectedIds.size === processedExports.length && processedExports.length > 0} onChange={handleToggleAll} className="custom-checkbox" />
                             <span>{t('strainsView.selectedCount', { count: selectedIds.size })}</span>
                         </div>
                         {processedExports.map(item => (
                             <div key={item.id} className={`p-3 rounded-lg flex items-center gap-3 transition-colors ring-1 ring-inset ring-white/20 ${selectedIds.has(item.id) ? 'bg-primary-900/40' : 'bg-slate-800'}`}>
-                                 <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 flex-shrink-0" />
+                                 <input type="checkbox" checked={selectedIds.has(item.id)} onChange={() => handleToggleSelection(item.id)} className="custom-checkbox flex-shrink-0" />
                                 <div className="flex-grow">
                                     <p className="font-bold text-slate-100">{item.name}</p>
                                     <div className="text-xs text-slate-400 flex items-center gap-3 flex-wrap">

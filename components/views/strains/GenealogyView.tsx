@@ -9,8 +9,8 @@ import {
     fetchAndBuildGenealogy,
     setSelectedGenealogyStrain,
     setGenealogyZoom,
-    resetGenealogyZoom,
     setGenealogyLayout,
+    toggleGenealogyNode,
 } from '@/stores/slices/genealogySlice';
 import { Strain, GenealogyNode, GeneticContribution, StrainType } from '@/types';
 import { StrainTreeNode } from './StrainTreeNode';
@@ -33,15 +33,11 @@ const nodeSize = { width: 220, height: 80 };
 const nodeSeparation = { x: 40, y: 40 };
 
 const Link: React.FC<{ link: d3.HierarchyLink<GenealogyNode>, orientation: 'horizontal' | 'vertical' }> = ({ link, orientation }) => {
-    const d3PathHorizontal = d3.linkHorizontal<d3.HierarchyLink<GenealogyNode>, d3.HierarchyPointNode<GenealogyNode>>()
-        .x(d => (d as any).y)
-        .y(d => (d as any).x);
-    
-     const d3PathVertical = d3.linkVertical<d3.HierarchyLink<GenealogyNode>, d3.HierarchyPointNode<GenealogyNode>>()
-        .x(d => (d as any).x)
-        .y(d => (d as any).y);
-
-    const pathGenerator = orientation === 'horizontal' ? d3PathHorizontal : d3PathVertical;
+    const pathGenerator = useMemo(() => {
+        return orientation === 'horizontal'
+            ? d3.linkHorizontal<any, d3.HierarchyPointNode<GenealogyNode>>().x(d => d.y).y(d => d.x)
+            : d3.linkVertical<any, d3.HierarchyPointNode<GenealogyNode>>().x(d => d.x).y(d => d.y);
+    }, [orientation]);
 
     return <path className="genealogy-link" d={pathGenerator(link) || ''} />;
 };
@@ -110,8 +106,10 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     }, [allStrains, onNodeClick]);
     
     const handleToggle = useCallback((nodeId: string) => {
-        // Placeholder for future expand/collapse logic
-    }, []);
+        if (selectedStrainId) {
+            dispatch(toggleGenealogyNode({ strainId: selectedStrainId, nodeId }));
+        }
+    }, [dispatch, selectedStrainId]);
 
     const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         dispatch(setSelectedGenealogyStrain(e.target.value || null));
@@ -154,7 +152,6 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
             const { width, height } = svg.node()!.getBoundingClientRect();
             const initialTranslate = layoutOrientation === 'horizontal' ? [width * 0.1, height / 2] : [width / 2, height * 0.1];
             const initialTransform = d3.zoomIdentity.translate(initialTranslate[0], initialTranslate[1]);
-            // Use a transition for smooth recentering. This programmatic call is now safe.
             svg.transition().duration(750).call(zoomBehavior.transform, initialTransform);
         } else {
             const transform = d3.zoomIdentity.translate(zoomTransform.x, zoomTransform.y).scale(zoomTransform.k);
@@ -242,17 +239,27 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                              <svg ref={svgRef} className="w-full h-full cursor-move">
                                 <g className="genealogy-content">
                                     {links.map((link, i) => <Link key={`${link.source.data.id}-${link.target.data.id}-${i}`} link={link} orientation={layoutOrientation} />)}
-                                    {nodes.map((node) => (
-                                         <foreignObject
-                                            key={node.data.id}
-                                            x={layoutOrientation === 'horizontal' ? node.y - (nodeSize.width / 2) : node.x - (nodeSize.width / 2)}
-                                            y={layoutOrientation === 'horizontal' ? node.x - (nodeSize.height / 2) : node.y - (nodeSize.height / 2)}
-                                            width={nodeSize.width}
-                                            height={nodeSize.height}
-                                        >
-                                             <StrainTreeNode node={node} onNodeClick={handleNodeClick} onToggle={handleToggle} />
-                                        </foreignObject>
-                                    ))}
+                                    {nodes.map((node) => {
+                                        const isHorizontal = layoutOrientation === 'horizontal';
+                                        const x = isHorizontal ? node.y : node.x;
+                                        const y = isHorizontal ? node.x : node.y;
+                                        return (
+                                            <g
+                                                key={node.data.id}
+                                                transform={`translate(${x}, ${y})`}
+                                                style={{ transition: 'transform 0.4s ease-in-out' }}
+                                            >
+                                                <foreignObject
+                                                    x={-nodeSize.width / 2}
+                                                    y={-nodeSize.height / 2}
+                                                    width={nodeSize.width}
+                                                    height={nodeSize.height}
+                                                >
+                                                    <StrainTreeNode node={node} onNodeClick={handleNodeClick} onToggle={handleToggle} />
+                                                </foreignObject>
+                                            </g>
+                                        );
+                                    })}
                                 </g>
                             </svg>
                         </Card>

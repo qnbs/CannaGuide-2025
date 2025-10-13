@@ -1,6 +1,12 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
+  "florida-kush": {
+    "description": "A potent indica-dominant strain originating from Florida, closely related to OG Kush and Triangle Kush. It delivers a strong, relaxing, and euphoric high. The aroma is a classic OG profile of pine, earth, and lemon. It is one of the parents of Pink Panties."
+  },
+  "forum-cut-cookies": {
+    "description": "The 'Forum Cut' is one of the original, legendary clone-only phenotypes of Girl Scout Cookies. It is prized for its classic GSC effects: a potent, euphoric head high that melts into a relaxing body buzz. It has a characteristic sweet, earthy, and doughy aroma. It's a parent of Mandarin Cookies."
+  },
   "face-off-og": {
     "description": "An extremely potent indica-dominant strain, known for its heavily sedating and physically relaxing effects. Ideal for evening use and for severe pain or insomnia.",
   },

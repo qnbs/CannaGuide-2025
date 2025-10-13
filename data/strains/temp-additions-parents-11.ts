@@ -11,6 +11,8 @@ export const strains: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 22,
         "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
         "floweringTime": 8.5,
         "agronomic": {
             "difficulty": "Medium",
@@ -31,6 +33,8 @@ export const strains: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 22,
         "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
         "floweringTime": 8,
         "agronomic": {
             "difficulty": "Medium",
@@ -51,6 +55,8 @@ export const strains: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
         "floweringTime": 8,
         "agronomic": {
             "difficulty": "Easy",
@@ -71,6 +77,8 @@ export const strains: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 19,
         "cbd": 1,
+        "thcRange": "17-21%",
+        "cbdRange": "<1%",
         "floweringTime": 7.5,
         "agronomic": {
             "difficulty": "Easy",
@@ -91,6 +99,8 @@ export const strains: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 22,
         "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
         "floweringTime": 9,
         "agronomic": {
             "difficulty": "Hard",

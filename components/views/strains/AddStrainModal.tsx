@@ -143,10 +143,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                 <div className="space-y-6">
                     <FormSection title={t('strainsView.addStrainModal.generalInfo')} defaultOpen={true}>
                         <FormInput label={`${t('strainsView.addStrainModal.strainName')} *`} value={values.name} onChange={(e) => handleChange('name', e.target.value)} required />
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('common.type')}</label>
-                            <Select value={values.type} onChange={(e) => handleChange('type', e.target.value as StrainType)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
-                        </div>
+                        <Select label={t('common.type')} value={values.type} onChange={(e) => handleChange('type', e.target.value as StrainType)} options={[{value: 'Sativa', label: t('strainsView.sativa')}, {value: 'Indica', label: t('strainsView.indica')}, {value: 'Hybrid', label: t('strainsView.hybrid')}]}/>
                         <FormInput label={t('common.typeDetails')} value={values.typeDetails} onChange={(e) => handleChange('typeDetails', e.target.value)} placeholder={t('strainsView.addStrainModal.typeDetailsPlaceholder')} />
                         <FormInput label={t('common.genetics')} value={values.genetics} onChange={(e) => handleChange('genetics', e.target.value)} />
                         <div className="flex items-center gap-2 pt-2">
@@ -156,7 +153,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                                 name="isAutoflower"
                                 checked={values.isAutoflower}
                                 onChange={(e) => handleChange('isAutoflower', e.target.checked)}
-                                className="h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500"
+                                className="custom-checkbox"
                             />
                             <label htmlFor="isAutoflower" className="text-sm font-semibold text-slate-300 cursor-pointer">
                                 {t('strainsView.addStrainModal.autoflower')}
@@ -174,18 +171,9 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                     <FormSection title={t('strainsView.addStrainModal.growData')}>
                         <FormInput label={`${t('strainsView.addStrainModal.floweringTimeWeeks')} *`} type="number" step="0.5" value={values.floweringTime} onChange={(e) => handleChange('floweringTime', Number(e.target.value))} required />
                         <FormInput label={t('strainsView.addStrainModal.floweringTimeRange')} value={values.floweringTimeRange} onChange={(e) => handleChange('floweringTimeRange', e.target.value)} placeholder={t('strainsView.addStrainModal.floweringTimeRangePlaceholder')}/>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.table.difficulty')}</label>
-                            <Select value={values.difficulty} onChange={(e) => handleChange('difficulty', e.target.value as DifficultyLevel)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
-                        </div>
-                         <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.addStrainModal.yield')}</label>
-                            <Select value={values.yield} onChange={(e) => handleChange('yield', e.target.value as YieldLevel)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.addStrainModal.height')}</label>
-                            <Select value={values.height} onChange={(e) => handleChange('height', e.target.value as HeightLevel)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
-                        </div>
+                        <Select label={t('strainsView.table.difficulty')} value={values.difficulty} onChange={(e) => handleChange('difficulty', e.target.value as DifficultyLevel)} options={[{value: 'Easy', label: t('strainsView.difficulty.easy')}, {value: 'Medium', label: t('strainsView.difficulty.medium')}, {value: 'Hard', label: t('strainsView.difficulty.hard')}]}/>
+                        <Select label={t('strainsView.addStrainModal.yield')} value={values.yield} onChange={(e) => handleChange('yield', e.target.value as YieldLevel)} options={[{value: 'Low', label: t('strainsView.addStrainModal.yields.low')}, {value: 'Medium', label: t('strainsView.addStrainModal.yields.medium')}, {value: 'High', label: t('strainsView.addStrainModal.yields.high')}]}/>
+                        <Select label={t('strainsView.addStrainModal.height')} value={values.height} onChange={(e) => handleChange('height', e.target.value as HeightLevel)} options={[{value: 'Short', label: t('strainsView.addStrainModal.heights.short')}, {value: 'Medium', label: t('strainsView.addStrainModal.heights.medium')}, {value: 'Tall', label: t('strainsView.addStrainModal.heights.tall')}]}/>
                         <FormInput label={t('strainsView.strainModal.yieldIndoor')} value={values.yieldIndoor} onChange={(e) => handleChange('yieldIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldIndoorPlaceholder')}/>
                         <FormInput label={t('strainsView.strainModal.yieldOutdoor')} value={values.yieldOutdoor} onChange={(e) => handleChange('yieldOutdoor', e.target.value)} placeholder={t('strainsView.addStrainModal.yieldOutdoorPlaceholder')}/>
                         <FormInput label={t('strainsView.strainModal.heightIndoor')} value={values.heightIndoor} onChange={(e) => handleChange('heightIndoor', e.target.value)} placeholder={t('strainsView.addStrainModal.heightIndoorPlaceholder')}/>

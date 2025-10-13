@@ -9,6 +9,7 @@ import {
     ArchivedAdvisorResponse,
     Recommendation,
     RecommendationItem,
+    StructuredGrowTips,
 } from '@/types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -125,7 +126,7 @@ const exportDataLogic = <T extends { [key: string]: any }>(
         xmlItem: string;
         txtFormatter: (item: T) => string;
         pdfHeaders: string[];
-        pdfRows: (item: T) => string[];
+        pdfRows: (item: T) => (string | number | boolean | null | undefined)[];
         t: (key: string, options?: Record<string, unknown>) => string;
     }
 ) => {
@@ -135,7 +136,7 @@ const exportDataLogic = <T extends { [key: string]: any }>(
     switch (format) {
         case 'json':
             downloadFile(
-                JSON.stringify(data, null, 2),
+                JSON.stringify(serializableData, null, 2),
                 `${filename}.json`,
                 'application/json;charset=utf-8;'
             );
@@ -572,44 +573,53 @@ export const exportStrainTipsLogic = (
     t: (key: string, options?: Record<string, unknown>) => string
 ) => {
 // FIX: Updated `exportStrainTipsLogic` to handle the `SavedStrainTip` type which has structured properties (`nutrientTip`, `trainingTip`, etc.) instead of a single `content` property. This resolves errors where the non-existent `content` property was being accessed for CSV, TXT, and PDF exports.
+    const toSerializable = (item: SavedStrainTip) => ({
+        Strain: item.strainName,
+        Created: new Date(item.createdAt).toLocaleString(),
+        Title: item.title,
+        'Nutrient Tip': item.nutrientTip,
+        'Training Tip': item.trainingTip,
+        'Environmental Tip': item.environmentalTip,
+        'Pro Tip': item.proTip,
+    });
+
+    const txtFormatter = (item: SavedStrainTip) => (
+        `[${item.strainName} - ${item.title}]\n` +
+        `Date: ${new Date(item.createdAt).toLocaleString()}\n` +
+        `- Nutrient: ${item.nutrientTip}\n` +
+        `- Training: ${item.trainingTip}\n` +
+        `- Environment: ${item.environmentalTip}\n` +
+        `- Pro-Tip: ${item.proTip}\n`
+    );
+
+    const pdfHeaders = [
+        t('strainsView.table.strain'),
+        'Title',
+        'Date',
+        t('strainsView.tips.form.categories.nutrientTip'),
+        t('strainsView.tips.form.categories.trainingTip'),
+        t('strainsView.tips.form.categories.environmentalTip'),
+        t('strainsView.tips.form.categories.proTip'),
+    ];
+
+    const pdfRows = (item: SavedStrainTip) => [
+        item.strainName,
+        item.title,
+        new Date(item.createdAt).toLocaleDateString(),
+        item.nutrientTip,
+        item.trainingTip,
+        item.environmentalTip,
+        item.proTip,
+    ];
+
     exportDataLogic(tips, format, filename, {
         title: t('strainsView.tips.title'),
-        toSerializable: (item) => ({
-            Strain: item.strainName,
-            Created: new Date(item.createdAt).toLocaleString(),
-            Title: item.title,
-            'Nutrient Tip': item.nutrientTip,
-            'Training Tip': item.trainingTip,
-            'Environmental Tip': item.environmentalTip,
-            'Pro Tip': item.proTip,
-        }),
+        toSerializable,
         xmlRoot: 'strain_tips',
         xmlItem: 'tip',
-        txtFormatter: (item) =>
-            `[${item.strainName} - ${item.title}]\n` +
-            `Date: ${new Date(item.createdAt).toLocaleString()}\n` +
-            `- Nutrient: ${item.nutrientTip}\n` +
-            `- Training: ${item.trainingTip}\n` +
-            `- Environment: ${item.environmentalTip}\n` +
-            `- Pro-Tip: ${item.proTip}\n`,
-        pdfHeaders: [
-            t('strainsView.table.strain'),
-            'Title',
-            'Date',
-            t('strainsView.tips.form.categories.nutrientTip'),
-            t('strainsView.tips.form.categories.trainingTip'),
-            t('strainsView.tips.form.categories.environmentalTip'),
-            t('strainsView.tips.form.categories.proTip'),
-        ],
-        pdfRows: (item) => [
-            item.strainName,
-            item.title,
-            new Date(item.createdAt).toLocaleDateString(),
-            item.nutrientTip,
-            item.trainingTip,
-            item.environmentalTip,
-            item.proTip,
-        ],
+        txtFormatter,
+        pdfHeaders,
+        pdfRows,
         t,
     });
 };

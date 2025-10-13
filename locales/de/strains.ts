@@ -186,6 +186,9 @@ export const strainsView = {
         noImagesTitle: 'Noch keine Bilder',
         noImagesSubtitle: 'Generiere KI-Tipps mit Bildern, um diese Galerie zu füllen.',
     },
+    notes: {
+        saveSuccess: 'Notiz gespeichert!',
+    }
   },
   exportsManager: {
     createExport: 'Neuen Export erstellen',

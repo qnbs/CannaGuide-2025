@@ -526,9 +526,12 @@ const exportSetupsLogic = (
             name: item.name,
             createdAt: new Date(item.createdAt).toLocaleDateString(),
             totalCost: item.totalCost,
-            area: item.sourceDetails.area,
+            plantCount: item.sourceDetails.plantCount,
+            experience: item.sourceDetails.experience,
             budget: item.sourceDetails.budget,
-            growStyle: item.sourceDetails.growStyle,
+            priorities: item.sourceDetails.priorities.join(', '),
+            growSpace: item.sourceDetails.growSpace ? `${item.sourceDetails.growSpace.width}x${item.sourceDetails.growSpace.depth}cm` : 'N/A',
+            floweringType: item.sourceDetails.floweringTypePreference || 'any',
         }),
         xmlRoot: 'savedSetups',
         xmlItem: 'setup',
@@ -536,7 +539,8 @@ const exportSetupsLogic = (
             let str = `[ ${s.name} ]\n`;
             str += `Created: ${new Date(s.createdAt).toLocaleString()}\n`;
             str += `Total Cost: ${s.totalCost.toFixed(2)} ${t('common.units.currency_eur')}\n`;
-            str += `Source Details: Area ${s.sourceDetails.area}, Budget ${s.sourceDetails.budget}, Style ${s.sourceDetails.growStyle}\n\n`;
+            const { plantCount, experience, budget, priorities, growSpace, floweringTypePreference } = s.sourceDetails;
+            str += `Source Details: ${plantCount} plants, ${experience}, Budget: ${budget}€, Priorities: ${priorities.join(', ')}, Space: ${growSpace?.width}x${growSpace?.depth}cm, Type: ${floweringTypePreference}\n\n`;
             str += `--- Components ---\n`;
             (Object.keys(s.recommendation) as (keyof Recommendation)[]).forEach((key) => {
                 if (key === 'proTip') return;
@@ -551,17 +555,23 @@ const exportSetupsLogic = (
             t('common.name'),
             t('equipmentView.savedSetups.pdfReport.createdAt'),
             `${t('equipmentView.configurator.total')} (${t('common.units.currency_eur')})`,
-            'Area',
-            'Style',
+            'Plant Count',
+            'Experience',
+            'Priorities',
             'Budget',
+            'Grow Space',
+            'Flowering Type',
         ],
         pdfRows: (s) => [
             s.name,
             new Date(s.createdAt).toLocaleDateString(),
             s.totalCost.toFixed(2),
-            s.sourceDetails.area,
-            s.sourceDetails.growStyle,
+            s.sourceDetails.plantCount,
+            s.sourceDetails.experience,
+            s.sourceDetails.priorities.join(', '),
             s.sourceDetails.budget,
+            s.sourceDetails.growSpace ? `${s.sourceDetails.growSpace.width}x${s.sourceDetails.growSpace.depth}cm` : 'N/A',
+            s.sourceDetails.floweringTypePreference || 'any',
         ],
         t,
     });

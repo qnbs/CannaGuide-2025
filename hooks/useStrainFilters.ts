@@ -136,9 +136,8 @@ export const useStrainFilters = (
 
         if (showFavoritesOnly) strains = strains.filter((s) => favorites.has(s.id));
 
-        const typeFilterSet = new Set(typeFilter);
-        if (typeFilterSet.size > 0) {
-            strains = strains.filter((s) => typeFilterSet.has(s.type));
+        if (typeFilter.length > 0) {
+            strains = strains.filter((s) => typeFilter.includes(s.type));
         }
 
         if (letterFilter) {

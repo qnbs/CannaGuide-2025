@@ -52,12 +52,14 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
     ];
 
     return (
-        <svg viewBox="0 0 24 24" className={className} style={{ transition: 'transform 0.5s ease' }}>
-            <g transform={`scale(${stageScale}) translate(0, ${24 - 24 * stageScale})`}>
-                {stem}
-                {leaves}
-                {showBuds && buds}
-            </g>
-        </svg>
+        <div className={`group ${className}`}>
+            <svg viewBox="0 0 24 24" className="w-full h-full group-hover:scale-105 transition-transform duration-300 ease-in-out">
+                <g transform={`scale(${stageScale}) translate(0, ${24 - 24 * stageScale})`}>
+                    {stem}
+                    {leaves}
+                    {showBuds && buds}
+                </g>
+            </svg>
+        </div>
     );
 });

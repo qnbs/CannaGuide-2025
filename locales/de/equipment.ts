@@ -10,16 +10,52 @@ export const equipmentView = {
   },
   configurator: {
     title: 'KI-Ausrüstungs-Konfigurator',
-    subtitleNew: 'Beantworte zwei einfache Fragen, um eine komplette, KI-generierte Ausrüstungsempfehlung für deinen Grow zu erhalten.',
-    step1TitleNew: '1. Wie viele Pflanzen möchtest du anbauen?',
+    subtitleNew: 'Beantworte ein paar Fragen, um eine komplette, KI-generierte Ausrüstungsempfehlung für deinen Grow zu erhalten.',
+    
+    // Steps
+    step1Title: '1. Grundlagen',
+    step2Title: '2. Budget & Prioritäten',
+    step3Title: '3. Individuelle Wünsche',
+    
+    // Plant Count
     plantCount_one: '1 Pflanze',
-    plantCount_other: '{{range}} Pflanzen',
-    step2TitleNew: '2. Wähle deinen Konfigurationsstil',
+    plantCount_other: '{{count}} Pflanzen',
+
+    // Grow Space
+    growSpaceTitle: 'Anbaufläche',
+    growSpaceDescription: 'Gib die Maße deines Zeltes oder deiner Anbaufläche an.',
+    width: 'Breite (cm)',
+    depth: 'Tiefe (cm)',
+    
+    // Flowering Type
+    floweringTypeTitle: 'Bevorzugter Blütetyp',
+    floweringTypeAny: 'Egal / Unsicher',
+    floweringTypeAutoflower: 'Autoflower',
+    floweringTypePhotoperiod: 'Photoperiodisch',
+    
+    step1TitleNew: '1. Wie viele Pflanzen möchtest du anbauen?', // Old, can be removed if not used
+    step2TitleNew: '2. Was ist dein Erfahrungslevel?', // Old, can be removed
+    
+    budgetTitle: 'Budget',
+    step3TitleNew: '3. Was sind deine Hauptprioritäten?',
+    priorityDescription: 'Wähle bis zu zwei aus, um der KI zu helfen, dein Setup anzupassen.',
+    priorities: {
+        yield: 'Ertragsmaximierung',
+        quality: 'Qualität/Terpene',
+        stealth: 'Diskretion',
+        easeOfUse: 'Einfache Handhabung',
+        energy: 'Energieeffizienz',
+    },
+    step4TitleNew: '4. Besondere Wünsche oder Einschränkungen?',
+    customNotesDescription: 'Teile der KI alles Weitere mit, z.B. dein Klima, Platzbeschränkungen oder ob du organische Methoden bevorzugst.',
+    customNotesPlaceholder: 'z.B. "Ich lebe in einem sehr heißen Klima" oder "Ich möchte ein rein organisches Setup"...',
+    
     generate: 'Setup generieren',
     setupSaveSuccess: 'Setup "{{name}}" erfolgreich gespeichert!',
     resultsTitle: 'Dein KI-generiertes Setup',
     resultsSubtitle: 'Für: {{area}} Fläche, mit Fokus auf {{style}} und einem {{budget}} Budget.',
     resultsSubtitleNew: 'Für: {{plants}} Pflanzen, mit einem {{budget}} Budget.',
+    resultsSubtitleAdvanced: 'Basierend auf: {{plantCount}} Pflanzen, Erfahrung "{{experience}}", einem Budget von {{budget}}€ und Prioritäten: {{priorities}}',
     total: 'Gesamtkosten',
     error: 'Bei der Generierung deines Setups ist ein Fehler aufgetreten.',
     tryAgain: 'Erneut versuchen',

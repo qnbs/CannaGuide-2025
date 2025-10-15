@@ -1,6 +1,5 @@
 
-
-import React, { useEffect, useRef, lazy, Suspense } from 'react'
+import React, { useEffect, useRef, lazy, Suspense, useCallback } from 'react'
 import { View, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/navigation/Header'
@@ -22,7 +21,7 @@ import {
   selectActiveView,
   selectIsCommandPaletteOpen,
   selectSettings,
-  selectSelectedPlantId,
+  selectNavigation,
 } from '@/stores/selectors'
 import {
   setAppReady,
@@ -32,6 +31,7 @@ import {
 } from '@/stores/slices/uiSlice'
 import { initializeSimulation } from '@/stores/slices/simulationSlice'
 import { toggleSetting } from '@/stores/slices/settingsSlice'
+import { cacheViewState } from '@/stores/slices/navigationSlice'
 import { ToastContainer } from '@/components/common/Toast'
 import { AiDiagnosticsModalContainer } from '@/components/views/plants/AiDiagnosticsModalContainer'
 import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupModalContainer'
@@ -53,7 +53,7 @@ const EquipmentView = lazy(() =>
   }))
 )
 const KnowledgeView = lazy(() =>
-  import('@/components/views/KnowledgeView').then((module) => ({
+  import('@/components/views/knowledge/KnowledgeView').then((module) => ({
     default: module.KnowledgeView,
   }))
 )
@@ -88,9 +88,9 @@ const AppContent: React.FC = () => {
   const dispatch = useAppDispatch()
   const settings = useAppSelector(selectSettings);
   const activeView = useAppSelector(selectActiveView)
-  const selectedPlantId = useAppSelector(selectSelectedPlantId)
   const onboardingCompleted = settings.onboardingCompleted
   const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
+  const navigationState = useAppSelector(selectNavigation)
 
   const mainContentRef = useRef<HTMLElement | null>(null)
 
@@ -100,13 +100,37 @@ const AppContent: React.FC = () => {
 
   useDocumentEffects(settings)
   
-  // This effect ensures that whenever the main view changes or a detailed plant view is opened/closed,
-  // the scrollable content area is reset to the top. This directly fulfills the user's request.
+  // This effect handles both caching and restoring scroll positions for a seamless UX.
   useEffect(() => {
-    if (mainContentRef.current) {
-        mainContentRef.current.scrollTo({ top: 0, behavior: 'auto' });
-    }
-  }, [activeView, selectedPlantId]);
+    const mainEl = mainContentRef.current;
+    if (!mainEl) return;
+
+    // 1. Restore scroll position for the new view
+    const cachedState = navigationState.viewStates[activeView];
+    mainEl.scrollTop = cachedState?.scrollY || 0;
+
+    // 2. Set up a debounced scroll listener to cache the new position as the user scrolls
+    const handleScroll = () => {
+        dispatch(cacheViewState({
+            view: activeView,
+            state: { ...cachedState, scrollY: mainEl.scrollTop }
+        }));
+    };
+    
+    let timeoutId: number;
+    const debouncedHandleScroll = () => {
+        clearTimeout(timeoutId);
+        timeoutId = window.setTimeout(handleScroll, 150);
+    };
+
+    mainEl.addEventListener('scroll', debouncedHandleScroll);
+
+    // 3. Cleanup listener on view change
+    return () => {
+        mainEl.removeEventListener('scroll', debouncedHandleScroll);
+        clearTimeout(timeoutId);
+    };
+  }, [activeView, dispatch, navigationState.viewStates]);
 
 
   useEffect(() => {

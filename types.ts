@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 
 // --- Basic types ---
@@ -388,7 +386,10 @@ export interface RecommendationItem {
 }
 export type RecommendationCategory = 'tent' | 'light' | 'ventilation' | 'circulationFan' | 'pots' | 'soil' | 'nutrients' | 'extra';
 export type Recommendation = Record<RecommendationCategory, RecommendationItem> & { proTip: string };
-export type PlantCount = '1' | '2-3';
+export type PlantCount = '1' | '2' | '3';
+export type ExperienceLevel = 'beginner' | 'intermediate' | 'expert';
+export type GrowPriority = 'yield' | 'quality' | 'stealth' | 'easeOfUse' | 'energy';
+
 
 export interface SavedSetup {
     id: string;
@@ -397,10 +398,13 @@ export interface SavedSetup {
     recommendation: Recommendation;
     totalCost: number;
     sourceDetails: {
-        area: string;
-        budget: string;
-        growStyle: string;
-        plantCount?: PlantCount;
+        plantCount: PlantCount;
+        experience: ExperienceLevel;
+        budget: number;
+        priorities: GrowPriority[];
+        customNotes?: string;
+        growSpace?: { width: number; depth: number };
+        floweringTypePreference?: 'autoflower' | 'photoperiod' | 'any';
     };
 }
 

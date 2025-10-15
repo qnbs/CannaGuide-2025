@@ -29,7 +29,8 @@ export const useGardenHealthMetrics = () => useAppSelector(selectGardenHealthMet
  * @returns An object containing health metrics, open tasks, and active problems.
  */
 export const useGardenSummary = () => {
-    const healthMetrics = useAppSelector(selectGardenHealthMetrics);
+    // FIX: Cast the result of useAppSelector to the selector's return type to avoid type errors.
+    const healthMetrics = useAppSelector(selectGardenHealthMetrics) as ReturnType<typeof selectGardenHealthMetrics>;
     const tasks = useAppSelector(selectOpenTasksSummary);
     const problems = useAppSelector(selectActiveProblemsSummary);
     return { ...healthMetrics, tasks, problems };
@@ -40,8 +41,9 @@ export const useGardenSummary = () => {
  * @returns An object with an array of plant data for each slot (or null if empty) and a boolean indicating if slots are available.
  */
 export const usePlantSlotsData = () => {
-    const slots = useAppSelector(selectPlantSlots);
-    const plantEntities = useAppSelector(state => state.simulation.plants.entities);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const slots = useAppSelector(selectPlantSlots) as (string | null)[];
+    const plantEntities = useAppSelector(state => state.simulation.plants.entities) as Record<string, Plant | undefined>;
     const hasAvailable = useAppSelector(selectHasAvailableSlots);
     
     const slotsWithData = useMemo(() => slots.map(id => id ? plantEntities[id] || null : null), [slots, plantEntities]);

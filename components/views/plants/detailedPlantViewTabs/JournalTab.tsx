@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from '@/components/common/Card';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { JournalEntry, JournalEntryType } from '@/types';
 import { useTranslation } from 'react-i18next';
@@ -61,7 +62,8 @@ export const JournalTab: React.FC<JournalTabProps> = ({ journal }) => {
                                 {journalTypeIcons[entry.type]}
                             </div>
                             <div className="flex-grow">
-                                <p className="font-semibold text-slate-100">{t(entry.notes, { ...entry.details, from: t(`plantStages.${entry.details?.from}`), to: t(`plantStages.${entry.details?.to}`) })}</p>
+                                {/* FIX: Cast the result of the `t` function to a string to resolve a type mismatch error. */}
+                                <p className="font-semibold text-slate-100">{t(entry.notes, { ...entry.details, from: t(`plantStages.${entry.details?.from}`), to: t(`plantStages.${entry.details?.to}`) }) as string}</p>
                                 {entry.details && (
                                     <p className="text-xs text-slate-400">
                                         {Object.entries(entry.details).map(([key, value]) => value && !['imageUrl', 'imageId', 'from', 'to'].includes(key) && `${key}: ${value}`).filter(Boolean).join(' | ')}

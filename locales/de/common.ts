@@ -35,6 +35,7 @@ export const common = {
     error: 'Fehler',
     deepDive: 'Deep Dive',
     saveToJournal: 'Im Journal speichern',
+    search: 'Suche',
     editor: {
         bold: 'Fett',
         italic: 'Kursiv',
@@ -59,6 +60,17 @@ export const common = {
         invalidActionData: 'Ungültige Daten für Aktion übermittelt: {{action}}.',
     },
     metadataDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie über 500 Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
+    voiceControl: {
+        listening: 'Höre zu...',
+        processing: 'Verarbeite: "{{transcript}}"',
+        toggle: 'Sprachsteuerung umschalten',
+        errors: {
+            generic: 'Ein Fehler bei der Spracherkennung ist aufgetreten.',
+            noSpeech: 'Keine Sprache erkannt.',
+            notAllowed: 'Mikrofonzugriff verweigert.',
+            startFailed: 'Zuhören konnte nicht gestartet werden.',
+        },
+    },
 };
 
 export const nav = {

@@ -22,7 +22,8 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string, colo
 export const DashboardSummary: React.FC<DashboardSummaryProps> = memo(({ openTasksCount }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppSelector(selectGardenHealthMetrics);
+    // FIX: Cast the result of useAppSelector to the selector's return type to avoid type errors.
+    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppSelector(selectGardenHealthMetrics) as ReturnType<typeof selectGardenHealthMetrics>;
     const hasActiveGrows = activePlantsCount > 0;
 
     const handleWaterAll = () => {

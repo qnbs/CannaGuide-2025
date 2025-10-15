@@ -111,7 +111,8 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         }
     }, [dispatch, selectedStrainId]);
 
-    const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleSelectChange = (e: any) => {
+        // FIX: The `setSelectedGenealogyStrain` action creator requires a payload.
         dispatch(setSelectedGenealogyStrain(e.target.value || null));
     };
     

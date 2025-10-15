@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Strain, SortKey, SortDirection, StrainType } from '@/types';
 import { StrainToolbar } from './StrainToolbar';
@@ -6,10 +6,10 @@ import { AlphabeticalFilter } from './AlphabeticalFilter';
 import { StrainListHeader } from './StrainListHeader';
 import { StrainList } from './StrainList';
 import { StrainGrid } from './StrainGrid';
-import { Pagination } from '@/components/common/Pagination';
 import { Card } from '@/components/common/Card';
 import { BulkActionsBar } from './BulkActionsBar';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import { LoadMoreButton } from '@/components/common/LoadMoreButton';
 
 const ITEMS_PER_PAGE = 25;
 
@@ -48,7 +48,7 @@ interface StrainLibraryViewProps {
 
 export const StrainLibraryView: React.FC<StrainLibraryViewProps> = (props) => {
     const {
-        strains, totalStrainCount, currentPage, onPageChange, viewMode, isSearching, searchTerm,
+        strains, totalStrainCount, viewMode, isSearching, searchTerm,
         onSearchTermChange, sort, handleSort, letterFilter, handleSetLetterFilter, typeFilter, onToggleTypeFilter,
         isAnyFilterActive, onResetFilters, onOpenDrawer, activeFilterCount, selectedIds, onToggleSelection, onSelect,
         favoriteIds, onToggleFavorite, isUserStrain, onDeleteUserStrain, onClearSelection, onExport,
@@ -56,14 +56,16 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = (props) => {
     } = props;
 
     const { t } = useTranslation();
+    const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
+
+    useEffect(() => {
+        setDisplayCount(ITEMS_PER_PAGE);
+    }, [strains]);
+
 
     const currentStrains = useMemo(() => {
-        const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-        const endIndex = startIndex + ITEMS_PER_PAGE;
-        return strains.slice(startIndex, endIndex);
-    }, [strains, currentPage]);
-
-    const totalPages = Math.ceil(totalStrainCount / ITEMS_PER_PAGE);
+        return strains.slice(0, displayCount);
+    }, [strains, displayCount]);
     
     const areAllOnPageSelected = useMemo(() => 
         currentStrains.length > 0 && currentStrains.every(s => selectedIds.has(s.id)),
@@ -80,35 +82,43 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = (props) => {
             }
         });
     };
+    
+    const handleLoadMore = () => {
+        setDisplayCount(prev => Math.min(prev + ITEMS_PER_PAGE, totalStrainCount));
+    };
 
 
     return (
         <>
-            <Card>
-                <div className="space-y-4">
-                    <StrainToolbar
-                        searchTerm={searchTerm}
-                        onSearchTermChange={onSearchTermChange}
-                        onOpenDrawer={onOpenDrawer}
-                        activeFilterCount={activeFilterCount}
-                        viewMode={viewMode}
-                        typeFilter={typeFilter}
-                        onToggleTypeFilter={onToggleTypeFilter}
-                        isAnyFilterActive={isAnyFilterActive}
-                        onResetFilters={onResetFilters}
-                    />
-                    <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
-                    {viewMode === 'list' && (
-                        <StrainListHeader
-                            sort={sort}
-                            handleSort={handleSort}
-                            areAllOnPageSelected={areAllOnPageSelected}
-                            onToggleAll={handleToggleAll}
+            <Card className="!p-0">
+                 <div className="sticky top-[var(--header-height,64px)] z-20 bg-[rgba(var(--color-bg-primary),0.95)] backdrop-blur-sm mt-[-1rem] sm:mt-[-1.5rem] pt-4 sm:pt-6">
+                    <div className="px-4 space-y-4">
+                        <StrainToolbar
+                            searchTerm={searchTerm}
+                            onSearchTermChange={onSearchTermChange}
+                            onOpenDrawer={onOpenDrawer}
+                            activeFilterCount={activeFilterCount}
+                            viewMode={viewMode}
+                            typeFilter={typeFilter}
+                            onToggleTypeFilter={onToggleTypeFilter}
+                            isAnyFilterActive={isAnyFilterActive}
+                            onResetFilters={onResetFilters}
                         />
+                        <AlphabeticalFilter activeLetter={letterFilter} onLetterClick={handleSetLetterFilter} />
+                    </div>
+                    {viewMode === 'list' && (
+                        <div className="mt-4 border-b border-t border-slate-700/50">
+                            <StrainListHeader
+                                sort={sort}
+                                handleSort={handleSort}
+                                areAllOnPageSelected={areAllOnPageSelected}
+                                onToggleAll={handleToggleAll}
+                            />
+                        </div>
                     )}
                 </div>
 
-                <div className="mt-4">
+                <div className="p-4 pb-0">
                     {isSearching ? (
                         <SkeletonLoader variant={viewMode} count={10} />
                     ) : totalStrainCount === 0 ? (
@@ -139,19 +149,14 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = (props) => {
                             onToggleFavorite={onToggleFavorite}
                         />
                     )}
-
-                    {totalStrainCount > 0 && (
-                        <div className="mt-6 text-center space-y-4">
-                            <p className="text-sm text-slate-400">
-                                {t('strainsView.showingCount', { count: currentStrains.length, total: totalStrainCount })}
-                            </p>
-                            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                                <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
-                            </div>
-                        </div>
-                    )}
                 </div>
             </Card>
+            
+            <LoadMoreButton 
+                onClick={handleLoadMore}
+                visibleCount={currentStrains.length}
+                totalCount={totalStrainCount}
+            />
 
             {selectedIds.size > 0 && (
                 <BulkActionsBar

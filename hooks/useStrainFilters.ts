@@ -33,7 +33,8 @@ export const useStrainFilters = (
     const dispatch = useAppDispatch();
     const { searchTerm, typeFilter, showFavoritesOnly, advancedFilters, letterFilter } =
         useAppSelector((state) => state.filters);
-    const favorites = useAppSelector(selectFavoriteIds);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const favorites = useAppSelector(selectFavoriteIds) as Set<string>;
 
     const [sort, setSort] = React.useState<{ key: SortKey; direction: SortDirection }>({
         key: strainsViewSettings.defaultSortKey,

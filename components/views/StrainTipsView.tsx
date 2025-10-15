@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { SavedStrainTip, Strain, ExportFormat } from '@/types';
+import { SavedStrainTip, Strain, ExportFormat, StructuredGrowTips } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
-import { EditResponseModal } from '@/components/common/EditResponseModal';
+import { EditStrainTipModal } from './EditStrainTipModal';
 import { selectHasAvailableSlots } from '@/stores/selectors';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { exportService } from '@/services/exportService';
@@ -21,6 +21,12 @@ interface StrainTipsViewProps {
 
 const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => void, onDelete: (id: string) => void }> = ({ tip, onEdit, onDelete }) => {
     const { t } = useTranslation();
+    const tipCategories = [
+        { key: 'nutrientTip', icon: <PhosphorIcons.Flask />, label: t('strainsView.tips.form.categories.nutrientTip') },
+        { key: 'trainingTip', icon: <PhosphorIcons.Scissors />, label: t('strainsView.tips.form.categories.trainingTip') },
+        { key: 'environmentalTip', icon: <PhosphorIcons.Fan />, label: t('strainsView.tips.form.categories.environmentalTip') },
+        { key: 'proTip', icon: <PhosphorIcons.Sparkle />, label: t('strainsView.tips.form.categories.proTip') },
+    ];
     return (
         <div className="animate-fade-in">
              {tip.imageUrl && (
@@ -42,7 +48,18 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
                     </Button>
                 </div>
             </div>
-            <div className="mt-2 pt-2 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: tip.content }} />
+            <div className="mt-2 pt-2 border-t border-slate-700/50 space-y-3">
+                {tipCategories.map(cat => {
+                    const tipContent = tip[cat.key as keyof StructuredGrowTips];
+                    if (!tipContent) return null;
+                    return (
+                        <div key={cat.key}>
+                             <h5 className="font-semibold text-primary-400 text-sm flex items-center gap-2 mb-1">{cat.icon}{cat.label}</h5>
+                             <p className="text-sm text-slate-300 pl-7">{tipContent}</p>
+                        </div>
+                    )
+                })}
+            </div>
         </div>
     );
 };
@@ -59,10 +76,8 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-    const handleUpdateSave = (updated: { id: string, title: string, content: string }) => {
-        if (!editingTip) return;
-        const updatedTipData: SavedStrainTip = { ...editingTip, title: updated.title, content: updated.content };
-        updateTip(updatedTipData);
+    const handleUpdateSave = (updatedTip: SavedStrainTip) => {
+        updateTip(updatedTip);
         setEditingTip(null);
     };
     
@@ -72,7 +87,10 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
         return savedTips.filter(tip => 
             tip.strainName.toLowerCase().includes(lowerCaseSearch) ||
             tip.title.toLowerCase().includes(lowerCaseSearch) ||
-            tip.content.toLowerCase().includes(lowerCaseSearch)
+            tip.nutrientTip.toLowerCase().includes(lowerCaseSearch) ||
+            tip.trainingTip.toLowerCase().includes(lowerCaseSearch) ||
+            tip.environmentalTip.toLowerCase().includes(lowerCaseSearch) ||
+            tip.proTip.toLowerCase().includes(lowerCaseSearch)
         );
     }, [savedTips, searchTerm]);
 
@@ -135,7 +153,7 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
 
     return (
         <div className="mt-4">
-            {editingTip && <EditResponseModal response={editingTip} onClose={() => setEditingTip(null)} onSave={handleUpdateSave} title={t('strainsView.tips.editTipTitle')} />}
+            {editingTip && <EditStrainTipModal tip={editingTip} onClose={() => setEditingTip(null)} onSave={handleUpdateSave} />}
             <DataExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={handleExport} title={t('strainsView.tips.title')} selectionCount={selectedIds.size} totalCount={filteredTips.length} translationBasePath="strainsView.tips.exportModal" />
 
             {selectedIds.size > 0 && (

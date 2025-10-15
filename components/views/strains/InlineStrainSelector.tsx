@@ -8,7 +8,6 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { Input } from '@/components/ui/ThemePrimitives';
 import { SearchBar } from '@/components/common/SearchBar';
 
 interface InlineStrainSelectorProps {
@@ -32,7 +31,8 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 
 const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }> = ({ strain, onClick }) => {
     const { t } = useTranslation();
-    const userStrains = useAppSelector(selectUserStrains);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const userStrains = useAppSelector(selectUserStrains) as Strain[];
     const isUserStrain = userStrains.some(s => s.id === strain.id);
 
     const typeClasses: Record<string, string> = { Sativa: 'text-amber-400', Indica: 'text-indigo-400', Hybrid: 'text-blue-400' };
@@ -88,8 +88,10 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({ onCl
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const userStrains = useAppSelector(selectUserStrains);
-    const favorites = useAppSelector(selectFavoriteIds);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const userStrains = useAppSelector(selectUserStrains) as Strain[];
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const favorites = useAppSelector(selectFavoriteIds) as Set<string>;
 
     useEffect(() => {
         strainService.getAllStrains().then(strains => {

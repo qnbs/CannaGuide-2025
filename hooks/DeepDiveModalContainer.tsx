@@ -12,6 +12,7 @@ import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
 import { selectDeepDiveModalState, selectPlantById, selectLanguage } from '@/stores/selectors';
 import { runComparisonScenario } from '@/stores/slices/sandboxSlice';
+import { UIState } from '@/stores/slices/uiSlice';
 
 interface DeepDiveModalProps {
   plant: Plant;
@@ -108,7 +109,8 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps & ReturnType<typeof useG
 export const DeepDiveModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
-    const { isOpen, plantId, topic } = useAppSelector(selectDeepDiveModalState);
+    // FIX: Cast the result of `useAppSelector` to the correct type to avoid 'unknown' type errors.
+    const { isOpen, plantId, topic } = useAppSelector(selectDeepDiveModalState) as UIState['deepDiveModal'];
     const plant = useAppSelector(selectPlantById(plantId));
 
     const [generateDeepDive, { reset, ...mutationState }] = useGenerateDeepDiveMutation(

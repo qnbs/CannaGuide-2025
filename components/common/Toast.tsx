@@ -63,7 +63,8 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
 
 export const ToastContainer: React.FC = () => {
     const dispatch = useAppDispatch()
-    const notifications = useAppSelector(selectNotifications)
+    // FIX: Cast the result of `useAppSelector` to the correct type to avoid 'unknown' type errors.
+    const notifications = useAppSelector(selectNotifications) as Notification[];
     const container = document.getElementById('toast-container')
 
     const handleClose = (id: number) => {

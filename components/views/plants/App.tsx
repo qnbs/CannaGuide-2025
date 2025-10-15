@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, lazy, Suspense, useCallback } from 'react'
 import { View, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
@@ -22,6 +21,7 @@ import {
   selectIsCommandPaletteOpen,
   selectSettings,
   selectNavigation,
+  selectUi,
 } from '@/stores/selectors'
 import {
   setAppReady,
@@ -38,7 +38,7 @@ import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupM
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
-  import('@/components/views/StrainsView').then((module) => ({
+  import('@/components/views/strains/StrainsView').then((module) => ({
     default: module.StrainsView,
   }))
 )
@@ -53,7 +53,7 @@ const EquipmentView = lazy(() =>
   }))
 )
 const KnowledgeView = lazy(() =>
-  import('@/components/views/knowledge/KnowledgeView').then((module) => ({
+  import('@/components/views/KnowledgeView').then((module) => ({
     default: module.KnowledgeView,
   }))
 )
@@ -86,11 +86,13 @@ const ToastManager: React.FC = () => {
 
 const AppContent: React.FC = () => {
   const dispatch = useAppDispatch()
-  const settings = useAppSelector(selectSettings);
+  // FIX: Cast the result of useAppSelector to the correct type to resolve 'unknown' type errors.
+  const settings = useAppSelector(selectSettings) as AppSettings;
   const activeView = useAppSelector(selectActiveView)
   const onboardingCompleted = settings.onboardingCompleted
   const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
   const navigationState = useAppSelector(selectNavigation)
+  const { voiceControl } = useAppSelector(selectUi);
 
   const mainContentRef = useRef<HTMLElement | null>(null)
 
@@ -187,6 +189,11 @@ const AppContent: React.FC = () => {
         isOpen={isCommandPaletteOpen}
         onClose={() => dispatch(setIsCommandPaletteOpen(false))}
       />
+      {voiceControl.statusMessage && (
+        <div key={voiceControl.statusMessage} className="fixed top-20 left-1/2 -translate-x-1/2 z-[110] bg-slate-800 text-slate-100 px-4 py-2 rounded-lg shadow-lg animate-fade-in text-sm">
+            {voiceControl.statusMessage}
+        </div>
+      )}
       <LogActionModalContainer />
       <DeepDiveModalContainer />
       <AiDiagnosticsModalContainer />
@@ -216,7 +223,8 @@ const AppContent: React.FC = () => {
 
 export const App: React.FC = () => {
   const dispatch = useAppDispatch()
-  const isAppReady = useAppSelector((state: RootState) => state.ui.isAppReady);
+  // FIX: Cast the result of `useAppSelector` to a boolean to resolve the 'unknown' type error.
+  const isAppReady = useAppSelector((state: RootState) => state.ui.isAppReady) as boolean;
 
   useEffect(() => {
     const initializeApp = async () => {

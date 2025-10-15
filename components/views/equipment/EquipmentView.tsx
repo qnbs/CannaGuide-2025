@@ -21,7 +21,8 @@ export const EquipmentView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { equipmentViewTab: activeTab } = useAppSelector(selectUi);
-    const savedSetups = useAppSelector(selectSavedSetups);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid type errors.
+    const savedSetups = useAppSelector(selectSavedSetups) as SavedSetup[];
     const [isPending, startTransition] = useTransition();
 
     const viewIcons = useMemo(() => ({

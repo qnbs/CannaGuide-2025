@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { Plant, ModalType, AppSettings } from '@/types';
 import { Card } from '@/components/common/Card';
@@ -21,7 +22,8 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const settings = useAppSelector(selectSettings) as AppSettings;
     const highlightedElement = useAppSelector(selectHighlightedElement);
 
     return (

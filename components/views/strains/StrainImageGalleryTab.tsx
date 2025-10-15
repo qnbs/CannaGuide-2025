@@ -12,7 +12,8 @@ interface StrainImageGalleryTabProps {
 
 export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ strain }) => {
     const { t } = useTranslation();
-    const savedTips = useAppSelector(selectSavedStrainTips);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const savedTips = useAppSelector(selectSavedStrainTips) as SavedStrainTip[];
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
     const images = useMemo(() => savedTips

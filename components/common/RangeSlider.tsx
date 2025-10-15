@@ -102,7 +102,8 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     } 
     // --- RANGE MODE ---
     else {
-        const { value, onChange } = props;
+        // FIX: Explicitly cast `value` and `onChange` to resolve type confusion with the discriminated union.
+        const { value, onChange } = props as { value: [number, number]; onChange: (v: [number, number]) => void };
         const [minZIndex, setMinZIndex] = useState(1);
         const [maxZIndex, setMaxZIndex] = useState(1);
 

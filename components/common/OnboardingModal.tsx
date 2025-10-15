@@ -19,7 +19,8 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const step = useAppSelector(selectOnboardingStep)
+    // FIX: Cast the result of `useAppSelector` to `number` to resolve 'unknown' type errors.
+    const step = useAppSelector(selectOnboardingStep) as number;
 
     const steps = useMemo(
         () => [

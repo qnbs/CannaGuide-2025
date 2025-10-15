@@ -9,7 +9,7 @@ import { setSetting, exportAllData, resetAllData } from '@/stores/slices/setting
 import { resetPlants } from '@/stores/slices/simulationSlice';
 import { clearArchives } from '@/stores/slices/archivesSlice';
 import { setOnboardingStep } from '@/stores/slices/uiSlice';
-import { Language, Theme } from '@/types';
+import { Language, Theme, AppSettings } from '@/types';
 import { Select } from '@/components/ui/ThemePrimitives';
 import { Switch } from '@/components/common/Switch';
 import { useAvailableVoices } from '@/hooks/useAvailableVoices';
@@ -63,7 +63,8 @@ const SegmentedButtons: React.FC<{ options: { value: string; label: string, icon
 const SettingsView: React.FC = () => {
     const { t, i18n } = useTranslation();
     const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
+    // FIX: Cast the result of `useAppSelector` to the correct type to avoid 'unknown' type errors.
+    const settings = useAppSelector(selectSettings) as AppSettings;
     const availableVoices = useAvailableVoices();
     const { estimates, isLoading: isEstimating } = useStorageEstimate();
 

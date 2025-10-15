@@ -286,7 +286,7 @@ const exportStrainsLogic = (
             addKeyValue(t('strainsView.table.cbd'), strain.cbdRange || `${strain.cbd}%`);
             y += 4;
             
-            addSectionTitle(t('strainsView.strainModal.agronomicData'));
+            addSectionTitle(t('strainsView.addStrainModal.agronomicData'));
             addKeyValue(t('strainsView.strainModal.difficulty'), t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`));
             addKeyValue(t('strainsView.table.flowering'), `${strain.floweringTimeRange || strain.floweringTime} ${t('common.units.weeks')}`);
             addKeyValue(t('strainsView.strainModal.yieldIndoor'), strain.agronomic.yieldDetails?.indoor);
@@ -344,7 +344,8 @@ const exportSetupLogic = (
     t: (key: string, options?: Record<string, unknown>) => string
 ) => {
     const filename = setup.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const recommendationKeys = Object.keys(setup.recommendation) as (keyof Recommendation)[];
+    const recommendationKeys = setup.recommendation ? (Object.keys(setup.recommendation) as (keyof Recommendation)[]) : [];
+
 
     const setupToSerializableObject = (s: SavedSetup) => ({
         name: s.name,
@@ -353,14 +354,17 @@ const exportSetupLogic = (
         sourceDetails: s.sourceDetails,
         components: recommendationKeys
             .filter((key): key is RecommendationCategory => key !== 'proTip')
-            .map((key) => ({
-                category: t(`equipmentView.configurator.categories.${key}`),
-                product: s.recommendation[key].name,
-                price: s.recommendation[key].price,
-                rationale: s.recommendation[key].rationale,
-                watts: s.recommendation[key].watts,
-            })),
-        proTip: s.recommendation.proTip,
+            .map((key) => {
+                const item = s.recommendation[key];
+                return {
+                    category: t(`equipmentView.configurator.categories.${key}`),
+                    product: item.name,
+                    price: item.price,
+                    rationale: item.rationale,
+                    watts: item.watts,
+                }
+            }),
+        proTip: s.recommendation?.proTip,
     });
     const serializableSetup = setupToSerializableObject(setup);
 
@@ -414,22 +418,26 @@ const exportSetupLogic = (
                 2
             )} ${t('common.units.currency_eur')}\n\n`;
             txtString += `--- ${t('equipmentView.configurator.costBreakdown')} ---\n\n`;
-            recommendationKeys
-                .filter((key): key is RecommendationCategory => key !== 'proTip')
-                .forEach((key) => {
-                    const item = setup.recommendation[key];
-                    txtString += `${t(`equipmentView.configurator.categories.${key}`)}:\n`;
-                    txtString += `  - ${t('equipmentView.savedSetups.pdfReport.product')}: ${
-                        item.name
-                    } ${item.watts ? `(${item.watts}W)` : ''}\n`;
-                    txtString += `  - ${t('equipmentView.savedSetups.pdfReport.price')}: ${item.price.toFixed(
-                        2
-                    )} ${t('common.units.currency_eur')}\n`;
-                    txtString += `  - ${t('equipmentView.savedSetups.pdfReport.rationale')}: ${
-                        item.rationale
-                    }\n\n`;
-                });
-            if (setup.recommendation.proTip) {
+            if (setup.recommendation) {
+                recommendationKeys
+                    .filter((key): key is RecommendationCategory => key !== 'proTip')
+                    .forEach((key) => {
+                        const item = setup.recommendation[key];
+                        if (item && typeof item === 'object' && item.name) {
+                            txtString += `${t(`equipmentView.configurator.categories.${key}`)}:\n`;
+                            txtString += `  - ${t('equipmentView.savedSetups.pdfReport.product')}: ${
+                                item.name
+                            } ${item.watts ? `(${item.watts}W)` : ''}\n`;
+                            txtString += `  - ${t('equipmentView.savedSetups.pdfReport.price')}: ${(item.price || 0).toFixed(
+                                2
+                            )} ${t('common.units.currency_eur')}\n`;
+                            txtString += `  - ${t('equipmentView.savedSetups.pdfReport.rationale')}: ${
+                                item.rationale || ''
+                            }\n\n`;
+                        }
+                    });
+            }
+            if (setup.recommendation?.proTip) {
                 txtString += `--- Profi-Tipp ---\n${setup.recommendation.proTip}\n`;
             }
             downloadFile(txtString, `${filename}.txt`, 'text/plain;charset=utf-8;');
@@ -487,7 +495,7 @@ const exportSetupLogic = (
                 didDrawPage: (data: any) => {
                     drawPdfLayout(doc, reportTitle, t);
                     if (data.pageNumber === (doc as any).internal.pages.length - 1) {
-                        if (setup.recommendation.proTip) {
+                        if (setup.recommendation?.proTip) {
                             let finalY = (data.doc as any).lastAutoTable.finalY;
                             if (finalY + 30 > doc.internal.pageSize.height) {
                                 doc.addPage();
@@ -542,13 +550,17 @@ const exportSetupsLogic = (
             const { plantCount, experience, budget, priorities, growSpace, floweringTypePreference } = s.sourceDetails;
             str += `Source Details: ${plantCount} plants, ${experience}, Budget: ${budget}€, Priorities: ${priorities.join(', ')}, Space: ${growSpace?.width}x${growSpace?.depth}cm, Type: ${floweringTypePreference}\n\n`;
             str += `--- Components ---\n`;
-            (Object.keys(s.recommendation) as (keyof Recommendation)[]).forEach((key) => {
-                if (key === 'proTip') return;
-                const item = s.recommendation[key as RecommendationCategory];
-                str += `- ${t(`equipmentView.configurator.categories.${key}`)}: ${
-                    item.name
-                } (${item.price.toFixed(2)} ${t('common.units.currency_eur')})\n`;
-            });
+            if (s.recommendation) {
+                (Object.keys(s.recommendation) as (keyof Recommendation)[]).forEach((key) => {
+                    if (key === 'proTip') return;
+                    const item = s.recommendation[key as RecommendationCategory];
+                    if (item && typeof item === 'object' && item.name) {
+                        str += `- ${t(`equipmentView.configurator.categories.${key}`)}: ${
+                            item.name
+                        } (${(item.price || 0).toFixed(2)} ${t('common.units.currency_eur')})\n`;
+                    }
+                });
+            }
             return str;
         },
         pdfHeaders: [

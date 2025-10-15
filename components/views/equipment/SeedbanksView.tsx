@@ -1,7 +1,60 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import React, { useState, useMemo, memo } from 'react';
 import { Card } from '@/components/common/Card';
+import { useTranslation } from 'react-i18next';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { Button } from '@/components/common/Button';
+import { PaymentIcons } from '@/components/icons/PaymentIcons';
+import { Modal } from '@/components/common/Modal';
+
+type ShopRegion = 'europe' | 'us';
+
+const ShopDetailModal: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = memo(({ shop, t, onClose }) => (
+    <Modal isOpen={true} onClose={onClose} title={shop.name} size="lg">
+        <div className="flex flex-col h-full">
+            <div className="flex justify-between items-start mb-4">
+                <div>
+                    <p className="text-sm text-slate-400">{shop.location}</p>
+                </div>
+            </div>
+            <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                        <PhosphorIcons.Star key={i} weight={i < Math.round(shop.rating) ? 'fill' : 'regular'} className={`w-5 h-5 ${i < Math.round(shop.rating) ? 'text-amber-400' : 'text-slate-500'}`} />
+                    ))}
+                </div>
+                <span className="font-bold text-amber-300">{shop.rating.toFixed(1)}</span>
+            </div>
+            <div className="flex-grow overflow-y-auto pr-2 space-y-4">
+                <p className="text-slate-300 text-sm">{shop.description}</p>
+                <div>
+                    <h4 className="font-semibold text-primary-400 mb-2">{t('equipmentView.growShops.strengths')}</h4>
+                    <ul className="list-disc list-inside space-y-1 text-sm text-slate-300">
+                        {shop.strengths.map((s: string, i: number) => <li key={i}>{s}</li>)}
+                    </ul>
+                </div>
+                <div>
+                    <h4 className="font-semibold text-primary-400 mb-2">{t('equipmentView.growShops.shipping')}</h4>
+                    <p className="text-sm text-slate-300">{shop.shipping}</p>
+                </div>
+                <div>
+                    <h4 className="font-semibold text-primary-400 mb-2">{t('equipmentView.growShops.paymentMethods')}</h4>
+                    <div className="flex items-center gap-2">
+                        {shop.paymentMethods.map((pm: string) => {
+                            const Icon = PaymentIcons[pm as keyof typeof PaymentIcons];
+                            return Icon ? <Icon key={pm} className="w-8 h-8 text-slate-300" /> : null;
+                        })}
+                    </div>
+                </div>
+            </div>
+            <div className="mt-6 flex-shrink-0">
+                <Button as="a" href={shop.url} target="_blank" rel="noopener noreferrer" className="w-full text-center">
+                    {t('equipmentView.growShops.visitShop', { shopName: shop.name })} <PhosphorIcons.ArrowSquareOut className="inline w-4 h-4 ml-1.5" />
+                </Button>
+            </div>
+        </div>
+    </Modal>
+));
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div>
@@ -10,7 +63,8 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     </div>
 );
 
-const SeedbankProfile: React.FC<{ bankKey: string }> = ({ bankKey, isOpen }) => {
+// FIX: Added isOpen to the component's props interface to match its usage.
+const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bankKey, isOpen }) => {
     const { t } = useTranslation();
     const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as any;
 

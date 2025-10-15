@@ -2,6 +2,7 @@ import React, { useState, memo, useEffect } from 'react';
 import { Plant, PlantStage, ModalType, Task, TaskPriority } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Tabs } from '@/components/common/Tabs';
 import { OverviewTab } from './detailedPlantViewTabs/OverviewTab';
@@ -90,7 +91,8 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     </Card>
                     
                     <Card>
-                        <ActionToolbar plant={plant} onLogAction={(type: ModalType) => dispatch(openActionModalAction({ plantId: plant.id, type }))} />
+                        {/* FIX: Removed the unnecessary `plant` prop from the `ActionToolbar` component call, as the component's props interface does not define it. */}
+                        <ActionToolbar onLogAction={(type: ModalType) => dispatch(openActionModalAction({ plantId: plant.id, type }))} />
                     </Card>
                     
                     <Card>

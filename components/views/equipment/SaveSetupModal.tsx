@@ -14,7 +14,8 @@ interface SaveSetupModalProps {
 
 export const SaveSetupModal: React.FC<SaveSetupModalProps> = ({ isOpen, onClose, onSave, setupToSave }) => {
     const { t } = useTranslation();
-    const suggestedName = `${t(`equipmentView.configurator.budgets.${setupToSave.sourceDetails.budget}`)} - ${setupToSave.sourceDetails.area}`;
+    const { plantCount, experience, budget } = setupToSave.sourceDetails;
+    const suggestedName = `${t('equipmentView.configurator.plantCount', { count: parseInt(plantCount, 10) })} - ${t(`strainsView.tips.form.experienceOptions.${experience}`)} - ${budget}€`;
     const [name, setName] = useState(suggestedName);
 
     const handleSave = () => {

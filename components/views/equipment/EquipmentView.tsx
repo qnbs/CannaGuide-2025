@@ -8,7 +8,7 @@ import { selectUi, selectSavedSetups } from '@/stores/selectors';
 import { updateSetup, deleteSetup } from '@/stores/slices/savedItemsSlice';
 import { Card } from '@/components/common/Card';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-import { Tabs } from '@/components/common/Tabs';
+import { EquipmentSubNav } from './EquipmentSubNav';
 
 const SetupConfigurator = lazy(() => import('./SetupConfigurator').then(m => ({ default: m.SetupConfigurator })));
 const SavedSetupsView = lazy(() => import('./SavedSetupsView').then(m => ({ default: m.SavedSetupsView })));
@@ -24,14 +24,6 @@ export const EquipmentView: React.FC = () => {
     const savedSetups = useAppSelector(selectSavedSetups);
     const [isPending, startTransition] = useTransition();
 
-    const tabs = useMemo(() => [
-        { id: EquipmentViewTab.Configurator, label: t('equipmentView.tabs.configurator'), icon: <PhosphorIcons.MagicWand /> },
-        { id: EquipmentViewTab.Setups, label: t('equipmentView.tabs.setups'), icon: <PhosphorIcons.ArchiveBox /> },
-        { id: EquipmentViewTab.Calculators, label: t('equipmentView.tabs.calculators'), icon: <PhosphorIcons.Calculator /> },
-        { id: EquipmentViewTab.GrowShops, label: t('equipmentView.tabs.growShops'), icon: <PhosphorIcons.Storefront /> },
-        { id: EquipmentViewTab.Seedbanks, label: t('equipmentView.tabs.seedbanks'), icon: <PhosphorIcons.Cannabis /> },
-    ], [t]);
-
     const viewIcons = useMemo(() => ({
         [EquipmentViewTab.Configurator]: <PhosphorIcons.MagicWand className="w-16 h-16 mx-auto text-purple-400" />,
         [EquipmentViewTab.Setups]: <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-orange-400" />,
@@ -40,9 +32,9 @@ export const EquipmentView: React.FC = () => {
         [EquipmentViewTab.Seedbanks]: <PhosphorIcons.Cannabis className="w-16 h-16 mx-auto text-green-400" />,
     }), []);
 
-    const handleSetTab = (id: string) => {
+    const handleSetTab = (id: EquipmentViewTab) => {
         startTransition(() => {
-            dispatch(setEquipmentViewTab(id as EquipmentViewTab));
+            dispatch(setEquipmentViewTab(id));
         });
     };
     
@@ -78,9 +70,7 @@ export const EquipmentView: React.FC = () => {
                 <h2 className="text-3xl font-bold font-display text-primary-300 mt-2">{t('nav.equipment')}</h2>
             </div>
             
-            <Card className="!p-2 !bg-slate-950">
-                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={handleSetTab} />
-            </Card>
+            <EquipmentSubNav activeTab={activeTab} onTabChange={handleSetTab} />
 
             <main className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
                  <Card>

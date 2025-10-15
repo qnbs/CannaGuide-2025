@@ -10,16 +10,52 @@ export const equipmentView = {
   },
   configurator: {
     title: 'AI Equipment Configurator',
-    subtitleNew: 'Answer two simple questions to get a complete, AI-generated equipment recommendation for your grow.',
-    step1TitleNew: '1. How many plants do you want to grow?',
+    subtitleNew: 'Answer a few simple questions to get a complete, AI-generated equipment recommendation for your grow.',
+    
+    // Steps
+    step1Title: '1. Basics',
+    step2Title: '2. Budget & Priorities',
+    step3Title: '3. Custom Requests',
+
+    // Plant Count
     plantCount_one: '1 Plant',
-    plantCount_other: '{{range}} Plants',
-    step2TitleNew: '2. Choose your configuration style',
+    plantCount_other: '{{count}} Plants',
+
+    // Grow Space
+    growSpaceTitle: 'Grow Space',
+    growSpaceDescription: 'Specify the dimensions of your tent or area.',
+    width: 'Width (cm)',
+    depth: 'Depth (cm)',
+
+    // Flowering Type
+    floweringTypeTitle: 'Preferred Flowering Type',
+    floweringTypeAny: 'Any / Unsure',
+    floweringTypeAutoflower: 'Autoflower',
+    floweringTypePhotoperiod: 'Photoperiod',
+
+    step1TitleNew: '1. How many plants do you want to grow?', // Old, can be removed
+    step2TitleNew: '2. Choose your configuration style', // Old, can be removed
+    
+    budgetTitle: 'Budget',
+    step3TitleNew: '3. What are your main priorities?',
+    priorityDescription: 'Select up to two to help the AI tailor your setup.',
+    priorities: {
+        yield: 'Yield Maximization',
+        quality: 'Quality/Terpenes',
+        stealth: 'Stealth',
+        easeOfUse: 'Ease of Use',
+        energy: 'Energy Efficiency',
+    },
+    step4TitleNew: '4. Any special requests or constraints?',
+    customNotesDescription: 'Tell the AI anything else, like your climate, space limitations, or if you prefer organic methods.',
+    customNotesPlaceholder: 'e.g., "I live in a very hot climate" or "I want a fully organic setup"...',
+
     generate: 'Generate Setup',
     setupSaveSuccess: 'Setup "{{name}}" saved successfully!',
     resultsTitle: 'Your AI-Generated Setup',
     resultsSubtitle: 'For: {{area}} area, with a focus on {{style}} and a {{budget}} budget.',
     resultsSubtitleNew: 'For: {{plants}} plants, with a {{budget}} budget.',
+    resultsSubtitleAdvanced: 'Based on: {{plantCount}} plants, experience "{{experience}}", a budget of €{{budget}}, and priorities: {{priorities}}',
     total: 'Total Cost',
     error: 'An error occurred while generating your setup.',
     tryAgain: 'Try Again',

@@ -10,7 +10,7 @@ import { Card } from '@/components/common/Card';
 import { usePlantById } from '@/hooks/useSimulationBridge';
 import { MentorChatView } from './knowledge/MentorChatView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
-import { Tabs } from '@/components/common/Tabs';
+import { KnowledgeSubNav } from './KnowledgeSubNav';
 
 // Lazy load the sub-views for better initial load performance
 const MentorView = lazy(() => import('./knowledge/MentorView'));
@@ -28,14 +28,6 @@ export const KnowledgeView: React.FC = () => {
 
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 
-    const tabs = useMemo(() => [
-        { id: KnowledgeViewTab.Mentor, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
-        { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
-        { id: KnowledgeViewTab.Archive, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
-        { id: KnowledgeViewTab.Breeding, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
-        { id: KnowledgeViewTab.Sandbox, label: t('knowledgeView.tabs.sandbox'), icon: <PhosphorIcons.Flask /> },
-    ], [t]);
-
     const viewIcons = useMemo(() => ({
         [KnowledgeViewTab.Mentor]: <PhosphorIcons.Brain className="w-16 h-16 mx-auto text-fuchsia-400" />,
         [KnowledgeViewTab.Guide]: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-rose-400" />,
@@ -49,9 +41,9 @@ export const KnowledgeView: React.FC = () => {
         return <MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} />;
     }
 
-    const handleSetTab = (id: string) => {
+    const handleSetTab = (id: KnowledgeViewTab) => {
         startTransition(() => {
-            dispatch(setKnowledgeViewTab(id as KnowledgeViewTab));
+            dispatch(setKnowledgeViewTab(id));
         });
     };
 
@@ -74,9 +66,7 @@ export const KnowledgeView: React.FC = () => {
                 <p className="text-slate-400 mt-1">{t('knowledgeView.subtitle')}</p>
             </div>
 
-            <Card className="!p-2 !bg-slate-950">
-                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={handleSetTab} />
-            </Card>
+            <KnowledgeSubNav activeTab={activeTab} onTabChange={handleSetTab} />
 
             <main className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
                 <Card>

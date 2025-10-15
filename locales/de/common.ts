@@ -58,7 +58,7 @@ export const common = {
         invalidSetup: 'Ungültige Anbau-Setup-Konfiguration. Bitte versuchen Sie es erneut.',
         invalidActionData: 'Ungültige Daten für Aktion übermittelt: {{action}}.',
     },
-    metadataDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 500 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
+    metadataDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie über 500 Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
 };
 
 export const nav = {
@@ -104,8 +104,9 @@ export const ai = {
     generating: 'KI denkt nach...',
     disclaimer: 'KI-generierter Inhalt. Überprüfe kritische Informationen immer.',
     prompts: {
-        equipmentSystemInstruction: 'Du bist ein Experte für Cannabis-Anbauberatung. Der Benutzer gibt seine Einschränkungen (Fläche, Budget, Stil) an und du lieferst eine vollständige Ausrüstungsliste im JSON-Format. Gib spezifische, reale Produktnamen und einen geschätzten Preis in Euro an. Deine Begründung sollte prägnant und hilfreich für einen Anfänger sein.',
+        equipmentSystemInstruction: 'Du bist ein Experte für Cannabis-Anbauberatung. Der Benutzer gibt seine Einschränkungen an und du lieferst eine vollständige Ausrüstungsliste im JSON-Format. Gib spezifische, reale Produktnamen und einen geschätzten Preis in Euro an. Deine Begründung sollte prägnant und hilfreich sein.',
         equipmentRequest: 'Ich möchte einen Anbau für {{plantCount}} Pflanzen in einem {{tentSize}} Zelt mit einem {{budget}} Budget einrichten.',
+        equipmentRequestAdvanced: 'Generiere eine vollständige Cannabis-Anbau-Ausrüstungsliste für ein Setup in Europa (Preise in EUR). Das Setup sollte für {{plantCount}} Pflanzen in einer Anbaufläche von {{growSpaceWidth}}cm x {{growSpaceDepth}}cm ausgelegt sein. Der Erfahrungsgrad des Benutzers ist "{{experienceLevel}}", also empfiehl bitte entsprechende Ausrüstung. Sie bevorzugen den Anbau von "{{floweringTypePreference}}"-Pflanzen. Das Gesamtbudget beträgt ungefähr {{budget}}€. Die Hauptprioritäten für diesen Anbau sind: {{priorities}}. Passe deine Empfehlungen an, um diese Ziele zu optimieren. Berücksichtige außerdem die spezifische Anfrage des Benutzers: "{{customNotes}}".',
         advisor: 'Du bist ein Experte für Cannabis-Anbauberatung. Basierend auf den folgenden Pflanzendaten, gib prägnante, umsetzbare Ratschläge für die nächsten 24-48 Stunden. Formatiere deine Antwort als einfaches Markdown.\n\n{{plant}}',
         proactiveDiagnosis: 'Du bist ein Experte für Pflanzenpathologie mit Spezialisierung auf Cannabis. Analysiere den folgenden vollständigen Pflanzendatenbericht. Identifiziere mögliche zugrunde liegende Probleme oder Risiken, die nicht sofort offensichtlich sind. Liefere einen prägnanten Bericht mit Titel und Inhalt im Markdown-Format, der deine Ergebnisse und präventiven Empfehlungen darlegt.\n\n{{plant}}',
         mentor: {
@@ -118,10 +119,10 @@ export const ai = {
     },
     loading: {
         equipment: {
-            '1': 'Analysiere deinen Platz und dein Budget...',
-            '2': 'Wähle die optimale Beleuchtungslösung aus...',
-            '3': 'Berechne die Belüftungsanforderungen für eine gesunde Umgebung...',
-            '4': 'Stimme die richtigen Nährstoffe und das richtige Medium ab...',
+            '1': 'Analysiere deine Prioritäten und dein Budget...',
+            '2': 'Wähle die optimale Beleuchtung für {{priorities}} aus...',
+            '3': 'Berechne die Belüftungsanforderungen für {{plantCount}} Pflanzen...',
+            '4': 'Stimme Nährstoffe und Medium auf einen {{experienceLevel}}-Grower ab...',
             '5': 'Stelle deine individuelle Ausrüstungsliste zusammen...'
         },
         diagnostics: {

@@ -25,13 +25,13 @@ const SortButton: React.FC<{
     </button>
 );
 
-const gridLayout = "grid grid-cols-[auto_1fr_auto_auto] items-center gap-x-4";
+const gridLayout = "grid-cols-[auto_auto_1fr_auto_auto] items-center gap-x-4";
 
 export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, handleSort, onToggleAll, areAllOnPageSelected }) => {
     const { t } = useTranslation();
 
     return (
-        <div className={`p-3 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
+        <div className={`hidden sm:grid p-3 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
             <input
                 type="checkbox"
                 checked={areAllOnPageSelected}
@@ -39,11 +39,9 @@ export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, h
                 className="custom-checkbox"
                 aria-label="Select all on page"
             />
-            {/* The invisible div helps align the Sorte header correctly with the content below it */}
-            <div className="flex items-center">
-                 <div className="w-8 mr-4"></div> {/* Spacer for icon column */}
-                <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
-            </div>
+            {/* This invisible div helps align the Sorte header correctly with the content below it */}
+            <div className="w-8"></div> {/* Spacer for icon column */}
+            <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
             
             <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
             

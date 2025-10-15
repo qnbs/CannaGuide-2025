@@ -17,7 +17,7 @@ import ttsReducer from './slices/ttsSlice';
 import sandboxReducer from './slices/sandboxSlice';
 import filtersReducer from './slices/filtersSlice';
 import genealogyReducer from './slices/genealogySlice';
-import navigationReducer from './slices/navigationSlice'; // New navigation slice
+import navigationReducer from './slices/navigationSlice';
 import { geminiApi } from './api';
 import { listenerMiddleware } from './listenerMiddleware';
 import { indexedDBStorage } from './indexedDBStorage';
@@ -39,7 +39,7 @@ const rootReducer = {
     sandbox: sandboxReducer,
     filters: filtersReducer,
     genealogy: genealogyReducer,
-    navigation: navigationReducer, // Add navigation reducer
+    navigation: navigationReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
 };
 

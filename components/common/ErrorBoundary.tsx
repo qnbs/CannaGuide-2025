@@ -6,7 +6,9 @@ type ErrorBoundaryProps = { children: React.ReactNode };
 type ErrorBoundaryState = { hasError: boolean };
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    // FIX: Reverted to using a constructor for state initialization to resolve a potential environment-specific issue where class properties were not correctly initializing `this.props` and `this.state`.
+    // FIX: Initialize state in the constructor.
+    // This ensures the component has a `state` property when it's instantiated,
+    // resolving errors where `this.state` and `this.props` were reported as non-existent.
     constructor(props: ErrorBoundaryProps) {
         super(props);
         this.state = { hasError: false };

@@ -72,19 +72,13 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = (props) => {
 
     const handleToggleAll = () => {
         const pageIds = currentStrains.map(s => s.id);
-        const currentSelectionOnPage = new Set(Array.from(selectedIds).filter(id => pageIds.includes(id)));
-        
-        if (currentSelectionOnPage.size === pageIds.length) {
-            // Deselect all on page
-            pageIds.forEach(id => onToggleSelection(id));
-        } else {
-            // Select all on page
-            pageIds.forEach(id => {
-                if (!selectedIds.has(id)) {
-                    onToggleSelection(id);
-                }
-            });
-        }
+        const allSelected = areAllOnPageSelected;
+
+        pageIds.forEach(id => {
+            if ((allSelected && selectedIds.has(id)) || (!allSelected && !selectedIds.has(id))) {
+                 onToggleSelection(id);
+            }
+        });
     };
 
 
@@ -95,8 +89,6 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = (props) => {
                     <StrainToolbar
                         searchTerm={searchTerm}
                         onSearchTermChange={onSearchTermChange}
-                        onExport={onExport}
-                        onAdd={() => {}} // This is handled by parent
                         onOpenDrawer={onOpenDrawer}
                         activeFilterCount={activeFilterCount}
                         viewMode={viewMode}

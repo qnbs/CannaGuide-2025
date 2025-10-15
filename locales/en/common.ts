@@ -58,7 +58,7 @@ export const common = {
         invalidSetup: 'Invalid grow setup configuration. Please try again.',
         invalidActionData: 'Invalid data provided for action: {{action}}.',
     },
-    metadataDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore over 500 strains, get AI equipment advice, and master your grow with an interactive guide.',
+    metadataDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore over 500 strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
 };
 
 export const nav = {
@@ -104,8 +104,9 @@ export const ai = {
     generating: 'AI is thinking...',
     disclaimer: 'AI-generated content. Always verify critical information.',
     prompts: {
-        equipmentSystemInstruction: 'You are an expert cannabis grow consultant. The user will provide their constraints (area, budget, style) and you will provide a complete equipment list in JSON format. Provide specific, real-world product names and an estimated price in Euros. Your rationale should be concise and helpful for a beginner.',
+        equipmentSystemInstruction: 'You are an expert cannabis grow consultant. The user will provide their constraints and you will provide a complete equipment list in JSON format. Provide specific, real-world product names and an estimated price in Euros. Your rationale should be concise and helpful.',
         equipmentRequest: 'I want to set up a grow for {{plantCount}} plants in a {{tentSize}} tent with a {{budget}} budget.',
+        equipmentRequestAdvanced: 'Generate a complete cannabis grow equipment list for a setup in Europe (prices in EUR). The setup should accommodate {{plantCount}} plants in a grow space of {{growSpaceWidth}}cm x {{growSpaceDepth}}cm. The user\'s experience level is "{{experienceLevel}}". They prefer to grow "{{floweringTypePreference}}" type plants. The total budget is approximately €{{budget}}. The main priorities for this grow are: {{priorities}}. Tailor your recommendations to optimize for these goals. Additionally, consider the user\'s specific request: "{{customNotes}}".',
         advisor: 'You are an expert cannabis grow advisor. Based on the following plant data, provide concise, actionable advice for the next 24-48 hours. Format your response as a simple markdown.\n\n{{plant}}',
         proactiveDiagnosis: 'You are an expert plant pathologist specializing in cannabis. Analyze the following complete plant data report. Identify any potential underlying issues or risks that may not be immediately obvious. Provide a concise report with a title and content in markdown format, outlining your findings and preventative recommendations.\n\n{{plant}}',
         mentor: {
@@ -118,10 +119,10 @@ export const ai = {
     },
     loading: {
         equipment: {
-            '1': 'Analyzing your space and budget...',
-            '2': 'Selecting the optimal lighting solution...',
-            '3': 'Calculating ventilation requirements for a healthy environment...',
-            '4': 'Pairing the right nutrients and medium...',
+            '1': 'Analyzing your priorities and budget...',
+            '2': 'Selecting optimal lighting for {{priorities}}...',
+            '3': 'Calculating ventilation needs for {{plantCount}} plants...',
+            '4': 'Matching nutrients and medium for a {{experienceLevel}} grower...',
             '5': 'Assembling your custom equipment list...'
         },
         diagnostics: {

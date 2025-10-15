@@ -226,7 +226,7 @@ const SettingsView: React.FC = () => {
 
              <SettingsSection title={t('settingsView.about.title')} icon={<PhosphorIcons.Info className="text-sky-400" />}>
                 <SettingsRow label="" className="!items-start">
-                    <p className="text-sm text-slate-300">{t('common.metadataDescription')}</p>
+                     <div className="text-sm text-slate-300 prose prose-sm dark:prose-invert max-w-none prose-ul:mt-2 prose-ul:mb-0" dangerouslySetInnerHTML={{ __html: t('common.metadataDescription') }} />
                 </SettingsRow>
                 <SettingsRow label={t('settingsView.about.version')}>
                     <span className="font-semibold text-slate-200">2.0</span>

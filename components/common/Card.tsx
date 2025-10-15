@@ -37,7 +37,7 @@ export const Card = memo(
                     }
                 }}
                 className={`glass-pane rounded-xl p-4 ${
-                    isInteractive ? 'card-interactive' : ''
+                    isInteractive ? 'card-interactive card-interactive-glow' : ''
                 } ${className}`}
                 onMouseMove={isInteractive ? handleMouseMove : undefined}
                 role={isInteractive ? 'button' : undefined}

@@ -6,12 +6,13 @@ import { useAppDispatch } from '@/stores/store';
 import { setStrainsViewMode } from '@/stores/slices/strainsViewSlice';
 import { StrainType } from '@/types';
 import { SearchBar } from '@/components/common/SearchBar';
+import { SegmentedControl } from '@/components/common/SegmentedControl';
 
 interface StrainToolbarProps {
     searchTerm: string;
     onSearchTermChange: (term: string) => void;
-    onExport: () => void;
-    onAdd: () => void;
+    onExport?: () => void; // Made optional as it's not in the new design's primary toolbar
+    onAdd?: () => void; // Made optional
     onOpenDrawer: () => void;
     activeFilterCount: number;
     viewMode: 'list' | 'grid';
@@ -28,10 +29,10 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
         searchTerm, onSearchTermChange, onOpenDrawer, activeFilterCount, viewMode, typeFilter, onToggleTypeFilter, isAnyFilterActive, onResetFilters
     } = props;
     
-    const typeOptions: { value: StrainType, label: string }[] = [
-        { value: StrainType.Sativa, label: t('strainsView.sativa') },
-        { value: StrainType.Indica, label: t('strainsView.indica') },
-        { value: StrainType.Hybrid, label: t('strainsView.hybrid') },
+    const typeOptions = [
+        { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
+        { value: 'Indica' as StrainType, label: t('strainsView.indica') },
+        { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
     ];
 
     return (
@@ -62,20 +63,10 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                 </Button>
             </div>
             
-            <div className="flex flex-wrap items-center gap-2">
-                {typeOptions.map(opt => (
-                    <Button 
-                        key={opt.value} 
-                        variant={typeFilter.includes(opt.value) ? 'primary' : 'secondary'}
-                        onClick={() => onToggleTypeFilter(opt.value)}
-                        size="sm"
-                        className="flex-1"
-                    >
-                        {opt.label}
-                    </Button>
-                ))}
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+                <SegmentedControl options={typeOptions} value={typeFilter} onToggle={onToggleTypeFilter} className="w-full sm:w-auto" />
                 {isAnyFilterActive && (
-                    <Button variant="ghost" size="sm" onClick={onResetFilters} className="text-red-400 hover:bg-red-500/10 hover:text-red-300">
+                    <Button variant="ghost" size="sm" onClick={onResetFilters} className="text-red-400 hover:bg-red-500/10 hover:text-red-300 sm:ml-auto">
                         <PhosphorIcons.X className="w-4 h-4 mr-1" />
                         {t('strainsView.resetFilters')}
                     </Button>

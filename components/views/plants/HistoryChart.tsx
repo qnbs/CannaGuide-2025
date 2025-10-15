@@ -82,6 +82,13 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         moisture: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.moisture(d.medium.moisture)),
     }), [xScale, yScales]);
     
+    const areaGenerator = useMemo(() => 
+        d3.area<PlantHistoryEntry>()
+            .x(d => xScale(d.day))
+            .y0(height - padding.bottom)
+            .y1(d => yScales.height(d.height)),
+    [xScale, yScales.height, height, padding.bottom]);
+
     const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);
 
     const paths = pathConfig[view];
@@ -114,6 +121,12 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-white/20 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
             </div>
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+                 <defs>
+                    <linearGradient id="heightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" style={{ stopColor: 'rgb(var(--color-primary-500))', stopOpacity: 0.4 }} />
+                        <stop offset="100%" style={{ stopColor: 'rgb(var(--color-primary-800))', stopOpacity: 0.1 }} />
+                    </linearGradient>
+                </defs>
                 <g className="history-chart-grid" transform={`translate(0, ${height - padding.bottom})`}>
                     {xScale.ticks(5).map(tick => (
                         <g key={`x-${tick}`} transform={`translate(${xScale(tick)}, 0)`}>
@@ -123,6 +136,8 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                     ))}
                 </g>
                 
+                {view === 'growth' && <path d={areaGenerator(history) || ''} fill="url(#heightGradient)" />}
+
                 {paths.map((pathInfo) => (
                     <path key={pathInfo.key} d={lineGenerators[pathInfo.key](history) || ''} fill="none" stroke={pathInfo.color} strokeWidth={pathInfo.strokeWidth} strokeDasharray={pathInfo.dash ? '3,3' : 'none'} opacity={pathInfo.opacity ?? 1} />
                 ))}
@@ -170,11 +185,16 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                             }
                             const yPos = yScales[pathInfo.key](yValue);
 
-                            return <circle key={`dot-${pathInfo.key}`} cx={hoveredData.x} cy={yPos} r="3" fill={pathInfo.color} stroke="rgb(var(--color-bg-primary))" strokeWidth="1.5" />;
+                            return (
+                                <g key={`dot-${pathInfo.key}`}>
+                                    <circle cx={hoveredData.x} cy={yPos} r="4" fill={pathInfo.color} stroke="rgb(var(--color-bg-primary))" strokeWidth="2" />
+                                    <circle cx={hoveredData.x} cy={yPos} r="6" fill="transparent" stroke={pathInfo.color} strokeWidth="1" className="animate-pulse" />
+                                </g>
+                            );
                         })}
 
                         <foreignObject x={hoveredData.x > width / 2 ? hoveredData.x - 120 - 10 : hoveredData.x + 10} y={padding.top} width="120" height="100">
-                           <div className="bg-slate-900/80 p-2 rounded-md border border-slate-700 text-xs text-slate-200 space-y-1">
+                           <div className="glass-pane !p-2 rounded-md text-xs text-slate-200 space-y-1">
                                 <p className="font-bold border-b border-slate-700 pb-1 mb-1">{t('plantsView.plantCard.day')} {hoveredData.point.day}</p>
                                 {paths.map(pathInfo => {
                                       let value;

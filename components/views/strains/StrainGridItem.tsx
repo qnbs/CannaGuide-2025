@@ -39,7 +39,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
 
     return (
         <Card 
-            className={`flex flex-col h-full text-center relative cursor-pointer !p-3 ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
+            className={`flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
         >

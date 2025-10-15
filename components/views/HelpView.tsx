@@ -1,7 +1,6 @@
 import React, { useState, useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
-import { Tabs } from '@/components/common/Tabs';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { faqData } from '@/data/faq';
 import { visualGuidesData } from '@/data/visualGuides';
@@ -12,6 +11,7 @@ import { LexiconCard } from './help/LexiconCard';
 import { Button } from '@/components/common/Button';
 import { Speakable } from '@/components/common/Speakable';
 import { SearchBar } from '@/components/common/SearchBar';
+import { HelpSubNav } from './help/HelpSubNav';
 
 const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
@@ -224,13 +224,6 @@ export const HelpView: React.FC = () => {
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('manual');
 
-    const tabs = [
-        { id: 'manual', label: t('helpView.tabs.manual'), icon: <PhosphorIcons.BookOpenText /> },
-        { id: 'lexicon', label: t('helpView.tabs.lexicon'), icon: <PhosphorIcons.Book /> },
-        { id: 'guides', label: t('helpView.tabs.guides'), icon: <PhosphorIcons.GraduationCap /> },
-        { id: 'faq', label: t('helpView.tabs.faq'), icon: <PhosphorIcons.Question /> },
-    ];
-
      const viewIcons = useMemo(() => ({
         manual: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-blue-400" />,
         lexicon: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-indigo-400" />,
@@ -256,9 +249,7 @@ export const HelpView: React.FC = () => {
                 <p className="text-slate-400 mt-1">{t('helpView.subtitle')}</p>
             </div>
 
-            <Card className="!p-2">
-                <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-            </Card>
+            <HelpSubNav activeTab={activeTab} onTabChange={setActiveTab} />
 
             <div className="animate-fade-in">
                 {renderContent()}

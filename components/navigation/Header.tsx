@@ -1,14 +1,13 @@
 import React from 'react'
-import { View, BeforeInstallPromptEvent } from '@/types'
+import { View, BeforeInstallPromptEvent, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 import { Button } from '../common/Button'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
-import { selectActiveView, selectIsExpertMode } from '@/stores/selectors'
+import { selectActiveView } from '@/stores/selectors'
 import { setActiveView } from '@/stores/slices/uiSlice'
-import { setSetting } from '@/stores/slices/settingsSlice'
-import { Switch } from '../common/Switch'
+import { VoiceControl } from '../common/VoiceControl'
 
 interface HeaderProps {
     onCommandPaletteOpen: () => void
@@ -25,8 +24,8 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const activeView = useAppSelector(selectActiveView)
-    const isExpertMode = useAppSelector(selectIsExpertMode)
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const activeView = useAppSelector(selectActiveView) as View;
 
     const viewTitles: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
@@ -62,16 +61,6 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                     </button>
                     <div className="flex items-center gap-1 sm:gap-2">
-                        <div title={t('settingsView.general.expertModeTitle')}>
-                            <Switch
-                                checked={isExpertMode}
-                                onChange={(val) =>
-                                    dispatch(setSetting({ path: 'isExpertMode', value: val }))
-                                }
-                                aria-label={t('settingsView.general.expertModeTitle')}
-                            />
-                        </div>
-
                         {!isInstalled && deferredPrompt && (
                             <Button
                                 variant="ghost"
@@ -82,6 +71,8 @@ export const Header: React.FC<HeaderProps> = ({
                                 <PhosphorIcons.DownloadSimple className="w-6 h-6" />
                             </Button>
                         )}
+                        
+                        <VoiceControl />
                         
                         <Button
                             variant="ghost"

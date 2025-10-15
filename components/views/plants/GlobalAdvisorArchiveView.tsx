@@ -15,7 +15,8 @@ import { SearchBar } from '@/components/common/SearchBar';
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const archive = useAppSelector(selectArchivedAdvisorResponses);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
+    const archive = useAppSelector(selectArchivedAdvisorResponses) as Record<string, ArchivedAdvisorResponse[]>;
     const activePlants = useActivePlants();
     
     const [searchTerm, setSearchTerm] = useState('');
@@ -28,8 +29,9 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
         
         allKnownPlants.forEach(p => plantMap.set(p.id, p.name));
         
+        // FIX: Use Object.values().flat() to correctly iterate over the archive object.
         return Object.values(archive)
-            .flat()
+            .reduce((acc, val) => acc.concat(val), [])
             .map((advice: ArchivedAdvisorResponse) => ({
                 ...advice,
                 plantName: plantMap.get(advice.plantId) || t('plantsView.archivedPlant')

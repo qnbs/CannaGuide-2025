@@ -108,8 +108,8 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                     {diagnosisState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                     {diagnosisState.data && !diagnosisState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
-                            <h4 className="font-bold text-primary-300">{diagnosisState.data.title}</h4>
-                            <Speakable elementId={`proactive-diag-content-${plant.id}`}>
+                             <Speakable elementId={`proactive-diag-content-${plant.id}`}>
+                                <h4 className="font-bold text-primary-300">{diagnosisState.data.title}</h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: diagnosisState.data.content }}></div>
                             </Speakable>
                              <div className="text-right mt-2">
@@ -138,8 +138,8 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                     {advisorState.isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                     {advisorState.data && !advisorState.isLoading && (
                         <Card className="bg-slate-800 animate-fade-in">
-                            <h4 className="font-bold text-primary-300">{advisorState.data.title}</h4>
                              <Speakable elementId={`advisor-content-${plant.id}`}>
+                                <h4 className="font-bold text-primary-300">{advisorState.data.title}</h4>
                                 <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: advisorState.data.content }}></div>
                             </Speakable>
                             {!advisorState.error && (
@@ -167,8 +167,8 @@ export const AiTab: React.FC<AiTabProps> = ({ plant }) => {
                         sortedArchive.map(res => (
                              <Card key={res.id} className="bg-slate-800">
                                  <p className="text-xs text-slate-400">{new Date(res.createdAt).toLocaleString()} - {t(`plantStages.${res.plantStage}`)}</p>
-                                <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
                                  <Speakable elementId={`advisor-archive-${res.id}`}>
+                                    <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
                                     <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
                                  </Speakable>
                                  <div className="flex justify-end items-center gap-2 mt-2">

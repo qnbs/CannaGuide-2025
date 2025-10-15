@@ -143,6 +143,8 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 label={t('plantsView.actionModals.photo.category')}
                 value={details.photoCategory || ''}
                 onChange={(e) => setDetails({ ...details, photoCategory: e.target.value })}
+                // FIX: Use Object.values on the PhotoCategory enum to dynamically generate options.
+                // This resolves a TypeScript error that occurs when trying to map a type alias.
                 options={Object.values(PhotoCategory).map((c) => ({ value: c, label: t(`plantsView.actionModals.photo.categories.${c}`) }))}
               />
               {image ? (

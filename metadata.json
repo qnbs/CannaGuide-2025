@@ -3,6 +3,7 @@
   "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore over 500 strains, get AI equipment advice, and master your grow with an interactive guide.",
   "prompt": "",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "microphone"
   ]
 }

@@ -1,23 +1,24 @@
 // FIX: Add `useMemo` to the `react` import to resolve the "Cannot find name 'useMemo'" error.
 import React, { useTransition, Suspense, lazy, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { KnowledgeViewTab } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
 import { selectUi } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { usePlantById } from '@/hooks/useSimulationBridge';
-import { MentorChatView } from './knowledge/MentorChatView';
+import { MentorChatView } from './MentorChatView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import { KnowledgeSubNav } from './KnowledgeSubNav';
 
 // Lazy load the sub-views for better initial load performance
-const MentorView = lazy(() => import('./knowledge/MentorView'));
-const GuideView = lazy(() => import('./knowledge/GuideView'));
-const ArchiveView = lazy(() => import('./knowledge/ArchiveView'));
-const BreedingView = lazy(() => import('./knowledge/BreedingView'));
-const SandboxView = lazy(() => import('./knowledge/SandboxView'));
+const MentorView = lazy(() => import('./MentorView'));
+const GuideView = lazy(() => import('./GuideView'));
+const ArchiveView = lazy(() => import('./ArchiveView'));
+const BreedingView = lazy(() => import('./BreedingView'));
+const SandboxView = lazy(() => import('./SandboxView'));
 
 
 export const KnowledgeView: React.FC = () => {

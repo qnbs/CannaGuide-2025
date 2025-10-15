@@ -35,6 +35,7 @@ export const common = {
     error: 'Error',
     deepDive: 'Deep Dive',
     saveToJournal: 'Save to Journal',
+    search: 'Search',
     editor: {
         bold: 'Bold',
         italic: 'Italic',
@@ -59,6 +60,17 @@ export const common = {
         invalidActionData: 'Invalid data provided for action: {{action}}.',
     },
     metadataDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore over 500 strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
+    voiceControl: {
+        listening: 'Listening...',
+        processing: 'Processing: "{{transcript}}"',
+        toggle: 'Toggle voice control',
+        errors: {
+            generic: 'An error occurred during speech recognition.',
+            noSpeech: 'No speech was detected.',
+            notAllowed: 'Microphone access was denied.',
+            startFailed: 'Could not start listening.',
+        },
+    },
 };
 
 export const nav = {

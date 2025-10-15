@@ -1,5 +1,3 @@
-
-
 import { GoogleGenAI, GenerateContentResponse, Type } from '@google/genai'
 import {
     Plant,
@@ -343,6 +341,7 @@ PLANT CONTEXT:
 
     async getStrainTips(
         strain: Strain,
+        // FIX: Corrected `experience` to `experienceLevel` to match the expected type.
         context: { focus: string; stage: string; experienceLevel: string },
         lang: Language
     ): Promise<StructuredGrowTips> {

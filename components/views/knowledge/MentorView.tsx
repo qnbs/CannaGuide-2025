@@ -32,7 +32,8 @@ const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
 export const MentorView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const activePlants = useActivePlants();
+    // FIX: Cast the return value of the hook to the correct type to avoid 'unknown' type errors.
+    const activePlants = useActivePlants() as Plant[];
     const [selectedPlantId, setSelectedPlantId] = useState<string | null>(null);
     
     useEffect(() => {

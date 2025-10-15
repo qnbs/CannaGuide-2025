@@ -1,13 +1,12 @@
-
-
 import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from './store';
 import { i18nInstance, getT } from '@/i18n';
-import { Language, Strain } from '@/types';
+import { Language, Strain, View } from '@/types';
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
-import { plantStateUpdated, resetPlants, addJournalEntry } from './slices/simulationSlice';
-import { addNotification, setOnboardingStep } from './slices/uiSlice';
+import { plantStateUpdated, resetPlants, addJournalEntry, waterAllPlants } from './slices/simulationSlice';
+import { addNotification, setOnboardingStep, setActiveView, closeAddModal, closeExportModal, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
 import { indexedDBStorage } from './indexedDBStorage';
+import { setSearchTerm, resetAllFilters, setShowFavoritesOnly } from './slices/filtersSlice';
 
 // Import actions to listen for
 import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice';
@@ -107,6 +106,69 @@ startAppListening({
           }
       });
   }
+});
+
+/**
+ * Listener to process recognized voice commands.
+ */
+startAppListening({
+    actionCreator: processVoiceCommand,
+    effect: async (action, { dispatch, getState }) => {
+        const transcript = action.payload.toLowerCase();
+        const t = getT();
+
+        // --- Define Voice Commands ---
+        const commands = [
+            // Navigation
+            { match: [t('nav.plants').toLowerCase(), 'show garden', 'gehe zu pflanzen'], action: () => dispatch(setActiveView(View.Plants)) },
+            { match: [t('nav.strains').toLowerCase(), 'show strains', 'gehe zu sorten'], action: () => dispatch(setActiveView(View.Strains)) },
+            { match: [t('nav.equipment').toLowerCase(), 'gehe zu ausrüstung'], action: () => dispatch(setActiveView(View.Equipment)) },
+            { match: [t('nav.knowledge').toLowerCase(), 'show knowledge', 'gehe zu wissen'], action: () => dispatch(setActiveView(View.Knowledge)) },
+            { match: [t('nav.settings').toLowerCase(), 'show settings', 'gehe zu einstellungen'], action: () => dispatch(setActiveView(View.Settings)) },
+            { match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'], action: () => dispatch(setActiveView(View.Help)) },
+            
+            // Strain Actions
+            { match: [`${t('common.search', {lng: 'en'}).toLowerCase()} for`, `${t('common.search', {lng: 'de'}).toLowerCase()} nach`], action: () => {
+                const searchTerm = transcript.split(/search for|suche nach/i)[1]?.trim();
+                if (searchTerm) {
+                    dispatch(setActiveView(View.Strains));
+                    dispatch(setSearchTerm(searchTerm));
+                }
+            }},
+            { match: [t('strainsView.resetFilters').toLowerCase(), 'filter zurücksetzen'], action: () => dispatch(resetAllFilters()) },
+            { match: [t('strainsView.tabs.favorites').toLowerCase(), 'show favorites', 'zeige favoriten'], action: () => {
+                dispatch(setActiveView(View.Strains));
+                dispatch(setShowFavoritesOnly(true));
+            }},
+            
+            // Plant Actions
+            { match: [t('plantsView.summary.waterAll').toLowerCase(), 'alle pflanzen gießen'], action: () => dispatch(waterAllPlants()) },
+
+            // UI Control
+            { match: ['go back', 'zurück'], action: () => {
+                const { activeView, lastActiveView } = getState().ui;
+                 if (activeView !== lastActiveView) {
+                    dispatch(setActiveView(lastActiveView));
+                 }
+            } },
+        ];
+
+        let commandFound = false;
+        for (const cmd of commands) {
+            if (cmd.match.some(keyword => transcript.startsWith(keyword))) {
+                cmd.action();
+                commandFound = true;
+                // Use a generic success message instead of echoing the command for a cleaner UI.
+                // dispatch(setVoiceStatusMessage(`Command executed: "${action.payload}"`));
+                break;
+            }
+        }
+
+        if (!commandFound) {
+            dispatch(setVoiceStatusMessage(`Unknown command: "${action.payload}"`));
+            setTimeout(() => dispatch(setVoiceStatusMessage(null)), 4000);
+        }
+    }
 });
 
 

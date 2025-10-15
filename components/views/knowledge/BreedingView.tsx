@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectCollectedSeeds, selectBreedingSlots } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
-import { Seed, Strain, StrainType, GeneticModifiers } from '@/types';
+import { Seed, Strain, StrainType, GeneticModifiers, BreedingState } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { setParentA, setParentB, clearBreedingSlots } from '@/stores/slices/breedingSlice';
@@ -92,7 +92,8 @@ const TraitComparison: React.FC<{ label: string, valA: string, valB: string, val
         <span className="text-slate-300 font-mono">{valA}</span>
         <span className="font-bold text-slate-100 flex items-center justify-center gap-1.5">{icon}{label}</span>
         <span className="text-slate-300 font-mono">{valB}</span>
-        <div colSpan={3} className="text-2xl font-bold text-primary-300 mt-1">{valChild}</div>
+        {/* FIX: Replaced invalid `colSpan` prop on a div with a valid `className="col-span-3"` for grid layout. */}
+        <div className="col-span-3 text-2xl font-bold text-primary-300 mt-1">{valChild}</div>
     </div>
 );
 
@@ -101,8 +102,9 @@ const BreedingView: React.FC = () => {
     const dispatch = useAppDispatch();
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isBreeding, setIsBreeding] = useState(false);
-    const collectedSeeds = useAppSelector(selectCollectedSeeds);
-    const { parentA: parentA_id, parentB: parentB_id } = useAppSelector(selectBreedingSlots);
+    // FIX: Explicitly type the result of useAppSelector to avoid `unknown` type errors.
+    const collectedSeeds = useAppSelector(selectCollectedSeeds) as Seed[];
+    const { parentA: parentA_id, parentB: parentB_id } = useAppSelector(selectBreedingSlots) as BreedingState['breedingSlots'];
     const [newStrainName, setNewStrainName] = useState('');
     const [result, setResult] = useState<Omit<Strain, 'id'> | null>(null);
 

@@ -79,128 +79,104 @@ export const helpView = {
   },
   manual: {
     title: 'User Manual',
-    introduction: {
-      title: 'Introduction',
-      content: 'Welcome to CannaGuide 2025! This manual will guide you through all the major features of the app to help you get the most out of your cultivation experience. Each section is designed to be intuitive and powerful, whether you are a novice or an expert grower.'
-    },
-    strains: {
-      title: 'The Strains View',
-      content: 'This is your comprehensive encyclopedia. Here you can explore over 500 strains, add your own, and get AI-powered tips. This view is your starting point for planning your grow.',
-      allStrains: {
-        title: 'All Strains Tab',
-        content: 'Browse the entire database of over 500 entries. Use the search bar for quick searches by name or aroma. Use the letter filters and type toggles for fast navigation. For a more detailed search, open the <strong>advanced filter drawer</strong> to filter by THC/CBD ranges, flowering time, aroma, terpenes, and cultivation traits.'
-      },
-      myStrains: {
-        title: 'My Strains Tab',
-        content: 'This is where all strains you have created yourself or bred in the Breeding Lab are stored. You have full <strong>CRUD functionality</strong> (Create, Read, Update, Delete) here. Custom strains are marked with a star in the main list and can be selected for a new grow just like any other strain.'
-      },
-      favorites: {
-        title: 'Favorites Tab',
-        content: 'A quick-access list of all strains you have marked with a heart. This is the perfect place to create a shortlist for your next grow. When you start a new grow, your favorites will be shown first.'
-      },
-      genealogy: {
-        title: 'Genealogy Tab',
-        content: 'Visualize the genetic lineage of any strain in an interactive tree. Select a strain from the dropdown to see its family tree. Use the analysis tools to highlight <strong>landraces</strong> or trace the inheritance of <strong>Sativa/Indica lines</strong>. You can also view the genetic influence of the top ancestors.'
-      },
-      exports: {
-        title: 'Exports Tab',
-        content: 'Manage all your saved exports of strain data. You can re-download, rename, add notes to, or delete them here. Exports in CSV, JSON, or XML formats are stored as datasets to preserve data integrity, while PDFs are generated directly.'
-      },
-      tips: {
-        title: 'Tips Tab',
-        content: 'Here you will find all the AI-generated grow tips you have saved. This collection serves as your personal reference for strain-specific cultivation strategies. You can search, edit, delete, and export the tips.'
-      },
-      toolbar: {
-        title: 'Toolbar & Filtering',
-        content: 'The toolbar at the top allows you to switch between <strong>list and grid view</strong>, <strong>export</strong> data (selected or all filtered strains), and <strong>add</strong> new custom strains. The filter bar below offers quick filtering options for favorites and strain types.'
-      },
-      detailView: {
-        title: 'Strain Detail View',
-        content: 'Click on any strain to see a detailed breakdown. Here you will find agronomic data, aroma profiles, and you can add <strong>personal notes</strong>. The "AI Tips" tab allows you to generate tailored cultivation advice for this specific strain based on your experience level. You can also <strong>start a grow</strong> directly from here.'
-      }
-    },
-    plants: {
-      title: 'The Plants View',
-      content: 'The command center for your active grows. Manage up to three plants simultaneously in a realistic simulation that continues to run in the background.',
-      dashboard: {
-        title: 'Dashboard & Vitals',
-        content: 'The main view (when no plant is selected) shows you a summary of your <strong>garden vitals</strong>, a useful <strong>Tip of the Day</strong>, and an overview of your <strong>open tasks and warnings</strong>. From here, you can also water all plants at once, a time-saving feature.'
-      },
-      startingGrow: {
-        title: 'Starting a New Grow',
-        content: 'Click an empty slot to begin the process. You first select a strain from the library (your favorites are shown first), then configure your grow setup (e.g., pot size, light cycle). After confirmation, the plant is added to your garden and the simulation begins.'
-      },
-      detailView: {
-        title: 'Detailed Plant View',
-        content: 'Click on an active plant to go to its detailed view. Here you can log all actions like watering, feeding, or training. Monitor all vitals in real-time, view the growth history in the chart, and use the AI tools. You can enable <strong>Expert Mode</strong> in the header at any time to see even more detailed scientific data, such as Vapor Pressure Deficit (VPD).'
-      },
-      aiDiagnostics: {
-        title: 'AI Plant Doctor',
-        content: 'Take a photo of a problematic leaf or area on your plant. The AI will analyze the image along with your plant\'s current vitals to provide a diagnosis and recommended actions. You can save the diagnosis directly to the plant\'s journal to document the history.'
-      }
-    },
-    equipment: {
-      title: 'The Equipment View',
-      content: 'Your toolbox for planning and calculating your grow.',
-      configurator: {
-        title: 'AI Setup Configurator',
-        content: 'Answer two simple questions (number of plants and your budget/style), and the AI will generate a complete, brand-specific equipment recommendation. This includes everything from the tent to the nutrients, along with rationales and a pro-tip. Save your configurations for later.'
-      },
-      savedSetups: {
-        title: 'My Setups',
-        content: 'Manage your saved equipment setups. You can edit, delete, or export them as a detailed <strong>PDF</strong> to use as a shopping list.'
-      },
-      calculators: {
-        title: 'Calculators',
-        content: 'A suite of useful calculators for: <ul><li><strong>Ventilation:</strong> Calculate the required fan power.</li><li><strong>Lighting:</strong> Estimate the optimal LED wattage.</li><li><strong>Electricity Cost:</strong> Calculate running costs.</li><li><strong>Nutrients:</strong> Mix your nutrient solution precisely.</li><li><strong>EC/PPM:</strong> Easily convert values.</li><li><strong>Yield:</strong> Get a rough estimate of your potential harvest.</li></ul>'
-      },
-      growShops: {
-        title: 'Grow Shops',
-        content: 'A curated list of recommended online grow shops for Europe and the USA, including a brief description of their strengths and direct links.'
-      }
-    },
-    knowledge: {
-      title: 'The Knowledge Hub',
-      content: 'The place to learn, experiment, and deepen your knowledge.',
-      mentor: {
-        title: 'AI Mentor',
-        content: 'Select one of your active plants and ask the Mentor specific questions (e.g., "Should I defoliate now?"). The AI uses your plant\'s real-time data to give tailored advice. All conversations can be saved to the archive.'
-      },
-      guide: {
-        title: 'Grow Guide',
-        content: 'An interactive guide that explains the key stages and techniques of cannabis cultivation in easy-to-digest, collapsible sections. The articles displayed adapt to the current stage of your selected plant.'
-      },
-      archive: {
-        title: 'Archives',
-        content: 'Manage all your saved responses from the AI Mentor and the proactive advice from the AI Plant Advisor in the plant view. Everything is searchable and exportable.'
-      },
-      breeding: {
-        title: 'Breeding Lab',
-        content: 'Cross seeds from your best plants to create brand new, unique strains. These are permanently added to your personal library under "My Strains".'
-      },
-      sandbox: {
-        title: 'Sandbox',
-        content: 'Run risk-free "what-if" scenarios. Select one of your plants as a clone and simulate the effect of different training techniques (e.g., Topping vs. LST) over an accelerated period to see the results in a visual comparison.'
-      }
-    },
     general: {
-      title: 'General Features',
-      content: 'Features available throughout the app that enhance your experience.',
+      title: 'Platform-Wide Features',
+      content: 'Features that enhance your experience throughout the app.',
       pwa: {
-        title: 'PWA & Offline Use',
-        content: 'CannaGuide is a <strong>Progressive Web App</strong>. You can "install" it to your device via the button in the header. This makes it behave like a native app and function 100% offline, including all data and archives.'
+        title: 'PWA & 100% Offline Functionality',
+        content: 'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience. Thanks to a robust Service Worker, all your data and the core functions of the app are fully available even without an internet connection.'
       },
       commandPalette: {
         title: 'Command Palette (Cmd/Ctrl + K)',
-        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the fastest way to navigate and perform actions like "Water All Plants" or "Add New Strain" without taking your hands off the keyboard.'
+        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the power-user tool for instant navigation and actions without leaving the keyboard.'
+      },
+      voiceControl: {
+        title: 'Voice Control & Speech',
+        content: 'Control the app hands-free. Press the <strong>microphone button</strong> to activate listening and speak your commands.<ul><li><strong>Navigation:</strong> Say "Go to Plants" or "Show Help".</li><li><strong>Search:</strong> Say "Search for Northern Lights".</li><li><strong>Actions:</strong> Say "Water all plants".</li></ul>You can also enable <strong>Text-to-Speech</strong> in Settings. This adds a small speaker icon to content blocks, allowing you to have guides, AI advice, and descriptions read aloud.'
       },
       dataManagement: {
-        title: 'Data Management',
-        content: 'Under <code>Settings > Data Management</code>, you have full control. You can <strong>back up</strong> your entire app data (plants, settings, custom strains, etc.) to a single JSON file. This file can be <strong>imported</strong> later to restore your state on any device.'
+        title: 'Data Sovereignty: Backup & Restore',
+        content: 'Under <code>Settings > Data Management</code>, you have full control. Export your entire app state (plants, settings, etc.) as a JSON file for <strong>backup</strong>. Import this file later to fully <strong>restore</strong> your state on any device.'
       },
       accessibility: {
-        title: 'Accessibility',
-        content: 'The app is designed with accessibility in mind. In the settings, you will find options for a <strong>dyslexia-friendly font</strong> and a <strong>reduced motion mode</strong>. The integrated <strong>Text-to-Speech (TTS)</strong> allows you to have important content read aloud.'
+        title: 'Enhanced Accessibility',
+        content: 'The app offers comprehensive accessibility options. Enable a <strong>dyslexia-friendly font</strong>, a <strong>reduced motion mode</strong>, or use the integrated <strong>Text-to-Speech (TTS)</strong> feature to have content read aloud.'
+      }
+    },
+    strains: {
+      title: 'Strains View',
+      content: 'The core of your cannabis knowledge base. Here you can explore over 500 strains, add your own, and use powerful tools for discovery and analysis.',
+      library: {
+        title: 'Library (All/My/Favorites)',
+        content: 'Switch between the full library, your personally added strains, and your favorites. Use the powerful search, alphabetical filters, type filters, and the advanced filter drawer to find exactly what you\'re looking for. Toggle between list and grid view to suit your preference.'
+      },
+      genealogy: {
+        title: 'Genealogy Explorer',
+        content: 'Visualize the genetic lineage of any strain. Use the analysis tools to highlight landraces, calculate the genetic influence of top ancestors, or discover known descendants.'
+      },
+      aiTips: {
+        title: 'AI Grow Tips',
+        content: 'Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals. Each time you generate tips, a unique, AI-generated image is also created, artistically representing the essence of the strain.'
+      },
+      exports: {
+        title: 'Exports & Data Management',
+        content: 'Export selected or all filtered strains in various formats (PDF, CSV, JSON, etc.). Manage your saved exports in the "Exports" tab.'
+      }
+    },
+    plants: {
+      title: 'Plants View (The Grow Room)',
+      content: 'Your command center for managing and simulating up to three simultaneous grows.',
+      dashboard: {
+        title: 'Dashboard & Garden Vitals',
+        content: 'Get a quick overview of your garden\'s overall health, the number of active plants, and average environmental conditions. You can also perform global actions like "Water All Plants" here.'
+      },
+      simulation: {
+        title: 'Advanced Simulation',
+        content: 'The app simulates plant growth in real-time based on scientific principles like Vapor Pressure Deficit (VPD). Toggle <strong>Expert Mode</strong> in the header to reveal detailed scientific data like VPD and DLI.'
+      },
+      diagnostics: {
+        title: 'AI Diagnostics & Advisor',
+        content: 'Use AI tools to keep your plants healthy.<ul><li><strong>Photo Diagnosis:</strong> Upload a photo to get an instant AI-based diagnosis of problems.</li><li><strong>Proactive Advisor:</strong> Get data-driven advice from the AI based on your plant\'s real-time vitals.</li></ul>'
+      },
+      journal: {
+        title: 'Comprehensive Journaling',
+        content: 'Log every action—from watering and training to pest control. The journal is your detailed record of the plant\'s entire lifecycle.'
+      }
+    },
+    equipment: {
+      title: 'Equipment View (The Workshop)',
+      content: 'Your toolkit for planning and optimizing your grow setup.',
+      configurator: {
+        title: 'AI Setup Configurator',
+        content: 'Answer a few simple questions about your budget, experience, and priorities to receive a complete, brand-specific equipment list from the AI.'
+      },
+      calculators: {
+        title: 'Precision Calculators',
+        content: 'Use a suite of calculators for ventilation, lighting (PPFD/DLI), electricity costs, nutrient mixes, and more to optimize your grow.'
+      },
+      shops: {
+        title: 'Grow Shops & Seed Banks',
+        content: 'Browse curated lists of recommended shops and seed banks for European and North American markets.'
+      }
+    },
+    knowledge: {
+      title: 'Knowledge View (The Library)',
+      content: 'Your central resource for learning, experimenting, and mastering cultivation.',
+      mentor: {
+        title: 'Context-Aware AI Mentor',
+        content: 'Ask the AI Mentor growing questions. Select one of your active plants to allow the mentor to incorporate its specific data into its advice.'
+      },
+      breeding: {
+        title: 'Breeding Lab',
+        content: 'Collect seeds from your highest-quality harvested plants. In the breeding lab, you can cross two seeds to create an entirely new, <strong>permanent hybrid strain</strong> that is added to your personal library.'
+      },
+      sandbox: {
+        title: 'Interactive Sandbox',
+        content: 'Run risk-free "what-if" scenarios. Clone one of your plants and simulate over an accelerated period to see how different training techniques (e.g., Topping vs. LST) affect its growth without risking your real plants.'
+      },
+      guide: {
+        title: 'Built-in Grow Guide',
+        content: 'Access a comprehensive reference that includes a grower\'s lexicon, visual guides for common techniques, a searchable FAQ, and this user manual.'
       }
     }
   }
@@ -247,75 +223,75 @@ export const faq = {
     answer: 'Most pre-fertilized soils have enough nutrients for the first 2-3 weeks. For seedlings, wait until they have 3-4 sets of true leaves before starting with a very weak nutrient solution (1/4 of the recommended dose). Observe the plant\'s reaction before increasing the dosage.'
   },
   npkMeaning: {
-    question: 'What do the N-P-K values on fertilizers mean?',
-    answer: 'N-P-K stands for the three primary macronutrients: Nitrogen (N), Phosphorus (P), and Potassium (K). <strong>N (Nitrogen)</strong> is mainly responsible for leaf and stem growth (vegetative phase). <strong>P (Phosphorus)</strong> is crucial for root development and flower production. <strong>K (Potassium)</strong> strengthens overall plant health and flower quality.'
+    question: 'What do N-P-K numbers on fertilizers mean?',
+    answer: 'N-P-K stands for Nitrogen (N), Phosphorus (P), and Potassium (K). These are the three primary macronutrients your plant needs. The numbers represent the percentage of each nutrient in the fertilizer. <ul><li><strong>N (Nitrogen):</strong> Crucial for vegetative growth (leaves, stems).</li><li><strong>P (Phosphorus):</strong> Essential for root development and flower production.</li><li><strong>K (Potassium):</strong> Important for overall plant health, disease resistance, and flower density.</li></ul>'
   },
   calmagUsage: {
-    question: 'What is Cal-Mag and when do I need it?',
-    answer: 'Cal-Mag is a supplement that provides Calcium and Magnesium. These secondary nutrients are crucial but are sometimes not adequately covered by base fertilizers. You often need it when using filtered/RO water or growing in coco coir, as this medium tends to bind calcium. Symptoms of a deficiency are often small, rust-brown spots on the leaves.'
+    question: 'When and why should I use Cal-Mag?',
+    answer: 'Cal-Mag (Calcium-Magnesium supplement) is important when using filtered water (like reverse osmosis) that lacks these secondary nutrients, or when growing in coco coir, which tends to bind calcium. Deficiencies often show up as small, rust-colored spots on the leaves.'
   },
   flushingPlants: {
-    question: 'What does "flushing" mean and do I have to do it?',
-    answer: 'Flushing means watering the plant with only pure, pH-adjusted water for the last 1-2 weeks before harvest. The goal is to remove excess nutrient salts from the medium and the plant, which is said to result in a cleaner, smoother final product. It is a common practice, especially with mineral fertilizers.'
+    question: 'What is "flushing" and do I need to do it?',
+    answer: 'Flushing is the practice of watering the plant with only pure, pH-adjusted water for the last 1-2 weeks before harvest. The idea is to remove excess nutrient salts from the medium and the plant, which is believed to result in a cleaner, smoother taste. It\'s often unnecessary in organic soil grows but is common practice in hydroponic or coco systems.'
   },
   vpdImportance: {
-    question: 'What is VPD and why is it important?',
-    answer: 'VPD stands for Vapor Pressure Deficit and is a more accurate measure of the optimal ratio of temperature to humidity than relative humidity alone. A correct VPD value allows the plant to transpire optimally (to "sweat"), promoting nutrient uptake and growth. Too high a VPD (too dry) stresses the plant, while too low a VPD (too humid) increases the risk of mold.'
+    question: 'What is VPD and why should I care?',
+    answer: 'VPD (Vapor Pressure Deficit) is an advanced measurement that combines temperature and humidity to describe the "thirst" of the air. An optimal VPD allows the plant to transpire (evaporate water) efficiently, driving nutrient uptake and growth. Too high a VPD means the air is too dry, causing stress. Too low a VPD means the air is too humid, increasing mold risk and slowing nutrient uptake.'
   },
   idealTempHumidity: {
     question: 'What are the ideal temperature and humidity levels?',
-    answer: 'This varies by phase: <br><strong>Seedlings:</strong> 22-25°C (72-77°F), 70-80% RH. <br><strong>Vegetative:</strong> 22-28°C (72-82°F), 50-60% RH. <br><strong>Flowering:</strong> 20-26°C (68-79°F), 40-50% RH. <br>Try to avoid large fluctuations between light and dark periods.'
+    answer: 'It depends on the stage:<ul><li><strong>Seedlings:</strong> 22-26°C (72-79°F), 70-80% RH</li><li><strong>Vegetative:</strong> 22-28°C (72-82°F), 50-70% RH</li><li><strong>Flowering:</strong> 20-26°C (68-79°F), 40-50% RH</li><li><strong>Late Flower:</strong> 18-24°C (64-75°F), 30-40% RH</li></ul>The goal is to hit the ideal VPD range for each stage.'
   },
   airCirculation: {
     question: 'How important is air circulation?',
-    answer: 'Extremely important. A light, constant breeze from an oscillating fan has several benefits: it strengthens the stems, prevents mold and pests, ensures even gas exchange on the leaves, and helps to avoid hot and humid spots in the tent.'
+    answer: 'Extremely important. One or more oscillating fans inside the tent keep the air moving around the plants. This strengthens stems, prevents humid "pockets" from forming, and significantly reduces the risk of mold and pests.'
   },
   nutrientBurn: {
-    question: 'What are burnt leaf tips?',
-    answer: 'Brown, dry, and "burnt" leaf tips are a classic sign of nutrient burn (over-fertilization). The plant is taking up more nutrients than it can process, and the salts accumulate in the leaf tips. Reduce the fertilizer concentration at the next feeding or flush the medium with pH-adjusted water.'
+    question: 'What is nutrient burn?',
+    answer: 'Nutrient burn (or "nute burn") appears as dark green leaves with burnt, yellow or brown tips that often curl upwards. It means the plant is receiving more nutrients than it can process. The solution is to reduce the nutrient concentration (EC) and/or flush the medium with pH-adjusted water.'
   },
   spiderMites: {
-    question: 'How do I recognize and combat spider mites?',
-    answer: 'Spider mites are tiny pests that live on the underside of leaves. The first signs are small white or yellow dots on the top of the leaf. In a severe infestation, fine webs will form. They multiply quickly in warm, dry environments. To combat them, you can use neem oil or insecticidal soap solutions. Predatory mites are a good biological control method.'
+    question: 'How do I spot and fight spider mites?',
+    answer: 'Spider mites are tiny pests that live on the underside of leaves. Early signs are small white or yellow dots on the leaves. In a heavy infestation, you will see fine webbing. They reproduce extremely fast in warm, dry environments. Neem oil sprays or insecticidal soaps can be used to combat them. Good prevention includes a clean environment and not letting humidity get too low.'
   },
   stretchingCauses: {
     question: 'Why is my plant stretching so much?',
-    answer: 'Excessive stretching (long internodal spacing) is usually caused by a lack of light. The plant is trying to grow closer to the light source. Make sure your lamp is powerful enough for your area and is at the correct distance. High temperatures can also contribute to stretching.'
+    answer: 'Excessive stretching, where the plant grows long, thin stems with large gaps between leaf nodes, is almost always caused by insufficient light. The plant is "reaching" for the light source. Move your light closer or use a more powerful one. Some Sativa strains are also genetically prone to stretching, especially at the start of the flowering phase.'
   },
   toppingVsFimming: {
     question: 'What is the difference between Topping and FIMing?',
-    answer: 'Both are "high-stress training" methods to make the plant bushier. With <strong>Topping</strong>, the main shoot is completely cut off, resulting in two new main shoots. With <strong>FIMing</strong>, about 80% of the new shoot is pinched off, which can result in four or more new shoots. Topping is more precise, while FIMing can produce more, but often more uneven, shoots.'
+    answer: 'Both are "high-stress training" techniques to break apical dominance and create more main colas. With <strong>Topping</strong>, you cleanly cut off the top of the main shoot, resulting in two new main shoots. With <strong>FIMing</strong> (F*ck I Missed), you pinch off the tip, leaving a small amount. If done right, this can result in four or more new shoots. Topping is more precise; FIMing can result in bushier growth.'
   },
   whatIsScrog: {
     question: 'What is a SCROG?',
-    answer: 'SCROG (Screen of Green) is a growing technique where a net or screen is stretched over the plants. As the plant grows, the shoots are tucked under the net and guided horizontally. This creates a very wide, flat, and even canopy where all the flowers receive optimal light, which can lead to maximum yields.'
+    answer: 'SCROG stands for "Screen of Green". It is an advanced training technique where a net or screen is placed horizontally over the plants. As the plant grows, shoots are tucked under the screen and trained to grow horizontally. This creates a wide, flat, and even canopy where all bud sites receive the same, optimal amount of light, maximizing yield.'
   },
   whatIsLollipopping: {
-    question: 'What is Lollipopping?',
-    answer: 'Lollipopping is the removal of the lower shoots and leaves that receive little to no light. By removing these "unnecessary" plant parts, the plant directs all its energy to the upper, light-exposed flowers (colas), resulting in larger and denser main buds. This is typically done shortly before or at the beginning of the flowering phase.'
+    question: 'What does "lollipopping" mean?',
+    answer: '"Lollipopping" is a defoliation technique usually performed just before or at the start of the flowering phase. It involves removing all the lower leaves and small shoots that are in the shade and would never develop into dense buds. This focuses all the plant\'s energy on the upper flowers in the canopy, resulting in larger, denser main colas.'
   },
   dryingDuration: {
-    question: 'How long should I dry my buds?',
-    answer: 'The goal is a slow and even drying process. Hang the branches in a dark room at about 18-20°C (64-68°F) and 55-60% humidity. This usually takes 7-14 days. A good test is to bend a small twig: if it snaps but doesn\'t break, the buds are ready for curing.'
+    question: 'How long should I dry my harvest?',
+    answer: 'Drying usually takes 7-14 days. The goal is a slow and controlled dry in a dark, cool space at around 18-20°C (64-68°F) and 55-60% humidity. A good test is the "stem snap test": if the smaller stems snap rather than just bend when you bend them, the buds are ready for curing in jars.'
   },
   curingImportance: {
-    question: 'What is curing and why is it important?',
-    answer: 'Curing is the process of maturing the dried flowers in airtight jars. During this time, enzymes and bacteria break down chlorophyll and other undesirable substances. This significantly improves the taste and aroma, makes the smoke smoother, and can even increase potency. It is a crucial step for a high-quality end product.'
+    question: 'Why is curing so important?',
+    answer: 'Curing is a crucial step for final quality. During this process, which takes place in airtight jars, bacteria break down chlorophyll and other unwanted substances. This leads to a much smoother smoke and allows the strain\'s complex terpene profile (aroma and flavor) to fully develop. A good cure can be the difference between mediocre and top-shelf cannabis.'
   },
   storageHarvest: {
-    question: 'How should I store my harvested buds?',
-    answer: 'Store your fully cured buds in airtight glass jars in a cool, dark, and dry place. Light, air, high temperatures, and humidity are the biggest enemies of cannabinoids and terpenes. A humidity level of 58-62% in the jar is considered ideal and can be maintained with special humidity packs.'
+    question: 'How should I store my finished harvest?',
+    answer: 'After curing, buds should be stored long-term in airtight glass containers in a cool, dark place. Light, heat, and oxygen are the main enemies that degrade cannabinoids and terpenes. The ideal storage temperature is below 21°C (70°F). Humidity packs (e.g., 62% RH) in the jars can help maintain the perfect moisture level.'
   },
   autoflowerVsPhotoperiod: {
     question: 'Autoflower vs. Photoperiod: What\'s the difference?',
-    answer: '<strong>Photoperiod</strong> plants need a change in the light cycle (to 12 hours of darkness per day) to start flowering. They have a longer vegetative phase and can grow larger. <strong>Autoflower</strong> plants automatically flower after a certain time (about 3-4 weeks), regardless of the light cycle. They are faster to finish and stay smaller, making them ideal for beginners or small spaces.'
+    answer: '<strong>Photoperiod</strong> plants require a change in the light cycle (switching to 12 hours of light / 12 hours of darkness) to initiate flowering. They have a longer vegetative phase and typically grow larger and yield more. <strong>Autoflowers</strong> flower automatically after a certain amount of time (usually 3-4 weeks), regardless of the light cycle. They are faster to finish, stay smaller, and are often easier for beginners, but the yield is usually lower.'
   },
   howOftenToWater: {
-    question: 'How often should I water?',
-    answer: 'There is no fixed rule, as it depends on pot size, plant size, temperature, and medium. The best method is to lift the pot and feel the weight. Water thoroughly until some water runs out the bottom, then wait until the pot is significantly lighter again. Stick a finger about 2-3 cm (1 inch) deep into the soil; if it comes out dry, it\'s time to water.'
+    question: 'How often do I need to water?',
+    answer: 'There\'s no fixed schedule. The best method is to lift the pot and feel its weight. Water thoroughly until some runs out the bottom (runoff), then wait until the pot feels significantly lighter again. This ensures the roots get enough oxygen between waterings. Also, stick your finger about an inch (2-3 cm) into the soil; if it comes out dry, it\'s likely time to water.'
   },
   potSize: {
     question: 'What pot size should I use?',
-    answer: 'The pot size depends on the desired final size of your plant. A general guideline: for every 30 cm (1 foot) of plant height, you need about 4 liters (1 gallon) of pot volume. Common sizes are 11-19 liters (3-5 gallons) for medium-sized indoor plants. Larger pots need to be watered less frequently but also dry out more slowly.'
+    answer: 'Pot size depends on the type of plant and your desired final size. A good rule of thumb:<ul><li><strong>Autoflowers:</strong> 10-15 liter (3-4 gallon) pots are ideal, as they don\'t like being transplanted.</li><li><strong>Photoperiods:</strong> Start in smaller pots (1-3 liters) and transplant 1-2 times into larger ones, e.g., 15-25 liters (4-7 gallons) for the final stage. This promotes a healthy root system.</li></ul>Bigger pots mean more room for roots and potentially bigger plants, but they need watering less frequently.'
   }
 };

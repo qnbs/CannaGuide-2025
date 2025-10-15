@@ -24,22 +24,22 @@ import {
 import { openAddModal, closeAddModal, openExportModal, closeExportModal, addNotification } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
 import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
-import { StrainDetailView } from './strains/StrainDetailView';
-import { AddStrainModal } from './strains/AddStrainModal';
+import { StrainDetailView } from './StrainDetailView';
+import { AddStrainModal } from './AddStrainModal';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip } from '@/stores/slices/savedItemsSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { FilterDrawer } from './strains/FilterDrawer';
+import { FilterDrawer } from './FilterDrawer';
 import { initialAdvancedFilters } from '@/stores/slices/filtersSlice';
 import { exportService } from '@/services/exportService';
-import { StrainSubNav } from './strains/StrainSubNav';
+import { StrainSubNav } from './StrainSubNav';
 
 // --- Lazy Loaded Views for Performance ---
-const StrainLibraryView = lazy(() => import('./strains/StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
-const ExportsManagerView = lazy(() => import('./strains/ExportsManagerView').then(m => ({ default: m.ExportsManagerView })));
-const StrainTipsView = lazy(() => import('./strains/StrainTipsView').then(m => ({ default: m.StrainTipsView })));
-const GenealogyView = lazy(() => import('./strains/GenealogyView').then(m => ({ default: m.GenealogyView })));
+const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
+const ExportsManagerView = lazy(() => import('./ExportsManagerView').then(m => ({ default: m.ExportsManagerView })));
+const StrainTipsView = lazy(() => import('./StrainTipsView').then(m => ({ default: m.StrainTipsView })));
+const GenealogyView = lazy(() => import('./GenealogyView').then(m => ({ default: m.GenealogyView })));
 
 
 export const StrainsView: React.FC = () => {

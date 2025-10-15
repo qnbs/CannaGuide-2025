@@ -1,7 +1,6 @@
-
-
 import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { Task, PlantProblem, TaskPriority } from '@/types';

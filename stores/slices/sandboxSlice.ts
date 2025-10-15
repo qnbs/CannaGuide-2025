@@ -1,12 +1,7 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { ExperimentResult, SavedExperiment, Scenario, Plant } from '@/types';
+// FIX: Add missing imports for ExperimentResult and SavedExperiment
+import { ExperimentResult, SavedExperiment, Scenario, Plant, SandboxState } from '@/types';
 import { RootState } from '../store';
-
-export interface SandboxState {
-    currentExperiment: (ExperimentResult & { basePlantId?: string, scenarioId?: string }) | null;
-    status: 'idle' | 'running' | 'succeeded' | 'failed';
-    savedExperiments: SavedExperiment[];
-}
 
 const initialState: SandboxState = {
     currentExperiment: null,

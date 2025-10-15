@@ -299,4 +299,5 @@ export const strainsView = {
   },
   sortBy: 'Sort by',
   showingCount: 'Showing {{count}} of {{total}}',
+  loadMore: 'Load More... {{count}} of {{total}}',
 };

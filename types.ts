@@ -148,13 +148,13 @@ export type VentilationPower = 'low' | 'medium' | 'high';
 export type PotType = 'Plastic' | 'Fabric';
 
 export interface GrowSetup {
-    lightType?: LightType;
-    lightWattage?: number;
+    lightType: LightType;
+    lightWattage: number;
     lightHours: number;
-    ventilation?: VentilationPower;
-    hasCirculationFan?: boolean;
+    ventilation: VentilationPower;
+    hasCirculationFan: boolean;
     potSize: number; // in Liters
-    potType?: PotType;
+    potType: PotType;
     medium: 'Soil' | 'Coco' | 'Hydro';
 }
 
@@ -563,6 +563,13 @@ export interface SavedExperiment extends ExperimentResult {
     scenarioId: string;
     basePlantName: string;
     createdAt: number;
+}
+
+// FIX: Export SandboxState type to be used in components, resolving an import error in SandboxView.tsx.
+export interface SandboxState {
+    currentExperiment: (ExperimentResult & { basePlantId?: string, scenarioId?: string }) | null;
+    status: 'idle' | 'running' | 'succeeded' | 'failed';
+    savedExperiments: SavedExperiment[];
 }
 
 export interface GenealogyNode {

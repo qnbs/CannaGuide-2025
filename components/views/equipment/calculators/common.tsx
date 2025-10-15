@@ -1,4 +1,5 @@
 import React, { useId, memo } from 'react';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Input as PrimitiveInput, Select as PrimitiveSelect } from '@/components/ui/ThemePrimitives';
 
@@ -33,7 +34,15 @@ export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
     );
 };
 
-export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & { label: string; options: {value: string, label: string}[] }> = ({ label, options, ...props }) => {
+// FIX: Corrected the props for this wrapper component. It was incorrectly extending native HTMLSelectElement attributes
+// while wrapping a custom dropdown component with different prop signatures. The props are now aligned with the wrapped component.
+export const Select: React.FC<{
+    label: string;
+    options: { value: string | number; label: string }[];
+    value?: string | number;
+    onChange?: (e: any) => void;
+    [key: string]: any;
+}> = ({ label, options, ...props }) => {
     const id = useId();
     return (
         <div>

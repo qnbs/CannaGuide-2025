@@ -11,7 +11,7 @@ import { LexiconCard } from './help/LexiconCard';
 import { Button } from '@/components/common/Button';
 import { Speakable } from '@/components/common/Speakable';
 import { SearchBar } from '@/components/common/SearchBar';
-import { HelpSubNav } from './HelpSubNav';
+import { HelpSubNav } from './help/HelpSubNav';
 
 const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
@@ -183,9 +183,11 @@ const ManualSection: React.FC = memo(() => {
                         <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
                         {title}
                     </summary>
-                    <div className="p-3 border-t border-slate-700/50">
-                        {content && <Speakable elementId={`manual-sub-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
-                    </div>
+                    <Speakable elementId={`manual-sub-${sectionKey}`}>
+                        <div className="p-3 border-t border-slate-700/50">
+                            {content && <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />}
+                        </div>
+                    </Speakable>
                 </details>
             );
         }

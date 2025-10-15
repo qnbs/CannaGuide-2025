@@ -5,11 +5,12 @@ import { selectTtsState } from '@/stores/selectors'
 import { Button } from '@/components/common/Button'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { playTts, pauseTts, stopTts, nextTts } from '@/stores/slices/ttsSlice'
+import { TtsState } from '@/stores/slices/ttsSlice'
 
 export const TTSControls: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const { isTtsSpeaking, isTtsPaused, ttsQueue } = useAppSelector(selectTtsState)
+    const { isTtsSpeaking, isTtsPaused, ttsQueue } = useAppSelector(selectTtsState) as TtsState;
     const ttsEnabled = useAppSelector((state) => state.settings.settings.tts.enabled)
 
     if (!ttsEnabled || (ttsQueue.length === 0 && !isTtsSpeaking && !isTtsPaused)) {
@@ -17,7 +18,7 @@ export const TTSControls: React.FC = () => {
     }
 
     return (
-        <div className="fixed bottom-[72px] right-4 z-40 flex items-center gap-2 p-2 rounded-full shadow-lg glass-pane animate-fade-in">
+        <div className="fixed bottom-[80px] sm:bottom-4 right-4 z-40 flex items-center gap-2 p-2 rounded-full shadow-lg glass-pane animate-fade-in">
             {isTtsSpeaking && !isTtsPaused ? (
                 <Button
                     variant="secondary"

@@ -93,10 +93,7 @@ const uiSlice = createSlice({
     reducers: {
         setActiveView: (state, action: PayloadAction<View>) => {
             state.activeView = action.payload;
-            // Only update lastActiveView if it's one of the main nav views
-            if ([View.Plants, View.Strains, View.Equipment, View.Knowledge, View.Help, View.Settings].includes(action.payload)) {
-                state.lastActiveView = action.payload;
-            }
+            state.lastActiveView = action.payload;
         },
         setOnboardingStep: (state, action: PayloadAction<number>) => {
             state.onboardingStep = action.payload;

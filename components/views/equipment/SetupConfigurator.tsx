@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
+// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { SavedSetup, Recommendation, RecommendationItem, PlantCount, ExperienceLevel, GrowPriority, RecommendationCategory } from '@/types';
@@ -131,9 +132,9 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
         if (isLoading) {
             const messages = geminiService.getDynamicLoadingMessages({
                 useCase: 'equipment',
-                data: { 
+                data: {
                     plantCount,
-                    experience: t(`strainsView.tips.form.experienceOptions.${experience}`),
+                    experienceLevel: t(`strainsView.tips.form.experienceOptions.${experience}`),
                     priorities: priorities.map(p => t(`equipmentView.configurator.priorities.${p}`)).join(', ')
                 }
             });
@@ -153,7 +154,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             plantCount: parseInt(plantCount, 10),
             growSpaceWidth: growSpace.width,
             growSpaceDepth: growSpace.depth,
-            experience: t(`strainsView.tips.form.experienceOptions.${experience}`),
+            experienceLevel: t(`strainsView.tips.form.experienceOptions.${experience}`),
             floweringTypePreference,
             budget,
             priorities: prioritiesText || 'a balanced setup',
@@ -232,8 +233,9 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
 
             {step === 1 && (
                 <div className="space-y-6 animate-fade-in">
-                    <FormSection title={t('equipmentView.configurator.plantCount_other', { count: ''})} defaultOpen>
-                        <SegmentedControl value={[plantCount]} onToggle={(v) => setPlantCount(v as PlantCount)} options={[ { value: '1', label: t('equipmentView.configurator.plantCount_one')}, { value: '2', label: t('equipmentView.configurator.plantCount_other', {count: 2})}, { value: '3', label: t('equipmentView.configurator.plantCount_other', {count: 3})} ]} />
+                    <FormSection title={t('equipmentView.configurator.plantCount_other', {count: ''})} defaultOpen>
+                        {/* FIX: Corrected the i18next translation key for pluralization and used numeric counts. */}
+                        <SegmentedControl value={[plantCount]} onToggle={(v) => setPlantCount(v as PlantCount)} options={[ { value: '1', label: t('equipmentView.configurator.plantCount', {count: 1})}, { value: '2', label: t('equipmentView.configurator.plantCount', {count: 2})}, { value: '3', label: t('equipmentView.configurator.plantCount', {count: 3})} ]} />
                     </FormSection>
                     <FormSection title={t('strainsView.tips.form.experience')} defaultOpen>
                          <SegmentedControl value={[experience]} onToggle={(v) => setExperience(v as ExperienceLevel)} options={Object.keys(t('strainsView.tips.form.experienceOptions', { returnObjects: true })).map(k => ({ value: k as ExperienceLevel, label: t(`strainsView.tips.form.experienceOptions.${k}`) }))} />

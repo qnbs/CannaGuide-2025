@@ -13,7 +13,8 @@ import { selectSettings, selectHasAvailableSlots, selectSimulation } from '@/sto
 export const useCommandPalette = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
+    // FIX: Cast the result of useAppSelector to the correct type to avoid type errors.
+    const settings = useAppSelector(selectSettings) as AppSettings;
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
     const { plantSlots } = useAppSelector(selectSimulation);
     const { language } = settings;

@@ -3,9 +3,7 @@ import { useAppDispatch } from '../stores/store'
 import { useTranslation } from 'react-i18next'
 import { addNotification } from '../stores/slices/uiSlice'
 import { BeforeInstallPromptEvent } from '@/types'
-
-// Key for storing the installation status in localStorage.
-const PWA_INSTALLED_KEY = 'cannaGuidePwaInstalled';
+import { PWA_INSTALLED_KEY } from '@/constants';
 
 /**
  * A custom hook to manage the PWA installation prompt and status.

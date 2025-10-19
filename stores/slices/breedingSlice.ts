@@ -1,5 +1,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { BreedingState, Seed } from '@/types';
+import { Seed } from '@/types';
+
+export interface BreedingState {
+    collectedSeeds: Seed[];
+    breedingSlots: {
+        parentA: string | null; // seed ID
+        parentB: string | null; // seed ID
+    };
+}
 
 const initialState: BreedingState = {
     collectedSeeds: [],

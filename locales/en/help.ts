@@ -79,6 +79,10 @@ export const helpView = {
   },
   manual: {
     title: 'User Manual',
+    introduction: {
+        title: 'Introduction & Philosophy',
+        content: 'Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual will guide you through the app\'s advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline-First:</strong> 100% functionality without an internet connection.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker.</li><li><strong>Data Sovereignty:</strong> Complete control through export and import functions for all your data.</li><li><strong>AI as a Tool:</strong> Targeted use of AI for actionable, context-sensitive insights.</li></ul>'
+    },
     general: {
       title: 'Platform-Wide Features',
       content: 'Features that enhance your experience throughout the app.',

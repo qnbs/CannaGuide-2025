@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, memo } from 'react';
 import { JournalEntry, PhotoDetails, JournalEntryType } from '@/types';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
@@ -50,7 +50,7 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
 };
 
 
-export const PhotosTab: React.FC<PhotoTabProps> = ({ journal }) => {
+export const PhotosTab: React.FC<PhotoTabProps> = memo(({ journal }) => {
     const { t } = useTranslation();
     
     const photoJournalEntries = useMemo(() => 
@@ -70,4 +70,4 @@ export const PhotosTab: React.FC<PhotoTabProps> = ({ journal }) => {
             )}
         </Card>
     );
-};
+});

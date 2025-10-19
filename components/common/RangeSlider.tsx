@@ -26,9 +26,9 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     const rangeId = useId();
 
     const colorMap = {
-        primary: { active: 'rgb(var(--color-primary-600))', inactive: 'rgb(var(--color-primary-500))', bg: 'bg-primary-500' },
-        green: { active: 'rgb(22, 163, 74)', inactive: 'rgb(34, 197, 94)', bg: 'bg-green-500' },
-        blue: { active: 'rgb(37, 99, 235)', inactive: 'rgb(59, 130, 246)', bg: 'bg-blue-500' },
+        primary: { active: 'rgb(var(--color-primary-400))', inactive: 'rgb(var(--color-primary-500))', bg: 'bg-primary-500' },
+        green: { active: 'rgb(var(--color-secondary-300))', inactive: 'rgb(var(--color-secondary-400))', bg: 'bg-secondary-500' },
+        blue: { active: 'rgb(var(--color-info))', inactive: 'rgb(var(--color-info))', bg: 'bg-info' },
     };
     const { active, inactive, bg } = colorMap[color] || colorMap.primary;
 
@@ -72,13 +72,13 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                             min={min}
                             max={max}
                             step={step}
-                            className="w-24 text-right bg-slate-700/80 px-2 py-0.5 rounded-md ring-1 ring-inset ring-white/20 font-mono text-sm pr-8"
+                            className="w-24 text-right bg-slate-900/50 px-2 py-0.5 rounded-md ring-1 ring-inset ring-slate-700/50 font-mono text-sm pr-8 focus:outline-none focus:ring-2 focus:ring-primary-500"
                         />
                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">{unit}</span>
                     </div>
                 </div>
                 <div className="relative h-4 flex items-center">
-                    <div className="relative w-full h-1 bg-slate-600 rounded-full">
+                    <div className="relative w-full h-1 bg-slate-700 rounded-full">
                         <div
                             className={`absolute h-1 ${bg} rounded-full`}
                             style={{ width: `${pos}%` }}
@@ -102,19 +102,20 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     } 
     // --- RANGE MODE ---
     else {
-        // FIX: Explicitly cast `value` and `onChange` to resolve type confusion with the discriminated union.
-        const { value, onChange } = props as { value: [number, number]; onChange: (v: [number, number]) => void };
+        const { value, onChange } = props;
         const [minZIndex, setMinZIndex] = useState(1);
         const [maxZIndex, setMaxZIndex] = useState(1);
 
         const handleMinChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-            const newMinVal = Math.min(Number(e.target.value), value[1] - step);
-            onChange([newMinVal, value[1]]);
+            const val = value as [number, number];
+            const newMinVal = Math.min(Number(e.target.value), val[1] - step);
+            (onChange as (v: [number, number]) => void)([newMinVal, val[1]]);
         }, [onChange, value, step]);
 
         const handleMaxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-            const newMaxVal = Math.max(Number(e.target.value), value[0] + step);
-            onChange([value[0], newMaxVal]);
+            const val = value as [number, number];
+            const newMaxVal = Math.max(Number(e.target.value), val[0] + step);
+            (onChange as (v: [number, number]) => void)([val[0], newMaxVal]);
         }, [onChange, value, step]);
         
         const handleMinInteraction = () => { setMinZIndex(2); setMaxZIndex(1); };
@@ -131,10 +132,10 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                     <label htmlFor={`${rangeId}-min`} className="text-sm font-semibold text-slate-300">
                         {label}
                     </label>
-                    <span className="text-sm font-mono bg-slate-700 px-2 py-0.5 rounded-md ring-1 ring-inset ring-white/20">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
+                    <span className="text-sm font-mono bg-slate-900/50 px-2 py-0.5 rounded-md ring-1 ring-inset ring-slate-700/50">{`${value[0]}${unit} - ${value[1]}${unit}`}</span>
                 </div>
                 <div className="relative h-4 flex items-center">
-                    <div className="relative w-full h-1 bg-slate-600 rounded-full">
+                    <div className="relative w-full h-1 bg-slate-700 rounded-full">
                         <div
                             className={`absolute h-1 ${bg} rounded-full`}
                             style={{ left: `${minPos}%`, right: `${100 - maxPos}%` }}

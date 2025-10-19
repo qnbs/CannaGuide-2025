@@ -1,6 +1,5 @@
 import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
-// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
 import { Task, PlantProblem, TaskPriority } from '@/types';
@@ -18,9 +17,9 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(({ tasks, 
 
     return (
         <div className="space-y-6">
-            <Card>
+            <Card className="ring-1 ring-inset ring-white/20">
                 <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2 mb-4">
-                    <PhosphorIcons.Checks className="w-6 h-6" /> {t('plantsView.tasks.title')}
+                    <PhosphorIcons.Checks className="w-6 h-6 text-primary-400" /> {t('plantsView.tasks.title')}
                 </h3>
                 {tasks.length > 0 ? (
                     <div className="space-y-3">
@@ -40,14 +39,13 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(({ tasks, 
                     <p className="text-slate-300 text-sm">{t('plantsView.tasks.none')}</p>
                 )}
             </Card>
-             <Card>
+             <Card className="ring-1 ring-inset ring-white/20">
                 <h3 className="text-xl font-bold font-display mb-4 text-amber-400 flex items-center gap-2">
-                    <PhosphorIcons.WarningCircle className="w-6 h-6" /> {t('plantsView.warnings.title')}
+                    <PhosphorIcons.WarningCircle className="w-6 h-6 text-amber-400" /> {t('plantsView.warnings.title')}
                 </h3>
                 {problems.length > 0 ? (
                     <div className="space-y-3">
                         {problems.map((problem, index) => {
-                            // FIX: Correctly convert problem type from SCREAMING_SNAKE_CASE to camelCase for i18n key.
                             const problemKey = problem.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
                             return (
                                 <div key={`${problem.plantId}-${index}`} className="p-2 border-l-4 border-amber-500/50 bg-amber-500/10 rounded-r-md">

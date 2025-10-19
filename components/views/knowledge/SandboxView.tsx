@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectSandboxState, selectActivePlants, selectSavedExperiments } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
-// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Modal } from '@/components/common/Modal';
 import { runComparisonScenario, clearCurrentExperiment, saveExperiment, deleteExperiment } from '@/stores/slices/sandboxSlice';
@@ -11,8 +10,8 @@ import { scenarioService } from '@/services/scenarioService';
 import { ComparisonView } from '../plants/ComparisonView';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { Card } from '@/components/common/Card';
-// FIX: Imported SandboxState from its slice file as it is not exported from the main types file.
-import { SavedExperiment, Plant, SandboxState } from '@/types';
+import { SavedExperiment, Plant } from '@/types';
+import { SandboxState } from '@/types';
 
 const SavedExperimentCard: React.FC<{ experiment: SavedExperiment; onDelete: () => void; onView: () => void }> = ({ experiment, onDelete, onView }) => {
     const { t } = useTranslation();
@@ -31,16 +30,14 @@ const SavedExperimentCard: React.FC<{ experiment: SavedExperiment; onDelete: () 
                 </div>
             </div>
         </Card>
-    )
-}
+    );
+};
 
 const SandboxView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: Cast the result of useAppSelector to the correct type to avoid type errors.
-    const { currentExperiment, status, savedExperiments } = useAppSelector(selectSandboxState) as SandboxState;
-    // FIX: Cast the return value of the hook to the correct type to avoid 'unknown' type errors.
-    const activePlants = useAppSelector(selectActivePlants) as Plant[];
+    const { currentExperiment, status, savedExperiments } = useAppSelector(selectSandboxState);
+    const activePlants = useAppSelector(selectActivePlants);
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [selectedPlantId, setSelectedPlantId] = React.useState<string | null>(null);
 

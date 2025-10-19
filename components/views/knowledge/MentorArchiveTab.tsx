@@ -1,34 +1,35 @@
-import React, { useState, useMemo } from 'react';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslation } from 'react-i18next';
-import { ArchivedMentorResponse, ExportFormat } from '@/types';
-import { EditResponseModal } from '@/components/common/EditResponseModal';
-import { DataExportModal } from '@/components/common/DataExportModal';
-import { exportService } from '@/services/exportService';
-import { useAppSelector, useAppDispatch } from '@/stores/store';
-import { selectArchivedMentorResponses } from '@/stores/selectors';
-import { updateArchivedMentorResponse, deleteArchivedMentorResponse } from '@/stores/slices/archivesSlice';
-import { addNotification } from '@/stores/slices/uiSlice';
-import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-import { SearchBar } from '@/components/common/SearchBar';
+import React, { useState, useMemo, memo } from 'react'
+import { Card } from '@/components/common/Card'
+import { Button } from '@/components/common/Button'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useTranslation } from 'react-i18next'
+import { ArchivedMentorResponse } from '@/types'
+import { EditResponseModal } from '@/components/common/EditResponseModal'
+import { useAppSelector, useAppDispatch } from '@/stores/store'
+import { selectArchivedMentorResponses } from '@/stores/selectors'
+import {
+    updateArchivedMentorResponse,
+    deleteArchivedMentorResponse,
+} from '@/stores/slices/archivesSlice'
+import { addNotification } from '@/stores/slices/uiSlice'
+import { SkeletonLoader } from '@/components/common/SkeletonLoader'
+import { SearchBar } from '@/components/common/SearchBar'
 
 interface MentorArchiveTabProps {
-    archivedResponses?: ArchivedMentorResponse[];
+    archivedResponses?: ArchivedMentorResponse[]
 }
 
-export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResponses: propsResponses }) => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const storeResponses = useAppSelector(selectArchivedMentorResponses);
-    const archivedResponses = propsResponses || storeResponses;
+export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
+    archivedResponses: propsResponses,
+}) => {
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const storeResponses = useAppSelector(selectArchivedMentorResponses)
+    const archivedResponses = propsResponses || storeResponses
 
-
-    const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedIds, setSelectedIds] = useState(new Set<string>());
-    const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null)
+    const [searchTerm, setSearchTerm] = useState('')
+    const [selectedIds, setSelectedIds] = useState(new Set<string>())
 
     // Defensive check to prevent rendering with invalid data structure
     if (!Array.isArray(archivedResponses)) {
@@ -36,126 +37,147 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = ({ archivedResp
             <Card>
                 <SkeletonLoader count={3} />
             </Card>
-        );
+        )
     }
 
-    const sortedArchive = useMemo(() => 
-        [...(archivedResponses || [])].sort((a,b) => b.createdAt - a.createdAt),
-    [archivedResponses]);
+    const sortedArchive = useMemo(
+        () => [...(archivedResponses || [])].sort((a, b) => b.createdAt - a.createdAt),
+        [archivedResponses],
+    )
 
     const filteredArchive = useMemo(() => {
-        const cleanArchive = sortedArchive.filter(res => res && typeof res === 'object');
-        if (!searchTerm) return cleanArchive;
+        const cleanArchive = sortedArchive.filter((res) => res && typeof res === 'object')
+        if (!searchTerm) return cleanArchive
 
-        const lowerCaseSearch = searchTerm.toLowerCase();
-        return cleanArchive.filter(res => 
-            (res.title || '').toLowerCase().includes(lowerCaseSearch) ||
-            (res.query || '').toLowerCase().includes(lowerCaseSearch) ||
-            (res.content || '').toLowerCase().includes(lowerCaseSearch)
-        );
-    }, [sortedArchive, searchTerm]);
+        const lowerCaseSearch = searchTerm.toLowerCase()
+        return cleanArchive.filter(
+            (res) =>
+                (res.title || '').toLowerCase().includes(lowerCaseSearch) ||
+                (res.query || '').toLowerCase().includes(lowerCaseSearch) ||
+                (res.content || '').toLowerCase().includes(lowerCaseSearch),
+        )
+    }, [sortedArchive, searchTerm])
 
     const handleToggleSelection = (id: string) => {
-        setSelectedIds(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(id)) newSet.delete(id);
-            else newSet.add(id);
-            return newSet;
-        });
-    };
+        setSelectedIds((prev) => {
+            const newSet = new Set(prev)
+            if (newSet.has(id)) newSet.delete(id)
+            else newSet.add(id)
+            return newSet
+        })
+    }
 
     const handleToggleAll = () => {
         if (selectedIds.size === filteredArchive.length) {
-            setSelectedIds(new Set());
+            setSelectedIds(new Set())
         } else {
-            setSelectedIds(new Set(filteredArchive.map(res => res.id)));
+            setSelectedIds(new Set(filteredArchive.map((res) => res.id)))
         }
-    };
-
-    const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
-        if (window.confirm(t('common.exportConfirm'))) {
-            const dataToExport = source === 'selected' 
-                ? archivedResponses.filter(res => selectedIds.has(res.id))
-                : filteredArchive;
-            if (dataToExport.length === 0) {
-                dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
-                return;
-            }
-            exportService.exportMentorArchive(dataToExport, format, `CannaGuide_Mentor_Archive_${new Date().toISOString().slice(0, 10)}`);
-        }
-    };
+    }
 
     const handleUpdate = (response: ArchivedMentorResponse) => {
-        dispatch(updateArchivedMentorResponse(response));
-        setEditingResponse(null);
+        dispatch(updateArchivedMentorResponse(response))
+        setEditingResponse(null)
     }
-    
+
     const handleDelete = (id: string) => {
-        dispatch(deleteArchivedMentorResponse(id));
+        dispatch(deleteArchivedMentorResponse(id))
     }
 
     return (
         <div>
             {editingResponse && (
-                <EditResponseModal 
-                    response={{ ...editingResponse, title: editingResponse.title || '' }} 
-                    onClose={() => setEditingResponse(null)} 
+                <EditResponseModal
+                    response={{ ...editingResponse, title: editingResponse.title || '' }}
+                    onClose={() => setEditingResponse(null)}
                     onSave={(updated) => handleUpdate({ ...editingResponse, ...updated })}
                 />
             )}
-             <DataExportModal 
-                isOpen={isExportModalOpen}
-                onClose={() => setIsExportModalOpen(false)}
-                onExport={handleExport}
-                title={t('knowledgeView.archive.title')}
-                selectionCount={selectedIds.size}
-                totalCount={filteredArchive.length}
-            />
 
             <div className="flex justify-between items-center mb-4">
                 <div className="flex-grow">
                     <SearchBar
                         placeholder={t('strainsView.tips.searchPlaceholder')}
                         value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <Button variant="secondary" onClick={() => setIsExportModalOpen(true)} className="ml-2">
-                    <PhosphorIcons.DownloadSimple className="w-5 h-5"/>
-                </Button>
             </div>
 
             <div className="space-y-4 max-h-[calc(100vh-350px)] overflow-y-auto pr-2">
                 {filteredArchive.length > 0 ? (
                     <>
                         <div className="px-1 flex items-center gap-3">
-                            <input type="checkbox" checked={selectedIds.size === filteredArchive.length && filteredArchive.length > 0} onChange={handleToggleAll} className="custom-checkbox" />
-                            <label className="text-sm text-slate-400">{t('strainsView.selectedCount', { count: selectedIds.size })}</label>
+                            <input
+                                type="checkbox"
+                                checked={
+                                    selectedIds.size === filteredArchive.length &&
+                                    filteredArchive.length > 0
+                                }
+                                onChange={handleToggleAll}
+                                className="custom-checkbox"
+                            />
+                            <label className="text-sm text-slate-400">
+                                {t('strainsView.selectedCount', { count: selectedIds.size })}
+                            </label>
                         </div>
-                         {filteredArchive.map(res => (
-                            (res && res.title) && (
-                                <Card key={res.id} className="bg-slate-800/70 p-3 flex items-start gap-3">
-                                    <input type="checkbox" checked={selectedIds.has(res.id)} onChange={() => handleToggleSelection(res.id)} className="custom-checkbox mt-1.5 flex-shrink-0" />
-                                    <div className="flex-grow">
-                                        <p className="text-xs text-slate-400 italic">{t('knowledgeView.archive.queryLabel')}: "{res.query}"</p>
-                                        <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
-                                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: res.content }}></div>
-                                        <div className="flex justify-end items-center gap-2 mt-2">
-                                            <Button size="sm" variant="secondary" onClick={() => setEditingResponse(res)} aria-label={t('common.edit')}><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
-                                            <Button size="sm" variant="danger" onClick={() => handleDelete(res.id)} aria-label={t('common.deleteResponse')}><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
+                        {filteredArchive.map(
+                            (res) =>
+                                res &&
+                                res.title && (
+                                    <Card
+                                        key={res.id}
+                                        className="bg-slate-800/70 p-3 flex items-start gap-3"
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedIds.has(res.id)}
+                                            onChange={() => handleToggleSelection(res.id)}
+                                            className="custom-checkbox mt-1.5 flex-shrink-0"
+                                        />
+                                        <div className="flex-grow">
+                                            <p className="text-xs text-slate-400 italic">
+                                                {t('knowledgeView.archive.queryLabel')}: "{res.query}"
+                                            </p>
+                                            <h4 className="font-bold text-primary-300 mt-1">
+                                                {res.title}
+                                            </h4>
+                                            <div
+                                                className="prose prose-sm dark:prose-invert max-w-none"
+                                                dangerouslySetInnerHTML={{ __html: res.content }}
+                                            ></div>
+                                            <div className="flex justify-end items-center gap-2 mt-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="secondary"
+                                                    onClick={() => setEditingResponse(res)}
+                                                    aria-label={t('common.edit')}
+                                                >
+                                                    <PhosphorIcons.PencilSimple className="w-4 h-4" />
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="danger"
+                                                    onClick={() => handleDelete(res.id)}
+                                                    aria-label={t('common.delete')}
+                                                >
+                                                    <PhosphorIcons.TrashSimple className="w-4 h-4" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                </Card>
-                            )
-                        ))}
+                                    </Card>
+                                ),
+                        )}
                     </>
                 ) : (
                     <div className="text-center py-10 text-slate-500">
                         <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                        <h3 className="font-semibold text-slate-300">{t('knowledgeView.archive.empty')}</h3>
+                        <h3 className="font-semibold text-slate-300">
+                            {t('knowledgeView.archive.empty')}
+                        </h3>
                     </div>
                 )}
             </div>
         </div>
-    );
-};
+    )
+});

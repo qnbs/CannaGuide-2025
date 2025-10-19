@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface PaginationProps {
@@ -8,6 +9,7 @@ interface PaginationProps {
 }
 
 export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
+    const { t } = useTranslation();
     if (totalPages <= 1) {
         return null;
     }
@@ -45,12 +47,12 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
     }
 
     return (
-        <nav className="flex items-center justify-center gap-1" aria-label="Pagination">
+        <nav className="flex items-center justify-center gap-1" aria-label={t('common.pagination.title') || 'Pagination'}>
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
-                aria-label="Previous Page"
+                aria-label={t('common.pagination.previous')}
             >
                 <PhosphorIcons.ArrowLeft className="w-4 h-4" />
             </button>
@@ -67,6 +69,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
                                 : 'bg-slate-700/50 hover:bg-slate-700 text-slate-300'
                         }`}
                         aria-current={currentPage === num ? 'page' : undefined}
+                        aria-label={`${t('common.page')} ${num}`}
                     >
                         {num}
                     </button>
@@ -76,7 +79,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
-                aria-label="Next Page"
+                aria-label={t('common.pagination.next')}
             >
                 <PhosphorIcons.ArrowRight className="w-4 h-4" />
             </button>

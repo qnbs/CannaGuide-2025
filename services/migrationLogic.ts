@@ -1,8 +1,7 @@
 import { AppSettings } from '@/types';
 import { defaultSettings } from '@/stores/slices/settingsSlice';
 import { RootState } from '@/stores/store';
-
-export const APP_VERSION = 2;
+import { APP_VERSION } from '@/constants';
 
 // This represents the shape of the persisted state object.
 export type PersistedState = Partial<RootState> & { version?: number };
@@ -57,8 +56,9 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
         migratedState.settings = { settings: defaultSettings, version: 1 };
     }
 
-    if (typeof migratedState.settings.settings.showArchivedInPlantsView === 'undefined') {
-         migratedState.settings.settings.showArchivedInPlantsView = true;
+    if (typeof (migratedState.settings.settings.plantsView as any)?.showArchivedInPlantsView !== 'undefined') {
+         migratedState.settings.settings.plantsView.showArchived = (migratedState.settings.settings.plantsView as any).showArchivedInPlantsView;
+         delete (migratedState.settings.settings.plantsView as any).showArchivedInPlantsView;
     }
     
     if (migratedState.simulation?.plants?.entities) {

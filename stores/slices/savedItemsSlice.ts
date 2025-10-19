@@ -1,20 +1,26 @@
-import { SavedExport, SavedSetup, Strain, AIResponse, SavedStrainTip, StructuredGrowTips } from '../../types';
+import { SavedSetup, Strain, SavedStrainTip, StructuredGrowTips, SavedExport } from '../../types';
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter, EntityState } from '@reduxjs/toolkit';
+import { RootState } from '../store';
+import { SimpleExportFormat } from '@/components/common/DataExportModal';
+import { exportService } from '@/services/exportService';
+import { getT } from '@/i18n';
+import { addNotification, closeExportModal } from './uiSlice';
 
-export const savedExportsAdapter = createEntityAdapter<SavedExport>();
 export const savedSetupsAdapter = createEntityAdapter<SavedSetup>();
 export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip>();
+export const savedExportsAdapter = createEntityAdapter<SavedExport>();
+
 
 export interface SavedItemsState {
-    savedExports: EntityState<SavedExport, string>;
     savedSetups: EntityState<SavedSetup, string>;
     savedStrainTips: EntityState<SavedStrainTip, string>;
+    savedExports: EntityState<SavedExport, string>;
 }
 
 const initialState: SavedItemsState = {
-    savedExports: savedExportsAdapter.getInitialState(),
     savedSetups: savedSetupsAdapter.getInitialState(),
     savedStrainTips: savedStrainTipsAdapter.getInitialState(),
+    savedExports: savedExportsAdapter.getInitialState(),
 };
 
 export const addSetup = createAsyncThunk<SavedSetup, Omit<SavedSetup, 'id' | 'createdAt'>>(
@@ -35,38 +41,62 @@ export const addSetup = createAsyncThunk<SavedSetup, Omit<SavedSetup, 'id' | 'cr
     }
 );
 
+export const exportAndSaveStrains = createAsyncThunk<void, { strains: Strain[], format: SimpleExportFormat, fileName: string, sourceDescription: string }, { state: RootState }>(
+    'savedItems/exportStrains',
+    async ({ strains, format, fileName, sourceDescription }, { dispatch }) => {
+        const t = getT();
+        if (format === 'pdf') {
+            exportService.exportStrainsAsPdf(strains, fileName, t);
+        } else {
+            exportService.exportStrainsAsTxt(strains, fileName, t);
+        }
+        
+        dispatch(addExport({
+            name: fileName,
+            format,
+            strainIds: strains.map(s => s.id),
+            sourceDescription
+        }));
+        
+        dispatch(closeExportModal());
+    }
+);
+
+export const exportStrainTips = createAsyncThunk<void, { tips: SavedStrainTip[], format: 'pdf' | 'txt', fileName: string }, { state: RootState }>(
+    'savedItems/exportStrainTips',
+    async ({ tips, format, fileName }, { dispatch }) => {
+        const t = getT();
+        exportService.exportStrainTips(tips, format, fileName, t);
+        
+        dispatch(addNotification({ message: t('common.successfullyExported_other', { count: tips.length, format: format.toUpperCase() }), type: 'success' }));
+    }
+);
+
+export const exportSetups = createAsyncThunk<void, { setups: SavedSetup[], format: 'pdf' | 'txt', fileName: string }, { state: RootState }>(
+    'savedItems/exportSetups',
+    async ({ setups, format, fileName }, { dispatch }) => {
+        const t = getT();
+        if (format === 'pdf') {
+            exportService.exportSetupsAsPdf(setups, fileName, t);
+        } else {
+            exportService.exportSetupsAsTxt(setups, fileName, t);
+        }
+        dispatch(addNotification({ message: t('common.successfullyExported_other', { count: setups.length, format: format.toUpperCase() }), type: 'success' }));
+    }
+);
+
 
 const savedItemsSlice = createSlice({
     name: 'savedItems',
     initialState,
     reducers: {
-        addExport: (state, action: PayloadAction<{ data: Omit<SavedExport, 'id' | 'createdAt' | 'count' | 'strainIds'>, strainIds: string[] }>) => {
-            const { data, strainIds } = action.payload;
-            if (!data.name?.trim() || !strainIds || strainIds.length === 0) {
-                console.error('[savedItemsSlice] Attempted to add an empty or invalid export. Aborted.');
-                return;
-            }
-            const newExport: SavedExport = {
-                ...data,
-                id: `export-${Date.now()}`,
-                createdAt: Date.now(),
-                count: strainIds.length,
-                strainIds,
-            };
-            savedExportsAdapter.addOne(state.savedExports, newExport);
-        },
-        updateExport: (state, action: PayloadAction<SavedExport>) => {
-            savedExportsAdapter.updateOne(state.savedExports, { id: action.payload.id, changes: action.payload });
-        },
-        deleteExport: (state, action: PayloadAction<string>) => {
-            savedExportsAdapter.removeOne(state.savedExports, action.payload);
-        },
         updateSetup: (state, action: PayloadAction<SavedSetup>) => {
             savedSetupsAdapter.updateOne(state.savedSetups, { id: action.payload.id, changes: action.payload });
         },
         deleteSetup: (state, action: PayloadAction<string>) => {
             savedSetupsAdapter.removeOne(state.savedSetups, action.payload);
         },
+        deleteMultipleSetups: savedSetupsAdapter.removeMany,
         addStrainTip: (state, action: PayloadAction<{ strain: Strain, tip: StructuredGrowTips, title: string, imageUrl?: string }>) => {
             const { strain, tip, title, imageUrl } = action.payload;
              if (!tip || !tip.nutrientTip || !tip.trainingTip || !tip.environmentalTip || !tip.proTip) {
@@ -90,15 +120,32 @@ const savedItemsSlice = createSlice({
         deleteStrainTip: (state, action: PayloadAction<string>) => {
             savedStrainTipsAdapter.removeOne(state.savedStrainTips, action.payload);
         },
-        // For migration
-        setSavedExports: (state, action: PayloadAction<SavedExport[]>) => {
-            savedExportsAdapter.setAll(state.savedExports, action.payload);
+         addExport: (state, action: PayloadAction<Omit<SavedExport, 'id' | 'createdAt'>>) => {
+            const newExport: SavedExport = {
+                ...action.payload,
+                id: `export-${Date.now()}`,
+                createdAt: Date.now(),
+            };
+            savedExportsAdapter.addOne(state.savedExports, newExport);
         },
+        updateExport: (state, action: PayloadAction<SavedExport>) => {
+            savedExportsAdapter.updateOne(state.savedExports, { id: action.payload.id, changes: action.payload });
+        },
+        deleteExport: (state, action: PayloadAction<string>) => {
+            savedExportsAdapter.removeOne(state.savedExports, action.payload);
+        },
+        deleteMultipleExports: (state, action: PayloadAction<string[]>) => {
+            savedExportsAdapter.removeMany(state.savedExports, action.payload);
+        },
+        // For migration
         setSavedSetups: (state, action: PayloadAction<SavedSetup[]>) => {
             savedSetupsAdapter.setAll(state.savedSetups, action.payload);
         },
         setSavedStrainTips: (state, action: PayloadAction<SavedStrainTip[]>) => {
             savedStrainTipsAdapter.setAll(state.savedStrainTips, action.payload);
+        },
+         setSavedExports: (state, action: PayloadAction<SavedExport[]>) => {
+            savedExportsAdapter.setAll(state.savedExports, action.payload);
         },
     },
     extraReducers: (builder) => {
@@ -109,17 +156,19 @@ const savedItemsSlice = createSlice({
 });
 
 export const {
-    addExport,
-    updateExport,
-    deleteExport,
     updateSetup,
     deleteSetup,
+    deleteMultipleSetups,
     addStrainTip,
     updateStrainTip,
     deleteStrainTip,
-    setSavedExports,
+    addExport,
+    updateExport,
+    deleteExport,
+    deleteMultipleExports,
     setSavedSetups,
     setSavedStrainTips,
+    setSavedExports,
 } = savedItemsSlice.actions;
 
 export default savedItemsSlice.reducer;

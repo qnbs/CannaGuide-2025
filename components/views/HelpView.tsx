@@ -40,6 +40,7 @@ const FAQSection: React.FC = memo(() => {
                     placeholder={t('helpView.faq.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onClear={() => setSearchTerm('')}
                 />
             </div>
             <div className="space-y-3">
@@ -145,6 +146,7 @@ const LexiconSection: React.FC = memo(() => {
                     placeholder={t('helpView.lexicon.searchPlaceholder')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    onClear={() => setSearchTerm('')}
                 />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -168,31 +170,34 @@ const ManualSection: React.FC = memo(() => {
         const subSections = Object.keys(sectionData).filter(key => key !== 'title' && key !== 'content');
 
         const icons: Record<string, React.ReactNode> = {
+            introduction: <PhosphorIcons.Info className="w-6 h-6"/>,
             strains: <PhosphorIcons.Leafy className="w-6 h-6"/>,
             plants: <PhosphorIcons.Plant className="w-6 h-6"/>,
             equipment: <PhosphorIcons.Wrench className="w-6 h-6"/>,
-            knowledge: <PhosphorIcons.BookOpenText className="w-6 h-6"/>,
+            knowledge: <PhosphorIcons.BookBookmark className="w-6 h-6"/>,
             general: <PhosphorIcons.Cube className="w-6 h-6"/>,
         };
 
         if (isSubSection) {
             // Render subsections as simpler, nested details
              return (
-                 <details key={sectionKey} open={false} className="group bg-slate-900 rounded-lg ring-1 ring-inset ring-slate-700/50">
+                 <details key={sectionKey} open={false} className="group bg-slate-900 rounded-lg ring-1 ring-inset ring-white/20">
                     <summary className="list-none flex items-center gap-2 cursor-pointer p-3 text-md font-semibold text-primary-300">
                         <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180 flex-shrink-0" />
                         {title}
                     </summary>
-                    <div className="p-3 border-t border-slate-700/50">
-                        {content && <Speakable elementId={`manual-sub-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
-                    </div>
+                    <Speakable elementId={`manual-sub-${sectionKey}`}>
+                        <div className="p-3 border-t border-slate-700/50">
+                            {content && <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />}
+                        </div>
+                    </Speakable>
                 </details>
             );
         }
 
         // Render top-level sections styled like SettingsSection
         return (
-            <details key={sectionKey} open={level < 1} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
+            <details key={sectionKey} open={level < 1} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20">
                 <summary className="list-none flex justify-between items-center p-4 cursor-pointer font-bold text-slate-100">
                     <div className="flex items-center gap-3">
                         {icons[sectionKey]}
@@ -211,10 +216,14 @@ const ManualSection: React.FC = memo(() => {
             </details>
         );
     };
+    
+    const sectionOrder = ['introduction', 'general', 'strains', 'plants', 'equipment', 'knowledge'];
 
     return (
         <div className="space-y-4">
-            {Object.keys(manualContent).filter(key => key !== 'title').map(key => renderSection(key, manualContent[key]))}
+            {sectionOrder
+                .filter(key => manualContent[key])
+                .map(key => renderSection(key, manualContent[key]))}
         </div>
     );
 });
@@ -225,11 +234,18 @@ export const HelpView: React.FC = () => {
     const [activeTab, setActiveTab] = useState('manual');
 
      const viewIcons = useMemo(() => ({
-        manual: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-blue-400" />,
-        lexicon: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-indigo-400" />,
+        manual: <PhosphorIcons.BookBookmark className="w-16 h-16 mx-auto text-blue-400" />,
+        lexicon: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-indigo-400" />,
         guides: <PhosphorIcons.GraduationCap className="w-16 h-16 mx-auto text-green-400" />,
-        faq: <PhosphorIcons.Question className="w-16 h-16 mx-auto text-yellow-400" />,
+        faq: <PhosphorIcons.Question weight="fill" className="w-16 h-16 mx-auto text-yellow-400" />,
     }), []);
+
+    const viewTitles = useMemo(() => ({
+        manual: t('helpView.tabs.manual'),
+        lexicon: t('helpView.tabs.lexicon'),
+        guides: t('helpView.tabs.guides'),
+        faq: t('helpView.tabs.faq'),
+    }), [t]);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -245,8 +261,7 @@ export const HelpView: React.FC = () => {
         <div className="space-y-6">
             <div className="text-center mb-6 animate-fade-in">
                 {viewIcons[activeTab as keyof typeof viewIcons]}
-                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('helpView.title')}</h2>
-                <p className="text-slate-400 mt-1">{t('helpView.subtitle')}</p>
+                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{viewTitles[activeTab as keyof typeof viewTitles] || t('helpView.title')}</h2>
             </div>
 
             <HelpSubNav activeTab={activeTab} onTabChange={setActiveTab} />

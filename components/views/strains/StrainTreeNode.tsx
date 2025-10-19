@@ -66,7 +66,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                         e.stopPropagation();
                         onToggle(data.id);
                     }}
-                    title={isCollapsible ? "Collapse Ancestors" : "Expand Ancestors"}
+                    aria-label={isCollapsible ? "Collapse Ancestors" : "Expand Ancestors"}
                 >
                     {isCollapsible ? <PhosphorIcons.Minus className="w-4 h-4" /> : <PhosphorIcons.Plus className="w-4 h-4" />}
                 </button>

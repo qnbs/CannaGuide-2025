@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Task } from '@/types';
@@ -10,7 +10,7 @@ interface TasksTabProps {
     onCompleteTask: (taskId: string) => void;
 }
 
-export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => {
+export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }) => {
     const { t } = useTranslation();
     
     const openTasks = tasks.filter(t => !t.isCompleted).sort((a, b) => a.createdAt - b.createdAt);
@@ -56,4 +56,4 @@ export const TasksTab: React.FC<TasksTabProps> = ({ tasks, onCompleteTask }) => 
             </Card>
         </div>
     );
-};
+});

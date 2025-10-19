@@ -6,7 +6,6 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 interface BulkActionsBarProps {
     selectedCount: number;
     onClearSelection: () => void;
-    onExport?: () => void;
     onAddToFavorites?: () => void;
     onRemoveFromFavorites?: () => void;
     onDelete?: () => void;
@@ -15,7 +14,6 @@ interface BulkActionsBarProps {
 export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
     selectedCount,
     onClearSelection,
-    onExport,
     onAddToFavorites,
     onRemoveFromFavorites,
     onDelete,
@@ -35,11 +33,6 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                 {onRemoveFromFavorites && (
                     <Button size="sm" variant="secondary" onClick={onRemoveFromFavorites} title={t('strainsView.bulkActions.removeFromFavorites')}>
                         <PhosphorIcons.Heart className="w-4 h-4" />
-                    </Button>
-                )}
-                 {onExport && (
-                    <Button size="sm" variant="secondary" onClick={onExport} title={t('common.export')}>
-                        <PhosphorIcons.DownloadSimple className="w-4 h-4" />
                     </Button>
                 )}
                 {onDelete && (

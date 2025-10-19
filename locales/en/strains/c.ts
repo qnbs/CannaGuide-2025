@@ -136,11 +136,8 @@ export const strains: Record<string, StrainTranslationData> = {
     "citradelic-sunset": {
         "description": "A sativa-dominant hybrid with a strong citrusy, orangey, and sweet aroma. Citradelic Sunset delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
     },
-    "colombian-gold": {
-        "description": "A classic sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1"
-    },
-    "colombian": {
-        "description": "A classic Sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1 and is known for its uplifting, energizing, and clear-headed effects without paranoia. The aroma is a sweet mix of citrus, lime, and skunk."
+    "cosmic-charlie": {
+        "description": "A sativa-dominant strain with a highly psychedelic and creative effect. The aroma is a mix of citrus, sweetness, and earthy notes."
     },
     "colt-45": {
         "description": "A sativa-dominant hybrid with an earthy, piney, and woody aroma. Colt 45 delivers an energetic, uplifting, and creative high that is perfect for daytime use.",
@@ -160,13 +157,13 @@ export const strains: Record<string, StrainTranslationData> = {
     "cookies-and-cream": {
         "description": "A balanced hybrid with a sweet, vanilla-like, and nutty aroma. Cookies and Cream delivers a strong, euphoric, and relaxing high that is suitable for various occasions.",
     },
-    "cosmic-charlie": {
-        "description": "A sativa-dominant strain with a highly psychedelic and creative effect. The aroma is a mix of citrus, sweetness, and earthy notes."
-    },
     "critical-mass": {
         "description": "An indica-dominant strain known for its massive yields and dense buds that tend to break under their own weight. The effect is deeply relaxing.",
     },
     "c-vitt": {
         "description": "A CBD-rich strain with a sweet, citrusy aroma. The effect is mild, clear, and functional, ideal for medical users seeking relief without strong psychoactive effects.",
+    },
+    "colombian": {
+        "description": "A classic Sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1 and is known for its uplifting, energizing, and clear-headed effects without paranoia. The aroma is a sweet mix of citrus, lime, and skunk."
     }
 }

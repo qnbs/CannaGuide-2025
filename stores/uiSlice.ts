@@ -37,7 +37,6 @@ export interface UIState {
     };
 }
 
-// FIX: Export the initialState so it can be imported in the store setup.
 export const initialState: UIState = {
     activeView: View.Plants,
     lastActiveView: View.Plants,
@@ -92,8 +91,15 @@ const uiSlice = createSlice({
     initialState,
     reducers: {
         setActiveView: (state, action: PayloadAction<View>) => {
-            state.activeView = action.payload;
-            state.lastActiveView = action.payload;
+            const newView = action.payload;
+            const mainViews: View[] = [View.Plants, View.Strains, View.Equipment, View.Knowledge];
+            
+            // Only update lastActiveView if the view we are navigating TO is a main view.
+            // This correctly preserves the context when navigating between secondary views (e.g., Settings -> Help).
+            if (mainViews.includes(newView)) {
+                state.lastActiveView = newView;
+            }
+            state.activeView = newView;
         },
         setOnboardingStep: (state, action: PayloadAction<number>) => {
             state.onboardingStep = action.payload;

@@ -43,10 +43,10 @@ export const common = {
     },
     notes: 'Notizen',
     units: {
-        weeks: 'Wochen',
+        weeks: 'Wo.',
         days: 'Tage',
-        hours: 'Stunden',
-        minutes: 'Minuten',
+        hours: 'Std.',
+        minutes: 'Min.',
         h_day: 'h/Tag',
         price_kwh: '€/kWh',
         currency_eur: '€',
@@ -70,6 +70,10 @@ export const common = {
             notAllowed: 'Mikrofonzugriff verweigert.',
             startFailed: 'Zuhören konnte nicht gestartet werden.',
         },
+    },
+    pagination: {
+        previous: 'Vorherige Seite',
+        next: 'Nächste Seite',
     },
 };
 
@@ -126,8 +130,16 @@ export const ai = {
             systemInstruction: 'Du bist ein freundlicher und sachkundiger Mentor für den Cannabisanbau. Dein Name ist Kai. Du gibst hilfreiche, prägnante und ermutigende Ratschläge. Antworte nur im JSON-Format. Die Antwort muss ein "title"-, ein "content"-Feld (markdown-formatiert) und ein optionales "uiHighlights"-Array von Objekten mit "elementId" (string) und optionaler "plantId" (string) enthalten. Hebe für deine Antwort relevante UI-Elemente hervor (z.B. vpd-gauge, ph-vital).',
         },
         strainTips: 'Gib strukturierte, prägnante Anbautipps für die Sorte: {{strain}}. Der Fokus des Benutzers liegt auf "{{focus}}", sein Erfahrungslevel ist "{{experienceLevel}}", und er fragt nach der "{{stage}}"-Phase. Antworte nur im JSON-Format mit den Schlüsseln: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
-        strainImage: 'Erstelle eine fantastische, künstlerische Darstellung der Cannabis-Sorte "{{strainName}}". Dies ist eine {{type}}-Sorte, die für ihre {{aromas}}-Aromen bekannt ist. Ihre Wirkung wird oft als {{description_snippet}} beschrieben. Die Pflanze ist für ihren {{agronomic_yield}}-Ertrag bekannt und wird {{agronomic_height}} hoch. Schaffe ein visuell beeindruckendes und fantasievolles Kunstwerk, das die *Essenz* dieser Merkmale auf eine subtile, künstlerische Weise einfängt. Zum Beispiel könnte ein \'Hoher\' Ertrag durch ein Gefühl von Fülle dargestellt werden und eine \'Hohe\' Wuchshöhe durch vertikale Elemente in der Komposition. Stelle diese Merkmale nicht wörtlich dar. Erstelle kein fotorealistisches Bild einer Cannabisblüte. Stelle dir stattdessen ein abstraktes Konzept oder eine Fantasielandschaft vor, die von ihren Eigenschaften inspiriert ist. Der Stil sollte lebendig, unvergesslich und für einen Premium-Guide geeignet sein.',
+        strainImage: `Betreff: Eine wunderschöne Cannabis-Pflanze der Sorte '{{strainName}}'.
+Stil: Digitale Kunst, Fantasy-Illustration, lebendig, farbenfroh, hochwertig.
+Typ: {{type}}.
+Visuell darzustellende Merkmale:
+- Aromen: {{aromas}}.
+- Ertrag: {{agronomic_yield}}.
+- Höhe: {{agronomic_height}}.
+- Stimmung: {{description_snippet}}.`,
         deepDive: 'Generiere einen Deep Dive Guide zum Thema "{{topic}}" im Kontext der folgenden Pflanze: {{plant}}. Antworte im JSON-Format mit den Schlüsseln: "introduction" (string), "stepByStep" (Array von Strings), "prosAndCons" ({pros: string[], cons: string[]}), und "proTip" (string).',
+        gardenStatus: 'Du bist ein erfahrener Meister-Gärtner für Cannabis. Analysiere die folgende Zusammenfassung der aktiven Pflanzen in einem Garten. Gib eine sehr prägnante Zusammenfassung (ein Satz) über den allgemeinen Gesundheitszustand des Gartens und nenne die eine, wichtigste "Top-Priorität" für den Gärtner. Formatiere als Markdown.\n\nPFLANZEN-ZUSAMMENFASSUNGEN:\n{{summaries}}',
     },
     loading: {
         equipment: {

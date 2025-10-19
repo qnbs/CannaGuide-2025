@@ -98,9 +98,6 @@ export const strains: Record<string, StrainTranslationData> = {
   "animal-mints": {
     "description": "Bred by Seed Junky Genetics. A highly potent hybrid with a complex aroma of mint, cookie dough, vanilla, and a hint of diesel. The effect is strong and balanced, starting with a euphoric head high that transitions into a deep, sedating body relaxation."
   },
-  "appalachia": {
-    "description": "Appalachia is a balanced hybrid strain that combines the energetic, cerebral effects of Green Crack with the physical potency of Tres Dawg. The result is a versatile high that starts with a motivating and euphoric head rush and gradually transitions into a calming body relaxation without being heavily sedating. The aroma is a complex blend of sweet earth, pine, and a hint of diesel."
-  },
   "appalachian-kush": {
     "description": "A potent hybrid with an earthy, sweet, and slightly spicy aroma. It offers a balanced effect that begins with a cerebral, energetic boost and transitions into a relaxing body high. Ideal for relieving stress and pain without being overly sedating."
   },

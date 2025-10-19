@@ -12,9 +12,9 @@ interface TimelineProps {
 const stageColors: Record<PlantStage, string> = {
     [PlantStage.Seed]: 'bg-amber-400',
     [PlantStage.Germination]: 'bg-amber-500',
-    [PlantStage.Seedling]: 'bg-accent-500',
-    [PlantStage.Vegetative]: 'bg-accent-400',
-    [PlantStage.Flowering]: 'bg-secondary-500',
+    [PlantStage.Seedling]: 'bg-secondary-500',
+    [PlantStage.Vegetative]: 'bg-secondary-400',
+    [PlantStage.Flowering]: 'bg-accent-500',
     [PlantStage.Harvest]: 'bg-orange-500',
     [PlantStage.Drying]: 'bg-amber-700',
     [PlantStage.Curing]: 'bg-slate-500',
@@ -33,9 +33,9 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentSt
 
     return (
         <div>
-            <h3 className="text-xl font-bold font-display mb-4 text-primary-400">{t('plantsView.detailedView.lifecycle')}</h3>
+            <h3 className="text-xl font-bold font-display mb-4 text-primary-300">{t('plantsView.detailedView.lifecycle')}</h3>
             <div className="relative mb-2">
-                <div className="flex h-4 overflow-hidden rounded-full bg-slate-800/50">
+                <div className="flex h-3 overflow-hidden rounded-full bg-slate-800/50">
                     {relevantStages.map(stage => {
                         const stageInfo = PLANT_STAGE_DETAILS[stage];
                         const width = (stageInfo.duration / totalDuration) * 100;
@@ -53,8 +53,8 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentSt
                         );
                     })}
                 </div>
-                <div className="absolute top-0 h-4" style={{ left: `calc(${progressPercentage}% - 2px)` }}>
-                    <div className="w-1 h-full bg-white rounded-full" title={`${t('plantsView.plantCard.day')} ${currentAge}`}></div>
+                <div className="absolute top-0 h-3" style={{ left: `calc(${progressPercentage}% - 2px)` }}>
+                    <div className="w-1 h-full bg-white rounded-full shadow-lg" title={`${t('plantsView.plantCard.day')} ${currentAge}`}></div>
                 </div>
             </div>
              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-300">

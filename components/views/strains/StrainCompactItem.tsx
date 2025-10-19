@@ -12,8 +12,7 @@ interface StrainCompactItemProps {
 
 export const StrainCompactItem: React.FC<StrainCompactItemProps> = memo(({ strain, onClick }) => {
     const { t } = useTranslation();
-    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
-    const userStrains = useAppSelector(selectUserStrains) as Strain[];
+    const userStrains = useAppSelector(selectUserStrains);
     const isUserStrain = userStrains.some(s => s.id === strain.id);
 
     return (

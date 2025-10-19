@@ -5,7 +5,6 @@ This README file supports two languages.
 -->
 
 # 🌿 CannaGuide 2025 (English)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
@@ -21,11 +20,17 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 
 - [⭐ Project Philosophy](#-project-philosophy)
 - [🚀 Key Features](#-key-features)
+  - [1. The Grow Room (`Plants` View)](#1-the-grow-room-plants-view)
+  - [2. The Strain Encyclopedia (`Strains` View)](#2-the-strain-encyclopedia-strains-view)
+  - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view)
+  - [4. The Library (`Knowledge` View)](#4-the-library-knowledge-view)
+  - [5. The Help Desk (`Help` View)](#5-the-help-desk-help-view)
+  - [6. The Command Center (`Settings` View)](#6-the-command-center-settings-view)
+  - [7. Platform-Wide Features](#7-platform-wide-features)
 - [💻 Technical Deep Dive](#-technical-deep-dive)
 - [🏁 Getting Started (User Guide)](#-getting-started-user-guide)
-- [🛠️ Installation & Local Development (Developer Guide)](#️-installation--local-development-developer-guide)
+- [🛠️ Local Development (Developer Guide)](#️-local-development-developer-guide)
 - [🤔 Troubleshooting](#-troubleshooting)
-- [🔒 Security](#-security)
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
 - [🤝 Contributing](#-contributing)
 - [⚠️ Disclaimer](#️-disclaimer)
@@ -37,13 +42,13 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 
 CannaGuide 2025 is built upon a set of core principles designed to deliver a best-in-class experience:
 
-> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**, ensuring you always have access to your data and tools.
+> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**, with all your data, notes, and even AI archives stored locally and accessible anytime, anywhere.
 
-> **Performance is Key**: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex plant simulation, is offloaded to a **Web Worker** to keep the interface smooth and instantaneous.
+> **Performance is Key**: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex, multi-plant simulation, is offloaded to a dedicated **Web Worker**, ensuring the user interface remains smooth and instantaneous at all times.
 
-> **Data Sovereignty**: Your data is yours. The ability to **export and import your entire application state** gives you complete control, ownership, and peace of mind.
+> **Data Sovereignty**: Your data is yours, period. The ability to **export and import your entire application state** as a single file gives you complete control, ownership, and peace of mind for backups or device migration.
 
-> **AI as a Co-pilot**: We leverage AI not as a gimmick, but as a powerful tool to provide **actionable, context-aware insights** that truly assist the grower at every stage.
+> **AI as a Co-pilot**: We leverage the Google Gemini API not as a gimmick, but as a powerful tool to provide **actionable, context-aware insights**. From diagnosing a sick plant from a photo to generating a custom equipment list, AI serves to genuinely assist the grower at every stage.
 
 ---
 
@@ -52,7 +57,7 @@ CannaGuide 2025 is built upon a set of core principles designed to deliver a bes
 ### 1. The Grow Room (`Plants` View)
 Your command center for managing and simulating up to three simultaneous grows.
 
--   **Advanced Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model.
+-   **Advanced Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model that visually represents your plant's progress.
 -   **Toggleable UI Modes**: Switch between a streamlined **Simple Mode** for core actions and an **Expert Mode** in the header to reveal detailed scientific data like VPD and DLI.
 -   **AI-Powered Diagnostics**:
     -   **Photo Diagnosis**: Upload a photo of your plant to get an instant AI-based diagnosis, complete with immediate actions, long-term solutions, and preventative advice.
@@ -73,7 +78,7 @@ Your central knowledge hub, designed for deep exploration with **offline-first**
 ### 3. The Workshop (`Equipment` View)
 Your toolkit for planning and optimizing your grow setup.
 
--   **AI Setup Configurator**: A streamlined 2-step process where you select your **plant count** and **budget style** (Value, Balanced, or Premium) to receive a complete, brand-specific equipment list generated by Gemini AI.
+-   **Advanced AI Setup Configurator**: A multi-step process where you define your **plant count, grow space, experience, budget, and priorities** to receive a complete, brand-specific equipment list generated by Gemini AI.
 -   **Saved Setups**: Full **CRUD** functionality for your generated equipment lists. Edit, delete, and manage your setups for future use.
 -   **Suite of Calculators**: Access a comprehensive set of precision tools:
     -   Ventilation Calculator (m³/h)
@@ -84,19 +89,34 @@ Your toolkit for planning and optimizing your grow setup.
     -   Yield Estimator
 -   **Curated Shop Lists**: Browse recommended Grow Shops and Seedbanks for both European and US/Canadian markets.
 
-### 4. The Library (`Knowledge` & `Help` Views)
+### 4. The Library (`Knowledge` View)
 Your complete resource for learning and problem-solving.
 
 -   **Context-Aware AI Mentor**: Ask growing questions to the AI Mentor, which leverages your active plant's data for tailored advice. All conversations are archived with full **CRUD** support.
 -   **Breeding Lab**: Cross your high-quality collected seeds to create entirely new, **permanent hybrid strains** that are added to your personal library and can be used in future grows.
 -   **Interactive Sandbox**: Run "what-if" scenarios, like comparing **Topping vs. LST** on a clone of your plant, to visualize the impact of different training techniques over an accelerated simulation without risking your real plants.
--   **Comprehensive Guides**: Access a built-in grower's lexicon, visual guides for common techniques, an extensive searchable FAQ, and a new, detailed **User Manual** explaining every feature of the app.
 
-### 5. Platform-Wide Features
+### 5. The Help Desk (`Help` View)
+Your go-to for in-app support and learning resources.
+
+-   **Comprehensive User Manual**: A detailed, built-in guide explaining every feature of the app.
+-   **Searchable FAQ**: Quickly find answers to common cultivation questions.
+-   **Grower's Lexicon**: An extensive glossary of cannabis terms, from cannabinoids and terpenes to advanced growing techniques.
+-   **Visual Guides**: Simple, animated guides for core techniques like Topping and LST.
+
+### 6. The Command Center (`Settings` View)
+A sophisticated hub to customize every aspect of your CannaGuide experience.
+
+-   **UI & Theme Customization**: Choose from multiple themes (`Midnight`, `Forest`, etc.), adjust font sizes, and switch between `Comfortable` and `Compact` UI densities.
+-   **Accessibility Suite**: Activate a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and various **Colorblind Modes** (Protanopia, Deuteranopia, Tritanopia).
+-   **Voice & Speech**: Configure Text-to-Speech (TTS) voices and rates, and manage voice command settings.
+-   **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a breakdown of your storage usage.
+-   **Privacy & Security**: Secure your app with an optional 4-digit **PIN on launch** and configure automatic clearing of AI chat history on exit.
+
+### 7. Platform-Wide Features
 -   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
 -   **Command Palette (`Cmd/Ctrl + K`)**: A power-user tool for instant, click-free navigation and actions across the entire application.
--   **Complete Data Sovereignty**: Export *all* your app data (plants, settings, archives, custom strains) to a single JSON file for **backup**. Import it later to **restore** your state on any device.
--   **Advanced Accessibility**: Features a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and integrated **Text-to-Speech (TTS)** functionality for key content.
+-   **Voice Control**: Navigate the app, search for strains, and perform actions using simple voice commands.
 
 ---
 
@@ -104,16 +124,27 @@ Your complete resource for learning and problem-solving.
 
 CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed for performance and offline-first reliability.
 
--   **Frontend Framework**: **React 19** with **TypeScript** for a modern, type-safe, and performant user interface.
--   **State Management**: **Redux Toolkit (^2.2)** serves as the single source of truth, ensuring predictable state transitions and simplifying debugging.
--   **Asynchronous Operations & AI**:
-    -   **RTK Query** manages all interactions with the **Google Gemini API (`@google/genai` ^1.19)**, providing caching and streamlined state management. The `gemini-2.5-flash` model is used for its optimal balance of speed, cost, and structured JSON output capabilities.
-    -   The plant growth simulation runs in a dedicated **Web Worker**, ensuring the main UI thread remains responsive and smooth.
--   **Data Persistence**: A robust **IndexedDB** strategy ensures complete offline availability.
-    -   The core Redux state is persisted via a **listener middleware**, providing seamless state hydration and migration on app startup.
-    -   Large static assets, such as the strain library and search index, are managed in a separate IndexedDB database for optimal performance.
--   **PWA & Offline Capability**: A **Service Worker** implements a "Cache First, then Network" strategy, making the application fully installable and functional without an internet connection.
--   **Styling**: **Tailwind CSS (via CDN)** enables a rapid, utility-first approach to building a consistent and responsive design system, configured directly in `index.html`.
+### Key Technologies
+
+| Category             | Technology                                                                                                    | Purpose                                                                                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Frontend**         | [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)                             | Modern, type-safe, and performant user interface.                                      |
+| **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                | Centralized, predictable state management for the entire application.                  |
+| **AI Integration**   | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                  | Powers all AI features, including diagnostics, advice, and content generation.         |
+| **Async Operations** | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                  | Manages all interactions with the Gemini API, providing caching and state management.    |
+| **Concurrency**      | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                               | Runs the complex plant simulation off the main thread to ensure a smooth UI.           |
+| **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)                                   | Provides a robust, client-side database for full offline functionality.                |
+| **PWA & Offline**    | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                        | Implements a "Cache First, then Network" strategy for offline access.                  |
+| **Styling**          | [Tailwind CSS](https://tailwindcss.com/) (via CDN)                                                            | Enables a rapid, utility-first approach to building a consistent and responsive design.  |
+
+### Project Structure
+The codebase is organized into logical directories to promote maintainability and scalability:
+-   `components/`: Contains all React components, organized by view or commonality.
+-   `stores/`: Home to the Redux store, slices, selectors, and middleware.
+-   `services/`: Houses business logic, including the simulation engine, database interactions, and API service wrappers.
+-   `hooks/`: Contains custom React hooks for shared logic like focus traps, PWA installation, and more.
+-   `data/`: Stores static data, such as the strain library, lexicon, and FAQ content.
+-   `locales/`: Contains all internationalization (i18n) translation files.
 
 ---
 
@@ -123,22 +154,22 @@ No installation is required beyond a modern web browser.
 
 1.  **Onboarding**: On first launch, you'll be guided through a quick tutorial to set your preferred language.
 2.  **Discover Strains**: Start in the **Strains** view. Use the search and filters to find a strain and save it as a favorite by clicking the heart icon.
-3.  **Start Growing**: Navigate to the **Plants** dashboard. From an empty slot, click "Start New Grow," select a strain from your favorites or the main list, and configure your setup.
+3.  **Start Growing**: Navigate to the **Plants** dashboard. From an empty slot, click "Start New Grow," select a strain, and configure your setup.
 4.  **Manage Your Grow**: The **Plants** dashboard is your command center. Log actions like watering and feeding, check on your plant's vitals, and get advice from the AI.
 5.  **Use the Command Palette**: For the fastest access, press `Cmd/Ctrl + K` to navigate or perform actions instantly.
 
 ---
 
-## 🛠️ Installation & Local Development (Developer Guide)
+## 🛠️ Local Development (Developer Guide)
 
-To run CannaGuide 2025 locally for development, follow these steps.
+This project is designed to run within Google's AI Studio, which handles the development server and environment variables. However, you can run it locally with a standard Node.js setup.
 
 ### Prerequisites
 *   [Node.js](https://nodejs.org/) (v18.x or later recommended)
 *   [npm](https://www.npmjs.com/) (usually included with Node.js)
 *   A **Google Gemini API Key**. You can obtain one from [Google AI Studio](https://ai.studio.google.com/app/apikey).
 
-### Installation
+### Installation & Setup
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/qnbs/CannaGuide-2025.git
@@ -151,53 +182,34 @@ To run CannaGuide 2025 locally for development, follow these steps.
     ```
 
 3.  **Set up environment variables:**
-    The application requires a Google Gemini API key to function. Create a `.env` file in the root of the project:
+    The application requires a Google Gemini API key. Create a `.env` file in the root of the project:
     ```bash
     touch .env
     ```
     Open the `.env` file and add your API key:
     ```
-    API_KEY=YOUR_GEMINI_API_KEY
+    VITE_API_KEY=YOUR_GEMINI_API_KEY
     ```
-    > **Note**: This setup assumes a development environment that injects environment variables (like Vite or Create React App). The application code directly accesses `process.env.API_KEY`.
+    > **Note**: The app uses Vite, which exposes `VITE_` prefixed variables to the client. The application code will need to access it as `import.meta.env.VITE_API_KEY`. (This has been abstracted to `process.env.API_KEY` for compatibility with AI Studio).
 
-4.  **Run the application:**
-    This project is designed to run within Google's AI Studio, which handles the development server. If running locally, you would typically use a command like:
+4.  **Run the development server:**
     ```bash
-    npm start 
+    npm run dev
     ```
-    (Note: `package.json` does not contain this script; you would need to add it or use a local server.)
-
-### Build Process
-To create a production-ready build, you would typically run:
-```bash
-npm run build
-```
-This command would bundle and optimize the code, preparing it for deployment. (Note: `package.json` does not contain this script.)
+    This will start the Vite development server, typically at `http://localhost:5173`.
 
 ---
 
 ## 🤔 Troubleshooting
 
-*   **AI Features Not Working**: This is almost always due to a missing or invalid Gemini API key. Ensure your `.env` file is correctly set up and the key is valid. Check your browser's developer console for any `4xx` errors related to the Google API.
+*   **AI Features Not Working**: This is almost always due to a missing or invalid Gemini API key. Ensure your environment variable (`VITE_API_KEY` for local dev) is correctly set up and the key is valid. Check your browser's developer console for any `4xx` errors related to the Google API.
 *   **App Not Updating (PWA Caching)**: If you've made changes but don't see them, the Service Worker might be serving a cached version.
     1.  Open your browser's developer tools.
     2.  Go to the `Application` tab.
-    3.  Find `Service Workers`, check "Update on reload", and click "Unregister" for the CannaGuide service worker.
+    3.  Find `Service Workers`, check "Update on reload", and click "Unregister".
     4.  Go to `Storage`, click "Clear site data".
     5.  Refresh the page.
 *   **Data Corruption**: If the application state becomes corrupted, you can perform a hard reset by navigating to `Settings > Data Management > Reset All App Data`. **Warning: This will delete all your local data.**
-
----
-
-## 🔒 Security
-
-*   **API Key Management**: Your Gemini API key is a secret. **Do not** commit your `.env` file or expose the key in client-side code that is publicly accessible. The `.gitignore` file should include `.env`.
-*   **Dependencies**: Regularly check for vulnerabilities in the project's dependencies by running:
-    ```bash
-    npm audit
-    ```
-    Keep packages updated to their latest stable versions to mitigate security risks.
 
 ---
 
@@ -250,12 +262,18 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 ## Inhaltsverzeichnis
 
 - [⭐ Projektphilosophie](#-projektphilosophie-1)
-- [🚀 Hauptfunktionen](#-hauptfunktionen-1)
+- [🚀 Hauptfunktionen](#-hauptfunktionen)
+  - [1. Der Grow Room (`Pflanzen`-Ansicht)](#1-der-grow-room-pflanzen-ansicht)
+  - [2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)](#2-die-sorten-enzyklopädie-sorten-ansicht)
+  - [3. Die Werkstatt (`Ausrüstung`-Ansicht)](#3-die-werkstatt-ausrüstung-ansicht)
+  - [4. Die Bibliothek (`Wissen`-Ansicht)](#4-die-bibliothek-wissen-ansicht)
+  - [5. Das Hilfe-Center (`Hilfe`-Ansicht)](#5-das-hilfe-center-hilfe-ansicht)
+  - [6. Die Kommandozentrale (`Einstellungen`-Ansicht)](#6-die-kommandozentrale-einstellungen-ansicht)
+  - [7. Plattformweite Funktionen](#7-plattformweite-funktionen)
 - [💻 Technischer Deep Dive](#-technischer-deep-dive-1)
 - [🏁 Erste Schritte (Benutzerhandbuch)](#-erste-schritte-benutzerhandbuch)
-- [🛠️ Installation & Lokale Entwicklung (Entwicklerhandbuch)](#️-installation--lokale-entwicklung-entwicklerhandbuch)
+- [🛠️ Lokale Entwicklung (Entwicklerhandbuch)](#️-lokale-entwicklung-entwicklerhandbuch)
 - [🤔 Fehlerbehebung (Troubleshooting)](#-fehlerbehebung-troubleshooting)
-- [🔒 Sicherheit](#-sicherheit-1)
 - [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
 - [🤝 Mitwirken (Contributing)](#-mitwirken-contributing-1)
 - [⚠️ Haftungsausschluss](#️-haftungsausschluss-1)
@@ -302,7 +320,7 @@ Ihr zentraler Wissens-Hub, konzipiert für tiefgehende Erkundungen mit **Offline
 ### 3. Die Werkstatt (`Ausrüstung`-Ansicht)
 Ihr Werkzeugkasten für die Planung und Optimierung Ihres Anbau-Setups.
 
--   **KI-Setup-Konfigurator**: Ein schlanker 2-Schritte-Prozess, bei dem Sie Ihre **Pflanzenanzahl** und Ihren **Budget-Stil** (Preis/Leistung, Ausgewogen oder Premium) auswählen, um eine vollständige, markenspezifische Ausrüstungsliste von der Gemini-KI zu erhalten.
+-   **Fortschrittlicher KI-Setup-Konfigurator**: Ein mehrstufiger Prozess, in dem Sie Ihre **Pflanzenanzahl, Anbaufläche, Erfahrung, Budget und Prioritäten** definieren, um eine vollständige, markenspezifische Ausrüstungsliste von der Gemini-KI zu erhalten.
 -   **Gespeicherte Setups**: Volle **CRUD**-Funktionalität für Ihre generierten Ausrüstungslisten. Bearbeiten, löschen und verwalten Sie Ihre Setups für die zukünftige Verwendung.
 -   **Suite von Rechnern**: Greifen Sie auf eine umfassende Sammlung von Präzisionswerkzeugen zu:
     -   Lüftungsrechner (m³/h)
@@ -313,19 +331,34 @@ Ihr Werkzeugkasten für die Planung und Optimierung Ihres Anbau-Setups.
     -   Ertragsschätzer
 -   **Kuratierte Shop-Listen**: Durchsuchen Sie empfohlene Grow Shops und Saatgutbanken für den europäischen und den US/kanadischen Markt.
 
-### 4. Die Bibliothek (`Wissen`- & `Hilfe`-Ansichten)
+### 4. Die Bibliothek (`Wissen`-Ansicht)
 Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
 -   **Kontextsensitiver KI-Mentor**: Stellen Sie dem KI-Mentor Anbaufragen, der die Daten Ihrer aktiven Pflanze für maßgeschneiderte Ratschläge nutzt. Alle Gespräche werden mit voller **CRUD**-Unterstützung archiviert.
 -   **Zuchtlabor**: Kreuzen Sie Ihre hochwertigsten Samen, um völlig neue, **permanente Hybridsorten** zu erschaffen, die Ihrer persönlichen Bibliothek hinzugefügt und in zukünftigen Anbauprojekten verwendet werden können.
 -   **Interaktive Sandbox**: Führen Sie risikofreie "Was-wäre-wenn"-Szenarien durch, wie z. B. den Vergleich von **Topping vs. LST** an einem Klon Ihrer Pflanze, um die Auswirkungen verschiedener Trainingstechniken über eine beschleunigte Simulation zu visualisieren.
--   **Umfassende Anleitungen**: Greifen Sie auf ein integriertes Grower-Lexikon, visuelle Anleitungen für gängige Techniken, einen umfangreichen durchsuchbaren FAQ-Bereich und ein neues, detailliertes **Benutzerhandbuch** zu, das jede Funktion der App erklärt.
 
-### 5. Plattformweite Funktionen
+### 5. Das Hilfe-Center (`Hilfe`-Ansicht)
+Ihre Anlaufstelle für In-App-Support und Lernressourcen.
+
+-   **Umfassendes Benutzerhandbuch**: Ein detaillierter, integrierter Leitfaden, der jede Funktion der App erklärt.
+-   **Durchsuchbare FAQ**: Finden Sie schnell Antworten auf häufige Anbaufragen.
+-   **Grower-Lexikon**: Ein umfangreiches Glossar von Cannabis-Begriffen, von Cannabinoiden und Terpenen bis hin zu fortgeschrittenen Anbautechniken.
+-   **Visuelle Anleitungen**: Einfache, animierte Anleitungen für grundlegende Techniken wie Topping und LST.
+
+### 6. Die Kommandozentrale (`Einstellungen`-Ansicht)
+Ein hochentwickelter Hub zur Anpassung jedes Aspekts Ihres CannaGuide-Erlebnisses.
+
+-   **UI & Theme-Anpassung**: Wählen Sie aus mehreren Themes (`Mitternacht`, `Wald` usw.), passen Sie die Schriftgrößen an und wechseln Sie zwischen `Komfortabler` und `Kompakter` UI-Dichte.
+-   **Barrierefreiheit-Suite**: Aktivieren Sie eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und verschiedene **Farbfehlsichtigkeits-Modi** (Protanopie, Deuteranopie, Tritanopie).
+-   **Sprache & Sprachausgabe**: Konfigurieren Sie Text-zu-Sprache (TTS)-Stimmen und -Raten und verwalten Sie die Einstellungen für Sprachbefehle.
+-   **Datensouveränität**: Exportieren Sie Ihren gesamten App-Zustand zur **Sicherung**, importieren Sie ihn zur **Wiederherstellung** oder führen Sie granulare Resets durch, wie das Leeren von KI-Archiven oder Pflanzendaten. Sehen Sie eine Aufschlüsselung Ihrer Speichernutzung.
+-   **Privatsphäre & Sicherheit**: Sichern Sie Ihre App mit einer optionalen 4-stelligen **PIN beim Start** und konfigurieren Sie das automatische Leeren des KI-Chatverlaufs beim Beenden.
+
+### 7. Plattformweite Funktionen
 -   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich Zugriff auf alle Daten und KI-Archive.
 -   **Befehlspalette (`Cmd/Ctrl + K`)**: Ein Power-User-Tool für sofortige, klickfreie Navigation und Aktionen in der gesamten Anwendung.
--   **Vollständige Datensouveränität**: Exportieren Sie *alle* Ihre App-Daten (Pflanzen, Einstellungen, Archive, eigene Sorten) in eine einzige JSON-Datei zur **Sicherung**. Importieren Sie sie später, um Ihren Zustand auf jedem Gerät vollständig **wiederherzustellen**.
--   **Erweiterte Barrierefreiheit**: Bietet eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und eine integrierte **Text-zu-Sprache (TTS)**-Funktionalität für wichtige Inhalte.
+-   **Sprachsteuerung**: Navigieren Sie durch die App, suchen Sie nach Sorten und führen Sie Aktionen mit einfachen Sprachbefehlen aus.
 
 ---
 
@@ -333,16 +366,27 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 
 CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack, der auf Leistung und Offline-First-Zuverlässigkeit ausgelegt ist.
 
--   **Frontend-Framework**: **React 19** mit **TypeScript** für eine moderne, typsichere und performante Benutzeroberfläche.
--   **Zustandsverwaltung**: **Redux Toolkit (^2.2)** dient als zentrale Datenquelle ("Single Source of Truth"), was vorhersagbare Zustandsübergänge gewährleistet und das Debugging vereinfacht.
--   **Asynchrone Operationen & KI**:
-    -   **RTK Query** verwaltet alle Interaktionen mit der **Google Gemini API (`@google/genai` ^1.19)** und bietet Caching sowie ein optimiertes Lade-/Fehlerzustandsmanagement. Das `gemini-2.5-flash`-Modell wird für seine optimale Balance aus Geschwindigkeit, Kosten und der Fähigkeit zur strukturierten JSON-Ausgabe verwendet.
-    -   Die Pflanzenwachstumssimulation läuft in einem dedizierten **Web Worker**, wodurch der Haupt-UI-Thread reaktionsschnell und flüssig bleibt.
--   **Datenpersistenz**: Eine robuste **IndexedDB**-Strategie gewährleistet vollständige Offline-Verfügbarkeit.
-    -   Der Kern-Redux-Zustand wird über eine **Listener-Middleware** persistiert, was eine nahtlose Zustandshydratisierung und -migration beim App-Start ermöglicht.
-    -   Große statische Daten wie die Sortenbibliothek und der Suchindex werden zur Leistungsoptimierung in einer separaten IndexedDB verwaltet.
--   **PWA & Offline-Fähigkeit**: Ein **Service Worker** implementiert eine "Cache First, then Network"-Strategie, wodurch die Anwendung vollständig installierbar und ohne Internetverbindung funktionsfähig ist.
--   **Styling**: **Tailwind CSS (über CDN)** ermöglicht einen schnellen, Utility-First-Ansatz zum Erstellen eines konsistenten und responsiven Designsystems, das direkt in `index.html` konfiguriert wird.
+### Schlüsseltechnologien
+
+| Kategorie             | Technologie                                                                                                    | Zweck                                                                                |
+| --------------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **Frontend**          | [React 19](https://react.dev/) mit [TypeScript](https://www.typescriptlang.org/)                              | Modernes, typsicheres und performantes Benutzerinterface.                               |
+| **Zustandsverwaltung**| [Redux Toolkit](https://redux-toolkit.js.org/)                                                                 | Zentralisierte, vorhersagbare Zustandsverwaltung für die gesamte Anwendung.             |
+| **KI-Integration**    | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                   | Treibt alle KI-Funktionen an, einschließlich Diagnose, Beratung und Content-Erstellung. |
+| **Asynchrone Op.**    | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                   | Verwaltet alle Interaktionen mit der Gemini API, bietet Caching und Zustandsmanagement. |
+| **Nebenläufigkeit**   | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                                | Führt die komplexe Pflanzensimulation außerhalb des Haupt-Threads aus, um die UI flüssig zu halten. |
+| **Datenpersistenz**   | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)                                    | Bietet eine robuste, clientseitige Datenbank für volle Offline-Funktionalität.          |
+| **PWA & Offline**     | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                         | Implementiert eine "Cache First, then Network"-Strategie für Offline-Zugriff.           |
+| **Styling**           | [Tailwind CSS](https://tailwindcss.com/) (via CDN)                                                             | Ermöglicht einen schnellen, Utility-First-Ansatz für ein konsistentes Designsystem.     |
+
+### Projektstruktur
+Die Codebasis ist in logische Verzeichnisse organisiert, um Wartbarkeit und Skalierbarkeit zu fördern:
+-   `components/`: Enthält alle React-Komponenten, organisiert nach Ansicht oder Gemeinsamkeit.
+-   `stores/`: Beherbergt den Redux-Store, Slices, Selektoren und Middleware.
+-   `services/`: Enthält die Geschäftslogik, einschließlich der Simulations-Engine, Datenbankinteraktionen und API-Service-Wrapper.
+-   `hooks/`: Enthält benutzerdefinierte React-Hooks für gemeinsam genutzte Logik wie Focus Traps, PWA-Installation und mehr.
+-   `data/`: Speichert statische Daten wie die Sortenbibliothek, das Lexikon und FAQ-Inhalte.
+-   `locales/`: Enthält alle Internationalisierungs- (i18n) Übersetzungsdateien.
 
 ---
 
@@ -352,22 +396,22 @@ Außer einem modernen Webbrowser ist keine Installation erforderlich.
 
 1.  **Onboarding**: Beim ersten Start werden Sie durch ein kurzes Tutorial geführt, um Ihre bevorzugte Sprache einzustellen.
 2.  **Sorten entdecken**: Beginnen Sie in der **Sorten**-Ansicht. Nutzen Sie die Suche und die Filter, um eine Sorte zu finden, und speichern Sie sie als Favorit, indem Sie auf das Herzsymbol klicken.
-3.  **Anbau starten**: Navigieren Sie zum **Pflanzen**-Dashboard. Klicken Sie auf einen leeren Steckplatz, wählen Sie "Neuen Anbau starten", wählen Sie eine Sorte aus Ihren Favoriten oder der Hauptliste aus und konfigurieren Sie Ihr Setup.
+3.  **Anbau starten**: Navigieren Sie zum **Pflanzen**-Dashboard. Klicken Sie auf einen leeren Steckplatz, wählen Sie "Neuen Anbau starten", wählen Sie eine Sorte aus und konfigurieren Sie Ihr Setup.
 4.  **Ihren Anbau verwalten**: Das **Pflanzen**-Dashboard ist Ihre Kommandozentrale. Protokollieren Sie Aktionen wie Gießen und Düngen, überprüfen Sie die Vitalwerte Ihrer Pflanze und holen Sie sich Ratschläge von der KI.
 5.  **Befehlspalette verwenden**: Drücken Sie für den schnellsten Zugriff `Cmd/Ctrl + K`, um sofort zu navigieren oder Aktionen auszuführen.
 
 ---
 
-## 🛠️ Installation & Lokale Entwicklung (Entwicklerhandbuch)
+## 🛠️ Lokale Entwicklung (Entwicklerhandbuch)
 
-Um CannaGuide 2025 lokal für die Entwicklung auszuführen, befolgen Sie diese Schritte.
+Dieses Projekt ist für die Ausführung im Google AI Studio konzipiert, das den Entwicklungsserver und die Umgebungsvariablen bereitstellt. Sie können es jedoch auch lokal mit einem Standard-Node.js-Setup ausführen.
 
 ### Voraussetzungen
 *   [Node.js](https://nodejs.org/) (v18.x oder neuer empfohlen)
 *   [npm](https://www.npmjs.com/) (normalerweise bei Node.js enthalten)
 *   Ein **Google Gemini API Key**. Diesen erhalten Sie im [Google AI Studio](https://ai.studio.google.com/app/apikey).
 
-### Installation
+### Installation & Einrichtung
 1.  **Repository klonen:**
     ```bash
     git clone https://github.com/qnbs/CannaGuide-2025.git
@@ -386,47 +430,28 @@ Um CannaGuide 2025 lokal für die Entwicklung auszuführen, befolgen Sie diese S
     ```
     Öffnen Sie die `.env`-Datei und fügen Sie Ihren API-Schlüssel hinzu:
     ```
-    API_KEY=YOUR_GEMINI_API_KEY
+    VITE_API_KEY=DEIN_GEMINI_API_SCHLÜSSEL
     ```
-    > **Hinweis**: Dieses Setup geht von einer Entwicklungsumgebung aus, die Umgebungsvariablen bereitstellt (wie Vite oder Create React App). Der Anwendungscode greift direkt auf `process.env.API_KEY` zu.
+    > **Hinweis**: Die App verwendet Vite, das `VITE_`-präfixierte Variablen für den Client verfügbar macht. Der Anwendungscode greift darauf über `import.meta.env.VITE_API_KEY` zu (für die Kompatibilität mit AI Studio auf `process.env.API_KEY` abstrahiert).
 
-4.  **Anwendung ausführen:**
-    Dieses Projekt ist für die Ausführung im Google AI Studio konzipiert, das den Entwicklungsserver bereitstellt. Bei lokaler Ausführung würden Sie typischerweise einen Befehl wie diesen verwenden:
+4.  **Entwicklungsserver starten:**
     ```bash
-    npm start 
+    npm run dev
     ```
-    (Hinweis: Die `package.json` enthält dieses Skript nicht; Sie müssten es hinzufügen oder einen lokalen Server verwenden.)
-
-### Build-Prozess
-Um einen produktionsfertigen Build zu erstellen, würden Sie typischerweise Folgendes ausführen:
-```bash
-npm run build
-```
-Dieser Befehl würde den Code bündeln und optimieren und ihn für die Bereitstellung vorbereiten. (Hinweis: Die `package.json` enthält dieses Skript nicht.)
+    Dies startet den Vite-Entwicklungsserver, typischerweise unter `http://localhost:5173`.
 
 ---
 
 ## 🤔 Fehlerbehebung (Troubleshooting)
 
-*   **KI-Funktionen funktionieren nicht**: Dies liegt fast immer an einem fehlenden oder ungültigen Gemini API-Schlüssel. Stellen Sie sicher, dass Ihre `.env`-Datei korrekt eingerichtet ist und der Schlüssel gültig ist. Überprüfen Sie die Entwicklerkonsole Ihres Browsers auf `4xx`-Fehler im Zusammenhang mit der Google-API.
+*   **KI-Funktionen funktionieren nicht**: Dies liegt fast immer an einem fehlenden oder ungültigen Gemini API-Schlüssel. Stellen Sie sicher, dass Ihre Umgebungsvariable (`VITE_API_KEY` für lokale Entwicklung) korrekt eingerichtet ist. Überprüfen Sie die Entwicklerkonsole Ihres Browsers auf `4xx`-Fehler.
 *   **App aktualisiert sich nicht (PWA-Caching)**: Wenn Sie Änderungen vorgenommen haben, diese aber nicht sehen, könnte der Service Worker eine zwischengespeicherte Version ausliefern.
     1.  Öffnen Sie die Entwicklertools Ihres Browsers.
     2.  Gehen Sie zum Tab `Anwendung` (Application).
-    3.  Suchen Sie `Service Workers`, aktivieren Sie "Update on reload" (Bei Neuladen aktualisieren) und klicken Sie auf "Unregister" (Registrierung aufheben) für den CannaGuide-Service-Worker.
-    4.  Gehen Sie zu `Speicher` (Storage) und klicken Sie auf "Site data löschen" (Clear site data).
+    3.  Suchen Sie `Service Workers`, aktivieren Sie "Update on reload" und klicken Sie auf "Unregister".
+    4.  Gehen Sie zu `Speicher` (Storage) und klicken Sie auf "Site data löschen".
     5.  Aktualisieren Sie die Seite.
 *   **Datenprobleme**: Sollte der Zustand der Anwendung beschädigt werden, können Sie einen Hard-Reset durchführen, indem Sie zu `Einstellungen > Datenverwaltung > Alle App-Daten zurücksetzen` navigieren. **Achtung: Dies löscht alle Ihre lokalen Daten.**
-
----
-
-## 🔒 Sicherheit
-
-*   **API-Schlüssel-Verwaltung**: Ihr Gemini API-Schlüssel ist ein Geheimnis. **Übergeben Sie Ihre `.env`-Datei nicht an die Versionskontrolle** und legen Sie den Schlüssel nicht in clientseitigem Code offen, der öffentlich zugänglich ist. Die `.gitignore`-Datei sollte `.env` enthalten.
-*   **Abhängigkeiten**: Überprüfen Sie regelmäßig die Abhängigkeiten des Projekts auf Schwachstellen, indem Sie Folgendes ausführen:
-    ```bash
-    npm audit
-    ```
-    Halten Sie Pakete auf ihren neuesten stabilen Versionen, um Sicherheitsrisiken zu minimieren.
 
 ---
 

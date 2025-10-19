@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { SavedStrainTip, Strain, ExportFormat, StructuredGrowTips } from '@/types';
+import { SavedStrainTip, Strain, StructuredGrowTips } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -139,15 +139,16 @@ export const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, delet
         }
     }, [selectedIds, deleteTip, t]);
     
-    const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
-        if (!window.confirm(t('common.exportConfirm'))) return;
+    const handleExport = (source: 'selected' | 'all', format: any) => {
+        if (!window.confirm(t('common.exportConfirm') as string)) return;
 
         const dataToExport = source === 'selected' ? savedTips.filter(tip => selectedIds.has(tip.id)) : filteredTips;
         if (dataToExport.length === 0) {
             dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
             return;
         }
-        exportService.exportStrainTips(dataToExport, format, `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`);
+        // FIX: Added the missing 't' function as the fourth argument to match the function signature.
+        exportService.exportStrainTips(dataToExport, format, `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`, t);
         setIsExportModalOpen(false);
     };
 

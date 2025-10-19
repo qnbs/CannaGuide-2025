@@ -29,8 +29,7 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
     // The use of 'any' here is a deliberate and controlled type assertion.
     // This is a widely recognized pattern for creating polymorphic components in React with TypeScript.
     // It allows the 'Button' to be rendered as any valid HTML element (e.g., 'a', 'div')
-    // while correctly inheriting and type-checking the props of that element,
-    // which would be lost with a more restrictive type.
+    // while correctly inheriting and type-checking the props of that element.
     const Component: any = as || defaultElement
 
     const baseClasses =
@@ -40,11 +39,9 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
         primary:
             'bg-gradient-to-br from-primary-500 to-primary-600 text-white font-bold shadow-lg shadow-primary-500/30 hover:shadow-xl hover:shadow-primary-500/40 border border-primary-500/50 hover:from-primary-400 hover:to-primary-500 focus-visible:ring-primary-400',
         secondary:
-            'bg-[rgba(var(--color-bg-component),0.6)] backdrop-blur-sm border border-[rgb(var(--color-border))] text-slate-200 hover:text-white hover:bg-[rgba(var(--color-neutral-700),0.6)] hover:border-slate-600 shadow-inner-glow focus-visible:ring-primary-500',
-        danger: 
-            'bg-gradient-to-br from-red-500 to-red-600 text-white font-bold shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 border border-red-600/50 hover:from-red-600 hover:to-red-700 focus-visible:ring-red-400',
-        ghost: 
-            'bg-transparent hover:bg-primary-500/10 focus-visible:ring-primary-500 text-slate-300 hover:text-primary-300 border border-transparent',
+            'bg-[rgba(var(--color-bg-component),0.6)] backdrop-blur-sm border border-white/20 text-slate-200 hover:text-white hover:bg-[rgba(var(--color-neutral-700),0.6)] hover:border-white/40 shadow-inner-glow focus-visible:ring-primary-500',
+        danger: 'bg-gradient-to-br from-red-500 to-red-600 text-white font-bold shadow-lg shadow-red-500/30 hover:shadow-xl hover:shadow-red-500/40 border border-red-600/50 hover:from-red-600 hover:to-red-700 focus-visible:ring-red-400',
+        ghost: 'bg-transparent hover:bg-primary-500/10 focus-visible:ring-primary-500 text-slate-300 hover:text-primary-300 border border-transparent',
     }
 
     const sizeClasses = {
@@ -57,7 +54,7 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
         <Component
             className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
                 glow ? 'animate-pulse-glow' : ''
-            } ${className}`}
+            } ${className || ''}`}
             {...props}
         >
             {children}

@@ -1,4 +1,4 @@
-import React, { forwardRef, memo, useId, useState, useEffect, useRef } from 'react';
+import React, { forwardRef, memo, useId, useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useOutsideClick } from '@/hooks/useOutsideClick';
 
@@ -68,7 +68,7 @@ export const Input = memo(
     forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
         ({ as = 'input', className, label, ...props }, ref) => {
             const id = useId();
-            const commonClassName = `w-full bg-slate-800 ring-1 ring-inset ring-slate-700/50 rounded-md px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-colors duration-200 ${className || ''}`;
+            const commonClassName = `w-full bg-slate-800 ring-1 ring-inset ring-white/20 rounded-md px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 transition-colors duration-200 ${className || ''}`;
 
             const inputElement =
                 as === 'textarea' ? (
@@ -112,9 +112,20 @@ export const Select = memo(
     forwardRef<HTMLButtonElement, SelectProps>(({ options, className, value, onChange, label, ...props }, ref) => {
         const id = useId();
         const [isOpen, setIsOpen] = useState(false);
+        const [isAbove, setIsAbove] = useState(false);
         const [highlightedIndex, setHighlightedIndex] = useState(0);
         const containerRef = useOutsideClick<HTMLDivElement>(() => setIsOpen(false));
         const listRef = useRef<HTMLUListElement>(null);
+        const buttonRef = useRef<HTMLButtonElement | null>(null);
+
+        const setButtonRef = useCallback((element: HTMLButtonElement | null) => {
+            buttonRef.current = element;
+            if (typeof ref === 'function') {
+                ref(element);
+            } else if (ref) {
+                ref.current = element;
+            }
+        }, [ref]);
 
         const selectedOption = options.find(opt => opt.value === value) || options[0] || { label: 'Select...', value: '' };
 
@@ -131,6 +142,17 @@ export const Select = memo(
                 highlightedElement?.scrollIntoView({ block: 'nearest' });
             }
         }, [isOpen, highlightedIndex]);
+
+        useLayoutEffect(() => {
+            if (isOpen && buttonRef.current) {
+                const rect = buttonRef.current.getBoundingClientRect();
+                const spaceBelow = window.innerHeight - rect.bottom;
+                const dropdownHeight = 240; // Corresponds to max-h-60
+                const spaceAbove = rect.top;
+                setIsAbove(spaceBelow < dropdownHeight && spaceAbove > dropdownHeight);
+            }
+        }, [isOpen]);
+
 
         const handleSelect = (optionValue: string | number) => {
             if (props.disabled || !onChange) return;
@@ -182,10 +204,10 @@ export const Select = memo(
                 {label && <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>}
                 <div ref={containerRef} className="relative">
                     <button
-                        ref={ref}
+                        ref={setButtonRef}
                         id={id}
                         type="button"
-                        className={`w-full bg-slate-800 ring-1 ring-inset ring-slate-700/50 rounded-md px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 text-left flex justify-between items-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${className || ''}`}
+                        className={`w-full bg-slate-800 ring-1 ring-inset ring-white/20 rounded-md px-3 py-2 text-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 text-left flex justify-between items-center transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${className || ''}`}
                         onClick={() => !props.disabled && setIsOpen(!isOpen)}
                         onKeyDown={handleKeyDown}
                         aria-haspopup="listbox"
@@ -198,7 +220,7 @@ export const Select = memo(
                     {isOpen && !props.disabled && (
                         <ul
                             ref={listRef}
-                            className="absolute z-10 mt-1 w-full bg-slate-800 border border-primary-900 rounded-md shadow-lg max-h-60 overflow-y-auto animate-slide-down-fade-in p-1"
+                            className={`absolute z-30 w-full bg-slate-800 border border-primary-900 rounded-md shadow-lg max-h-60 overflow-y-auto p-1 ${isAbove ? 'bottom-full mb-1 animate-fade-in-up' : 'mt-1 animate-slide-down-fade-in'}`}
                             role="listbox"
                         >
                             {options.map((opt, index) => (

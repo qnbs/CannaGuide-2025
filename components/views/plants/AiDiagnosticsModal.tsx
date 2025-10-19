@@ -14,21 +14,8 @@ import { geminiService } from '@/services/geminiService';
 import { dbService } from '@/services/dbService';
 import { Input } from '@/components/ui/ThemePrimitives';
 import { selectLanguage } from '@/stores/selectors';
+import { resizeImage, base64ToMimeType } from '@/services/imageService';
 
-
-const base64ToMimeType = (base64: string): string => {
-    const signatures: Record<string, string> = {
-      'R0lGODdh': 'image/gif',
-      'iVBORw0KGgo': 'image/png',
-      '/9j/': 'image/jpeg'
-    };
-    for (const s in signatures) {
-      if (base64.startsWith(s)) {
-        return signatures[s];
-      }
-    }
-    return 'image/jpeg'; // fallback
-};
 
 interface DiagnosisResultProps {
     response: PlantDiagnosisResponse;
@@ -160,15 +147,22 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
         }
     }, [isLoading]);
 
-    const handleFile = useCallback((file: File) => {
+    const handleFile = useCallback(async (file: File) => {
         resetDiagnosis();
         if (!file.type.startsWith('image/')) {
             dispatch(addNotification({ message: t('plantsView.aiDiagnostics.validation.imageOnly'), type: 'error' }));
             return;
         }
         const reader = new FileReader();
-        reader.onload = () => {
-            setImage(reader.result as string);
+        reader.onload = async () => {
+            try {
+                const resizedImage = await resizeImage(reader.result as string);
+                setImage(resizedImage);
+            } catch (err) {
+                console.error("Image resizing failed:", err);
+                setImage(reader.result as string); // fallback to original
+                dispatch(addNotification({ message: 'Image resizing failed, using original.', type: 'error' }));
+            }
         };
         reader.readAsDataURL(file);
     }, [dispatch, t, resetDiagnosis]);
@@ -178,9 +172,16 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({ plant, o
     const handleDragOut = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); }, []);
     const handleDrop = useCallback((e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); if (e.dataTransfer.files && e.dataTransfer.files[0]) { handleFile(e.dataTransfer.files[0]); } }, [handleFile]);
 
-    const handleCapture = (dataUrl: string) => {
+    const handleCapture = async (dataUrl: string) => {
         resetDiagnosis();
-        setImage(dataUrl);
+        try {
+            const resizedImage = await resizeImage(dataUrl);
+            setImage(resizedImage);
+        } catch (err) {
+            console.error("Image resizing failed:", err);
+            setImage(dataUrl); // fallback to original
+            dispatch(addNotification({ message: 'Image resizing failed, using original.', type: 'error' }));
+        }
         setIsCameraOpen(false);
     };
 

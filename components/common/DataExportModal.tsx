@@ -1,119 +1,51 @@
-import React, { useState, useEffect } from 'react'
-import { ExportFormat } from '@/types'
-import { Button } from '@/components/common/Button'
-import { useTranslation } from 'react-i18next'
-import { Modal } from '@/components/common/Modal'
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Modal } from './Modal';
+import { Button } from './Button';
+import { PhosphorIcons } from '../icons/PhosphorIcons';
 
-type ExportSource = 'selected' | 'all'
+export type SimpleExportFormat = 'pdf' | 'txt';
 
 interface DataExportModalProps {
-    isOpen: boolean
-    onClose: () => void
-    onExport: (source: ExportSource, format: ExportFormat) => void
-    title: string
-    selectionCount: number
-    totalCount: number
-    translationBasePath?: string
+    isOpen: boolean;
+    onClose: () => void;
+    onExport: (format: SimpleExportFormat) => void;
+    title: string;
+    selectionCount: number;
+    totalCount: number;
+    translationBasePath: string;
 }
 
-export const DataExportModal: React.FC<DataExportModalProps> = ({
-    isOpen,
-    onClose,
-    onExport,
-    title,
-    selectionCount,
-    totalCount,
-    translationBasePath = 'strainsView.exportModal',
-}) => {
-    const { t } = useTranslation()
-    const [source, setSource] = useState<ExportSource>(selectionCount > 0 ? 'selected' : 'all')
-    const [format, setFormat] = useState<ExportFormat>('pdf')
-
-    useEffect(() => {
-        if (isOpen) {
-            // Intelligently set the default source based on whether items are selected
-            setSource(selectionCount > 0 ? 'selected' : 'all')
-        }
-    }, [isOpen, selectionCount])
-
-    const sources: { id: ExportSource; count: number; disabled: boolean }[] = [
-        { id: 'selected', count: selectionCount, disabled: selectionCount === 0 },
-        { id: 'all', count: totalCount, disabled: totalCount === 0 },
-    ]
-
-    const formats: { id: ExportFormat; label: string }[] = [
-        { id: 'pdf', label: t('strainsView.exportModal.formats.pdf') },
-        { id: 'txt', label: t('strainsView.exportModal.formats.txt') },
-        { id: 'csv', label: t('strainsView.exportModal.formats.csv') },
-        { id: 'json', label: t('strainsView.exportModal.formats.json') },
-        { id: 'xml', label: t('strainsView.exportModal.formats.xml') },
-    ]
-
-    const handleExportClick = () => {
-        onExport(source, format);
-    }
-
-    const footer = (
-        <>
-            <Button variant="secondary" onClick={onClose}>
-                {t('common.cancel')}
-            </Button>
-            <Button
-                onClick={handleExportClick}
-                disabled={(source === 'selected' && selectionCount === 0) || (source === 'all' && totalCount === 0)}
-            >
-                {t('common.export')}
-            </Button>
-        </>
-    )
+export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, onExport, title, selectionCount, totalCount, translationBasePath }) => {
+    const { t } = useTranslation();
+    
+    const hasSelection = selectionCount > 0;
+    const sourceText = hasSelection 
+        ? t(`${translationBasePath}.sources.selected_other`, { count: selectionCount }) 
+        : t(`${translationBasePath}.sources.all_other`, { count: totalCount });
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg" footer={footer} containerClassName="ring-1 ring-white">
-            <div className="space-y-6">
+        <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg">
+            <div className="space-y-4">
                 <div>
-                    <h3 className="text-lg font-semibold text-slate-200 mb-2">
-                        {t('strainsView.exportModal.source')}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2">
-                        {sources.map((s) => (
-                            <button
-                                key={s.id}
-                                onClick={() => !s.disabled && setSource(s.id)}
-                                disabled={s.disabled}
-                                className={`p-3 text-left rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed ring-1 ring-inset ring-white/20 ${
-                                    source === s.id
-                                        ? 'bg-primary-600 text-white font-bold'
-                                        : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
-                                }`}
-                            >
-                                <span className="block">
-                                    {t(`${translationBasePath}.sources.${s.id}`, { count: s.count })}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
+                    <h3 className="font-semibold text-slate-300">{t(`${translationBasePath}.source`)}</h3>
+                    <p className="text-sm text-slate-400">{sourceText}</p>
                 </div>
                 <div>
-                    <h3 className="text-lg font-semibold text-slate-200 mb-2">
-                        {t('strainsView.exportModal.format')}
-                    </h3>
-                    <div className="flex gap-2 pb-2">
-                        {formats.map((f) => (
-                            <button
-                                key={f.id}
-                                onClick={() => setFormat(f.id)}
-                                className={`flex-1 py-2 px-2 text-sm rounded-md transition-colors border border-transparent ${
-                                    format === f.id
-                                        ? 'bg-primary-600 text-white font-bold ring-1 ring-white'
-                                        : 'bg-slate-800 text-slate-200 hover:bg-slate-700 ring-1 ring-inset ring-white/20'
-                                }`}
-                            >
-                                {f.label}
-                            </button>
-                        ))}
+                    <h3 className="font-semibold text-slate-300">{t(`${translationBasePath}.format`)}</h3>
+                    <p className="text-sm text-slate-400 mb-2">{t(`${translationBasePath}.chooseFormat`)}</p>
+                    <div className="flex gap-4">
+                        <Button onClick={() => onExport('pdf')} className="flex-1" variant="secondary">
+                            <PhosphorIcons.FilePdf className="w-5 h-5 mr-2" />
+                            {t(`${translationBasePath}.formats.pdf`)}
+                        </Button>
+                        <Button onClick={() => onExport('txt')} className="flex-1" variant="secondary">
+                            <PhosphorIcons.FileText className="w-5 h-5 mr-2" />
+                            {t(`${translationBasePath}.formats.txt`)}
+                        </Button>
                     </div>
                 </div>
             </div>
         </Modal>
-    )
-}
+    );
+};

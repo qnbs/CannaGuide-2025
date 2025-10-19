@@ -1,4 +1,5 @@
 
+
 import { KnowledgeArticle, PlantStage, ProblemType } from '@/types';
 
 export const knowledgeBase: KnowledgeArticle[] = [
@@ -65,5 +66,37 @@ export const knowledgeBase: KnowledgeArticle[] = [
         triggers: {
             activeProblems: [ProblemType.NutrientDeficiency]
         }
+    },
+    {
+        id: 'fix-nutrient-burn',
+        titleKey: 'knowledgeView.knowledgebase.fix-nutrient-burn.title',
+        contentKey: 'knowledgeView.knowledgebase.fix-nutrient-burn.content',
+        tags: ['problem', 'fix', 'nutrient burn', 'overfeeding', 'ec'],
+        triggers: {} // Can be triggered by high EC in the future
+    },
+    {
+        id: 'fix-pests',
+        titleKey: 'knowledgeView.knowledgebase.fix-pests.title',
+        contentKey: 'knowledgeView.knowledgebase.fix-pests.content',
+        tags: ['problem', 'fix', 'pests', 'spider mites', 'fungus gnats', 'neem oil'],
+        triggers: {
+            activeProblems: [ProblemType.PestInfestation]
+        }
+    },
+    {
+        id: 'concept-training',
+        titleKey: 'knowledgeView.knowledgebase.concept-training.title',
+        contentKey: 'knowledgeView.knowledgebase.concept-training.content',
+        tags: ['concept', 'training', 'lst', 'topping', 'yield'],
+        triggers: {
+            plantStage: PlantStage.Vegetative,
+        }
+    },
+    {
+        id: 'concept-environment',
+        titleKey: 'knowledgeView.knowledgebase.concept-environment.title',
+        contentKey: 'knowledgeView.knowledgebase.concept-environment.content',
+        tags: ['concept', 'environment', 'temperature', 'humidity', 'airflow', 'vpd'],
+        triggers: {}
     },
 ];

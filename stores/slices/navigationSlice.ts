@@ -1,4 +1,3 @@
-
 import { View } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
@@ -25,7 +24,7 @@ const navigationSlice = createSlice({
         /**
          * Caches the state for a specific view. This is called when the user navigates away from a view.
          */
-        cacheViewState: (state, action: PayloadAction<{ view: View; state: Partial<ViewStatePayload> }>) => {
+        cacheViewState: (state, action: PayloadAction<{ view: View; state: ViewStatePayload }>) => {
             state.viewStates[action.payload.view] = {
                 ...state.viewStates[action.payload.view],
                 ...action.payload.state,

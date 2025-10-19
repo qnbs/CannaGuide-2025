@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, memo } from 'react';
 import { SavedExperiment, Plant, PlantHistoryEntry } from '@/types';
 import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
@@ -8,7 +8,7 @@ import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
 
 // Small component for the chart
-const ComparisonChart: React.FC<{ historyA: PlantHistoryEntry[], historyB: PlantHistoryEntry[], labelA: string, labelB: string }> = ({ historyA, historyB, labelA, labelB }) => {
+const ComparisonChart: React.FC<{ historyA: PlantHistoryEntry[], historyB: PlantHistoryEntry[], labelA: string, labelB: string }> = memo(({ historyA, historyB, labelA, labelB }) => {
     const svgRef = useRef<SVGSVGElement>(null);
     const { t } = useTranslation();
 
@@ -62,9 +62,9 @@ const ComparisonChart: React.FC<{ historyA: PlantHistoryEntry[], historyB: Plant
             </div>
         </div>
     );
-};
+});
 
-const PlantSummaryCard: React.FC<{ title: string, plant: Plant }> = ({ title, plant }) => {
+const PlantSummaryCard: React.FC<{ title: string, plant: Plant }> = memo(({ title, plant }) => {
     return (
         <Card className="bg-slate-800/50">
             <h3 className="font-bold text-lg text-primary-300">{title}</h3>
@@ -76,7 +76,7 @@ const PlantSummaryCard: React.FC<{ title: string, plant: Plant }> = ({ title, pl
             </div>
         </Card>
     );
-};
+});
 
 
 export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: () => void }> = ({ experiment, onFinish }) => {

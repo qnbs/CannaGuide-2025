@@ -1,7 +1,6 @@
 import React, { useState, useMemo, memo } from 'react';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
-// FIX: The PhosphorIcons import was incorrect. Correcting it to use the proper export structure.
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
 import { PaymentIcons } from '@/components/icons/PaymentIcons';
@@ -63,7 +62,6 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     </div>
 );
 
-// FIX: Added isOpen to the component's props interface to match its usage.
 const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bankKey, isOpen }) => {
     const { t } = useTranslation();
     const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as any;

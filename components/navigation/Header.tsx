@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { View, BeforeInstallPromptEvent, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
@@ -24,8 +24,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
-    const activeView = useAppSelector(selectActiveView) as View;
+    const activeView = useAppSelector(selectActiveView)
 
     const viewTitles: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
@@ -43,6 +42,26 @@ export const Header: React.FC<HeaderProps> = ({
         dispatch(setActiveView(View.Plants))
     }
 
+    const headerIcon = useMemo(() => {
+        const iconClass = "w-8 h-8 flex-shrink-0";
+        switch (activeView) {
+            case View.Strains:
+                return <PhosphorIcons.Leafy className={`${iconClass} text-green-400`} />;
+            case View.Plants:
+                return <PhosphorIcons.Plant className={`${iconClass} text-green-400`} />;
+            case View.Equipment:
+                return <PhosphorIcons.MagicWand className={`${iconClass} text-purple-400`} />;
+            case View.Knowledge:
+                return <PhosphorIcons.Flask className={`${iconClass} text-rose-400`} />;
+            case View.Help:
+                return <PhosphorIcons.Question className={`${iconClass} text-primary-400`} />;
+            case View.Settings:
+                return <PhosphorIcons.GearSix className={`${iconClass} text-primary-400`} />;
+            default:
+                return <CannabisLeafIcon className={`${iconClass} text-primary-400`} />;
+        }
+    }, [activeView]);
+
     return (
         <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0 border-b border-slate-800 shadow-md relative">
             <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
@@ -53,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1"
                         aria-label="Go to Plants Dashboard"
                     >
-                        <CannabisLeafIcon className="w-8 h-8 flex-shrink-0 text-primary-400" />
+                        {headerIcon}
                         <div className="flex items-baseline gap-2">
                             <h1 className="text-xl font-bold font-display text-primary-300">
                                 {currentTitle}
@@ -66,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
                                 variant="ghost"
                                 className="!p-2 rounded-full hidden sm:flex"
                                 onClick={onInstallClick}
-                                title={t('common.installPwa')}
+                                aria-label={t('common.installPwa')}
                             >
                                 <PhosphorIcons.DownloadSimple className="w-6 h-6" />
                             </Button>
@@ -78,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
                             variant="ghost"
                             className="!p-2 rounded-full"
                             onClick={onCommandPaletteOpen}
-                            title={t('commandPalette.open')}
+                            aria-label={t('commandPalette.open')}
                         >
                             <PhosphorIcons.CommandLine className="w-6 h-6" />
                         </Button>
@@ -86,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
                             variant="ghost"
                             className="!p-2 rounded-full"
                             onClick={() => dispatch(setActiveView(View.Help))}
-                            title={t('nav.help')}
+                            aria-label={t('nav.help')}
                         >
                             <PhosphorIcons.Question className="w-6 h-6" />
                         </Button>
@@ -94,9 +113,9 @@ export const Header: React.FC<HeaderProps> = ({
                             variant="ghost"
                             className="!p-2 rounded-full"
                             onClick={() => dispatch(setActiveView(View.Settings))}
-                            title={t('nav.settings')}
+                            aria-label={t('nav.settings')}
                         >
-                            <PhosphorIcons.Gear className="w-6 h-6" />
+                            <PhosphorIcons.GearSix className="w-6 h-6" />
                         </Button>
                     </div>
                 </div>

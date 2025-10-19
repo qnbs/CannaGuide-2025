@@ -14,7 +14,7 @@ import { GrowSetupModal } from './plants/GrowSetupModal';
 import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectUi, selectIsExpertMode } from '@/stores/selectors';
+import { selectIsExpertMode, selectNewGrowFlow } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 import { SkeletonLoader } from '../common/SkeletonLoader';
@@ -25,7 +25,7 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
     return (
         <Card
             onClick={onStart}
-            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-slate-700 hover:border-primary-500 hover:bg-slate-800/50 cursor-pointer transition-all card-interactive-glow empty-slot-pulse"
+            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-white/30 hover:border-primary-500 hover:bg-primary-900/20 cursor-pointer transition-all card-interactive-glow empty-slot-pulse"
         >
             <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
             <h3 className="font-semibold text-slate-300">{t('plantsView.emptySlot.title')}</h3>
@@ -69,7 +69,7 @@ export const PlantsView: React.FC = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    const { newGrowFlow } = useAppSelector(selectUi);
+    const newGrowFlow = useAppSelector(selectNewGrowFlow);
     
     const { slotsWithData } = usePlantSlotsData();
     const { tasks, problems } = useGardenSummary();
@@ -85,9 +85,9 @@ export const PlantsView: React.FC = () => {
             {/* Main Dashboard View - Hidden when a plant is selected to preserve state */}
             <div style={{ display: selectedPlant ? 'none' : 'block' }}>
                 <div className="space-y-6">
-                    <div className="text-center mb-6 animate-fade-in">
+                     <div className="text-center mb-6 animate-fade-in">
                         <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-green-400" />
-                        <h2 className="text-3xl font-bold font-display text-primary-400 mt-2">{t('nav.plants')}</h2>
+                        <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.plants')}</h2>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
@@ -102,9 +102,7 @@ export const PlantsView: React.FC = () => {
                         )}
 
                         <div className="lg:col-span-2 space-y-6">
-                            <DashboardSummary
-                                openTasksCount={tasks.length}
-                            />
+                            <DashboardSummary />
                             <TipOfTheDay />
                             {showGrowFromStrainBanner && (
                                 <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">

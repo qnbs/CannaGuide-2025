@@ -33,14 +33,25 @@ const nodeSize = { width: 220, height: 80 };
 const nodeSeparation = { x: 40, y: 40 };
 
 const Link: React.FC<{ link: d3.HierarchyLink<GenealogyNode>, orientation: 'horizontal' | 'vertical' }> = ({ link, orientation }) => {
-    const pathGenerator = useMemo(() => {
-        return orientation === 'horizontal'
-            ? d3.linkHorizontal<any, d3.HierarchyPointNode<GenealogyNode>>().x(d => d.y).y(d => d.x)
-            : d3.linkVertical<any, d3.HierarchyPointNode<GenealogyNode>>().x(d => d.x).y(d => d.y);
-    }, [orientation]);
+    // The default d3 link generator creates a smooth bezier curve (a "wave").
+    // To create sharp, right-angled lines ("Linien") as requested, we manually construct the path data.
+    const pathData = useMemo(() => {
+        const source = link.source as d3.HierarchyPointNode<GenealogyNode>;
+        const target = link.target as d3.HierarchyPointNode<GenealogyNode>;
 
-    return <path className="genealogy-link" d={pathGenerator(link) || ''} />;
+        if (orientation === 'horizontal') {
+            const midY = source.y + (target.y - source.y) / 2;
+            return `M${source.y},${source.x} L${midY},${source.x} L${midY},${target.x} L${target.y},${target.x}`;
+        } else { // vertical
+            const midY = source.y + (target.y - source.y) / 2;
+            return `M${source.x},${source.y} L${source.x},${midY} L${target.x},${midY} L${target.x},${target.y}`;
+        }
+    }, [link, orientation]);
+    
+    // FIX: Add fallback for path `d` attribute to prevent runtime errors if pathData is undefined.
+    return <path className="genealogy-link" d={pathData || ''} />;
 };
+
 
 const AnalysisPanel: React.FC<{ tree: GenealogyNode | null, onShowDescendants: () => void }> = ({ tree, onShowDescendants }) => {
     const { t } = useTranslation();
@@ -112,7 +123,6 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     }, [dispatch, selectedStrainId]);
 
     const handleSelectChange = (e: any) => {
-        // FIX: The `setSelectedGenealogyStrain` action creator requires a payload.
         dispatch(setSelectedGenealogyStrain(e.target.value || null));
     };
     

@@ -1,11 +1,7 @@
-
-
 import { Strain } from '@/types';
 import { dbService } from './dbService';
-import { allStrainsData } from '@/data/strains';
-
-const STRAIN_DATA_VERSION_KEY = 'strainDataVersion';
-const CURRENT_STRAIN_DATA_VERSION = 2; // Increment this when strain data changes significantly
+import { allStrainsData } from '@/data/strains/index';
+import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants';
 
 class StrainService {
     private allStrains: Strain[] = [];

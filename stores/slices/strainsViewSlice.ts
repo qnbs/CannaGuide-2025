@@ -1,4 +1,4 @@
-import { StrainViewTab } from '@/types';
+import { StrainViewTab, Strain } from '@/types';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface StrainsViewState {

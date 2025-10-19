@@ -1,4 +1,4 @@
-import i18next from 'i18next'
+import i18next, { TFunction } from 'i18next'
 import { initReactI18next } from 'react-i18next'
 import { de, en } from './locales'
 
@@ -10,7 +10,7 @@ export const i18nInstance = i18next.createInstance()
  * This is the single source of truth for translations outside of React components (e.g., in services, stores).
  * @returns The translation function.
  */
-export const getT = () => i18nInstance.t
+export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance);
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
 const detectedLang = navigator.language.split('-')[0]

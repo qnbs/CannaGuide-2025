@@ -140,11 +140,8 @@ export const strains: Record<string, StrainTranslationData> = {
     "citradelic-sunset": {
         "description": "Eine sativa-dominante Hybride mit einem starken zitrusartigen, orangenartigen und süßen Aroma. Citradelic Sunset liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
     },
-    "colombian": {
-        "description": "Eine klassische Sativa-Landrasse aus den Bergen von Santa Marta in Kolumbien. Sie ist einer der Elternteile von Skunk #1 und ist bekannt für ihre erhebende, energetisierende und klare Wirkung ohne Paranoia. Das Aroma ist eine süße Mischung aus Zitrus, Limette und Skunk."
-    },
-    "colombian-gold": {
-        "description": "Eine klassische Sativa-Landrasse aus den Bergen von Santa Marta in Kolumbien. Sie ist einer der Elternteile von Skunk #1"
+    "cosmic-charlie": {
+        "description": "Eine sativa-dominante Sorte mit einer hoch psychedelischen und kreativen Wirkung. Das Aroma ist eine Mischung aus Zitrus, Süße und erdigen Noten."
     },
     "colt-45": {
         "description": "Eine sativa-dominante Hybride mit einem erdigen, kiefernartigen und holzigen Aroma. Colt 45 liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
@@ -164,13 +161,13 @@ export const strains: Record<string, StrainTranslationData> = {
     "cookies-and-cream": {
         "description": "Eine ausgewogene Hybride mit einem süßen, vanilleartigen und nussigen Aroma. Cookies and Cream liefert ein starkes, euphorisches und entspannendes High, das für verschiedene Anlässe geeignet ist.",
     },
-    "cosmic-charlie": {
-        "description": "Eine sativa-dominante Sorte mit einer hoch psychedelischen und kreativen Wirkung. Das Aroma ist eine Mischung aus Zitrus, Süße und erdigen Noten."
-    },
     "critical-mass": {
         "description": "Eine indica-dominante Sorte, die für ihre massiven Erträge und dichten Knospen bekannt ist, die dazu neigen, unter ihrem eigenen Gewicht zu brechen. Die Wirkung ist tief entspannend.",
     },
     "c-vitt": {
         "description": "Eine CBD-reiche Sorte mit einem süßen, zitrusartigen Aroma. Die Wirkung ist mild, klar und funktional, ideal für medizinische Anwender, die Linderung ohne starke psychoaktive Effekte suchen.",
+    },
+    "colombian": {
+        "description": "Eine klassische Sativa-Landrasse aus den Bergen von Santa Marta in Kolumbien. Sie ist einer der Elternteile von Skunk #1 und ist bekannt für ihre erhebende, energetisierende und klare Wirkung ohne Paranoia. Das Aroma ist eine süße Mischung aus Zitrus, Limette und Skunk."
     }
 }

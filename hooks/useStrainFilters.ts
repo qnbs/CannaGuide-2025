@@ -1,4 +1,4 @@
-import { useMemo, useTransition, useCallback } from 'react';
+import { useMemo, useTransition, useCallback, useEffect, useState } from 'react';
 import {
     Strain,
     SortKey,
@@ -18,9 +18,11 @@ import {
     setAdvancedFilters,
     resetAllFilters as resetFiltersAction,
     setLetterFilter,
+    setSort,
 } from '@/stores/slices/filtersSlice';
-import { selectFavoriteIds } from '@/stores/selectors';
+import { selectFavoriteIds, selectUserStrainIds } from '@/stores/selectors';
 import React from 'react';
+import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 
 const difficultyOrder: Record<DifficultyLevel, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
 const yieldOrder: Record<YieldLevel, number> = { 'Low': 1, 'Medium': 2, 'High': 3 };
@@ -28,28 +30,21 @@ const heightOrder: Record<HeightLevel, number> = { 'Short': 1, 'Medium': 2, 'Tal
 
 export const useStrainFilters = (
     allStrains: Strain[],
-    strainsViewSettings: AppSettings['strainsViewSettings']
+    strainsViewSettings: AppSettings['strainsView']
 ) => {
     const dispatch = useAppDispatch();
-    const { searchTerm, typeFilter, showFavoritesOnly, advancedFilters, letterFilter } =
+    const { searchTerm, typeFilter, showFavoritesOnly, advancedFilters, letterFilter, sortKey, sortDirection } =
         useAppSelector((state) => state.filters);
-    // FIX: Cast the result of useAppSelector to the correct type to avoid 'unknown' type errors.
-    const favorites = useAppSelector(selectFavoriteIds) as Set<string>;
-
-    const [sort, setSort] = React.useState<{ key: SortKey; direction: SortDirection }>({
-        key: strainsViewSettings.defaultSortKey,
-        direction: strainsViewSettings.defaultSortDirection,
-    });
+    const favorites = useAppSelector(selectFavoriteIds);
+    const userStrainIds = useAppSelector(selectUserStrainIds);
     const [isPending, startTransition] = useTransition();
 
     const handleSort = useCallback((key: SortKey) => {
         startTransition(() => {
-            setSort((prev) => ({
-                key,
-                direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc',
-            }));
+            const newDirection = sortKey === key && sortDirection === 'asc' ? 'desc' : 'asc';
+            dispatch(setSort({ key, direction: newDirection }));
         });
-    }, []);
+    }, [dispatch, sortKey, sortDirection]);
 
     const handleSetSearchTerm = useCallback(
         (term: string) => {
@@ -91,12 +86,12 @@ export const useStrainFilters = (
             typeFilter.length > 0 ||
             showFavoritesOnly ||
             letterFilter !== null ||
-            advancedFilters.thcRange[0] > 0 ||
-            advancedFilters.thcRange[1] < 35 ||
-            advancedFilters.cbdRange[0] > 0 ||
-            advancedFilters.cbdRange[1] < 20 ||
-            advancedFilters.floweringRange[0] > 4 ||
-            advancedFilters.floweringRange[1] < 20 ||
+            advancedFilters.thcRange[0] > INITIAL_ADVANCED_FILTERS.thcRange[0] ||
+            advancedFilters.thcRange[1] < INITIAL_ADVANCED_FILTERS.thcRange[1] ||
+            advancedFilters.cbdRange[0] > INITIAL_ADVANCED_FILTERS.cbdRange[0] ||
+            advancedFilters.cbdRange[1] < INITIAL_ADVANCED_FILTERS.cbdRange[1] ||
+            advancedFilters.floweringRange[0] > INITIAL_ADVANCED_FILTERS.floweringRange[0] ||
+            advancedFilters.floweringRange[1] < INITIAL_ADVANCED_FILTERS.floweringRange[1] ||
             advancedFilters.selectedDifficulties.length > 0 ||
             advancedFilters.selectedYields.length > 0 ||
             advancedFilters.selectedHeights.length > 0 ||
@@ -112,9 +107,9 @@ export const useStrainFilters = (
         if (advancedFilters.selectedDifficulties.length > 0) count++;
         if (advancedFilters.selectedYields.length > 0) count++;
         if (advancedFilters.selectedHeights.length > 0) count++;
-        if (advancedFilters.thcRange[0] > 0 || advancedFilters.thcRange[1] < 35) count++;
-        if (advancedFilters.cbdRange[0] > 0 || advancedFilters.cbdRange[1] < 20) count++;
-        if (advancedFilters.floweringRange[0] > 4 || advancedFilters.floweringRange[1] < 20) count++;
+        if (advancedFilters.thcRange[0] > INITIAL_ADVANCED_FILTERS.thcRange[0] || advancedFilters.thcRange[1] < INITIAL_ADVANCED_FILTERS.thcRange[1]) count++;
+        if (advancedFilters.cbdRange[0] > INITIAL_ADVANCED_FILTERS.cbdRange[0] || advancedFilters.cbdRange[1] < INITIAL_ADVANCED_FILTERS.cbdRange[1]) count++;
+        if (advancedFilters.floweringRange[0] > INITIAL_ADVANCED_FILTERS.floweringRange[0] || advancedFilters.floweringRange[1] < INITIAL_ADVANCED_FILTERS.floweringRange[1]) count++;
         return count;
     }, [advancedFilters]);
 
@@ -183,8 +178,15 @@ export const useStrainFilters = (
             );
 
         strains.sort((a, b) => {
+            if (strainsViewSettings.prioritizeUserStrains) {
+                const aIsPriority = userStrainIds.has(a.id) || favorites.has(a.id);
+                const bIsPriority = userStrainIds.has(b.id) || favorites.has(b.id);
+                if (aIsPriority && !bIsPriority) return -1;
+                if (!aIsPriority && bIsPriority) return 1;
+            }
+
             let comparison = 0;
-            const key = sort.key;
+            const key = sortKey;
 
             switch (key) {
                 case 'difficulty':
@@ -209,11 +211,11 @@ export const useStrainFilters = (
                     return 0;
             }
 
-            return sort.direction === 'asc' ? comparison : -comparison;
+            return sortDirection === 'asc' ? comparison : -comparison;
         });
 
         return strains;
-    }, [allStrains, searchTerm, showFavoritesOnly, typeFilter, advancedFilters, favorites, sort, letterFilter]);
+    }, [allStrains, searchTerm, showFavoritesOnly, typeFilter, advancedFilters, favorites, userStrainIds, strainsViewSettings.prioritizeUserStrains, sortKey, sortDirection, letterFilter]);
 
     return {
         filteredStrains,
@@ -229,7 +231,7 @@ export const useStrainFilters = (
         letterFilter,
         handleSetLetterFilter,
         resetAllFilters,
-        sort,
+        sort: { key: sortKey, direction: sortDirection },
         handleSort,
         isAnyFilterActive,
         activeFilterCount,

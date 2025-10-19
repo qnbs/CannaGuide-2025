@@ -1,108 +1,85 @@
-import React, { useState, memo, useMemo } from 'react';
-import { SavedSetup, ExportFormat } from '@/types';
+import React, { useState, memo } from 'react';
+import { SavedSetup } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { EditSetupModal } from './EditSetupModal';
 import { SetupCard } from './SetupCard';
+import { EditSetupModal } from './EditSetupModal';
+import { Card } from '@/components/common/Card';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from '@/components/common/Button';
-import { exportService } from '@/services/exportService';
-import { DataExportModal } from '@/components/common/DataExportModal';
+import { DataExportModal, SimpleExportFormat } from '@/components/common/DataExportModal';
 import { useAppDispatch } from '@/stores/store';
-import { addNotification } from '@/stores/slices/uiSlice';
-import { SearchBar } from '@/components/common/SearchBar';
+import { exportSetups } from '@/stores/slices/savedItemsSlice';
 
 interface SavedSetupsViewProps {
     savedSetups: SavedSetup[];
-    updateSetup: (updatedSetup: SavedSetup) => void;
-    deleteSetup: (setupId: string) => void;
+    updateSetup: (setup: SavedSetup) => void;
+    deleteSetup: (id: string) => void;
 }
 
 const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups, updateSetup, deleteSetup }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [editingSetup, setEditingSetup] = useState<SavedSetup | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-    
-    const handleUpdateSave = (updatedSetup: SavedSetup) => {
+
+    const handleSave = (updatedSetup: SavedSetup) => {
         updateSetup(updatedSetup);
         setEditingSetup(null);
     };
-
-    const filteredSetups = useMemo(() => {
-        const lowerCaseSearch = searchTerm.toLowerCase();
-        if (!lowerCaseSearch) {
-            return [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
-        }
-        return [...savedSetups]
-            .filter(setup => setup.name.toLowerCase().includes(lowerCaseSearch))
-            .sort((a, b) => b.createdAt - a.createdAt);
-    }, [savedSetups, searchTerm]);
     
-    const handleExport = (source: 'selected' | 'all', format: ExportFormat) => {
-        if (window.confirm(t('common.exportConfirm'))) {
-            // In this view, there's no selection, so we always export all filtered items.
-            if (filteredSetups.length === 0) {
-                 dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
-                 return;
-            }
-            exportService.exportSetups(filteredSetups, format, 'cannaguide-setups');
-            dispatch(addNotification({ message: t('common.successfullyExported_other', { count: filteredSetups.length, format }), type: 'success' }));
-        }
+    const onExport = (format: SimpleExportFormat) => {
+        const fileName = `CannaGuide_Setups_${new Date().toISOString().slice(0, 10)}`;
+        dispatch(exportSetups({ setups: savedSetups, format, fileName }));
         setIsExportModalOpen(false);
-    }
+    };
+    
+    const sortedSetups = [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
 
+    if (sortedSetups.length === 0) {
+        return (
+            <Card className="text-center py-10 text-slate-500">
+                <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-slate-400 mb-4" />
+                <h3 className="font-semibold text-slate-300">{t('equipmentView.savedSetups.noSetups.title')}</h3>
+                <p className="text-sm">{t('equipmentView.savedSetups.noSetups.subtitle')}</p>
+            </Card>
+        );
+    }
+    
     return (
-        <div>
+        <div className="space-y-4">
             {editingSetup && (
-                <EditSetupModal
-                    setup={editingSetup}
+                <EditSetupModal 
+                    setup={editingSetup} 
                     onClose={() => setEditingSetup(null)}
-                    onSave={handleUpdateSave}
+                    onSave={handleSave}
                 />
             )}
-            <DataExportModal
+            <DataExportModal 
                 isOpen={isExportModalOpen}
                 onClose={() => setIsExportModalOpen(false)}
-                onExport={handleExport}
-                title={t('equipmentView.tabs.setups')}
-                selectionCount={0} // This view doesn't have multi-select
-                totalCount={filteredSetups.length}
+                onExport={onExport}
+                title={t('equipmentView.savedSetups.exportTitle')}
+                selectionCount={0} // Simple export, no selection needed for now
+                totalCount={savedSetups.length}
+                translationBasePath="equipmentView.exportModal"
             />
-             <div className="flex flex-col sm:flex-row gap-2 justify-between sm:items-center mb-4">
-                <h2 className="text-2xl font-bold text-primary-400">{t('equipmentView.tabs.setups')}</h2>
-                <div className="flex items-center gap-2">
-                    <div className="relative flex-grow">
-                        <SearchBar placeholder={t('equipmentView.savedSetups.searchPlaceholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full sm:w-auto" />
-                    </div>
-                     <Button variant="secondary" onClick={() => setIsExportModalOpen(true)} disabled={filteredSetups.length === 0}><PhosphorIcons.DownloadSimple className="w-5 h-5"/></Button>
-                </div>
+            <div className="flex justify-end">
+                <Button onClick={() => setIsExportModalOpen(true)} disabled={savedSetups.length === 0}>
+                    <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />
+                    {t('common.export')}
+                </Button>
             </div>
-            
-            {savedSetups.length === 0 ? (
-                <div className="text-center py-10 text-slate-500">
-                    <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-slate-400 mb-4" />
-                    <h3 className="font-semibold text-slate-300">{t('equipmentView.savedSetups.noSetups.title')}</h3>
-                    <p className="text-sm">{t('equipmentView.savedSetups.noSetups.subtitle')}</p>
-                </div>
-            ) : (
-                <div className="space-y-3">
-                    {filteredSetups.map(setup => (
-                        <SetupCard
-                            key={setup.id}
-                            setup={setup}
-                            onEdit={() => setEditingSetup(setup)}
-                            onDelete={() => {
-                                if (window.confirm(t('equipmentView.savedSetups.deleteConfirm'))) {
-                                    deleteSetup(setup.id);
-                                }
-                            }}
-                        />
-                    ))}
-                </div>
-            )}
+            {sortedSetups.map(setup => (
+                <SetupCard 
+                    key={setup.id} 
+                    setup={setup} 
+                    onEdit={() => setEditingSetup(setup)} 
+                    onDelete={deleteSetup}
+                />
+            ))}
         </div>
     );
 };
 
 export const SavedSetupsView = memo(SavedSetupsViewComponent);
+export default SavedSetupsView;

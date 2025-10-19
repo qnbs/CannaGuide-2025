@@ -14,7 +14,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "Eine indica-dominante Sorte mit einem erdigen, kiefernartigen und zitronigen Aroma. Die Wirkung ist stark, entspannend und ideal für den Abend, bekannt dafür, ein starkes Gefühl der Ruhe und Euphorie zu erzeugen."
   },
   "tahoe-og-kush": {
-    "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Ideal für den Abend und bei Schlaflosigkeit."
+    "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Ideal für den Abendgebrauch und bei Schlaflosigkeit."
   },
   "tangerine-dream": {
     "description": "Eine sativa-dominante Sorte mit einem süßen, mandarinenartigen Aroma. Die Wirkung ist erhebend, kreativ und schmerzlindernd."
@@ -87,5 +87,14 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "tutankhamon": {
     "description": "Ein AK-47-Phänotyp mit einem extrem hohen THC-Gehalt. Die Wirkung ist stark, zerebral und energetisierend. Das Aroma ist skunkig und fruchtig."
+  },
+  "tropic-truffle": {
+    "description": "Eine Sativa-dominante Sorte mit einem süßen, zitrusartigen Orangenaroma, kombiniert mit minzigen und schokoladigen Untertönen. Die Wirkung ist energetisch, erhebend und kreativ, was sie zu einer großartigen Wahl für den Tagesgebrauch und soziale Aktivitäten macht."
+  },
+  "tropical-runtz": {
+    "description": "Eine potente Hybride mit einem süßen, fruchtigen Aroma von tropischen Früchten und Ananas. Die Wirkung ist stark, euphorisch und entspannend."
+  },
+  "tropical-punch": {
+    "description": "Eine sativa-dominante Sorte mit einem süßen, tropischen Aroma von Ananas und fruchtigem Punsch. Die Wirkung ist erhebend, energetisierend und kreativ."
   }
 };

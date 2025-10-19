@@ -1,4 +1,4 @@
-import { SpeechQueueItem, TTSSettings } from '@/types';
+import { SpeechQueueItem, TTSSettings, Language } from '@/types';
 import { ttsService } from '../../services/ttsService';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
@@ -37,7 +37,7 @@ const startNextInQueue = createAsyncThunk<void, void, { state: RootState }>(
             dispatch(startNextInQueue());
         };
 
-        ttsService.speak(nextItem.text, settings.language, onEnd, settings.tts);
+        ttsService.speak(nextItem.text, settings.general.language, onEnd, settings.tts);
     }
 );
 

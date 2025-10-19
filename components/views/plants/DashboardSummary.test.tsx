@@ -57,7 +57,7 @@ describe('DashboardSummary', () => {
             return undefined;
         });
 
-        render(<DashboardSummary openTasksCount={3} />);
+        render(<DashboardSummary />);
 
         expect(screen.getByText('90%')).toBeInTheDocument();
         expect(screen.getByText('1')).toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('DashboardSummary', () => {
             return undefined;
         });
 
-        render(<DashboardSummary openTasksCount={0} />);
+        render(<DashboardSummary />);
 
         expect(screen.getByText('100%')).toBeInTheDocument();
         expect(screen.getByText('0')).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe('DashboardSummary', () => {
             return undefined;
         });
 
-        render(<DashboardSummary openTasksCount={0} />);
+        render(<DashboardSummary />);
         
         fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }));
 
@@ -156,7 +156,7 @@ describe('Start New Grow Integration Test', () => {
                 } as any,
             }
         });
-        vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(store.dispatch);
+        vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(store.dispatch as any);
     });
 
     it('allows a user to start a new grow from an empty slot', async () => {

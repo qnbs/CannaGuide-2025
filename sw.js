@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v13-pwa-cache';
+const CACHE_NAME = 'cannaguide-v16-pwa-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
@@ -89,9 +89,12 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache).catch(err => {
         console.error('[SW] App shell caching failed:', err);
       });
+    }).then(() => {
+      // Force the waiting service worker to become the active service worker.
+      console.log('[SW] New service worker installed, calling skipWaiting().');
+      return self.skipWaiting();
     })
   );
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -105,7 +108,11 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+        // Take control of all open clients as soon as activation happens.
+        console.log('[SW] New service worker activated, claiming clients.');
+        return self.clients.claim();
+    })
   );
 });
 
@@ -146,6 +153,13 @@ self.addEventListener('fetch', (event) => {
     })
   );
 });
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 
 // Background Sync event listener
 self.addEventListener('sync', (event) => {

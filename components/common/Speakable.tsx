@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { selectCurrentlySpeakingId } from '@/stores/selectors'
+import { selectCurrentlySpeakingId, selectSettings } from '@/stores/selectors'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { addToTtsQueue } from '@/stores/slices/ttsSlice'
@@ -15,6 +15,8 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const currentlySpeakingId = useAppSelector(selectCurrentlySpeakingId)
+    const settings = useAppSelector(selectSettings);
+    const highlightEnabled = settings.tts.highlightSpeakingText;
     const ref = useRef<HTMLDivElement>(null)
 
     const isSpeaking = currentlySpeakingId === elementId
@@ -22,7 +24,7 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
     const handleSpeak = (e: React.MouseEvent) => {
         e.stopPropagation()
         if (ref.current) {
-            const textToSpeak = ref.current.textContent || ''
+            const textToSpeak = ref.current.innerText || ''
             if (textToSpeak.trim()) {
                 dispatch(addToTtsQueue({ id: elementId, text: textToSpeak }))
             }
@@ -33,14 +35,14 @@ export const Speakable: React.FC<SpeakableProps> = ({ children, elementId, class
         <div
             ref={ref}
             className={`speakable-container relative group ${
-                isSpeaking ? 'speakable-highlight' : ''
-            } ${className}`}
+                isSpeaking && highlightEnabled ? 'speakable-highlight' : ''
+            } ${className || ''}`}
         >
             {children}
             <button
                 onClick={handleSpeak}
                 className="speakable-button absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity bg-slate-700/80 hover:bg-primary-500/80 text-white rounded-full p-1"
-                aria-label={t('tts.readThis')}
+                aria-label={t('settingsView.tts.readThis')}
             >
                 <PhosphorIcons.SpeakerHigh className="w-4 h-4" />
             </button>

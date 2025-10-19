@@ -5,8 +5,7 @@ import { useAppSelector } from '@/stores/store'
 import { Language } from '@/types'
 
 export const useAvailableVoices = () => {
-    // FIX: Cast the result of `useAppSelector` to the correct type to avoid 'unknown' type errors.
-    const language = useAppSelector(selectLanguage) as Language;
+    const language = useAppSelector(selectLanguage);
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
 
     useEffect(() => {

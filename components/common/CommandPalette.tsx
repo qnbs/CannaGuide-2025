@@ -27,7 +27,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
 
     useEffect(() => {
         if (isOpen) {
-            setTimeout(() => inputRef.current?.focus(), 100)
+            // Let useFocusTrap handle the initial focus.
+            // It will correctly focus the input on desktop and the first item on mobile.
             setQuery('')
             listRef.current?.scrollTo({ top: 0 })
         }
@@ -85,7 +86,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         {t('commandPalette.title')}
                     </h2>
                 </div>
-                <div className="p-3 border-b border-slate-700/50 relative">
+                <div className="p-3 border-b border-slate-700/50 relative hidden sm:block">
                     <PhosphorIcons.MagnifyingGlass className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                     <Input
                         ref={inputRef}
@@ -93,7 +94,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         placeholder={t('commandPalette.placeholder')}
-                        className="w-full pl-10 input-base"
+                        className="w-full pl-10"
                     />
                 </div>
                 {displayedCommands.length > 0 ? (

@@ -1,15 +1,15 @@
-// FIX: Add `useMemo` to the `react` import to resolve the "Cannot find name 'useMemo'" error.
 import React, { useTransition, Suspense, lazy, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { KnowledgeViewTab } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
-import { selectUi } from '@/stores/selectors';
+import { selectKnowledgeViewTab, selectActiveMentorPlantId } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { usePlantById } from '@/hooks/useSimulationBridge';
 import { MentorChatView } from './knowledge/MentorChatView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
+import { KnowledgeSubNav } from './knowledge/KnowledgeSubNav';
 
 // Lazy load the sub-views for better initial load performance
 const MentorView = lazy(() => import('./knowledge/MentorView'));
@@ -22,35 +22,39 @@ const SandboxView = lazy(() => import('./knowledge/SandboxView'));
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { knowledgeViewTab: activeTab, activeMentorPlantId } = useAppSelector(selectUi);
+    const activeTab = useAppSelector(selectKnowledgeViewTab);
+    const activeMentorPlantId = useAppSelector(selectActiveMentorPlantId);
     const [isPending, startTransition] = useTransition();
 
     const activeMentorPlant = usePlantById(activeMentorPlantId);
 
-    const tabs = useMemo(() => [
-        { id: KnowledgeViewTab.Mentor, label: t('knowledgeView.tabs.mentor'), icon: <PhosphorIcons.Brain /> },
-        { id: KnowledgeViewTab.Guide, label: t('knowledgeView.tabs.guide'), icon: <PhosphorIcons.Book /> },
-        { id: KnowledgeViewTab.Archive, label: t('knowledgeView.tabs.archive'), icon: <PhosphorIcons.Archive /> },
-        { id: KnowledgeViewTab.Breeding, label: t('knowledgeView.tabs.breeding'), icon: <PhosphorIcons.TestTube /> },
-        { id: KnowledgeViewTab.Sandbox, label: t('knowledgeView.tabs.sandbox'), icon: <PhosphorIcons.Flask /> },
-    ], [t]);
+    const viewIcons = useMemo(
+        () => ({
+            [KnowledgeViewTab.Mentor]: <PhosphorIcons.Brain className="w-16 h-16 mx-auto text-purple-400" />,
+            [KnowledgeViewTab.Guide]: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-blue-400" />,
+            [KnowledgeViewTab.Archive]: <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-amber-400" />,
+            [KnowledgeViewTab.Breeding]: <PhosphorIcons.TestTube className="w-16 h-16 mx-auto text-green-400" />,
+            [KnowledgeViewTab.Sandbox]: <PhosphorIcons.Flask className="w-16 h-16 mx-auto text-rose-400" />,
+        }),
+        [],
+    );
 
-    const viewIcons = useMemo(() => ({
-        [KnowledgeViewTab.Mentor]: <PhosphorIcons.Brain className="w-16 h-16 mx-auto text-fuchsia-400" />,
-        [KnowledgeViewTab.Guide]: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-rose-400" />,
-        [KnowledgeViewTab.Archive]: <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-stone-400" />,
-        [KnowledgeViewTab.Breeding]: <PhosphorIcons.TestTube className="w-16 h-16 mx-auto text-violet-400" />,
-        [KnowledgeViewTab.Sandbox]: <PhosphorIcons.Flask className="w-16 h-16 mx-auto text-emerald-400" />,
-    }), []);
+    const viewTitles = useMemo(() => ({
+        [KnowledgeViewTab.Mentor]: t('knowledgeView.tabs.mentor'),
+        [KnowledgeViewTab.Guide]: t('knowledgeView.tabs.guide'),
+        [KnowledgeViewTab.Archive]: t('knowledgeView.tabs.archive'),
+        [KnowledgeViewTab.Breeding]: t('knowledgeView.tabs.breeding'),
+        [KnowledgeViewTab.Sandbox]: t('knowledgeView.tabs.sandbox'),
+    }), [t]);
     
     // If a chat is active, render the chat view exclusively
     if (activeMentorPlant) {
         return <MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} />;
     }
 
-    const handleSetTab = (id: string) => {
+    const handleSetTab = (id: KnowledgeViewTab) => {
         startTransition(() => {
-            dispatch(setKnowledgeViewTab(id as KnowledgeViewTab));
+            dispatch(setKnowledgeViewTab(id));
         });
     };
 
@@ -69,28 +73,10 @@ export const KnowledgeView: React.FC = () => {
         <div className="space-y-6 animate-fade-in">
             <div className="text-center mb-6 animate-fade-in">
                 {viewIcons[activeTab]}
-                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('knowledgeView.title')}</h2>
-                <p className="text-slate-400 mt-1">{t('knowledgeView.subtitle')}</p>
+                <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{viewTitles[activeTab]}</h2>
             </div>
 
-            <Card className="!p-2">
-                <div className="grid grid-cols-2 gap-2">
-                    {tabs.map((tab, index) => (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleSetTab(tab.id)}
-                            className={`w-full p-3 rounded-lg text-left transition-all duration-200 flex items-center gap-3 relative ${
-                                activeTab === tab.id
-                                    ? 'bg-slate-700 text-primary-300 font-semibold'
-                                    : 'bg-slate-800/50 hover:bg-slate-700/50 text-slate-200'
-                            } ${index === 4 ? 'col-span-2 justify-center' : ''}`}
-                        >
-                            <div className="w-6 h-6">{tab.icon}</div>
-                            <span>{tab.label}</span>
-                        </button>
-                    ))}
-                </div>
-            </Card>
+            <KnowledgeSubNav activeTab={activeTab} onTabChange={handleSetTab} />
 
             <main className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
                 <Card>

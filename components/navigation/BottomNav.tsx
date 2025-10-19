@@ -44,11 +44,11 @@ export const BottomNav: React.FC = () => {
     }, [activeView]);
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 sm:relative bg-[rgba(var(--color-bg-component),0.8)] border-t border-[rgb(var(--color-border))] backdrop-blur-lg flex-shrink-0 z-20 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
+        <nav className="fixed bottom-0 left-0 right-0 sm:hidden bg-[rgba(var(--color-bg-primary),0.8)] border-t border-[rgb(var(--color-border))] backdrop-blur-lg flex-shrink-0 z-20 pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/30 to-transparent"></div>
             <div ref={navRef} className="relative flex justify-around max-w-5xl mx-auto">
                 <div
-                    className="absolute top-0 h-full rounded-md bg-primary-500/20 transition-all duration-300 ease-out"
+                    className="absolute top-0 h-full rounded-md bg-primary-500/10 transition-all duration-300 ease-out"
                     style={indicatorStyle}
                 >
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary-400 rounded-b-full shadow-glow-primary"></div>

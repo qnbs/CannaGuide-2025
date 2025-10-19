@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-// FIX: Add missing imports for ExperimentResult and SavedExperiment
 import { ExperimentResult, SavedExperiment, Scenario, Plant, SandboxState } from '@/types';
 import { RootState } from '../store';
 

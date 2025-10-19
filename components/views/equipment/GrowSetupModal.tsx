@@ -27,11 +27,10 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
-  // FIX: Cast the result of `useAppSelector` to `AppSettings` to resolve 'unknown' type errors.
   const settings = useAppSelector(selectSettings) as AppSettings;
   
   const [setup, setSetup] = useState<GrowSetup>({
-    ...settings.defaultGrowSetup,
+    ...settings.defaults.growSetup,
     lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
   });
   

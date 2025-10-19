@@ -1,7 +1,7 @@
 import React from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
-import { selectTtsState } from '@/stores/selectors'
+import { selectTtsState, selectTtsEnabled } from '@/stores/selectors'
 import { Button } from '@/components/common/Button'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { playTts, pauseTts, stopTts, nextTts } from '@/stores/slices/ttsSlice'
@@ -10,8 +10,8 @@ import { TtsState } from '@/stores/slices/ttsSlice'
 export const TTSControls: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    const { isTtsSpeaking, isTtsPaused, ttsQueue } = useAppSelector(selectTtsState) as TtsState;
-    const ttsEnabled = useAppSelector((state) => state.settings.settings.tts.enabled)
+    const { isTtsSpeaking, isTtsPaused, ttsQueue } = useAppSelector(selectTtsState);
+    const ttsEnabled = useAppSelector(selectTtsEnabled);
 
     if (!ttsEnabled || (ttsQueue.length === 0 && !isTtsSpeaking && !isTtsPaused)) {
         return null
@@ -25,7 +25,7 @@ export const TTSControls: React.FC = () => {
                     size="sm"
                     className="!p-2 rounded-full"
                     onClick={() => dispatch(pauseTts())}
-                    aria-label={t('tts.pause')}
+                    aria-label={t('settingsView.tts.pause')}
                 >
                     <PhosphorIcons.Pause className="w-5 h-5" />
                 </Button>
@@ -35,7 +35,7 @@ export const TTSControls: React.FC = () => {
                     size="sm"
                     className="!p-2 rounded-full"
                     onClick={() => dispatch(playTts())}
-                    aria-label={t('tts.play')}
+                    aria-label={t('settingsView.tts.play')}
                 >
                     <PhosphorIcons.Play className="w-5 h-5" />
                 </Button>
@@ -46,7 +46,7 @@ export const TTSControls: React.FC = () => {
                 className="!p-2 rounded-full"
                 onClick={() => dispatch(nextTts())}
                 disabled={ttsQueue.length <= 1 && !isTtsPaused}
-                aria-label={t('tts.next')}
+                aria-label={t('settingsView.tts.next')}
             >
                 <PhosphorIcons.SkipForward className="w-5 h-5" />
             </Button>
@@ -55,7 +55,7 @@ export const TTSControls: React.FC = () => {
                 size="sm"
                 className="!p-2 rounded-full"
                 onClick={() => dispatch(stopTts())}
-                aria-label={t('tts.stop')}
+                aria-label={t('settingsView.tts.stop')}
             >
                 <PhosphorIcons.Stop className="w-5 h-5" />
             </Button>

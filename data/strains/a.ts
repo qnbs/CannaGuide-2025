@@ -603,30 +603,6 @@ export const strainsA: Strain[] = [
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
-        "id": "appalachia",
-        "name": "Appalachia",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-        "genetics": "Green Crack x Tres Dawg",
-        "floweringType": "Photoperiod",
-        "thc": 21,
-        "cbd": 1,
-        "thcRange": "19-23%",
-        "cbdRange": "<2%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "description": "Appalachia is a balanced hybrid strain that combines the energetic, cerebral effects of Green Crack with the physical potency of Tres Dawg. The result is a versatile high that starts with a motivating and euphoric head rush and gradually transitions into a calming body relaxation without being heavily sedating. The aroma is a complex blend of sweet earth, pine, and a hint of diesel.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Earthy", "Sweet", "Pine", "Diesel"],
-        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
-    }),
-    createStrainObject({
         "id": "appalachian-kush",
         "name": "Appalachian Kush",
         "type": StrainType.Hybrid,

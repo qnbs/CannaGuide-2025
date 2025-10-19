@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdvancedFilterState, DifficultyLevel, YieldLevel, HeightLevel, StrainType } from '@/types';
+import { AdvancedFilterState, DifficultyLevel, YieldLevel, HeightLevel, StrainType, SortKey, SortDirection } from '@/types';
+import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 
 export interface FiltersState {
     searchTerm: string;
@@ -7,25 +8,18 @@ export interface FiltersState {
     showFavoritesOnly: boolean;
     advancedFilters: AdvancedFilterState;
     letterFilter: string | null;
+    sortKey: SortKey;
+    sortDirection: SortDirection;
 }
-
-export const initialAdvancedFilters: AdvancedFilterState = {
-    thcRange: [0, 35],
-    cbdRange: [0, 20],
-    floweringRange: [4, 20],
-    selectedDifficulties: [],
-    selectedYields: [],
-    selectedHeights: [],
-    selectedAromas: [],
-    selectedTerpenes: [],
-};
 
 const initialState: FiltersState = {
     searchTerm: '',
     typeFilter: [],
     showFavoritesOnly: false,
-    advancedFilters: initialAdvancedFilters,
+    advancedFilters: INITIAL_ADVANCED_FILTERS,
     letterFilter: null,
+    sortKey: 'name',
+    sortDirection: 'asc',
 };
 
 const filtersSlice = createSlice({
@@ -56,12 +50,25 @@ const filtersSlice = createSlice({
         setLetterFilter: (state, action: PayloadAction<string | null>) => {
             state.letterFilter = state.letterFilter === action.payload ? null : action.payload;
         },
+        setSort: (state, action: PayloadAction<{ key: SortKey; direction: SortDirection }>) => {
+            state.sortKey = action.payload.key;
+            state.sortDirection = action.payload.direction;
+        },
+        hydrateFilters: (state, action: PayloadAction<Partial<FiltersState>>) => {
+            const { advancedFilters, ...rest } = action.payload;
+            Object.assign(state, rest);
+            if (advancedFilters) {
+                state.advancedFilters = { ...state.advancedFilters, ...advancedFilters };
+            }
+        },
         resetAllFilters: (state) => {
             state.searchTerm = '';
             state.typeFilter = [];
             state.showFavoritesOnly = false;
-            state.advancedFilters = initialAdvancedFilters;
+            state.advancedFilters = INITIAL_ADVANCED_FILTERS;
             state.letterFilter = null;
+            state.sortKey = 'name';
+            state.sortDirection = 'asc';
         },
     },
 });
@@ -74,6 +81,8 @@ export const {
     setAdvancedFilters,
     resetAllFilters,
     setLetterFilter,
+    setSort,
+    hydrateFilters,
 } = filtersSlice.actions;
 
 export default filtersSlice.reducer;

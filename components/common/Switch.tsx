@@ -26,8 +26,8 @@ export const Switch: React.FC<SwitchProps> = memo(
                     aria-checked={checked}
                     aria-label={ariaLabel || label}
                     onClick={() => onChange(!checked)}
-                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
-                        checked ? 'bg-primary-500' : 'bg-slate-600'
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
+                        checked ? 'bg-primary-500 border-primary-400' : 'bg-slate-700 border-slate-600'
                     }`}
                 >
                     <span

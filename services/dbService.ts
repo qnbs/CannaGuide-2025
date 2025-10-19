@@ -11,23 +11,18 @@
  */
 
 import { StoredImageData, Strain } from '@/types';
-
-// --- DATABASE CONFIGURATION ---
-
-const DB_NAME = 'CannaGuideDB';
-const DB_VERSION = 3;
-
-// --- STORE NAMES ---
-export const STRAINS_STORE = 'strains';
-export const IMAGES_STORE = 'images';
-export const METADATA_STORE = 'metadata';
-export const STRAIN_SEARCH_INDEX_STORE = 'strain_search_index';
-
-// --- INDEX NAMES for STRAINS_STORE ---
-export const STRAIN_INDEX_TYPE = 'by_type';
-export const STRAIN_INDEX_THC = 'by_thc';
-export const STRAIN_INDEX_CBD = 'by_cbd';
-export const STRAIN_INDEX_FLOWERING = 'by_floweringTime';
+import { 
+    DB_NAME, 
+    DB_VERSION,
+    STRAINS_STORE,
+    IMAGES_STORE,
+    METADATA_STORE,
+    STRAIN_SEARCH_INDEX_STORE,
+    STRAIN_INDEX_TYPE,
+    STRAIN_INDEX_THC,
+    STRAIN_INDEX_CBD,
+    STRAIN_INDEX_FLOWERING,
+} from '@/constants';
 
 
 // --- TYPE DEFINITIONS ---

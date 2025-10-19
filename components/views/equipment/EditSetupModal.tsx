@@ -11,16 +11,6 @@ interface EditSetupModalProps {
     onSave: (updatedSetup: SavedSetup) => void;
 }
 
-const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => {
-    const id = useId();
-    return (
-        <div>
-            <label htmlFor={id} className="block text-xs font-semibold text-slate-300 mb-1">{label}</label>
-            <Input id={id} {...props} />
-        </div>
-    );
-};
-
 const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => {
      const id = useId();
     return (
@@ -71,7 +61,7 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
     return (
         <Modal isOpen={true} onClose={onClose} title={t('equipmentView.savedSetups.editTitle')} footer={footer} size="2xl">
             <div className="space-y-4">
-                <FormInput 
+                <Input 
                     label={t('common.name')}
                     value={formData.name}
                     onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
@@ -84,9 +74,9 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
                      
                      return (
                          <FormSection title={categoryLabel} key={key}>
-                            <FormInput label={t('equipmentView.savedSetups.pdfReport.product')} value={item.name} onChange={e => handleRecommendationChange(key, 'name', e.target.value)} />
-                             <FormInput label={t('equipmentView.savedSetups.pdfReport.price')} type="number" value={item.price} onChange={e => handleRecommendationChange(key, 'price', e.target.value)} />
-                             {item.watts !== undefined && <FormInput label={t('common.units.watt')} type="number" value={item.watts} onChange={e => handleRecommendationChange(key, 'watts', e.target.value)} />}
+                            <Input label={t('equipmentView.savedSetups.pdfReport.product')} value={item.name} onChange={e => handleRecommendationChange(key, 'name', e.target.value)} />
+                             <Input label={t('equipmentView.savedSetups.pdfReport.price')} type="number" value={item.price} onChange={e => handleRecommendationChange(key, 'price', e.target.value)} />
+                             {item.watts !== undefined && <Input label={t('common.units.watt')} type="number" value={item.watts} onChange={e => handleRecommendationChange(key, 'watts', e.target.value)} />}
                              <div className="sm:col-span-2">
                                 <FormTextarea label={t('equipmentView.savedSetups.pdfReport.rationale')} value={item.rationale} onChange={e => handleRecommendationChange(key, 'rationale', e.target.value)} />
                              </div>

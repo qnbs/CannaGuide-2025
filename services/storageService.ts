@@ -1,5 +1,4 @@
-
-const STORAGE_PREFIX = 'cannaguide-2025-';
+import { STORAGE_PREFIX } from '@/constants';
 
 /**
  * A centralized service for interacting with localStorage.

@@ -1,1 +1,1 @@
-export * from '@/data/strains/index';
+export * from './strains/index';

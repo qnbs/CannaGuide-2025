@@ -98,9 +98,6 @@ export const strains: Record<string, StrainTranslationData> = {
   "animal-mints": {
     "description": "Gezüchtet von Seed Junky Genetics. Eine hochpotente Hybride mit einem komplexen Aroma von Minze, Keksteig, Vanille und einem Hauch Diesel. Die Wirkung ist stark und ausgewogen, beginnend mit einem euphorischen Kopf-High, das in eine tiefe, sedierende Körperentspannung übergeht."
   },
-  "appalachia": {
-    "description": "Appalachia ist eine ausgewogene Hybridsorte, die die energetische, zerebrale Wirkung von Green Crack mit der körperlichen Potenz von Tres Dawg kombiniert. Das Ergebnis ist ein vielseitiges High, das mit einem motivierenden und euphorischen Kopfschub beginnt und allmählich in eine beruhigende Körperentspannung übergeht, ohne stark sedierend zu wirken. Das Aroma ist eine komplexe Mischung aus süßer Erde, Kiefer und einem Hauch von Diesel."
-  },
   "appalachian-kush": {
     "description": "Eine potente Hybride mit einem erdigen, süßen und leicht würzigen Aroma. Sie bietet eine ausgewogene Wirkung, die mit einem zerebralen, energetischen Schub beginnt und in eine entspannende Körperwirkung übergeht. Ideal zur Linderung von Stress und Schmerzen, ohne völlig zu sedieren."
   },

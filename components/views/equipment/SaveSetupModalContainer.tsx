@@ -4,10 +4,12 @@ import { closeSaveSetupModal, setEquipmentViewTab } from '@/stores/slices/uiSlic
 import { addSetup } from '@/stores/slices/savedItemsSlice';
 import { SaveSetupModal } from './SaveSetupModal';
 import { EquipmentViewTab } from '@/types';
+import { selectIsSaveSetupModalOpen, selectSetupToSave } from '@/stores/selectors';
 
 export const SaveSetupModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();
-    const { isSaveSetupModalOpen, setupToSave } = useAppSelector(state => state.ui);
+    const isSaveSetupModalOpen = useAppSelector(selectIsSaveSetupModalOpen);
+    const setupToSave = useAppSelector(selectSetupToSave);
 
     const handleSave = (name: string) => {
         if (setupToSave) {

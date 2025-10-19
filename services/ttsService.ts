@@ -61,6 +61,7 @@ class TTSService {
         utterance.lang = selectedVoice?.lang || langCode;
         utterance.pitch = settings.pitch;
         utterance.rate = settings.rate;
+        utterance.volume = settings.volume;
 
         this.synth.speak(utterance);
     }

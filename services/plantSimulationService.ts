@@ -1,11 +1,5 @@
 import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType } from '@/types';
-import { STAGES_ORDER } from '@/constants';
-
-// --- SIMULATION CONSTANTS ---
-const PAR_PER_WATT_LED = 2.5; // µmol/s/W (Photosynthetically Active Radiation)
-const LIGHT_EXTINCTION_COEFFICIENT_K = 0.7; // For Beer-Lambert law
-const BIOMASS_CONVERSION_EFFICIENCY = 0.5; // g biomass per g nutrients (abstract)
-const SECONDS_PER_DAY = 86400;
+import { STAGES_ORDER, SIM_PAR_PER_WATT_LED, SIM_LIGHT_EXTINCTION_COEFFICIENT_K, SIM_BIOMASS_CONVERSION_EFFICIENCY, SIM_SECONDS_PER_DAY } from '@/constants';
 
 // More detailed stage information for the mechanistic model
 export const PLANT_STAGE_DETAILS: Record<PlantStage, { 
@@ -33,7 +27,6 @@ export const PLANT_STAGE_DETAILS: Record<PlantStage, {
 class PlantSimulationService {
     createPlant(strain: Strain, setup: GrowSetup, name: string): Plant {
         const now = Date.now();
-        // Fabric pots have better aeration and thus a slightly lower water holding capacity compared to plastic.
         const waterHoldingCapacity = setup.potSize * 1000 * (setup.potType === 'Fabric' ? 0.28 : 0.35);
         return {
             id: `plant-${now}`,
@@ -46,7 +39,7 @@ class PlantSimulationService {
             health: 100,
             stressLevel: 0,
             height: 0,
-            biomass: { total: 0.01, roots: 0.01, stem: 0, leaves: 0, flowers: 0 },
+            biomass: { total: 0.01, stem: 0.01, leaves: 0, flowers: 0 },
             leafAreaIndex: 0.01,
             isTopped: false,
             lstApplied: 0,
@@ -65,7 +58,7 @@ class PlantSimulationService {
                 nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 },
             },
             nutrientPool: { nitrogen: 5, phosphorus: 5, potassium: 5 },
-            rootSystem: { health: 100 },
+            rootSystem: { health: 100, mass: 0.01 },
             equipment: {
                 light: {
                     type: setup.lightType,
@@ -80,6 +73,8 @@ class PlantSimulationService {
                 circulationFan: {
                     isOn: setup.hasCirculationFan,
                 },
+                potSize: setup.potSize,
+                potType: setup.potType,
             },
             problems: [],
             journal: [],
@@ -87,10 +82,11 @@ class PlantSimulationService {
             harvestData: null,
             structuralModel: { branches: 1, nodes: 1 },
             history: [{ day: 0, health: 100, height: 0, stressLevel: 0, medium: { ph: 6.5, ec: 0.8, moisture: 100 } }],
+            cannabinoidProfile: { thc: 0, cbd: 0, cbn: 0 },
+            terpeneProfile: {},
         };
     }
     
-    // Core delta-time simulation function
     calculateStateForTimeDelta(plant: Plant, deltaTime: number): { updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] } {
         let updatedPlant = this.clonePlant(plant);
         const newJournalEntries: JournalEntry[] = [];
@@ -99,7 +95,7 @@ class PlantSimulationService {
 
         const elapsedMillis = now - updatedPlant.lastUpdated;
         const totalMillisToSimulate = deltaTime < elapsedMillis ? elapsedMillis : deltaTime;
-        const daysToSimulate = Math.floor(totalMillisToSimulate / SECONDS_PER_DAY / 1000);
+        const daysToSimulate = Math.floor(totalMillisToSimulate / SIM_SECONDS_PER_DAY / 1000);
         
         if (daysToSimulate < 1) {
             updatedPlant.lastUpdated = now;
@@ -107,13 +103,11 @@ class PlantSimulationService {
         }
 
         for (let i = 0; i < daysToSimulate; i++) {
-            // Run one full day of simulation logic
             updatedPlant.age += 1;
 
-            // ... (full mechanistic logic would go here)
-            // This is a simplified but representative implementation
             updatedPlant = this._runDailyMetabolism(updatedPlant);
             updatedPlant = this._runDailyGrowth(updatedPlant);
+            updatedPlant = this._runDailySynthesis(updatedPlant);
             updatedPlant = this._updateHealthAndStress(updatedPlant);
 
             const { plant: p, journalEntries: j, tasks: t } = this._checkForEvents(updatedPlant);
@@ -121,7 +115,6 @@ class PlantSimulationService {
             newJournalEntries.push(...j);
             newTasks.push(...t);
 
-            // Record history
             updatedPlant.history.push({
                 day: updatedPlant.age,
                 height: updatedPlant.height,
@@ -138,32 +131,24 @@ class PlantSimulationService {
     private _runDailyMetabolism(plant: Plant): Plant {
         const p = this.clonePlant(plant);
         
-        // --- EQUIPMENT MODIFIERS ---
-        // Exhaust fan power directly influences how quickly temperature and humidity can be corrected.
         const ventilationFactor = { low: 0.8, medium: 1.0, high: 1.5 }[p.equipment.exhaustFan.power || 'medium'];
-        // HPS lights generate more heat
         const heatFromLight = p.equipment.light.wattage * (p.equipment.light.type === 'HPS' ? 0.2 : 0.1);
-        // Lack of circulation fan can create humidity pockets, slightly increasing effective humidity
         const circulationFactor = p.equipment.circulationFan.isOn ? 1.0 : 1.05;
 
-        // 1. Environment & VPD
-        // Simplified temp/humidity logic would be applied here based on factors above
         p.environment.vpd = this._calculateVPD(p.environment.internalTemperature, p.environment.internalHumidity, -2);
         
-        // 2. Transpiration (driven by VPD and plant size)
         const vpd = p.environment.vpd;
         const vpdOptimum = (p.strain.geneticModifiers.vpdTolerance.min + p.strain.geneticModifiers.vpdTolerance.max) / 2;
         const vpdStressFactor = 1 - Math.abs(vpd - vpdOptimum);
         const transpirationRate = p.biomass.leaves * p.strain.geneticModifiers.transpirationFactor * vpdStressFactor;
         
-        const waterUsed = Math.min(p.medium.substrateWater, transpirationRate * 100); // 100 is an arbitrary factor
+        const waterUsed = Math.min(p.medium.substrateWater, transpirationRate * 100);
         p.medium.substrateWater -= waterUsed;
-        const waterCapacity = (p.equipment as any).potSize * 1000 * ((p.equipment as any).potType === 'Fabric' ? 0.28 : 0.35);
+        const waterCapacity = p.equipment.potSize * 1000 * (p.equipment.potType === 'Fabric' ? 0.28 : 0.35);
         p.medium.moisture = (p.medium.substrateWater / waterCapacity) * 100;
 
-        // 3. Nutrient Uptake (driven by water uptake and root health)
         const uptakeFactor = p.strain.geneticModifiers.nutrientUptakeRate * (p.rootSystem.health / 100);
-        const nutrientDemand = p.biomass.total * 0.05; // Plant wants 5% of its mass in nutrients daily
+        const nutrientDemand = (p.biomass.total + p.rootSystem.mass) * 0.05;
         const availableNutrients = waterUsed * p.medium.ec * uptakeFactor;
         
         const nutrientsTaken = Math.min(nutrientDemand, availableNutrients);
@@ -181,42 +166,63 @@ class PlantSimulationService {
     private _runDailyGrowth(plant: Plant): Plant {
         const p = this.clonePlant(plant);
         
-        // 4. Photosynthesis & Biomass Accumulation
-        // LED lights are more efficient in converting watts to PAR
-        const parEfficiency = p.equipment.light.type === 'LED' ? PAR_PER_WATT_LED : PAR_PER_WATT_LED * 0.8;
-        const dailyLightIntegral = (p.equipment.light.wattage * parEfficiency * p.equipment.light.lightHours * 3600) / 1000000; // mol/m²/day
-        const lightAbsorbed = 1 - Math.exp(-LIGHT_EXTINCTION_COEFFICIENT_K * p.leafAreaIndex);
-        const potentialBiomassGain = (dailyLightIntegral / 4) * lightAbsorbed * p.strain.geneticModifiers.rue; // Simplified conversion from DLI to MJ
+        const parEfficiency = p.equipment.light.type === 'LED' ? SIM_PAR_PER_WATT_LED : SIM_PAR_PER_WATT_LED * 0.8;
+        const dailyLightIntegral = (p.equipment.light.wattage * parEfficiency * p.equipment.light.lightHours * 3600) / 1000000;
+        const lightAbsorbed = 1 - Math.exp(-SIM_LIGHT_EXTINCTION_COEFFICIENT_K * p.leafAreaIndex);
+        const potentialBiomassGain = (dailyLightIntegral / 4) * lightAbsorbed * p.strain.geneticModifiers.rue;
         
-        // 5. Growth Limiting Factors
-        const nutrientSupply = (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) * BIOMASS_CONVERSION_EFFICIENCY;
+        const nutrientSupply = (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) * SIM_BIOMASS_CONVERSION_EFFICIENCY;
         const actualBiomassGain = Math.min(potentialBiomassGain, nutrientSupply) * (p.health / 100);
         
-        // 6. Partition Biomass
         const partition = PLANT_STAGE_DETAILS[p.stage].biomassPartitioning;
         const gainedRoots = actualBiomassGain * partition.roots;
         const gainedStem = actualBiomassGain * partition.stem;
         const gainedLeaves = actualBiomassGain * partition.leaves;
         const gainedFlowers = actualBiomassGain * partition.flowers;
         
-        p.biomass.total += actualBiomassGain;
-        p.biomass.roots += gainedRoots;
+        p.rootSystem.mass += gainedRoots;
         p.biomass.stem += gainedStem;
         p.biomass.leaves += gainedLeaves;
         p.biomass.flowers += gainedFlowers;
+        p.biomass.total = p.biomass.stem + p.biomass.leaves + p.biomass.flowers;
         
-        // Update other metrics
-        p.height = p.biomass.stem * 20; // Simplification
-        p.leafAreaIndex = p.biomass.leaves * 0.05; // Simplification
+        p.height = p.biomass.stem * 20;
+        p.leafAreaIndex = p.biomass.leaves * 0.05;
 
-        // Consume nutrients from pool
-        const consumedNutrients = actualBiomassGain / BIOMASS_CONVERSION_EFFICIENCY;
+        const consumedNutrients = actualBiomassGain / SIM_BIOMASS_CONVERSION_EFFICIENCY;
         const ratio = PLANT_STAGE_DETAILS[p.stage].nutrientRatio;
         const totalRatio = ratio.n + ratio.p + ratio.k;
         if(totalRatio > 0) {
-            p.nutrientPool.nitrogen -= consumedNutrients * (ratio.n / totalRatio);
-            p.nutrientPool.phosphorus -= consumedNutrients * (ratio.p / totalRatio);
-            p.nutrientPool.potassium -= consumedNutrients * (ratio.k / totalRatio);
+            p.nutrientPool.nitrogen = Math.max(0, p.nutrientPool.nitrogen - consumedNutrients * (ratio.n / totalRatio));
+            p.nutrientPool.phosphorus = Math.max(0, p.nutrientPool.phosphorus - consumedNutrients * (ratio.p / totalRatio));
+            p.nutrientPool.potassium = Math.max(0, p.nutrientPool.potassium - consumedNutrients * (ratio.k / totalRatio));
+        }
+
+        return p;
+    }
+
+    private _runDailySynthesis(plant: Plant): Plant {
+        const p = this.clonePlant(plant);
+
+        if (p.stage !== PlantStage.Flowering) {
+            return p;
+        }
+
+        const productionFactor = 0.02 * (p.health / 100) * (1 - (p.stressLevel / 150));
+        const newCannabinoids = p.biomass.flowers * productionFactor;
+
+        if (newCannabinoids > 0) {
+            const thcToCbdRatio = p.strain.thc / (p.strain.cbd + 0.1);
+            p.cannabinoidProfile.thc += newCannabinoids * (thcToCbdRatio / (thcToCbdRatio + 1));
+            p.cannabinoidProfile.cbd += newCannabinoids * (1 / (thcToCbdRatio + 1));
+        }
+        
+        if (p.strain.dominantTerpenes && p.strain.dominantTerpenes.length > 0) {
+            const newTerpenes = p.biomass.flowers * (productionFactor * 0.2);
+            const terpeneCount = p.strain.dominantTerpenes.length;
+            p.strain.dominantTerpenes.forEach(terpName => {
+                p.terpeneProfile[terpName] = (p.terpeneProfile[terpName] || 0) + (newTerpenes / terpeneCount);
+            });
         }
 
         return p;
@@ -227,17 +233,13 @@ class PlantSimulationService {
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals;
         let stress = 0;
         
-        // VPD stress
         if(p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max) stress += 10;
-        // PH stress
         if(p.medium.ph < ideal.ph.min || p.medium.ph > ideal.ph.max) stress += 15;
-        // EC stress
         if(p.medium.ec < ideal.ec.min || p.medium.ec > ideal.ec.max) stress += 10;
-        // Water stress
         if(p.medium.moisture < 20) stress += 20;
-        if(p.medium.moisture > 98) stress += 5; // Overwatering
+        if(p.medium.moisture > 98) stress += 5;
         
-        p.stressLevel = Math.min(100, p.stressLevel * 0.8 + stress); // Stress decays but also accumulates
+        p.stressLevel = Math.min(100, p.stressLevel * 0.8 + stress);
         p.health = Math.max(0, 100 - p.stressLevel);
 
         return p;
@@ -249,7 +251,6 @@ class PlantSimulationService {
         const tasks: Task[] = [];
         const originalStage = p.stage;
     
-        // STAGE TRANSITION LOGIC
         const currentStageIndex = STAGES_ORDER.indexOf(p.stage);
         if (currentStageIndex < STAGES_ORDER.length - 1 && ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(p.stage)) {
             let cumulativeDuration = 0;
@@ -260,9 +261,8 @@ class PlantSimulationService {
             let shouldAdvance = p.age >= cumulativeDuration;
             const nextStage = STAGES_ORDER[currentStageIndex + 1];
     
-            // Special check for flowering transition
             if (nextStage === PlantStage.Flowering && p.strain.floweringType === 'Photoperiod' && p.equipment.light.lightHours > 12) {
-                shouldAdvance = false; // Hold in vegetative
+                shouldAdvance = false;
             }
             
             if (shouldAdvance) {
@@ -272,8 +272,8 @@ class PlantSimulationService {
     
         if (p.stage !== originalStage) {
             journalEntries.push({
-                id: '', // will be added by slice
-                createdAt: 0, // will be added by slice
+                id: '',
+                createdAt: 0,
                 type: JournalEntryType.System,
                 notes: `Stage changed from ${originalStage} to ${p.stage}`,
                 details: { from: originalStage, to: p.stage }
@@ -299,7 +299,6 @@ class PlantSimulationService {
         return JSON.parse(JSON.stringify(plant));
     }
     
-    // Action handlers
     topPlant(plant: Plant): { updatedPlant: Plant } {
         const p = this.clonePlant(plant);
         if (p.stage === PlantStage.Vegetative && !p.isTopped) {

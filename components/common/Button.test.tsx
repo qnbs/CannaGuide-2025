@@ -19,10 +19,10 @@ describe('Button', () => {
 
     it('applies variant classes correctly', () => {
         const { rerender } = render(<Button variant="primary">Primary</Button>);
-        expect(screen.getByText('Primary')).toHaveClass('bg-primary-500');
+        expect(screen.getByText('Primary')).toHaveClass('from-primary-500');
 
         rerender(<Button variant="secondary">Secondary</Button>);
-        expect(screen.getByText('Secondary')).toHaveClass('bg-slate-700');
+        expect(screen.getByText('Secondary')).toHaveClass('text-slate-200');
     });
 
     it('applies size classes correctly', () => {

@@ -1,37 +1,30 @@
-import React from 'react';
-import { Command, CommandGroup } from '@/types';
-
-const groupOrder: CommandGroup[] = [
-    CommandGroup.Navigation,
-    CommandGroup.General,
-    CommandGroup.Plants,
-    CommandGroup.Strains,
-    CommandGroup.Knowledge,
-    CommandGroup.Settings,
-];
+import { Command } from '@/types';
 
 export const groupAndSortCommands = (commands: Command[]): Command[] => {
-    const grouped = commands.reduce((acc, command) => {
-        if (!acc[command.group]) {
-            acc[command.group] = [];
+    if (!commands.length) return [];
+
+    const grouped: { [key: string]: Command[] } = {};
+    commands.forEach(command => {
+        if (!grouped[command.group]) {
+            grouped[command.group] = [];
         }
-        acc[command.group].push(command);
-        return acc;
-    }, {} as Record<string, Command[]>);
+        grouped[command.group].push(command);
+    });
+
+    const groupOrder = ['Navigation', 'Strains', 'Plants', 'General'];
+    const sortedGroups = Object.keys(grouped).sort((a, b) => {
+        const indexA = groupOrder.indexOf(a);
+        const indexB = groupOrder.indexOf(b);
+        if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        return indexA - indexB;
+    });
 
     const result: Command[] = [];
-    groupOrder.forEach(groupName => {
-        if (grouped[groupName] && grouped[groupName].length > 0) {
-            result.push({
-                id: `header-${groupName.replace(/\s/g, '')}`,
-                title: groupName,
-                group: groupName,
-                isHeader: true,
-                action: () => {},
-                icon: () => React.createElement('div'),
-            });
-            result.push(...grouped[groupName]);
-        }
+    sortedGroups.forEach(group => {
+        result.push({ id: `header-${group}`, title: group, group, isHeader: true, action: () => {}, icon: () => null });
+        result.push(...grouped[group].sort((a, b) => a.title.localeCompare(b.title)));
     });
 
     return result;

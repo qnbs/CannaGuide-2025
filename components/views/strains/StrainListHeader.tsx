@@ -38,7 +38,7 @@ export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, h
                 checked={areAllOnPageSelected}
                 onChange={onToggleAll}
                 className="custom-checkbox"
-                aria-label="Select all on page"
+                aria-label={t('strainsView.bulkActions.selectAll')}
             />
             {/* Spacer for icon column */}
             <div></div>

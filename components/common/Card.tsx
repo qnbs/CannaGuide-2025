@@ -3,6 +3,7 @@ import React, { forwardRef, useRef, memo, useCallback } from 'react'
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
     children: React.ReactNode
     className?: string
+    onClick?: React.MouseEventHandler<HTMLDivElement>
 }
 
 export const Card = memo(
@@ -19,12 +20,22 @@ export const Card = memo(
             internalRef.current.style.setProperty('--y', `${y}px`)
         }
 
-        const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-            if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                (props.onClick as any)(e);
-            }
-        }, [isInteractive, props.onClick]);
+        const handleKeyDown = useCallback(
+            (e: React.KeyboardEvent<HTMLDivElement>) => {
+                if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault()
+                    if (props.onClick) {
+                        // Create a synthetic mouse event to satisfy the handler's type
+                        const mockMouseEvent = {
+                            ...e,
+                            // Add any necessary properties from MouseEvent
+                        } as unknown as React.MouseEvent<HTMLDivElement>
+                        props.onClick(mockMouseEvent)
+                    }
+                }
+            },
+            [isInteractive, props.onClick],
+        )
 
         return (
             <div
@@ -48,5 +59,5 @@ export const Card = memo(
                 {children}
             </div>
         )
-    })
+    }),
 )

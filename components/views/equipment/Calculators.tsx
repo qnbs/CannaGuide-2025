@@ -25,7 +25,7 @@ export const Calculators: React.FC = () => {
     return (
         <div className="space-y-3">
             {calculatorList.map((calc, index) => (
-                <details key={calc.id} className="group glass-pane rounded-lg overflow-hidden ring-1 ring-inset ring-white/20" open={index === 0}>
+                <details key={calc.id} className="group bg-slate-800/50 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20" open={index === 0}>
                     <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
                         <h4 className="font-semibold text-slate-100 flex items-center gap-3">
                             <div className="w-6 h-6 text-primary-300">{calc.icon}</div>

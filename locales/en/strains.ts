@@ -39,10 +39,8 @@ export const strainsView = {
     myStrains: 'My Strains',
     favorites: 'Favorites',
     genealogy: 'Genealogy',
-    exports_one: '1 Export',
-    exports_other: '{{count}} Exports',
-    tips_one: '1 Tip',
-    tips_other: '{{count}} Tips',
+    exports: 'Exports ({{count}})',
+    tips: 'Tips ({{count}})',
   },
   filters: {
     thcMax: 'THC',
@@ -53,6 +51,7 @@ export const strainsView = {
     terpenes: 'Terpenes',
     difficulty: 'Difficulty',
     height: 'Height',
+    active: 'Active',
   },
   emptyStates: {
     noResults: {
@@ -146,29 +145,11 @@ export const strainsView = {
     format: 'Format',
     formats: {
       pdf: 'PDF',
-      csv: 'CSV',
-      json: 'JSON',
       txt: 'TXT',
-      xml: 'XML',
     },
-  },
-  csvHeaders: {
-    name: 'Name',
-    type: 'Type',
-    thc: 'THC (%)',
-    cbd: 'CBD (%)',
-    floweringTime: 'Flowering Time (weeks)',
-    difficulty: 'Difficulty',
-    yield: 'Yield',
-    height: 'Height',
-    genetics: 'Genetics',
-    aromas: 'Aromas',
-    terpenes: 'Terpenes',
-    yieldIndoor: 'Yield Indoor',
-    yieldOutdoor: 'Yield Outdoor',
-    heightIndoor: 'Height Indoor',
-    heightOutdoor: 'Height Outdoor',
-    description: 'Description',
+    chooseFormat: 'Choose a format from the options below.',
+    downloadReady: 'Download Ready',
+    clickToDownload: 'Your file "{{filename}}" is ready. Click the button below to download.',
   },
   strainDetail: {
     similarStrains: 'Similar Strains',
@@ -233,8 +214,17 @@ export const strainsView = {
             selected_other: '{{count}} selected tips',
             all_one: '1 filtered tip',
             all_other: 'All {{count}} filtered tips',
-        }
+        },
+        source: 'Source',
+        format: 'Format',
+        formats: {
+            pdf: 'PDF',
+            txt: 'TXT',
+        },
+        chooseFormat: 'Choose a format from the options below.',
     },
+    deleteConfirmPlural_one: 'Are you sure you want to delete 1 tip?',
+    deleteConfirmPlural_other: 'Are you sure you want to delete {{count}} tips?',
     form: {
       title: 'Get AI Grow Tips',
       description: 'Adjust the parameters to get tailored tips for this strain.',
@@ -270,6 +260,7 @@ export const strainsView = {
   bulkActions: {
     addToFavorites: 'Add to Favorites',
     removeFromFavorites: 'Remove from Favorites',
+    selectAll: 'Select all',
     addedToFavorites_one: 'Added 1 strain to favorites.',
     addedToFavorites_other: 'Added {{count}} strains to favorites.',
     removedFromFavorites_one: 'Removed 1 strain from favorites.',
@@ -299,5 +290,5 @@ export const strainsView = {
   },
   sortBy: 'Sort by',
   showingCount: 'Showing {{count}} of {{total}}',
-  loadMore: 'Load More... {{count}} of {{total}}',
+  loadMore: 'Load More... ({{count}} of {{total}})',
 };

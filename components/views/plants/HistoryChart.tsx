@@ -35,9 +35,9 @@ const pathConfig = {
         { key: 'stressLevel' as Metric, labelKey: 'plantsView.detailedView.stress', color: 'rgb(var(--color-accent-500))', strokeWidth: 1.5, dash: true, unit: '%' },
     ],
     substrate: [
-        { key: 'ph' as Metric, labelKey: 'plantsView.vitals.ph', color: 'rgb(250, 204, 21)', strokeWidth: 2, dash: false, unit: '' },
-        { key: 'ec' as Metric, labelKey: 'plantsView.vitals.ec', color: 'rgb(249, 115, 22)', strokeWidth: 2, dash: true, unit: '' },
-        { key: 'moisture' as Metric, labelKey: 'plantsView.vitals.moisture', color: 'rgb(59, 130, 246)', strokeWidth: 1.5, dash: false, unit: '%', opacity: 0.7 },
+        { key: 'ph' as Metric, labelKey: 'plantsView.vitals.ph', color: 'rgb(var(--color-warning))', strokeWidth: 2, dash: false, unit: '' },
+        { key: 'ec' as Metric, labelKey: 'plantsView.vitals.ec', color: 'rgb(var(--color-info))', strokeWidth: 2, dash: true, unit: '' },
+        { key: 'moisture' as Metric, labelKey: 'plantsView.vitals.moisture', color: 'rgb(var(--color-primary-400))', strokeWidth: 1.5, dash: false, unit: '%', opacity: 0.7 },
     ]
 };
 
@@ -117,14 +117,14 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     return (
         <div className="w-full h-full">
             <div className="flex justify-center gap-1 mb-2">
-                <button onClick={() => setView('growth')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-white/20 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.history')}</button>
-                <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-white/20 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
+                <button onClick={() => setView('growth')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.history')}</button>
+                <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
             </div>
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
                  <defs>
                     <linearGradient id="heightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                        <stop offset="0%" style={{ stopColor: 'rgb(var(--color-primary-500))', stopOpacity: 0.4 }} />
-                        <stop offset="100%" style={{ stopColor: 'rgb(var(--color-primary-800))', stopOpacity: 0.1 }} />
+                        <stop offset="0%" stopColor="rgb(var(--color-primary-500))" stopOpacity={0.4} />
+                        <stop offset="100%" stopColor="rgb(var(--color-primary-800))" stopOpacity={0.1} />
                     </linearGradient>
                 </defs>
                 <g className="history-chart-grid" transform={`translate(0, ${height - padding.bottom})`}>
@@ -203,7 +203,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                                       } else {
                                           value = (hoveredData.point as any)[pathInfo.key];
                                       }
-                                      return <p key={`tooltip-${pathInfo.key}`} style={{color: pathInfo.color}}>{t(pathInfo.labelKey)}: {value.toFixed(1)}{pathInfo.unit}</p>
+                                      return <p key={`tooltip-${pathInfo.key}`} style={{color: pathInfo.color}} className="font-semibold">{t(pathInfo.labelKey)}: {value.toFixed(1)}{pathInfo.unit}</p>
                                 })}
                            </div>
                         </foreignObject>
@@ -217,7 +217,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                             <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: pathInfo.color}}></div> :
                             <div className="w-2.5 h-0.5" style={{backgroundColor: pathInfo.color}}></div>
                         }
-                        {t(pathInfo.labelKey)}
+                        <span style={{color: pathInfo.color}}>{t(pathInfo.labelKey)}</span>
                     </span>
                 ))}
             </div>

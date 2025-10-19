@@ -9,8 +9,7 @@ import { Plant } from '@/types';
 export const AiDiagnosticsModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();
     const { isDiagnosticsModalOpen, diagnosticsPlantId } = useAppSelector(state => state.ui);
-    // FIX: Cast the result of `useAppSelector` to the correct type to avoid 'unknown' type errors.
-    const plant = useAppSelector(selectPlantById(diagnosticsPlantId)) as Plant | null;
+    const plant = useAppSelector(selectPlantById(diagnosticsPlantId));
 
     // The mutation hook is now in the container that controls its lifecycle.
     const [diagnosePlant, { isLoading, data, error, reset }] = useDiagnosePlantMutation(

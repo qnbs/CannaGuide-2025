@@ -19,8 +19,7 @@ interface OnboardingModalProps {
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
-    // FIX: Cast the result of `useAppSelector` to `number` to resolve 'unknown' type errors.
-    const step = useAppSelector(selectOnboardingStep) as number;
+    const step = useAppSelector(selectOnboardingStep);
 
     const steps = useMemo(
         () => [
@@ -51,7 +50,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     const handleLanguageSelect = async (lang: Language) => {
         // Explicitly await the language change before proceeding
         await i18nInstance.changeLanguage(lang)
-        dispatch(setSetting({ path: 'language', value: lang }))
+        dispatch(setSetting({ path: 'general.language', value: lang }))
         dispatch(setOnboardingStep(1))
     }
 
@@ -78,6 +77,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                         <Button
                             onClick={() => handleLanguageSelect('de')}
                             className="flex-1 flex items-center justify-center"
+                            variant="secondary"
                         >
                             <FlagDE className="w-6 h-6 mr-2" />
                             Deutsch
@@ -85,6 +85,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                         <Button
                             onClick={() => handleLanguageSelect('en')}
                             className="flex-1 flex items-center justify-center"
+                            variant="secondary"
                         >
                             <FlagEN className="w-6 h-6 mr-2" />
                             English
@@ -110,7 +111,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                         className={`rounded-full transition-all duration-300 ${
                             i === step - 1
                                 ? 'w-2.5 h-2.5 bg-primary-400'
-                                : 'w-2 h-2 border border-slate-600'
+                                : 'w-2 h-2 bg-slate-600'
                         }`}
                     ></div>
                 ))}

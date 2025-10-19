@@ -43,10 +43,10 @@ export const common = {
     },
     notes: 'Notes',
     units: {
-        weeks: 'weeks',
+        weeks: 'wks',
         days: 'days',
-        hours: 'Hours',
-        minutes: 'Minutes',
+        hours: 'hrs',
+        minutes: 'min',
         h_day: 'h/day',
         price_kwh: '€/kWh',
         currency_eur: '€',
@@ -57,19 +57,23 @@ export const common = {
     terpenes: {},
     simulationErrors: {
         invalidSetup: 'Invalid grow setup configuration. Please try again.',
-        invalidActionData: 'Invalid data provided for action: {{action}}.',
+        invalidActionData: 'Invalid data submitted for action: {{action}}.',
     },
     metadataDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore over 500 strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
     voiceControl: {
         listening: 'Listening...',
         processing: 'Processing: "{{transcript}}"',
-        toggle: 'Toggle voice control',
+        toggle: 'Toggle Voice Control',
         errors: {
-            generic: 'An error occurred during speech recognition.',
+            generic: 'A speech recognition error occurred.',
             noSpeech: 'No speech was detected.',
-            notAllowed: 'Microphone access was denied.',
+            notAllowed: 'Microphone access denied.',
             startFailed: 'Could not start listening.',
         },
+    },
+    pagination: {
+        previous: 'Previous Page',
+        next: 'Next Page',
     },
 };
 
@@ -95,39 +99,47 @@ export const plantStages = {
 };
 
 export const problemMessages = {
-    nutrientDeficiency: { message: 'Nutrient Deficiency Detected' },
-    overwatering: { message: 'Overwatering Detected' },
-    underwatering: { message: 'Underwatering Detected' },
-    pestInfestation: { message: 'Pest Infestation Detected' },
+    nutrientDeficiency: { message: 'Nutrient deficiency detected' },
+    overwatering: { message: 'Overwatering detected' },
+    underwatering: { message: 'Underwatering detected' },
+    pestInfestation: { message: 'Pest infestation detected' },
 };
 
 export const ai = {
     error: {
         generic: 'An AI error occurred. Please try again.',
-        equipment: 'Failed to generate equipment recommendation.',
-        diagnostics: 'Failed to generate plant diagnosis.',
-        tips: 'Failed to generate strain tips.',
-        deepDive: 'Failed to generate deep dive guide.',
+        equipment: 'Could not generate equipment recommendation.',
+        diagnostics: 'Could not generate plant diagnosis.',
+        tips: 'Could not generate strain tips.',
+        deepDive: 'Could not generate deep dive.',
         unknown: 'An unknown AI error occurred.'
     },
     advisor: 'AI Advisor',
     getAdvice: 'Get Advice',
-    diagnostics: 'Get Diagnosis',
+    diagnostics: 'Start Diagnosis',
     generating: 'AI is thinking...',
     disclaimer: 'AI-generated content. Always verify critical information.',
     prompts: {
-        equipmentSystemInstruction: 'You are an expert cannabis grow consultant. The user will provide their constraints and you will provide a complete equipment list in JSON format. Provide specific, real-world product names and an estimated price in Euros. Your rationale should be concise and helpful.',
+        equipmentSystemInstruction: 'You are an expert cannabis cultivation advisor. The user will provide their constraints and you will provide a full equipment list in JSON format. Provide specific, real product names and an estimated price in Euros. Your rationale should be concise and helpful.',
         equipmentRequest: 'I want to set up a grow for {{plantCount}} plants in a {{tentSize}} tent with a {{budget}} budget.',
-        equipmentRequestAdvanced: 'Generate a complete cannabis grow equipment list for a setup in Europe (prices in EUR). The setup should accommodate {{plantCount}} plants in a grow space of {{growSpaceWidth}}cm x {{growSpaceDepth}}cm. The user\'s experience level is "{{experienceLevel}}". They prefer to grow "{{floweringTypePreference}}" type plants. The total budget is approximately €{{budget}}. The main priorities for this grow are: {{priorities}}. Tailor your recommendations to optimize for these goals. Additionally, consider the user\'s specific request: "{{customNotes}}".',
-        advisor: 'You are an expert cannabis grow advisor. Based on the following plant data, provide concise, actionable advice for the next 24-48 hours. Format your response as a simple markdown.\n\n{{plant}}',
-        proactiveDiagnosis: 'You are an expert plant pathologist specializing in cannabis. Analyze the following complete plant data report. Identify any potential underlying issues or risks that may not be immediately obvious. Provide a concise report with a title and content in markdown format, outlining your findings and preventative recommendations.\n\n{{plant}}',
+        equipmentRequestAdvanced: 'Generate a full cannabis grow equipment list for a setup in Europe (prices in EUR). The setup should accommodate {{plantCount}} plants in a {{growSpaceWidth}}cm x {{growSpaceDepth}}cm grow space. The user\'s experience level is "{{experienceLevel}}", so recommend appropriate gear. They prefer growing "{{floweringTypePreference}}" plants. The total budget is approximately €{{budget}}. The main priorities for this grow are: {{priorities}}. Tailor your recommendations to optimize for these goals. Also, consider the user\'s custom request: "{{customNotes}}".',
+        advisor: 'You are an expert cannabis cultivation advisor. Based on the following plant data, provide concise, actionable advice for the next 24-48 hours. Format your response as simple markdown.\n\n{{plant}}',
+        proactiveDiagnosis: 'You are an expert plant pathologist specializing in cannabis. Analyze the following full plant data report. Identify any potential underlying issues or risks that are not immediately obvious. Provide a concise report with a title and content in markdown format outlining your findings and preventative recommendations.\n\n{{plant}}',
         mentor: {
-            main: 'Context: \n{{context}}\n\nUser Query: "{{query}}"',
-            systemInstruction: 'You are a friendly and knowledgeable cannabis cultivation mentor. Your name is Kai. You provide helpful, concise, and encouraging advice. Respond in JSON format only. The response must include a "title", a "content" field (markdown formatted), and an optional "uiHighlights" array of objects with "elementId" (string) and optional "plantId" (string). Highlight UI elements relevant to your answer (e.g., vpd-gauge, ph-vital).',
+            main: 'Context: \n{{context}}\n\nUser query: "{{query}}"',
+            systemInstruction: 'You are a friendly and knowledgeable cannabis grow mentor. Your name is Kai. You provide helpful, concise, and encouraging advice. Respond only in JSON format. The response must include a "title", a "content" field (markdown formatted), and an optional "uiHighlights" array of objects with "elementId" (string) and optional "plantId" (string). Highlight relevant UI elements for your response (e.g., vpd-gauge, ph-vital).',
         },
-        strainTips: 'Provide structured, concise growing tips for the strain: {{strain}}. The user\'s focus is on "{{focus}}", their experience level is "{{experienceLevel}}", and they are asking about the "{{stage}}" stage. Respond in JSON format only with keys: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
-        strainImage: 'Generate a fantastical, artistic representation of the cannabis strain "{{strainName}}". This is a {{type}} strain, renowned for its {{aromas}} aromas. Its effect is often described as {{description_snippet}}. The plant is known for its {{agronomic_yield}} yield and grows {{agronomic_height}}. Create a visually stunning and imaginative artwork that captures the *essence* of these traits in a subtle, artistic way. For example, a \'High\' yield could be represented by a sense of abundance, and a \'Tall\' height by vertical elements in the composition. Do not depict these literally. Do not create a photorealistic image of a cannabis bud. Instead, envision an abstract concept or fantasy landscape inspired by its characteristics. The style should be vibrant, memorable, and suitable for a premium guide.',
-        deepDive: 'Generate a deep dive guide on the topic of "{{topic}}" in the context of the following plant: {{plant}}. Respond in JSON format with keys: "introduction" (string), "stepByStep" (array of strings), "prosAndCons" ({pros: string[], cons: string[]}), and "proTip" (string).',
+        strainTips: 'Provide structured, concise grow tips for the strain: {{strain}}. The user\'s focus is on "{{focus}}", their experience level is "{{experienceLevel}}", and they are asking about the "{{stage}}" phase. Respond only in JSON format with the keys: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
+        strainImage: `Subject: A beautiful cannabis plant of the '{{strainName}}' strain.
+Style: Digital art, fantasy illustration, vibrant, colorful, high-quality.
+Type: {{type}}.
+Visual traits to feature:
+- Aromas: {{aromas}}.
+- Yield: {{agronomic_yield}}.
+- Height: {{agronomic_height}}.
+- Vibe: {{description_snippet}}.`,
+        deepDive: 'Generate a deep dive guide on the topic of "{{topic}}" within the context of the following plant: {{plant}}. Respond in JSON format with keys: "introduction" (string), "stepByStep" (array of strings), "prosAndCons" ({pros: string[], cons: string[]}), and "proTip" (string).',
+        gardenStatus: 'You are an expert cannabis grow master. Analyze the following summary of active plants in a garden. Provide a very concise, one-sentence summary of the garden\'s overall health, followed by a single, actionable "Top Priority" for the grower. Format as markdown.\n\nPLANT SUMMARIES:\n{{summaries}}',
     },
     loading: {
         equipment: {
@@ -144,27 +156,27 @@ export const ai = {
             '4': 'Formulating immediate actions and long-term solutions...'
         },
         advisor: {
-            '1': 'Reviewing {{plantName}}\'s latest vitals...',
-            '2': 'Checking current growth stage and age...',
+            '1': 'Reviewing the latest vitals for {{plantName}}...',
+            '2': 'Considering current growth stage and age...',
             '3': 'Formulating tailored advice for the next 48 hours...'
         },
         proactiveDiagnosis: {
             '1': 'Analyzing historical data for {{plantName}}...',
             '2': 'Identifying trends in pH and EC...',
-            '3': 'Scanning for early signs of environmental stress...',
-            '4': 'Compiling preventative care recommendations...'
+            '3': 'Looking for early signs of environmental stress...',
+            '4': 'Assembling preventative care recommendations...'
         },
         growTips: {
             '1': 'Analyzing the genetic traits of {{strainName}}...',
             '2': 'Tailoring tips for a grower with {{experienceLevel}} experience...',
-            '3': 'Focusing recommendations on {{focus}} for the {{stage}} stage...',
-            '4': 'Crafting actionable, structured advice...'
+            '3': 'Focusing recommendations on {{focus}} for the {{stage}} phase...',
+            '4': 'Generating actionable, structured advice...'
         },
         deepDive: {
             '1': 'Researching "{{topic}}"...',
-            '2': 'Applying concepts to {{plantName}}\'s current state...',
+            '2': 'Applying concepts to the current state of {{plantName}}...',
             '3': 'Structuring a step-by-step guide...',
-            '4': 'Compiling pros, cons, and a special pro-tip...'
+            '4': 'Assembling pros, cons, and a special pro-tip...'
         }
     }
 };

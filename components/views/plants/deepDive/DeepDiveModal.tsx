@@ -1,12 +1,9 @@
-
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { Modal } from '@/components/common/Modal';
-import { Plant, Scenario } from '@/types';
-import { useAppDispatch } from '@/stores/store';
+import { Plant, Scenario, DeepDiveGuide } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { geminiService } from '@/services/geminiService';
-import { useGenerateDeepDiveMutation } from '@/stores/api';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
@@ -16,26 +13,22 @@ interface DeepDiveModalProps {
   topic: string;
   onClose: () => void;
   onRunScenario: (scenario: Scenario) => void;
+  data?: DeepDiveGuide;
+  isLoading: boolean;
+  error?: any;
 }
 
-export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario }) => {
+export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario, data: response, isLoading, error }) => {
     const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const [generateDeepDive, { data: response, isLoading, error }] = useGenerateDeepDiveMutation();
-
-    useEffect(() => {
-        if (!response && !isLoading && !error) {
-            generateDeepDive({ topic, plant });
-        }
-    }, [plant, topic, response, isLoading, error, dispatch, generateDeepDive]);
 
     const loadingMessage = useMemo(() => {
+        if (!isLoading) return '';
         const messages = geminiService.getDynamicLoadingMessages({
             useCase: 'deepDive',
             data: { topic, plantName: plant.name }
         });
         return messages[Math.floor(Math.random() * messages.length)];
-    }, [topic, plant.name, t]);
+    }, [topic, plant.name, isLoading, t]);
 
 
     const relevantScenario = useMemo(() => {

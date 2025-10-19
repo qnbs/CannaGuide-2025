@@ -3,13 +3,14 @@ export const settingsView = {
   saveSuccess: 'Einstellungen gespeichert!',
   categories: {
     general: 'Allgemein & UI',
-    accessibility: 'Barrierefreiheit',
     strains: 'Sorten-Ansicht',
+    plants: 'Pflanzen & Simulation',
     notifications: 'Benachrichtigungen',
     defaults: 'Standardwerte',
     data: 'Datenverwaltung',
     about: 'Über die App',
-    tts: 'Sprachausgabe',
+    tts: 'Sprache & Stimme',
+    privacy: 'Privatsphäre & Sicherheit',
   },
   general: {
     title: 'Allgemeine Einstellungen',
@@ -34,38 +35,58 @@ export const settingsView = {
     installAppDesc: 'Installiere den CannaGuide 2025 auf deinem Gerät für ein natives App-Erlebnis, inklusive Offline-Zugriff.',
     expertModeTitle: 'Expertenmodus',
     expertModeDesc: 'Zeige erweiterte wissenschaftliche Daten und detaillierte Diagramme in der Pflanzenansicht an.',
+    uiDensity: 'UI-Dichte',
+    uiDensities: {
+        comfortable: 'Komfortabel',
+        compact: 'Kompakt'
+    },
   },
   languages: {
     en: 'Englisch',
     de: 'Deutsch',
   },
-  accessibility: {
-    title: 'Barrierefreiheit',
-    highContrast: 'Hoher Kontrast',
-    highContrastDesc: 'Erhöht den Textkontrast für bessere Lesbarkeit.',
-    dyslexiaFont: 'Legastheniker-Schriftart',
-    dyslexiaFontDesc: 'Verwendet eine Schriftart, die für Menschen mit Legasthenie leichter zu lesen ist.',
-    reducedMotion: 'Bewegung reduzieren',
-    reducedMotionDesc: 'Deaktiviert die meisten Animationen in der App.',
-    uiDensity: 'UI-Dichte',
-    uiDensities: {
-      comfortable: 'Komfortabel',
-      compact: 'Kompakt',
-    }
-  },
    tts: {
-    title: 'Sprachausgabe',
-    enabled: 'Sprachausgabe aktivieren',
-    enabledDesc: 'Fügt Schaltflächen hinzu, um sich App-Inhalte vorlesen zu lassen.',
+    title: 'Sprache & Stimme',
+    ttsOutput: 'Text-zu-Sprache-Ausgabe',
+    voiceControlInput: 'Sprachsteuerung (Eingabe)',
+    ttsEnabled: 'Sprachausgabe aktivieren',
+    ttsEnabledDesc: 'Fügt Schaltflächen hinzu, um sich App-Inhalte vorlesen zu lassen.',
     voice: 'Stimme',
     noVoices: 'Keine Stimmen verfügbar',
     rate: 'Sprechgeschwindigkeit',
     pitch: 'Tonhöhe',
+    volume: 'Lautstärke',
+    highlightSpeakingText: 'Gesprochenen Text hervorheben',
+    highlightSpeakingTextDesc: 'Hebt den Textblock visuell hervor, der gerade vorgelesen wird.',
+    voiceControl: {
+      enabled: 'Sprachsteuerung aktivieren',
+      enabledDesc: 'Steuere die App mit einfachen Sprachbefehlen.',
+    },
+    commands: {
+        title: 'Verfügbare Sprachbefehle',
+        description: 'Hier ist eine Liste von Befehlen, die du verwenden kannst, wenn die Sprachsteuerung aktiv ist. Beginne einfach mit "Gehe zu..." oder "Suche nach...".',
+        groups: {
+            navigation: 'Navigation',
+            strains: 'Sorten',
+            plants: 'Pflanzen',
+        },
+        goTo: 'Gehe zu {{view}}',
+        searchFor: 'Suche nach [Sortenname]',
+        resetFilters: 'Filter zurücksetzen',
+        showFavorites: 'Favoriten anzeigen',
+        waterAll: 'Alle Pflanzen gießen',
+    },
+    readThis: 'Diesen Abschnitt vorlesen',
+    play: 'Abspielen',
+    pause: 'Pause',
+    next: 'Nächster',
+    stop: 'Stopp',
   },
   strains: {
-    title: 'Einstellungen der Sorten-Ansicht',
+    title: 'Sorten-Ansicht',
     defaultSort: 'Standard-Sortierung',
     defaultViewMode: 'Standard-Ansichtsmodus',
+    strainsPerPage: 'Einträge pro Seite',
     viewModes: {
       list: 'Liste',
       grid: 'Raster',
@@ -77,8 +98,6 @@ export const settingsView = {
         thc: 'THC',
         cbd: 'CBD',
         floweringTime: 'Blütezeit',
-        yield: 'Ertrag',
-        difficulty: 'Schwierigkeit',
     },
     sortKeys: {
       name: 'Name',
@@ -88,11 +107,65 @@ export const settingsView = {
       difficulty: 'Schwierigkeit',
       type: 'Typ',
       yield: 'Ertrag',
+      height: 'Höhe',
     },
     sortDirections: {
       asc: 'Aufsteigend',
       desc: 'Absteigend',
+    },
+    defaults: {
+        title: 'Standards & Verhalten',
+        prioritizeTitle: 'Meine Sorten & Favoriten priorisieren',
+        prioritizeDesc: 'Zeigt eigene und favorisierte Sorten immer am Anfang der Liste an.',
+        sortDirection: 'Sortierrichtung'
+    },
+    listView: {
+        title: 'Listenansicht-Anpassung',
+        description: 'Passe die Spalten an, die in der Listenansicht angezeigt werden.'
+    },
+    advanced: {
+        title: 'Erweiterte Funktionen',
+        genealogyLayout: 'Standard-Stammbaum-Layout',
+        genealogyDepth: 'Standard-Stammbaum-Tiefe',
+        aiTipsExperience: 'Standard-Erfahrung für KI-Tipps',
+        aiTipsFocus: 'Standard-Fokus für KI-Tipps'
     }
+  },
+  plants: {
+    title: 'Pflanzen & Simulation',
+    behavior: 'Simulationsverhalten',
+    physics: 'Fortgeschrittene Simulationsphysik (Experte)',
+    showArchived: 'Abgeschlossene Grows anzeigen',
+    showArchivedDesc: 'Zeigt fertige/geerntete Pflanzen im Dashboard an.',
+    autoGenerateTasks: 'Aufgaben automatisch erstellen',
+    autoGenerateTasksDesc: 'Erstellt automatisch Aufgaben für Aktionen wie Gießen.',
+    realtimeSimulation: 'Echtzeit-Simulation',
+    realtimeSimulationDesc: 'Die Pflanzensimulation läuft im Hintergrund weiter.',
+    speedMultiplier: 'Simulations-Geschwindigkeit',
+    autoJournaling: 'Automatisches Journaling',
+    logStageChanges: 'Phasenwechsel protokollieren',
+    logProblems: 'Probleme protokollieren',
+    logTasks: 'Aufgaben protokollieren',
+    simulationProfile: 'Simulationsprofil',
+    simulationProfiles: {
+      beginner: 'Anfänger',
+      intermediate: 'Fortgeschritten',
+      expert: 'Experte',
+    },
+    pestPressure: 'Schädlingsdruck',
+    pestPressureDesc: 'Die Basiswahrscheinlichkeit für das Auftreten von Schädlingsereignissen.',
+    nutrientSensitivity: 'Nährstoffempfindlichkeit',
+    nutrientSensitivityDesc: 'Wie stark die Pflanze auf Nährstoffungleichgewichte reagiert.',
+    environmentalStability: 'Umweltstabilität',
+    environmentalStabilityDesc: 'Wie stark Temperatur und Luftfeuchtigkeit schwanken.',
+    leafTemperatureOffset: 'Blatt-Temperatur-Offset (°C)',
+    leafTemperatureOffsetDesc: 'Simuliert, wie viel kühler (negativ) oder wärmer (positiv) die Blätter im Vergleich zur Umgebungsluft sind. Beeinflusst direkt die VPD-Berechnung.',
+    lightExtinctionCoefficient: 'Lichtdurchdringung (k-Wert)',
+    lightExtinctionCoefficientDesc: 'Steuert, wie gut Licht durch das Blätterdach dringt. Ein niedrigerer Wert bedeutet eine bessere Durchdringung. Beeinflusst die Photosynthese der unteren Blätter.',
+    nutrientConversionEfficiency: 'Nährstoff-Umwandlungseffizienz',
+    nutrientConversionEfficiencyDesc: 'Wie effizient die Pflanze aufgenommene Nährstoffe in Biomasse umwandelt. Ein höherer Wert bedeutet mehr Wachstum bei gleicher Nährstoffmenge.',
+    stomataSensitivity: 'Stomata-Empfindlichkeit',
+    stomataSensitivityDesc: 'Steuert, wie schnell die Pflanze ihre Spaltöffnungen (Stomata) bei hohem VPD schließt, um Wasser zu sparen. Ein höherer Wert bedeutet eine höhere Trockenheitstoleranz.',
   },
   notifications: {
     title: 'Benachrichtigungen',
@@ -101,6 +174,8 @@ export const settingsView = {
     problemDetected: 'Problem erkannt',
     harvestReady: 'Ernte bereit',
     newTask: 'Neue Aufgabe',
+    lowWaterWarning: 'Warnung bei niedrigem Wasserstand',
+    phDriftWarning: 'pH-Drift-Warnung',
     quietHours: 'Ruhezeiten',
     enableQuietHours: 'Ruhezeiten aktivieren',
     quietHoursDesc: 'Benachrichtigungen werden während dieser Zeit stummgeschaltet.',
@@ -108,7 +183,7 @@ export const settingsView = {
   defaults: {
       title: 'Standardwerte',
       growSetup: 'Standard-Grow-Setup',
-      export: 'Standard-Export-Einstellungen',
+      export: 'Standard-Exportformat',
       journalNotesTitle: 'Standard-Journalnotizen',
       wateringNoteLabel: 'Notiz für Gießen',
       feedingNoteLabel: 'Notiz für Düngen',
@@ -117,6 +192,14 @@ export const settingsView = {
     title: 'Datenverwaltung',
     lastBackup: 'Letztes Backup',
     noBackup: 'Noch kein Backup erstellt',
+    autoBackup: 'Automatische Sicherung',
+    backupOptions: {
+        off: 'Aus',
+        daily: 'Täglich',
+        weekly: 'Wöchentlich',
+    },
+    cloudSync: 'Cloud-Synchronisation',
+    cloudSyncDesc: 'Synchronisiere deine Daten mit Google Drive (zukünftige Funktion).',
     replayOnboarding: 'Einführung erneut anzeigen',
     replayOnboardingConfirm: 'Dadurch wird die Willkommens-Einführung beim nächsten App-Start angezeigt. Fortfahren?',
     replayOnboardingSuccess: 'Die Einführung wird beim nächsten Start angezeigt.',
@@ -132,9 +215,6 @@ export const settingsView = {
     exportConfirm: 'Möchtest du wirklich alle deine App-Daten als Backup exportieren?',
     exportSuccess: 'Alle Daten erfolgreich exportiert!',
     exportError: 'Export fehlgeschlagen.',
-    importAll: 'Alle Daten importieren',
-    importConfirm: 'Bist du sicher, dass du diese Daten importieren möchtest? Dies wird alle deine aktuellen Daten überschreiben.',
-    importInvalidFile: 'Ungültige CannaGuide 2025 Backup-Datei.',
     clearArchives: 'KI-Archive leeren',
     clearArchivesDesc: 'Löscht alle gespeicherten Antworten vom KI-Mentor und -Berater.',
     clearArchivesConfirm: 'Möchtest du wirklich alle deine gespeicherten KI-Antworten löschen?',
@@ -148,15 +228,42 @@ export const settingsView = {
         savedItems: 'Gespeicherte Items',
     }
   },
+  privacy: {
+    title: 'Privatsphäre & Sicherheit',
+    requirePin: 'PIN beim Start anfordern',
+    requirePinDesc: 'Schütze deine App mit einer 4-stelligen PIN.',
+    setPin: 'PIN festlegen/ändern',
+    clearAiHistory: 'KI-Verlauf beim Beenden löschen',
+    clearAiHistoryDesc: 'Löscht automatisch alle KI-Chatverläufe, wenn die App geschlossen wird.',
+  },
    about: {
       title: 'Über die App',
       version: 'Version',
-      description: 'Beschreibung',
-      devWithAIStudio: 'Entwickelt mit AI Studio',
-      github: 'Open Source auf GitHub',
-      getTheAppHere: 'App in AI Studio ansehen',
+      whatsNew: {
+        title: "Was ist neu in v2.0",
+        items: {
+            simulation: "Fortschrittliche Simulations-Engine: Basiert auf VPD, Biomasse und einem strukturellen Wachstumsmodell.",
+            genealogy: "Interaktiver Stammbaum: Visualisiere die genetische Abstammung und den Einfluss von Vorfahren.",
+            ai: "KI-Anbau-Tipps & Bildgenerierung: Erhalte einzigartige, KI-gestützte Ratschläge und Bilder für jede Sorte.",
+            breeding: "Zuchtlabor & Sandbox: Kreuze neue Sorten und führe risikofreie 'Was-wäre-wenn'-Experimente durch."
+        }
+      },
+      techStack: {
+        title: "Technologie-Stack",
+        gemini: "Treiber aller KI-Funktionen für intelligente Diagnosen und Ratschläge.",
+        react: "Für eine moderne, performante und reaktionsschnelle Benutzeroberfläche.",
+        indexedDb: "Robuste clientseitige Datenbank für 100% Offline-Funktionalität.",
+        webWorkers: "Lagert komplexe Simulationen aus, um die UI flüssig zu halten."
+      },
+      credits: {
+          title: "Danksagungen & Links",
+          phosphor: "Icons bereitgestellt von Phosphor Icons.",
+      },
       githubLinkText: 'Projekt auf GitHub ansehen',
-      disclaimer: 'Haftungsausschluss',
-      privacy: 'Datenschutz',
+      aiStudioLinkText: 'Projekt im AI Studio forken',
+      disclaimer: {
+        title: 'Haftungsausschluss',
+        content: 'Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.'
+      }
     }
 };

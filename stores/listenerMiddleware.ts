@@ -4,69 +4,20 @@ import { i18nInstance, getT } from '@/i18n';
 import { Language, Strain, View } from '@/types';
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
 import { plantStateUpdated, resetPlants, addJournalEntry, waterAllPlants } from './slices/simulationSlice';
-import { addNotification, setOnboardingStep, setActiveView, closeAddModal, closeExportModal, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
-import { indexedDBStorage } from './indexedDBStorage';
-import { setSearchTerm, resetAllFilters, setShowFavoritesOnly } from './slices/filtersSlice';
+import { addNotification, setOnboardingStep, setActiveView, closeAddModal, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
+import { setSearchTerm, resetAllFilters, setShowFavoritesOnly, setSort, hydrateFilters, toggleTypeFilter, setAdvancedFilters, setLetterFilter } from './slices/filtersSlice';
+import { urlService } from '@/services/urlService';
 
 // Import actions to listen for
 import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice';
-import { addExport, updateExport, deleteExport, addStrainTip, updateStrainTip, deleteStrainTip, addSetup, updateSetup, deleteSetup } from './slices/savedItemsSlice';
+import { addStrainTip, updateStrainTip, deleteStrainTip, addSetup, updateSetup, deleteSetup, addExport } from './slices/savedItemsSlice';
 import { addArchivedMentorResponse, addArchivedAdvisorResponse, clearArchives } from './slices/archivesSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice';
 
 export const listenerMiddleware = createListenerMiddleware();
-const REDUX_STATE_KEY = 'cannaguide-redux-storage';
 
 type AppStartListening = TypedStartListening<RootState, AppDispatch>;
 const startAppListening = listenerMiddleware.startListening as AppStartListening;
-
-
-// --- State-of-the-art Persistence Logic ---
-
-/**
- * Listener to handle state persistence to IndexedDB.
- * This is a more modern and robust approach than a manual store.subscribe().
- * It now intelligently persists only the necessary slices and fields.
- */
-startAppListening({
-  // Listen to all actions, but not the ones from RTK Query which are internal
-  predicate: (action) => !action.type.startsWith('geminiApi/'),
-  effect: async (action, listenerApi) => {
-    const state = listenerApi.getState() as RootState;
-    try {
-        // Construct a state object with only the slices we want to persist.
-        // This prevents ephemeral UI state (like modals, loading states) from being saved.
-        const stateToSave = {
-            version: state.settings.version,
-            // Slices to persist entirely
-            settings: state.settings,
-            simulation: state.simulation,
-            userStrains: state.userStrains,
-            favorites: state.favorites,
-            notes: state.notes,
-            archives: state.archives,
-            savedItems: state.savedItems,
-            knowledge: state.knowledge,
-            breeding: state.breeding,
-            sandbox: state.sandbox,
-            filters: state.filters,
-            // Selectively persist only specific fields from the UI slice
-            ui: {
-                lastActiveView: state.ui.lastActiveView,
-                onboardingStep: state.ui.onboardingStep,
-                equipmentViewTab: state.ui.equipmentViewTab,
-                knowledgeViewTab: state.ui.knowledgeViewTab,
-            },
-            // The 'navigation' slice is intentionally excluded to keep it session-only.
-        };
-        const serializedState = JSON.stringify(stateToSave);
-        await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
-    } catch (e) {
-        console.error("Could not save state to IndexedDB", e);
-    }
-  },
-});
-
 
 /**
  * Listener to automatically change the i18n language when the setting is updated.
@@ -74,7 +25,7 @@ startAppListening({
 startAppListening({
   actionCreator: setSetting,
   effect: async (action) => {
-    if (action.payload.path === 'language') {
+    if (action.payload.path === 'general.language') {
       const newLang = action.payload.value as Language;
       if (i18nInstance.language !== newLang) {
         await i18nInstance.changeLanguage(newLang);
@@ -101,7 +52,8 @@ startAppListening({
       newProblems.forEach(problem => {
           if (!oldProblems.has(problem.type)) {
               const t = getT();
-              const message = `${updatedPlant.name}: ${t(`problemMessages.${problem.type.charAt(0).toLowerCase() + problem.type.slice(1)}.message`)}`;
+              const problemKey = problem.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
+              const message = `${updatedPlant.name}: ${t(`problemMessages.${problemKey}.message`)}`;
               listenerApi.dispatch(addNotification({ message, type: 'error' }));
           }
       });
@@ -171,6 +123,44 @@ startAppListening({
     }
 });
 
+// --- URL Sync Logic for Strain Filters ---
+let urlUpdateTask: any;
+
+startAppListening({
+    matcher: isAnyOf(
+        setSearchTerm,
+        toggleTypeFilter,
+        setShowFavoritesOnly,
+        setAdvancedFilters,
+        setLetterFilter,
+        resetAllFilters,
+        setSort
+    ),
+    effect: (action, listenerApi) => {
+        // Only run for strains view
+        if (listenerApi.getState().ui.activeView !== View.Strains) {
+            return;
+        }
+
+        urlUpdateTask?.cancel();
+
+        urlUpdateTask = listenerApi.fork(async (forkApi) => {
+            // Debounce for 300ms
+            await forkApi.delay(300);
+
+            const filtersState = listenerApi.getState().filters;
+            const queryString = urlService.serializeFiltersToQueryString(filtersState);
+
+            const newUrl = queryString 
+                ? `${window.location.pathname}?${queryString}`
+                : window.location.pathname;
+
+            // Use replaceState to avoid polluting browser history with every minor change
+            window.history.replaceState({}, '', newUrl);
+        });
+    }
+});
+
 
 // --- Centralized Notification Listeners ---
 const t = getT();
@@ -193,17 +183,7 @@ startAppListening({
 });
 
 startAppListening({
-  actionCreator: addExport,
-  effect: (action, { dispatch }) => {
-      dispatch(addNotification({
-          message: t('common.successfullyExported_other', { count: action.payload.strainIds.length, format: action.payload.data.format.toUpperCase() }),
-          type: 'success',
-      }));
-  }
-});
-
-startAppListening({
-    matcher: isAnyOf(deleteExport, deleteSetup, deleteStrainTip, deleteUserStrain),
+    matcher: isAnyOf(deleteSetup, deleteStrainTip, deleteUserStrain),
     effect: (action, { dispatch }) => {
         let message = 'Item removed.';
         if (action.type.includes('Export')) message = t('strainsView.exportsManager.exportRemoved');
@@ -213,7 +193,7 @@ startAppListening({
 });
 
 startAppListening({
-    matcher: isAnyOf(updateExport, updateSetup, updateStrainTip),
+    matcher: isAnyOf(updateSetup, updateStrainTip),
     effect: (action, { dispatch }) => {
         const payload = (action.payload as any).changes || action.payload;
         const name = payload.name || payload.title;
@@ -248,6 +228,13 @@ startAppListening({
   actionCreator: addArchivedMentorResponse,
   effect: (_, { dispatch }) => {
     dispatch(addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }));
+  }
+});
+
+startAppListening({
+  actionCreator: addExport,
+  effect: (action, { dispatch }) => {
+    dispatch(addNotification({ message: t('common.successfullyExported_other', { count: action.payload.strainIds.length, format: action.payload.format.toUpperCase() }), type: 'success' }));
   }
 });
 

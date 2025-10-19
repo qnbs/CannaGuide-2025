@@ -915,8 +915,8 @@ export const strainsC: Strain[] = [
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
     }),
     createStrainObject({
-        "id": "colombian-gold",
-        "name": "Colombian Gold",
+        "id": "colombian",
+        "name": "Colombian",
         "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Colombian Landrace",
@@ -1081,29 +1081,5 @@ export const strainsC: Strain[] = [
         },
         "aromas": ["Citrus", "Sweet", "Earthy", "Herbal"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "colombian",
-        "name": "Colombian",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa - 100% Sativa",
-        "genetics": "Colombian Landrace",
-        "floweringType": "Photoperiod",
-        "description": "A classic Sativa landrace from the mountains of Santa Marta in Colombia. It is one of the parents of Skunk #1 and is known for its uplifting, energizing, and clear-headed effects without paranoia. The aroma is a sweet mix of citrus, lime, and skunk.",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 12,
-        "floweringTimeRange": "11-13",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "Medium",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
-            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
-        },
-        "aromas": ["Citrus", "Lime", "Sweet", "Skunk"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     })
 ];

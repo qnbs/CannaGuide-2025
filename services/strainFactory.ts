@@ -14,7 +14,8 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
           min: 0.7 + (((nameHash * 2) % 30) / 100), // e.g., 0.7-1.0 kPa
           max: 1.3 + (((nameHash * 11) % 30) / 100)  // e.g., 1.3-1.6 kPa
       },
-      transpirationFactor: 0.9 + (((nameHash * 13) % 20) / 100) // 0.9 to 1.1
+      transpirationFactor: 0.9 + (((nameHash * 13) % 20) / 100), // 0.9 to 1.1
+      stomataSensitivity: 0.9 + (((nameHash * 17) % 20) / 100), // Range 0.9 to 1.1
   };
 
   const defaults: Omit<Strain, 'id' | 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime'> = {

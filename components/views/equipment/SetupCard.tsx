@@ -4,28 +4,19 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { exportService } from '@/services/exportService';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
 
 interface SetupCardProps {
     setup: SavedSetup;
     onEdit: () => void;
-    onDelete: () => void;
+    onDelete: (id: string) => void;
 }
 
 export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDelete }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     
-    const handleExport = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (window.confirm(t('common.exportConfirm'))) {
-            exportService.exportSetup(setup, 'pdf');
-            dispatch(addNotification({ message: t('common.successfullyExported_one', { count: 1, format: 'PDF' }), type: 'success' }));
-        }
-    };
-
     const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'circulationFan', 'pots', 'soil', 'nutrients', 'extra'];
 
     return (
@@ -40,9 +31,8 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                     </div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                    <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); onEdit(); }} title={t('common.edit')} className="!p-2"><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
-                    <Button size="sm" variant="danger" onClick={(e) => { e.stopPropagation(); onDelete(); }} title={t('common.delete')} className="!p-2"><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
-                    <Button size="sm" variant="secondary" onClick={handleExport} title={t('common.export')} className="!p-2"><PhosphorIcons.FilePdf className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); onEdit(); }} aria-label={t('common.edit')} className="!p-2"><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="danger" onClick={(e) => { e.stopPropagation(); onDelete(setup.id); }} aria-label={t('common.delete')} className="!p-2"><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
                     <div className="p-2 text-slate-400 transition-transform duration-300 group-open:rotate-180"><PhosphorIcons.ChevronDown className="w-5 h-5" /></div>
                 </div>
             </summary>

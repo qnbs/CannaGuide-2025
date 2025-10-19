@@ -1,4 +1,4 @@
-import { GoogleGenAI, GenerateContentResponse, Type } from '@google/genai'
+import { GoogleGenAI, GenerateContentResponse, Type, Modality } from '@google/genai'
 import {
     Plant,
     Recommendation,
@@ -21,7 +21,6 @@ const formatPlantContextForPrompt = (
         plant.problems.length > 0
             ? plant.problems
                   .map((p) => {
-                      // FIX: Convert problem type from SCREAMING_SNAKE_CASE to camelCase for i18n key.
                       const problemKey = p.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
                       return t(`problemMessages.${problemKey}.message`);
                   })
@@ -214,7 +213,6 @@ class GeminiService {
             plant.problems.length > 0
                 ? plant.problems
                       .map((p) => {
-                          // FIX: Convert problem type from SCREAMING_SNAKE_CASE to camelCase for i18n key.
                           const problemKey = p.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
                           return t(`problemMessages.${problemKey}.message`);
                       })
@@ -236,7 +234,7 @@ PLANT CONTEXT:
         const prompt = `
             Analyze the following image of a cannabis plant.
             ${contextString}
-            Based on the image and the detailed context, provide a comprehensive diagnosis.
+            Based on the image and the detailed context, provide a comprehensive diagnosis. Your response must be a JSON object with the following structure: { "title": "A short, clear title for the diagnosis (e.g., 'Early Nitrogen Deficiency').", "content": "The main diagnosis text, explaining what the issue appears to be based on the visual evidence and data provided.", "confidence": "A value from 0.0 to 1.0 indicating your confidence in the diagnosis.", "immediateActions": "Markdown formatted string of immediate, actionable steps the user should take within the next 24-48 hours.", "longTermSolution": "Markdown formatted string explaining the long-term solution or adjustments needed to fix the root cause.", "prevention": "Markdown formatted string with advice on how to prevent this issue in the future." }.
         `
 
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
@@ -253,18 +251,19 @@ PLANT CONTEXT:
                     responseSchema: {
                         type: Type.OBJECT,
                         properties: {
-                            title: { type: Type.STRING, description: "A short, clear title for the diagnosis (e.g., 'Early Nitrogen Deficiency')." },
-                            content: { type: Type.STRING, description: "The main diagnosis text, explaining what the issue appears to be based on the visual evidence and data provided. This field corresponds to the 'diagnosis' requested in older prompt versions." },
-                            confidence: { type: Type.NUMBER, description: "A value from 0.0 to 1.0 indicating the model's confidence in the diagnosis." },
-                            immediateActions: { type: Type.STRING, description: "Markdown formatted string of immediate, actionable steps the user should take within the next 24-48 hours." },
-                            longTermSolution: { type: Type.STRING, description: "Markdown formatted string explaining the long-term solution or adjustments needed to fix the root cause." },
-                            prevention: { type: Type.STRING, description: "Markdown formatted string with advice on how to prevent this issue in the future." },
+                            title: { type: Type.STRING },
+                            content: { type: Type.STRING },
+                            confidence: { type: Type.NUMBER },
+                            immediateActions: { type: Type.STRING },
+                            longTermSolution: { type: Type.STRING },
+                            prevention: { type: Type.STRING },
+                            diagnosis: { type: Type.STRING },
                         },
-                        required: ['title', 'content', 'confidence', 'immediateActions', 'longTermSolution', 'prevention'],
-                    },
+                        required: ['title', 'content', 'confidence', 'immediateActions', 'longTermSolution', 'prevention', 'diagnosis'],
+                    }
                 },
             })
-
+            
             return JSON.parse(response.text.trim()) as PlantDiagnosisResponse
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
@@ -341,7 +340,6 @@ PLANT CONTEXT:
 
     async getStrainTips(
         strain: Strain,
-        // FIX: Corrected `experience` to `experienceLevel` to match the expected type.
         context: { focus: string; stage: string; experienceLevel: string },
         lang: Language
     ): Promise<StructuredGrowTips> {
@@ -380,37 +378,32 @@ PLANT CONTEXT:
     }
 
     async generateStrainImage(strain: Strain, lang: Language): Promise<string> {
-        const t = getT()
-        const aromas = (strain.aromas || []).join(', ')
-        const description_snippet =
-            strain.description?.split('.').slice(0, 2).join('.') + '.' || 'uplifting and creative'
-
-        const prompt = t('ai.prompts.strainImage', {
-            strainName: strain.name,
-            type: strain.type,
-            aromas: aromas,
-            description_snippet: description_snippet,
-            agronomic_yield: strain.agronomic.yield,
-            agronomic_height: strain.agronomic.height,
-        })
+        const prompt = `A stunning, artistic, and imaginative fantasy illustration representing the cannabis strain '${strain.name}'. The style should be vibrant and impressive, with ethereal lighting. The strain's name, '${strain.name}', must be creatively and elegantly integrated into the artwork itself, like elegant typography, glowing runes, or part of the plant's natural patterns.`
 
         try {
-            const response = await this.ai.models.generateImages({
-                model: 'imagen-4.0-generate-001',
-                prompt: prompt,
-                config: {
-                    numberOfImages: 1,
-                    outputMimeType: 'image/jpeg',
-                    aspectRatio: '1:1',
+            const response = await this.ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: {
+                    parts: [
+                        {
+                            text: prompt,
+                        },
+                    ],
                 },
-            })
-
-            if (response.generatedImages && response.generatedImages.length > 0) {
-                const base64ImageBytes: string = response.generatedImages[0].image.imageBytes
-                return base64ImageBytes
-            } else {
-                throw new Error('No image was generated by the API.')
+                config: {
+                    responseModalities: [Modality.IMAGE],
+                },
+            });
+            
+            // FIX: Add optional chaining to prevent runtime errors if the response structure is unexpected.
+            for (const part of response.candidates?.[0]?.content?.parts || []) {
+                if (part.inlineData?.data) {
+                    const base64ImageBytes: string = part.inlineData.data;
+                    return base64ImageBytes;
+                }
             }
+            
+            throw new Error('No image was generated by the API.')
         } catch (error) {
             console.error('Gemini generateStrainImage Error:', error)
             throw new Error('ai.error.generic')
@@ -426,7 +419,7 @@ PLANT CONTEXT:
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
         try {
             const response = await this.ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+                model: 'gemini-2.5-pro',
                 contents: localizedPrompt,
                 config: {
                     responseMimeType: 'application/json',
@@ -455,6 +448,18 @@ PLANT CONTEXT:
             console.error('Gemini generateDeepDive Error:', e)
             throw new Error('ai.error.deepDive')
         }
+    }
+
+    async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
+        const t = getT();
+        const plantSummaries = plants.map(p => 
+            `- ${p.name} (${t('plantsView.plantCard.day')} ${p.age}, ${t(`plantStages.${p.stage}`)}): Health ${p.health.toFixed(0)}%, Stress ${p.stressLevel.toFixed(0)}%. Problems: ${p.problems.length > 0 ? p.problems.map(prob => prob.type).join(', ') : 'None'}`
+        ).join('\n');
+        
+        const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries });
+
+        const responseText = await this.generateText(prompt, lang);
+        return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText };
     }
 
     getDynamicLoadingMessages({

@@ -1,116 +1,153 @@
-import React, { useState, useRef, useEffect, memo } from 'react';
-import { Plant, MentorMessage } from '@/types';
-import { Button } from '@/components/common/Button';
-import { useTranslation } from 'react-i18next';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
-import { Input } from '@/components/ui/ThemePrimitives';
-import { useGetMentorResponseMutation } from '@/stores/api';
-import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice';
-import { selectLanguage } from '@/stores/selectors';
-import { Speakable } from '@/components/common/Speakable';
+import React, { useState, useRef, useEffect, memo } from 'react'
+import { Plant, MentorMessage } from '@/types'
+import { Button } from '@/components/common/Button'
+import { useTranslation } from 'react-i18next'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
+import { Input } from '@/components/ui/ThemePrimitives'
+import { useGetMentorResponseMutation } from '@/stores/api'
+import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice'
+import { selectLanguage } from '@/stores/selectors'
+import { Speakable } from '@/components/common/Speakable'
 
 interface MentorChatViewProps {
-    plant: Plant;
-    onClose: () => void;
+    plant: Plant
+    onClose: () => void
 }
 
 const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
-    const isUser = message.role === 'user';
+    const isUser = message.role === 'user'
     const content = (
-         <div className={`max-w-md p-3 rounded-lg ${isUser ? 'bg-primary-800 text-slate-100' : 'bg-slate-800'}`}>
+        <div
+            className={`max-w-md p-3 rounded-lg ${
+                isUser ? 'bg-primary-800 text-slate-100' : 'bg-slate-800'
+            }`}
+        >
             {message.title && <h4 className="font-bold text-primary-300">{message.title}</h4>}
-            <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: message.content }} />
+            <div
+                className="prose prose-sm dark:prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: message.content }}
+            />
         </div>
-    );
-    const wrappedContent = <Speakable elementId={`mentor-${message.id || Date.now()}`}>{content}</Speakable>;
+    )
+    const wrappedContent = <Speakable elementId={`mentor-${message.id || Date.now()}`}>{content}</Speakable>
 
     return (
         <div className={`flex items-start gap-3 ${isUser ? 'justify-end' : ''}`}>
-            {!isUser && <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0"><PhosphorIcons.Brain className="w-5 h-5 text-primary-300"/></div>}
+            {!isUser && (
+                <div className="w-8 h-8 rounded-full bg-primary-500/20 flex items-center justify-center flex-shrink-0">
+                    <PhosphorIcons.Brain className="w-5 h-5 text-primary-300" />
+                </div>
+            )}
             {wrappedContent}
         </div>
-    );
-});
+    )
+})
 
 export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }) => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const lang = useAppSelector(selectLanguage);
-    const [getMentorResponse, { isLoading }] = useGetMentorResponseMutation();
-    const [history, setHistory] = useState<MentorMessage[]>([]);
-    
-    const [input, setInput] = useState('');
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const lang = useAppSelector(selectLanguage)
+    const [getMentorResponse, { isLoading }] = useGetMentorResponseMutation()
+    const [history, setHistory] = useState<MentorMessage[]>([])
+
+    const [input, setInput] = useState('')
+    const messagesEndRef = useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    };
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
 
-    useEffect(scrollToBottom, [history]);
+    useEffect(scrollToBottom, [history])
 
     const handleSend = async () => {
         if (input.trim() && !isLoading) {
-            const userMessage: MentorMessage = { id: `msg-user-${Date.now()}`, role: 'user', content: input.trim(), title: '' };
-            setHistory(prev => [...prev, userMessage]);
-            const currentInput = input.trim();
-            setInput('');
+            const userMessage: MentorMessage = {
+                id: `msg-user-${Date.now()}`,
+                role: 'user',
+                content: input.trim(),
+                title: '',
+            }
+            setHistory((prev) => [...prev, userMessage])
+            const currentInput = input.trim()
+            setInput('')
 
             try {
-                const response = await getMentorResponse({ plant, query: currentInput, lang }).unwrap();
-                const modelMessage: MentorMessage = { id: `msg-model-${Date.now()}`, role: 'model', ...response };
-                setHistory(prev => [...prev, modelMessage]);
-                dispatch(addArchivedMentorResponse({ query: currentInput, ...response }));
+                const response = await getMentorResponse({ plant, query: currentInput, lang }).unwrap()
+                const modelMessage: MentorMessage = {
+                    id: `msg-model-${Date.now()}`,
+                    role: 'model',
+                    ...response,
+                }
+                setHistory((prev) => [...prev, modelMessage])
+                dispatch(addArchivedMentorResponse({ query: currentInput, ...response }))
             } catch (error) {
-                const errorMessage: MentorMessage = { id: `msg-error-${Date.now()}`, role: 'model', title: t('common.error'), content: (error as any).message || t('ai.error.unknown') };
-                setHistory(prev => [...prev, errorMessage]);
+                const message = error instanceof Error ? error.message : t('ai.error.unknown');
+                const errorMessage: MentorMessage = {
+                    id: `msg-error-${Date.now()}`,
+                    role: 'model',
+                    title: t('common.error'),
+                    content: message,
+                }
+                setHistory((prev) => [...prev, errorMessage])
             }
         }
-    };
-    
+    }
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleSend();
+            e.preventDefault()
+            handleSend()
         }
-    };
+    }
 
     const handleClear = () => {
-        if(window.confirm(t('knowledgeView.aiMentor.clearConfirm'))) {
-            setHistory([]);
+        if (window.confirm(t('knowledgeView.aiMentor.clearConfirm'))) {
+            setHistory([])
         }
     }
 
     return (
-        <div className="flex flex-col animate-fade-in h-full">
+        <div className="flex flex-col animate-fade-in">
             <header className="flex-shrink-0 mb-4">
-                 <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between">
                     <Button variant="secondary" onClick={onClose}>
                         <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
                         {t('common.back')}
                     </Button>
-                    <Button variant="danger" size="sm" onClick={handleClear} disabled={history.length === 0}>
-                        <PhosphorIcons.TrashSimple className="w-4 h-4 mr-1"/>
+                    <Button
+                        variant="danger"
+                        size="sm"
+                        onClick={handleClear}
+                        disabled={history.length === 0}
+                    >
+                        <PhosphorIcons.TrashSimple className="w-4 h-4 mr-1" />
                         {t('knowledgeView.aiMentor.clearChat')}
                     </Button>
                 </div>
                 <div className="mt-4">
-                    <h1 className="text-3xl font-bold font-display text-primary-300">{t('knowledgeView.aiMentor.title')}</h1>
-                    <p className="text-slate-400">{t('knowledgeView.aiMentor.plantContext', { name: plant.name })}</p>
+                    <h1 className="text-3xl font-bold font-display text-primary-300">
+                        {t('knowledgeView.aiMentor.title')}
+                    </h1>
+                    <p className="text-slate-400">
+                        {t('knowledgeView.aiMentor.plantContext', { name: plant.name })}
+                    </p>
                 </div>
             </header>
             <div className="flex-grow overflow-y-auto pr-2 -mr-4 space-y-4">
-                {history.map((msg) => <Message key={msg.id} message={msg} />)}
+                {history.map((msg) => (
+                    <Message key={msg.id} message={msg} />
+                ))}
                 {isLoading && <AiLoadingIndicator loadingMessage={t('ai.generating')} />}
                 <div ref={messagesEndRef} />
             </div>
             <div className="flex-shrink-0 mt-4 pt-4 border-t border-slate-700">
-                 <div className="flex items-start gap-2">
-                    <Input 
+                <div className="flex items-start gap-2">
+                    <Input
                         as="textarea"
                         value={input}
-                        onChange={e => setInput(e.target.value)}
+                        onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyPress}
                         placeholder={t('knowledgeView.aiMentor.inputPlaceholder')}
                         className="flex-grow resize-none"
@@ -118,10 +155,10 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                         disabled={isLoading}
                     />
                     <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
-                        <PhosphorIcons.PaperPlaneTilt weight="fill" className="w-5 h-5"/>
+                        <PhosphorIcons.PaperPlaneTilt weight="fill" className="w-5 h-5" />
                     </Button>
                 </div>
             </div>
         </div>
-    );
-};
+    )
+}

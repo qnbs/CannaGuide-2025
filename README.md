@@ -59,7 +59,6 @@ CannaGuide 2025 is built upon a set of core principles designed to deliver a bes
 Your command center for managing and simulating up to three simultaneous grows.
 
 -   **Advanced Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model that visually represents your plant's progress.
--   **Toggleable UI Modes**: Switch between a streamlined **Simple Mode** for core actions and an **Expert Mode** in the header to reveal detailed scientific data like VPD and DLI.
 -   **AI-Powered Diagnostics**:
     -   **Photo Diagnosis**: Upload a photo of your plant to get an instant AI-based diagnosis, complete with immediate actions, long-term solutions, and preventative advice.
     -   **Proactive Advisor**: Get data-driven advice from Gemini AI based on your plant's real-time vitals. All recommendations can be archived with full **CRUD** functionality.
@@ -109,10 +108,8 @@ Your go-to for in-app support and learning resources.
 A sophisticated hub to customize every aspect of your CannaGuide experience.
 
 -   **UI & Theme Customization**: Choose from multiple themes (`Midnight`, `Forest`, etc.), adjust font sizes, and switch between `Comfortable` and `Compact` UI densities.
--   **Accessibility Suite**: Activate a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and various **Colorblind Modes** (Protanopia, Deuteranopia, Tritanopia).
 -   **Voice & Speech**: Configure Text-to-Speech (TTS) voices and rates, and manage voice command settings.
 -   **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a breakdown of your storage usage.
--   **Privacy & Security**: Secure your app with an optional 4-digit **PIN on launch** and configure automatic clearing of AI chat history on exit.
 
 ### 7. Platform-Wide Features
 -   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
@@ -301,7 +298,6 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.
 
 -   **Hochentwickelte Simulations-Engine**: Erleben Sie eine Simulation, die auf **VPD (Dampfdruckdefizit)**, biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
--   **Umschaltbare UI-Modi**: Wechseln Sie zwischen einem einfachen **Anfängermodus** für die Kernaktionen und einem **Expertenmodus** im Header, um detaillierte wissenschaftliche Daten wie VPD und DLI anzuzeigen.
 -   **KI-gestützte Diagnose**:
     -   **Foto-Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose zu erhalten, komplett mit Sofortmaßnahmen, langfristigen Lösungen und präventiven Ratschlägen.
     -   **Proaktiver Berater**: Erhalten Sie datengesteuerte Ratschläge von Gemini AI basierend auf den Echtzeit-Vitalwerten Ihrer Pflanze. Alle Empfehlungen können mit voller **CRUD**-Funktionalität archiviert werden.
@@ -351,10 +347,8 @@ Ihre Anlaufstelle für In-App-Support und Lernressourcen.
 Ein hochentwickelter Hub zur Anpassung jedes Aspekts Ihres CannaGuide-Erlebnisses.
 
 -   **UI & Theme-Anpassung**: Wählen Sie aus mehreren Themes (`Mitternacht`, `Wald` usw.), passen Sie die Schriftgrößen an und wechseln Sie zwischen `Komfortabler` und `Kompakter` UI-Dichte.
--   **Barrierefreiheit-Suite**: Aktivieren Sie eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und verschiedene **Farbfehlsichtigkeits-Modi** (Protanopie, Deuteranopie, Tritanopie).
 -   **Sprache & Sprachausgabe**: Konfigurieren Sie Text-zu-Sprache (TTS)-Stimmen und -Raten und verwalten Sie die Einstellungen für Sprachbefehle.
 -   **Datensouveränität**: Exportieren Sie Ihren gesamten App-Zustand zur **Sicherung**, importieren Sie ihn zur **Wiederherstellung** oder führen Sie granulare Resets durch, wie das Leeren von KI-Archiven oder Pflanzendaten. Sehen Sie eine Aufschlüsselung Ihrer Speichernutzung.
--   **Privatsphäre & Sicherheit**: Sichern Sie Ihre App mit einer optionalen 4-stelligen **PIN beim Start** und konfigurieren Sie das automatische Leeren des KI-Chatverlaufs beim Beenden.
 
 ### 7. Plattformweite Funktionen
 -   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich Zugriff auf alle Daten und KI-Archive.

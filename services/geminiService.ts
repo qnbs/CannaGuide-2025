@@ -65,6 +65,11 @@ const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
     return `${languageInstruction}\n\n${basePrompt}`
 }
 
+type ImageCriteria = { focus: string; composition: string; mood: string };
+type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk';
+const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'macro', 'cyberpunk'];
+
+
 class GeminiService {
     private ai: GoogleGenAI
 
@@ -377,8 +382,51 @@ PLANT CONTEXT:
         }
     }
 
-    async generateStrainImage(strain: Strain, lang: Language): Promise<string> {
-        const prompt = `A stunning, artistic, and imaginative fantasy illustration representing the cannabis strain '${strain.name}'. The style should be vibrant and impressive, with ethereal lighting. The strain's name, '${strain.name}', must be creatively and elegantly integrated into the artwork itself, like elegant typography, glowing runes, or part of the plant's natural patterns.`
+    async generateStrainImage(strain: Strain, style: ImageStyle, criteria: ImageCriteria): Promise<string> {
+        const systemPrompt = `You are an advanced image generation AI. Your task is to produce a single, high-fidelity, visually stunning, and contextually accurate image based on the user's detailed prompt. Adhere strictly to all instructions, especially regarding style, subject, and mood. Interpret prompts artistically but precisely.`;
+        
+        let selectedStyle = style;
+        if (selectedStyle === 'random') {
+            selectedStyle = availableStyles[Math.floor(Math.random() * availableStyles.length)];
+        }
+        
+        const stylePrompts: Record<Exclude<ImageStyle, 'random'>, string> = {
+            fantasy: `A stunning, artistic, and imaginative fantasy illustration representing the cannabis strain '${strain.name}'. The style should be vibrant and impressive, with ethereal, magical lighting.`,
+            botanical: `A detailed vintage botanical illustration of the cannabis strain '${strain.name}'. The style should mimic a 19th-century scientific drawing with fine ink lines, delicate watercolor washes, and annotations on aged, parchment-like paper. Focus on realism and anatomical accuracy.`,
+            psychedelic: `A vibrant, psychedelic art piece inspired by the cannabis strain '${strain.name}'. The style should be reminiscent of 1960s poster art, featuring swirling patterns, kaleidoscopic visuals, bold neon colors, and abstract, flowing shapes. Trippy and mesmerizing.`,
+            macro: `An ultra-realistic, professional macro photograph of a perfect cannabis bud from the strain '${strain.name}'. Focus on the intricate details: glistening trichomes, vibrant pistils, and complex textures. Use dramatic studio lighting to create depth. The background should be clean and dark.`,
+            cyberpunk: `A high-tech, cyberpunk-style hologram of the cannabis strain '${strain.name}'. The plant should be rendered as a glowing, neon-blue and purple wireframe or semi-translucent light form, projected into a dark, futuristic scene. Incorporate glitch effects and scan lines for a high-tech feel.`
+        };
+
+        const criteriaPrompts = {
+            focus: {
+                buds: 'The main focus is a close-up on the detailed structure of the flower buds.',
+                plant: 'The composition features the entire plant, showcasing its overall shape and structure.',
+                abstract: 'The image is an abstract representation of the strain\'s essence, not a literal plant.'
+            },
+            composition: {
+                symmetrical: 'The composition is balanced and formally symmetrical.',
+                dynamic: 'The composition is dynamic, using strong diagonal lines and a sense of movement.',
+                minimalist: 'The composition is minimalist, with a single subject against a simple, clean background.'
+            },
+            mood: {
+                mystical: 'The overall mood is mystical, dark, and enigmatic.',
+                energetic: 'The overall mood is bright, energetic, and vibrant.',
+                calm: 'The overall mood is calm, serene, and peaceful.'
+            }
+        };
+
+        const strainSpecificPrompt = stylePrompts[selectedStyle as Exclude<ImageStyle, 'random'>];
+        const criteriaString = `
+            Artistic Direction:
+            - Focus: ${criteriaPrompts.focus[criteria.focus as keyof typeof criteriaPrompts.focus]}
+            - Composition: ${criteriaPrompts.composition[criteria.composition as keyof typeof criteriaPrompts.composition]}
+            - Mood: ${criteriaPrompts.mood[criteria.mood as keyof typeof criteriaPrompts.mood]}
+            - Integrate the strain's name '${strain.name}' creatively and elegantly into the artwork itself, for example as subtle typography, glowing runes, or part of a natural pattern.
+        `;
+
+        const prompt = `${systemPrompt}\n\n---\n\nEXECUTE THE FOLLOWING PROMPT:\n\n${strainSpecificPrompt}\n\n${criteriaString}`;
+
 
         try {
             const response = await this.ai.models.generateContent({
@@ -395,12 +443,9 @@ PLANT CONTEXT:
                 },
             });
             
-            // FIX: Add optional chaining to prevent runtime errors if the response structure is unexpected.
-            for (const part of response.candidates?.[0]?.content?.parts || []) {
-                if (part.inlineData?.data) {
-                    const base64ImageBytes: string = part.inlineData.data;
-                    return base64ImageBytes;
-                }
+            const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+            if (imagePart && imagePart.inlineData) {
+                return imagePart.inlineData.data;
             }
             
             throw new Error('No image was generated by the API.')

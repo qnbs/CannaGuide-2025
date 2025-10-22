@@ -15,7 +15,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "1-4%",
         "floweringTime": 12,
         "floweringTimeRange": "11-13",
-        "description": "A sativa-dominant strain known for its high potency and its uplifting, cerebral effect. It has a sweet, fruity, and spicy aroma.",
+        "description": "A highly potent sativa-dominant strain from Medical Seeds Co., whose exact genetics are a well-kept secret. It's known for its intense, cerebral, and long-lasting effect that promotes creativity and euphoria. The complex aroma blends sweet, fruity notes with incense and spice.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -39,7 +39,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "Also known as Kosher Tangie. An indica-dominant hybrid with a sweet citrus and tangerine aroma. The effect is relaxing and happy, with an uplifting mental boost.",
+        "description": "Also known as Kosher Tangie, 24k Gold is an indica-dominant hybrid celebrated for its stunning appearance and powerful citrus aroma. It delivers a happy, uplifting high that gently melts into a deep body relaxation, making it ideal for stress relief without complete mental fog.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -63,7 +63,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "An indica-dominant strain with an earthy, piney aroma. The effect is strong, relaxing, and sedating.",
+        "description": "Originating from Colorado's 303 area code, this indica-dominant strain is known for its classic OG characteristics. It delivers a potent, fast-acting high that starts with cerebral euphoria before settling into a deep, full-body relaxation. Its aroma is a pungent mix of earthy, piney, and diesel notes.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Low",
@@ -87,7 +87,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "An indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is strong, relaxing, and physical.",
+        "description": "Named after the elite clone trooper legion from Star Wars, 501st OG is a potent indica-dominant strain. It boasts a sweet, fruity aroma with earthy and piney undertones. The effect is heavily physical, providing deep relaxation that can effectively combat pain and insomnia, making it a powerful force for evening use.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -102,8 +102,8 @@ export const strainsNumeric: Strain[] = [
         "id": "707-headband",
         "name": "707 Headband",
         "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
-        "genetics": "Sour Diesel x OG Kush x Master Kush",
+        "typeDetails": "Hybrid - 70% Sativa / 30% Sativa",
+        "genetics": "(Sour Diesel x OG Kush) x Master Kush",
         "floweringType": "Photoperiod",
         "thc": 22.5,
         "cbd": 1,
@@ -111,7 +111,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "A sativa-dominant strain with an earthy, citrusy, and diesel-like aroma. The effect is uplifting, creative, and relaxing.",
+        "description": "Originating from Humboldt County (area code 707), this sativa-dominant strain is a special phenotype of Headband. It is known for delivering a classic 'headband' sensation of pressure around the temples, accompanied by an uplifting, creative, and long-lasting cerebral high that gently eases into relaxation. Its aroma is a pungent mix of earthy lemon and diesel.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -135,7 +135,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "1-5%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "A pure Indica strain with an earthy, spicy aroma. The effect is strong, relaxing, and sedating, ideal for evening use.",
+        "description": "A pure Indica strain derived from Afghani landraces in the Hindu Kush region. It's prized for its high resin production, making it excellent for hash. The effect is strong, deeply relaxing, and sedating, with a classic earthy and spicy aroma. Ideal for evening use.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",
@@ -159,7 +159,7 @@ export const strainsNumeric: Strain[] = [
         "cbdRange": "~1%",
         "floweringTime": 8,
         "floweringTimeRange": "7-9",
-        "description": "A potent indica-dominant strain with a sweet, fruity aroma of grapes and limes. The effect is strong, fast-acting, and sedating.",
+        "description": "A potent indica-dominant strain that lives up to its name with heavy, sedating effects. It has a sweet, fruity aroma of grapes and limes. The high is fast-acting, providing a strong wave of relaxation that is perfect for combating pain and insomnia at the end of the day.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",

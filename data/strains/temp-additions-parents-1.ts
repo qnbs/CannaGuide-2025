@@ -24,27 +24,6 @@ export const strains: Strain[] = [
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
-        "id": "the-menthol",
-        "name": "The Menthol",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Gelato 45 x (White Diesel x (High Octane x Jet Fuel))",
-        "floweringType": "Photoperiod",
-        "thc": 25,
-        "cbd": 1,
-        "thcRange": "22-28%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium"
-        },
-        "aromas": ["Mint", "Chemical", "Diesel", "Menthol"],
-        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }),
-    createStrainObject({
         "id": "og-kush-breath",
         "name": "OG Kush Breath",
         "type": StrainType.Hybrid,

@@ -3,26 +3,6 @@ import { createStrainObject } from '@/services/strainFactory';
 
 export const strains: Strain[] = [
     createStrainObject({
-        id: 'gorilla-glue',
-        name: 'Gorilla Glue (GG4)',
-        type: StrainType.Hybrid,
-        typeDetails: "Hybrid 50% / 50%",
-        thc: 27.5,
-        cbd: 1,
-        thcRange: "25-30%",
-        cbdRange: "<1%",
-        floweringTime: 8.5,
-        floweringTimeRange: "8-9",
-        genetics: "Chem's Sister x Sour Dubb x Chocolate Diesel",
-        agronomic: {
-            difficulty: "Medium",
-            yield: "High",
-            height: "Medium",
-        },
-        aromas: ["Earthy", "Pine", "Diesel", "Chocolate"],
-        dominantTerpenes: ["Caryophyllene", "Myrcene", "Limonene"],
-    }),
-    createStrainObject({
         id: 'monkey-glue',
         name: 'Monkey Glue',
         type: StrainType.Hybrid,

@@ -5,7 +5,6 @@ This README file supports two languages.
 -->
 
 # 🌿 CannaGuide 2025 (English)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
@@ -13,7 +12,7 @@ This README file supports two languages.
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
-CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire cannabis cultivation lifecycle. Engineered for both novice enthusiasts and master growers, this state-of-the-art **Progressive Web App (PWA)** guides you from seed selection to a perfectly cured harvest. Simulate grows with an advanced VPD-based engine, explore a vast library of over 500 strains with a powerful genealogy tracker, diagnose plant issues with a photo, breed new genetics in the lab, plan equipment with Gemini-powered intelligence, and master your craft with an interactive, data-driven guide.
+CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire cannabis cultivation lifecycle. Engineered for both novice enthusiasts and master growers, this state-of-the-art **Progressive Web App (PWA)** guides you from seed selection to a perfectly cured harvest. Simulate grows with an advanced VPD-based engine, explore a vast library of 700+ strains with a powerful genealogy tracker, diagnose plant issues with a photo, breed new genetics in the lab, plan equipment with Gemini-powered intelligence, and master your craft with an interactive, data-driven guide.
 
 ---
 
@@ -59,6 +58,7 @@ CannaGuide 2025 is built upon a set of core principles designed to deliver a bes
 Your command center for managing and simulating up to three simultaneous grows.
 
 -   **Advanced Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model that visually represents your plant's progress.
+-   **Toggleable UI Modes**: Switch between a streamlined **Simple Mode** for core actions and an **Expert Mode** in the header to reveal detailed scientific data like VPD and DLI.
 -   **AI-Powered Diagnostics**:
     -   **Photo Diagnosis**: Upload a photo of your plant to get an instant AI-based diagnosis, complete with immediate actions, long-term solutions, and preventative advice.
     -   **Proactive Advisor**: Get data-driven advice from Gemini AI based on your plant's real-time vitals. All recommendations can be archived with full **CRUD** functionality.
@@ -68,7 +68,7 @@ Your command center for managing and simulating up to three simultaneous grows.
 ### 2. The Strain Encyclopedia (`Strains` View)
 Your central knowledge hub, designed for deep exploration with **offline-first** access.
 
--   **Vast Library**: Access detailed information on **over 500 cannabis strains**.
+-   **Vast Library**: Access detailed information on **700+ cannabis strains**.
 -   **Interactive Genealogy Tree**: Visualize the complete genetic lineage of any strain. Use analysis tools to **highlight landraces**, trace Sativa/Indica parentage, **calculate the genetic influence** of top ancestors, and **discover known descendants**.
 -   **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search, alphabetical filtering, and an advanced multi-select filter drawer for THC/CBD range, flowering time, aroma, and more.
 -   **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
@@ -108,8 +108,10 @@ Your go-to for in-app support and learning resources.
 A sophisticated hub to customize every aspect of your CannaGuide experience.
 
 -   **UI & Theme Customization**: Choose from multiple themes (`Midnight`, `Forest`, etc.), adjust font sizes, and switch between `Comfortable` and `Compact` UI densities.
+-   **Accessibility Suite**: Activate a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and various **Colorblind Modes** (Protanopia, Deuteranopia, Tritanopia).
 -   **Voice & Speech**: Configure Text-to-Speech (TTS) voices and rates, and manage voice command settings.
 -   **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a breakdown of your storage usage.
+-   **Privacy & Security**: Secure your app with an optional 4-digit **PIN on launch** and configure automatic clearing of AI chat history on exit.
 
 ### 7. Platform-Wide Features
 -   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
@@ -134,6 +136,25 @@ CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed f
 | **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)                                   | Provides a robust, client-side database for full offline functionality.                |
 | **PWA & Offline**    | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                        | Implements a "Cache First, then Network" strategy for offline access.                  |
 | **Styling**          | [Tailwind CSS](https://tailwindcss.com/) (via CDN)                                                            | Enables a rapid, utility-first approach to building a consistent and responsive design.  |
+
+### Gemini Service Abstraction (`geminiService.ts`)
+
+As noted in the [project's DeepWiki](https://deepwiki.com/qnbs/CannaGuide-2025), the `geminiService.ts` file is a critical component that acts as a central abstraction layer for all communication with the Google Gemini API. This design decouples the API logic from the UI components and the Redux state management layer (RTK Query), making the code cleaner, more maintainable, and easier to test.
+
+All AI-powered features in the application route their requests through this service. RTK Query hooks (e.g., `useGetPlantAdviceMutation`) are configured to use a `queryFn` that calls the corresponding method in `geminiService`.
+
+**Key Responsibilities & Methods:**
+
+*   **Initialization**: The service initializes a single `GoogleGenAI` instance, ensuring the API key is handled in one central location.
+*   **Context & Localization**: It uses helper functions (`formatPlantContextForPrompt`, `createLocalizedPrompt`) to automatically format real-time plant data into a consistent context report and prepend the correct language instruction (`"IMPORTANT: Your entire response must be exclusively in English..."`) to every prompt sent to the API. This ensures all AI responses are tailored and correctly localized.
+*   **Structured JSON Output**: For features requiring structured data, the service leverages Gemini's JSON mode.
+    *   `getEquipmentRecommendation`, `diagnosePlant`, `getMentorResponse`, `getStrainTips`, `generateDeepDive`: These methods pass a `responseSchema` in the request configuration. This forces the model to return a valid JSON object that matches the defined TypeScript types (e.g., `Recommendation`, `PlantDiagnosisResponse`), eliminating the need for fragile string parsing on the client side.
+*   **Multimodal Input (Vision)**:
+    *   `diagnosePlant`: This method demonstrates multimodal capabilities by accepting a Base64-encoded image and combining it with the text-based context report into a multipart request. The `gemini-2.5-flash` model then analyzes both the image and the data to provide a diagnosis.
+*   **Image Generation**:
+    *   `generateStrainImage`: This method uses the specialized `gemini-2.5-flash-image` model and configures `responseModalities: [Modality.IMAGE]` to generate a unique, artistic image for a given strain, which is then used in the AI Grow Tips feature.
+*   **Model Selection**: The service intelligently selects the appropriate model for the task. It uses the cost-effective and fast `gemini-2.5-flash` for most text and vision tasks, but switches to the more powerful `gemini-2.5-pro` for the complex `generateDeepDive` feature, which requires more advanced reasoning.
+*   **Error Handling**: Each method includes `try...catch` blocks that wrap the API call. On failure, it logs the error and throws a new, user-friendly error message (using keys from the translation files, e.g., `'ai.error.diagnostics'`), which RTK Query then provides to the UI for graceful display.
 
 ### Project Structure
 The codebase is organized into logical directories to promote maintainability and scalability:
@@ -253,7 +274,7 @@ Please follow the existing code style and ensure your changes are well-documente
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 
-CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Cannabisanbaus. Entwickelt für sowohl neugierige Einsteiger als auch für erfahrene Meisterzüchter, führt Sie diese hochmoderne **Progressive Web App (PWA)** von der Samenauswahl bis zur perfekt ausgehärteten Ernte. Simulieren Sie Anbauvorgänge mit einer fortschrittlichen VPD-basierten Engine, erkunden Sie eine Bibliothek mit über 500 Sorten mit einem leistungsstarken Genealogie-Tracker, diagnostizieren Sie Pflanzenprobleme per Foto, züchten Sie neue Genetiken im Labor, planen Sie Ihre Ausrüstung mit Gemini-gestützter Intelligenz und meistern Sie Ihr Handwerk mit einem interaktiven, datengesteuerten Leitfaden.
+CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Cannabisanbaus. Entwickelt für sowohl neugierige Einsteiger als auch für erfahrene Meisterzüchter, führt Sie diese hochmoderne **Progressive Web App (PWA)** von der Samenauswahl bis zur perfekt ausgehärteten Ernte. Simulieren Sie Anbauvorgänge mit einer fortschrittlichen VPD-basierten Engine, erkunden Sie eine Bibliothek mit 700+ Sorten mit einem leistungsstarken Genealogie-Tracker, diagnostizieren Sie Pflanzenprobleme per Foto, züchten Sie neue Genetiken im Labor, planen Sie Ihre Ausrüstung mit Gemini-gestützter Intelligenz und meistern Sie Ihr Handwerk mit einem interaktiven, datengesteuerten Leitfaden.
 
 ---
 
@@ -298,6 +319,7 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.
 
 -   **Hochentwickelte Simulations-Engine**: Erleben Sie eine Simulation, die auf **VPD (Dampfdruckdefizit)**, biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
+-   **Umschaltbare UI-Modi**: Wechseln Sie zwischen einem einfachen **Anfängermodus** für die Kernaktionen und einem **Expertenmodus** im Header, um detaillierte wissenschaftliche Daten wie VPD und DLI anzuzeigen.
 -   **KI-gestützte Diagnose**:
     -   **Foto-Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose zu erhalten, komplett mit Sofortmaßnahmen, langfristigen Lösungen und präventiven Ratschlägen.
     -   **Proaktiver Berater**: Erhalten Sie datengesteuerte Ratschläge von Gemini AI basierend auf den Echtzeit-Vitalwerten Ihrer Pflanze. Alle Empfehlungen können mit voller **CRUD**-Funktionalität archiviert werden.
@@ -307,7 +329,7 @@ Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitig
 ### 2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)
 Ihr zentraler Wissens-Hub, konzipiert für tiefgehende Erkundungen mit **Offline-First**-Zugriff.
 
--   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu **über 500 Cannabissorten** zu.
+-   **Riesige Bibliothek**: Greifen Sie auf detaillierte Informationen zu **700+ Cannabissorten** zu.
 -   **Interaktiver Stammbaum**: Visualisieren Sie die vollständige genetische Abstammung jeder Sorte. Nutzen Sie Analysewerkzeuge, um **Landrassen hervorzuheben**, Sativa/Indica-Linien zu verfolgen, den **genetischen Einfluss** der Top-Vorfahren zu berechnen und **bekannte Nachkommen zu entdecken**.
 -   **Hochleistungs-Suche & -Filter**: Finden Sie sofort Sorten mit einer IndexedDB-gestützten Volltextsuche, alphabetischer Filterung und einem erweiterten Mehrfachauswahl-Filtermenü für THC/CBD-Bereich, Blütezeit, Aroma und mehr.
 -   **Persönliche Sortensammlung**: Genießen Sie volle **CRUD (Erstellen, Lesen, Aktualisieren, Löschen)**-Funktionalität, um Ihre eigenen benutzerdefinierten Sorten hinzuzufügen und zu verwalten.
@@ -347,8 +369,10 @@ Ihre Anlaufstelle für In-App-Support und Lernressourcen.
 Ein hochentwickelter Hub zur Anpassung jedes Aspekts Ihres CannaGuide-Erlebnisses.
 
 -   **UI & Theme-Anpassung**: Wählen Sie aus mehreren Themes (`Mitternacht`, `Wald` usw.), passen Sie die Schriftgrößen an und wechseln Sie zwischen `Komfortabler` und `Kompakter` UI-Dichte.
+-   **Barrierefreiheit-Suite**: Aktivieren Sie eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und verschiedene **Farbfehlsichtigkeits-Modi** (Protanopie, Deuteranopie, Tritanopie).
 -   **Sprache & Sprachausgabe**: Konfigurieren Sie Text-zu-Sprache (TTS)-Stimmen und -Raten und verwalten Sie die Einstellungen für Sprachbefehle.
 -   **Datensouveränität**: Exportieren Sie Ihren gesamten App-Zustand zur **Sicherung**, importieren Sie ihn zur **Wiederherstellung** oder führen Sie granulare Resets durch, wie das Leeren von KI-Archiven oder Pflanzendaten. Sehen Sie eine Aufschlüsselung Ihrer Speichernutzung.
+-   **Privatsphäre & Sicherheit**: Sichern Sie Ihre App mit einer optionalen 4-stelligen **PIN beim Start** und konfigurieren Sie das automatische Leeren des KI-Chatverlaufs beim Beenden.
 
 ### 7. Plattformweite Funktionen
 -   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich Zugriff auf alle Daten und KI-Archive.
@@ -373,6 +397,25 @@ CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack
 | **Datenpersistenz**   | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)                                    | Bietet eine robuste, clientseitige Datenbank für volle Offline-Funktionalität.          |
 | **PWA & Offline**     | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                         | Implementiert eine "Cache First, then Network"-Strategie für Offline-Zugriff.           |
 | **Styling**           | [Tailwind CSS](https://tailwindcss.com/) (via CDN)                                                             | Ermöglicht einen schnellen, Utility-First-Ansatz für ein konsistentes Designsystem.     |
+
+### Gemini-Service-Abstraktion (`geminiService.ts`)
+
+Wie im [DeepWiki des Projekts](https://deepwiki.com/qnbs/CannaGuide-2025) erwähnt, ist die Datei `geminiService.ts` eine entscheidende Komponente, die als zentrale Abstraktionsschicht für die gesamte Kommunikation mit der Google Gemini API fungiert. Dieses Design entkoppelt die API-Logik von den UI-Komponenten und der Redux-Zustandsverwaltung (RTK Query), was den Code sauberer, wartbarer und einfacher testbar macht.
+
+Alle KI-gestützten Funktionen in der Anwendung leiten ihre Anfragen über diesen Dienst. RTK Query-Hooks (z. B. `useGetPlantAdviceMutation`) sind so konfiguriert, dass sie eine `queryFn` verwenden, die die entsprechende Methode im `geminiService` aufruft.
+
+**Hauptverantwortlichkeiten & Methoden:**
+
+*   **Initialisierung**: Der Dienst initialisiert eine einzige `GoogleGenAI`-Instanz und stellt sicher, dass der API-Schlüssel an einem zentralen Ort gehandhabt wird.
+*   **Kontext & Lokalisierung**: Er verwendet Hilfsfunktionen (`formatPlantContextForPrompt`, `createLocalizedPrompt`), um Echtzeit-Pflanzendaten automatisch in einen konsistenten Kontextbericht zu formatieren und jeder an die API gesendeten Anfrage die korrekte Sprachanweisung (`"WICHTIG: Deine gesamte Antwort muss ausschließlich auf Deutsch sein..."`) voranzustellen. Dies stellt sicher, dass alle KI-Antworten maßgeschneidert und korrekt lokalisiert sind.
+*   **Strukturierte JSON-Ausgabe**: Für Funktionen, die strukturierte Daten erfordern, nutzt der Dienst den JSON-Modus von Gemini.
+    *   `getEquipmentRecommendation`, `diagnosePlant`, `getMentorResponse`, `getStrainTips`, `generateDeepDive`: Diese Methoden übergeben ein `responseSchema` in der Anfragekonfiguration. Dies zwingt das Modell, ein gültiges JSON-Objekt zurückzugeben, das den definierten TypeScript-Typen entspricht (z. B. `Recommendation`, `PlantDiagnosisResponse`), wodurch ein fehleranfälliges Parsen von Zeichenketten auf der Client-Seite vermieden wird.
+*   **Multimodale Eingabe (Vision)**:
+    *   `diagnosePlant`: Diese Methode demonstriert multimodale Fähigkeiten, indem sie ein Base64-kodiertes Bild akzeptiert und es mit dem textbasierten Kontextbericht zu einer mehrteiligen Anfrage kombiniert. Das `gemini-2.5-flash`-Modell analysiert dann sowohl das Bild als auch die Daten, um eine Diagnose zu stellen.
+*   **Bilderzeugung**:
+    *   `generateStrainImage`: Diese Methode verwendet das spezialisierte `gemini-2.5-flash-image`-Modell und konfiguriert `responseModalities: [Modality.IMAGE]`, um ein einzigartiges, künstlerisches Bild für eine bestimmte Sorte zu generieren, das dann in der Funktion "KI-Anbau-Tipps" verwendet wird.
+*   **Modellauswahl**: Der Dienst wählt intelligent das passende Modell für die jeweilige Aufgabe aus. Er verwendet das kostengünstige und schnelle `gemini-2.5-flash` für die meisten Text- und Bildanalyseaufgaben, wechselt aber zum leistungsfähigeren `gemini-2.5-pro` für die komplexe `generateDeepDive`-Funktion, die fortgeschrittenere Schlussfolgerungen erfordert.
+*   **Fehlerbehandlung**: Jede Methode enthält `try...catch`-Blöcke, die den API-Aufruf umschließen. Bei einem Fehler wird der Fehler protokolliert und eine neue, benutzerfreundliche Fehlermeldung (unter Verwendung von Schlüsseln aus den Übersetzungsdateien, z. B. `'ai.error.diagnostics'`) geworfen, die RTK Query dann der Benutzeroberfläche zur anmutigen Anzeige zur Verfügung stellt.
 
 ### Projektstruktur
 Die Codebasis ist in logische Verzeichnisse organisiert, um Wartbarkeit und Skalierbarkeit zu fördern:

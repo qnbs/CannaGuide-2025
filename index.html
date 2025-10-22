@@ -37,7 +37,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CannaGuide 2025 - Cannabis Grow Guide with Gemini</title>
-    <meta name="description" content="Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore over 500 strains, get AI equipment advice, and master your grow with an interactive guide." />
+    <meta name="description" content="Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide." />
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.json" />
@@ -169,7 +169,7 @@
       .no-scrollbar::-webkit-scrollbar { display: none; }
       .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       
-      .glass-pane { background-color: rgba(var(--color-bg-component), 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(var(--color-border), 0.1); }
+      .glass-pane { background-color: rgba(var(--color-bg-component), 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.2); }
       .card-interactive:hover { background-color: rgba(var(--color-bg-component), 1); border-color: rgba(var(--color-primary-500), 0.3); }
 
       .card-interactive-glow { position: relative; overflow: hidden; }
@@ -213,11 +213,58 @@
       .ui-density-compact .glass-pane, .ui-density-compact details { padding: 0.75rem !important; }
       .ui-density-compact .strain-list-item-padding { padding: 0.5rem 0.75rem !important; }
 
+      /* --- ACCESSIBILITY --- */
+      .font-dyslexia body { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
+      .font-dyslexia .font-display, .font-dyslexia .font-mono { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
+      
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }
+      .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+      
+      .colorblind-protanopia body { filter: url(#protanopia); }
+      .colorblind-deuteranopia body { filter: url(#deuteranopia); }
+      .colorblind-tritanopia body { filter: url(#tritanopia); }
     </style>
   </head>
   <body class="bg-bg-primary">
-    <div id="root"></div>
+    <svg width="0" height="0" style="position: absolute;">
+      <defs>
+        <filter id="protanopia">
+          <feColorMatrix type="matrix" values="0.567, 0.433, 0,     0, 0,
+                                                0.558, 0.442, 0,     0, 0,
+                                                0,     0.242, 0.758, 0, 0,
+                                                0,     0,     0,     1, 0"/>
+        </filter>
+        <filter id="deuteranopia">
+          <feColorMatrix type="matrix" values="0.625, 0.375, 0,   0, 0,
+                                                0.7,   0.3,   0,   0, 0,
+                                                0,     0.3,   0.7, 0, 0,
+                                                0,     0,     0,   1, 0"/>
+        </filter>
+        <filter id="tritanopia">
+          <feColorMatrix type="matrix" values="0.95, 0.05,  0,     0, 0,
+                                                0,    0.433, 0.567, 0, 0,
+                                                0,    0.475, 0.525, 0, 0,
+                                                0,    0,     0,     1, 0"/>
+        </filter>
+      </defs>
+    </svg>
+    <div id="root">
+      <div style="display: flex; flex-direction: column; height: 100vh; align-items: center; justify-content: center; color: #94a3b8; font-family: Inter, sans-serif;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 6rem; height: 6rem; color: #34d399; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
+          <defs><linearGradient id="cannaGuideLeafGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="rgb(74, 222, 128)"></stop><stop offset="100%" stop-color="rgb(16, 185, 129)"></stop></linearGradient></defs>
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path>
+          <g transform="translate(5.2, 5.2) scale(0.6)"><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z"></path><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z"></path><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z"></path><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z"></path></g>
+        </svg>
+        <p style="margin-top: 1rem; font-size: 1.125rem; font-weight: 600;">Preparing your guide...</p>
+      </div>
+    </div>
     <div id="toast-container"></div>
+    <noscript>
+      <div style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0F172A; color: #cbd5e1; text-align: center; padding: 2rem;">
+        <h1 style="font-size: 1.5rem; font-weight: bold; color: white;">JavaScript Required</h1>
+        <p>This application requires JavaScript to function. Please enable it in your browser settings and refresh the page.</p>
+      </div>
+    </noscript>
     <script type="module" src="/index.js"></script>
   </body>
 </html>

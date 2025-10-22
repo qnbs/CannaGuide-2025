@@ -109,7 +109,7 @@ export const helpView = {
     },
     strains: {
       title: 'Sorten-Ansicht',
-      content: 'Das Herzstück Ihrer Cannabis-Wissensdatenbank. Hier können Sie über 500 Sorten erkunden, Ihre eigenen hinzufügen und leistungsstarke Werkzeuge für Entdeckung und Analyse nutzen.',
+      content: 'Das Herzstück Ihrer Cannabis-Wissensdatenbank. Hier können Sie 700+ Sorten erkunden, Ihre eigenen hinzufügen und leistungsstarke Werkzeuge für Entdeckung und Analyse nutzen.',
       library: {
         title: 'Bibliothek (Alle/Meine/Favoriten)',
         content: 'Wechseln Sie zwischen der gesamten Bibliothek, Ihren persönlich hinzugefügten Sorten und Ihren Favoriten. Verwenden Sie die leistungsstarke Suche, alphabetische Filter, Typ-Filter und die erweiterte Filterleiste, um genau das zu finden, was Sie suchen. Schalten Sie zwischen Listen- und Rasteransicht um, wie es Ihnen am besten passt.'

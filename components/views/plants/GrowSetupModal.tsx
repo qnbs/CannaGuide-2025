@@ -4,7 +4,7 @@ import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { Strain, GrowSetup, LightType, VentilationPower, PotType, AppSettings } from '@/types';
 import { useAppSelector } from '@/stores/store';
-import { selectDefaults } from '@/stores/selectors';
+import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { FormSection } from '@/components/ui/ThemePrimitives';
 import { RangeSlider } from '@/components/common/RangeSlider';
@@ -27,10 +27,10 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
-  const defaultSettings = useAppSelector(selectDefaults);
+  const settings = useAppSelector(selectSettings);
   
   const [setup, setSetup] = useState<GrowSetup>({
-    ...defaultSettings.growSetup,
+    ...settings.defaults.growSetup,
     lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
   });
   

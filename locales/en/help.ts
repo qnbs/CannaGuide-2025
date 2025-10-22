@@ -109,7 +109,7 @@ export const helpView = {
     },
     strains: {
       title: 'Strains View',
-      content: 'The core of your cannabis knowledge base. Here you can explore over 500 strains, add your own, and use powerful tools for discovery and analysis.',
+      content: 'The core of your cannabis knowledge base. Here you can explore 700+ strains, add your own, and use powerful tools for discovery and analysis.',
       library: {
         title: 'Library (All/My/Favorites)',
         content: 'Switch between the full library, your personally added strains, and your favorites. Use the powerful search, alphabetical filters, type filters, and the advanced filter drawer to find exactly what you\'re looking for. Toggle between list and grid view to suit your preference.'

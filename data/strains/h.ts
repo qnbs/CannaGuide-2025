@@ -151,7 +151,7 @@ export const strainsH: Strain[] = [
         "name": "Haze",
         "type": StrainType.Sativa,
         "typeDetails": "Sativa - 100% Sativa",
-        "genetics": "A mix of multiple landrace Sativas (e.g., Colombian, Mexican, Thai)",
+        "genetics": "Colombian x Mexican x Thai",
         "floweringType": "Photoperiod",
         "thc": 22.5,
         "cbd": 1,
@@ -277,8 +277,8 @@ export const strainsH: Strain[] = [
         "cbd": 1,
         "thcRange": "20-28%",
         "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
         "description": "A legendary indica-dominant strain known for its extremely potent, almost narcotic effects. It delivers a heavy, sedating body high, making it a top choice for severe pain and insomnia. The aroma is earthy, woody, and pungent.",
         "agronomic": {
             "difficulty": "Easy",
@@ -337,5 +337,29 @@ export const strainsH: Strain[] = [
         },
         "aromas": ["Pepper", "Earthy", "Vanilla", "Woody"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
-    })
+    }),
+    createStrainObject({
+        "id": "high-country-diesel",
+        "name": "High Country Diesel",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "OG Kush x Granddaddy Purple (presumed)",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A sativa-dominant hybrid with a strong diesel aroma and uplifting effects. It provides a surge of energy and euphoria, making it a key parent to the popular Jet Fuel (G6) strain.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
+        },
+        "aromas": ["Diesel", "Pungent", "Earthy", "Sweet"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    }),
 ];

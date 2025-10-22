@@ -97,7 +97,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     label={t('strainsView.strainModal.aromas')}
                     value={
                         <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                            {(strain.aromas || []).map(a => <Tag key={a}>{a}</Tag>)}
+                            {(strain.aromas || []).map(a => <Tag key={a}>{t(`common.aromas.${a}`, { defaultValue: a })}</Tag>)}
                         </div>
                     }
                 />
@@ -105,7 +105,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     label={t('strainsView.strainModal.dominantTerpenes')}
                     value={
                         <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                            {(strain.dominantTerpenes || []).map(terp => <Tag key={terp}>{terp}</Tag>)}
+                            {(strain.dominantTerpenes || []).map(terp => <Tag key={terp}>{t(`common.terpenes.${terp}`, { defaultValue: terp })}</Tag>)}
                         </div>
                     }
                 />

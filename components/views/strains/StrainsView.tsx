@@ -40,8 +40,10 @@ import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 
 // --- Lazy Loaded Views for Performance ---
 const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
+// FIX: Corrected path for default export from StrainTipsView. The previous path was incorrect.
 const StrainTipsView = lazy(() => import('./StrainTipsView'));
 const GenealogyView = lazy(() => import('./GenealogyView').then(m => ({ default: m.GenealogyView })));
+// FIX: Corrected the path for the default export from ExportsManagerView.
 const ExportsManagerView = lazy(() => import('./ExportsManagerView'));
 
 
@@ -138,8 +140,8 @@ export const StrainsView: React.FC = () => {
         setIsDrawerOpen(false);
     };
     
-    const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
-    const handleUpdateStrain = (strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain));
+    const handleAddStrain = useCallback((strain: Strain) => dispatch(addUserStrainWithValidation(strain)), [dispatch]);
+    const handleUpdateStrain = useCallback((strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain)), [dispatch]);
     
     const handleDeleteUserStrain = useCallback((id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
@@ -162,7 +164,7 @@ export const StrainsView: React.FC = () => {
     const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
     const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
     
-    const handleExport = (format: SimpleExportFormat) => {
+    const handleExport = useCallback((format: SimpleExportFormat) => {
         const source = selectedIdsSet.size > 0 ? 'selected' : 'all';
         const dataToExport = source === 'selected'
             ? allStrains.filter(strain => selectedIdsSet.has(strain.id))
@@ -187,7 +189,7 @@ export const StrainsView: React.FC = () => {
             fileName,
             sourceDescription
         }));
-    };
+    }, [dispatch, t, selectedIdsSet, allStrains, filteredStrains]);
 
     const handleSelect = useCallback((strain: Strain) => {
         dispatch(setSelectedStrainId(strain.id));
@@ -319,6 +321,7 @@ export const StrainsView: React.FC = () => {
                 showFavorites={showFavoritesOnly}
                 onToggleFavorites={(val) => setShowFavoritesOnly(val)}
                 typeFilter={typeFilter}
+                // FIX: The prop passed to the component should be `handleToggleTypeFilter` as defined by the `useStrainFilters` hook.
                 onToggleTypeFilter={handleToggleTypeFilter}
                 isAnyFilterActive={isAnyFilterActive}
             />

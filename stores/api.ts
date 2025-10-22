@@ -24,7 +24,6 @@ export const geminiApi = createApi({
     reducerPath: 'geminiApi',
     baseQuery: fakeBaseQuery(),
     endpoints: (builder) => ({
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed. This resolves the "Untyped function calls may not accept type arguments" error.
         getEquipmentRecommendation: builder.mutation({
             async queryFn({
                 prompt,
@@ -43,7 +42,6 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         diagnosePlant: builder.mutation({
             async queryFn({
                 base64Image,
@@ -74,7 +72,6 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         getPlantAdvice: builder.mutation({
             async queryFn({
                 plant,
@@ -93,7 +90,6 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         getProactiveDiagnosis: builder.mutation({
             async queryFn({
                 plant,
@@ -112,7 +108,6 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         getMentorResponse: builder.mutation({
             async queryFn({
                 plant,
@@ -133,7 +128,6 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         getStrainTips: builder.mutation({
             async queryFn({
                 strain,
@@ -154,17 +148,18 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         generateStrainImage: builder.mutation({
             async queryFn({
                 strain,
-                lang,
+                style,
+                criteria,
             }: {
                 strain: Strain
-                lang: Language
+                style: string
+                criteria: { focus: string; composition: string; mood: string }
             }): Promise<{ data: string } | { error: { message: string } }> {
                 try {
-                    const data = await geminiService.generateStrainImage(strain, lang)
+                    const data = await geminiService.generateStrainImage(strain, style as any, criteria)
                     return { data }
                 } catch (error) {
                     const message =
@@ -173,7 +168,6 @@ export const geminiApi = createApi({
                 }
             },
         }),
-        // FIX: The generic types for builder.mutation have been removed and the `queryFn` parameters and return type are now explicitly typed.
         getDeepDive: builder.mutation({
             async queryFn({
                 topic,

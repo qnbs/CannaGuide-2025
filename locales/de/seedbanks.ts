@@ -1,8 +1,8 @@
-// This file consolidates all seed bank data to resolve a module import error.
-// Previously, this file attempted to import from non-existent 'eu' and 'us-ca' sub-files.
-// To fix this, the content for those categories has been defined directly within this file.
+// This file consolidates all seed bank data for the German locale.
+// The content for different regions (EU, US/CA) is defined directly within this file
+// to ensure module resolution works correctly.
 
-const seedbanks_eu = {
+export const seedbanks = {
     sensiSeeds: {
         title: "1. Sensi Seeds",
         profile: {
@@ -68,10 +68,7 @@ const seedbanks_eu = {
             title: "Analysten-Einschätzung",
             content: "Eine Top-Wahl für Züchter, die nach potenten, ertragreichen und preisgekrönten Sorten suchen. Ihre Genetik ist durchweg von hoher Qualität und bei Kennern sehr beliebt."
         }
-    }
-};
-
-const seedbanks_us_ca = {
+    },
     dnaGenetics: {
         title: "4. DNA Genetics",
         profile: {
@@ -111,12 +108,7 @@ const seedbanks_us_ca = {
             title: "Analysten-Einschätzung",
             content: "Eine gute Wahl für Anfänger und Züchter, die eine große Auswahl und eine Liefergarantie suchen. Während einige erfahrene Züchter die genetische Stabilität kritisieren, sind sie eine zugängliche Option für den Einstieg."
         }
-    }
-};
-
-export const seedbanks = {
-    ...seedbanks_eu,
-    ...seedbanks_us_ca,
+    },
     grandifloraGenetics: {
         title: "34. Grandiflora Genetics",
         profile: {

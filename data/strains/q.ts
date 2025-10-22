@@ -127,7 +127,7 @@ export const strainsQ: Strain[] = [
         "name": "Querkle",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Urkle x Space Queen",
+        "genetics": "Purple Urkle x Space Queen",
         "floweringType": "Photoperiod",
         "thc": 22,
         "cbd": 1,

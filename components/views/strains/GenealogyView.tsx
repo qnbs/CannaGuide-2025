@@ -217,7 +217,7 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                     </div>
                 </Modal>
             )}
-            <Card>
+            <Card className="relative z-10">
                 <h3 className="text-xl font-bold font-display text-primary-400">{t('strainsView.genealogyView.title')}</h3>
                 <p className="text-sm text-slate-400 mt-1">{t('strainsView.genealogyView.description')}</p>
                 <div className="flex flex-col sm:flex-row gap-4 mt-4">
@@ -283,3 +283,5 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         </div>
     );
 };
+
+export default GenealogyView;

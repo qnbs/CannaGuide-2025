@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
-// FIX: Import 'SimulationState' and 'PlantStage' types.
 import { Plant, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType, TrainingType, AmendmentType, VentilationPower, SimulationState, PlantStage } from '@/types';
 import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { RootState } from '../store';

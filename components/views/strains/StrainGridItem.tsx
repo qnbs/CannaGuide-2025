@@ -5,9 +5,8 @@ import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { useAppDispatch } from '@/stores/store';
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
-import { selectHasAvailableSlots } from '@/stores/selectors';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -37,7 +36,6 @@ const typeClasses: Record<StrainType, string> = {
 const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
     const handleActionClick = (e: React.MouseEvent, action: () => void) => {
         e.stopPropagation();
@@ -50,11 +48,12 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
         >
-            <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10">
+            {/* FIX: Wrapped input in a div with stopPropagation to prevent card click, and corrected onChange handler type. */}
+            <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
                  <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={(e) => handleActionClick(e, () => onToggleSelection(strain.id))}
+                    onChange={() => onToggleSelection(strain.id)}
                     className="custom-checkbox"
                     aria-label={`Select ${strain.name}`}
                 />

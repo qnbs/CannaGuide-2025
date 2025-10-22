@@ -1,8 +1,8 @@
-// This file consolidates all seed bank data to resolve a module import error.
-// Previously, this file attempted to import from non-existent 'eu' and 'us-ca' sub-files.
-// To fix this, the content for those categories has been defined directly within this file.
+// This file consolidates all seed bank data for the English locale.
+// The content for different regions (EU, US/CA) is defined directly within this file
+// to ensure module resolution works correctly.
 
-const seedbanks_eu = {
+export const seedbanks = {
     sensiSeeds: {
         title: "1. Sensi Seeds",
         profile: {
@@ -68,10 +68,7 @@ const seedbanks_eu = {
             title: "Analyst's Assessment",
             content: "A top choice for growers looking for potent, high-yielding, and award-winning strains. Their genetics are consistently of high quality and very popular among connoisseurs."
         }
-    }
-};
-
-const seedbanks_us_ca = {
+    },
     dnaGenetics: {
         title: "4. DNA Genetics",
         profile: {
@@ -111,12 +108,7 @@ const seedbanks_us_ca = {
             title: "Analyst's Assessment",
             content: "A good choice for beginners and growers looking for a wide selection and a delivery guarantee. While some experienced growers criticize the genetic stability, they are an accessible option for getting started."
         }
-    }
-};
-
-export const seedbanks = {
-    ...seedbanks_eu,
-    ...seedbanks_us_ca,
+    },
     grandifloraGenetics: {
         title: "34. Grandiflora Genetics",
         profile: {
@@ -139,7 +131,7 @@ export const seedbanks = {
         title: "35. Bean Patch Seeds",
         profile: {
             title: "Company Profile and Reputation",
-            content: "Bean Patch Seeds is a smaller, boutique breeder known for working with rare and heirloom genetics. They focus on preserving and crossing unique lines, often in regular seed form, catering to experienced growers and pheno-hunters. Their reputation in niche communities is positive, valued for genetic diversity."
+            content: "Bean Patch Seeds is a smaller, boutique breeder known for working with rare and 'heirloom' genetics. They focus on preserving and crossing unique lines, often in regular seed form, catering to experienced growers and pheno-hunters. Their reputation in niche communities is positive, valued for genetic diversity."
         },
         policies: {
             title: "Operational Policies",
@@ -319,7 +311,7 @@ export const seedbanks = {
             },
             breeders: {
                 title: "Breeders",
-                content: "Buying directly from a reputable breeder like Brothers Grimm or Khalifa Genetics (where possible) guarantees genetic authenticity. However, many elite breeders (e.g., Grandiflora, Exotic Genetix, Bloom) distribute exclusively through a network of dealers. In these cases, the reliability of the dealer must be evaluated."
+                content: "Buying directly from a reputable breeder with their own distribution structure (e.g., Brothers Grimm, Khalifa Genetics) guarantees genetic authenticity. However, many elite breeders (e.g., Grandiflora, Exotic Genetix, Bloom) distribute exclusively through a network of dealers. In these cases, the reliability of the dealer must be evaluated."
             },
             boutiques: {
                 title: "Boutique Breeders",

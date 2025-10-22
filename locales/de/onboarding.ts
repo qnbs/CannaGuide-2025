@@ -5,7 +5,7 @@ export const onboarding = {
   english: 'Englisch',
   step1: {
     title: '🧬 Sorten-Enzyklopädie',
-    text: 'Entdecke über 500 Sorten mit detaillierten Filtern, erforsche ihre genetische Abstammung in einem interaktiven Stammbaum oder füge deine eigenen hinzu. Erhalte KI-gestützte Anbau-Tipps.'
+    text: 'Entdecke 700+ Sorten mit detaillierten Filtern, erforsche ihre genetische Abstammung in einem interaktiven Stammbaum oder füge deine eigenen hinzu. Erhalte KI-gestützte Anbau-Tipps.'
   },
   step2: {
     title: '🌿 Der Digitale Grow Room',

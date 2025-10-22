@@ -51,7 +51,7 @@ export const Drawer: React.FC<DrawerProps> = ({
         >
             <Card
                 ref={drawerRef as React.RefObject<HTMLDivElement>}
-                className={`w-full ${sizeClasses[size]} max-h-[85vh] flex flex-col rounded-t-2xl glass-pane !border-b-0 animate-slide-in-up !bg-slate-800/95 !backdrop-blur-lg !border-slate-700/50`}
+                className={`w-full ${sizeClasses[size]} max-h-[85vh] flex flex-col rounded-t-2xl glass-pane !border-b-0 animate-slide-in-up !bg-slate-800/95 !backdrop-blur-lg`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {title && (

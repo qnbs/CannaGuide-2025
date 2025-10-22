@@ -249,6 +249,34 @@ export const strainsView = {
         expert: 'Experte',
       },
       generate: 'Tipps generieren',
+      imageStyle: 'Bildstil',
+      imageStyles: {
+          random: 'Zufällig',
+          fantasy: 'Fantasie',
+          botanical: 'Botanik',
+          psychedelic: 'Psychedelisch',
+          macro: 'Makro',
+          cyberpunk: 'Cyberpunk'
+      },
+      imageCriteria: 'Generierungs-Kriterien',
+      imageFocus: 'Fokus',
+      imageFocusOptions: {
+          buds: 'Blüten',
+          plant: 'Ganze Pflanze',
+          abstract: 'Abstrakt'
+      },
+      imageComposition: 'Komposition',
+      imageCompositionOptions: {
+          symmetrical: 'Symmetrisch',
+          dynamic: 'Dynamisch',
+          minimalist: 'Minimalistisch'
+      },
+      imageMood: 'Stimmung',
+      imageMoodOptions: {
+          mystical: 'Mystisch',
+          energetic: 'Energetisch',
+          calm: 'Ruhig'
+      },
       categories: {
         nutrientTip: 'Nährstoff-Tipp',
         trainingTip: 'Trainings-Tipp',

@@ -95,7 +95,7 @@ export const strains: Strain[] = [
         "name": "Roze",
         "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
-        "genetics": "Unknown genetics",
+        "genetics": "Unknown",
         "floweringType": "Photoperiod",
         "thc": 18,
         "cbd": 1,
@@ -125,7 +125,7 @@ export const strains: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "Also known as OG Eddy Lepp, this is an indica-dominant hybrid with a sweet, grape, and earthy aroma. It delivers a relaxing body high coupled with a happy, euphoric mental state. It is a parent of California Black Rose.",
+        "description": "Also known as OG Eddy Lepp, this is an indica-dominant hybrid with a sweet, grape, and earthy aroma. It delivers a relaxing body high, coupled with a happy, euphoric mental state. It is a parent of California Black Rose.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -148,28 +148,6 @@ export const strains: Strain[] = [
         "floweringTime": 7.5,
         "floweringTimeRange": "7-8",
         "description": "A classic, pure indica strain descended from Afghani landraces. It's known for its fast flowering time, high resin production, and a deeply relaxing, sedative body high. The aroma is sweet and earthy with hints of citrus and spice.",
-        "agronomic": {
-            "difficulty": "Easy",
-            "yield": "High",
-            "height": "Short"
-        },
-        "aromas": ["Sweet", "Earthy", "Citrus", "Spicy"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }),
-     createStrainObject({
-        "id": "maple-leaf-indica",
-        "name": "Maple Leaf Indica",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "Afghani Landrace",
-        "floweringType": "Photoperiod",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 7.5,
-        "floweringTimeRange": "7-8",
-        "description": "A classic, pure indica strain descended from Afghani landraces. It's known for its fast flowering time, high resin production, and a deeply relaxing, sedative body high. The aroma is sweet and earthy with hints of citrus and spice. It is a parent of Marley's Collie.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "High",

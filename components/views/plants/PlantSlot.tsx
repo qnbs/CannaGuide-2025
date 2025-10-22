@@ -5,27 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { PlantVisualizer } from './PlantVisualizer';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { VitalBar } from './VitalBar';
 
 interface PlantSlotProps {
     plant: Plant;
     onInspect: () => void;
 }
-
-const VitalBar: React.FC<{ value: number; idealMin: number; idealMax: number; icon: React.ReactNode; label: string }> = ({ value, idealMin, idealMax, icon, label }) => {
-    const isIdeal = value >= idealMin && value <= idealMax;
-    return (
-        <div className="flex items-center gap-2 text-xs" title={`${label}: ${value.toFixed(1)}`}>
-            <div className={`w-4 h-4 flex-shrink-0 ${isIdeal ? 'text-primary-400' : 'text-amber-400'}`}>{icon}</div>
-            <div className="w-full bg-slate-700 rounded-full h-1.5">
-                <div 
-                    className={`h-1.5 rounded-full transition-all duration-300 ${isIdeal ? 'bg-primary-500' : 'bg-amber-500'}`} 
-                    style={{ width: `${Math.min(100, (value / (idealMax * 1.2)) * 100)}%` }}
-                ></div>
-            </div>
-        </div>
-    );
-};
-
 
 export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) => {
     const { t } = useTranslation();
@@ -34,7 +19,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
     return (
-        <Card onClick={onInspect} className="flex flex-col h-full cursor-pointer card-interactive p-3 border border-white/40">
+        <Card onClick={onInspect} className="flex flex-col h-full cursor-pointer card-interactive p-3">
             <div className="flex justify-between items-start">
                 <div className="min-w-0">
                     <h3 className="font-bold text-lg text-slate-100 truncate">{plant.name}</h3>
@@ -50,10 +35,10 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
                  <PlantVisualizer plant={plant} className="w-32 h-32" />
             </div>
 
-            <div className="flex flex-col gap-2 text-slate-300 border-t border-slate-700/50 pt-3 mt-auto">
-                <VitalBar value={plant.health} idealMin={80} idealMax={100} icon={<PhosphorIcons.Heart />} label={t('plantsView.summary.gardenHealth')} />
-                <VitalBar value={plant.medium.ph} idealMin={stageDetails.idealVitals.ph.min} idealMax={stageDetails.idealVitals.ph.max} icon={<span className="font-bold text-xs leading-none">pH</span>} label={t('plantsView.vitals.ph')} />
-                <VitalBar value={plant.medium.moisture} idealMin={20} idealMax={80} icon={<PhosphorIcons.Drop />} label={t('plantsView.vitals.moisture')} />
+            <div className="grid grid-cols-3 gap-1 text-slate-300 border-t border-slate-700/50 pt-3 mt-auto">
+                <VitalBar value={plant.health} min={80} max={100} label={t('plantsView.summary.gardenHealth')} unit="%" icon={<PhosphorIcons.Heart />} />
+                <VitalBar value={plant.medium.ph} min={stageDetails.idealVitals.ph.min} max={stageDetails.idealVitals.ph.max} label={t('plantsView.vitals.ph')} icon={<span className="font-bold text-xs leading-none">pH</span>} />
+                <VitalBar value={plant.medium.moisture} min={20} max={80} label={t('plantsView.vitals.moisture')} unit="%" icon={<PhosphorIcons.Drop />} />
             </div>
         </Card>
     );

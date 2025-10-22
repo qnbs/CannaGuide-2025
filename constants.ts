@@ -5,7 +5,7 @@ export const APP_VERSION = 2;
 export const CURRENT_STRAIN_DATA_VERSION = 2;
 export const APP_METADATA = {
   "name": "CannaGuide 2025 - Cannabis Grow Guide with Gemini",
-  "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore over 500 strains, get AI equipment advice, and master your grow with an interactive guide.",
+  "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.",
   "prompt": "",
   "requestFramePermissions": [
     "camera",

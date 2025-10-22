@@ -90,7 +90,8 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                 {/* Name & Main Stats */}
                 <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-2">
-                        {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" title={t('strainsView.tabs.myStrains')} />}
+                        {/* FIX: Removed unsupported `title` prop from icon component. The visual indication is sufficient. */}
+                        {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />}
                         <p className="font-bold text-slate-100 truncate">{strain.name}</p>
                     </div>
                     <p className="text-xs text-slate-400 mt-1 sm:hidden">

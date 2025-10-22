@@ -18,6 +18,11 @@ export const useDocumentEffects = (settings: AppSettings) => {
         const managedClasses = [
             'ui-density-compact',
             'tts-disabled',
+            'font-dyslexia',
+            'reduced-motion',
+            'colorblind-protanopia',
+            'colorblind-deuteranopia',
+            'colorblind-tritanopia',
             // All possible theme classes. We must list them manually as Theme is a TypeScript type, not a runtime object.
             'theme-midnight', 'theme-forest', 'theme-purpleHaze', 'theme-desertSky', 'theme-roseQuartz', 'theme-rainbowKush'
         ];
@@ -34,6 +39,11 @@ export const useDocumentEffects = (settings: AppSettings) => {
         
         if (general.uiDensity === 'compact') root.classList.add('ui-density-compact');
         if (!tts.enabled) root.classList.add('tts-disabled');
+        if (general.dyslexiaFont) root.classList.add('font-dyslexia');
+        if (general.reducedMotion) root.classList.add('reduced-motion');
+        if (general.colorblindMode && general.colorblindMode !== 'none') {
+            root.classList.add(`colorblind-${general.colorblindMode}`);
+        }
         
         // --- Apply styles and attributes that are not class-based ---
         root.style.fontSize =

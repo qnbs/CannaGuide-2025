@@ -2,38 +2,24 @@ import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
     "1024": {
-        "description": "Eine Sativa-dominante Sorte, bekannt für ihre hohe Potenz und ihre erhebende, zerebrale Wirkung. Sie hat ein süßes, fruchtiges und würziges Aroma.",
-        "genetics": "Unbekannte Kreuzung",
-        "heightDetails": { "indoor": "150-220 cm", "outdoor": "180-250 cm" }
+        "description": "Eine hochpotente Sativa-dominante Sorte von Medical Seeds Co., deren genaue Genetik ein gut gehütetes Geheimnis ist. Sie ist bekannt für ihre intensive, zerebrale und langanhaltende Wirkung, die Kreativität und Euphorie fördert. Das komplexe Aroma mischt süße, fruchtige Noten mit Weihrauch und Gewürzen."
     },
     "24k-gold": {
-        "description": "Auch bekannt als Kosher Tangie. Eine Indica-dominante Hybride mit einem süßen Zitrus- und Mandarinenaroma. Die Wirkung ist entspannend und glücklich, mit einem erhebenden mentalen Schub.",
-        "genetics": "Kosher Kush x Tangie",
-        "heightDetails": { "indoor": "150-200 cm", "outdoor": "180-220 cm" }
+        "description": "Auch bekannt als Kosher Tangie, ist 24k Gold eine Indica-dominante Hybride, die für ihre atemberaubende Optik und ihr starkes Zitrusaroma gefeiert wird. Sie liefert ein glückliches, erhebendes High, das sanft in eine tiefe Körperentspannung übergeht, was sie ideal zur Stresslinderung macht, ohne den Geist völlig zu benebeln."
     },
     "303-og": {
-        "description": "Eine Indica-dominante Sorte mit einem erdigen, kiefernartigen Aroma. Die Wirkung ist stark, entspannend und sedierend.",
-        "genetics": "Pre-98 Bubba Kush x Chemdawg",
-        "heightDetails": { "indoor": "Mittel", "outdoor": "Mittel" }
+        "description": "Diese aus dem Vorwahlbereich 303 von Colorado stammende Indica-dominante Sorte ist für ihre klassischen OG-Eigenschaften bekannt. Sie liefert ein potentes, schnell einsetzendes High, das mit zerebraler Euphorie beginnt, bevor es in eine tiefe Ganzkörperentspannung übergeht. Ihr Aroma ist eine scharfe Mischung aus erdigen, kiefernartigen und dieselartigen Noten."
     },
     "501st-og": {
-        "description": "Eine Indica-dominante Sorte mit einem süßen, fruchtigen und erdigen Aroma. Die Wirkung ist stark, entspannend und körperlich.",
-        "genetics": "Skywalker OG x Rare Dankness #1",
-        "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz" }
+        "description": "Benannt nach der elitären Klonkrieger-Legion aus Star Wars, ist 501st OG eine potente Indica-dominante Sorte. Sie besticht durch ein süßes, fruchtiges Aroma mit erdigen und kiefernartigen Untertönen. Die Wirkung ist stark körperlich und sorgt für eine tiefe Entspannung, die Schmerzen und Schlaflosigkeit wirksam bekämpfen kann, was sie zu einer mächtigen Kraft für den Abendgebrauch macht."
     },
     "707-headband": {
-        "description": "Eine Sativa-dominante Sorte mit einem erdigen, zitrusartigen und dieselartigen Aroma. Die Wirkung ist erhebend, kreativ und entspannend.",
-        "genetics": "Sour Diesel x OG Kush x Master Kush",
-        "heightDetails": { "indoor": "Hoch", "outdoor": "Hoch" }
+        "description": "Diese Sativa-dominante Sorte stammt aus Humboldt County (Vorwahl 707) und ist ein spezieller Phänotyp von Headband. Sie ist dafür bekannt, ein klassisches 'Headband'-Gefühl des Drucks um die Schläfen zu erzeugen, begleitet von einem erhebenden, kreativen und langanhaltenden zerebralen High, das sanft in Entspannung übergeht. Ihr Aroma ist eine scharfe Mischung aus erdiger Zitrone und Diesel."
     },
     "8-ball-kush": {
-        "description": "Eine reine Indica-Sorte mit einem erdigen, würzigen Aroma. Die Wirkung ist stark, entspannend und sedierend, ideal für den Abendgebrauch.",
-        "genetics": "Afghanische Landrasse",
-        "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz" }
+        "description": "Eine reine Indica-Sorte, die von afghanischen Landrassen aus der Hindukusch-Region abstammt. Sie wird für ihre hohe Harzproduktion geschätzt, was sie hervorragend für Haschisch macht. Die Wirkung ist stark, tief entspannend und sedierend, mit einem klassischen erdigen und würzigen Aroma. Ideal für den Abendgebrauch."
     },
     "9-pound-hammer": {
-        "description": "Eine potente Indica-dominante Sorte mit einem süßen, fruchtigen Aroma von Trauben und Limetten. Die Wirkung ist stark, schnell einsetzend und sedierend.",
-        "genetics": "Gooberry x Hells OG x Jack The Ripper",
-        "heightDetails": { "indoor": "Kurz", "outdoor": "Kurz" }
+        "description": "Eine potente Indica-dominante Sorte, die ihrem Namen mit schweren, sedierenden Effekten alle Ehre macht. Sie hat ein süßes, fruchtiges Aroma von Trauben und Limetten. Das High ist schnell einsetzend und sorgt für eine starke Welle der Entspannung, die perfekt ist, um am Ende des Tages Schmerzen und Schlaflosigkeit zu bekämpfen."
     }
 };

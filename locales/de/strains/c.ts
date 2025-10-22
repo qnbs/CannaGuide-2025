@@ -2,7 +2,7 @@ import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
     "cactus-breath": {
-        "description": "Eine potente indica-dominante Hybride mit einem erdigen, kiefernartigen und würzigen Aroma. Cactus Breath liefert ein starkes, entspannendes und euphorisches High, das perfekt zum Entspannen am Ende des Tages ist.",
+        "description": "Eine potente indica-dominante Hybride mit einem erdigen, kiefernartigen und würzigen Aroma. Cactus Breath liefert ein starkes, entspannendes und euphorisches High, das perfekt zum Entspannen am Ende des Tages ist."
     },
     "cactus": {
         "description": "Cactus ist eine indica-dominante Hybridsorte, die für ihre robuste Natur und ihre entspannende Wirkung bekannt ist. Sie ist eine Kreuzung aus den klassischen Sorten Afghani und Northern Lights. Die Wirkung ist typischerweise beruhigend und körperlich entspannend, was sie zu einer guten Wahl für den Abend macht. Das Aroma ist eine Mischung aus Kiefer, süßer Erde und würzigen Noten.",
@@ -96,10 +96,10 @@ export const strains: Record<string, StrainTranslationData> = {
         "description": "Eine sativa-dominante Hybride mit einem scharfen, ammoniakartigen und zitrusartigen Aroma. Cheetah Piss liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
     },
     "chem-sis": {
-        "description": "Eine sativa-dominante Hybride mit einem scharfen, dieselartigen und erdigen Aroma. Chem Sis liefert ein energetisches, erhebendes und kreatives High, das perfekt für den Tagesgebrauch ist.",
+        "description": "Auch als 'Chem Sis' bekannt, ist dies ein berühmter Phänotyp der legendären Chemdawg-Linie. Diese sativa-dominante Hybride liefert ein starkes, erhebendes zerebrales High, das Kreativität und Energie steigert. Ihr Aroma ist unverkennbar scharf und chemisch, mit starken Noten von Diesel und Erde."
     },
     "chemdawg": {
-        "description": "Eine legendäre Hybride mit mysteriösem Ursprung, bekannt für ihr scharfes, dieselartiges Aroma. Die Wirkung ist stark, zerebral und erhebend, was sie zu einer Quelle für viele berühmte Sorten macht.",
+        "description": "Chemdawg, oft auch Chemdog geschrieben, ist eine legendäre Hybride mit mysteriösem Ursprung und dient als genetischer Grundpfeiler für unzählige moderne Klassiker wie OG Kush und Sour Diesel. Ihre Entstehungsgeschichte ist von Mythen umwoben, doch die populärste Theorie besagt, dass die Sorte aus Samen entstand, die 1991 auf einem Grateful-Dead-Konzert erworben wurden. Ihre Wirkung ist stark zerebral, erhebend und kreativ, geht aber schnell in eine spürbare körperliche Entspannung über, ohne vollständig sedierend zu sein. Ihr Aroma ist ihr markantestes Merkmal: ein extrem scharfer, beißender Geruch nach Diesel, Chemikalien und erdiger Kiefer, der als 'Gas' oder 'Fuel' bekannt wurde und eine ganze Kategorie von Geschmacksprofilen definierte. Aufgrund ihrer Potenz und ihres einzigartigen Terpenprofils ist sie eine Sorte, die eher für erfahrene Konsumenten geeignet ist.",
     },
     "chemdawg-91": {
         "description": "Einer der ursprünglichen und potentesten Phänotypen der Chemdawg-Linie. Bekannt für sein extrem scharfes, dieselartiges Aroma und eine starke, zerebrale Wirkung, die in eine tiefe Körperentspannung übergeht. Eine legendäre Sorte, die als Elternteil für viele berühmte Hybriden wie OG Kush und Sour Diesel diente."

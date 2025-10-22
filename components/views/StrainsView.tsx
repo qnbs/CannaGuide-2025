@@ -28,23 +28,20 @@ import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } f
 import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
 import { StrainDetailView } from './strains/StrainDetailView';
 import { AddStrainModal } from './strains/AddStrainModal';
-import { addStrainTip, updateStrainTip, deleteStrainTip, addExport, updateExport, deleteExport } from '@/stores/slices/savedItemsSlice';
+import { addStrainTip, updateStrainTip, deleteStrainTip, addExport, updateExport, deleteExport, exportAndSaveStrains } from '@/stores/slices/savedItemsSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { FilterDrawer } from './strains/FilterDrawer';
 import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 import { StrainSubNav } from './strains/StrainSubNav';
 import { StrainsViewState } from '@/stores/slices/strainsViewSlice';
-import { exportService } from '@/services/exportService';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 
 // --- Lazy Loaded Views for Performance ---
 const StrainLibraryView = lazy(() => import('./strains/StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
-// FIX: Corrected lazy import to handle default export from StrainTipsView.
 const StrainTipsView = lazy(() => import('./strains/StrainTipsView'));
 const GenealogyView = lazy(() => import('./strains/GenealogyView').then(m => ({ default: m.GenealogyView })));
-// FIX: Corrected the lazy import to handle a default export from ExportsManagerView.
 const ExportsManagerView = lazy(() => import('./strains/ExportsManagerView'));
 
 
@@ -97,7 +94,8 @@ export const StrainsView: React.FC = () => {
         [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
         [StrainViewTab.Favorites]: t('strainsView.tabs.favorites'),
         [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
-        [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
+        // FIX: Explicitly cast `savedExportsCount` to number to satisfy i18next `count` type.
+        [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount as number }),
         [StrainViewTab.Tips]: t('strainsView.tabs.tips', { count: savedTips.length }),
     }), [t, savedTips.length, savedExportsCount]);
 
@@ -141,8 +139,8 @@ export const StrainsView: React.FC = () => {
         setIsDrawerOpen(false);
     };
     
-    const handleAddStrain = (strain: Strain) => dispatch(addUserStrainWithValidation(strain));
-    const handleUpdateStrain = (strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain));
+    const handleAddStrain = useCallback((strain: Strain) => dispatch(addUserStrainWithValidation(strain)), [dispatch]);
+    const handleUpdateStrain = useCallback((strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain)), [dispatch]);
     
     const handleDeleteUserStrain = useCallback((id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
@@ -165,9 +163,7 @@ export const StrainsView: React.FC = () => {
     const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
     const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
     
-    const handleExport = (format: SimpleExportFormat) => {
-        if (!window.confirm(t('common.exportConfirm') as string)) return;
-
+    const handleExport = useCallback((format: SimpleExportFormat) => {
         const source = selectedIdsSet.size > 0 ? 'selected' : 'all';
         const dataToExport = source === 'selected'
             ? allStrains.filter(strain => selectedIdsSet.has(strain.id))
@@ -175,6 +171,7 @@ export const StrainsView: React.FC = () => {
 
         if (dataToExport.length === 0) {
             dispatch(addNotification({ message: t('common.noDataToExport'), type: 'error' }));
+            dispatch(closeExportModal());
             return;
         }
 
@@ -185,24 +182,21 @@ export const StrainsView: React.FC = () => {
         
         const fileName = `CannaGuide_Strains_${new Date().toISOString().slice(0, 10)}`;
 
-        switch (format) {
-            case 'pdf':
-                exportService.exportStrainsAsPdf(dataToExport, fileName, t);
-                break;
-            case 'txt':
-                exportService.exportStrainsAsTxt(dataToExport, fileName, t);
-                break;
-        }
-        
-        dispatch(addExport({
-            name: fileName,
+        dispatch(exportAndSaveStrains({
+            strains: dataToExport,
             format,
-            strainIds: dataToExport.map(s => s.id),
+            fileName,
             sourceDescription
         }));
-        
-        dispatch(closeExportModal());
-    };
+    }, [dispatch, t, selectedIdsSet, allStrains, filteredStrains]);
+
+    const handleSelect = useCallback((strain: Strain) => {
+        dispatch(setSelectedStrainId(strain.id));
+    }, [dispatch]);
+
+    const handleToggleSelection = useCallback((id: string) => {
+        dispatch(toggleStrainSelection(id));
+    }, [dispatch]);
 
     if (selectedStrainForDetail) {
         return (
@@ -240,8 +234,8 @@ export const StrainsView: React.FC = () => {
                             onOpenDrawer={() => setIsDrawerOpen(true)}
                             activeFilterCount={activeFilterCount}
                             selectedIds={selectedIdsSet}
-                            onToggleSelection={(id) => dispatch(toggleStrainSelection(id))}
-                            onSelect={(strain) => dispatch(setSelectedStrainId(strain.id))}
+                            onToggleSelection={handleToggleSelection}
+                            onSelect={handleSelect}
                             favoriteIds={favoriteIds}
                             onToggleFavorite={handleToggleFavorite}
                             isUserStrain={(id) => userStrainIds.has(id)}
@@ -268,7 +262,7 @@ export const StrainsView: React.FC = () => {
             case StrainViewTab.Genealogy:
                 return (
                     <Suspense fallback={<SkeletonLoader count={3} />}>
-                        <GenealogyView allStrains={allStrains} onNodeClick={(strain) => dispatch(setSelectedStrainId(strain.id))} />
+                        <GenealogyView allStrains={allStrains} onNodeClick={handleSelect} />
                     </Suspense>
                 );
             case StrainViewTab.Exports:
@@ -300,7 +294,7 @@ export const StrainsView: React.FC = () => {
             <StrainSubNav 
                 activeTab={strainsViewTab} 
                 onTabChange={(id) => dispatch(setStrainsViewTab(id))} 
-                counts={{ tips: savedTips.length, exports: savedExportsCount }}
+                counts={{ tips: savedTips.length, exports: savedExportsCount as number }}
             />
             
             {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}

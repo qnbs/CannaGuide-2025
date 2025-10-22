@@ -3,48 +3,6 @@ import { createStrainObject } from '@/services/strainFactory';
 
 export const strains: Strain[] = [
     createStrainObject({
-        "id": "abusive-og",
-        "name": "Abusive OG",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
-        "genetics": "OG Kush phenotype",
-        "floweringType": "Photoperiod",
-        "thc": 23.5,
-        "cbd": 1,
-        "thcRange": "20-27%",
-        "cbdRange": "<2%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Earthy", "Pine", "Pungent", "Skunk"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "chems-sister",
-        "name": "Chem's Sister",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "Chemdawg (phenotype)",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "thcRange": "18-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 9.5,
-        "floweringTimeRange": "9-10",
-        "agronomic": {
-            "difficulty": "Hard",
-            "yield": "High",
-            "height": "Tall"
-        },
-        "aromas": ["Diesel", "Earthy", "Pungent", "Pine"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }),
-    createStrainObject({
         "id": "sophisticated-lady",
         "name": "Sophisticated Lady",
         "type": StrainType.Hybrid,

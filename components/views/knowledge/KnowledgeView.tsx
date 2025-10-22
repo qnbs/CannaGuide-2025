@@ -22,7 +22,6 @@ const SandboxView = lazy(() => import('./knowledge/SandboxView'));
 export const KnowledgeView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    // FIX: Switched to specific, memoized selectors for better performance and state management.
     const activeTab = useAppSelector(selectKnowledgeViewTab);
     const activeMentorPlantId = useAppSelector(selectActiveMentorPlantId);
     const [isPending, startTransition] = useTransition();
@@ -32,7 +31,7 @@ export const KnowledgeView: React.FC = () => {
     const viewIcons = useMemo(
         () => ({
             [KnowledgeViewTab.Mentor]: <PhosphorIcons.Brain className="w-16 h-16 mx-auto text-purple-400" />,
-            [KnowledgeViewTab.Guide]: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-blue-400" />,
+            [KnowledgeViewTab.Guide]: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-blue-400" />,
             [KnowledgeViewTab.Archive]: <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-amber-400" />,
             [KnowledgeViewTab.Breeding]: <PhosphorIcons.TestTube className="w-16 h-16 mx-auto text-green-400" />,
             [KnowledgeViewTab.Sandbox]: <PhosphorIcons.Flask className="w-16 h-16 mx-auto text-rose-400" />,

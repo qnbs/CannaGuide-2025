@@ -7,7 +7,7 @@ export const strainsP: Strain[] = [
         "name": "Painkiller XL",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 75% / Indica 25%",
-        "genetics": "Respect #13 x Juanita la Lagrimosa",
+        "genetics": "Respect x Juanita la Lagrimosa",
         "floweringType": "Photoperiod",
         "thc": 9,
         "cbd": 9,
@@ -751,7 +751,7 @@ export const strainsP: Strain[] = [
         "name": "Pre-98 Bubba Kush",
         "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
-        "genetics": "OG Kush x West Coast Dog",
+        "genetics": "OG Kush x West Coast Dog (presumed)",
         "floweringType": "Photoperiod",
         "thc": 20,
         "cbd": 1,
@@ -1028,8 +1028,8 @@ export const strainsP: Strain[] = [
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-180 cm" }
         },
         "aromas": ["Sweet", "Berry", "Earthy", "Pine"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
@@ -1039,7 +1039,7 @@ export const strainsP: Strain[] = [
         "name": "Purple Star",
         "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
-        "genetics": "Dutch strain",
+        "genetics": "Dutch Landrace phenotype",
         "floweringType": "Photoperiod",
         "thc": 16,
         "cbd": 1,

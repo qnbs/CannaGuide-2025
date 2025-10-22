@@ -31,7 +31,7 @@ export const strainsR: Strain[] = [
         "name": "Rare Dankness #1",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 70% Indica / 30% Sativa",
-        "genetics": "Ghost OG x (Chemdawg x Triangle Kush)",
+        "genetics": "Ghost OG x Rare Dankness #2",
         "floweringType": "Photoperiod",
         "thc": 24,
         "cbd": 1,
@@ -188,8 +188,8 @@ export const strainsR: Strain[] = [
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-180 cm" }
         },
         "aromas": ["Spicy", "Herbal", "Earthy", "Grape"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
@@ -223,7 +223,7 @@ export const strainsR: Strain[] = [
         "name": "Runtz Muffin",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Zkittlez x Gelato #33 x Orange Punch",
+        "genetics": "(Zkittlez x Gelato #33) x Orange Punch",
         "floweringType": "Photoperiod",
         "thc": 29,
         "cbd": 1,
@@ -236,8 +236,8 @@ export const strainsR: Strain[] = [
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+            "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Cake", "Fruity", "Lavender"],
         "dominantTerpenes": ["Limonene", "Linalool", "Caryophyllene"]
@@ -260,8 +260,8 @@ export const strainsR: Strain[] = [
             "difficulty": "Easy",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "" }
+            "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "550-650 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Earthy", "Pine", "Sweet", "Diesel"],
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]

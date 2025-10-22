@@ -7,7 +7,7 @@ export const strainsM: Strain[] = [
         "name": "MAC (Miracle Alien Cookies)",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-        "genetics": "Alien Cookies F2 x (Colombian x Starfighter)",
+        "genetics": "Alien Cookies x (Colombian x Starfighter)",
         "floweringType": "Photoperiod",
         "thc": 25,
         "cbd": 1,
@@ -151,7 +151,7 @@ export const strainsM: Strain[] = [
         "name": "Marathon OG",
         "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
-        "genetics": "OG Kush phenotype",
+        "genetics": "OG Kush",
         "floweringType": "Photoperiod",
         "thc": 25,
         "cbd": 1,
@@ -175,7 +175,7 @@ export const strainsM: Strain[] = [
         "name": "Mars OG",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 60% / Sativa 40%",
-        "genetics": "Mars x OG",
+        "genetics": "OG Kush",
         "floweringType": "Photoperiod",
         "thc": 21,
         "cbd": 1,
@@ -315,8 +315,8 @@ export const strainsM: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     }),
     createStrainObject({
-        "id": "mazar-sharif",
-        "name": "Mazar | Sharif",
+        "id": "mazar-i-sharif",
+        "name": "Mazar-I-Sharif",
         "type": StrainType.Indica,
         "typeDetails": "Indica 100%",
         "genetics": "Afghan Landrace (Mazar-i-Sharif)",
@@ -601,5 +601,29 @@ export const strainsM: Strain[] = [
         },
         "aromas": ["Earthy", "Sweet", "Pungent", "Woody"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
-    })
+    }),
+    createStrainObject({
+        "id": "marleys-collie",
+        "name": "Marley's Collie",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Jamaican Landrace x Maple Leaf Indica",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A sativa-dominant strain created by Sensi Seeds in honor of Bob Marley. It combines a sweet, tropical aroma with an uplifting, creative, and energetic high. It's a parent of Jamaican Pearl.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
+        },
+        "aromas": ["Sweet", "Tropical", "Spicy", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
 ];

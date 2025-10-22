@@ -5,7 +5,6 @@ This README file supports two languages.
 -->
 
 # 🌿 CannaGuide 2025 (English)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
@@ -349,7 +348,7 @@ Ihr Werkzeugkasten für die Planung und Optimierung Ihres Anbau-Setups.
     -   Nährstoff-Mischrechner
     -   EC/PPM-Umrechner
     -   Ertragsschätzer
--   **Kuratierte Shop-Listen**: Durchsuchen Sie empfohlene Grow Shops und Saatgutbanken für den europäischen und den US/kanadischen Markt.
+-   **Kuratierte Shop-Listen**: Durchsuchen Sie empfohlene Grow Shops und Anbieter von Saatgut für den europäischen und den US/kanadischen Markt.
 
 ### 4. Die Bibliothek (`Wissen`-Ansicht)
 Ihre vollständige Ressource zum Lernen und zur Problemlösung.

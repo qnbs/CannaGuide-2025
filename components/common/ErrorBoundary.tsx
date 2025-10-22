@@ -23,12 +23,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         console.error('Uncaught error:', error, errorInfo)
     }
 
-    // FIX: Reverted to a standard class method for `render`. The arrow function syntax caused a typing issue where `this.props` was not recognized.
+    // FIX: The render method in a class component must be a standard method, not an arrow function, to ensure React correctly binds `this` and provides access to `this.props`.
     render(): React.ReactNode {
         if (this.state.hasError) {
             // You can render any custom fallback UI
             return (
-                <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans items-center justify-center p-4 text-center">
+                <div className="flex flex-col h-full bg-slate-900 text-slate-300 font-sans items-center justify-center p-4 text-center">
                     <PhosphorIcons.WarningCircle
                         weight="fill"
                         className="w-24 h-24 text-red-400 mb-4"

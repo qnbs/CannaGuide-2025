@@ -28,9 +28,9 @@ export const Input: React.FC<
             >
                 {label}
                 {tooltip && (
-                    <span className="group relative">
+                    <span className="group/tooltip relative" tabIndex={0} role="tooltip">
                         <PhosphorIcons.Question className="w-4 h-4 text-slate-400" />
-                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-slate-900 text-slate-200 text-xs rounded-md shadow-lg opacity-0 group-hover/tooltip:opacity-100 group-focus/tooltip:opacity-100 transition-opacity pointer-events-none z-10">
                             {tooltip}
                         </span>
                     </span>

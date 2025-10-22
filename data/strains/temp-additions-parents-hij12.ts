@@ -27,30 +27,6 @@ export const strains: Strain[] = [
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
-        "id": "hawaiian",
-        "name": "Hawaiian",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa 100%",
-        "genetics": "Hawaiian Landrace",
-        "floweringType": "Photoperiod",
-        "thc": 21,
-        "cbd": 1,
-        "thcRange": "18-24%",
-        "cbdRange": "<1%",
-        "floweringTime": 11,
-        "floweringTimeRange": "10-12",
-        "description": "A classic sativa landrace from the volcanic soils of Hawaii. It delivers a quintessential sativa high: energetic, creative, and happy, perfect for daytime activities. The aroma is a sweet and tropical blend of pineapple and citrus.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Tropical", "Pineapple", "Sweet", "Citrus"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Pinene"]
-    }),
-    createStrainObject({
         "id": "high-country-diesel",
         "name": "High Country Diesel",
         "type": StrainType.Hybrid,

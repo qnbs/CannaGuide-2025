@@ -73,5 +73,27 @@ export const strainsX: Strain[] = [
         },
         "aromas": ["Lemon", "Pine", "Spicy", "Sweet"],
         "dominantTerpenes": ["Terpinolene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "xxx-og",
+        "name": "XXX OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush x OG Kush",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A potent indica-dominant strain that is a three-time Cannabis Cup winner. It provides a heavy, relaxing body high that is great for pain and insomnia. The aroma is classic OG: earthy, piney, and pungent. It is a parent of Godfather OG.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     })
 ];

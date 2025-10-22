@@ -788,7 +788,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Easy",
             "yield": "Medium",
             "height": "Short",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Floral", "Grape"],
@@ -812,7 +812,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Medium",
             "yield": "Low",
             "height": "Medium",
-            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Creamy", "Fruity", "Grape"],
@@ -836,7 +836,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Medium",
             "yield": "Low",
             "height": "Medium",
-            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/plant" },
+            "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/Pflanze" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Creamy", "Berry"],
@@ -860,7 +860,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "600-800 g/m²", "outdoor": "700-800 g/plant" },
+            "yieldDetails": { "indoor": "600-800 g/m²", "outdoor": "700-800 g/Pflanze" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Sweet", "Spicy", "Earthy", "Skunk"],
@@ -884,7 +884,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Pine", "Earthy", "Pungent", "Sweet"],
@@ -908,7 +908,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Medium",
             "yield": "High",
             "height": "Tall",
-            "yieldDetails": { "indoor": "600-800 g/m²", "outdoor": "800-900 g/plant" },
+            "yieldDetails": { "indoor": "600-800 g/m²", "outdoor": "800-900 g/Pflanze" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Lemon", "Citrus", "Sweet", "Spicy"],
@@ -932,7 +932,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Medium",
             "yield": "High",
             "height": "Tall",
-            "yieldDetails": { "indoor": "700-800 g/m²", "outdoor": "800-900 g/plant" },
+            "yieldDetails": { "indoor": "700-800 g/m²", "outdoor": "800-900 g/Pflanze" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Spicy", "Citrus", "Earthy", "Sweet"],
@@ -956,7 +956,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Easy",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
             "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
         },
         "aromas": ["Skunk", "Earthy", "Sweet", "Pungent"],
@@ -980,7 +980,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Medium",
             "yield": "High",
             "height": "Tall",
-            "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "650-750 g/plant" },
+            "yieldDetails": { "indoor": "550-650 g/m²", "outdoor": "650-750 g/Pflanze" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Sweet", "Mango", "Tropical", "Earthy"],
@@ -991,7 +991,7 @@ export const strainsS: Strain[] = [
         "name": "Sweet Tooth",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
-        "genetics": "Afghani x Nepali x Hawaiian",
+        "genetics": "Afghani x Nepali x Hawaiian Sativa",
         "floweringType": "Photoperiod",
         "thc": 19,
         "cbd": 1,
@@ -1004,7 +1004,7 @@ export const strainsS: Strain[] = [
             "difficulty": "Easy",
             "yield": "Medium",
             "height": "Short",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Sweet", "Berry", "Fruity", "Floral"],

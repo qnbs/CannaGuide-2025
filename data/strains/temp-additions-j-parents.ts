@@ -5,7 +5,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "the-cleaner",
         "name": "The Cleaner",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Lamb's Bread x Pluton x Purple Haze",
         "floweringType": "Photoperiod",

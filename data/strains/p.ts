@@ -893,8 +893,8 @@ export const strainsP: Strain[] = [
     createStrainObject({
         "id": "purple-cream",
         "name": "Purple Cream",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 60% / Sativa 40%",
         "genetics": "Blackwater x Green Crack",
         "floweringType": "Photoperiod",
         "thc": 22,

@@ -173,8 +173,8 @@ export const strainsK: Strain[] = [
     createStrainObject({
         "id": "king",
         "name": "King",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "OG Kush",
         "floweringType": "Photoperiod",
         "thc": 20,
@@ -245,8 +245,8 @@ export const strainsK: Strain[] = [
     createStrainObject({
         "id": "kosher-kush",
         "name": "Kosher Kush",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica - 100% Indica",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "OG Kush",
         "floweringType": "Photoperiod",
         "thc": 22,
@@ -255,7 +255,7 @@ export const strainsK: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "The first strain to be blessed by a rabbi. This award-winning Indica offers a strong, physically relaxing effect and an earthy, fruity taste.",
+        "description": "The first strain to be blessed by a rabbi. This award-winning indica-dominant hybrid offers a strong, physically relaxing effect and an earthy, fruity taste.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",

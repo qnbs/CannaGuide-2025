@@ -5,7 +5,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "nevilles-a5-haze",
         "name": "Neville's A5 Haze",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 95% / Indica 5%",
         "genetics": "Haze x Northern Lights #5",
         "floweringType": "Photoperiod",
@@ -27,7 +27,7 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "pure-power-plant",
         "name": "Pure Power Plant",
-        "type": StrainType.Sativa,
+        "type": StrainType.Hybrid,
         "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "South African Sativa",
         "floweringType": "Photoperiod",

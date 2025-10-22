@@ -143,6 +143,16 @@
           -webkit-tap-highlight-color: transparent;
       }
       
+      /* Style to hide spinners on number inputs */
+      .no-spinner::-webkit-inner-spin-button,
+      .no-spinner::-webkit-outer-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+      }
+      .no-spinner {
+          -moz-appearance: textfield;
+      }
+
       /* Reinstated Optimal Scrollbar Design - Applied Globally */
       * {
         scrollbar-width: thin;

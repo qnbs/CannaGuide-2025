@@ -49,8 +49,8 @@ export const strains: Strain[] = [
     createStrainObject({
         "id": "lilly",
         "name": "Lilly",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa 100%",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 90% / Indica 10%",
         "genetics": "Queen Mother x Congo",
         "floweringType": "Photoperiod",
         "thc": 22,

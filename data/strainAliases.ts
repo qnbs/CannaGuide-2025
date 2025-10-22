@@ -32,4 +32,5 @@ export const strainAliases: Record<string, string> = {
     'gorilla glue (gg4)': 'Gorilla Glue #4',
     'z': 'Zkittlez',
     'og kush breath': 'OGKB (OG Kush Breath)',
+    'hawaiian': 'Hawaiian Sativa',
 };

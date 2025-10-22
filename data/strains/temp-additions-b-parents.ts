@@ -51,7 +51,7 @@ export const strains: Strain[] = [
         "aromas": ["Diesel", "Lemon", "Pine"], "dominantTerpenes": ["Terpinolene", "Caryophyllene", "Limonene"]
     }),
     createStrainObject({
-        "id": "raspberry-cough", "name": "Raspberry Cough", "type": StrainType.Sativa, "typeDetails": "Sativa 70% / Indica 30%",
+        "id": "raspberry-cough", "name": "Raspberry Cough", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
         "genetics": "Cambodian Landrace x Ice", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 9.5,
         "description": "A sativa-dominant strain with a sweet raspberry aroma. The effect is uplifting and clear-headed. It is a parent of Blackberry.",
         "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
@@ -79,24 +79,60 @@ export const strains: Strain[] = [
         "aromas": ["Sweet", "Citrus", "Floral"], "dominantTerpenes": ["Myrcene", "Linalool", "Pinene"]
     }),
     createStrainObject({
-        "id": "the-power", "name": "The Power", "type": StrainType.Sativa, "typeDetails": "Sativa 80% / Indica 20%",
-        "genetics": "South African Sativa", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 8.5,
-        "description": "A fast-flowering sativa from Dutch Passion, known for its uplifting and energetic high. It is a parent of Blue Power.",
-        "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Medium" },
-        "aromas": ["Sweet", "Earthy", "Spicy"], "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+        "id": "the-power",
+        "name": "The Power",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "South African Sativa",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "floweringTime": 8.5,
+        "description": "A fast-flowering sativa known for its uplifting and energetic high. It is a parent of Blue Power.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Sweet", "Earthy", "Spicy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
     }),
     createStrainObject({
-        "id": "blue-moonshine", "name": "Blue Moonshine", "type": StrainType.Indica, "typeDetails": "Indica 100%",
-        "genetics": "Blueberry (phenotype)", "floweringType": "Photoperiod", "thc": 17.5, "cbd": 1, "floweringTime": 7.5,
+        "id": "blue-moonshine",
+        "name": "Blue Moonshine",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Blueberry (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 17.5,
+        "cbd": 1,
+        "floweringTime": 7.5,
         "description": "An indica-dominant phenotype of Blueberry, known for its sweet flavor and fast flowering time. The effect is relaxing and sedating. It is a parent of Blue Power.",
-        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
-        "aromas": ["Blueberry", "Berry", "Sweet"], "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short"
+        },
+        "aromas": ["Blueberry", "Berry", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     }),
     createStrainObject({
-        "id": "indiana-bubblegum", "name": "Indiana Bubblegum", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Bubble Gum (original phenotype)", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8.5,
+        "id": "indiana-bubblegum",
+        "name": "Indiana Bubblegum",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Bubble Gum (original phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "floweringTime": 8.5,
         "description": "The original Bubblegum phenotype from Indiana, known for its distinctive sweet bubblegum flavor. The effect is balanced, euphoric, and relaxing.",
-        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Medium" },
-        "aromas": ["Bubblegum", "Sweet", "Fruity"], "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Bubblegum", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
     })
 ];

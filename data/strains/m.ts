@@ -149,8 +149,8 @@ export const strainsM: Strain[] = [
     createStrainObject({
         "id": "marathon-og",
         "name": "Marathon OG",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica 100%",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 90% / Sativa 10%",
         "genetics": "OG Kush",
         "floweringType": "Photoperiod",
         "thc": 25,
@@ -159,7 +159,7 @@ export const strainsM: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "A pure Indica named after the rapper Nipsey Hussle. Known for its strong, relaxing, and long-lasting effect.",
+        "description": "An indica-dominant hybrid named after the rapper Nipsey Hussle. Known for its strong, relaxing, and long-lasting effect.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -619,9 +619,7 @@ export const strainsM: Strain[] = [
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
+            "height": "Tall"
         },
         "aromas": ["Sweet", "Tropical", "Spicy", "Woody"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]

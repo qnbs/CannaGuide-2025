@@ -6,7 +6,7 @@ export const equipmentView = {
     setups: 'Gespeicherte Setups',
     calculators: 'Rechner',
     growShops: 'Grow Shops',
-    seedbanks: 'Samenbanken',
+    seedbanks: 'Saatgut',
   },
   configurator: {
     title: 'KI-Setup-Konfigurator',

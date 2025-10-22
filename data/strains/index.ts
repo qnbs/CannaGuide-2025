@@ -62,6 +62,7 @@ import { strains as strainsTempParentsQ } from './temp-additions-q-parents';
 import { strains as strainsTempParentsR } from './temp-additions-r-parents';
 import { strains as strainsTempParentsS } from './temp-additions-s-parents';
 import { strains as strainsTempParentsT } from './temp-additions-t-parents';
+import { strains as strainsTempParents13 } from './temp-additions-parents-13';
 
 
 const combinedStrains: Strain[] = [
@@ -128,6 +129,7 @@ const combinedStrains: Strain[] = [
     ...strainsTempParentsR,
     ...strainsTempParentsS,
     ...strainsTempParentsT,
+    ...strainsTempParents13,
 ];
 
 // De-duplicate strains by ID to ensure data integrity from the source.

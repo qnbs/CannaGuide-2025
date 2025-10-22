@@ -42,7 +42,6 @@ import { strains as strainsTempParents11 } from './strains/temp-additions-parent
 import { strains as strainsTempBParents } from './strains/temp-additions-b-parents'
 import { strains as strainsTempTriangleKush } from './strains/temp-additions-trianglekush'
 import { strains as strainsTempChocoDiesel } from './strains/temp-additions-chocodiesel'
-import { strains as strainsTempN11 } from './strains/temp-additions-n11'
 import { strains as strainsTempU5 } from './strains/temp-additions-u5'
 import { strains as strainsTempNew12 } from './strains/temp-additions-new-12'
 import { strains as strainsTempNew09 } from './strains/temp-additions-new09'
@@ -64,6 +63,7 @@ import { strains as strainsTempParentsQ } from './strains/temp-additions-q-paren
 import { strains as strainsTempParentsR } from './strains/temp-additions-r-parents'
 import { strains as strainsTempParentsS } from './strains/temp-additions-s-parents'
 import { strains as strainsTempParentsT } from './strains/temp-additions-t-parents'
+import { strains as strainsTempParents13 } from './strains/temp-additions-parents-13'
 
 export const strainsData: Record<string, StrainTranslationData> = {
     ...strainsNumeric,
@@ -108,7 +108,6 @@ export const strainsData: Record<string, StrainTranslationData> = {
     ...strainsTempBParents,
     ...strainsTempTriangleKush,
     ...strainsTempChocoDiesel,
-    ...strainsTempN11,
     ...strainsTempU5,
     ...strainsTempNew12,
     ...strainsTempNew09,
@@ -130,4 +129,5 @@ export const strainsData: Record<string, StrainTranslationData> = {
     ...strainsTempParentsR,
     ...strainsTempParentsS,
     ...strainsTempParentsT,
+    ...strainsTempParents13,
 }

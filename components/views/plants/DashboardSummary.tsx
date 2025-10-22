@@ -63,12 +63,15 @@ export const DashboardSummary: React.FC = memo(() => {
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-300 mb-4">{t('plantsView.gardenVitals.title')}</h3>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            {/* FIX: Add avgTemp and avgHumidity stats and adjust grid layout to display all vital metrics. */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                 <Stat icon={<PhosphorIcons.Heart weight="fill" className="text-rose-400" />} value={`${Math.round(gardenHealth)}%`} label={t('plantsView.summary.gardenHealth')} />
                 <Stat icon={<PhosphorIcons.Plant className="text-green-400" />} value={activePlantsCount.toString()} label={t('plantsView.summary.activeGrows')} />
-                <div className="text-center min-w-0 bg-slate-800/50 p-2 rounded-lg ring-1 ring-inset ring-white/20 flex flex-col justify-center items-center">
-                    <VPDGauge temperature={avgTemp} humidity={avgHumidity} />
-                </div>
+                <Stat icon={<PhosphorIcons.Thermometer className="text-orange-400" />} value={`${avgTemp.toFixed(1)}°`} label={t('plantsView.gardenVitals.avgTemp')} />
+                <Stat icon={<PhosphorIcons.Drop className="text-blue-400" />} value={`${avgHumidity.toFixed(1)}%`} label={t('plantsView.gardenVitals.avgHumidity')} />
+            </div>
+            <div className="text-center min-w-0 bg-slate-800/50 p-2 rounded-lg ring-1 ring-inset ring-white/20 flex flex-col justify-center items-center mb-4">
+                <VPDGauge temperature={avgTemp} humidity={avgHumidity} />
             </div>
 
             {/* AI Status Section */}

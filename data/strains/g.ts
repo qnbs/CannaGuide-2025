@@ -53,8 +53,8 @@ export const strainsG: Strain[] = [
     createStrainObject({
         "id": "galactica-og",
         "name": "Galactica OG",
-        "type": StrainType.Indica,
-        "typeDetails": "Indica - 100% Indica",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica-dominant Hybrid",
         "genetics": "OG Kush x Saturn OG",
         "floweringType": "Photoperiod",
         "thc": 24,
@@ -63,7 +63,7 @@ export const strainsG: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "A potent Indica with a coffee-like and earthy aroma. The effect is strong, relaxing, and ideal for the evening.",
+        "description": "A potent indica-dominant hybrid with a coffee-like and earthy aroma. The effect is strong, relaxing, and ideal for the evening.",
         "agronomic": {
             "difficulty": "Easy",
             "yield": "Medium",

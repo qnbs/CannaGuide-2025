@@ -159,8 +159,8 @@ export const helpView = {
         content: 'Nutzen Sie eine Reihe von Rechnern für Lüftung, Beleuchtung (PPFD/DLI), Stromkosten, Nährstoffmischungen und mehr, um Ihren Anbau zu optimieren.'
       },
       shops: {
-        title: 'Grow Shops & Saatgutbanken',
-        content: 'Durchsuchen Sie kuratierte Listen empfohlener Shops und Saatgutbanken für europäische und nordamerikanische Märkte.'
+        title: 'Grow Shops & Saatgut',
+        content: 'Durchsuchen Sie kuratierte Listen empfohlener Grow Shops und Anbieter von Saatgut für europäische und nordamerikanische Märkte.'
       }
     },
     knowledge: {

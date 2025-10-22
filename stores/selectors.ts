@@ -22,7 +22,7 @@ import { FavoritesState } from './slices/favoritesSlice'
 import { ArchivesState } from './slices/archivesSlice'
 import { TtsState } from './slices/ttsSlice'
 import { StrainsViewState } from './slices/strainsViewSlice'
-// FIX: Module '"@/types"' has no exported member 'BreedingState'.
+// FIX: Module '"@/types"' has no exported member 'BreedingState'. Corrected import path.
 import { BreedingState } from './slices/breedingSlice'
 import { SettingsState } from './slices/settingsSlice'
 

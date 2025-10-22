@@ -45,10 +45,6 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
                     {t('common.back')}
                 </Button>
-                 <Button onClick={() => dispatch(openDiagnosticsModal(plant.id))} size="sm">
-                    <PhosphorIcons.Sparkle className="w-5 h-5 mr-2" />
-                    {t('plantsView.aiDiagnostics.diagnoseProblem')}
-                </Button>
             </div>
             <div className="mt-4 text-center">
                 <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{plant.name}</h1>
@@ -58,7 +54,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     );
     
     return (
-        <div className="animate-fade-in space-y-4">
+        <div className="animate-fade-in space-y-6">
             {header}
             
             <nav className="flex flex-wrap justify-center gap-2 sm:gap-4">

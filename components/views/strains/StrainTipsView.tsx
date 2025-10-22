@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { EditStrainTipModal } from './EditStrainTipModal';
 import { selectHasAvailableSlots } from '@/stores/selectors';
 import { DataExportModal } from '@/components/common/DataExportModal';
+import { exportService } from '@/services/exportService';
 import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { addNotification, initiateGrowFromStrainList } from '@/stores/slices/uiSlice';

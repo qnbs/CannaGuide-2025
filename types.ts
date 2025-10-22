@@ -212,6 +212,12 @@ export interface Plant {
     // Real-time chemical synthesis tracking
     cannabinoidProfile: { thc: number; cbd: number; cbn: number; };
     terpeneProfile: Record<string, number>;
+    stressCounters: {
+        vpd: number;
+        ph: number;
+        ec: number;
+        moisture: number;
+    };
 }
 
 export interface PlantProblem {
@@ -340,6 +346,9 @@ export interface AppSettings {
         defaultView: View;
         uiDensity: 'comfortable' | 'compact';
         expertMode: boolean;
+        dyslexiaFont: boolean;
+        reducedMotion: boolean;
+        colorblindMode: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
     };
     voiceControl: {
         enabled: boolean;

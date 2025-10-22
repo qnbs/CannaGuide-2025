@@ -38,9 +38,9 @@ import { strains as strainsTempParents8 } from './temp-additions-parents-8';
 import { strains as strainsTempParents9 } from './temp-additions-parents-9';
 import { strains as strainsTempParents10 } from './temp-additions-parents-10';
 import { strains as strainsTempParents11 } from './temp-additions-parents-11';
+import { strains as strainsTempBParents } from './temp-additions-b-parents';
 import { strains as strainsTempTriangleKush } from './temp-additions-trianglekush';
 import { strains as strainsTempChocoDiesel } from './temp-additions-chocodiesel';
-import { strains as strainsTempN11 } from './temp-additions-n11';
 import { strains as strainsTempU5 } from './temp-additions-u5';
 import { strains as strainsTempNew12 } from './temp-additions-new-12';
 import { strains as strainsTempNew09 } from './temp-additions-new09';
@@ -51,9 +51,20 @@ import { strains as strainsTempParents411 } from './temp-additions-parents-411';
 import { strains as strainsTempParentsEf10 } from './temp-additions-parents-ef10';
 import { strains as strainsTempParentsCc9 } from './temp-additions-parents-cc9';
 import { strains as strainsTempParentsJTW } from './temp-additions-parents-jtw';
+import { strains as strainsTempParentsL } from './temp-additions-l-parents';
+import { strains as strainsTempParentsJ } from './temp-additions-j-parents';
+import { strains as strainsTempParentsK } from './temp-additions-k-parents';
+import { strains as strainsTempParentsM } from './temp-additions-m-parents';
+import { strains as strainsTempParentsN } from './temp-additions-n-parents';
+import { strains as strainsTempParentsO } from './temp-additions-o-parents';
+import { strains as strainsTempParentsP } from './temp-additions-p-parents';
+import { strains as strainsTempParentsQ } from './temp-additions-q-parents';
+import { strains as strainsTempParentsR } from './temp-additions-r-parents';
+import { strains as strainsTempParentsS } from './temp-additions-s-parents';
+import { strains as strainsTempParentsT } from './temp-additions-t-parents';
 
 
-export const allStrainsData: Strain[] = [
+const combinedStrains: Strain[] = [
     ...strainsNumeric,
     ...strainsA,
     ...strainsB,
@@ -93,9 +104,9 @@ export const allStrainsData: Strain[] = [
     ...strainsTempParents9,
     ...strainsTempParents10,
     ...strainsTempParents11,
+    ...strainsTempBParents,
     ...strainsTempTriangleKush,
     ...strainsTempChocoDiesel,
-    ...strainsTempN11,
     ...strainsTempU5,
     ...strainsTempNew12,
     ...strainsTempNew09,
@@ -106,4 +117,18 @@ export const allStrainsData: Strain[] = [
     ...strainsTempParentsEf10,
     ...strainsTempParentsCc9,
     ...strainsTempParentsJTW,
+    ...strainsTempParentsL,
+    ...strainsTempParentsJ,
+    ...strainsTempParentsK,
+    ...strainsTempParentsM,
+    ...strainsTempParentsN,
+    ...strainsTempParentsO,
+    ...strainsTempParentsP,
+    ...strainsTempParentsQ,
+    ...strainsTempParentsR,
+    ...strainsTempParentsS,
+    ...strainsTempParentsT,
 ];
+
+// De-duplicate strains by ID to ensure data integrity from the source.
+export const allStrainsData: Strain[] = Array.from(new Map(combinedStrains.map(strain => [strain.id, strain])).values());

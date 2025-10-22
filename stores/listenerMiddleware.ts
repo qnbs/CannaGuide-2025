@@ -60,6 +60,29 @@ startAppListening({
   }
 });
 
+let audioCtx: AudioContext | null = null;
+const playConfirmationSound = () => {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+    if (!audioCtx) return;
+
+    const oscillator = audioCtx.createOscillator();
+    const gainNode = audioCtx.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, audioCtx.currentTime); // A6
+    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.3);
+    oscillator.start(audioCtx.currentTime);
+    oscillator.stop(audioCtx.currentTime + 0.3);
+};
+
+
 /**
  * Listener to process recognized voice commands.
  */
@@ -110,8 +133,9 @@ startAppListening({
             if (cmd.match.some(keyword => transcript.startsWith(keyword))) {
                 cmd.action();
                 commandFound = true;
-                // Use a generic success message instead of echoing the command for a cleaner UI.
-                // dispatch(setVoiceStatusMessage(`Command executed: "${action.payload}"`));
+                if (getState().settings.settings.voiceControl.confirmationSound) {
+                    playConfirmationSound();
+                }
                 break;
             }
         }

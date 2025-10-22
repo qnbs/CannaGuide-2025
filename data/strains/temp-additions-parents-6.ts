@@ -22,26 +22,5 @@ export const strains: Strain[] = [
         },
         "aromas": ["Citrus", "Earthy", "Spicy", "Diesel"],
         "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
-    }),
-    createStrainObject({
-        "id": "the-original",
-        "name": "The Original",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Indica - 85% Indica / 15% Sativa",
-        "genetics": "Original OG Kush phenotype",
-        "floweringType": "Photoperiod",
-        "thc": 22,
-        "cbd": 1,
-        "thcRange": "20-24%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Earthy", "Pine", "Spicy", "Pungent"],
-        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     })
 ];

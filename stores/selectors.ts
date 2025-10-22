@@ -14,6 +14,7 @@ import {
     Plant,
     SavedExport,
     TTSSettings,
+    SandboxState,
 } from '@/types'
 import { SavedItemsState } from './slices/savedItemsSlice'
 import { UIState } from './slices/uiSlice'
@@ -21,7 +22,9 @@ import { FavoritesState } from './slices/favoritesSlice'
 import { ArchivesState } from './slices/archivesSlice'
 import { TtsState } from './slices/ttsSlice'
 import { StrainsViewState } from './slices/strainsViewSlice'
-import { SandboxState } from '@/types'
+// FIX: Module '"@/types"' has no exported member 'BreedingState'.
+import { BreedingState } from './slices/breedingSlice'
+import { SettingsState } from './slices/settingsSlice'
 
 // --- Base Selectors (for each slice) ---
 export const selectUi = (state: RootState): UIState => state.ui
@@ -45,6 +48,7 @@ import { savedSetupsAdapter, savedStrainTipsAdapter, savedExportsAdapter } from 
 import { plantsAdapter } from './slices/simulationSlice'
 
 // --- UI Selectors ---
+// FIX: Added explicit types to selector callbacks to ensure correct type inference.
 export const selectActiveView = createSelector([selectUi], (ui: UIState): View => ui.activeView)
 export const selectIsCommandPaletteOpen = createSelector(
     [selectUi],
@@ -61,19 +65,23 @@ export const selectNotifications = createSelector(
 export const selectOnboardingStep = createSelector([selectUi], (ui: UIState): number => ui.onboardingStep)
 export const selectActionModalState = createSelector([selectUi], (ui: UIState) => ui.actionModal)
 export const selectDeepDiveModalState = createSelector([selectUi], (ui: UIState) => ui.deepDiveModal)
-export const selectIsAppReady = createSelector([selectUi], (ui) => ui.isAppReady);
-export const selectNewGrowFlow = createSelector([selectUi], (ui) => ui.newGrowFlow);
-export const selectKnowledgeViewTab = createSelector([selectUi], (ui) => ui.knowledgeViewTab);
-export const selectActiveMentorPlantId = createSelector([selectUi], (ui) => ui.activeMentorPlantId);
-export const selectEquipmentViewTab = createSelector([selectUi], (ui) => ui.equipmentViewTab);
-export const selectIsSaveSetupModalOpen = createSelector([selectUi], (ui) => ui.isSaveSetupModalOpen);
-export const selectSetupToSave = createSelector([selectUi], (ui) => ui.setupToSave);
+export const selectIsAppReady = createSelector([selectUi], (ui: UIState) => ui.isAppReady);
+export const selectNewGrowFlow = createSelector([selectUi], (ui: UIState) => ui.newGrowFlow);
+export const selectKnowledgeViewTab = createSelector([selectUi], (ui: UIState) => ui.knowledgeViewTab);
+export const selectActiveMentorPlantId = createSelector([selectUi], (ui: UIState) => ui.activeMentorPlantId);
+export const selectEquipmentViewTab = createSelector([selectUi], (ui: UIState) => ui.equipmentViewTab);
+export const selectIsSaveSetupModalOpen = createSelector([selectUi], (ui: UIState) => ui.isSaveSetupModalOpen);
+export const selectSetupToSave = createSelector([selectUi], (ui: UIState) => ui.setupToSave);
+// FIX: Added new selectors for diagnostics modal state
+export const selectIsDiagnosticsModalOpen = createSelector([selectUi], (ui: UIState) => ui.isDiagnosticsModalOpen);
+export const selectDiagnosticsPlantId = createSelector([selectUi], (ui: UIState) => ui.diagnosticsPlantId);
 
 
 // --- Settings Selectors ---
 export const selectSettings = createSelector(
+    // FIX: Added explicit type to selector callback.
     [selectSettingsState],
-    (settingsState): AppSettings => settingsState.settings,
+    (settingsState: SettingsState): AppSettings => settingsState.settings,
 )
 export const selectLanguage = createSelector(
     [selectSettings],
@@ -121,6 +129,7 @@ export const selectUserStrainIds = createSelector(
     (ids) => new Set(ids as string[]),
 )
 export const selectFavoriteIds = createSelector(
+    // FIX: Added explicit type to selector callback.
     [selectFavoritesState],
     (favorites: FavoritesState): Set<string> => new Set(favorites?.favoriteIds || []),
 )
@@ -131,6 +140,7 @@ export const selectArchivedMentorResponses = createSelector(
     (archives: ArchivesState) => archives.archivedMentorResponses,
 )
 const selectAllArchivedAdvisorResponses = createSelector(
+    // FIX: Added explicit type to selector callback.
     [selectArchives],
     (archives: ArchivesState) => archives.archivedAdvisorResponses,
 )
@@ -164,6 +174,7 @@ export const { selectAll: selectAllPlants, selectById: selectPlantEntityById } =
     plantsAdapter.getSelectors<RootState>((state) => state.simulation.plants)
 
 export const selectPlantSlots = createSelector(
+    // FIX: Added explicit type to selector callback.
     [selectSimulation],
     (sim: SimulationState) => sim.plantSlots,
 )
@@ -182,6 +193,7 @@ export const selectHasAvailableSlots = createSelector([selectPlantSlots], (slots
 )
 
 export const selectSelectedPlantId = createSelector(
+    // FIX: Added explicit type to selector callback.
     [selectSimulation],
     (sim: SimulationState) => sim.selectedPlantId,
 )
@@ -269,10 +281,11 @@ export const selectSelectedStrainIds = createSelector(
 
 // --- Knowledge & Breeding Selectors ---
 export const selectKnowledgeProgress = createSelector([selectKnowledge], (k) => k.knowledgeProgress)
-export const selectCollectedSeeds = createSelector([selectBreeding], (b) => b.collectedSeeds)
-export const selectBreedingSlots = createSelector([selectBreeding], (b) => b.breedingSlots)
+export const selectCollectedSeeds = createSelector([selectBreeding], (b: BreedingState) => b.collectedSeeds)
+export const selectBreedingSlots = createSelector([selectBreeding], (b: BreedingState) => b.breedingSlots)
 
 // --- Sandbox Selector ---
+// FIX: Added explicit type to selector callback.
 export const selectSandboxState = createSelector([selectSandbox], (s: SandboxState) => s)
 export const selectSavedExperiments = createSelector([selectSandboxState], (s) => s.savedExperiments)
 

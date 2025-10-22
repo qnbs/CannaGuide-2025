@@ -91,50 +91,6 @@ export const strains: Strain[] = [
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     }),
     createStrainObject({
-        "id": "marleys-collie",
-        "name": "Marley's Collie",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Sativa 80% / Indica 20%",
-        "genetics": "Jamaican Landrace x Maple Leaf Indica",
-        "floweringType": "Photoperiod",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 10,
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
-        },
-        "aromas": ["Sweet", "Tropical", "Spicy", "Woody"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
-    }),
-    createStrainObject({
-        "id": "matanuska-valley-sativa",
-        "name": "Matanuska Valley Sativa",
-        "type": StrainType.Sativa,
-        "typeDetails": "Sativa 100%",
-        "genetics": "Alaskan Landrace",
-        "floweringType": "Photoperiod",
-        "thc": 20,
-        "cbd": 1,
-        "thcRange": "18-22%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Tall",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
-        },
-        "aromas": ["Pine", "Lemon", "Menthol", "Skunk"],
-        "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
-    }),
-    createStrainObject({
         "id": "nepalese-sativa",
         "name": "Nepalese Sativa",
         "type": StrainType.Sativa,

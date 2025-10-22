@@ -1,31 +1,38 @@
-import React, { ReactNode, ErrorInfo } from 'react'
+import React, { ReactNode, ErrorInfo, Component } from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
 
 interface ErrorBoundaryProps {
     children: ReactNode
 }
+
 interface ErrorBoundaryState {
     hasError: boolean
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    // FIX: Reverted from class property to a constructor for state initialization. This resolves a TypeScript error where `this.props` was not being found, likely due to a build configuration issue with class field transforms.
-    state: ErrorBoundaryState = { hasError: false };
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    state: ErrorBoundaryState = { hasError: false }
 
+    // This lifecycle method is called to update the state when an error is thrown.
     static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
         return { hasError: true }
     }
 
+    // This lifecycle method is used for logging error information.
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error:', error, errorInfo)
     }
 
+    // FIX: Reverted to a standard class method for `render`. The arrow function syntax caused a typing issue where `this.props` was not recognized.
     render(): React.ReactNode {
         if (this.state.hasError) {
+            // You can render any custom fallback UI
             return (
                 <div className="flex flex-col h-screen bg-slate-900 text-slate-300 font-sans items-center justify-center p-4 text-center">
-                    <PhosphorIcons.WarningCircle weight="fill" className="w-24 h-24 text-red-400 mb-4" />
+                    <PhosphorIcons.WarningCircle
+                        weight="fill"
+                        className="w-24 h-24 text-red-400 mb-4"
+                    />
                     <h1 className="text-2xl font-bold font-display text-red-400 mb-2">
                         Something went wrong.
                     </h1>
@@ -39,7 +46,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                 </div>
             )
         }
-        
-        return this.props.children;
+
+        return this.props.children
     }
 }

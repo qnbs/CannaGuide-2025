@@ -15,8 +15,8 @@ class StrainService {
         try {
             const storedVersion = await dbService.getMetadata(STRAIN_DATA_VERSION_KEY);
             const dbCount = await dbService.getStrainsCount();
-
-            if (dbCount > 0 && storedVersion === CURRENT_STRAIN_DATA_VERSION) {
+            
+            if (dbCount > 0 && storedVersion === CURRENT_STRAIN_DATA_VERSION && dbCount === allStrainsData.length) {
                 console.log('[StrainService] Loading strains from IndexedDB.');
                 this.allStrains = await dbService.getAllStrains();
             } else {
@@ -24,6 +24,7 @@ class StrainService {
                 await dbService.addStrains(allStrainsData);
                 await dbService.setMetadata(STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION);
                 this.allStrains = allStrainsData;
+                console.log(`[StrainService] Initialized with ${allStrainsData.length} strains.`);
             }
             this.isInitialized = true;
         } catch (error) {

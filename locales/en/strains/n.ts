@@ -35,7 +35,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "An extremely potent indica-dominant hybrid that once held the record for the highest THC content. It delivers a powerful, multi-faceted high that is both intensely cerebral and heavily physical. The aroma is a complex blend of sweet fruit and coffee with a peppery finish."
   },
   "northern-lights": {
-    "description": "One of the most famous strains of all time, a pure indica cherished for its fast flowering, resinous buds, and resilience during growth. It offers a pungently sweet and spicy aroma and a powerfully relaxing body high."
+    "description": "A legendary, almost pure Indica strain known for its fast flowering, high resin production, and deeply relaxing effect. Ideal for evening use and for insomnia."
   },
   "nyc-diesel": {
     "description": "A popular sativa-dominant hybrid known for its strong, uplifting, and talkative effects. It features a pungent diesel aroma mixed with notes of ripe grapefruit and lime."

@@ -1,17 +1,8 @@
 import type { StrainTranslationData } from '@/types';
 
-export const strains: Record<string, StrainTranslationData> = {
-  "the-creature": {
-    "description": "The Creature is a highly potent and mysterious indica-dominant strain, rumored to have emerged from OG Kush genetics. It's known for its monstrously dense, resin-caked buds and a pungent, gassy aroma. The effects are heavy and sedating, providing a powerful body stone. It is a parent of the acclaimed Chimera #2."
-  },
-  "the-original": {
-    "description": "Often referring to a foundational OG Kush phenotype, 'The Original' is a potent indica celebrated for its classic earthy, pine, and pungent aroma. It delivers a heavy, tranquilizing body high, making it a go-to for stress relief and deep relaxation."
-  },
-  "the-menthol": {
-    "description": "A unique hybrid known for its distinctively sharp, minty, and chemical aroma, reminiscent of menthol. The high is balanced, offering an uplifting and creative cerebral buzz followed by a soothing body calm, making it suitable for various occasions without being overly sedative.",
-  },
+export const strainsT: Record<string, StrainTranslationData> = {
   "tahoe-alien": {
-    "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening, known for inducing a powerful sense of calm and euphoria."
+    "description": "An indica-dominant strain with an earthy, piney, and lemony aroma. The effect is strong, relaxing, and ideal for the evening."
   },
   "tahoe-og-kush": {
     "description": "An OG Kush phenotype known for its heavily relaxing and sedating effects. Ideal for evening use and for insomnia."
@@ -41,7 +32,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "A sativa-dominant strain with a unique floral, minty, and 'clean' aroma. The effect is uplifting, creative, and energizing."
   },
   "the-y": {
-    "description": "A potent hybrid with a sweet, fruity, and diesel-like aroma. The effect is strong, euphoric, and relaxing."
+    "description": "Also known as Y-Griega or Y-Life, The Y is a potent hybrid with a sweet, fruity, and diesel-like aroma. The effect is strong, euphoric, and relaxing. It's a parent of the famous Gary Payton strain."
   },
   "thin-mint-gsc": {
     "description": "A GSC phenotype with a minty, sweet, and earthy aroma. The effect is strong, balanced between cerebral euphoria and physical relaxation."
@@ -61,28 +52,31 @@ export const strains: Record<string, StrainTranslationData> = {
   "tres-dawg": {
     "description": "A potent indica-dominant strain with a strong, chemical, and diesel-like aroma. The effect is strong, relaxing, and long-lasting."
   },
-  "triangle-kush": {
-    "description": "Triangle Kush is a legendary and highly potent indica strain originating from Florida, named after the state's three major cannabis-producing cities: Jacksonville, Miami, and Tampa. Believed to be a direct descendant or a very close phenotype of the original OG Kush, it is considered a cornerstone of many modern Kush and OG varieties. The effect is powerful and balanced, starting with an uplifting cerebral rush that sparks creativity and conversation, before settling into a deep, full-body relaxation that can effectively manage pain and stress without being completely incapacitating. Its aroma is a classic and complex OG profile, dominated by notes of spicy fuel, earthy pine, and sour lemon."
-  },
   "triangle-mints": {
     "description": "A balanced hybrid with a minty, earthy, and sweet aroma. The effect is strong, euphoric, and relaxing."
   },
   "triple-og": {
-    "description": "A pure Indica with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and sedating."
+    "description": "A potent indica that combines three OG Kush lines. It has an earthy, piney, and spicy aroma. The effect is strong, relaxing, and sedating."
   },
   "tropicana-cherry": {
     "description": "A balanced hybrid with a sweet, fruity aroma of cherries and citrus. The effect is uplifting, happy, and relaxing."
   },
   "tropicana-cookies": {
-    "description": "Tropicana Cookies is a sativa-dominant strain famous for its incredibly intense aroma of fresh oranges and sweet cookie dough. It produces a strong, energetic, and uplifting high that boosts creativity and focus, making it ideal for daytime use."
-  },
-  "trophy-wife": {
-    "description": "While often known as a high-CBD strain, Trophy Wife also has high-THC phenotypes that are used for breeding. This version offers a balanced, relaxing high with a sweet and earthy cherry aroma. It is a parent of the popular Point Break strain."
+    "description": "A sativa-dominant strain with a strong orange and citrus aroma. The effect is uplifting, creative, and energizing."
   },
   "truffle-butter": {
     "description": "An indica-dominant strain with a sweet, buttery, and earthy aroma. The effect is strong, relaxing, and sedating."
   },
   "tutankhamon": {
     "description": "An AK-47 phenotype with an extremely high THC content. The effect is strong, cerebral, and energizing. The aroma is skunky and fruity."
+  },
+  "tropic-truffle": {
+    "description": "A sativa-dominant strain with a sweet, citrusy orange aroma combined with minty and chocolatey undertones. The effect is energetic, uplifting, and creative, making it a great choice for daytime use and social activities."
+  },
+  "tropical-runtz": {
+    "description": "A potent hybrid with a sweet, fruity aroma of tropical fruits and pineapple. The effect is strong, euphoric, and relaxing."
+  },
+  "tropical-punch": {
+    "description": "A sativa-dominant strain with a sweet, tropical aroma of pineapple and fruity punch. The effect is uplifting, energizing, and creative."
   }
 };

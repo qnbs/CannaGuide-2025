@@ -48,7 +48,7 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentSt
                                 key={stage}
                                 style={{ width: `${width}%` }}
                                 className={`transition-all duration-300 ${stageColors[stage]} ${isCompleted || isCurrent ? 'opacity-100' : 'opacity-40'}`}
-                                title={`${t(`plantStages.${stage}`)} (~${stageInfo.duration} ${t('common.days')})`}
+                                title={`${t(`plantStages.${stage}`)} (~${stageInfo.duration} ${t('common.units.days')})`}
                             />
                         );
                     })}

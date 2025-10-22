@@ -32,7 +32,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "description": "A sativa-dominant strain with a spicy, incense-like aroma. The effect is uplifting, cerebral, and energizing."
   },
   "rocket-fuel": {
-    "description": "A potent indica-dominant strain with a strong, diesel-like aroma. The effect is strong, relaxing, and long-lasting, ideal for evening use."
+    "description": "A potent indica-dominant strain with a strong, diesel-like aroma. The effect is strong, physically relaxing, and sedating."
   },
   "rockstar": {
     "description": "Rockstar is a potent indica-dominant strain prized for its strong pain-relieving effects without being overly sedative. It delivers a euphoric and uplifting head high that gently transitions into deep physical relaxation. The aroma is a complex blend of spicy herbs with a hint of sweet grape."

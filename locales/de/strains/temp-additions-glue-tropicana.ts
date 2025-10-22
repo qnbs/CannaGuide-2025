@@ -1,68 +1,14 @@
-import { Strain, StrainType } from '@/types';
-import { createStrainObject } from '@/services/strainFactory';
+import type { StrainTranslationData } from '@/types';
 
-export const strains: Strain[] = [
-    createStrainObject({
-        id: 'gorilla-glue',
-        name: 'Gorilla Glue (GG4)',
-        type: StrainType.Hybrid,
-        typeDetails: "Hybrid 50% / 50%",
-        thc: 27.5,
-        cbd: 1,
-        thcRange: "25-30%",
-        cbdRange: "<1%",
-        floweringTime: 8.5,
-        floweringTimeRange: "8-9",
-        genetics: "Chem's Sister x Sour Dubb x Chocolate Diesel",
-        description: "Auch bekannt als GG4. Eine extrem potente und harzige Hybride. Ihre Wirkung ist stark, euphorisch und entspannend, oft mit einem 'Couch-Lock'-Effekt. Das Aroma ist erdig, sauer und erinnert an Diesel.",
-        agronomic: {
-            difficulty: "Medium",
-            yield: "High",
-            height: "Medium",
-        },
-        aromas: ["Earthy", "Pine", "Diesel", "Chocolate"],
-        dominantTerpenes: ["Caryophyllene", "Myrcene", "Limonene"],
-    }),
-    createStrainObject({
-        id: 'monkey-glue',
-        name: 'Monkey Glue',
-        type: StrainType.Hybrid,
-        typeDetails: "Hybrid 50% / 50%",
-        thc: 24.5,
-        cbd: 1,
-        thcRange: "22-27%",
-        cbdRange: "<1%",
-        floweringTime: 8.5,
-        floweringTimeRange: "8-9",
-        genetics: "Gorilla Glue #4 x Wookie #15",
-        description: "Monkey Glue ist eine ausgewogene Hybride, die die extreme Harzigkeit von GG4 mit der komplexen Aromatik von Wookie kombiniert. Die Wirkung ist potent und langanhaltend, beginnend mit einem euphorischen Kopf-High, das in eine komfortable, aber nicht überwältigende körperliche Entspannung übergeht.",
-        agronomic: {
-            difficulty: "Medium",
-            yield: "High",
-            height: "Medium",
-        },
-        aromas: ["Diesel", "Pine", "Earthy", "Sweet"],
-        dominantTerpenes: ["Myrcene", "Caryophyllene", "Limonene"],
-    }),
-    createStrainObject({
-        id: 'tropicana-banana',
-        name: 'Tropicana Banana',
-        type: StrainType.Hybrid,
-        typeDetails: "Hybrid 60% Sativa / 40% Indica",
-        thc: 25,
-        cbd: 1,
-        thcRange: "22-28%",
-        cbdRange: "<1%",
-        floweringTime: 9.5,
-        floweringTimeRange: "9-10",
-        genetics: "Tropicana Cookies x Banana Kush",
-        description: "Tropicana Banana kombiniert das Zitrusprofil von Tropicana Cookies mit der cremigen Süße von Banana Kush. Das Ergebnis ist ein exotischer Fruchtcocktail im Aroma. Die Wirkung ist fröhlich, euphorisch und entspannend, perfekt für soziale Anlässe oder kreative Tätigkeiten am Nachmittag.",
-        agronomic: {
-            difficulty: "Medium",
-            yield: "High",
-            height: "Medium",
-        },
-        aromas: ["Banana", "Tropical", "Sweet", "Citrus"],
-        dominantTerpenes: ["Limonene", "Myrcene", "Pinene"],
-    })
-];
+export const strains: Record<string, StrainTranslationData> = {
+    "monkey-glue": {
+        "description": "Monkey Glue ist eine ausgewogene Hybride, die die extreme Harzigkeit von GG4 mit der komplexen Aromatik von Wookie kombiniert. Die Wirkung ist potent und langanhaltend, beginnend mit einem euphorischen Kopf-High, das in eine komfortable, aber nicht überwältigende körperliche Entspannung übergeht.",
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Gorilla Glue #4 x Wookie #15",
+    },
+    "tropicana-banana": {
+        "description": "Tropicana Banana kombiniert das Zitrusprofil von Tropicana Cookies mit der cremigen Süße von Banana Kush. Das Ergebnis ist ein exotischer Fruchtcocktail im Aroma. Die Wirkung ist fröhlich, euphorisch und entspannend, perfekt für soziale Anlässe oder kreative Tätigkeiten am Nachmittag.",
+        "typeDetails": "Hybrid 60% Sativa / 40% Indica",
+        "genetics": "Tropicana Cookies x Banana Kush",
+    }
+};

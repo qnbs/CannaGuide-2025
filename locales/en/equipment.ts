@@ -1,3 +1,5 @@
+import { seedbanks } from './seedbanks';
+
 export const equipmentView = {
   tabs: {
     configurator: 'Configurator',
@@ -266,7 +268,7 @@ export const equipmentView = {
        shopKeys: ["ac-infinity", "growers-house", "hydrobuilder", "htg-supply"]
     }
   },
-  seedbanks: {},
+  seedbanks,
   exportModal: {
     sources: {
       selected_one: '1 selected item',

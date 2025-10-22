@@ -99,10 +99,6 @@ export const strainsView = {
     },
     aromasPlaceholder: 'Comma-separated, e.g., Earthy, Pine',
     terpenesPlaceholder: 'Comma-separated, e.g., Myrcene',
-    yieldIndoorPlaceholder: 'e.g., 450-550 g/m²',
-    yieldOutdoorPlaceholder: 'e.g., 500-600 g/plant',
-    heightIndoorPlaceholder: 'e.g., 100-150 cm',
-    heightOutdoorPlaceholder: 'e.g., 150-200 cm',
     validation: {
       name: 'Name is required.',
       thc: 'THC must be between 0 and 50.',
@@ -249,6 +245,34 @@ export const strainsView = {
         expert: 'Expert'
       },
       generate: 'Generate Tips',
+      imageStyle: 'Image Style',
+      imageStyles: {
+          random: 'Random',
+          fantasy: 'Fantasy',
+          botanical: 'Botanical',
+          psychedelic: 'Psychedelic',
+          macro: 'Macro',
+          cyberpunk: 'Cyberpunk'
+      },
+      imageCriteria: 'Generation Criteria',
+      imageFocus: 'Focus',
+      imageFocusOptions: {
+          buds: 'Buds',
+          plant: 'Whole Plant',
+          abstract: 'Abstract'
+      },
+      imageComposition: 'Composition',
+      imageCompositionOptions: {
+          symmetrical: 'Symmetrical',
+          dynamic: 'Dynamic',
+          minimalist: 'Minimalist'
+      },
+      imageMood: 'Mood',
+      imageMoodOptions: {
+          mystical: 'Mystical',
+          energetic: 'Energetic',
+          calm: 'Calm'
+      },
       categories: {
           nutrientTip: 'Nutrient Tip',
           trainingTip: 'Training Tip',

@@ -12,7 +12,6 @@ import { Select, Input, FormSection } from '@/components/ui/ThemePrimitives'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
 import { RangeSlider } from '@/components/common/RangeSlider'
 import { Button } from '@/components/common/Button'
-import { useAvailableVoices } from '@/hooks/useAvailableVoices'
 import { useStorageEstimate } from '@/hooks/useStorageEstimate'
 import { Card } from '@/components/common/Card'
 import { SettingsSubNav } from './SettingsSubNav'
@@ -20,6 +19,8 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 
 const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
+const VoiceSettingsTab = lazy(() => import('./VoiceSettingsTab'))
+const DataManagementTab = lazy(() => import('./DataManagementTab'))
 
 const SettingsRow: React.FC<{
     label: string
@@ -35,53 +36,60 @@ const SettingsRow: React.FC<{
     </div>
 )
 
-const parseSize = (sizeStr: string): number => {
-    if (!sizeStr) return 0
-    const parts = sizeStr.split(' ')
-    if (parts.length < 2) return 0
-    const value = parseFloat(parts[0])
-    const unit = parts[1].toUpperCase()
-    switch (unit) {
-        case 'GB':
-            return value * 1024 * 1024 * 1024
-        case 'MB':
-            return value * 1024 * 1024
-        case 'KB':
-            return value * 1024
-        case 'BYTES':
-            return value
-        default:
-            return 0
-    }
-}
+const GeneralSettingsTab: React.FC = () => {
+    const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+    const settings = useAppSelector(selectSettings);
+    const general = settings.general;
 
-const StorageBar: React.FC<{ labelKey: string; size: string; percentage: number; color: string }> =
-    ({ labelKey, size, percentage, color }) => {
-        const { t } = useTranslation()
-        return (
-            <div>
-                <div className="flex justify-between text-sm mb-1">
-                    <span className="font-semibold text-slate-300">
-                        {t(`settingsView.data.storageBreakdown.${labelKey}`)}
-                    </span>
-                    <span className="font-mono text-slate-400">{size}</span>
-                </div>
-                <div className="w-full bg-slate-700 rounded-full h-2">
-                    <div
-                        className={`${color} h-2 rounded-full`}
-                        style={{ width: `${percentage}%` }}
-                    ></div>
-                </div>
-            </div>
-        )
-    }
+    const handleSetSetting = (path: string, value: any) => {
+        dispatch(setSetting({ path: `general.${path}`, value }));
+    };
 
-const CommandItem: React.FC<{ icon: React.ReactNode, text: string }> = ({ icon, text }) => (
-    <div className="flex items-center gap-3 p-2 bg-slate-900/50 rounded-md">
-        <div className="w-5 h-5 text-primary-300 flex-shrink-0">{icon}</div>
-        <code className="text-sm text-slate-300">{text}</code>
-    </div>
-);
+    const colorblindModeOptions = Object.keys(t('settingsView.general.colorblindModes', { returnObjects: true })).map(key => ({
+        value: key,
+        label: t(`settingsView.general.colorblindModes.${key}`)
+    }));
+
+    return (
+        <div className="space-y-6">
+            <Card>
+                <FormSection title={t('settingsView.categories.lookAndFeel')} icon={<PhosphorIcons.Cube />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.general.language')}><Select value={general.language} onChange={(e) => handleSetSetting('language', e.target.value as Language)} options={[{ value: 'en', label: t('settingsView.languages.en') }, { value: 'de', label: t('settingsView.languages.de') }]} /></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.theme')}><Select value={general.theme} onChange={(e) => handleSetSetting('theme', e.target.value as Theme)} options={Object.keys(t('settingsView.general.themes', { returnObjects: true })).map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))} /></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.fontSize')}><SegmentedControl value={[general.fontSize]} onToggle={(val) => handleSetSetting('fontSize', val)} options={Object.keys(t('settingsView.general.fontSizes', { returnObjects: true })).map(k => ({ value: k, label: t(`settingsView.general.fontSizes.${k}`) }))} /></SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+            <Card>
+                <FormSection title={t('settingsView.categories.interactivity')} icon={<PhosphorIcons.GameController />} defaultOpen>
+                     <div className="sm:col-span-2 space-y-6">
+                         <SettingsRow label={t('settingsView.general.uiDensity')}><SegmentedControl value={[general.uiDensity]} onToggle={(val) => handleSetSetting('uiDensity', val)} options={[{ value: 'comfortable', label: t('settingsView.general.uiDensities.comfortable') }, { value: 'compact', label: t('settingsView.general.uiDensities.compact') }]} /></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.expertModeTitle')} description={t('settingsView.general.expertModeDesc')}><Switch checked={general.expertMode} onChange={(val) => handleSetSetting('expertMode', val)}/></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.defaultView')}><Select value={general.defaultView} onChange={(e) => handleSetSetting('defaultView', e.target.value as View)} options={[{ value: View.Plants, label: t('nav.plants') }, { value: View.Strains, label: t('nav.strains') }, { value: View.Equipment, label: t('nav.equipment') }, { value: View.Knowledge, label: t('nav.knowledge') },]} /></SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+             <Card>
+                <FormSection title={t('settingsView.categories.accessibility')} icon={<PhosphorIcons.Person />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.general.dyslexiaFont')} description={t('settingsView.general.dyslexiaFontDesc')}>
+                            <Switch checked={general.dyslexiaFont} onChange={val => handleSetSetting('dyslexiaFont', val)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.general.reducedMotion')} description={t('settingsView.general.reducedMotionDesc')}>
+                            <Switch checked={general.reducedMotion} onChange={val => handleSetSetting('reducedMotion', val)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.general.colorblindMode')} description={t('settingsView.general.colorblindModeDesc')}>
+                            <Select value={general.colorblindMode} onChange={(e) => handleSetSetting('colorblindMode', e.target.value)} options={colorblindModeOptions} />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+        </div>
+    );
+};
+
 
 const PlantsSettingsTab: React.FC = () => {
     const { t } = useTranslation();
@@ -134,15 +142,7 @@ const PlantsSettingsTab: React.FC = () => {
 
 const SettingsViewComponent: React.FC = () => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
-    const settings = useAppSelector(selectSettings)
-    const availableVoices = useAvailableVoices()
-    const { estimates, isLoading: isStorageLoading } = useStorageEstimate()
     const [activeTab, setActiveTab] = useState('general');
-
-    const handleSetSetting = (path: string, value: any) => {
-        dispatch(setSetting({ path, value }))
-    }
     
     const viewIcons = useMemo(() => ({
         general: <PhosphorIcons.GearSix className="w-16 h-16 mx-auto text-primary-400" />,
@@ -162,100 +162,14 @@ const SettingsViewComponent: React.FC = () => {
         about: t('settingsView.categories.about'),
     }), [t]);
 
-    const totalBytes = useMemo(
-        () =>
-            Object.values(estimates).reduce((sum: number, sizeStr) => sum + parseSize(sizeStr as string), 0),
-        [estimates],
-    )
-    const storageColors = [ 'bg-primary-500', 'bg-accent-500', 'bg-secondary-500', 'bg-yellow-500', 'bg-cyan-500', ];
-    
-    const COMMANDS = {
-        navigation: [
-            { icon: <PhosphorIcons.Plant/>, text: t('settingsView.tts.commands.goTo', { view: t('nav.plants')}) },
-            { icon: <PhosphorIcons.Leafy/>, text: t('settingsView.tts.commands.goTo', { view: t('nav.strains')}) },
-            { icon: <PhosphorIcons.Wrench/>, text: t('settingsView.tts.commands.goTo', { view: t('nav.equipment')}) },
-        ],
-        strains: [
-            { icon: <PhosphorIcons.MagnifyingGlass/>, text: t('settingsView.tts.commands.searchFor')},
-            { icon: <PhosphorIcons.FunnelSimple/>, text: t('settingsView.tts.commands.resetFilters')},
-            { icon: <PhosphorIcons.Heart/>, text: t('settingsView.tts.commands.showFavorites')},
-        ],
-        plants: [
-             { icon: <PhosphorIcons.Drop/>, text: t('settingsView.tts.commands.waterAll')},
-        ]
-    };
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'general': return (
-                <Card><div className="space-y-6">
-                    <SettingsRow label={t('settingsView.general.language')}>
-                        <Select value={settings.general.language} onChange={(e) => handleSetSetting('general.language', e.target.value as Language)} options={[{ value: 'en', label: t('settingsView.languages.en') }, { value: 'de', label: t('settingsView.languages.de') }]}/>
-                    </SettingsRow>
-                    <SettingsRow label={t('settingsView.general.theme')}>
-                        <Select value={settings.general.theme} onChange={(e) => handleSetSetting('general.theme', e.target.value as Theme)} options={Object.keys(t('settingsView.general.themes', { returnObjects: true })).map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))}/>
-                    </SettingsRow>
-                    <SettingsRow label={t('settingsView.general.defaultView')}>
-                        <Select
-                            value={settings.general.defaultView}
-                            onChange={(e) => handleSetSetting('general.defaultView', e.target.value as View)}
-                            options={[
-                                { value: View.Plants, label: t('nav.plants') },
-                                { value: View.Strains, label: t('nav.strains') },
-                                { value: View.Equipment, label: t('nav.equipment') },
-                                { value: View.Knowledge, label: t('nav.knowledge') },
-                            ]}
-                        />
-                    </SettingsRow>
-                    <SettingsRow label={t('settingsView.general.uiDensity')}>
-                        <SegmentedControl
-                            value={[settings.general.uiDensity]}
-                            onToggle={(val) => handleSetSetting('general.uiDensity', val)}
-                            options={[
-                                { value: 'comfortable', label: t('settingsView.general.uiDensities.comfortable') },
-                                { value: 'compact', label: t('settingsView.general.uiDensities.compact') }
-                            ]}
-                        />
-                    </SettingsRow>
-                </div></Card>
-            );
+            case 'general': return <GeneralSettingsTab />;
             case 'tts': return (
-                 <div className="space-y-6">
-                    <Card>
-                        <FormSection title={t('settingsView.tts.ttsOutput')} icon={<PhosphorIcons.SpeakerHigh/>} defaultOpen>
-                            <div className="sm:col-span-2 space-y-6">
-                                <SettingsRow label={t('settingsView.tts.ttsEnabled')} description={t('settingsView.tts.ttsEnabledDesc')}><Switch checked={settings.tts.enabled} onChange={(val) => handleSetSetting('tts.enabled', val)}/></SettingsRow>
-                                <SettingsRow label={t('settingsView.tts.voice')}><Select value={settings.tts.voiceName || ''} onChange={(e) => handleSetSetting('tts.voiceName', e.target.value)} options={ availableVoices.length > 0 ? availableVoices.map((v) => ({ value: v.name, label: v.name })) : [{ value: '', label: t('settingsView.tts.noVoices') }] } disabled={!settings.tts.enabled || availableVoices.length === 0}/></SettingsRow>
-                                <SettingsRow label={t('settingsView.tts.rate')}><RangeSlider singleValue value={settings.tts.rate} onChange={v => handleSetSetting('tts.rate', v)} min={0.5} max={2} step={0.1} label="" unit="x" /></SettingsRow>
-                                <SettingsRow label={t('settingsView.tts.pitch')}><RangeSlider singleValue value={settings.tts.pitch} onChange={v => handleSetSetting('tts.pitch', v)} min={0.5} max={2} step={0.1} label="" unit="x" /></SettingsRow>
-                                <SettingsRow label={t('settingsView.tts.volume')}><RangeSlider singleValue value={settings.tts.volume} onChange={v => handleSetSetting('tts.volume', v)} min={0} max={1} step={0.1} label="" unit="" /></SettingsRow>
-                                <SettingsRow label={t('settingsView.tts.highlightSpeakingText')} description={t('settingsView.tts.highlightSpeakingTextDesc')}><Switch checked={settings.tts.highlightSpeakingText} onChange={(val) => handleSetSetting('tts.highlightSpeakingText', val)}/></SettingsRow>
-                            </div>
-                        </FormSection>
-                    </Card>
-                     <Card>
-                        <FormSection title={t('settingsView.tts.voiceControlInput')} icon={<PhosphorIcons.Microphone/>} defaultOpen>
-                            <div className="sm:col-span-2 space-y-6">
-                                <SettingsRow label={t('settingsView.tts.voiceControl.enabled')} description={t('settingsView.tts.voiceControl.enabledDesc')}><Switch checked={settings.voiceControl.enabled} onChange={(val) => handleSetSetting('voiceControl.enabled', val)}/></SettingsRow>
-                            </div>
-                        </FormSection>
-                    </Card>
-                    <Card>
-                        <FormSection title={t('settingsView.tts.commands.title')} icon={<PhosphorIcons.CommandLine/>}>
-                            <div className="sm:col-span-2 space-y-4">
-                                <p className="text-sm text-slate-400 -mt-2">{t('settingsView.tts.commands.description')}</p>
-                                {Object.entries(COMMANDS).map(([group, commands]) => (
-                                    <div key={group}>
-                                        <h5 className="font-semibold text-slate-200 capitalize mb-2">{t(`settingsView.tts.commands.groups.${group}`)}</h5>
-                                        <div className="space-y-2">
-                                            {commands.map(cmd => <CommandItem key={cmd.text} icon={cmd.icon} text={cmd.text} />)}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </FormSection>
-                    </Card>
-                </div>
+                <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
+                    <VoiceSettingsTab />
+                </Suspense>
             );
             case 'strains': return (
                 <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
@@ -266,14 +180,9 @@ const SettingsViewComponent: React.FC = () => {
                 <PlantsSettingsTab />
             );
             case 'data': return (
-                <Card><div className="space-y-6">
-                    <SettingsRow label={t('settingsView.data.storageUsage')}>
-                        <div className="w-full space-y-2">{isStorageLoading ? 'Calculating...' : Object.entries(estimates).map(([key, sizeStr], index) => { const bytes = parseSize(sizeStr as string); const percentage = totalBytes > 0 ? (bytes / totalBytes) * 100 : 0; return ( <StorageBar key={key} labelKey={key} size={sizeStr as string} percentage={percentage} color={storageColors[index % storageColors.length]}/> ) })}</div>
-                    </SettingsRow>
-                    <SettingsRow label={t('settingsView.data.exportAll')}><Button className="w-full sm:w-auto justify-center" onClick={() => dispatch(exportAllData())}>{t('settingsView.data.exportAsJson')}</Button></SettingsRow>
-                    <SettingsRow label={t('settingsView.data.clearArchives')} description={t('settingsView.data.clearArchivesDesc')}><Button className="w-full sm:w-auto justify-center" variant="danger" onClick={() => { if (window.confirm(t('settingsView.data.clearArchivesConfirm') as string)) { dispatch(clearArchives()) } }}>{t('settingsView.data.clearArchives')}</Button></SettingsRow>
-                    <SettingsRow label={t('settingsView.data.resetAll')}><Button className="w-full sm:w-auto justify-center" variant="danger" onClick={() => { if (window.confirm(t('settingsView.data.resetAllConfirm') as string)) { dispatch(resetAllData()) } }}>{t('settingsView.data.resetAll')}</Button></SettingsRow>
-                </div></Card>
+                <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
+                    <DataManagementTab />
+                </Suspense>
             );
             case 'about': return (
                  <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>

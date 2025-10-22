@@ -174,21 +174,6 @@ export const dbService = {
             const transaction = db.transaction(STRAINS_STORE, 'readwrite');
             const store = transaction.objectStore(STRAINS_STORE);
     
-            const clearRequest = store.clear();
-            
-            clearRequest.onerror = () => {
-                 console.error('[dbService] Failed to clear store during atomic transaction:', clearRequest.error);
-                 transaction.abort();
-            }
-            
-            clearRequest.onsuccess = () => {
-                strains.forEach(strain => {
-                    // Using .put() is an "upsert" operation, which is more resilient to duplicate
-                    // source data than .add(), preventing "Key already exists" errors.
-                    store.put(strain);
-                });
-            }
-
             transaction.oncomplete = () => {
                 console.log('[dbService] Atomically replaced all strains in IndexedDB.');
                 resolve();
@@ -198,6 +183,23 @@ export const dbService = {
                 console.error('[dbService] Failed to replace strains in atomic transaction:', transaction.error);
                 reject(transaction.error);
             };
+
+            const clearRequest = store.clear();
+            
+            clearRequest.onsuccess = () => {
+                strains.forEach(strain => {
+                    const putRequest = store.put(strain);
+                    putRequest.onerror = () => {
+                        console.error(`[dbService] Failed to add strain "${strain.name}" during bulk operation. Aborting transaction.`, putRequest.error);
+                        transaction.abort();
+                    };
+                });
+            }
+            
+            clearRequest.onerror = () => {
+                 console.error('[dbService] Failed to clear store during atomic transaction:', clearRequest.error);
+                 transaction.abort();
+            }
         });
     },
     
@@ -276,6 +278,10 @@ export const dbService = {
         return new Promise((resolve, reject) => {
             const transaction = db.transaction(STRAIN_SEARCH_INDEX_STORE, 'readwrite');
             const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+
             const clearRequest = store.clear();
 
             clearRequest.onerror = () => {
@@ -285,12 +291,13 @@ export const dbService = {
             
             clearRequest.onsuccess = () => {
                 Object.entries(index).forEach(([word, ids]) => {
-                    store.put({ word, ids });
+                    const putRequest = store.put({ word, ids });
+                    putRequest.onerror = () => {
+                        console.error(`[dbService] Failed to add index for word "${word}". Aborting.`, putRequest.error);
+                        transaction.abort();
+                    };
                 });
             };
-
-            transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
         });
     },
 

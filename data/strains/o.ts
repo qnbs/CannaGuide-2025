@@ -14,7 +14,7 @@ export const strainsO: Strain[] = [
         "thcRange": "23-29%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-9",
         "description": "A legendary hybrid with an earthy, piney, and citrusy aroma. It is known for its balanced, strong effects that relax both the mind and body.",
         "agronomic": {
             "difficulty": "Hard",
@@ -31,7 +31,7 @@ export const strainsO: Strain[] = [
         "name": "OGKB (OG Kush Breath)",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "GSC phenotype (presumably)",
+        "genetics": "GSC (phenotype)",
         "floweringType": "Photoperiod",
         "thc": 27,
         "cbd": 1,
@@ -55,14 +55,14 @@ export const strainsO: Strain[] = [
         "name": "Orange Bud",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 65% / Indica 35%",
-        "genetics": "Skunk #1 Phenotype",
+        "genetics": "Skunk #1 (phenotype)",
         "floweringType": "Photoperiod",
         "thc": 18,
         "cbd": 1,
         "thcRange": "16-20%",
         "cbdRange": "<1%",
         "floweringTime": 8,
-        "floweringTimeRange": "8",
+        "floweringTimeRange": "7-9",
         "description": "A classic Skunk strain with a strong orange and citrus aroma. The effect is uplifting, happy, and energizing. Easy to grow and high-yielding.",
         "agronomic": {
             "difficulty": "Easy",
@@ -86,7 +86,7 @@ export const strainsO: Strain[] = [
         "thcRange": "18-22%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "A balanced hybrid with a sweet orange and cookie aroma. The effect is uplifting, relaxing, and happy.",
         "agronomic": {
             "difficulty": "Medium",
@@ -110,7 +110,7 @@ export const strainsO: Strain[] = [
         "thcRange": "17-21%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-9",
         "description": "A balanced hybrid with a sweet, creamy orange aroma. The effect is uplifting and relaxing.",
         "agronomic": {
             "difficulty": "Easy",
@@ -134,7 +134,7 @@ export const strainsO: Strain[] = [
         "thcRange": "23-29%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "A sativa-dominant strain with a strong orange and citrus aroma. The effect is uplifting, energizing, and creative.",
         "agronomic": {
             "difficulty": "Medium",
@@ -151,14 +151,14 @@ export const strainsO: Strain[] = [
         "name": "Orange Juice",
         "type": StrainType.Hybrid,
         "typeDetails": "Sativa 70% / Indica 30%",
-        "genetics": "California Orange x Skunk #1",
+        "genetics": "Cali-O (California Orange) x Skunk #1",
         "floweringType": "Photoperiod",
         "thc": 17.5,
         "cbd": 1,
         "thcRange": "15-20%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "A sativa-dominant strain with a sweet, fresh orange juice aroma. The effect is uplifting and energizing.",
         "agronomic": {
             "difficulty": "Easy",
@@ -182,7 +182,7 @@ export const strainsO: Strain[] = [
         "thcRange": "19-24%",
         "cbdRange": "<1%",
         "floweringTime": 10,
-        "floweringTimeRange": "10",
+        "floweringTimeRange": "9-11",
         "description": "A balanced hybrid with a sweet, creamy orange aroma. The effect is uplifting and relaxing.",
         "agronomic": {
             "difficulty": "Medium",
@@ -230,7 +230,7 @@ export const strainsO: Strain[] = [
         "thcRange": "22-28%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "An indica-dominant strain with a sweet, chocolatey, and earthy aroma. The effect is strong, relaxing, and sedating.",
         "agronomic": {
             "difficulty": "Medium",
@@ -254,7 +254,7 @@ export const strainsO: Strain[] = [
         "thcRange": "25-31%",
         "cbdRange": "<1%",
         "floweringTime": 9,
-        "floweringTimeRange": "9",
+        "floweringTimeRange": "8-10",
         "description": "A potent indica-dominant strain with a chocolatey, sweet, and creamy aroma. The effect is strong, relaxing, and long-lasting.",
         "agronomic": {
             "difficulty": "Medium",
@@ -278,7 +278,7 @@ export const strainsO: Strain[] = [
         "thcRange": "12-18%",
         "cbdRange": "8-12%",
         "floweringTime": 7,
-        "floweringTimeRange": "7",
+        "floweringTimeRange": "6-8",
         "description": "An indica-dominant strain with a sweet, fruity, and earthy aroma. The effect is relaxing and calming.",
         "agronomic": {
             "difficulty": "Easy",
@@ -313,29 +313,5 @@ export const strainsO: Strain[] = [
         },
         "aromas": ["Earthy", "Spicy", "Woody", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
-    }),
-    createStrainObject({
-        "id": "original-glue",
-        "name": "Original Glue",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Chem's Sister x Sour Dubb x Chocolate Diesel",
-        "floweringType": "Photoperiod",
-        "thc": 28.5,
-        "cbd": 1,
-        "thcRange": "25-32%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "9",
-        "description": "Also known as GG4. An extremely potent and resinous hybrid. Its effect is strong, euphoric, and relaxing, often with a 'couch-lock' effect. The aroma is earthy, sour, and reminiscent of diesel.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "High",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
-            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
-        },
-        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
-        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
     })
 ];

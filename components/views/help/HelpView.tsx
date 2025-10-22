@@ -46,7 +46,7 @@ const FAQSection: React.FC = memo(() => {
             <div className="space-y-3">
                 {filteredFaq.length > 0 ? (
                     filteredFaq.map(item => (
-                        <details key={item.id} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-white/20">
+                        <details key={item.id} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
                             <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
                                 <span className="text-lg font-bold text-slate-100">{item.question}</span>
                                 <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
@@ -174,7 +174,6 @@ const ManualSection: React.FC = memo(() => {
             strains: <PhosphorIcons.Leafy className="w-6 h-6"/>,
             plants: <PhosphorIcons.Plant className="w-6 h-6"/>,
             equipment: <PhosphorIcons.Wrench className="w-6 h-6"/>,
-            // FIX: Updated icon for consistency.
             knowledge: <PhosphorIcons.BookBookmark className="w-6 h-6"/>,
             general: <PhosphorIcons.Cube className="w-6 h-6"/>,
         };
@@ -235,9 +234,8 @@ export const HelpView: React.FC = () => {
     const [activeTab, setActiveTab] = useState('manual');
 
      const viewIcons = useMemo(() => ({
-        // FIX: Updated icon for consistency.
         manual: <PhosphorIcons.BookBookmark className="w-16 h-16 mx-auto text-blue-400" />,
-        lexicon: <PhosphorIcons.Book className="w-16 h-16 mx-auto text-indigo-400" />,
+        lexicon: <PhosphorIcons.BookOpenText className="w-16 h-16 mx-auto text-indigo-400" />,
         guides: <PhosphorIcons.GraduationCap className="w-16 h-16 mx-auto text-green-400" />,
         faq: <PhosphorIcons.Question weight="fill" className="w-16 h-16 mx-auto text-yellow-400" />,
     }), []);

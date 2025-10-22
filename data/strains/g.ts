@@ -188,7 +188,7 @@ export const strainsG: Strain[] = [
             "difficulty": "Medium",
             "yield": "High",
             "height": "Medium",
-            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
             "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
         },
         "aromas": ["Sweet", "Fruity", "Grape", "Diesel"],
@@ -243,30 +243,6 @@ export const strainsG: Strain[] = [
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
-        "id": "gelato-41",
-        "name": "Gelato #41",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "floweringType": "Photoperiod",
-        "thc": 25,
-        "cbd": 1,
-        "thcRange": "22-28%",
-        "cbdRange": "<1%",
-        "floweringTime": 9,
-        "floweringTimeRange": "8-10",
-        "genetics": "Sunset Sherbet x Thin Mint GSC",
-        "description": "Bacio Gelato is the phenotype #41 of the original Gelato. It is renowned for its heavy, relaxing high and a rich, creamy, and sweet flavor profile with notes of berries and earth. Unlike some other Gelato phenotypes that can be more uplifting, Bacio Gelato is known for its potent, full-bodied effects that are deeply calming, making it an excellent choice for evening use to relieve stress and pain.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
-            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-        },
-        "aromas": ["Sweet", "Earthy", "Berry", "Creamy"],
-        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
-    }),
-    createStrainObject({
         "id": "gelonade",
         "name": "Gelonade",
         "type": StrainType.Hybrid,
@@ -295,7 +271,7 @@ export const strainsG: Strain[] = [
         "name": "Georgia Pie",
         "type": StrainType.Hybrid,
         "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
-        "genetics": "Gellati x Kush Mints",
+        "genetics": "Gelatti x Kush Mints",
         "floweringType": "Photoperiod",
         "thc": 26,
         "cbd": 1,
@@ -655,7 +631,7 @@ export const strainsG: Strain[] = [
         "name": "Grandmommy Purple",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 80% / Sativa 20%",
-        "genetics": "Granddaddy Purple x Big Bud",
+        "genetics": "Big Bud x Purple Urkle",
         "floweringType": "Photoperiod",
         "thc": 30,
         "cbd": 1,
@@ -663,7 +639,7 @@ export const strainsG: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
-        "description": "An indica-dominant hybrid with a sweet, earthy, and fruity aroma. Grandmommy delivers a strong, relaxing, and sedating high that is perfect for nighttime.",
+        "description": "An extremely potent indica-dominant hybrid from Herbies Seeds, known for its very high THC content. It delivers a deeply relaxing, heavy-hitting body high that is perfect for nighttime use to combat insomnia and pain. The aroma is sweet and fruity with notes of wild berries and candy.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
@@ -692,7 +668,7 @@ export const strainsG: Strain[] = [
             "difficulty": "Easy",
             "yield": "Medium",
             "height": "Short",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
             "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
         },
         "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
@@ -740,7 +716,7 @@ export const strainsG: Strain[] = [
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Medium",
-            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
             "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
         },
         "aromas": ["Grape", "Sweet", "Diesel", "Fruity"],
@@ -764,7 +740,7 @@ export const strainsG: Strain[] = [
             "difficulty": "Medium",
             "yield": "Medium",
             "height": "Tall",
-            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
             "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
         },
         "aromas": ["Grapefruit", "Citrus", "Sweet", "Tropical"],

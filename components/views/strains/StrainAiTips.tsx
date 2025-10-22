@@ -13,6 +13,7 @@ import { selectLanguage } from '@/stores/selectors';
 import { Speakable } from '@/components/common/Speakable';
 import { addStrainTip } from '@/stores/slices/savedItemsSlice';
 import { Select } from '@/components/ui/ThemePrimitives';
+import { SegmentedControl } from '@/components/common/SegmentedControl';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean; strainId: string; }> = ({ tips, onSave, isSaved, strainId }) => {
     const { t } = useTranslation();
@@ -32,7 +33,7 @@ const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => v
                     if (!tipContent) return null;
                     return (
                         <div key={cat.key}>
-                            <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
+                             <h4 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
                                {cat.icon} {cat.label}
                             </h4>
                             <Speakable elementId={`strain-tip-${strainId}-${cat.key}`}>
@@ -50,6 +51,48 @@ const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => v
         </Card>
     );
 };
+
+const ImageGenerationControls: React.FC<{
+    style: string;
+    setStyle: (s: string) => void;
+    criteria: { focus: string; composition: string; mood: string };
+    setCriteria: (c: { focus: string; composition: string; mood: string }) => void;
+}> = ({ style, setStyle, criteria, setCriteria }) => {
+    const { t } = useTranslation();
+
+    const styleOptions = Object.keys(t('strainsView.tips.form.imageStyles', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.imageStyles.${k}`) }));
+    const focusOptions = Object.keys(t('strainsView.tips.form.imageFocusOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.imageFocusOptions.${k}`) }));
+    const compositionOptions = Object.keys(t('strainsView.tips.form.imageCompositionOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.imageCompositionOptions.${k}`) }));
+    const moodOptions = Object.keys(t('strainsView.tips.form.imageMoodOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.imageMoodOptions.${k}`) }));
+
+    return (
+        <details className="group bg-slate-800/30 rounded-lg p-3 mt-4">
+            <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center gap-2">
+                 <PhosphorIcons.MagicWand /> {t('strainsView.tips.form.imageCriteria')}
+                 <PhosphorIcons.ChevronDown className="w-4 h-4 transition-transform duration-200 group-open:rotate-180 ml-auto" />
+            </summary>
+            <div className="pt-4 space-y-4">
+                <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.imageStyle')}</label>
+                    <SegmentedControl value={[style]} onToggle={(v) => setStyle(v as string)} options={styleOptions} />
+                </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.imageFocus')}</label>
+                    <SegmentedControl value={[criteria.focus]} onToggle={(v) => setCriteria({...criteria, focus: v as string})} options={focusOptions} />
+                </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.imageComposition')}</label>
+                    <SegmentedControl value={[criteria.composition]} onToggle={(v) => setCriteria({...criteria, composition: v as string})} options={compositionOptions} />
+                </div>
+                 <div>
+                    <label className="block text-sm font-semibold text-slate-300 mb-1">{t('strainsView.tips.form.imageMood')}</label>
+                    <SegmentedControl value={[criteria.mood]} onToggle={(v) => setCriteria({...criteria, mood: v as string})} options={moodOptions} />
+                </div>
+            </div>
+        </details>
+    );
+};
+
 
 interface StrainAiTipsProps {
     strain: Strain;
@@ -76,6 +119,12 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
         focus: 'overall',
         stage: 'all',
         experienceLevel: 'advanced'
+    });
+    const [imageStyle, setImageStyle] = useState('random');
+    const [imageCriteria, setImageCriteria] = useState({
+        focus: 'buds',
+        composition: 'dynamic',
+        mood: 'mystical'
     });
 
     const hasGeneratedOnce = !!tip || !!imageBase64;
@@ -114,7 +163,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
         const stageText = t(`strainsView.tips.form.stageOptions.${tipRequest.stage}`);
         const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experienceLevel}`);
         getStrainTips({strain, context: { focus: focusText, stage: stageText, experienceLevel: experienceText }, lang});
-        generateStrainImage({ strain, lang });
+        generateStrainImage({ strain, style: imageStyle, criteria: imageCriteria });
     };
 
     const handleSaveTip = () => {
@@ -153,6 +202,13 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                 <Button size="sm" onClick={handleGetAiTips} disabled={isLoading} className="w-full">
                     {isLoading ? loadingMessage : (hasGeneratedOnce ? t('common.regenerate') : t('strainsView.tips.form.generate'))}
                 </Button>
+
+                 <ImageGenerationControls
+                    style={imageStyle}
+                    setStyle={setImageStyle}
+                    criteria={imageCriteria}
+                    setCriteria={setImageCriteria}
+                />
                 
                 {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                 {error && !isLoading && <div className="text-center text-sm text-red-400">{'message' in (error as any) ? (error as any).message : t('ai.error.unknown')}</div>}

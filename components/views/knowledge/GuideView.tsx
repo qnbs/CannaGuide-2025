@@ -126,7 +126,8 @@ const GuideViewComponent: React.FC = () => {
                 {groupedArticles.map(([groupKey, groupData]) => {
                     const { icon, color, accentColor } = getGroupInfo(groupKey);
                     return (
-                        <section key={groupKey} id={groupKey} ref={el => sectionRefs.current[groupKey] = el} className="scroll-mt-20">
+                        // FIX: Changed ref callback to an expression that returns void to match expected type.
+                        <section key={groupKey} id={groupKey} ref={el => { sectionRefs.current[groupKey] = el }} className="scroll-mt-20">
                             <h2 className={`text-2xl font-bold font-display flex items-center gap-3 mb-4 ${color} border-b ${accentColor} pb-2`}>
                                 {icon} {groupData.name}
                             </h2>

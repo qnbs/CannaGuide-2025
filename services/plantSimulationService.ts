@@ -84,6 +84,7 @@ class PlantSimulationService {
             history: [{ day: 0, health: 100, height: 0, stressLevel: 0, medium: { ph: 6.5, ec: 0.8, moisture: 100 } }],
             cannabinoidProfile: { thc: 0, cbd: 0, cbn: 0 },
             terpeneProfile: {},
+            stressCounters: { vpd: 0, ph: 0, ec: 0, moisture: 0 },
         };
     }
     
@@ -232,12 +233,38 @@ class PlantSimulationService {
         const p = this.clonePlant(plant);
         const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals;
         let stress = 0;
-        
-        if(p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max) stress += 10;
-        if(p.medium.ph < ideal.ph.min || p.medium.ph > ideal.ph.max) stress += 15;
-        if(p.medium.ec < ideal.ec.min || p.medium.ec > ideal.ec.max) stress += 10;
-        if(p.medium.moisture < 20) stress += 20;
-        if(p.medium.moisture > 98) stress += 5;
+
+        // VPD Stress
+        if (p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max) {
+            stress += 10;
+            p.stressCounters.vpd = (p.stressCounters.vpd || 0) + 1;
+        } else {
+            p.stressCounters.vpd = 0;
+        }
+        // pH Stress
+        if (p.medium.ph < ideal.ph.min || p.medium.ph > ideal.ph.max) {
+            stress += 15;
+            p.stressCounters.ph = (p.stressCounters.ph || 0) + 1;
+        } else {
+            p.stressCounters.ph = 0;
+        }
+        // EC Stress
+        if (p.medium.ec < ideal.ec.min || p.medium.ec > ideal.ec.max) {
+            stress += 10;
+            p.stressCounters.ec = (p.stressCounters.ec || 0) + 1;
+        } else {
+            p.stressCounters.ec = 0;
+        }
+        // Moisture Stress
+        if (p.medium.moisture < 20) { // Underwatering
+            stress += 20;
+            p.stressCounters.moisture = (p.stressCounters.moisture || 0) + 1;
+        } else if (p.medium.moisture > 98) { // Overwatering
+            stress += 5;
+            p.stressCounters.moisture = (p.stressCounters.moisture || 0) + 1;
+        } else {
+            p.stressCounters.moisture = 0;
+        }
         
         p.stressLevel = Math.min(100, p.stressLevel * 0.8 + stress);
         p.health = Math.max(0, 100 - p.stressLevel);
@@ -251,6 +278,7 @@ class PlantSimulationService {
         const tasks: Task[] = [];
         const originalStage = p.stage;
     
+        // --- Stage Progression Logic ---
         const currentStageIndex = STAGES_ORDER.indexOf(p.stage);
         if (currentStageIndex < STAGES_ORDER.length - 1 && ![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(p.stage)) {
             let cumulativeDuration = 0;
@@ -280,8 +308,40 @@ class PlantSimulationService {
             });
         }
         
+        // --- Task Generation Logic ---
         if (p.medium.moisture < 30 && !p.tasks.some(t => t.title === 'Task: Water Plant')) {
             tasks.push({ id: `task-water-${p.id}`, title: 'Task: Water Plant', description: `${p.name} is thirsty!`, isCompleted: false, createdAt: Date.now(), priority: 'high' });
+        }
+
+        // --- Probabilistic Problem Generation ---
+        const hasProblem = (type: ProblemType) => p.problems.some(prob => prob.type === type && prob.status === 'active');
+        
+        // High VPD (too dry) -> Pest Risk
+        if (p.stressCounters.vpd > 3 && !hasProblem(ProblemType.PestInfestation)) {
+            const vpdStressChance = (p.stressCounters.vpd - 3) * 0.05 / p.strain.geneticModifiers.pestResistance;
+            if (Math.random() < vpdStressChance) {
+                p.problems.push({ type: ProblemType.PestInfestation, severity: 1, onsetDay: p.age, status: 'active' });
+                p.stressCounters.vpd = 0; // Reset counter after problem triggers
+            }
+        }
+        
+        // Nutrient/pH/EC Stress -> Nutrient Deficiency Risk
+        if ((p.stressCounters.ph > 3 || p.stressCounters.ec > 3) && !hasProblem(ProblemType.NutrientDeficiency)) {
+            const nutrientStressChance = ((p.stressCounters.ph + p.stressCounters.ec) - 3) * 0.04 / p.strain.geneticModifiers.stressTolerance;
+            if (Math.random() < nutrientStressChance) {
+                 p.problems.push({ type: ProblemType.NutrientDeficiency, severity: 1, onsetDay: p.age, status: 'active' });
+                 p.stressCounters.ph = 0;
+                 p.stressCounters.ec = 0;
+            }
+        }
+        
+        // Moisture Stress -> Under/Overwatering
+        if (p.stressCounters.moisture > 2 && !hasProblem(ProblemType.Underwatering) && p.medium.moisture < 20) {
+             p.problems.push({ type: ProblemType.Underwatering, severity: 1, onsetDay: p.age, status: 'active' });
+             p.stressCounters.moisture = 0;
+        } else if (p.stressCounters.moisture > 4 && !hasProblem(ProblemType.Overwatering) && p.medium.moisture > 95) {
+             p.problems.push({ type: ProblemType.Overwatering, severity: 1, onsetDay: p.age, status: 'active' });
+             p.stressCounters.moisture = 0;
         }
         
         return { plant: p, journalEntries, tasks };

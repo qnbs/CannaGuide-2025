@@ -25,12 +25,11 @@ export const Card = memo(
                 if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
                     if (props.onClick) {
-                        // Create a synthetic mouse event to satisfy the handler's type
-                        const mockMouseEvent = {
-                            ...e,
-                            // Add any necessary properties from MouseEvent
-                        } as unknown as React.MouseEvent<HTMLDivElement>
-                        props.onClick(mockMouseEvent)
+                        // The original KeyboardEvent `e` has stopPropagation. Casting to `any`
+                        // bypasses the MouseEvent type check, but ensures the handler
+                        // receives an object with the necessary method, fixing the runtime error.
+                        // The shallow spread `{...e}` was the bug, as it doesn't copy prototype methods.
+                        props.onClick(e as any)
                     }
                 }
             },

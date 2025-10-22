@@ -137,28 +137,6 @@ export const strains: Strain[] = [
         "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
     }),
     createStrainObject({
-        "id": "lemon-kush",
-        "name": "Lemon Kush",
-        "type": StrainType.Hybrid,
-        "typeDetails": "Hybrid 50% / 50%",
-        "genetics": "Master Kush x Lemon Joy",
-        "floweringType": "Photoperiod",
-        "thc": 23,
-        "cbd": 1,
-        "thcRange": "20-26%",
-        "cbdRange": "<1%",
-        "floweringTime": 8.5,
-        "floweringTimeRange": "8-9",
-        "description": "Lemon Kush is a balanced hybrid celebrated for its strong lemon and citrus aroma. It delivers an uplifting and creative cerebral high, accompanied by a relaxing body buzz. Its refreshing terpene profile and versatile effects make it a popular choice.",
-        "agronomic": {
-            "difficulty": "Medium",
-            "yield": "Medium",
-            "height": "Medium"
-        },
-        "aromas": ["Lemon", "Citrus", "Sweet", "Earthy"],
-        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
-    }),
-    createStrainObject({
         "id": "sour-cream",
         "name": "Sour Cream",
         "type": StrainType.Hybrid,

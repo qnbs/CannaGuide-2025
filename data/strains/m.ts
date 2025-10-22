@@ -619,7 +619,9 @@ export const strainsM: Strain[] = [
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
-            "height": "Tall"
+            "height": "Tall",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
         },
         "aromas": ["Sweet", "Tropical", "Spicy", "Woody"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]

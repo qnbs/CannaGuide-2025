@@ -277,4 +277,4 @@ export const strains: Record<string, StrainTranslationData> = {
     "yieldDetails": { "indoor": "300-400 g/m²", "outdoor": "350-450 g/Pflanze" },
     "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
   }
-}
+};

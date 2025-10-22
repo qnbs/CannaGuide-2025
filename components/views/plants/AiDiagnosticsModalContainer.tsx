@@ -1,6 +1,5 @@
 import React from 'react';
 import { AiDiagnosticsModal } from './AiDiagnosticsModal';
-// FIX: Use specific selectors for better performance and type safety.
 import { selectPlantById, selectIsDiagnosticsModalOpen, selectDiagnosticsPlantId } from '@/stores/selectors';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { closeDiagnosticsModal } from '@/stores/slices/uiSlice';
@@ -9,7 +8,6 @@ import { Plant } from '@/types';
 
 export const AiDiagnosticsModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();
-    // FIX: Replaced direct state access with specific selectors.
     const isDiagnosticsModalOpen = useAppSelector(selectIsDiagnosticsModalOpen);
     const diagnosticsPlantId = useAppSelector(selectDiagnosticsPlantId);
     const plant = useAppSelector(selectPlantById(diagnosticsPlantId));

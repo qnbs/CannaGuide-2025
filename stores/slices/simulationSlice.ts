@@ -41,14 +41,28 @@ const simulationSlice = createSlice({
         updatePlant: plantsAdapter.updateOne,
         plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
             const { updatedPlant, newJournalEntries, newTasks } = action.payload;
-            plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes: updatedPlant });
+            const existingPlant = state.plants.entities[updatedPlant.id];
+            if (!existingPlant) return;
+
+            // Give new journal entries unique IDs and current timestamps to ensure they are unique.
+            const newJournalWithIds = newJournalEntries.map((entry, index) => ({
+                ...entry,
+                id: `journal-${updatedPlant.id}-${Date.now()}-${index}`,
+                createdAt: Date.now(),
+            }));
+
+            // Prevent duplicate tasks by checking titles of existing incomplete tasks.
+            const existingIncompleteTaskTitles = new Set(existingPlant.tasks.filter(t => !t.isCompleted).map(t => t.title));
+            const tasksToAdd = newTasks.filter(t => !existingIncompleteTaskTitles.has(t.title));
+
+            // Create a changes object that merges the worker's calculations with the latest journal/task state.
+            const changes = {
+                ...updatedPlant,
+                journal: [...existingPlant.journal, ...newJournalWithIds],
+                tasks: [...existingPlant.tasks, ...tasksToAdd],
+            };
             
-            // This is a simple way to merge tasks; a more robust solution might check for duplicates
-            const existingTaskIds = new Set(state.plants.entities[updatedPlant.id]?.tasks.map(t => t.id));
-            const tasksToAdd = newTasks.filter(t => !existingTaskIds.has(t.id));
-            if (state.plants.entities[updatedPlant.id]) {
-                state.plants.entities[updatedPlant.id]!.tasks.push(...tasksToAdd);
-            }
+            plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes });
         },
         setSelectedPlantId: (state, action: PayloadAction<string | null>) => {
             state.selectedPlantId = action.payload;

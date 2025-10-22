@@ -196,7 +196,7 @@ export const strainsT: Strain[] = [
     }),
     createStrainObject({
         "id": "the-og",
-        "name": "The OG",
+        "name": "The Original",
         "type": StrainType.Hybrid,
         "typeDetails": "Indica 70% / Sativa 30%",
         "genetics": "OG Kush (phenotype)",
@@ -207,7 +207,7 @@ export const strainsT: Strain[] = [
         "cbdRange": "<1%",
         "floweringTime": 9.5,
         "floweringTimeRange": "9-10",
-        "description": "An OG Kush phenotype with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and ideal for the evening.",
+        "description": "An indica-dominant strain with an earthy, piney, and spicy aroma. The effect is strong, relaxing, and ideal for the evening.",
         "agronomic": {
             "difficulty": "Medium",
             "yield": "Medium",
@@ -571,7 +571,9 @@ export const strainsT: Strain[] = [
         "agronomic": {
             "difficulty": "Medium",
             "yield": "High",
-            "height": "Tall"
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
+            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
         },
         "aromas": ["Orange", "Citrus", "Sweet", "Mint"],
         "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]

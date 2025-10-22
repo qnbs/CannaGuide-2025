@@ -90,26 +90,22 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                 {/* Name & Main Stats */}
                 <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-2">
-                        {/* FIX: Removed unsupported `title` prop from icon component. The visual indication is sufficient. */}
                         {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />}
                         <p className="font-bold text-slate-100 truncate">{strain.name}</p>
                     </div>
                     <p className="text-xs text-slate-400 mt-1 sm:hidden">
-                        {strain.thc?.toFixed(1)}% THC | {strain.floweringTime} wks
+                        {strain.thc?.toFixed(1)}% THC | {strain.floweringTime} {t('common.units.weeks')}
                     </p>
                 </div>
                 
                 {/* Desktop stats */}
-                <div className="hidden sm:flex items-center gap-1.5 font-mono text-sm" title="THC">
-                    <span className="font-sans text-red-400/80 font-bold text-lg">*</span>
+                <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title="THC">
                     <span>{strain.thc?.toFixed(1)}%</span>
                 </div>
-                 <div className="hidden sm:flex items-center gap-1.5 font-mono text-sm" title="CBD">
-                    <PhosphorIcons.Drop weight="fill" className="w-3.5 h-3.5 text-blue-400/80" />
+                 <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title="CBD">
                     <span>{strain.cbd?.toFixed(1)}%</span>
                 </div>
-                <div className="hidden sm:flex items-center gap-1.5 font-mono text-sm" title={t('strainsView.table.flowering')}>
-                    <PhosphorIcons.ArrowClockwise className="w-3.5 h-3.5" />
+                <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title={t('strainsView.table.flowering')}>
                     <span>{strain.floweringTimeRange || strain.floweringTime}</span>
                 </div>
 

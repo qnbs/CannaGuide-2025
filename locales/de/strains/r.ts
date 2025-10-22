@@ -65,7 +65,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
   },
   "runtz-muffin": {
-    "description": "Runtz Muffin ist eine potente Indica-dominante Hybride von Barney's Farm, die die bonbonartige Süße von Zkittlez und Gelato mit einem cremigen Orangen-Vanille-Abgang von Orange Punch kombiniert. Die Wirkung ist zutiefst entspannend und langanhaltend. Sie überflutet den Konsumenten mit einer Welle der Euphorie, die Stress und Anspannung lindert und schließlich zu einem Zustand tiefer Ruhe führt.",
+    "description": "Eine potente indica-dominante Hybride von Barney's Farm, die die bonbonartige Süße von Zkittlez und Gelato mit einem cremigen Orangen-Vanille-Abgang von Orange Punch kombiniert. Die Wirkung ist zutiefst entspannend und langanhaltend. Sie überflutet den Konsumenten mit einer Welle der Euphorie, die Stress und Anspannung lindert und schließlich zu einem Zustand tiefer Ruhe führt.",
     "typeDetails": "Indica 70% / Sativa 30%",
     "yieldDetails": { "indoor": "550-600 g/m²", "outdoor": "600-700 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
@@ -75,5 +75,8 @@ export const strains: Record<string, StrainTranslationData> = {
     "typeDetails": "Hybrid 50% / 50%",
     "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "550-650 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+  },
+  "afghani-bullrider": {
+    "description": "Eine potente Indica-Sorte, die als Phänotyp einer afghanischen Landrasse gilt. Sie liefert ein tief entspannendes, fast narkotisches Körper-High, das Schmerzen und Stress dahinschmelzen lässt, was sie ideal für den nächtlichen Gebrauch macht. Ihr Aroma ist eine klassische Mischung aus erdigen, süßen und scharfen Noten. Sie ist ein Elternteil von Ray Charles."
   }
 };

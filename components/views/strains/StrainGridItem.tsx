@@ -14,7 +14,6 @@ interface StrainGridItemProps {
     isSelected: boolean;
     onToggleSelection: (id: string) => void;
     isUserStrain: boolean;
-    onDelete: (id: string) => void;
     index: number;
     isFavorite: boolean;
     onToggleFavorite: () => void;
@@ -33,7 +32,7 @@ const typeClasses: Record<StrainType, string> = {
 };
 
 
-const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, onDelete, index, isFavorite, onToggleFavorite }) => {
+const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
@@ -48,7 +47,6 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
         >
-            {/* FIX: Wrapped input in a div with stopPropagation to prevent card click, and corrected onChange handler type. */}
             <div className="absolute top-2 right-2 flex items-center gap-1.5 z-10" onClick={(e) => e.stopPropagation()}>
                  <input
                     type="checkbox"
@@ -69,7 +67,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             <p className="text-xs text-slate-400 mb-2">{strain.type}</p>
 
             <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono">
-                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1"><span className="font-sans text-red-400/80 font-bold">*</span>{strain.thc?.toFixed(1)}%</div>
+                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">{strain.thc?.toFixed(1)}%</div>
                 <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1"><PhosphorIcons.ArrowClockwise className="w-3 h-3" />{strain.floweringTimeRange || strain.floweringTime} w</div>
             </div>
 

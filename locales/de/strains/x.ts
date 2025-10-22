@@ -18,5 +18,11 @@ export const strains: Record<string, StrainTranslationData> = {
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "150-200 cm", "outdoor": "180-250 cm" }
+    },
+    "xxx-og": {
+        "description": "Eine potente indica-dominante Sorte, die dreimaliger Cannabis-Cup-Gewinner ist. Sie bietet ein schweres, entspannendes Körper-High, das sich hervorragend bei Schmerzen und Schlaflosigkeit eignet. Das Aroma ist klassisch OG: erdig, kiefernartig und scharf. Sie ist ein Elternteil von Godfather OG.",
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
+        "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
     }
 };

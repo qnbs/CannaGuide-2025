@@ -2,7 +2,9 @@ import type { StrainTranslationData } from "@/types";
 
 export const strains: Record<string, StrainTranslationData> = {
   "jacks-cleaner": {
-    "description": "Jack's Cleaner ist eine sativa-dominante Hybride, die für ihr extrem scharfes Zitronen- und Kiefernaroma bekannt ist, das an ein Reinigungsmittel erinnert. Die Wirkung ist schnell einsetzend, energetisierend, kreativ und klar im Kopf, was sie zu einer beliebten Wahl für den Tagesgebrauch macht. Sie ist eine Elternsorte von Jack The Ripper und Jesus OG."
+    "description": "Jack's Cleaner ist eine sativa-dominante Hybride, die für ihr extrem scharfes Zitronen- und Kiefernaroma bekannt ist, das an ein Reinigungsmittel erinnert. Die Wirkung ist schnell einsetzend, energetisierend, kreativ und klar im Kopf, was sie zu einer beliebten Wahl für den Tagesgebrauch macht. Sie ist eine Elternsorte von Jack The Ripper und Jesus OG.",
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
+    "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
   },
   "joseph-og": {
     "description": "Joseph OG ist ein potenter indica-dominanter Phänotyp von OG Kush, bekannt für seine starke Harzproduktion und sein klassisches OG-Aroma. Er liefert ein kraftvolles, entspannendes Körper-High mit einem euphorischen zerebralen Rausch. Er ist eine der Elternsorten von Grateful Breath."

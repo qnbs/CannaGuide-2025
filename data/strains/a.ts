@@ -395,7 +395,11 @@ export const strainsA: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 22, "cbd": 1, "thcRange": "19-25%", "cbdRange": "<1%", "floweringTime": 9,
         "description": "A clone-only indica-dominant hybrid with mysterious origins, though it's believed to be a phenotype of Afghan Skunk. It is known for its potent, long-lasting effects that are both euphoric and deeply relaxing. The aroma is a pungent mix of skunk, lemon, and diesel.",
-        "agronomic": { "difficulty": "Hard", "yield": "Low", "height": "Short" },
+        "agronomic": { 
+            "difficulty": "Hard", "yield": "Low", "height": "Short",
+            "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/plant" },
+            "heightDetails": { "indoor": "70-110 cm", "outdoor": "90-140 cm" }
+        },
         "aromas": ["Skunk", "Lemon", "Diesel", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     }),
@@ -471,7 +475,11 @@ export const strainsA: Strain[] = [
         "typeDetails": "Indica 100%", "genetics": "Afghani Landrace", "floweringType": "Photoperiod",
         "thc": 19, "cbd": 1, "thcRange": "16-22%", "cbdRange": "<1%", "floweringTime": 8.5,
         "description": "A pure indica landrace strain reportedly brought back from Afghanistan by a US soldier. It is known for its strong, sedating effects and its high resin production.",
-        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "agronomic": {
+            "difficulty": "Easy", "yield": "Medium", "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "60-100 cm", "outdoor": "80-120 cm" }
+        },
         "aromas": ["Earthy", "Spicy", "Woody", "Diesel"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     }),

@@ -40,10 +40,8 @@ import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 
 // --- Lazy Loaded Views for Performance ---
 const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
-// FIX: Corrected path for default export from StrainTipsView. The previous path was incorrect.
 const StrainTipsView = lazy(() => import('./StrainTipsView'));
 const GenealogyView = lazy(() => import('./GenealogyView').then(m => ({ default: m.GenealogyView })));
-// FIX: Corrected the path for the default export from ExportsManagerView.
 const ExportsManagerView = lazy(() => import('./ExportsManagerView'));
 
 
@@ -321,7 +319,6 @@ export const StrainsView: React.FC = () => {
                 showFavorites={showFavoritesOnly}
                 onToggleFavorites={(val) => setShowFavoritesOnly(val)}
                 typeFilter={typeFilter}
-                // FIX: The prop passed to the component should be `handleToggleTypeFilter` as defined by the `useStrainFilters` hook.
                 onToggleTypeFilter={handleToggleTypeFilter}
                 isAnyFilterActive={isAnyFilterActive}
             />

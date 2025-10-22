@@ -202,6 +202,17 @@
 
       #toast-container { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 70px); sm:bottom-4; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 24rem; padding: 0 1rem; }
 
+      /* Side Navigation Indicator */
+      .side-nav-indicator {
+        position: absolute;
+        left: 0;
+        width: 4px;
+        background-color: rgb(var(--color-primary-400));
+        border-radius: 0 4px 4px 0;
+        transition: top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 0 8px rgb(var(--color-primary-400));
+      }
+
       /* Genealogy Tree Styles */
       .genealogy-link { fill: none; stroke: rgb(var(--color-neutral-700)); stroke-width: 1.5px; }
       .genealogy-node-container { padding: 0.5rem; background-color: rgb(var(--color-neutral-800)/0.9); border: 1px solid rgb(var(--color-neutral-700)); border-radius: 0.5rem; width: 220px; height: 80px; display: flex; flex-direction: column; justify-content: space-between; position: relative; transition: all 0.2s; cursor: pointer; }
@@ -221,7 +232,6 @@
       /* New UI Density styles */
       .ui-density-compact main { padding: 0.5rem !important; padding-bottom: 5rem !important; }
       .ui-density-compact .glass-pane, .ui-density-compact details { padding: 0.75rem !important; }
-      .ui-density-compact .strain-list-item-padding { padding: 0.5rem 0.75rem !important; }
 
       /* --- ACCESSIBILITY --- */
       .font-dyslexia body { font-family: 'Atkinson Hyperlegible', sans-serif !important; }

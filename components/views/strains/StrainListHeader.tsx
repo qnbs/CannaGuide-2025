@@ -26,13 +26,13 @@ const SortButton: React.FC<{
     </button>
 );
 
-const gridLayout = "grid-cols-[auto_28px_1fr_55px_55px_55px_auto] items-center gap-x-3";
+const gridLayout = "grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4";
 
 export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, handleSort, onToggleAll, areAllOnPageSelected }) => {
     const { t } = useTranslation();
 
     return (
-        <div className={`hidden sm:grid p-2 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
+        <div className={`hidden sm:grid p-3 text-slate-400 text-xs font-semibold uppercase tracking-wider ${gridLayout}`}>
             <input
                 type="checkbox"
                 checked={areAllOnPageSelected}
@@ -44,9 +44,9 @@ export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, h
             <div></div>
             <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
             
-            <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} className="justify-center" />
-            <SortButton sortKey="cbd" label={t('strainsView.table.cbd')} currentSort={sort} onSort={handleSort} className="justify-center" />
-            <SortButton sortKey="floweringTime" label="WKS" currentSort={sort} onSort={handleSort} className="justify-center" title={t('strainsView.table.flowering')} />
+            <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
+            <SortButton sortKey="cbd" label={t('strainsView.table.cbd')} currentSort={sort} onSort={handleSort} />
+            <SortButton sortKey="floweringTime" label={t('common.units.weeks')} currentSort={sort} onSort={handleSort} title={t('strainsView.table.flowering')} />
             
             <div className="text-center">{t('common.actions')}</div>
         </div>

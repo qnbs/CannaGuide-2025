@@ -195,7 +195,7 @@ export interface Plant {
         nutrientConcentration: { nitrogen: number; phosphorus: number; potassium: number };
     };
     nutrientPool: { nitrogen: number; phosphorus: number; potassium: number };
-    rootSystem: { health: number; mass: number };
+    rootSystem: { health: number; rootMass: number };
     equipment: {
         light: { type: LightType; wattage: number; isOn: boolean; lightHours: number };
         exhaustFan: { power: VentilationPower; isOn: boolean };

@@ -16,9 +16,15 @@ export const strains: Strain[] = [
         "floweringTime": 12,
         "floweringTimeRange": "11-13",
         "description": "A general term for Sativa landraces from Africa, known for their uplifting, energetic, and cerebral effects. They are often resilient and adapted to warm climates.",
-        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Tall" },
-        "aromas": ["Earthy", "Spicy", "Sweet"],
-        "dominantTerpenes": ["Terpinolene", "Myrcene"]
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">220 cm" }
+        },
+        "aromas": ["Earthy", "Spicy", "Sweet", "Woody"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
     }),
     createStrainObject({
         "id": "afghani-hash-plant",
@@ -217,5 +223,29 @@ export const strains: Strain[] = [
         "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
         "aromas": ["Lemon", "Tropical", "Sweet", "Sour"],
         "dominantTerpenes": ["Myrcene", "Terpinolene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "xxx-og",
+        "name": "XXX OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush x OG Kush",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A potent indica-dominant strain that is a three-time Cannabis Cup winner. It provides a heavy, relaxing body high that is great for pain and insomnia. The aroma is classic OG: earthy, piney, and pungent. It is a parent of Godfather OG.",
+        "agronomic": { 
+            "difficulty": "Medium", 
+            "yield": "High", 
+            "height": "Medium",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Earthy", "Pine", "Pungent", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
     })
 ];

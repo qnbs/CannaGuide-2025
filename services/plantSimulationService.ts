@@ -58,7 +58,7 @@ class PlantSimulationService {
                 nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 },
             },
             nutrientPool: { nitrogen: 5, phosphorus: 5, potassium: 5 },
-            rootSystem: { health: 100, mass: 0.01 },
+            rootSystem: { health: 100, rootMass: 0.01 },
             equipment: {
                 light: {
                     type: setup.lightType,
@@ -149,7 +149,7 @@ class PlantSimulationService {
         p.medium.moisture = (p.medium.substrateWater / waterCapacity) * 100;
 
         const uptakeFactor = p.strain.geneticModifiers.nutrientUptakeRate * (p.rootSystem.health / 100);
-        const nutrientDemand = (p.biomass.total + p.rootSystem.mass) * 0.05;
+        const nutrientDemand = (p.biomass.total + p.rootSystem.rootMass) * 0.05;
         const availableNutrients = waterUsed * p.medium.ec * uptakeFactor;
         
         const nutrientsTaken = Math.min(nutrientDemand, availableNutrients);
@@ -181,7 +181,7 @@ class PlantSimulationService {
         const gainedLeaves = actualBiomassGain * partition.leaves;
         const gainedFlowers = actualBiomassGain * partition.flowers;
         
-        p.rootSystem.mass += gainedRoots;
+        p.rootSystem.rootMass += gainedRoots;
         p.biomass.stem += gainedStem;
         p.biomass.leaves += gainedLeaves;
         p.biomass.flowers += gainedFlowers;
@@ -275,7 +275,7 @@ class PlantSimulationService {
     private _checkForEvents(plant: Plant): { plant: Plant, journalEntries: JournalEntry[], tasks: Task[] } {
         const p = this.clonePlant(plant);
         const journalEntries: JournalEntry[] = [];
-        const tasks: Task[] = [];
+        const newTasks: Task[] = [];
         const originalStage = p.stage;
     
         // --- Stage Progression Logic ---
@@ -310,7 +310,7 @@ class PlantSimulationService {
         
         // --- Task Generation Logic ---
         if (p.medium.moisture < 30 && !p.tasks.some(t => t.title === 'Task: Water Plant')) {
-            tasks.push({ id: `task-water-${p.id}`, title: 'Task: Water Plant', description: `${p.name} is thirsty!`, isCompleted: false, createdAt: Date.now(), priority: 'high' });
+            newTasks.push({ id: `task-water-${p.id}`, title: 'Task: Water Plant', description: `${p.name} is thirsty!`, isCompleted: false, createdAt: Date.now(), priority: 'high' });
         }
 
         // --- Probabilistic Problem Generation ---
@@ -344,7 +344,7 @@ class PlantSimulationService {
              p.stressCounters.moisture = 0;
         }
         
-        return { plant: p, journalEntries, tasks };
+        return { plant: p, journalEntries, tasks: newTasks };
     }
 
     private _calculateVPD(tempC: number, rh: number, leafTempOffset: number): number {

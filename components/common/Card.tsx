@@ -22,13 +22,20 @@ export const Card = memo(
 
         const handleKeyDown = useCallback(
             (e: React.KeyboardEvent<HTMLDivElement>) => {
-                if (isInteractive && (e.key === 'Enter' || e.key === ' ')) {
+                const target = e.target as HTMLElement;
+                const isFormElement = 
+                    target.tagName === 'INPUT' || 
+                    target.tagName === 'TEXTAREA' || 
+                    target.tagName === 'SELECT' || 
+                    target.isContentEditable;
+
+                if (isInteractive && !isFormElement && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
                     if (props.onClick) {
-                        // The original KeyboardEvent `e` has stopPropagation. Casting to `any`
-                        // bypasses the MouseEvent type check, but ensures the handler
-                        // receives an object with the necessary method, fixing the runtime error.
-                        // The shallow spread `{...e}` was the bug, as it doesn't copy prototype methods.
+                        // FIX: Pass the original KeyboardEvent `e` directly instead of spreading it.
+                        // The shallow spread `{...e}` was the bug, as it doesn't copy prototype methods like `stopPropagation`.
+                        // Casting to `any` bypasses the MouseEvent type check but ensures the handler
+                        // receives an object with the necessary methods, fixing the runtime error.
                         props.onClick(e as any)
                     }
                 }

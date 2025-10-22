@@ -11,7 +11,8 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    state: ErrorBoundaryState = { hasError: false }
+    // FIX: Using public class field for state initialization to resolve type errors.
+    public state: ErrorBoundaryState = { hasError: false };
 
     // This lifecycle method is called to update the state when an error is thrown.
     static getDerivedStateFromError(_error: Error): ErrorBoundaryState {
@@ -23,7 +24,6 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         console.error('Uncaught error:', error, errorInfo)
     }
 
-    // FIX: The render method in a class component must be a standard method, not an arrow function, to ensure React correctly binds `this` and provides access to `this.props`.
     render(): React.ReactNode {
         if (this.state.hasError) {
             // You can render any custom fallback UI

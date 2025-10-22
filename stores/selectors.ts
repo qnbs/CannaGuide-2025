@@ -2,6 +2,7 @@ import { createSelector } from '@reduxjs/toolkit'
 import { RootState } from './store'
 import {
     ArchivedAdvisorResponse,
+    ArchivedMentorResponse,
     SimulationState,
     AppSettings,
     Task,
@@ -15,6 +16,11 @@ import {
     SavedExport,
     TTSSettings,
     SandboxState,
+    Language,
+    Theme,
+    StrainViewTab,
+    Seed,
+    SavedExperiment,
 } from '@/types'
 import { SavedItemsState } from './slices/savedItemsSlice'
 import { UIState } from './slices/uiSlice'
@@ -22,13 +28,12 @@ import { FavoritesState } from './slices/favoritesSlice'
 import { ArchivesState } from './slices/archivesSlice'
 import { TtsState } from './slices/ttsSlice'
 import { StrainsViewState } from './slices/strainsViewSlice'
-// FIX: Module '"@/types"' has no exported member 'BreedingState'. Corrected import path.
 import { BreedingState } from './slices/breedingSlice'
 import { SettingsState } from './slices/settingsSlice'
 
 // --- Base Selectors (for each slice) ---
 export const selectUi = (state: RootState): UIState => state.ui
-const selectSettingsState = (state: RootState) => state.settings
+const selectSettingsState = (state: RootState): SettingsState => state.settings
 export const selectSavedItems = (state: RootState): SavedItemsState => state.savedItems
 const selectUserStrainsState = (state: RootState) => state.userStrains
 const selectFavoritesState = (state: RootState): FavoritesState => state.favorites
@@ -48,7 +53,6 @@ import { savedSetupsAdapter, savedStrainTipsAdapter, savedExportsAdapter } from 
 import { plantsAdapter } from './slices/simulationSlice'
 
 // --- UI Selectors ---
-// FIX: Added explicit types to selector callbacks to ensure correct type inference.
 export const selectActiveView = createSelector([selectUi], (ui: UIState): View => ui.activeView)
 export const selectIsCommandPaletteOpen = createSelector(
     [selectUi],
@@ -65,27 +69,25 @@ export const selectNotifications = createSelector(
 export const selectOnboardingStep = createSelector([selectUi], (ui: UIState): number => ui.onboardingStep)
 export const selectActionModalState = createSelector([selectUi], (ui: UIState) => ui.actionModal)
 export const selectDeepDiveModalState = createSelector([selectUi], (ui: UIState) => ui.deepDiveModal)
-export const selectIsAppReady = createSelector([selectUi], (ui: UIState) => ui.isAppReady);
+export const selectIsAppReady = createSelector([selectUi], (ui: UIState): boolean => ui.isAppReady);
 export const selectNewGrowFlow = createSelector([selectUi], (ui: UIState) => ui.newGrowFlow);
 export const selectKnowledgeViewTab = createSelector([selectUi], (ui: UIState) => ui.knowledgeViewTab);
 export const selectActiveMentorPlantId = createSelector([selectUi], (ui: UIState) => ui.activeMentorPlantId);
 export const selectEquipmentViewTab = createSelector([selectUi], (ui: UIState) => ui.equipmentViewTab);
-export const selectIsSaveSetupModalOpen = createSelector([selectUi], (ui: UIState) => ui.isSaveSetupModalOpen);
+export const selectIsSaveSetupModalOpen = createSelector([selectUi], (ui: UIState): boolean => ui.isSaveSetupModalOpen);
 export const selectSetupToSave = createSelector([selectUi], (ui: UIState) => ui.setupToSave);
-// FIX: Added new selectors for diagnostics modal state
-export const selectIsDiagnosticsModalOpen = createSelector([selectUi], (ui: UIState) => ui.isDiagnosticsModalOpen);
-export const selectDiagnosticsPlantId = createSelector([selectUi], (ui: UIState) => ui.diagnosticsPlantId);
+export const selectIsDiagnosticsModalOpen = createSelector([selectUi], (ui: UIState): boolean => ui.isDiagnosticsModalOpen);
+export const selectDiagnosticsPlantId = createSelector([selectUi], (ui: UIState): string | null => ui.diagnosticsPlantId);
 
 
 // --- Settings Selectors ---
 export const selectSettings = createSelector(
-    // FIX: Added explicit type to selector callback.
     [selectSettingsState],
     (settingsState: SettingsState): AppSettings => settingsState.settings,
 )
 export const selectLanguage = createSelector(
     [selectSettings],
-    (settings: AppSettings) => settings.general.language,
+    (settings: AppSettings): Language => settings.general.language,
 )
 export const selectIsExpertMode = createSelector(
     [selectSettings],
@@ -93,7 +95,7 @@ export const selectIsExpertMode = createSelector(
 )
 export const selectTheme = createSelector(
     [selectSettings],
-    (settings: AppSettings) => settings.general.theme,
+    (settings: AppSettings): Theme => settings.general.theme,
 )
 export const selectDefaults = createSelector(
     [selectSettings],
@@ -105,7 +107,7 @@ export const selectTtsSettings = createSelector(
 )
 export const selectTtsEnabled = createSelector(
     [selectTtsSettings],
-    (tts: TTSSettings) => tts.enabled
+    (tts: TTSSettings): boolean => tts.enabled
 )
 
 // --- Saved Items Selectors ---
@@ -126,10 +128,9 @@ export const { selectAll: selectUserStrains, selectIds: selectUserStrainIdsAsArr
 
 export const selectUserStrainIds = createSelector(
     [selectUserStrainIdsAsArray],
-    (ids) => new Set(ids as string[]),
+    (ids): Set<string> => new Set(ids as string[]),
 )
 export const selectFavoriteIds = createSelector(
-    // FIX: Added explicit type to selector callback.
     [selectFavoritesState],
     (favorites: FavoritesState): Set<string> => new Set(favorites?.favoriteIds || []),
 )
@@ -137,19 +138,19 @@ export const selectFavoriteIds = createSelector(
 // --- Archives Selectors ---
 export const selectArchivedMentorResponses = createSelector(
     [selectArchives],
-    (archives: ArchivesState) => archives.archivedMentorResponses,
+    (archives: ArchivesState): ArchivedMentorResponse[] => archives.archivedMentorResponses,
 )
 const selectAllArchivedAdvisorResponses = createSelector(
-    // FIX: Added explicit type to selector callback.
     [selectArchives],
-    (archives: ArchivesState) => archives.archivedAdvisorResponses,
+    (archives: ArchivesState): Record<string, ArchivedAdvisorResponse[]> => archives.archivedAdvisorResponses,
 )
 
-const emptyArchivedAdvisorResponses: ArchivedAdvisorResponse[] = [] // Stable reference for memoization
+// Stable reference for memoization to prevent re-renders when a plant has no archives.
+const emptyArchivedAdvisorResponses: ArchivedAdvisorResponse[] = []
 
 export const selectArchivedAdvisorResponsesForPlant = createSelector(
     [selectAllArchivedAdvisorResponses, (state: RootState, plantId: string) => plantId],
-    (archives, plantId) => archives[plantId] || emptyArchivedAdvisorResponses,
+    (archives, plantId): ArchivedAdvisorResponse[] => archives[plantId] || emptyArchivedAdvisorResponses,
 )
 
 export const selectArchivedAdvisorResponses = selectAllArchivedAdvisorResponses
@@ -166,7 +167,7 @@ export const selectTtsState = createSelector(
 )
 export const selectCurrentlySpeakingId = createSelector(
     [selectTts],
-    (tts: TtsState) => tts.currentlySpeakingId,
+    (tts: TtsState): string | null => tts.currentlySpeakingId,
 )
 
 // --- Plant Simulation Selectors ---
@@ -174,9 +175,8 @@ export const { selectAll: selectAllPlants, selectById: selectPlantEntityById } =
     plantsAdapter.getSelectors<RootState>((state) => state.simulation.plants)
 
 export const selectPlantSlots = createSelector(
-    // FIX: Added explicit type to selector callback.
     [selectSimulation],
-    (sim: SimulationState) => sim.plantSlots,
+    (sim: SimulationState): (string | null)[] => sim.plantSlots,
 )
 
 export const selectActivePlants = createSelector(
@@ -188,14 +188,13 @@ export const selectActivePlants = createSelector(
             .filter((p): p is Plant => p !== undefined),
 )
 
-export const selectHasAvailableSlots = createSelector([selectPlantSlots], (slots) =>
+export const selectHasAvailableSlots = createSelector([selectPlantSlots], (slots): boolean =>
     slots.some((s) => s === null),
 )
 
 export const selectSelectedPlantId = createSelector(
-    // FIX: Added explicit type to selector callback.
     [selectSimulation],
-    (sim: SimulationState) => sim.selectedPlantId,
+    (sim: SimulationState): string | null => sim.selectedPlantId,
 )
 
 export const selectPlantById = (id: string | null) =>
@@ -264,30 +263,29 @@ export const selectGardenHealthMetrics = createSelector([selectActivePlants], (a
 // --- Strains View Selectors ---
 export const selectStrainsViewState = createSelector(
     [selectStrainsView],
-    (view: StrainsViewState) => view,
+    (view: StrainsViewState): StrainsViewState => view,
 )
 export const selectActiveStrainViewTab = createSelector(
     [selectStrainsView],
-    (view: StrainsViewState) => view.strainsViewTab,
+    (view: StrainsViewState): StrainViewTab => view.strainsViewTab,
 )
 export const selectStrainsViewMode = createSelector(
     [selectStrainsView],
-    (view: StrainsViewState) => view.strainsViewMode,
+    (view: StrainsViewState): 'list' | 'grid' => view.strainsViewMode,
 )
 export const selectSelectedStrainIds = createSelector(
     [selectStrainsView],
-    (view: StrainsViewState) => new Set(view.selectedStrainIds),
+    (view: StrainsViewState): Set<string> => new Set(view.selectedStrainIds),
 )
 
 // --- Knowledge & Breeding Selectors ---
 export const selectKnowledgeProgress = createSelector([selectKnowledge], (k) => k.knowledgeProgress)
-export const selectCollectedSeeds = createSelector([selectBreeding], (b: BreedingState) => b.collectedSeeds)
+export const selectCollectedSeeds = createSelector([selectBreeding], (b: BreedingState): Seed[] => b.collectedSeeds)
 export const selectBreedingSlots = createSelector([selectBreeding], (b: BreedingState) => b.breedingSlots)
 
 // --- Sandbox Selector ---
-// FIX: Added explicit type to selector callback.
-export const selectSandboxState = createSelector([selectSandbox], (s: SandboxState) => s)
-export const selectSavedExperiments = createSelector([selectSandboxState], (s) => s.savedExperiments)
+export const selectSandboxState = createSelector([selectSandbox], (s: SandboxState): SandboxState => s)
+export const selectSavedExperiments = createSelector([selectSandboxState], (s): SavedExperiment[] => s.savedExperiments)
 
 // --- Genealogy Selector ---
-export const selectGenealogyState = selectGenealogy
+export const selectGenealogyState = createSelector([selectGenealogy], (g) => g)

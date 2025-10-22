@@ -49,7 +49,7 @@ export const SideNav: React.FC = () => {
             <div className="mb-8">
                 <CannabisLeafIcon className="w-10 h-10 text-primary-400" />
             </div>
-            <div ref={navRef} className="side-nav-container flex flex-col items-center gap-2">
+            <div ref={navRef} className="relative w-full flex flex-col items-center gap-2">
                 <div className="side-nav-indicator" style={indicatorStyle}></div>
                 {mainNavViews.map((view) => (
                     <button

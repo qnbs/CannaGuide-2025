@@ -2,16 +2,24 @@ import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
   "abusive-og": {
-    "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Diese reine Indica liefert einen potenten, erdigen Kieferngeschmack und wird oft zur Linderung von Schmerzen, Angst und Schlaflosigkeit eingesetzt."
+    "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Diese reine Indica liefert einen potenten, erdigen Kieferngeschmack und wird oft zur Linderung von Schmerzen, Angst und Schlaflosigkeit eingesetzt.",
+    "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
+    "heightDetails": { "indoor": "90-130 cm", "outdoor": "120-180 cm" }
   },
   "ace-of-spades": {
-    "description": "Eine Indica-dominante Hybride, bekannt für ihr süß-saures Beerenaroma. Sie liefert ein entspannendes und euphorisches High, das sich hervorragend zum Abschalten und zur Anregung der Kreativität eignet. Die Blüten haben oft eine wunderschöne violette Färbung."
+    "description": "Eine Indica-dominante Hybride, bekannt für ihr süß-saures Beerenaroma. Sie liefert ein entspannendes und euphorisches High, das sich hervorragend zum Abschalten und zur Anregung der Kreativität eignet. Die Blüten haben oft eine wunderschöne violette Färbung.",
+    "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "550-650 g/Pflanze" },
+    "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
   },
   "albert-walker-og": {
-    "description": "Eine nur als Klon erhältliche, indica-dominante Hybride mit mysteriösen Ursprüngen, obwohl sie als Phänotyp von Afghan Skunk gilt. Sie ist bekannt für ihre potente, langanhaltende Wirkung, die sowohl euphorisch als auch tief entspannend ist. Das Aroma ist eine scharfe Mischung aus Skunk, Zitrone und Diesel."
+    "description": "Eine nur als Klon erhältliche, indica-dominante Hybride mit mysteriösen Ursprüngen, obwohl sie als Phänotyp von Afghan Skunk gilt. Sie ist bekannt für ihre potente, langanhaltende Wirkung, die sowohl euphorisch als auch tief entspannend ist. Das Aroma ist eine scharfe Mischung aus Skunk, Zitrone und Diesel.",
+    "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/Pflanze" },
+    "heightDetails": { "indoor": "70-110 cm", "outdoor": "90-140 cm" }
   },
   "alien-technology": {
-    "description": "Eine reine Indica-Landrassensorte, die angeblich von einem US-Soldaten aus Afghanistan mitgebracht wurde. Sie ist bekannt für ihre starke, sedierende Wirkung und ihre hohe Harzproduktion. Das Aroma ist eine klassische afghanische Mischung aus erdigen, würzigen und holzigen Noten mit einem Hauch von Diesel."
+    "description": "Eine reine Indica-Landrassensorte, die angeblich von einem US-Soldaten aus Afghanistan mitgebracht wurde. Sie ist bekannt für ihre starke, sedierende Wirkung und ihre hohe Harzproduktion. Das Aroma ist eine klassische afghanische Mischung aus erdigen, würzigen und holzigen Noten mit einem Hauch von Diesel.",
+    "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
+    "heightDetails": { "indoor": "60-100 cm", "outdoor": "80-120 cm" }
   },
   "atlas-star": {
     "description": "Eine ausgewogene Hybride, bekannt für ihr süßes, fruchtiges Aroma und ihre abgerundete Wirkung. Sie sorgt für ein euphorisches und glückliches High, das den Körper sanft entspannt, ohne übermäßig sedierend zu sein, was sie zu einer guten Wahl für verschiedene Anlässe macht."
@@ -239,7 +247,6 @@ export const strains: Record<string, StrainTranslationData> = {
     "heightDetails": { "indoor": "90-110 cm", "outdoor": "100-150 cm" }
   },
   "aspen-og": {
-    "description": "Aspen OG ist eine sativa-dominante Hybride, die für ihr saures, dieselartiges Aroma und ihre erhebende, energetische Wirkung bekannt ist. Durch die Kombination der Genetik von Sour Cream (einem Sour Diesel-Abkömmling) und OG Kush entsteht eine Sorte, die ein starkes, zerebrales High liefert, das Kreativität und Euphorie fördert. Ihre genetische Bedeutung liegt in ihrer Rolle als Elternteil von Jet Fuel (auch bekannt als G6), wo sie die charakteristischen 'Treibstoff'-Noten und die schnell einsetzende, energetisierende Wirkung mit einbringt.",
-    "typeDetails": "Sativa 70% / Indica 30%"
+    "description": "Aspen OG ist eine sativa-dominante Hybride, die für ihr saures, dieselartiges Aroma und ihre erhebende, energetische Wirkung bekannt ist. Durch die Kombination der Genetik von Sour Cream (einem Sour Diesel-Abkömmling) und OG Kush entsteht eine Sorte, die ein starkes, zerebrales High liefert, das Kreativität und Euphorie fördert. Ihre genetische Bedeutung liegt in ihrer Rolle als Elternteil von Jet Fuel (auch bekannt als G6), wo sie die charakteristischen 'Treibstoff'-Noten und die schnell einsetzende, energetisierende Wirkung mit einbringt."
   }
 }

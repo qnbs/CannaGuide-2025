@@ -104,14 +104,12 @@ const ReadmeProjectContent: React.FC = memo(() => {
                  <InfoSection title={readmeContent.philosophyTitle} icon={<PhosphorIcons.Sparkle />} id="philosophy">
                      <div dangerouslySetInnerHTML={{ __html: readmeContent.philosophyContent }} />
                  </InfoSection>
-                 {/* FIX: Property 'RocketLaunch' does not exist on type '...'. Replaced with 'ListChecks'. */}
                  <InfoSection title={readmeContent.featuresTitle} icon={<PhosphorIcons.ListChecks />} id="features">
                      <div dangerouslySetInnerHTML={{ __html: readmeContent.featuresContent }} />
                  </InfoSection>
                  <InfoSection title={readmeContent.techTitle} icon={<PhosphorIcons.BracketsCurly />} id="tech">
                      <div dangerouslySetInnerHTML={{ __html: readmeContent.techContent }} />
                  </InfoSection>
-                 {/* FIX: Property 'Code' does not exist on type '...'. Replaced with 'BracketsCurly'. */}
                  <InfoSection title={readmeContent.devTitle} icon={<PhosphorIcons.BracketsCurly />} id="dev">
                      <div dangerouslySetInnerHTML={{ __html: readmeContent.devContent }} />
                  </InfoSection>

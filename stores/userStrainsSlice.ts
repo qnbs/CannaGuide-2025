@@ -26,6 +26,7 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
         )
 
         if (isDuplicate) {
+            // FIX: The translation function `t` must be obtained by calling `getT()`.
             const t = getT();
             dispatch(
                 addNotification({

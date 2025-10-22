@@ -28,7 +28,6 @@ const calculatorList: {
         icon: <PhosphorIcons.LightbulbFilament />,
         titleKey: 'equipmentView.calculators.light.title',
     },
-    // FIX: Changed icon for CostCalculator from Drop to Lightning to better represent electricity.
     {
         id: 'cost',
         Component: CostCalculator,

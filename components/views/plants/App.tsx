@@ -166,7 +166,6 @@ export const App: React.FC = () => {
                 <main
                     className="flex-grow overflow-y-auto p-4 sm:p-6 pb-24 sm:pb-6"
                 >
-                    {/* FIX: The ErrorBoundary component must wrap the child components it's meant to protect. */}
                     <ErrorBoundary>
                         <Suspense fallback={<SkeletonLoader count={5} />}>{renderContent()}</Suspense>
                     </ErrorBoundary>

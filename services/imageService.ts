@@ -1,8 +1,10 @@
+import { IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT, IMAGE_JPEG_QUALITY } from '@/constants';
+
 export const resizeImage = (
     base64Str: string,
-    maxWidth = 1280,
-    maxHeight = 1280,
-    quality = 0.8,
+    maxWidth = IMAGE_MAX_WIDTH,
+    maxHeight = IMAGE_MAX_HEIGHT,
+    quality = IMAGE_JPEG_QUALITY,
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
         const img = new Image();

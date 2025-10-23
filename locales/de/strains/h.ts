@@ -21,7 +21,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "harlequin": {
         "description": "Eine berühmte CBD-dominante Sativa, bekannt für ihr zuverlässiges 5:2 CBD:THC-Verhältnis. Harlequin bietet eine klare, wache Wirkung mit sanfter Entspannung, was sie exzellent für den Tagesgebrauch zur Behandlung von Schmerzen und Angst ohne Rauschzustand macht.",
         "typeDetails": "Hybrid - 75% Sativa / 25% Indica (CBD Dominant)",
-        "genetics": "Colombian Gold x Nepali Indica x Thai x Swiss Landrasse",
+        "genetics": "Colombian Gold x Nepali Indica x Thai x Schweizer Landrasse",
         "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-180 cm" },
     },
@@ -39,9 +39,6 @@ export const strains: Record<string, StrainTranslationData> = {
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" },
     },
-    "hawaiian": {
-        "description": "Eine klassische Sativa-Landrasse aus den vulkanischen Böden Hawaiis. Sie liefert ein typisches Sativa-High: energetisch, kreativ und glücklich, perfekt für Tagesaktivitäten. Das Aroma ist eine süße und tropische Mischung aus Ananas und Zitrus."
-    },
     "hawaiian-sativa": {
         "description": "Eine reine Sativa-Landrasse aus den vulkanischen Böden Hawaiis. Sie liefert ein klassisches Sativa-High: energetisch, kreativ und glücklich, perfekt für Tagesaktivitäten. Das Aroma ist eine süße und tropische Mischung aus Ananas und Zitrus.",
         "typeDetails": "Sativa - 100% Sativa",
@@ -50,7 +47,7 @@ export const strains: Record<string, StrainTranslationData> = {
         "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" },
     },
     "haze": {
-        "description": "Eine legendäre reine Sativa-Sorte, die das genetische Rückgrat unzähliger moderner Hybriden bildet. Bekannt für ihre sehr lange Blütezeit und ein starkes, langanhaltendes, energetisches und fast psychedelisches zerebrales High. Das Aroma ist eine komplexe Mischung aus würzigen, weihrauchartigen, zitrusartigen und erdigen Noten.",
+        "description": "Eine legendäre reine Sativa-Sorte, ursprünglich von den 'Haze Brothers' in Kalifornien erschaffen, die das genetische Rückgrat unzähliger moderner Hybriden bildet. Bekannt für ihre sehr lange Blütezeit und ein starkes, langanhaltendes, energetisches und fast psychedelisches zerebrales High. Das Aroma ist eine komplexe Mischung aus würzigen, weihrauchartigen, zitrusartigen und erdigen Noten.",
         "typeDetails": "Sativa - 100% Sativa",
         "genetics": "Kolumbianisch x Mexikanisch x Thailändisch",
         "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/Pflanze" },
@@ -93,6 +90,8 @@ export const strains: Record<string, StrainTranslationData> = {
     },
     "high-country-diesel": {
         "description": "High Country Diesel ist eine sativa-dominante Hybride mit starkem Dieselaroma und erhebender Wirkung. Sie sorgt für einen Energieschub und Euphorie und ist eine wichtige Elternsorte der beliebten Sorte Jet Fuel (G6).",
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "OG Kush x Granddaddy Purple (vermutlich)",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
     },

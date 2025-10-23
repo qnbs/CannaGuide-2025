@@ -9,6 +9,6 @@ export const strains: Record<string, StrainTranslationData> = {
     "the-original": {
         "description": "Oft als foundationaler OG-Kush-Phänotyp bezeichnet, ist 'The Original' eine potente Indica, die für ihr klassisches erdiges, kiefernartiges und scharfes Aroma gefeiert wird. Sie liefert ein schweres, beruhigendes Körper-High, was sie zu einer ersten Wahl für Stressabbau und tiefe Entspannung macht.",
         "typeDetails": "Indica - 85% Indica / 15% Sativa",
-        "genetics": "Original OG Kush phenotype",
+        "genetics": "Original OG Kush Phänotyp",
     }
 };

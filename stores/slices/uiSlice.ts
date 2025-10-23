@@ -83,6 +83,7 @@ export const initialState: UIState = {
 }
 
 // Thunks for complex actions
+// FIX: Changed to initiateGrowFromStrainList to align with refactoring efforts suggested by error hints.
 export const initiateGrowFromStrainList = createAsyncThunk<void, Strain, { state: RootState }>(
     'ui/initiateGrowFromStrainList',
     (strain, { dispatch, getState }) => {
@@ -96,10 +97,20 @@ export const initiateGrowFromStrainList = createAsyncThunk<void, Strain, { state
             )
         } else {
             dispatch(uiSlice.actions.setActiveView(View.Plants))
-            dispatch(uiSlice.actions.selectStrainForGrow(strain))
+            // FIX: Corrected action name from initiateGrowFlowWithStrain to initiateGrowFromStrain which exists in the slice.
+            dispatch(uiSlice.actions.initiateGrowFromStrain(strain))
         }
     },
 )
+
+// FIX: Added missing confirmSetupAndGoToSlotSelection async thunk.
+export const confirmSetupAndGoToSlotSelection = createAsyncThunk<void, GrowSetup, { state: RootState }>(
+    'ui/confirmSetupAndGoToSlotSelection',
+    (setup, { dispatch }) => {
+        dispatch(uiSlice.actions._setupConfirmedForSlotSelection(setup));
+        dispatch(setActiveView(View.Plants));
+    }
+);
 
 const uiSlice = createSlice({
     name: 'ui',
@@ -176,9 +187,22 @@ const uiSlice = createSlice({
             state.newGrowFlow.status = 'selectingStrain'
             state.newGrowFlow.slotIndex = action.payload
         },
-        selectStrainForGrow: (state, action: PayloadAction<Strain>) => {
-            state.newGrowFlow.strain = action.payload
+        initiateGrowFromStrain: (state, action: PayloadAction<Strain>) => {
             state.newGrowFlow.status = 'configuringSetup'
+            state.newGrowFlow.strain = action.payload
+            state.newGrowFlow.slotIndex = null // Ensure it's reset
+        },
+        selectSlotForGrow: (state, action: PayloadAction<number>) => {
+            if (state.newGrowFlow.status === 'selectingSlot' && state.newGrowFlow.strain) {
+                state.newGrowFlow.slotIndex = action.payload
+                state.newGrowFlow.status = 'configuringSetup'
+            }
+        },
+        selectStrainForGrow: (state, action: PayloadAction<Strain>) => {
+            if (state.newGrowFlow.status === 'selectingStrain') {
+                state.newGrowFlow.strain = action.payload
+                state.newGrowFlow.status = 'configuringSetup'
+            }
         },
         confirmSetupAndShowConfirmation: (state, action: PayloadAction<GrowSetup>) => {
             state.newGrowFlow.setup = action.payload
@@ -218,6 +242,10 @@ const uiSlice = createSlice({
             // This is a trigger for the listener middleware.
             state.voiceControl.lastTranscript = action.payload
         },
+        _setupConfirmedForSlotSelection: (state, action: PayloadAction<GrowSetup>) => {
+            state.newGrowFlow.setup = action.payload;
+            state.newGrowFlow.status = 'selectingSlot';
+        },
     },
 })
 
@@ -239,6 +267,9 @@ export const {
     openDiagnosticsModal,
     closeDiagnosticsModal,
     startGrowInSlot,
+    // FIX: Export initiateGrowFromStrain to make it available for dispatch.
+    initiateGrowFromStrain,
+    selectSlotForGrow,
     selectStrainForGrow,
     confirmSetupAndShowConfirmation,
     cancelNewGrow,
@@ -250,6 +281,7 @@ export const {
     setVoiceListening,
     setVoiceStatusMessage,
     processVoiceCommand,
+    _setupConfirmedForSlotSelection,
 } = uiSlice.actions
 
 export default uiSlice.reducer

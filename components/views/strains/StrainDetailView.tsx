@@ -8,6 +8,7 @@ import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTyp
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectHasAvailableSlots, selectFavoriteIds } from '@/stores/selectors';
 import { toggleFavorite } from '@/stores/slices/favoritesSlice';
+// FIX: Switched to using the exported `initiateGrowFromStrainList` thunk as suggested by the error.
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 import { updateNote, undoNoteChange, redoNoteChange } from '@/stores/slices/notesSlice';
 import { StrainAiTips } from './StrainAiTips';
@@ -190,7 +191,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
     const typeDetails = t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails });
 
     return (
-        <div className="animate-fade-in space-y-6">
+        <div className="space-y-6">
             <header>
                  <div className="flex items-center justify-between">
                     <Button variant="secondary" onClick={onBack}>
@@ -199,7 +200,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                     </Button>
                     <div className="flex items-center gap-2">
                         <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                            <Button onClick={() => dispatch(initiateGrowFromStrainList(strain))} disabled={!hasAvailableSlots} size="sm" className="hidden sm:inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <Button onClick={() => dispatch(initiateGrowFromStrainList(strain))} disabled={!hasAvailableSlots} size="sm" className="inline-flex">{t('strainsView.startGrowing')}</Button>
                         </div>
                         <Button variant="secondary" onClick={() => dispatch(toggleFavorite(strain.id))} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />

@@ -3,6 +3,7 @@ import type { StrainTranslationData } from '@/types';
 export const strains: Record<string, StrainTranslationData> = {
   "abusive-og": {
     "description": "Ein OG-Kush-Phänotyp, der für seine stark entspannende und sedierende Wirkung bekannt ist. Diese reine Indica liefert einen potenten, erdigen Kieferngeschmack und wird oft zur Linderung von Schmerzen, Angst und Schlaflosigkeit eingesetzt.",
+    "genetics": "OG Kush Phänotyp",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "90-130 cm", "outdoor": "120-180 cm" }
   },
@@ -13,11 +14,13 @@ export const strains: Record<string, StrainTranslationData> = {
   },
   "albert-walker-og": {
     "description": "Eine nur als Klon erhältliche, indica-dominante Hybride mit mysteriösen Ursprüngen, obwohl sie als Phänotyp von Afghan Skunk gilt. Sie ist bekannt für ihre potente, langanhaltende Wirkung, die sowohl euphorisch als auch tief entspannend ist. Das Aroma ist eine scharfe Mischung aus Skunk, Zitrone und Diesel.",
+    "genetics": "Afghan Skunk Phänotyp (nur Klon)",
     "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/Pflanze" },
     "heightDetails": { "indoor": "70-110 cm", "outdoor": "90-140 cm" }
   },
   "alien-technology": {
     "description": "Eine reine Indica-Landrassensorte, die angeblich von einem US-Soldaten aus Afghanistan mitgebracht wurde. Sie ist bekannt für ihre starke, sedierende Wirkung und ihre hohe Harzproduktion. Das Aroma ist eine klassische afghanische Mischung aus erdigen, würzigen und holzigen Noten mit einem Hauch von Diesel.",
+    "genetics": "Afghanische Landrasse",
     "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
     "heightDetails": { "indoor": "60-100 cm", "outdoor": "80-120 cm" }
   },
@@ -33,6 +36,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "acapulco-gold": {
     "description": "Eine legendäre Sativa-dominante Landrasse aus den Bergen bei Acapulco, Mexiko, die seit den 1960er Jahren berühmt ist. Sie ist bekannt für ihre wunderschönen, dichten Blüten mit orangefarbenen Haaren, die ihr einen goldenen Schimmer verleihen. Die Wirkung ist stark zerebral, energetisierend und euphorisch, was sie zu einer klassischen 'Wake-and-Bake'-Sorte macht, die Stress und Müdigkeit reduziert. Ihr einzigartiges Geschmacksprofil wird oft als verbranntes Toffee, Kaffee und süße Erde beschrieben.",
     "typeDetails": "Sativa - 80% Sativa / 20% Indica",
+    "genetics": "Mexikanische Landrasse",
     "yieldDetails": { "indoor": "450 g/m²", "outdoor": "550 g/Pflanze" },
     "heightDetails": { "indoor": "150-200 cm", "outdoor": "200-300 cm" }
   },
@@ -45,6 +49,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "afghan-kush": {
     "description": "Eine Indica-Landrasse aus dem Hindukusch-Gebirge. Bekannt für ihre starke, fast narkotische Körperwirkung und hohe Harzproduktion, was sie ideal für die Haschischherstellung macht. Wirkt tief entspannend und sedierend. Ideal für den Abend und bei Schmerzen oder Schlaflosigkeit.",
     "typeDetails": "Indica - 100% Indica",
+    "genetics": "Hindu Kush",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "60-90 cm", "outdoor": "150-200 cm" }
   },
@@ -57,6 +62,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "afghani": {
     "description": "Eine fundamentale Landrasse aus Afghanistan, die die genetische Grundlage für viele moderne Indicas bildet. Bietet eine tief entspannende und sedierende Wirkung, die Stress abbaut und bei Schlaflosigkeit hilft. Das Aroma ist erdig, süß und skunkig.",
     "typeDetails": "Indica - 100% Indica",
+    "genetics": "Afghanische Landrasse",
     "yieldDetails": { "indoor": "400 g/m²", "outdoor": "500 g/Pflanze" },
     "heightDetails": { "indoor": "70-100 cm", "outdoor": "120-180 cm" }
   },
@@ -105,6 +111,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "alaskan-thunder-fuck": {
     "description": "Alias: ATF. Eine legendäre Sativa aus dem Matanuska Valley in Alaska. Bekannt für einen intensiven, euphorischen und energetisierenden Rausch, der die Kreativität fördert. Das Aroma ist eine komplexe Mischung aus Kiefer, Zitrone, Menthol und Skunk.",
     "typeDetails": "Hybrid - 70% Sativa / 30% Indica",
+    "genetics": "Matanuska Valley Sativa",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
   },
@@ -153,6 +160,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "amnesia-haze": {
     "description": "Eine mehrfache Cannabis-Cup-Gewinnerin, berühmt für ihre potente, langanhaltende und fast psychedelische zerebrale Wirkung. Fördert Energie, Euphorie und Kreativität. Das Aroma ist eine komplexe Mischung aus Zitrone, Zitrusfrüchten, Erde und Gewürzen.",
     "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
+    "genetics": "Südostasiatisch x Jamaikanisch Haze x Afghani/Hawaiianisch",
     "yieldDetails": { "indoor": "600-650 g/m²", "outdoor": "700 g/Pflanze" },
     "heightDetails": { "indoor": "120-210 cm", "outdoor": ">250 cm" }
   },
@@ -183,12 +191,14 @@ export const strains: Record<string, StrainTranslationData> = {
   "apple-betty": {
     "description": "Eine potente Hybride mit einem köstlichen Geschmacksprofil, das an gebackenen Apfelkuchen mit Zimt- und Schokoladennoten erinnert. Die Wirkung ist schnell einsetzend, euphorisch und kichernd, fast psychedelisch, gefolgt von einer tiefen Körperentspannung.",
     "typeDetails": "Hybrid - 60% Indica / 40% Sativa",
+    "genetics": "Unbekannt",
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": ">600 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-200 cm" }
   },
   "apple-cobbler": {
     "description": "Eine ausgewogene Hybride mit einem fruchtigen, säuerlichen Geschmacksprofil von Apfel und Erde. Die Wirkung setzt langsam ein, beginnend mit einem zerebralen Auftrieb, der die Stimmung und Kreativität fördert, und geht in eine beruhigende Körperentspannung über. Ideal für Stress- und Schmerzabbau.",
     "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+    "genetics": "Unbekannt",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
   },
@@ -225,6 +235,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "australian-sativa": {
     "description": "Australian Sativa ist eine Landrassensorte, die sich an das Klima Australiens angepasst hat. Sie ist vor allem als genetischer Ursprung der 'DucksFoot'-Mutation bekannt, die durch ihre ungewöhnlichen, schwimmhautartigen Blätter gekennzeichnet ist. Die Wirkung ist typisch für eine Sativa: erhebend, energetisch und kreativ, was sie zu einer guten Wahl für den Tagesgebrauch macht. Das Aroma ist erdig und kiefernartig mit würzigen und süßen Noten.",
     "typeDetails": "Sativa - 100% Sativa",
+    "genetics": "Landrasse",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
   },

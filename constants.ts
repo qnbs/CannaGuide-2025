@@ -2,7 +2,7 @@ import { PlantStage, AdvancedFilterState } from '@/types';
 
 // --- APP ---
 export const APP_VERSION = 2;
-export const CURRENT_STRAIN_DATA_VERSION = 2;
+export const CURRENT_STRAIN_DATA_VERSION = 3;
 export const APP_METADATA = {
   "name": "CannaGuide 2025 - Cannabis Grow Guide with Gemini",
   "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.",
@@ -38,6 +38,15 @@ export const STRAIN_INDEX_FLOWERING = 'by_floweringTime';
 
 // --- UI ---
 export const ITEMS_PER_PAGE = 25;
+
+// --- GENEALOGY ---
+export const GENEALOGY_NODE_SIZE = { width: 220, height: 80 };
+export const GENEALOGY_NODE_SEPARATION = { x: 40, y: 40 };
+
+// --- IMAGES ---
+export const IMAGE_MAX_WIDTH = 1280;
+export const IMAGE_MAX_HEIGHT = 1280;
+export const IMAGE_JPEG_QUALITY = 0.8;
 
 
 // --- FILTERS ---

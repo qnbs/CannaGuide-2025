@@ -79,7 +79,7 @@ export const common = {
         Eucalyptus: 'Eukalyptus',
         Fizzy: 'Spritzig',
         Floral: 'Blumig',
-        Fruity: 'Fruchtig',
+        Fruity: 'Fruity',
         Garlic: 'Knoblauch',
         Grape: 'Traube',
         Grapefruit: 'Grapefruit',
@@ -210,7 +210,7 @@ export const ai = {
         proactiveDiagnosis: 'Du bist ein Experte für Pflanzenpathologie mit Spezialisierung auf Cannabis. Analysiere den folgenden vollständigen Pflanzendatenbericht. Identifiziere mögliche zugrunde liegende Probleme oder Risiken, die nicht sofort offensichtlich sind. Liefere einen prägnanten Bericht mit Titel und Inhalt im Markdown-Format, der deine Ergebnisse und präventiven Empfehlungen darlegt.\n\n{{plant}}',
         mentor: {
             main: 'Kontext: \n{{context}}\n\nBenutzeranfrage: "{{query}}"',
-            systemInstruction: 'Du bist ein freundlicher und sachkundiger Mentor für den Cannabisanbau. Dein Name ist Kai. Du gibst hilfreiche, prägnante und ermutigende Ratschläge. Antworte nur im JSON-Format. Die Antwort muss ein "title"-, ein "content"-Feld (markdown-formatiert) und ein optionales "uiHighlights"-Array von Objekten mit "elementId" (string) und optionaler "plantId" (string) enthalten. Hebe für deine Antwort relevante UI-Elemente hervor (z.B. vpd-gauge, ph-vital).',
+            systemInstruction: 'Du bist ein wissenschaftlicher, sachlicher KI-Assistent für den Cannabisanbau. Deine Aufgabe ist es, präzise, hilfreiche und nützliche Ratschläge zu geben. Antworte nur im JSON-Format. Die Antwort muss ein "title"-, ein "content"-Feld (markdown-formatiert) und ein optionales "uiHighlights"-Array von Objekten mit "elementId" (string) und optionaler "plantId" (string) enthalten. Hebe für deine Antwort relevante UI-Elemente hervor (z.B. vpd-gauge, ph-vital).',
         },
         strainTips: 'Gib strukturierte, prägnante Anbautipps für die Sorte: {{strain}}. Der Fokus des Benutzers liegt auf "{{focus}}", sein Erfahrungslevel ist "{{experienceLevel}}", und er fragt nach der "{{stage}}"-Phase. Antworte nur im JSON-Format mit den Schlüsseln: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
         strainImage: `Betreff: Eine wunderschöne Cannabis-Pflanze der Sorte '{{strainName}}'.

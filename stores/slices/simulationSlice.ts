@@ -2,9 +2,11 @@ import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } fro
 import { Plant, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType, TrainingType, AmendmentType, VentilationPower, SimulationState, PlantStage } from '@/types';
 import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { RootState } from '../store';
-import { addNotification, cancelNewGrow } from './uiSlice';
+import { addNotification, cancelNewGrow, setActiveView } from './uiSlice';
 import { getT } from '@/i18n';
 import { GrowSetupSchema, WaterDataSchema, TrainingDataSchema, PestControlDataSchema, AmendmentDataSchema, FeedDataSchema } from '@/types/schemas';
+import { View } from '@/types';
+
 
 export const plantsAdapter = createEntityAdapter<Plant>();
 
@@ -163,20 +165,48 @@ const simulationSlice = createSlice({
 
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
-    (arg, { dispatch, getState }) => {
-        const { newGrowFlow } = getState().ui;
-        if (newGrowFlow.status === 'confirming' && newGrowFlow.strain && newGrowFlow.setup && newGrowFlow.slotIndex !== null) {
-            const validation = GrowSetupSchema.safeParse(newGrowFlow.setup);
+    (_, { dispatch, getState }) => {
+        const { ui, simulation } = getState();
+        const { strain, setup, slotIndex } = ui.newGrowFlow;
+
+        let finalSlotIndex = slotIndex;
+
+        // This logic remains as a safety net in case a flow is initiated without a slot pre-selected.
+        if (finalSlotIndex === null || finalSlotIndex === undefined) {
+            finalSlotIndex = simulation.plantSlots.findIndex(slot => slot === null);
+        }
+
+        // Check if a slot was found (could be -1 if all are full).
+        if (finalSlotIndex === -1) {
+            const t = getT();
+            dispatch(addNotification({ message: t('plantsView.notifications.allSlotsFull'), type: 'error' }));
+            dispatch(cancelNewGrow());
+            return;
+        }
+
+        if (strain && setup) {
+            const validation = GrowSetupSchema.safeParse(setup);
             if (!validation.success) {
-                console.error("Invalid Grow Setup:", validation.error);
-                dispatch(addNotification({ message: getT()('common.simulationErrors.invalidSetup'), type: 'error' }));
+                const t = getT();
+                console.error("Grow setup validation failed:", validation.error);
+                dispatch(addNotification({ message: t('common.simulationErrors.invalidSetup'), type: 'error' }));
                 dispatch(cancelNewGrow());
                 return;
             }
-
-            const newPlant = plantSimulationService.createPlant(newGrowFlow.strain, validation.data, `${newGrowFlow.strain.name} #${newGrowFlow.slotIndex + 1}`);
-            dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: newGrowFlow.slotIndex }));
-            dispatch(addNotification({ message: getT()('plantsView.notifications.growStarted', { name: newPlant.name }), type: 'success' }));
+            
+            const newPlant = plantSimulationService.createPlant(strain, validation.data, `${strain.name} #${finalSlotIndex + 1}`);
+            dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: finalSlotIndex }));
+            
+            const t = getT();
+            dispatch(addNotification({ message: t('plantsView.notifications.growStarted', { name: newPlant.name }), type: 'success' }));
+            
+            // Navigate to plants view to show the new plant, regardless of where the flow started.
+            dispatch(setActiveView(View.Plants)); 
+            
+            // Clean up the flow state.
+            dispatch(cancelNewGrow());
+        } else {
+            console.error("startNewPlant called without complete strain or setup data.", { strain, setup, finalSlotIndex });
             dispatch(cancelNewGrow());
         }
     }
@@ -230,6 +260,7 @@ export const applyWateringAction = createAsyncThunk<void, { plantId: string, dat
     ({ plantId, data, notes }, { dispatch, getState }) => {
         const validation = WaterDataSchema.safeParse(data);
         if (!validation.success) {
+            console.error("Watering action validation failed:", validation.error);
             dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Watering' }), type: 'error' }));
             return;
         }
@@ -254,6 +285,7 @@ export const applyTrainingAction = createAsyncThunk<void, { plantId: string, dat
     ({ plantId, data, notes }, { dispatch, getState }) => {
         const validation = TrainingDataSchema.safeParse(data);
         if (!validation.success) {
+             console.error("Training action validation failed:", validation.error);
              dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Training' }), type: 'error' }));
             return;
         }
@@ -274,17 +306,27 @@ export const applyTrainingAction = createAsyncThunk<void, { plantId: string, dat
 
 export const applyPestControlAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
     'simulation/applyPestControl',
-    ({ plantId, data, notes }, { dispatch, getState }) => {
-        // Validation, simulation logic, then dispatch journal entry
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes, details: data } }));
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = PestControlDataSchema.safeParse(data);
+        if (!validation.success) {
+            console.error("Pest Control action validation failed:", validation.error);
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Pest Control' }), type: 'error' }));
+            return;
+        }
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.PestControl, notes, details: validation.data } }));
     }
 );
 
 export const applyAmendmentAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
     'simulation/applyAmendment',
-    ({ plantId, data, notes }, { dispatch, getState }) => {
-        // Validation, simulation logic, then dispatch journal entry
-        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Amendment, notes, details: data } }));
+    ({ plantId, data, notes }, { dispatch }) => {
+        const validation = AmendmentDataSchema.safeParse(data);
+         if (!validation.success) {
+            console.error("Amendment action validation failed:", validation.error);
+            dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Amendment' }), type: 'error' }));
+            return;
+        }
+        dispatch(addJournalEntry({ plantId, entry: { type: JournalEntryType.Amendment, notes, details: validation.data } }));
     }
 );
 

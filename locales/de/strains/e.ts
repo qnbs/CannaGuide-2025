@@ -4,7 +4,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "early-girl": {
     "description": "Eine klassische Sensi Seeds-Sorte aus den 1980er Jahren, gezüchtet für ihre extrem schnelle Blütezeit und Widerstandsfähigkeit, was sie ideal für den Anbau im Freien in kühleren Klimazonen macht. Sie erzeugt ein mildes, entspannendes Körper-High mit einer angenehmen, erhebenden zerebralen Wirkung. Das Aroma ist süß und erdig mit einem Hauch von Haschisch. Sie ist einer der Elternteile von Early Pearl.",
     "typeDetails": "Indica 75% / Sativa 25%",
-    "genetics": "Afghani x Indian Indica x Mexican Sativa"
+    "genetics": "Afghani x Indische Indica x Mexikanische Sativa"
   },
   "erdpurt": {
     "description": "Eine Schweizer Outdoor-Sorte, die für ihre extreme Widerstandsfähigkeit gegen Kälte und Schimmel sowie ihre schönen violetten Farben bekannt ist. Sie bietet ein mildes, entspannendes und funktionales High mit nennenswertem CBD-Gehalt. Das Aroma ist eine süße Mischung aus Erdbeere und Erde. Sie ist ein Elternteil der CBD-Sorte Imperial Lion.",
@@ -40,7 +40,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "ed-rosenthal-super-bud": {
     "description": "Eine ausgewogene Hybride, benannt nach dem berühmten Cannabis-Autor. Sie bietet eine komplexe, erhebende und entspannende Wirkung sowie ein süßes, fruchtiges Aroma.",
     "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
-    "genetics": "Afghani x Hindu Kush x Mexican Sativa x Thai Sativa x African Sativa",
+    "genetics": "Afghani x Hindu Kush x Mexikanische Sativa x Thailändische Sativa x Afrikanische Sativa",
     "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "550-650 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
   },

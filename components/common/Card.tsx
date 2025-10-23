@@ -1,14 +1,19 @@
 import React, { forwardRef, useRef, memo, useCallback } from 'react'
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+// Define a union type for the event handler to accept both mouse and keyboard events.
+type CardClickEvent = React.MouseEvent<HTMLDivElement> | React.KeyboardEvent<HTMLDivElement>;
+type CardClickHandler = (event: CardClickEvent) => void;
+
+// Omit the original 'onClick' from HTMLAttributes and define our own with the broader type.
+interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onClick'> {
     children: React.ReactNode
     className?: string
-    onClick?: React.MouseEventHandler<HTMLDivElement>
+    onClick?: CardClickHandler
 }
 
 export const Card = memo(
-    forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
-        const isInteractive = !!props.onClick
+    forwardRef<HTMLDivElement, CardProps>(({ children, className = '', onClick, ...props }, ref) => {
+        const isInteractive = !!onClick
         const internalRef = useRef<HTMLDivElement | null>(null)
 
         const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -31,17 +36,21 @@ export const Card = memo(
 
                 if (isInteractive && !isFormElement && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
-                    if (props.onClick) {
-                        // FIX: Pass the original KeyboardEvent `e` directly instead of spreading it.
-                        // The shallow spread `{...e}` was the bug, as it doesn't copy prototype methods like `stopPropagation`.
-                        // Casting to `any` bypasses the MouseEvent type check but ensures the handler
-                        // receives an object with the necessary methods, fixing the runtime error.
-                        props.onClick(e as any)
+                    if (onClick) {
+                        // This is now type-safe, as the onClick prop accepts KeyboardEvent.
+                        onClick(e)
                     }
                 }
             },
-            [isInteractive, props.onClick],
+            [isInteractive, onClick],
         )
+
+        // Wrapper for the native div onClick, which only accepts MouseEvents.
+        const handleMouseClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+            if (onClick) {
+                onClick(e);
+            }
+        }, [onClick]);
 
         return (
             <div
@@ -59,6 +68,8 @@ export const Card = memo(
                 onMouseMove={isInteractive ? handleMouseMove : undefined}
                 role={isInteractive ? 'button' : undefined}
                 tabIndex={isInteractive ? 0 : undefined}
+                // Use the type-safe handlers
+                onClick={isInteractive ? handleMouseClick : undefined}
                 onKeyDown={isInteractive ? handleKeyDown : undefined}
                 {...props}
             >

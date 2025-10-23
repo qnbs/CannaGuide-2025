@@ -1,5 +1,14 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { View, Strain, ModalType, GrowSetup, Notification, EquipmentViewTab, KnowledgeViewTab, SavedSetup, StrainViewTab } from '@/types';
+import {
+    View,
+    Strain,
+    ModalType,
+    GrowSetup,
+    Notification,
+    EquipmentViewTab,
+    KnowledgeViewTab,
+    SavedSetup,
+} from '@/types';
 import type { RootState } from '../store';
 import { getT } from '@/i18n';
 
@@ -72,16 +81,11 @@ export const initialState: UIState = {
 };
 
 // Thunks for complex actions
-export const initiateGrowFromStrainList = createAsyncThunk<void, Strain, { state: RootState }>(
-    'ui/initiateGrowFromStrainList',
-    (strain, { dispatch, getState }) => {
-        const { simulation } = getState();
-        if (simulation.plantSlots.every(s => s !== null)) {
-            dispatch(addNotification({ message: getT()('plantsView.notifications.allSlotsFull'), type: 'error' }));
-        } else {
-            dispatch(uiSlice.actions.setActiveView(View.Plants));
-            dispatch(uiSlice.actions.selectStrainForGrow(strain));
-        }
+export const confirmSetupAndGoToSlotSelection = createAsyncThunk<void, GrowSetup, { state: RootState }>(
+    'ui/confirmSetupAndGoToSlotSelection',
+    (setup, { dispatch }) => {
+        dispatch(uiSlice.actions._setupConfirmedForSlotSelection(setup));
+        dispatch(setActiveView(View.Plants));
     }
 );
 
@@ -154,21 +158,43 @@ const uiSlice = createSlice({
             state.isDiagnosticsModalOpen = false;
             state.diagnosticsPlantId = null;
         },
+        // --- NEW/REFACTORED GROW FLOW ---
         startGrowInSlot: (state, action: PayloadAction<number>) => {
             state.newGrowFlow.status = 'selectingStrain';
             state.newGrowFlow.slotIndex = action.payload;
+            state.newGrowFlow.strain = null;
+            state.newGrowFlow.setup = null;
+        },
+        initiateGrowFromStrain: (state, action: PayloadAction<Strain>) => {
+            state.newGrowFlow.status = 'configuringSetup';
+            state.newGrowFlow.strain = action.payload;
+            state.newGrowFlow.slotIndex = null;
+            state.newGrowFlow.setup = null;
+        },
+        selectSlotForGrow: (state, action: PayloadAction<number>) => {
+             if (state.newGrowFlow.status === 'selectingSlot' && state.newGrowFlow.strain && state.newGrowFlow.setup) {
+                state.newGrowFlow.slotIndex = action.payload;
+                state.newGrowFlow.status = 'confirming';
+            }
         },
         selectStrainForGrow: (state, action: PayloadAction<Strain>) => {
-            state.newGrowFlow.strain = action.payload;
-            state.newGrowFlow.status = 'configuringSetup';
+            if (state.newGrowFlow.status === 'selectingStrain') {
+                state.newGrowFlow.strain = action.payload;
+                state.newGrowFlow.status = 'configuringSetup';
+            }
         },
         confirmSetupAndShowConfirmation: (state, action: PayloadAction<GrowSetup>) => {
             state.newGrowFlow.setup = action.payload;
             state.newGrowFlow.status = 'confirming';
         },
+        _setupConfirmedForSlotSelection: (state, action: PayloadAction<GrowSetup>) => {
+            state.newGrowFlow.setup = action.payload;
+            state.newGrowFlow.status = 'selectingSlot';
+        },
         cancelNewGrow: (state) => {
             state.newGrowFlow = initialState.newGrowFlow;
         },
+        // --- END NEW GROW FLOW ---
         setEquipmentViewTab: (state, action: PayloadAction<EquipmentViewTab>) => {
             state.equipmentViewTab = action.payload;
         },
@@ -218,6 +244,8 @@ export const {
     openDiagnosticsModal,
     closeDiagnosticsModal,
     startGrowInSlot,
+    initiateGrowFromStrain,
+    selectSlotForGrow,
     selectStrainForGrow,
     confirmSetupAndShowConfirmation,
     cancelNewGrow,
@@ -229,6 +257,7 @@ export const {
     setVoiceListening,
     setVoiceStatusMessage,
     processVoiceCommand,
+    _setupConfirmedForSlotSelection
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

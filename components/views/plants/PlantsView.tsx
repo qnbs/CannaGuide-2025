@@ -10,12 +10,10 @@ import { DashboardSummary } from './plants/DashboardSummary';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
-import { GrowSetupModal } from './plants/GrowSetupModal';
-import { GrowConfirmationModal } from './plants/GrowConfirmationModal';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectIsExpertMode, selectNewGrowFlow } from '@/stores/selectors';
-import { startGrowInSlot, selectStrainForGrow, confirmSetupAndShowConfirmation, cancelNewGrow } from '@/stores/slices/uiSlice';
+import { startGrowInSlot, selectStrainForGrow, cancelNewGrow, selectSlotForGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import { Task, PlantProblem } from '@/types';
@@ -77,6 +75,14 @@ export const PlantsView: React.FC = () => {
     
     const showGrowFromStrainBanner = newGrowFlow.strain && newGrowFlow.status === 'selectingSlot';
 
+    const handleEmptySlotClick = (index: number) => {
+        if (newGrowFlow.status === 'selectingSlot') {
+            dispatch(selectSlotForGrow(index));
+        } else {
+            dispatch(startGrowInSlot(index));
+        }
+    };
+
     return (
         <>
             {/* Detail View - Rendered on top when active */}
@@ -90,17 +96,6 @@ export const PlantsView: React.FC = () => {
                         <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.plants')}</h2>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
-                            <GrowSetupModal
-                                strain={newGrowFlow.strain}
-                                onClose={() => dispatch(cancelNewGrow())}
-                                onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
-                            />
-                        )}
-                        {newGrowFlow.status === 'confirming' && (
-                            <GrowConfirmationModal />
-                        )}
-
                         <div className="lg:col-span-2 space-y-6">
                             <DashboardSummary />
                             <TipOfTheDay />
@@ -132,7 +127,7 @@ export const PlantsView: React.FC = () => {
                                         return plant ? (
                                             <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
                                         ) : (
-                                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => dispatch(startGrowInSlot(index))} />
+                                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => handleEmptySlotClick(index)} />
                                         );
                                     })}
                                 </div>

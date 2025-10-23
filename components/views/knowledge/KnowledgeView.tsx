@@ -4,12 +4,13 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { KnowledgeViewTab } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiSlice';
-import { selectKnowledgeViewTab, selectActiveMentorPlantId } from '@/stores/selectors';
+import { selectKnowledgeViewTab, selectActiveMentorPlantId, selectSandboxState } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { usePlantById } from '@/hooks/useSimulationBridge';
 import { MentorChatView } from './knowledge/MentorChatView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import { KnowledgeSubNav } from './knowledge/KnowledgeSubNav';
+import { AiLoadingIndicator } from '../common/AiLoadingIndicator';
 
 // Lazy load the sub-views for better initial load performance
 const MentorView = lazy(() => import('./knowledge/MentorView'));
@@ -24,6 +25,7 @@ export const KnowledgeView: React.FC = () => {
     const dispatch = useAppDispatch();
     const activeTab = useAppSelector(selectKnowledgeViewTab);
     const activeMentorPlantId = useAppSelector(selectActiveMentorPlantId);
+    const sandboxState = useAppSelector(selectSandboxState);
     const [isPending, startTransition] = useTransition();
 
     const activeMentorPlant = usePlantById(activeMentorPlantId);
@@ -59,6 +61,10 @@ export const KnowledgeView: React.FC = () => {
     };
 
     const renderContent = () => {
+        if (activeTab === KnowledgeViewTab.Sandbox && sandboxState.status === 'running') {
+            return <AiLoadingIndicator loadingMessage={t('knowledgeView.sandbox.runningSimulation')} />;
+        }
+
         switch (activeTab) {
             case KnowledgeViewTab.Mentor: return <MentorView />;
             case KnowledgeViewTab.Guide: return <GuideView />;

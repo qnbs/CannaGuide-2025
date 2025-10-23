@@ -5,6 +5,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/common/Button';
 import { useAppDispatch } from '@/stores/store';
+// FIX: Switched to using the exported `initiateGrowFromStrainList` thunk as suggested by the error.
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 
 interface StrainListItemProps {

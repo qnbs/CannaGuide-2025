@@ -4,6 +4,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "b-52": {
         "description": "Eine Skunk-Hybride, die für ihre großen, dichten Knospen und hohen Erträge bekannt ist. Die Wirkung ist ausgewogen, beginnend mit einem zerebralen, erhebenden Gefühl, das in eine sanfte Körperentspannung übergeht. Das Aroma ist süß und skunkig.",
         "typeDetails": "Hybrid - 80% Indica / 20% Sativa",
+        "genetics": "Skunk #1 x Big Bud",
         "yieldDetails": { "indoor": "500-550 g/m²", "outdoor": "600-700 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "150-180 cm" }
     },
@@ -46,30 +47,35 @@ export const strains: Record<string, StrainTranslationData> = {
     "bc-bud": {
         "description": "Ein Oberbegriff für hochwertiges Cannabis aus British Columbia, Kanada. Oft bezieht es sich auf eine spezifische Hybride, die eine ausgewogene, entspannende Wirkung bietet. Das Aroma ist typischerweise erdig und süß mit Noten von Kiefer.",
         "typeDetails": "Hybrid - 50% Indica / 50% Sativa",
+        "genetics": "Unbekannter Skunk-Phänotyp",
         "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
         "heightDetails": { "indoor": "100-160 cm", "outdoor": "150-200 cm" }
     },
     "bedica-talea": {
         "description": "Eine standardisierte medizinische Cannabissorte, die von Bedrocan in den Niederlanden angebaut wird. Es handelt sich um eine Indica-Sorte, die für ihre entspannenden und schmerzlindernden Eigenschaften bekannt ist und oft zur Behandlung von chronischen Schmerzen und Spastizität eingesetzt wird.",
         "typeDetails": "Indica - 100% Indica",
+        "genetics": "Unbekannt (wahrscheinlich eine Indica-Sorte)",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "400-500 g/Pflanze" },
         "heightDetails": { "indoor": "60-100 cm", "outdoor": "80-120 cm" }
     },
     "bediol-elida": {
         "description": "Eine medizinische Cannabissorte von Bedrocan mit einem ausgewogenen THC- und CBD-Gehalt. Sie bietet eine milde, klare Wirkung ohne starke Psychoaktivität und ist ideal für Patienten, die die therapeutischen Vorteile beider Cannabinoide suchen.",
         "typeDetails": "Hybrid - 60% Sativa / 40% Indica (CBD-dominant)",
+        "genetics": "Unbekannt (wahrscheinlich eine Haze-Varietät)",
         "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
     },
     "bedrocan-afina": {
         "description": "Die Flaggschiff-Sorte von Bedrocan, bekannt für ihren hohen THC-Gehalt und ihre konstante Qualität. Es handelt sich um eine Sativa-Sorte (Jack Herer-Phänotyp), die eine starke, erhebende und energetisierende Wirkung bietet. Weit verbreitet in medizinischen Programmen.",
         "typeDetails": "Sativa - 100% Sativa",
+        "genetics": "Jack Herer Phänotyp",
         "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
         "heightDetails": { "indoor": "150-200 cm", "outdoor": "180-250 cm" }
     },
     "bedrolite-rensina": {
         "description": "Eine medizinische Cannabissorte von Bedrocan, die fast ausschließlich CBD enthält. Sie hat keine psychoaktive Wirkung und wird zur Behandlung von Erkrankungen wie Epilepsie, Entzündungen und Angstzuständen eingesetzt.",
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica (CBD-dominant)",
+        "genetics": "Unbekannt (CBD-reiche Varietät)",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "400-500 g/Pflanze" },
         "heightDetails": { "indoor": "100-140 cm", "outdoor": "120-150 cm" }
     },
@@ -106,12 +112,14 @@ export const strains: Record<string, StrainTranslationData> = {
     "black-beauty": {
         "description": "Eine seltene, einzigartige Sorte, die für ihre dunkelvioletten, fast schwarzen Blätter und ihren niedrigen THC-Gehalt bekannt ist. Die Wirkung ist mild und klar, ideal für Konsumenten, die eine subtile, entspannende Erfahrung ohne starke Psychoaktivität suchen.",
         "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
+        "genetics": "Unbekannter Landrassen-Sativa-Phänotyp",
         "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/Pflanze" },
         "heightDetails": { "indoor": "90-140 cm", "outdoor": "120-180 cm" }
     },
     "black-cherry-soda": {
         "description": "Bekannt für ihre tiefvioletten Knospen und ihr süßes, fruchtiges Aroma von Kirschen und Beeren. Die Wirkung ist ausgewogen, beginnend mit einem zerebralen, erhebenden Gefühl, das Stress abbaut, gefolgt von einer sanften Körperentspannung.",
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Unbekannt",
         "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
     },
@@ -178,6 +186,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "brazilian-sativa": {
         "description": "Brazilian Sativa ist eine reine Landrasse, die sich über Generationen an das tropische Klima des brasilianischen Amazonas angepasst hat. Sie ist historisch bedeutsam als einer der Elternteile der legendären White Widow. Diese Sorte ist bekannt für ihre Resistenz gegen Hitze und hohe Luftfeuchtigkeit. Die Wirkung ist ein klassisches Sativa-Erlebnis: ein klares, energetisches und langanhaltendes zerebrales High, das Euphorie, Kreativität und Geselligkeit fördert, ohne den Körper zu beschweren. Das Aroma ist ausgeprägt tropisch und fruchtig, oft mit dominanten Noten von süßer Mango und Papaya, was ihr den lokalen Spitznamen 'Manga Rosa' (Rosa Mango) eingebracht hat. Agronomisch wächst sie hoch und schlank mit einer langen Blütezeit von 10-14 Wochen.",
         "typeDetails": "Sativa - 100% Sativa",
+        "genetics": "Brasilianische Landrasse",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
     },
@@ -304,12 +313,14 @@ export const strains: Record<string, StrainTranslationData> = {
     "bubba-kush": {
         "description": "Bubba Kush ist eine klassische und hoch angesehene Indica-dominante Sorte, die in den 1990er Jahren in den USA berühmt wurde. Sie ist bekannt für ihre tief beruhigende und körperlich entspannende Wirkung, die oft als sedierend beschrieben wird, was sie zu einer ausgezeichneten Wahl zur Linderung von Stress, Schmerzen und insbesondere Schlaflosigkeit macht. Das Aroma ist einzigartig und komplex, mit deutlichen Noten von Kaffee und dunkler Schokolade, untermalt von einer süßen, erdigen und haschartigen Basis.",
         "typeDetails": "Indica - 80% Indica / 20% Sativa",
+        "genetics": "OG Kush x Northern Lights (vermutlich)",
         "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
         "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
     },
     "bubble-gum": {
         "description": "Eine preisgekrönte Sorte, die für ihren süßen Geschmack und Geruch von Kaugummi bekannt ist. Die Wirkung ist ausgewogen, beginnend mit einem euphorischen, erhebenden Gefühl, das in eine sanfte Körperentspannung übergeht. Ideal für den ganzen Tag.",
         "typeDetails": "Hybrid - 50% Sativa / 50% Indica",
+        "genetics": "Indiana Bubblegum",
         "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/Pflanze" },
         "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
     }

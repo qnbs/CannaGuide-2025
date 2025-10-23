@@ -104,8 +104,8 @@ class ExportService {
         printKeyValuePair(t('strainsView.strainModal.heightOutdoor'), t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic.heightDetails?.outdoor }));
         
         printSectionTitle(t('strainsView.strainDetail.aromaProfile'));
-        printKeyValuePair(t('strainsView.strainModal.aromas'), (strain.aromas || []).join(', '));
-        printKeyValuePair(t('strainsView.strainModal.dominantTerpenes'), (strain.dominantTerpenes || []).join(', '));
+        printKeyValuePair(t('strainsView.strainModal.aromas'), (strain.aromas || []).map(a => t(`common.aromas.${a}`, { defaultValue: a })).join(', '));
+        printKeyValuePair(t('strainsView.strainModal.dominantTerpenes'), (strain.dominantTerpenes || []).map(terp => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', '));
 
         const description = t(`strainsData.${strain.id}.description`, { defaultValue: strain.description });
         printTextBlock(t('common.description'), description);
@@ -149,8 +149,8 @@ class ExportService {
         content += `${t('strainsView.strainModal.heightOutdoor')}: ${t(`strainsData.${s.id}.heightDetails.outdoor`, { defaultValue: s.agronomic.heightDetails?.outdoor || 'N/A' })}\n\n`;
 
         content += `--- ${t('strainsView.strainDetail.aromaProfile')} ---\n`;
-        content += `${t('strainsView.strainModal.aromas')}: ${(s.aromas || []).join(', ')}\n`;
-        content += `${t('strainsView.strainModal.dominantTerpenes')}: ${(s.dominantTerpenes || []).join(', ')}\n\n`;
+        content += `${t('strainsView.strainModal.aromas')}: ${(s.aromas || []).map(a => t(`common.aromas.${a}`, { defaultValue: a })).join(', ')}\n`;
+        content += `${t('strainsView.strainModal.dominantTerpenes')}: ${(s.dominantTerpenes || []).map(terp => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', ')}\n\n`;
 
         content += `--- ${t('common.description')} ---\n`;
         content += `${t(`strainsData.${s.id}.description`, { defaultValue: s.description || 'N/A' })}\n\n\n`;

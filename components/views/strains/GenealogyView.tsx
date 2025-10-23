@@ -22,15 +22,13 @@ import { geneticsService } from '@/services/geneticsService';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { Modal } from '@/components/common/Modal';
 import { StrainCompactItem } from './StrainCompactItem';
+import { GENEALOGY_NODE_SIZE, GENEALOGY_NODE_SEPARATION } from '@/constants';
 
 
 interface GenealogyViewProps {
     allStrains: Strain[];
     onNodeClick: (strain: Strain) => void;
 }
-
-const nodeSize = { width: 220, height: 80 };
-const nodeSeparation = { x: 40, y: 40 };
 
 const Link: React.FC<{ link: d3.HierarchyLink<GenealogyNode>, orientation: 'horizontal' | 'vertical' }> = ({ link, orientation }) => {
     // The default d3 link generator creates a smooth bezier curve (a "wave").
@@ -101,8 +99,8 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         const root = d3.hierarchy(tree, d => d.children);
         const treeLayout = d3.tree<GenealogyNode>().nodeSize(
             layoutOrientation === 'horizontal' 
-                ? [nodeSize.height + nodeSeparation.y, nodeSize.width + nodeSeparation.x]
-                : [nodeSize.width + nodeSeparation.x, nodeSize.height + nodeSeparation.y]
+                ? [GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y, GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x]
+                : [GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x, GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y]
         );
         treeLayout(root);
         
@@ -261,10 +259,10 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                                                 style={{ transition: 'transform 0.4s ease-in-out' }}
                                             >
                                                 <foreignObject
-                                                    x={-nodeSize.width / 2}
-                                                    y={-nodeSize.height / 2}
-                                                    width={nodeSize.width}
-                                                    height={nodeSize.height}
+                                                    x={-GENEALOGY_NODE_SIZE.width / 2}
+                                                    y={-GENEALOGY_NODE_SIZE.height / 2}
+                                                    width={GENEALOGY_NODE_SIZE.width}
+                                                    height={GENEALOGY_NODE_SIZE.height}
                                                 >
                                                     <StrainTreeNode node={node} onNodeClick={handleNodeClick} onToggle={handleToggle} />
                                                 </foreignObject>

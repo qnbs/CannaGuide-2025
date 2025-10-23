@@ -39,6 +39,7 @@ const startApp = async () => {
         // 3. Render the app with the fully hydrated store
         root.render(
             <React.StrictMode>
+                {/* FIX: Wrap the application in an ErrorBoundary to catch runtime errors. */}
                 <ErrorBoundary>
                     <Provider store={store}>
                         <I18nextProvider i18n={i18nInstance}>

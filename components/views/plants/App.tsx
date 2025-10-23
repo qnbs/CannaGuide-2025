@@ -21,11 +21,14 @@ import {
     selectSettings,
     selectIsAppReady,
     selectOnboardingStep,
+    selectNewGrowFlow,
 } from '@/stores/selectors'
 import {
     setIsCommandPaletteOpen,
     addNotification,
     setActiveView,
+    cancelNewGrow,
+    confirmSetupAndShowConfirmation,
 } from '@/stores/slices/uiSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { ToastContainer } from '@/components/common/Toast'
@@ -34,6 +37,8 @@ import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupM
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal'
+import { GrowConfirmationModal } from '@/components/views/plants/GrowConfirmationModal'
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
@@ -84,6 +89,7 @@ export const App: React.FC = () => {
     const settings = useAppSelector(selectSettings)
     const isAppReady = useAppSelector(selectIsAppReady)
     const onboardingStep = useAppSelector(selectOnboardingStep)
+    const newGrowFlow = useAppSelector(selectNewGrowFlow);
 
     const [showUpdateBanner, setShowUpdateBanner] = useState(false)
     const waitingWorkerRef = useRef<ServiceWorker | null>(null)
@@ -166,6 +172,7 @@ export const App: React.FC = () => {
                 <main
                     className="flex-grow overflow-y-auto p-4 sm:p-6 pb-24 sm:pb-6"
                 >
+                    {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>
                         <Suspense fallback={<SkeletonLoader count={5} />}>{renderContent()}</Suspense>
                     </ErrorBoundary>
@@ -188,6 +195,16 @@ export const App: React.FC = () => {
                 isOpen={isCommandPaletteOpen}
                 onClose={() => dispatch(setIsCommandPaletteOpen(false))}
             />
+            {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
+                <GrowSetupModal
+                    strain={newGrowFlow.strain}
+                    onClose={() => dispatch(cancelNewGrow())}
+                    onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
+                />
+            )}
+            {newGrowFlow.status === 'confirming' && (
+                <GrowConfirmationModal />
+            )}
             <LogActionModalContainer />
             <DeepDiveModalContainer />
             <AiDiagnosticsModalContainer />

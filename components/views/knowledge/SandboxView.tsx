@@ -90,10 +90,6 @@ const SandboxView: React.FC = () => {
         }
     }
 
-    if (status === 'running') {
-        return <AiLoadingIndicator loadingMessage={t('knowledgeView.sandbox.runningSimulation')} />
-    }
-
     if (status === 'succeeded' && currentExperiment) {
         return (
             <div>

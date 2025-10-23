@@ -78,7 +78,7 @@ export const strainsA: Strain[] = [
         "id": "acapulco-gold",
         "name": "Acapulco Gold",
         "type": StrainType.Hybrid,
-        "typeDetails": "Sativa - 80% Sativa / 20% Indica",
+        "typeDetails": "Hybrid - 80% Sativa / 20% Indica",
         "genetics": "Mexican",
         "floweringType": "Photoperiod",
         "thc": 21,

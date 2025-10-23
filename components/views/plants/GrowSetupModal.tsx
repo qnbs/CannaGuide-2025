@@ -3,8 +3,9 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { Strain, GrowSetup, LightType, VentilationPower, PotType, AppSettings } from '@/types';
-import { useAppSelector } from '@/stores/store';
-import { selectSettings } from '@/stores/selectors';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
+// FIX: Removed incorrect imports and will use the onConfirm prop as intended by App.tsx
+import { selectNewGrowFlow, selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { FormSection } from '@/components/ui/ThemePrimitives';
 import { RangeSlider } from '@/components/common/RangeSlider';
@@ -27,7 +28,9 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const settings = useAppSelector(selectSettings);
+  const { slotIndex } = useAppSelector(selectNewGrowFlow);
   
   const [setup, setSetup] = useState<GrowSetup>({
     ...settings.defaults.growSetup,
@@ -46,6 +49,8 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   });
 
   const handleConfirm = () => {
+    // FIX: Use the onConfirm prop passed from App.tsx instead of direct dispatch.
+    // This makes the component more reusable and aligns with the existing app flow.
     onConfirm(setup);
   };
 

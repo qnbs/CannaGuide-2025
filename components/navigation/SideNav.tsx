@@ -33,15 +33,27 @@ export const SideNav: React.FC = () => {
     };
 
     useLayoutEffect(() => {
-        if (navRef.current) {
-            const activeButton = navRef.current.querySelector(`[data-view-id="${activeView}"]`) as HTMLElement;
-            if (activeButton) {
-                setIndicatorStyle({
-                    top: `${activeButton.offsetTop}px`,
-                    height: `${activeButton.offsetHeight}px`,
-                });
+        const calculateStyle = () => {
+            if (navRef.current) {
+                const activeButton = navRef.current.querySelector(`[data-view-id="${activeView}"]`) as HTMLElement;
+                if (activeButton) {
+                    setIndicatorStyle({
+                        top: `${activeButton.offsetTop}px`,
+                        height: `${activeButton.offsetHeight}px`,
+                    });
+                }
             }
-        }
+        };
+        
+        calculateStyle();
+
+        const navElement = navRef.current;
+        if (!navElement) return;
+
+        const resizeObserver = new ResizeObserver(calculateStyle);
+        resizeObserver.observe(navElement);
+
+        return () => resizeObserver.disconnect();
     }, [activeView]);
 
     return (

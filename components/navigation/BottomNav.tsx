@@ -32,15 +32,27 @@ export const BottomNav: React.FC = () => {
     };
 
     useLayoutEffect(() => {
-        if (navRef.current) {
-            const activeButton = navRef.current.querySelector(`[data-view-id="${activeView}"]`) as HTMLElement;
-            if (activeButton) {
-                setIndicatorStyle({
-                    left: `${activeButton.offsetLeft}px`,
-                    width: `${activeButton.offsetWidth}px`,
-                });
+        const calculateStyle = () => {
+            if (navRef.current) {
+                const activeButton = navRef.current.querySelector(`[data-view-id="${activeView}"]`) as HTMLElement;
+                if (activeButton) {
+                    setIndicatorStyle({
+                        left: `${activeButton.offsetLeft}px`,
+                        width: `${activeButton.offsetWidth}px`,
+                    });
+                }
             }
-        }
+        };
+        
+        calculateStyle();
+
+        const navElement = navRef.current;
+        if (!navElement) return;
+
+        const resizeObserver = new ResizeObserver(calculateStyle);
+        resizeObserver.observe(navElement);
+
+        return () => resizeObserver.disconnect();
     }, [activeView]);
 
     return (

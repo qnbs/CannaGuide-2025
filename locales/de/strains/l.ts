@@ -1,21 +1,6 @@
 import type { StrainTranslationData } from '@/types';
 
 export const strains: Record<string, StrainTranslationData> = {
-  "la-reunion": {
-    "description": "La Reunion ist eine reine Sativa-Landrasse von der Insel Réunion im Indischen Ozean. Sie ist bekannt für ihre klassischen, lang blühenden Sativa-Eigenschaften und ein starkes, energetisches und langanhaltendes zerebrales High. Ihr Aroma ist typischerweise würzig und haschig. Sie ist ein Schlüssel-Elternteil bei der Züchtung der berühmten Sorte Queen Mother."
-  },
-  "lemonnade": {
-    "description": "Lemonnade, manchmal auch Lemonade geschrieben, ist eine sativa-dominante Hybride, die für ihren überwältigend süßen und spritzigen Zitronengeschmack bekannt ist. Sie liefert ein energetisches, erhebendes und fröhliches High, das sich perfekt für den Tagesgebrauch und kreative Aktivitäten eignet. Sie ist ein Elternteil der beliebten Sorte Lemonchello."
-  },
-  "lemon-pebbles": {
-    "description": "Eine ausgewogene Hybride, die für ihr köstliches Geschmacksprofil bekannt ist, das die süßen, fruchtigen Noten von Fruity Pebbles OG mit einem scharfen, pikanten Zitronenkick kombiniert. Die Wirkung ist fröhlich, erhebend und kreativ und bietet eine sanfte Körperentspannung, die sie für den Tagesgebrauch geeignet macht."
-  },
-  "lemon-cooler": {
-    "description": "Eine Sativa-dominante Hybride, die für ihr erfrischendes und lebhaftes Zitrusprofil bekannt ist und an ein kühles Zitronengetränk an einem heißen Tag erinnert. Sie bietet typischerweise eine energetisierende und erhebende Wirkung, die Kreativität und Konzentration fördert, was sie zu einer ausgezeichneten Wahl für den Tagesgebrauch macht."
-  },
-  "lemon-joy": {
-    "description": "Lemon Joy ist eine sativa-dominante Hybride, die für ihre lebhafte und erhebende Wirkung sowie ihr süßes, spritziges Zitronenaroma bekannt ist. Sie sorgt für ein fröhliches und energetisches High, was sie zu einem wichtigen Elternteil bei der Züchtung von Lemon Kush macht."
-  },
   "la-confidential": {
     "description": "Eine berühmte Indica aus Kalifornien mit einem erdigen, kiefernartigen und skunkigen Aroma. Die Wirkung ist stark, entspannend und ideal bei Schmerzen und Schlaflosigkeit.",
     "typeDetails": "Indica 95% / Sativa 5%",
@@ -45,7 +30,7 @@ export const strains: Record<string, StrainTranslationData> = {
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
   },
   "lavender": {
-    "description": "Eine Indica-Sorte, die für ihre tiefvioletten Farben und ihr starkes, lavendelartiges, blumiges Aroma bekannt ist. Die Wirkung ist tief entspannend und sedierend.",
+    "description": "Eine Indica-Sorte, die für ihre tiefvioletten Farben und ihr starkes, lavendelartiges, blumiges Aroma bekannt ist. Der 'Big Buddy's Lavender'-Phänotyp ist eine bekannte Variante dieser Sorte. Die Wirkung ist tief entspannend und sedierend.",
     "typeDetails": "Indica 80% / Sativa 20%",
     "genetics": "Super Skunk x Big Skunk Korean x Afghani Hawaiian",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
@@ -124,7 +109,7 @@ export const strains: Record<string, StrainTranslationData> = {
   "lemon-thai": {
     "description": "Eine sativa-dominante Sorte mit einem starken Zitronen- und Minzaroma. Die Wirkung ist erhebend, kreativ und energetisierend.",
     "typeDetails": "Sativa 80% / Indica 20%",
-    "genetics": "Thai Sativa x Hawaiian Sativa",
+    "genetics": "Thai Sativa x Hawaiianische Sativa",
     "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/Pflanze" },
     "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
   },
@@ -148,12 +133,5 @@ export const strains: Record<string, StrainTranslationData> = {
     "genetics": "Sunset Sherbet x Unbekannte Indica",
     "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/Pflanze" },
     "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
-  },
-  "lowryder": {
-    "description": "Die ursprüngliche Autoflowering-Sorte, die die Welt des Cannabisanbaus revolutionierte. Sie ist klein, schnell und diskret, mit einer milden, entspannenden Wirkung.",
-    "typeDetails": "Hybrid 50% / 50% (Autoflower)",
-    "genetics": "Northern Lights #2 x William's Wonder x Ruderalis",
-    "yieldDetails": { "indoor": "150-250 g/m²", "outdoor": "50-100 g/Pflanze" },
-    "heightDetails": { "indoor": "40-60 cm", "outdoor": "50-70 cm" }
   }
-}
+};

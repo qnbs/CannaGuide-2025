@@ -1,4 +1,4 @@
-import React, { ReactNode, ErrorInfo, Component } from 'react'
+import React, { ReactNode, ErrorInfo } from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
 
@@ -10,9 +10,11 @@ interface ErrorBoundaryState {
     hasError: boolean
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
-    // FIX: Using public class field for state initialization to resolve type errors.
-    public state: ErrorBoundaryState = { hasError: false };
+export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+    // FIX: Initialize state using class property syntax. This resolves issues with
+    // `this.state` and `this.props` not being recognized within the class methods
+    // and is a more modern approach for React class components with TypeScript.
+    state: ErrorBoundaryState = { hasError: false };
 
     // This lifecycle method is called to update the state when an error is thrown.
     static getDerivedStateFromError(_error: Error): ErrorBoundaryState {

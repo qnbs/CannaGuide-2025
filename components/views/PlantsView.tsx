@@ -12,7 +12,8 @@ import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { selectIsExpertMode, selectNewGrowFlow } from '@/stores/selectors';
+// FIX: Removed unused `selectIsExpertMode` which was causing an import error.
+import { selectNewGrowFlow } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, cancelNewGrow, selectSlotForGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 import { SkeletonLoader } from '../common/SkeletonLoader';
@@ -60,7 +61,6 @@ export const PlantsView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
-    const isExpertMode = useAppSelector(selectIsExpertMode);
     
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 300);

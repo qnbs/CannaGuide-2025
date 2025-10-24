@@ -89,10 +89,6 @@ export const selectLanguage = createSelector(
     [selectSettings],
     (settings: AppSettings): Language => settings.general.language,
 )
-export const selectIsExpertMode = createSelector(
-    [selectSettings],
-    (settings: AppSettings): boolean => !!settings.general.expertMode,
-)
 export const selectTheme = createSelector(
     [selectSettings],
     (settings: AppSettings): Theme => settings.general.theme,

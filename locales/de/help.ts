@@ -81,50 +81,50 @@ export const helpView = {
     title: 'Benutzerhandbuch',
     introduction: {
         title: 'Einführung & Philosophie',
-        content: 'Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> 100%ige Funktionalität ohne Internetverbindung.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch Export- und Importfunktionen für alle Ihre Daten.</li><li><strong>KI als Werkzeug:</strong> Gezielter Einsatz von KI für handlungsorientierte, kontextsensitive Einblicke.</li></ul>'
+        content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> 100%ige Funktionalität ohne Internetverbindung (ausgenommen Live-KI-Anfragen). Aktionen werden in eine Warteschlange gestellt und später synchronisiert.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch vollständige Backup- und Wiederherstellungsfunktionen.</li><li><strong>KI als Werkzeug:</strong> Gezielter Einsatz von Gemini KI für handlungsorientierte, kontextsensitive Einblicke.</li></ul>`
     },
     general: {
       title: 'Plattformweite Funktionen',
       content: 'Funktionen, die Ihr Erlebnis in der gesamten App verbessern.',
       pwa: {
         title: 'PWA & 100% Offline-Funktionalität',
-        content: 'Installieren Sie CannaGuide als <strong>Progressive Web App</strong> für ein natives App-Erlebnis. Dank eines robusten Service Workers sind alle Ihre Daten und die Kernfunktionen der App auch ohne Internetverbindung vollständig verfügbar.'
+        content: 'Installieren Sie CannaGuide als <strong>Progressive Web App</strong> für ein natives App-Erlebnis über das Icon in der Kopfzeile. Der robuste Service Worker speichert alle App-Daten zwischen, einschließlich Ihrer Pflanzen, Notizen und sogar KI-Archive, und gewährleistet so eine <strong>100%ige Offline-Funktionalität (ausgenommen Live-KI-Anfragen)</strong>.'
       },
       commandPalette: {
         title: 'Befehlspalette (Cmd/Ctrl + K)',
-        content: 'Drücken Sie <code>Cmd/Ctrl + K</code>, um die Befehlspalette zu öffnen. Dies ist das Power-User-Werkzeug für sofortige Navigation und Aktionen, ohne die Tastatur verlassen zu müssen.'
+        content: 'Drücken Sie <code>Cmd/Ctrl + K</code>, um die Befehlspalette zu öffnen. Dies ist das Power-User-Werkzeug für sofortige Navigation und Aktionen, wie das Suchen von Sorten oder das Gießen von Pflanzen, ohne die Tastatur verlassen zu müssen.'
       },
       voiceControl: {
         title: 'Sprachsteuerung & Sprachausgabe',
-        content: 'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong>, um die Erkennung zu aktivieren, und sprechen Sie Ihre Befehle.<ul><li><strong>Navigation:</strong> Sagen Sie "Gehe zu Pflanzen" oder "Zeige Hilfe".</li><li><strong>Suche:</strong> Sagen Sie "Suche nach Northern Lights".</li><li><strong>Aktionen:</strong> Sagen Sie "Alle Pflanzen gießen".</li></ul>Sie können auch die <strong>Text-zu-Sprache</strong> in den Einstellungen aktivieren. Dies fügt ein kleines Lautsprecher-Symbol zu Inhaltsblöcken hinzu, sodass Sie sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen lassen können.'
+        content: 'Steuern Sie die App freihändig. Drücken Sie den <strong>Mikrofon-Button</strong> in der Kopfzeile, um die Erkennung zu aktivieren, und sprechen Sie Befehle wie "Gehe zu Sorten" oder "Suche nach Blue Dream". Sie können auch die <strong>Text-zu-Sprache (TTS)</strong> in den Einstellungen aktivieren, um sich Anleitungen, KI-Ratschläge und Beschreibungen vorlesen zu lassen.'
       },
       dataManagement: {
         title: 'Datensouveränität: Backup & Wiederherstellung',
-        content: 'Unter <code>Einstellungen > Datenverwaltung</code> haben Sie die volle Kontrolle. Exportieren Sie Ihren gesamten App-Zustand (Pflanzen, Einstellungen, etc.) als JSON-Datei zur <strong>Sicherung</strong>. Importieren Sie diese Datei später, um Ihren Zustand auf jedem Gerät vollständig <strong>wiederherzustellen</strong>.'
+        content: 'Unter <code>Einstellungen > Datenverwaltung</code> haben Sie die volle Kontrolle. Exportieren Sie Ihren gesamten App-Zustand (Pflanzen, Einstellungen usw.) als einzelne JSON-Datei zur <strong>Sicherung</strong>. Importieren Sie diese Datei später, um Ihren Zustand auf jedem Gerät vollständig <strong>wiederherzustellen</strong>.'
       },
       accessibility: {
         title: 'Erweiterte Barrierefreiheit',
-        content: 'Die App bietet umfassende Zugänglichkeitsoptionen. Aktivieren Sie eine <strong>legasthenikerfreundliche Schriftart</strong>, einen <strong>Modus mit reduzierter Bewegung</strong> oder nutzen Sie die integrierte <strong>Text-zu-Sprache (TTS)</strong> Funktion, um sich Inhalte vorlesen zu lassen.'
+        content: 'Die App bietet umfassende Zugänglichkeitsoptionen in den Einstellungen. Aktivieren Sie eine <strong>legasthenikerfreundliche Schriftart</strong>, einen <strong>Modus mit reduzierter Bewegung</strong>, verschiedene <strong>Farbfehlsichtigkeitsfilter</strong> und nutzen Sie die integrierte <strong>Text-zu-Sprache (TTS)</strong>-Funktion, um sich Inhalte vorlesen zu lassen.'
       }
     },
     strains: {
       title: 'Sorten-Ansicht',
-      content: 'Das Herzstück Ihrer Cannabis-Wissensdatenbank. Hier können Sie 700+ Sorten erkunden, Ihre eigenen hinzufügen und leistungsstarke Werkzeuge für Entdeckung und Analyse nutzen.',
+      content: 'Das Herzstück Ihrer Cannabis-Wissensdatenbank. Erkunden Sie über 700 Sorten, fügen Sie Ihre eigenen hinzu und nutzen Sie leistungsstarke Analysewerkzeuge.',
       library: {
         title: 'Bibliothek (Alle/Meine/Favoriten)',
-        content: 'Wechseln Sie zwischen der gesamten Bibliothek, Ihren persönlich hinzugefügten Sorten und Ihren Favoriten. Verwenden Sie die leistungsstarke Suche, alphabetische Filter, Typ-Filter und die erweiterte Filterleiste, um genau das zu finden, was Sie suchen. Schalten Sie zwischen Listen- und Rasteransicht um, wie es Ihnen am besten passt.'
+        content: 'Wechseln Sie zwischen der gesamten Bibliothek, Ihren benutzerdefinierten Sorten und Ihren Favoriten. Verwenden Sie die leistungsstarke Suche, den alphabetischen Filter und die erweiterte Filterleiste, um genau das zu finden, was Sie brauchen. Wechseln Sie zwischen Listen- und Rasteransicht für Ihr bevorzugtes Layout.'
       },
       genealogy: {
         title: 'Stammbaum-Explorer',
-        content: 'Visualisieren Sie die genetische Abstammung jeder Sorte. Verwenden Sie die Analysewerkzeuge, um Landrassen hervorzuheben, den genetischen Einfluss der Top-Vorfahren zu berechnen oder bekannte Nachkommen zu entdecken.'
+        content: 'Visualisieren Sie die genetische Abstammung jeder Sorte. Verwenden Sie die <strong>Analysewerkzeuge</strong>, um Landrassen hervorzuheben, Sativa/Indica-Linien zu verfolgen und den genetischen Einfluss der Top-Vorfahren zu berechnen. Sie können auch bekannte Nachkommen einer ausgewählten Sorte entdecken.'
       },
       aiTips: {
         title: 'KI-Anbau-Tipps',
-        content: 'Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte basierend auf Ihrem Erfahrungslevel und Ihren Zielen. Jedes Mal, wenn Sie Tipps generieren, wird auch ein einzigartiges, KI-generiertes Bild erstellt, das die Essenz der Sorte künstlerisch darstellt.'
+        content: 'Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte basierend auf Ihrem Erfahrungslevel und Ihren Zielen. Jede Anfrage generiert auch ein einzigartiges, künstlerisches Bild für die Sorte. Speichern Sie Ihre Lieblingstipps im "Tipps"-Archiv für den Offline-Zugriff.'
       },
       exports: {
         title: 'Exporte & Datenverwaltung',
-        content: 'Exportieren Sie ausgewählte oder alle gefilterten Sorten in verschiedenen Formaten (PDF, CSV, JSON etc.). Verwalten Sie Ihre gespeicherten Exporte im Tab "Exporte".'
+        content: 'Wählen Sie eine oder mehrere Sorten aus und verwenden Sie den Export-Button in der Werkzeugleiste, um eine PDF- oder TXT-Datei zu erstellen. Verwalten Sie alle Ihre bisherigen Exporte im Tab "Exporte", wo Sie sie erneut herunterladen oder löschen können.'
       }
     },
     plants: {
@@ -132,19 +132,19 @@ export const helpView = {
       content: 'Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.',
       dashboard: {
         title: 'Dashboard & Garten-Vitalwerte',
-        content: 'Erhalten Sie einen schnellen Überblick über die allgemeine Gesundheit Ihres Gartens, die Anzahl der aktiven Pflanzen und die durchschnittlichen Umgebungsbedingungen. Hier können Sie auch globale Aktionen wie "Alle Pflanzen gießen" ausführen.'
+        content: 'Erhalten Sie einen schnellen Überblick über die allgemeine Gesundheit Ihres Gartens, die Anzahl der aktiven Pflanzen und die durchschnittlichen Umgebungsbedingungen. Nutzen Sie die <strong>VPD-Anzeige</strong>, um das Transpirationspotenzial zu bewerten. Hier können Sie auch globale Aktionen wie "Alle Pflanzen gießen" ausführen oder eine KI-Statuszusammenfassung anfordern.'
       },
       simulation: {
         title: 'Fortschrittliche Simulation',
-        content: 'Die App simuliert das Pflanzenwachstum in Echtzeit basierend auf wissenschaftlichen Prinzipien wie dem Dampfdruckdefizit (VPD). Wechseln Sie im Header in den <strong>Expertenmodus</strong>, um detaillierte wissenschaftliche Daten wie VPD und DLI anzuzeigen.'
+        content: 'Die App simuliert das Pflanzenwachstum in Echtzeit basierend auf wissenschaftlichen Prinzipien wie dem <strong>Dampfdruckdefizit (VPD)</strong>. Dieser Wert kombiniert Temperatur und Luftfeuchtigkeit, um die Fähigkeit der Pflanze zur Transpiration zu bestimmen. Wechseln Sie zum <strong>Expertenprofil</strong> unter <code>Einstellungen > Pflanzen & Simulation</code>, um erweiterte Physikparameter für eine detailliertere Simulation anzuzeigen und anzupassen.'
       },
       diagnostics: {
         title: 'KI-Diagnose & Berater',
-        content: 'Nutzen Sie die KI-Werkzeuge, um Ihre Pflanzen gesund zu halten.<ul><li><strong>Foto-Diagnose:</strong> Laden Sie ein Foto hoch, um eine sofortige KI-basierte Diagnose von Problemen zu erhalten.</li><li><strong>Proaktiver Berater:</strong> Erhalten Sie datengesteuerte Ratschläge von der KI basierend auf den Echtzeit-Vitalwerten Ihrer Pflanze.</li></ul>'
+        content: 'Nutzen Sie KI-Werkzeuge, um Ihre Pflanzen gesund zu halten.<ul><li><strong>Foto-Diagnose:</strong> Laden Sie ein Foto eines Blattes oder einer Problemzone hoch, um eine sofortige KI-basierte Diagnose von Problemen zu erhalten.</li><li><strong>Proaktiver Berater:</strong> Erhalten Sie datengesteuerte Ratschläge von der KI basierend auf den Echtzeit-Vitalwerten und der jüngsten Historie Ihrer Pflanze.</li></ul>Alle KI-Antworten können im Berater-Archiv gespeichert werden.'
       },
       journal: {
         title: 'Umfassendes Journaling',
-        content: 'Protokollieren Sie jede Aktion – von der Bewässerung über das Training bis hin zur Schädlingsbekämpfung. Das Journal ist Ihre detaillierte Aufzeichnung des gesamten Lebenszyklus der Pflanze.'
+        content: 'Protokollieren Sie jede Aktion – von der Bewässerung über das Training bis hin zur Schädlingsbekämpfung und Bodenverbesserungen. Das Journal ist Ihre detaillierte, mit Zeitstempel versehene Aufzeichnung des gesamten Lebenszyklus der Pflanze, die nach Ereignistyp gefiltert werden kann.'
       }
     },
     equipment: {
@@ -152,15 +152,15 @@ export const helpView = {
       content: 'Ihr Werkzeugkasten zur Planung und Optimierung Ihres Anbau-Setups.',
       configurator: {
         title: 'KI-Setup-Konfigurator',
-        content: 'Beantworten Sie ein paar einfache Fragen zu Ihrem Budget, Ihrer Erfahrung und Ihren Prioritäten, um eine vollständige, markenspezifische Ausrüstungsliste von der KI zu erhalten.'
+        content: 'Beantworten Sie ein paar einfache Fragen zu Ihrem Budget, Ihrer Erfahrung und Ihren Prioritäten (wie Ertrag vs. Qualität), um eine vollständige, markenspezifische Ausrüstungsliste von der Gemini-KI zu erhalten.'
       },
       calculators: {
         title: 'Präzisionsrechner',
-        content: 'Nutzen Sie eine Reihe von Rechnern für Lüftung, Beleuchtung (PPFD/DLI), Stromkosten, Nährstoffmischungen und mehr, um Ihren Anbau zu optimieren.'
+        content: 'Nutzen Sie eine Reihe von Rechnern für <strong>Lüftung</strong>, <strong>Beleuchtung (PPFD/DLI)</strong>, <strong>Stromkosten</strong>, <strong>Nährstoffmischungen</strong> und mehr, um jeden Aspekt Ihres Anbaus zu optimieren.'
       },
       shops: {
-        title: 'Grow Shops & Saatgut',
-        content: 'Durchsuchen Sie kuratierte Listen empfohlener Grow Shops und Anbieter von Saatgut für europäische und nordamerikanische Märkte.'
+        title: 'Grow Shops & Saatgutbanken',
+        content: 'Durchsuchen Sie kuratierte, regionalspezifische Listen empfohlener Grow Shops und Saatgutbanken, komplett mit Bewertungen, Stärken und Versandinformationen.'
       }
     },
     knowledge: {
@@ -168,19 +168,19 @@ export const helpView = {
       content: 'Ihre zentrale Ressource zum Lernen, Experimentieren und Meistern des Anbaus.',
       mentor: {
         title: 'Kontextsensitiver KI-Mentor',
-        content: 'Stellen Sie dem KI-Mentor Anbaufragen. Wählen Sie eine Ihrer aktiven Pflanzen aus, damit der Mentor deren spezifische Daten in seine Ratschläge einbeziehen kann.'
+        content: 'Stellen Sie dem KI-Mentor Anbaufragen. Wählen Sie eine Ihrer aktiven Pflanzen aus, damit der Mentor deren spezifische Echtzeitdaten in seine Ratschläge einbeziehen kann, für eine wirklich personalisierte Beratung.'
       },
       breeding: {
         title: 'Zuchtlabor',
-        content: 'Sammeln Sie Samen von Ihren hochwertigsten geernteten Pflanzen. Im Zuchtlabor können Sie zwei Samen kreuzen, um eine völlig neue, <strong>permanente Hybridsorte</strong> zu erschaffen, die Ihrer persönlichen Bibliothek hinzugefügt wird.'
+        content: 'Geerntete, hochwertige Pflanzen können Samen ergeben. Im Zuchtlabor können Sie zwei dieser gesammelten Samen kreuzen, um eine völlig neue, <strong>permanente Hybridsorte</strong> zu erschaffen, die dann Ihrer persönlichen "Meine Sorten"-Bibliothek für zukünftige Anbauten hinzugefügt wird.'
       },
       sandbox: {
         title: 'Interaktive Sandbox',
-        content: 'Führen Sie risikofreie "Was-wäre-wenn"-Szenarien durch. Klonen Sie eine Ihrer Pflanzen und simulieren Sie über einen beschleunigten Zeitraum, wie sich verschiedene Trainingstechniken (z.B. Topping vs. LST) auf ihr Wachstum auswirken, ohne Ihre echten Pflanzen zu gefährden.'
+        content: 'Führen Sie risikofreie "Was-wäre-wenn"-Szenarien durch. Klonen Sie eine Ihrer aktiven Pflanzen und führen Sie eine beschleunigte 14-tägige Simulation durch, um die Auswirkungen verschiedener Trainingstechniken (z.B. Topping vs. LST) zu vergleichen, ohne Ihre echten Pflanzen zu gefährden.'
       },
       guide: {
         title: 'Integrierter Grow Guide',
-        content: 'Greifen Sie auf ein umfassendes Nachschlagewerk zu, das ein Grower-Lexikon, visuelle Anleitungen für gängige Techniken, einen durchsuchbaren FAQ-Bereich und dieses Benutzerhandbuch enthält.'
+        content: 'Greifen Sie auf ein umfassendes Nachschlagewerk zu, das dieses Benutzerhandbuch, ein Grower-Lexikon, visuelle Anleitungen für gängige Techniken und eine durchsuchbare FAQ enthält.'
       }
     }
   }

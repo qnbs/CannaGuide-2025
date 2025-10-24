@@ -33,6 +33,12 @@ const THIRD_PARTY_URLS = [
 
 const urlsToCache = [...APP_SHELL_URLS, ...THIRD_PARTY_URLS];
 
+// --- BACKGROUND SYNC CONSTANTS ---
+const DB_NAME = 'CannaGuideDB';
+const DB_VERSION = 4;
+const OFFLINE_ACTIONS_STORE = 'offline_actions';
+const SYNC_API_ENDPOINT = '/api/sync-action'; // Placeholder for the backend endpoint
+
 const offlineFallback = new Response(`
 <!DOCTYPE html>
 <html lang="en" style="height: 100%;">
@@ -90,7 +96,6 @@ self.addEventListener('install', (event) => {
         console.error('[SW] App shell caching failed:', err);
       });
     }).then(() => {
-      // Force the waiting service worker to become the active service worker.
       console.log('[SW] New service worker installed, calling skipWaiting().');
       return self.skipWaiting();
     })
@@ -109,7 +114,6 @@ self.addEventListener('activate', (event) => {
         })
       );
     }).then(() => {
-        // Take control of all open clients as soon as activation happens.
         console.log('[SW] New service worker activated, claiming clients.');
         return self.clients.claim();
     })
@@ -124,12 +128,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Ignore Google API calls to allow them to go through to the network
   if (url.hostname.includes(API_HOSTNAME)) {
     return;
   }
   
-  // Strategy: Cache first, then Network, with offline fallback for navigation.
   event.respondWith(
     caches.match(request).then(cachedResponse => {
       if (cachedResponse) {
@@ -161,21 +163,114 @@ self.addEventListener('message', (event) => {
 });
 
 
+// --- BACKGROUND SYNC IMPLEMENTATION ---
+
+/**
+ * Opens a connection to the IndexedDB.
+ * @returns {Promise<IDBDatabase>}
+ */
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        // Migrations are handled by the main app thread.
+    });
+}
+
+/**
+ * Retrieves all queued actions from the offline store.
+ * @returns {Promise<any[]>} A promise that resolves with an array of actions, including their DB keys.
+ */
+function getQueuedActions() {
+    return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readonly');
+            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE);
+            const request = store.getAll();
+            const keysRequest = store.getAllKeys();
+
+            let items = [];
+            let keys = [];
+
+            transaction.oncomplete = () => {
+                // Combine keys with items
+                const result = items.map((item, index) => ({ id: keys[index], ...item }));
+                resolve(result);
+            };
+            transaction.onerror = () => reject(transaction.error);
+            
+            request.onsuccess = () => { items = request.result; };
+            keysRequest.onsuccess = () => { keys = keysRequest.result; };
+        });
+    });
+}
+
+/**
+ * Deletes a specific action from the queue by its ID.
+ * @param {number} id The primary key of the item to delete.
+ * @returns {Promise<void>}
+ */
+function deleteQueuedAction(id) {
+    return openDB().then(db => {
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite');
+            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE);
+            const request = store.delete(id);
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+        });
+    });
+}
+
+/**
+ * The core sync logic. Retrieves actions and attempts to POST them.
+ */
+async function syncData() {
+  console.log('[SW] Attempting to sync data...');
+  try {
+    const queuedActions = await getQueuedActions();
+    if (!queuedActions || queuedActions.length === 0) {
+      console.log('[SW] No actions to sync.');
+      return;
+    }
+
+    console.log(`[SW] Found ${queuedActions.length} action(s) to sync.`);
+
+    for (const action of queuedActions) {
+      const { id, ...actionToSync } = action;
+      
+      // In a real app, you would POST this to your server.
+      // We simulate this with a fetch that will likely fail, as the endpoint doesn't exist.
+      // The browser's SyncManager will automatically retry on failure.
+      const response = await fetch(SYNC_API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(actionToSync),
+      });
+
+      if (response.ok) {
+        console.log(`[SW] Successfully synced action with id ${id}.`);
+        // If synced successfully, remove it from the IndexedDB queue.
+        await deleteQueuedAction(id);
+      } else {
+        console.error(`[SW] Server error syncing action ${id}. Status: ${response.status}`);
+        // Throw an error to signal failure to the SyncManager, prompting a retry.
+        throw new Error('server-sync-error');
+      }
+    }
+    console.log('[SW] All queued actions synced successfully.');
+  } catch (error) {
+    console.error('[SW] Sync failed, will retry later.', error);
+    // Re-throw the error to ensure the SyncManager retries. This is crucial.
+    throw error;
+  }
+}
+
 // Background Sync event listener
 self.addEventListener('sync', (event) => {
   if (event.tag === 'data-sync') {
-    console.log('[SW] Sync event triggered for data-sync');
+    console.log('[SW] Sync event received for "data-sync"');
     event.waitUntil(syncData());
   }
 });
-
-async function syncData() {
-  // Placeholder for actual sync logic to a backend
-  console.log('[SW] Would now attempt to sync queued data to the server...');
-  // In a real app:
-  // 1. Open IndexedDB for queued actions.
-  // 2. Fetch and POST each action to the server.
-  // 3. On success, remove from queue.
-  // 4. If fetch fails, the sync will be retried later by the browser.
-  return Promise.resolve();
-}

@@ -21,13 +21,14 @@ export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion';
 
 // --- DATABASE ---
 export const DB_NAME = 'CannaGuideDB';
-export const DB_VERSION = 3;
+export const DB_VERSION = 4;
 
 // DB Store Names
 export const STRAINS_STORE = 'strains';
 export const IMAGES_STORE = 'images';
 export const METADATA_STORE = 'metadata';
 export const STRAIN_SEARCH_INDEX_STORE = 'strain_search_index';
+export const OFFLINE_ACTIONS_STORE = 'offline_actions';
 
 // DB Index Names for STRAINS_STORE
 export const STRAIN_INDEX_TYPE = 'by_type';

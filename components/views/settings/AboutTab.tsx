@@ -4,7 +4,7 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon';
-import { APP_VERSION, APP_METADATA } from '@/constants';
+import { APP_VERSION } from '@/constants';
 
 const InfoSection: React.FC<{ title: string; icon?: React.ReactNode; children: React.ReactNode; id?: string }> = ({ title, icon, children, id }) => (
     <div id={id}>
@@ -35,7 +35,7 @@ const AboutAppContent: React.FC = memo(() => {
                     <CannabisLeafIcon className="w-20 h-20 mx-auto" />
                     <h2 className="text-3xl font-bold font-display mt-2">CannaGuide 2025</h2>
                     <p className="text-slate-400 font-semibold">{t('settingsView.about.version')} {APP_VERSION}.0.0</p>
-                    <p className="text-sm text-slate-300 max-w-xl mx-auto mt-2">{APP_METADATA.description}</p>
+                    <p className="text-sm text-slate-300 max-w-xl mx-auto mt-2">{t('common.appShortDescription')}</p>
                 </div>
             </Card>
 

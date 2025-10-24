@@ -3,5 +3,5 @@ export const commandPalette = {
   placeholder: 'Befehl eingeben oder suchen...',
   noResults: 'Keine Befehle gefunden.',
   toggleLanguage: 'Sprache auf {{lang}} wechseln',
-  open: 'Befehlspalette öffnen',
+  close: 'Befehlspalette schließen',
 };

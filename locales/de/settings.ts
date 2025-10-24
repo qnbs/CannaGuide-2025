@@ -36,8 +36,6 @@ export const settingsView = {
     defaultView: 'Standard-Startansicht',
     installApp: 'App installieren',
     installAppDesc: 'Installiere den CannaGuide 2025 auf deinem Gerät für ein natives App-Erlebnis, inklusive Offline-Zugriff.',
-    expertModeTitle: 'Expertenmodus',
-    expertModeDesc: 'Zeige erweiterte wissenschaftliche Daten und detaillierte Diagramme in der Pflanzenansicht an.',
     uiDensity: 'UI-Dichte',
     uiDensities: {
         comfortable: 'Komfortabel',
@@ -340,7 +338,7 @@ export const settingsView = {
             </ul>
             <h4>5. Das Hilfe-Center (<code>Hilfe</code>-Ansicht)</h4>
             <ul>
-                <li><strong>Umfassendes Benutzerhandbuch</strong>, durchsuchbare FAQ, Grower-Lexikon und visuelle Anleitungen.</li>
+                <li>Umfassendes Benutzerhandbuch, durchsuchbare FAQ, Grower-Lexikon und visuelle Anleitungen.</li>
             </ul>
             <h4>6. Die Kommandozentrale (<code>Einstellungen</code>-Ansicht)</h4>
             <ul>
@@ -397,7 +395,7 @@ export const settingsView = {
         aiStudioTitle: "Entwicklung mit AI Studio & Open Source",
         aiStudioContent: `
             <p>Diese Anwendung wurde vollständig mit <strong>Googles AI Studio</strong> entwickelt. Der gesamte Prozess, vom anfänglichen Projekt-Setup bis zur Implementierung komplexer Funktionen, wurde durch iterative Anweisungen in natürlicher Sprache gesteuert.</p>
-            <p>Dieses Projekt ist zudem vollständig Open Source. Erkunden Sie den Code, forken Sie das Projekt oder tragen Sie auf GitHub bei. Erleben Sie aus erster Hand, wie natürliche Sprache anspruchsvolle Anwendungen erstellen kann.</p>
+            <p>Dieses Projekt ist zudem vollständig Open Source. Tauchen Sie in den Code ein, forken Sie das Projekt oder tragen Sie auf GitHub bei. Erleben Sie aus erster Hand, wie natürliche Sprache anspruchsvolle Anwendungen erstellen kann.</p>
             <ul>
                 <li><a href="https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-" target="_blank" rel="noopener noreferrer">Projekt in AI Studio forken</a></li>
                 <li><a href="https://github.com/qnbs/CannaGuide-2025" target="_blank" rel="noopener noreferrer">Quellcode auf GitHub ansehen</a></li>

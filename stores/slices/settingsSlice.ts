@@ -15,7 +15,6 @@ export const defaultSettings: AppSettings = {
         fontSize: 'base',
         defaultView: View.Plants,
         uiDensity: 'comfortable',
-        expertMode: false,
         dyslexiaFont: false,
         reducedMotion: false,
         colorblindMode: 'none',

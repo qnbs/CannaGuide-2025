@@ -5,7 +5,6 @@ This README file supports two languages.
 -->
 
 # 🌿 CannaGuide 2025 (English)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
@@ -43,7 +42,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 
 CannaGuide 2025 is built upon a set of core principles designed to deliver a best-in-class experience:
 
-> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**, with all your data, notes, and even AI archives stored locally and accessible anytime, anywhere.
+> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**. All actions (like logging watering or adding notes) performed while offline are automatically queued and synced in the background via the browser's SyncManager API once your connection is restored. All your data, notes, and AI archives are stored locally and accessible anytime, anywhere.
 
 > **Performance is Key**: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex, multi-plant simulation, is offloaded to a dedicated **Web Worker**, ensuring the user interface remains smooth and instantaneous at all times.
 
@@ -59,7 +58,7 @@ CannaGuide 2025 is built upon a set of core principles designed to deliver a bes
 Your command center for managing and simulating up to three simultaneous grows.
 
 -   **Advanced Simulation Engine**: Experience a state-of-the-art simulation based on **VPD (Vapor Pressure Deficit)**, biomass-scaled resource consumption, and a structural growth model that visually represents your plant's progress.
--   **Toggleable UI Modes**: Switch between a streamlined **Simple Mode** for core actions and an **Expert Mode** in the header to reveal detailed scientific data like VPD and DLI.
+-   **Simulation Profiles**: Choose between `Beginner`, `Intermediate`, and `Expert` simulation profiles in the settings to adjust complexity and reveal advanced physics parameters.
 -   **AI-Powered Diagnostics**:
     -   **Photo Diagnosis**: Upload a photo of your plant to get an instant AI-based diagnosis, complete with immediate actions, long-term solutions, and preventative advice.
     -   **Proactive Advisor**: Get data-driven advice from Gemini AI based on your plant's real-time vitals. All recommendations can be archived with full **CRUD** functionality.
@@ -304,7 +303,7 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 
 CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt sind, ein erstklassiges Erlebnis zu bieten:
 
-> **Offline First**: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie **100% offline funktionsfähig** ist, sodass Sie immer Zugriff auf Ihre Daten und Werkzeuge haben.
+> **Offline First**: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie **100% offline funktionsfähig** ist. Alle Aktionen (wie das Protokollieren von Gießvorgängen oder das Hinzufügen von Notizen), die offline durchgeführt werden, werden automatisch in eine Warteschlange gestellt und im Hintergrund über die SyncManager-API des Browsers synchronisiert, sobald Ihre Verbindung wiederhergestellt ist. Alle Ihre Daten, Notizen und KI-Archive sind lokal gespeichert und jederzeit und überall zugänglich.
 
 > **Leistung ist entscheidend**: Eine flüssige, reaktionsschnelle Benutzeroberfläche ist unerlässlich. Rechenintensive Aufgaben, wie die komplexe Pflanzensimulation, werden in einen **Web Worker** ausgelagert, um die Hauptoberfläche geschmeidig und reaktionsschnell zu halten.
 
@@ -320,7 +319,7 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.
 
 -   **Hochentwickelte Simulations-Engine**: Erleben Sie eine Simulation, die auf **VPD (Dampfdruckdefizit)**, biomasse-skaliertem Ressourcenverbrauch und einem strukturellen Wachstumsmodell basiert.
--   **Umschaltbare UI-Modi**: Wechseln Sie zwischen einem einfachen **Anfängermodus** für die Kernaktionen und einem **Expertenmodus** im Header, um detaillierte wissenschaftliche Daten wie VPD und DLI anzuzeigen.
+-   **Simulationsprofile**: Wählen Sie in den Einstellungen zwischen den Simulationsprofilen `Anfänger`, `Fortgeschritten` und `Experte`, um die Komplexität anzupassen und erweiterte Physik-Parameter anzuzeigen.
 -   **KI-gestützte Diagnose**:
     -   **Foto-Diagnose**: Laden Sie ein Foto Ihrer Pflanze hoch, um eine sofortige KI-basierte Diagnose zu erhalten, komplett mit Sofortmaßnahmen, langfristigen Lösungen und präventiven Ratschlägen.
     -   **Proaktiver Berater**: Erhalten Sie datengesteuerte Ratschläge von Gemini AI basierend auf den Echtzeit-Vitalwerten Ihrer Pflanze. Alle Empfehlungen können mit voller **CRUD**-Funktionalität archiviert werden.

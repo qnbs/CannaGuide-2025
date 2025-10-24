@@ -158,6 +158,7 @@ export const common = {
         previous: 'Vorherige Seite',
         next: 'Nächste Seite',
     },
+    appShortDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
 };
 
 export const nav = {

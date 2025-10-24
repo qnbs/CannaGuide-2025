@@ -81,50 +81,50 @@ export const helpView = {
     title: 'User Manual',
     introduction: {
         title: 'Introduction & Philosophy',
-        content: 'Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual will guide you through the app\'s advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline-First:</strong> 100% functionality without an internet connection.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker.</li><li><strong>Data Sovereignty:</strong> Complete control through export and import functions for all your data.</li><li><strong>AI as a Tool:</strong> Targeted use of AI for actionable, context-sensitive insights.</li></ul>'
+        content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> 100% functionality without an internet connection (excluding live AI requests). Actions are queued and synced later.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker.</li><li><strong>Data Sovereignty:</strong> Complete control with full backup and restore capabilities.</li><li><strong>AI as a Tool:</strong> Targeted use of Gemini AI for actionable, context-sensitive insights.</li></ul>`
     },
     general: {
       title: 'Platform-Wide Features',
       content: 'Features that enhance your experience throughout the app.',
       pwa: {
         title: 'PWA & 100% Offline Functionality',
-        content: 'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience. Thanks to a robust Service Worker, all your data and the core functions of the app are fully available even without an internet connection.'
+        content: 'Install CannaGuide as a <strong>Progressive Web App</strong> for a native app experience via the header icon. The robust Service Worker caches all app data, including your plants, notes, and even AI archives, ensuring <strong>100% offline functionality (excluding live AI requests)</strong>.'
       },
       commandPalette: {
         title: 'Command Palette (Cmd/Ctrl + K)',
-        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the power-user tool for instant navigation and actions without leaving the keyboard.'
+        content: 'Press <code>Cmd/Ctrl + K</code> to open the command palette. This is the power-user tool for instant navigation and actions, like searching strains or watering plants, without leaving the keyboard.'
       },
       voiceControl: {
         title: 'Voice Control & Speech',
-        content: 'Control the app hands-free. Press the <strong>microphone button</strong> to activate listening and speak your commands.<ul><li><strong>Navigation:</strong> Say "Go to Plants" or "Show Help".</li><li><strong>Search:</strong> Say "Search for Northern Lights".</li><li><strong>Actions:</strong> Say "Water all plants".</li></ul>You can also enable <strong>Text-to-Speech</strong> in Settings. This adds a small speaker icon to content blocks, allowing you to have guides, AI advice, and descriptions read aloud.'
+        content: 'Control the app hands-free. Press the <strong>microphone button</strong> in the header to activate listening and speak commands like "Go to Strains" or "Search for Blue Dream". You can also enable <strong>Text-to-Speech (TTS)</strong> in Settings to have guides, AI advice, and descriptions read aloud.'
       },
       dataManagement: {
         title: 'Data Sovereignty: Backup & Restore',
-        content: 'Under <code>Settings > Data Management</code>, you have full control. Export your entire app state (plants, settings, etc.) as a JSON file for <strong>backup</strong>. Import this file later to fully <strong>restore</strong> your state on any device.'
+        content: 'Under <code>Settings > Data Management</code>, you have full control. Export your entire app state (plants, settings, etc.) as a single JSON file for <strong>backup</strong>. Import this file later to fully <strong>restore</strong> your state on any device.'
       },
       accessibility: {
         title: 'Enhanced Accessibility',
-        content: 'The app offers comprehensive accessibility options. Enable a <strong>dyslexia-friendly font</strong>, a <strong>reduced motion mode</strong>, or use the integrated <strong>Text-to-Speech (TTS)</strong> feature to have content read aloud.'
+        content: 'The app offers comprehensive accessibility options in Settings. Activate a <strong>dyslexia-friendly font</strong>, a <strong>reduced motion mode</strong>, various <strong>colorblind filters</strong>, and use the integrated <strong>Text-to-Speech (TTS)</strong> feature to have content read aloud.'
       }
     },
     strains: {
       title: 'Strains View',
-      content: 'The core of your cannabis knowledge base. Here you can explore 700+ strains, add your own, and use powerful tools for discovery and analysis.',
+      content: 'The heart of your cannabis knowledge base. Explore over 700 strains, add your own, and use powerful analysis tools.',
       library: {
         title: 'Library (All/My/Favorites)',
-        content: 'Switch between the full library, your personally added strains, and your favorites. Use the powerful search, alphabetical filters, type filters, and the advanced filter drawer to find exactly what you\'re looking for. Toggle between list and grid view to suit your preference.'
+        content: 'Toggle between the full library, your custom-added strains, and your favorites. Use the powerful search, alphabetical filter, and the advanced filter drawer to find exactly what you need. Switch between list and grid views for your preferred layout.'
       },
       genealogy: {
         title: 'Genealogy Explorer',
-        content: 'Visualize the genetic lineage of any strain. Use the analysis tools to highlight landraces, calculate the genetic influence of top ancestors, or discover known descendants.'
+        content: 'Visualize any strain\'s genetic lineage. Use the <strong>Analysis Tools</strong> to highlight landraces, trace Sativa/Indica heritage, and calculate the genetic influence of top ancestors. You can also discover known descendants of a selected strain.'
       },
       aiTips: {
         title: 'AI Grow Tips',
-        content: 'Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals. Each time you generate tips, a unique, AI-generated image is also created, artistically representing the essence of the strain.'
+        content: 'Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals. Each request also generates a unique, artistic image for the strain. Save your favorite tips to the "Tips" archive for offline access.'
       },
       exports: {
         title: 'Exports & Data Management',
-        content: 'Export selected or all filtered strains in various formats (PDF, CSV, JSON, etc.). Manage your saved exports in the "Exports" tab.'
+        content: 'Select one or more strains and use the export button in the toolbar to generate a PDF or TXT file. Manage all your past exports in the "Exports" tab, where you can re-download or delete them.'
       }
     },
     plants: {
@@ -132,19 +132,19 @@ export const helpView = {
       content: 'Your command center for managing and simulating up to three simultaneous grows.',
       dashboard: {
         title: 'Dashboard & Garden Vitals',
-        content: 'Get a quick overview of your garden\'s overall health, the number of active plants, and average environmental conditions. You can also perform global actions like "Water All Plants" here.'
+        content: 'Get a quick overview of your garden\'s overall health, active plant count, and average environment. Use the <strong>VPD Gauge</strong> to assess the transpiration potential. Here, you can also perform global actions like "Water All Plants" or request an AI status summary.'
       },
       simulation: {
         title: 'Advanced Simulation',
-        content: 'The app simulates plant growth in real-time based on scientific principles like Vapor Pressure Deficit (VPD). Toggle <strong>Expert Mode</strong> in the header to reveal detailed scientific data like VPD and DLI.'
+        content: 'The app simulates plant growth in real-time based on scientific principles like <strong>Vapor Pressure Deficit (VPD)</strong>. This value combines temperature and humidity to determine the plant\'s ability to transpire. Switch to the <strong>Expert Profile</strong> in <code>Settings > Plants & Simulation</code> to reveal and adjust advanced physics parameters for a more granular simulation.'
       },
       diagnostics: {
         title: 'AI Diagnostics & Advisor',
-        content: 'Use AI tools to keep your plants healthy.<ul><li><strong>Photo Diagnosis:</strong> Upload a photo to get an instant AI-based diagnosis of problems.</li><li><strong>Proactive Advisor:</strong> Get data-driven advice from the AI based on your plant\'s real-time vitals.</li></ul>'
+        content: 'Use AI tools to keep your plants healthy.<ul><li><strong>Photo Diagnosis:</strong> Upload a photo of a leaf or problem area to get an instant AI-based diagnosis.</li><li><strong>Proactive Advisor:</strong> Get data-driven advice from the AI based on your plant\'s real-time vitals and recent history.</li></ul>All AI responses can be saved to the Advisor Archive.'
       },
       journal: {
         title: 'Comprehensive Journaling',
-        content: 'Log every action—from watering and training to pest control. The journal is your detailed record of the plant\'s entire lifecycle.'
+        content: 'Log every action—from watering and training to pest control and amendments. The journal is your detailed, timestamped record of the plant\'s entire lifecycle, which can be filtered by event type.'
       }
     },
     equipment: {
@@ -152,15 +152,15 @@ export const helpView = {
       content: 'Your toolkit for planning and optimizing your grow setup.',
       configurator: {
         title: 'AI Setup Configurator',
-        content: 'Answer a few simple questions about your budget, experience, and priorities to receive a complete, brand-specific equipment list from the AI.'
+        content: 'Answer a few simple questions about your budget, experience, and priorities (like yield vs. quality) to receive a complete, brand-specific equipment list from the Gemini AI.'
       },
       calculators: {
         title: 'Precision Calculators',
-        content: 'Use a suite of calculators for ventilation, lighting (PPFD/DLI), electricity costs, nutrient mixes, and more to optimize your grow.'
+        content: 'Use a suite of calculators for <strong>Ventilation</strong>, <strong>Lighting (PPFD/DLI)</strong>, <strong>Electricity Cost</strong>, <strong>Nutrient Mixing</strong>, and more to optimize every aspect of your grow.'
       },
       shops: {
         title: 'Grow Shops & Seed Banks',
-        content: 'Browse curated lists of recommended shops and seed banks for European and North American markets.'
+        content: 'Browse curated, region-specific lists of recommended Grow Shops and Seed Banks, complete with ratings, strengths, and shipping info.'
       }
     },
     knowledge: {
@@ -168,19 +168,19 @@ export const helpView = {
       content: 'Your central resource for learning, experimenting, and mastering cultivation.',
       mentor: {
         title: 'Context-Aware AI Mentor',
-        content: 'Ask the AI Mentor growing questions. Select one of your active plants to allow the mentor to incorporate its specific data into its advice.'
+        content: 'Ask the AI Mentor growing questions. Select one of your active plants to allow the mentor to incorporate its specific real-time data into its advice for a truly personalized consultation.'
       },
       breeding: {
         title: 'Breeding Lab',
-        content: 'Collect seeds from your highest-quality harvested plants. In the breeding lab, you can cross two seeds to create an entirely new, <strong>permanent hybrid strain</strong> that is added to your personal library.'
+        content: 'Harvested high-quality plants may yield seeds. In the Breeding Lab, you can cross two of these collected seeds to create an entirely new, <strong>permanent hybrid strain</strong> which is then added to your personal "My Strains" library for future grows.'
       },
       sandbox: {
         title: 'Interactive Sandbox',
-        content: 'Run risk-free "what-if" scenarios. Clone one of your plants and simulate over an accelerated period to see how different training techniques (e.g., Topping vs. LST) affect its growth without risking your real plants.'
+        content: 'Run risk-free "what-if" scenarios. Clone one of your active plants and run an accelerated 14-day simulation to compare the effects of different training techniques (e.g., Topping vs. LST) without risking your real plants.'
       },
       guide: {
-        title: 'Built-in Grow Guide',
-        content: 'Access a comprehensive reference that includes a grower\'s lexicon, visual guides for common techniques, a searchable FAQ, and this user manual.'
+        title: 'Integrated Grow Guide',
+        content: 'Access a comprehensive reference that includes this User Manual, a Grower\'s Lexicon, visual guides for common techniques, and a searchable FAQ.'
       }
     }
   }
@@ -248,7 +248,7 @@ export const faq = {
   },
   airCirculation: {
     question: 'How important is air circulation?',
-    answer: 'Extremely important. One or more oscillating fans inside the tent keep the air moving around the plants. This strengthens stems, prevents humid "pockets" from forming, and significantly reduces the risk of mold and pests.'
+    answer: 'Extremely important. One or more oscillating fans inside the tent keep the air moving around the plants. This strengthens stems, prevents humid "pockets" from forming around leaves, and significantly reduces the risk of mold and pests.'
   },
   nutrientBurn: {
     question: 'What is nutrient burn?',

@@ -18,6 +18,7 @@ import {
     IMAGES_STORE,
     METADATA_STORE,
     STRAIN_SEARCH_INDEX_STORE,
+    OFFLINE_ACTIONS_STORE,
     STRAIN_INDEX_TYPE,
     STRAIN_INDEX_THC,
     STRAIN_INDEX_CBD,
@@ -95,6 +96,14 @@ const openDB = (): Promise<IDBDatabase> => {
                     if (!strainStore.indexNames.contains(STRAIN_INDEX_FLOWERING)) {
                         strainStore.createIndex(STRAIN_INDEX_FLOWERING, 'floweringTime', { unique: false });
                     }
+                }
+            }
+            
+            if (event.oldVersion < 4) {
+                 if (!dbInstance.objectStoreNames.contains(OFFLINE_ACTIONS_STORE)) {
+                    // This store will hold actions performed while offline.
+                    // The auto-incrementing key is used by the service worker to delete synced actions.
+                    dbInstance.createObjectStore(OFFLINE_ACTIONS_STORE, { autoIncrement: true });
                 }
             }
         };
@@ -353,5 +362,15 @@ export const dbService = {
                 }
             });
         });
-    }
+    },
+
+    // --- Offline Action Queue ---
+    /**
+     * Adds an action to the offline queue for later syncing by the service worker.
+     * @param action The Redux action object to queue.
+     * @returns {Promise<void>}
+     */
+    async addOfflineAction(action: any): Promise<void> {
+        await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', store => store.add(action));
+    },
 };

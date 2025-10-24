@@ -36,8 +36,6 @@ export const settingsView = {
     defaultView: 'Default View on Startup',
     installApp: 'Install App',
     installAppDesc: 'Install CannaGuide 2025 on your device for a native-app experience, including offline access.',
-    expertModeTitle: 'Expert Mode',
-    expertModeDesc: 'Show advanced scientific data and detailed charts in the plant view.',
     uiDensity: 'UI Density',
     uiDensities: {
         comfortable: 'Comfortable',

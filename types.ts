@@ -345,7 +345,6 @@ export interface AppSettings {
         fontSize: 'sm' | 'base' | 'lg';
         defaultView: View;
         uiDensity: 'comfortable' | 'compact';
-        expertMode: boolean;
         dyslexiaFont: boolean;
         reducedMotion: boolean;
         colorblindMode: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';

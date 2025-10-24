@@ -66,7 +66,6 @@ const GeneralSettingsTab: React.FC = () => {
                 <FormSection title={t('settingsView.categories.interactivity')} icon={<PhosphorIcons.GameController />} defaultOpen>
                      <div className="sm:col-span-2 space-y-6">
                          <SettingsRow label={t('settingsView.general.uiDensity')}><SegmentedControl value={[general.uiDensity]} onToggle={(val) => handleSetSetting('uiDensity', val)} options={[{ value: 'comfortable', label: t('settingsView.general.uiDensities.comfortable') }, { value: 'compact', label: t('settingsView.general.uiDensities.compact') }]} /></SettingsRow>
-                        <SettingsRow label={t('settingsView.general.expertModeTitle')} description={t('settingsView.general.expertModeDesc')}><Switch checked={general.expertMode} onChange={(val) => handleSetSetting('expertMode', val)}/></SettingsRow>
                         <SettingsRow label={t('settingsView.general.defaultView')}><Select value={general.defaultView} onChange={(e) => handleSetSetting('defaultView', e.target.value as View)} options={[{ value: View.Plants, label: t('nav.plants') }, { value: View.Strains, label: t('nav.strains') }, { value: View.Equipment, label: t('nav.equipment') }, { value: View.Knowledge, label: t('nav.knowledge') },]} /></SettingsRow>
                     </div>
                 </FormSection>

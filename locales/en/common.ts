@@ -157,6 +157,7 @@ export const common = {
         previous: 'Previous Page',
         next: 'Next Page',
     },
+    appShortDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.',
 };
 
 export const nav = {

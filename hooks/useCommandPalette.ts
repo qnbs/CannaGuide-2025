@@ -40,7 +40,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
         { id: 'plant_water_all', title: t('plantsView.summary.waterAll'), group: 'Plants', icon: PhosphorIcons.Drop, action: () => dispatch(waterAllPlants()) },
 
         // General
-        { id: 'toggle_palette', title: t('commandPalette.open'), group: 'General', icon: PhosphorIcons.CommandLine, action: () => dispatch(setIsCommandPaletteOpen(true)), shortcut: ['⌘', 'K'] },
+        { id: 'toggle_palette', title: t('commandPalette.close'), group: 'General', icon: PhosphorIcons.CommandLine, action: () => dispatch(setIsCommandPaletteOpen(false)), shortcut: ['⌘', 'K'] },
         { id: 'lang_en', title: t('commandPalette.toggleLanguage', { lang: 'English' }), group: 'General', icon: PhosphorIcons.Globe, action: () => dispatch(setSetting({path: 'general.language', value: 'en'})) },
         { id: 'lang_de', title: t('commandPalette.toggleLanguage', { lang: 'Deutsch' }), group: 'General', icon: PhosphorIcons.Globe, action: () => dispatch(setSetting({path: 'general.language', value: 'de'})) },
     ], [t, dispatch]);

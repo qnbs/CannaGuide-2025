@@ -106,6 +106,25 @@ export const StrainsView: React.FC = () => {
         });
     }, []);
 
+    const { allAromas, allTerpenes } = useMemo(() => {
+        const aromaSet = new Set<string>();
+        const terpeneSet = new Set<string>();
+
+        allStrains.forEach(strain => {
+            if (strain.aromas) {
+                strain.aromas.forEach(aroma => aromaSet.add(aroma));
+            }
+            if (strain.dominantTerpenes) {
+                strain.dominantTerpenes.forEach(terpene => terpeneSet.add(terpene));
+            }
+        });
+
+        return {
+            allAromas: Array.from(aromaSet).sort((a,b) => t(`common.aromas.${a}`, { defaultValue: a }).localeCompare(t(`common.aromas.${b}`, { defaultValue: b }))),
+            allTerpenes: Array.from(terpeneSet).sort((a,b) => t(`common.terpenes.${a}`, { defaultValue: a }).localeCompare(t(`common.terpenes.${b}`, { defaultValue: b }))),
+        };
+    }, [allStrains, t]);
+    
     const strainsForCurrentTab = useMemo(() => {
         switch (strainsViewTab) {
             case StrainViewTab.MyStrains: return userStrains;
@@ -126,6 +145,54 @@ export const StrainsView: React.FC = () => {
     
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
+
+    const countForDrawer = useMemo(() => {
+        let strains = [...strainsForCurrentTab];
+
+        if (searchTerm) {
+            const lowerCaseSearch = searchTerm.toLowerCase();
+            strains = strains.filter(s =>
+                s.name.toLowerCase().includes(lowerCaseSearch) ||
+                s.type.toLowerCase().includes(lowerCaseSearch) ||
+                (s.aromas || []).some(a => a.toLowerCase().includes(lowerCaseSearch)) ||
+                (s.dominantTerpenes || []).some(t => t.toLowerCase().includes(lowerCaseSearch)) ||
+                s.genetics?.toLowerCase().includes(lowerCaseSearch)
+            );
+        }
+        if (showFavoritesOnly) {
+            strains = strains.filter(s => favoriteIds.has(s.id));
+        }
+        if (typeFilter.length > 0) {
+            strains = strains.filter(s => typeFilter.includes(s.type));
+        }
+        if (letterFilter) {
+            if (letterFilter === '#') {
+                strains = strains.filter(s => /^\d/.test(s.name));
+            } else {
+                strains = strains.filter(s => s.name.toLowerCase().startsWith(letterFilter.toLowerCase()));
+            }
+        }
+
+        const difficulties = new Set(tempFilterState.selectedDifficulties);
+        const yields = new Set(tempFilterState.selectedYields);
+        const heights = new Set(tempFilterState.selectedHeights);
+        const aromas = new Set(tempFilterState.selectedAromas);
+        const terpenes = new Set(tempFilterState.selectedTerpenes);
+
+        strains = strains.filter(s => 
+            (s.thc >= tempFilterState.thcRange[0] && s.thc <= tempFilterState.thcRange[1]) &&
+            (s.cbd >= tempFilterState.cbdRange[0] && s.cbd <= tempFilterState.cbdRange[1]) &&
+            (s.floweringTime >= tempFilterState.floweringRange[0] && s.floweringTime <= tempFilterState.floweringRange[1]) &&
+            (difficulties.size === 0 || difficulties.has(s.agronomic.difficulty)) &&
+            (yields.size === 0 || yields.has(s.agronomic.yield)) &&
+            (heights.size === 0 || heights.has(s.agronomic.height)) &&
+            (aromas.size === 0 || (s.aromas || []).some(a => aromas.has(a))) &&
+            (terpenes.size === 0 || (s.dominantTerpenes || []).some(t => terpenes.has(t)))
+        );
+
+        return strains.length;
+    }, [strainsForCurrentTab, searchTerm, showFavoritesOnly, typeFilter, letterFilter, favoriteIds, tempFilterState]);
+
 
     const handleApplyFilters = () => {
         setAdvancedFilters(tempFilterState);
@@ -149,7 +216,7 @@ export const StrainsView: React.FC = () => {
     }, [dispatch, userStrains, t]);
 
     const handleBulkDelete = useCallback(() => {
-        if (strainsViewTab === StrainViewTab.MyStrains && window.confirm(t('strainsView.exportsManager.deleteConfirmPlural', { count: selectedIdsSet.size }))) {
+        if (strainsViewTab === StrainViewTab.MyStrains && window.confirm(t('strainsView.exportsManager.deleteConfirmPlural_other', { count: selectedIdsSet.size }))) {
             selectedIdsSet.forEach(id => dispatch(deleteUserStrain(id)));
             dispatch(clearStrainSelection());
         }
@@ -158,9 +225,6 @@ export const StrainsView: React.FC = () => {
     const handleToggleFavorite = useCallback((id: string) => {
         dispatch(toggleFavorite(id));
     }, [dispatch]);
-    
-    const allAromas = useMemo(() => [...new Set(allStrains.flatMap(s => s.aromas || []))].sort(), [allStrains]);
-    const allTerpenes = useMemo(() => [...new Set(allStrains.flatMap(s => s.dominantTerpenes || []))].sort(), [allStrains]);
     
     const handleExport = useCallback((format: SimpleExportFormat) => {
         const source = selectedIdsSet.size > 0 ? 'selected' : 'all';
@@ -315,10 +379,11 @@ export const StrainsView: React.FC = () => {
                 setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
                 allAromas={allAromas} 
                 allTerpenes={allTerpenes} 
-                count={filteredStrains.length}
+                count={countForDrawer}
                 showFavorites={showFavoritesOnly}
                 onToggleFavorites={(val) => setShowFavoritesOnly(val)}
                 typeFilter={typeFilter}
+                // FIX: Pass the correct function prop. The hook provides `handleToggleTypeFilter`, not `onToggleTypeFilter`.
                 onToggleTypeFilter={handleToggleTypeFilter}
                 isAnyFilterActive={isAnyFilterActive}
             />

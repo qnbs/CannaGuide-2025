@@ -1,4 +1,4 @@
-import { useMemo, useTransition, useCallback, useEffect, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
     Strain,
     SortKey,
@@ -37,7 +37,7 @@ export const useStrainFilters = (
         useAppSelector((state) => state.filters);
     const favorites = useAppSelector(selectFavoriteIds);
     const userStrainIds = useAppSelector(selectUserStrainIds);
-    const [isPending, startTransition] = useTransition();
+    const [isPending, startTransition] = React.useTransition();
 
     const handleSort = useCallback((key: SortKey) => {
         startTransition(() => {
@@ -152,30 +152,16 @@ export const useStrainFilters = (
         const selectedAromasSet = new Set(advancedFilters.selectedAromas);
         const selectedTerpenesSet = new Set(advancedFilters.selectedTerpenes);
 
-        strains = strains.filter(
-            (s) =>
-                s.thc >= advancedFilters.thcRange[0] &&
-                s.thc <= advancedFilters.thcRange[1] &&
-                s.cbd >= advancedFilters.cbdRange[0] &&
-                s.cbd <= advancedFilters.cbdRange[1] &&
-                s.floweringTime >= advancedFilters.floweringRange[0] &&
-                s.floweringTime <= advancedFilters.floweringRange[1]
+        strains = strains.filter(s => 
+            (s.thc >= advancedFilters.thcRange[0] && s.thc <= advancedFilters.thcRange[1]) &&
+            (s.cbd >= advancedFilters.cbdRange[0] && s.cbd <= advancedFilters.cbdRange[1]) &&
+            (s.floweringTime >= advancedFilters.floweringRange[0] && s.floweringTime <= advancedFilters.floweringRange[1]) &&
+            (selectedDifficultiesSet.size === 0 || selectedDifficultiesSet.has(s.agronomic.difficulty)) &&
+            (selectedYieldsSet.size === 0 || selectedYieldsSet.has(s.agronomic.yield)) &&
+            (selectedHeightsSet.size === 0 || selectedHeightsSet.has(s.agronomic.height)) &&
+            (selectedAromasSet.size === 0 || (s.aromas || []).some(a => selectedAromasSet.has(a))) &&
+            (selectedTerpenesSet.size === 0 || (s.dominantTerpenes || []).some(t => selectedTerpenesSet.has(t)))
         );
-
-        if (selectedDifficultiesSet.size > 0)
-            strains = strains.filter((s) => selectedDifficultiesSet.has(s.agronomic.difficulty));
-        if (selectedYieldsSet.size > 0)
-            strains = strains.filter((s) => selectedYieldsSet.has(s.agronomic.yield));
-        if (selectedHeightsSet.size > 0)
-            strains = strains.filter((s) => selectedHeightsSet.has(s.agronomic.height));
-        if (selectedAromasSet.size > 0)
-            strains = strains.filter((s) =>
-                (s.aromas || []).some((a) => selectedAromasSet.has(a))
-            );
-        if (selectedTerpenesSet.size > 0)
-            strains = strains.filter((s) =>
-                (s.dominantTerpenes || []).some((t) => selectedTerpenesSet.has(t))
-            );
 
         strains.sort((a, b) => {
             if (strainsViewSettings.prioritizeUserStrains) {

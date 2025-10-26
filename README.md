@@ -74,7 +74,7 @@ Your central knowledge hub, designed for deep exploration with **offline-first**
 -   **High-Performance Search & Filtering**: Instantly find strains with an IndexedDB-powered full-text search, alphabetical filtering, and an advanced multi-select filter drawer for THC/CBD range, flowering time, aroma, and more.
 -   **Personal Strain Collection**: Enjoy full **CRUD (Create, Read, Update, Delete)** functionality to add and manage your own custom strains.
 -   **AI Grow Tips**: Generate unique, AI-powered cultivation advice for any strain based on your experience level and goals, complete with a generated image, then manage it in a dedicated "Tips" archive.
--   **Flexible Data Export**: Export your selected or filtered strain lists in multiple formats, including **PDF, CSV, JSON, TXT, and XML**.
+-   **Flexible Data Export**: Export your selected or filtered strain lists in formats **PDF, TXT**.
 
 ### 3. The Workshop (`Equipment` View)
 Your toolkit for planning and optimizing your grow setup.
@@ -112,7 +112,6 @@ A sophisticated hub to customize every aspect of your CannaGuide experience.
 -   **Accessibility Suite**: Activate a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and various **Colorblind Modes** (Protanopia, Deuteranopia, Tritanopia).
 -   **Voice & Speech**: Configure Text-to-Speech (TTS) voices and rates, and manage voice command settings.
 -   **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a breakdown of your storage usage.
--   **Privacy & Security**: Secure your app with an optional 4-digit **PIN on launch** and configure automatic clearing of AI chat history on exit.
 
 ### 7. Platform-Wide Features
 -   **Full PWA & Offline Capability**: Install the app on your device for a native-like experience. The robust Service Worker ensures **100% offline functionality**, including access to all data and AI archives.
@@ -336,7 +335,7 @@ Ihr zentraler Wissens-Hub, konzipiert für tiefgehende Erkundungen mit **Offline
 -   **Hochleistungs-Suche & -Filter**: Finden Sie sofort Sorten mit einer IndexedDB-gestützten Volltextsuche, alphabetischer Filterung und einem erweiterten Mehrfachauswahl-Filtermenü für THC/CBD-Bereich, Blütezeit, Aroma und mehr.
 -   **Persönliche Sortensammlung**: Genießen Sie volle **CRUD (Erstellen, Lesen, Aktualisieren, Löschen)**-Funktionalität, um Ihre eigenen benutzerdefinierten Sorten hinzuzufügen und zu verwalten.
 -   **KI-Anbau-Tipps**: Generieren Sie einzigartige, KI-gestützte Anbauratschläge für jede Sorte basierend auf Ihrem Erfahrungslevel und Ihren Zielen, komplett mit einem generierten Bild, und verwalten Sie diese in einem dedizierten "Tipps"-Archiv.
--   **Flexible Datenexport**: Exportieren Sie Ihre ausgewählten oder gefilterten Sortenlisten in mehreren Formaten, einschließlich **PDF, CSV, JSON, TXT und XML**.
+-   **Flexible Datenexport**: Exportieren Sie Ihre ausgewählten oder gefilterten Sortenlisten in Formaten **PDF, TXT**.
 
 ### 3. Die Werkstatt (`Ausrüstung`-Ansicht)
 Ihr Werkzeugkasten für die Planung und Optimierung Ihres Anbau-Setups.
@@ -374,7 +373,6 @@ Ein hochentwickelter Hub zur Anpassung jedes Aspekts Ihres CannaGuide-Erlebnisse
 -   **Barrierefreiheit-Suite**: Aktivieren Sie eine **Legastheniker-freundliche Schriftart**, einen **Modus mit reduzierter Bewegung** und verschiedene **Farbfehlsichtigkeits-Modi** (Protanopie, Deuteranopie, Tritanopie).
 -   **Sprache & Sprachausgabe**: Konfigurieren Sie Text-zu-Sprache (TTS)-Stimmen und -Raten und verwalten Sie die Einstellungen für Sprachbefehle.
 -   **Datensouveränität**: Exportieren Sie Ihren gesamten App-Zustand zur **Sicherung**, importieren Sie ihn zur **Wiederherstellung** oder führen Sie granulare Resets durch, wie das Leeren von KI-Archiven oder Pflanzendaten. Sehen Sie eine Aufschlüsselung Ihrer Speichernutzung.
--   **Privatsphäre & Sicherheit**: Sichern Sie Ihre App mit einer optionalen 4-stelligen **PIN beim Start** und konfigurieren Sie das automatische Leeren des KI-Chatverlaufs beim Beenden.
 
 ### 7. Plattformweite Funktionen
 -   **Volle PWA- & Offline-Fähigkeit**: Installieren Sie die App auf Ihrem Gerät für ein natives Erlebnis. Der robuste Service Worker gewährleistet **100% Offline-Funktionalität**, einschließlich Zugriff auf alle Daten und KI-Archive.

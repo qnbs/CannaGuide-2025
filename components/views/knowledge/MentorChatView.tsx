@@ -45,6 +45,8 @@ const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
     )
 })
 
+Message.displayName = 'Message'
+
 export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()

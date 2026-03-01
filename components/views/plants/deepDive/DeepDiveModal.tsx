@@ -3,7 +3,7 @@ import { Modal } from '@/components/common/Modal';
 import { Plant, Scenario, DeepDiveGuide } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { geminiService } from '@/services/geminiService';
+import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
@@ -23,7 +23,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
 
     const loadingMessage = useMemo(() => {
         if (!isLoading) return '';
-        const messages = geminiService.getDynamicLoadingMessages({
+        const messages = getDynamicLoadingMessages({
             useCase: 'deepDive',
             data: { topic, plantName: plant.name }
         });

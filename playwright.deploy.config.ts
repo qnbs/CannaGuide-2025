@@ -4,7 +4,7 @@ const deployBaseUrl = process.env.DEPLOY_BASE_URL || 'https://qnbs.github.io/Can
 
 export default defineConfig({
   testDir: './tests/e2e',
-  testMatch: ['deploy-smoke.spec.ts'],
+  testMatch: ['*.spec.ts'],
   timeout: 45_000,
   expect: {
     timeout: 10_000,

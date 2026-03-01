@@ -21,7 +21,7 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
     const { t } = useTranslation();
 
     return (
-        <div className="sticky bottom-20 sm:bottom-4 z-10 animate-fade-in-up">
+        <div className="sticky bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-10 animate-fade-in-up">
             <div className="glass-pane max-w-fit mx-auto p-2 rounded-lg flex items-center gap-2">
                 <span className="text-sm font-semibold px-2">{t('strainsView.selectedCount', { count: selectedCount })}</span>
                 

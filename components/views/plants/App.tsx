@@ -170,7 +170,7 @@ export const App: React.FC = () => {
                     onInstallClick={handleInstallClick}
                 />
                 <main
-                    className="flex-grow overflow-y-auto p-4 sm:p-6 pb-24 sm:pb-6"
+                    className="flex-grow overflow-y-auto p-4 sm:p-6 pb-[calc(7.5rem+env(safe-area-inset-bottom))] sm:pb-6 scroll-pb-[calc(8rem+env(safe-area-inset-bottom))]"
                 >
                     {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>
@@ -182,7 +182,7 @@ export const App: React.FC = () => {
 
             {/* Global Modals & Overlays */}
             {showUpdateBanner && (
-                <div className="fixed bottom-20 sm:bottom-4 left-1/2 -translate-x-1/2 z-[250] w-full max-w-md animate-slide-in-up">
+                <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 left-1/2 -translate-x-1/2 z-[250] w-full max-w-md animate-slide-in-up">
                     <div className="glass-pane p-3 rounded-lg flex items-center justify-between gap-4 mx-4">
                         <p className="text-sm font-semibold text-slate-200">Eine neue Version ist verfügbar!</p>
                         <Button size="sm" onClick={handleUpdate} glow>Aktualisieren</Button>

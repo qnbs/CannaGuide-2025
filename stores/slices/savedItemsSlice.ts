@@ -1,10 +1,14 @@
 import { SavedSetup, Strain, SavedStrainTip, StructuredGrowTips, SavedExport } from '../../types';
 import { createSlice, PayloadAction, createAsyncThunk, createEntityAdapter, EntityState } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { SimpleExportFormat } from '@/components/common/DataExportModal';
-import { exportService } from '@/services/exportService';
+import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 import { getT } from '@/i18n';
 import { addNotification, closeExportModal } from './uiSlice';
+
+const getExportService = async () => {
+    const module = await import('@/services/exportService');
+    return module.exportService;
+};
 
 export const savedSetupsAdapter = createEntityAdapter<SavedSetup>();
 export const savedStrainTipsAdapter = createEntityAdapter<SavedStrainTip>();
@@ -45,6 +49,7 @@ export const exportAndSaveStrains = createAsyncThunk<void, { strains: Strain[], 
     'savedItems/exportStrains',
     async ({ strains, format, fileName, sourceDescription }, { dispatch }) => {
         const t = getT();
+        const exportService = await getExportService();
         if (format === 'pdf') {
             exportService.exportStrainsAsPdf(strains, fileName, t);
         } else {
@@ -66,6 +71,7 @@ export const exportStrainTips = createAsyncThunk<void, { tips: SavedStrainTip[],
     'savedItems/exportStrainTips',
     async ({ tips, format, fileName }, { dispatch }) => {
         const t = getT();
+        const exportService = await getExportService();
         exportService.exportStrainTips(tips, format, fileName, t);
         
         dispatch(addNotification({ message: t('common.successfullyExported_other', { count: tips.length, format: format.toUpperCase() }), type: 'success' }));
@@ -76,6 +82,7 @@ export const exportSetups = createAsyncThunk<void, { setups: SavedSetup[], forma
     'savedItems/exportSetups',
     async ({ setups, format, fileName }, { dispatch }) => {
         const t = getT();
+        const exportService = await getExportService();
         if (format === 'pdf') {
             exportService.exportSetupsAsPdf(setups, fileName, t);
         } else {

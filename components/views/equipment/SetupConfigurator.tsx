@@ -12,7 +12,7 @@ import {
     GrowPriority,
     RecommendationCategory,
 } from '@/types'
-import { geminiService } from '@/services/geminiService'
+import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
 import { useAppSelector } from '@/stores/store'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { useGetEquipmentRecommendationMutation } from '@/stores/api'
@@ -195,7 +195,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
 
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({
+            const messages = getDynamicLoadingMessages({
                 useCase: 'equipment',
                 data: {
                     plantCount,

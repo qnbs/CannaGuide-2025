@@ -84,13 +84,13 @@ export const KnowledgeView: React.FC = () => {
 
             <KnowledgeSubNav activeTab={activeTab} onTabChange={handleSetTab} />
 
-            <main className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
+            <section className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}>
                 <Card>
                      <Suspense fallback={<SkeletonLoader count={5} />}>
                         {renderContent()}
                     </Suspense>
                 </Card>
-            </main>
+            </section>
         </div>
     );
 };

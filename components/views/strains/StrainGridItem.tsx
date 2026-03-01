@@ -16,7 +16,7 @@ interface StrainGridItemProps {
     isUserStrain: boolean;
     index: number;
     isFavorite: boolean;
-    onToggleFavorite: () => void;
+    onToggleFavorite: (id: string) => void;
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
@@ -76,7 +76,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     variant="ghost" 
                     size="sm" 
                     className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
-                    onClick={(e) => handleActionClick(e, onToggleFavorite)}
+                    onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
                     aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                  >
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />

@@ -67,7 +67,7 @@ export const StrainList: React.FC<StrainListProps> = memo(({
                             isUserStrain={isUserStrain(strain.id)}
                             onDelete={onDelete}
                             isFavorite={favorites.has(strain.id)}
-                            onToggleFavorite={() => onToggleFavorite(strain.id)}
+                            onToggleFavorite={onToggleFavorite}
                         />
                     </div>
                  )

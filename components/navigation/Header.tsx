@@ -68,9 +68,10 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     <button
+                        type="button"
                         onClick={handleHeaderClick}
                         className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1 min-w-0"
-                        aria-label="Go to Plants Dashboard"
+                        aria-label={t('nav.plants')}
                     >
                         {headerIcon}
                         <div className="flex items-baseline gap-2 min-w-0">

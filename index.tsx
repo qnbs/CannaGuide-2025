@@ -15,6 +15,41 @@ import { REDUX_STATE_KEY } from './constants'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 
+const registerServiceWorker = () => {
+    if (!('serviceWorker' in navigator)) {
+        return
+    }
+
+    const baseUrl = import.meta.env.BASE_URL || '/'
+    const swPath = `${baseUrl}sw.js`
+
+    window.addEventListener('load', () => {
+        navigator.serviceWorker
+            .register(swPath, { scope: baseUrl })
+            .then((registration) => {
+                console.log('ServiceWorker registration successful:', registration)
+
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing
+                    if (newWorker) {
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                const event = new CustomEvent('swUpdate', { detail: registration })
+                                window.dispatchEvent(event)
+                                console.log(
+                                    '[SW] New content is available and will be used when all tabs for this page are closed. Firing swUpdate event.',
+                                )
+                            }
+                        })
+                    }
+                })
+            })
+            .catch((error) => {
+                console.error('ServiceWorker registration failed:', error)
+            })
+    })
+}
+
 const renderError = (error: Error) => {
     root.render(
         <div style={{ padding: '2rem', color: '#f87171', textAlign: 'center' }}>
@@ -119,4 +154,5 @@ const startApp = async () => {
     }
 };
 
+registerServiceWorker()
 startApp();

@@ -39,3 +39,11 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Deploy smoke (Playwright)
+        env:
+          DEPLOY_BASE_URL: https://qnbs.github.io/CannaGuide-2025/
+        run: npm run test:e2e:deploy

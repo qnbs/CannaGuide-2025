@@ -15,7 +15,8 @@
     "format": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:e2e:deploy": "playwright test -c playwright.deploy.config.ts"
   },
   "dependencies": {
     "@google/genai": "^1.19.0",
@@ -23,8 +24,8 @@
     "d3": "^7.9.0",
     "d3-hierarchy": "^3.1.2",
     "i18next": "^25.5.2",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^15.0.0",
@@ -32,6 +33,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",

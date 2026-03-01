@@ -67,6 +67,7 @@ export const BottomNav: React.FC = () => {
                 </div>
                 {mainNavViews.map((view) => (
                     <button
+                        type="button"
                         key={view}
                         data-view-id={view}
                         onClick={() => dispatch(setActiveView(view))}
@@ -75,6 +76,7 @@ export const BottomNav: React.FC = () => {
                                 ? 'text-primary-300'
                                 : 'text-slate-400 hover:text-primary-300'
                         }`}
+                        aria-label={navLabels[view]}
                         aria-current={activeView === view ? 'page' : undefined}
                     >
                         <div className="w-6 h-6 mb-1">{navIcons[view]}</div>

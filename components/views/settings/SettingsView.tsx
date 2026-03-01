@@ -302,9 +302,9 @@ const SettingsViewComponent: React.FC = () => {
             
             <SettingsSubNav activeTab={activeTab} onTabChange={setActiveTab} />
             
-            <main className="animate-fade-in">
+            <section className="animate-fade-in">
                 {renderContent()}
-            </main>
+            </section>
         </div>
     )
 }

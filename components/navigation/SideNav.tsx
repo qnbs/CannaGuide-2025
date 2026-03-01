@@ -65,6 +65,7 @@ export const SideNav: React.FC = () => {
                 <div className="side-nav-indicator" style={indicatorStyle}></div>
                 {mainNavViews.map((view) => (
                     <button
+                        type="button"
                         key={view}
                         data-view-id={view}
                         onClick={() => dispatch(setActiveView(view))}
@@ -73,6 +74,7 @@ export const SideNav: React.FC = () => {
                                 ? 'text-primary-300 bg-primary-500/10 text-glow'
                                 : 'text-slate-400 hover:text-primary-300 hover:bg-slate-700/50'
                         }`}
+                        aria-label={navLabels[view]}
                         aria-current={activeView === view ? 'page' : undefined}
                         title={navLabels[view]}
                     >

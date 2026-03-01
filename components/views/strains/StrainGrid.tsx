@@ -26,7 +26,7 @@ export const StrainGrid: React.FC<StrainGridProps> = ({ strains, onSelect, selec
                     isUserStrain={isUserStrain(strain.id)}
                     index={index}
                     isFavorite={favorites.has(strain.id)}
-                    onToggleFavorite={() => onToggleFavorite(strain.id)}
+                    onToggleFavorite={onToggleFavorite}
                 />
             ))}
         </div>

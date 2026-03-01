@@ -204,6 +204,24 @@ export const StrainsView: React.FC = () => {
         setTempFilterState(INITIAL_ADVANCED_FILTERS);
         setIsDrawerOpen(false);
     };
+
+    const handleOpenDrawer = useCallback(() => {
+        setIsDrawerOpen(true);
+    }, []);
+
+    const handleClearSelection = useCallback(() => {
+        dispatch(clearStrainSelection());
+    }, [dispatch]);
+
+    const handleAddSelectedToFavorites = useCallback(() => {
+        dispatch(addMultipleToFavorites(selectedStrainIds));
+    }, [dispatch, selectedStrainIds]);
+
+    const handleRemoveSelectedFromFavorites = useCallback(() => {
+        dispatch(removeMultipleFromFavorites(selectedStrainIds));
+    }, [dispatch, selectedStrainIds]);
+
+    const isUserStrain = useCallback((id: string) => userStrainIds.has(id), [userStrainIds]);
     
     const handleAddStrain = useCallback((strain: Strain) => dispatch(addUserStrainWithValidation(strain)), [dispatch]);
     const handleUpdateStrain = useCallback((strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain)), [dispatch]);
@@ -294,18 +312,18 @@ export const StrainsView: React.FC = () => {
                             handleSetLetterFilter={handleSetLetterFilter}
                             typeFilter={typeFilter}
                             onToggleTypeFilter={handleToggleTypeFilter}
-                            onOpenDrawer={() => setIsDrawerOpen(true)}
+                            onOpenDrawer={handleOpenDrawer}
                             activeFilterCount={activeFilterCount}
                             selectedIds={selectedIdsSet}
                             onToggleSelection={handleToggleSelection}
                             onSelect={handleSelect}
                             favoriteIds={favoriteIds}
                             onToggleFavorite={handleToggleFavorite}
-                            isUserStrain={(id) => userStrainIds.has(id)}
+                            isUserStrain={isUserStrain}
                             onDeleteUserStrain={handleDeleteUserStrain}
-                            onClearSelection={() => dispatch(clearStrainSelection())}
-                            onAddToFavorites={() => dispatch(addMultipleToFavorites(selectedStrainIds))}
-                            onRemoveFromFavorites={() => dispatch(removeMultipleFromFavorites(selectedStrainIds))}
+                            onClearSelection={handleClearSelection}
+                            onAddToFavorites={handleAddSelectedToFavorites}
+                            onRemoveFromFavorites={handleRemoveSelectedFromFavorites}
                             onDelete={strainsViewTab === StrainViewTab.MyStrains ? handleBulkDelete : undefined}
                             strainsViewTab={strainsViewTab}
                         />

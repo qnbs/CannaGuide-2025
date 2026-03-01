@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { memo, useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
@@ -19,7 +19,7 @@ import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import { Task, PlantProblem } from '@/types';
 
-const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
+const EmptyPlantSlot: React.FC<{ onStart: () => void }> = memo(({ onStart }) => {
     const { t } = useTranslation();
     return (
         <Card
@@ -31,9 +31,9 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = ({ onStart }) => {
             <p className="text-sm text-slate-500">{t('plantsView.emptySlot.subtitle')} <span className="hidden md:inline">{t('plantsView.emptySlot.subtitleInline')}</span></p>
         </Card>
     );
-};
+});
 
-const PlantSlotsSkeleton: React.FC = () => (
+const PlantSlotsSkeleton: React.FC = memo(() => (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {[...Array(3)].map((_, i) => (
             <Card key={i} className="flex flex-col h-full animate-pulse">
@@ -55,7 +55,7 @@ const PlantSlotsSkeleton: React.FC = () => (
             </Card>
         ))}
     </div>
-);
+));
 
 export const PlantsView: React.FC = () => {
     const { t } = useTranslation();
@@ -75,13 +75,13 @@ export const PlantsView: React.FC = () => {
     
     const showGrowFromStrainBanner = newGrowFlow.strain && newGrowFlow.status === 'selectingSlot';
 
-    const handleEmptySlotClick = (index: number) => {
+    const handleEmptySlotClick = useCallback((index: number) => {
         if (newGrowFlow.status === 'selectingSlot') {
             dispatch(selectSlotForGrow(index));
         } else {
             dispatch(startGrowInSlot(index));
         }
-    };
+    }, [dispatch, newGrowFlow.status]);
 
     return (
         <>

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Strain, StrainType } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -17,7 +17,7 @@ interface StrainListItemProps {
     onDelete: (id: string) => void;
     style?: React.CSSProperties;
     isFavorite: boolean;
-    onToggleFavorite: () => void;
+    onToggleFavorite: (id: string) => void;
 }
 
 const typeIcons: Record<StrainType, React.ReactNode> = {
@@ -61,6 +61,17 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
         action();
     };
 
+    const handleSelect = useCallback(() => {
+        onSelect(strain);
+    }, [onSelect, strain]);
+
+    const handleKeyboardSelect = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelect(strain);
+        }
+    }, [onSelect, strain]);
+
     return (
         <div
             style={style}
@@ -68,8 +79,9 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
             role="button"
             tabIndex={0}
             aria-selected={isSelected}
-            onClick={() => onSelect(strain)}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(strain) }}
+            aria-label={strain.name}
+            onClick={handleSelect}
+            onKeyDown={handleKeyboardSelect}
         >
             <div className="p-3 grid grid-cols-[auto_40px_1fr_auto] sm:grid-cols-[auto_40px_minmax(0,2.5fr)_repeat(3,minmax(0,1fr))_auto] items-center gap-x-4">
                 {/* Checkbox */}
@@ -126,7 +138,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         variant="ghost"
                         size="sm"
                         className={`!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`}
-                        onClick={(e) => handleActionClick(e, onToggleFavorite)}
+                        onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
                         title={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                         aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     >

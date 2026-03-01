@@ -109,8 +109,11 @@ const GuideViewComponent: React.FC = () => {
                             const isActive = activeSection === groupKey;
                             return (
                                 <button
+                                    type="button"
                                     key={groupKey}
                                     onClick={() => scrollToSection(groupKey)}
+                                    aria-label={groupData.name}
+                                    aria-current={isActive ? 'location' : undefined}
                                     className={`w-full flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors ${isActive ? `bg-slate-800 ${color}` : 'text-slate-300 hover:bg-slate-800/50 hover:text-slate-100'}`}
                                 >
                                     <div className="w-5 h-5">{icon}</div>
@@ -122,7 +125,7 @@ const GuideViewComponent: React.FC = () => {
                 </div>
             </aside>
 
-            <main className="md:col-span-8 lg:col-span-9 space-y-12">
+            <section className="md:col-span-8 lg:col-span-9 space-y-12">
                 {groupedArticles.map(([groupKey, groupData]) => {
                     const { icon, color, accentColor } = getGroupInfo(groupKey);
                     return (
@@ -149,7 +152,7 @@ const GuideViewComponent: React.FC = () => {
                         </section>
                     )
                 })}
-            </main>
+            </section>
         </div>
     );
 };

@@ -25,22 +25,45 @@ const registerServiceWorker = () => {
 
     window.addEventListener('load', () => {
         navigator.serviceWorker
-            .register(swPath, { scope: baseUrl })
+            .register(swPath, { scope: baseUrl, updateViaCache: 'none' })
             .then((registration) => {
                 console.log('ServiceWorker registration successful:', registration)
+
+                const dispatchSwUpdate = () => {
+                    const event = new CustomEvent('swUpdate', { detail: registration })
+                    window.dispatchEvent(event)
+                }
+
+                if (registration.waiting && navigator.serviceWorker.controller) {
+                    dispatchSwUpdate()
+                }
 
                 registration.addEventListener('updatefound', () => {
                     const newWorker = registration.installing
                     if (newWorker) {
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                const event = new CustomEvent('swUpdate', { detail: registration })
-                                window.dispatchEvent(event)
+                                dispatchSwUpdate()
                                 console.log(
                                     '[SW] New content is available and will be used when all tabs for this page are closed. Firing swUpdate event.',
                                 )
                             }
                         })
+                    }
+                })
+
+                const triggerUpdateCheck = () => {
+                    registration.update().catch((error) => {
+                        console.warn('[SW] Update check failed:', error)
+                    })
+                }
+
+                triggerUpdateCheck()
+                window.setInterval(triggerUpdateCheck, 5 * 60 * 1000)
+                window.addEventListener('focus', triggerUpdateCheck)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.visibilityState === 'visible') {
+                        triggerUpdateCheck()
                     }
                 })
             })

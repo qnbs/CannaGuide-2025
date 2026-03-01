@@ -85,7 +85,11 @@ const DashboardSummaryComponent: React.FC = () => {
                 {isAiLoading ? (
                     <AiLoadingIndicator loadingMessage={t('ai.generating')} />
                 ) : aiError ? (
-                    <div className="text-center text-sm text-red-400">{'message' in aiError ? (aiError as any).data?.message || (aiError as any).message : t('ai.error.unknown')}</div>
+                    <div className="text-center text-sm text-red-400">
+                        {typeof aiError === 'object' && aiError !== null && 'message' in aiError
+                            ? String((aiError as { message?: unknown }).message ?? t('ai.error.unknown'))
+                            : t('ai.error.unknown')}
+                    </div>
                 ) : aiStatus ? (
                     <Speakable elementId="garden-status-ai" className="animate-fade-in">
                         <div className="flex justify-between items-start">

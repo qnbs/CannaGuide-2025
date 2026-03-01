@@ -31,8 +31,8 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                     </div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                    <Button size="sm" variant="secondary" onClick={(e) => { e.stopPropagation(); onEdit(); }} aria-label={t('common.edit')} className="!p-2"><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
-                    <Button size="sm" variant="danger" onClick={(e) => { e.stopPropagation(); onDelete(setup.id); }} aria-label={t('common.delete')} className="!p-2"><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="secondary" onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onEdit(); }} aria-label={t('common.edit')} className="!p-2"><PhosphorIcons.PencilSimple className="w-4 h-4"/></Button>
+                    <Button size="sm" variant="danger" onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onDelete(setup.id); }} aria-label={t('common.delete')} className="!p-2"><PhosphorIcons.TrashSimple className="w-4 h-4"/></Button>
                     <div className="p-2 text-slate-400 transition-transform duration-300 group-open:rotate-180"><PhosphorIcons.ChevronDown className="w-5 h-5" /></div>
                 </div>
             </summary>
@@ -50,14 +50,14 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
                                 </div>
                                 <span className="text-sm font-mono font-semibold text-slate-300">{(item.price || 0).toFixed(2)} {t('common.units.currency_eur')}</span>
                             </div>
-                            <p className="text-xs text-slate-400 mt-1 italic">"{item.rationale}"</p>
+                            <p className="text-xs text-slate-400 mt-1 italic">{item.rationale}</p>
                         </div>
                     );
                 })}
                  {setup.recommendation?.proTip && (
                      <div className="p-2 bg-primary-900/20 rounded-md">
                         <h4 className="font-semibold text-primary-300 flex items-center gap-1.5"><PhosphorIcons.Sparkle /> {t('strainsView.tips.form.categories.proTip')}</h4>
-                        <p className="text-xs text-slate-300 mt-1 italic">"{setup.recommendation.proTip}"</p>
+                        <p className="text-xs text-slate-300 mt-1 italic">{setup.recommendation.proTip}</p>
                     </div>
                 )}
                 {!setup.recommendation && (
@@ -67,3 +67,5 @@ export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDele
         </details>
     );
 });
+
+SetupCard.displayName = 'SetupCard';

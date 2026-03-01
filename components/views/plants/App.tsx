@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, lazy, Suspense, useState } from 'react'
+import React, { useEffect, useRef, lazy, Suspense, useState, useCallback } from 'react'
 import { View, AppSettings } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/navigation/Header'
@@ -93,8 +93,27 @@ export const App: React.FC = () => {
 
     const [showUpdateBanner, setShowUpdateBanner] = useState(false)
     const waitingWorkerRef = useRef<ServiceWorker | null>(null)
+    const isApplyingUpdateRef = useRef(false)
 
     useDocumentEffects(settings)
+
+    const handleUpdate = useCallback(() => {
+        if (!waitingWorkerRef.current || isApplyingUpdateRef.current) {
+            return
+        }
+
+        isApplyingUpdateRef.current = true
+
+        navigator.serviceWorker.addEventListener(
+            'controllerchange',
+            () => {
+                window.location.reload()
+            },
+            { once: true },
+        )
+
+        waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' })
+    }, [])
 
     useEffect(() => {
         const handleSwUpdate = (event: Event) => {
@@ -102,24 +121,16 @@ export const App: React.FC = () => {
             if (registration && registration.waiting) {
                 waitingWorkerRef.current = registration.waiting;
                 setShowUpdateBanner(true);
+                window.setTimeout(() => {
+                    handleUpdate()
+                }, 1200)
             }
         };
 
         window.addEventListener('swUpdate', handleSwUpdate);
 
         return () => window.removeEventListener('swUpdate', handleSwUpdate);
-    }, []);
-
-    const handleUpdate = () => {
-        if (waitingWorkerRef.current) {
-            // Add a listener for when the new service worker has taken control.
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                window.location.reload();
-            });
-            // Send a message to the waiting service worker to trigger `skipWaiting()`.
-            waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' });
-        }
-    };
+    }, [handleUpdate]);
 
     useEffect(() => {
         if (isOffline) {
@@ -170,7 +181,7 @@ export const App: React.FC = () => {
                     onInstallClick={handleInstallClick}
                 />
                 <main
-                    className="flex-grow min-h-0 overflow-y-auto p-4 sm:p-6 pb-6 scroll-pb-8"
+                    className="flex-grow min-h-0 overflow-y-auto p-4 sm:p-6 pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-6 scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] md:scroll-pb-8"
                 >
                     {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>

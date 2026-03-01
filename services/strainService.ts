@@ -1,7 +1,32 @@
 import { Strain } from '@/types';
 import { dbService } from './dbService';
-import { allStrainsData } from '@/data/strains/index';
 import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants';
+
+type StrainModule = Record<string, unknown>
+
+let strainsDataCache: Strain[] | null = null
+
+const loadAllStrainsData = async (): Promise<Strain[]> => {
+    if (strainsDataCache) {
+        return strainsDataCache
+    }
+
+    const modules = import.meta.glob('../data/strains/*.ts')
+    const entries = Object.entries(modules).filter(([filePath]) => !filePath.endsWith('/index.ts'))
+
+    const loadedModules = await Promise.all(entries.map(([, loader]) => loader() as Promise<StrainModule>))
+
+    const allStrains = loadedModules.flatMap((module) =>
+        Object.values(module).filter(
+            (value): value is Strain[] =>
+                Array.isArray(value) &&
+                (value.length === 0 || (typeof value[0] === 'object' && value[0] !== null && 'id' in value[0])),
+        ),
+    )
+
+    strainsDataCache = Array.from(new Map(allStrains.flat().map((strain) => [strain.id, strain])).values())
+    return strainsDataCache
+}
 
 class StrainService {
     private allStrains: Strain[] = [];
@@ -13,6 +38,7 @@ class StrainService {
         }
 
         try {
+            const allStrainsData = await loadAllStrainsData()
             const storedVersion = await dbService.getMetadata(STRAIN_DATA_VERSION_KEY);
             const dbCount = await dbService.getStrainsCount();
             
@@ -30,7 +56,7 @@ class StrainService {
         } catch (error) {
             console.error('[StrainService] Failed to initialize. Falling back to in-memory data.', error);
             // Fallback to in-memory data if IndexedDB fails
-            this.allStrains = allStrainsData;
+            this.allStrains = await loadAllStrainsData();
             this.isInitialized = true;
         }
     }

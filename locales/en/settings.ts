@@ -21,14 +21,20 @@ export const settingsView = {
     apiKey: 'Gemini API Key',
     apiKeyDesc: 'Required for all AI features in this static app deployment.',
     save: 'Save Key',
+    test: 'Validate Key',
     clear: 'Remove Key',
+    openAiStudio: 'Get API Key',
     stored: 'A Gemini API key is currently saved on this device.',
     notStored: 'No Gemini API key is saved yet.',
+    maskedPrefix: 'Saved key:',
     invalid: 'Please enter a valid API key.',
     saved: 'API key saved successfully.',
+    testSuccessStored: 'Stored API key is valid and ready for all AI features.',
+    testSuccessUnsaved: 'Entered API key is valid. Save it to enable all AI features.',
     cleared: 'API key removed.',
     loadError: 'Could not load API key status.',
     saveError: 'Could not save API key.',
+    testError: 'API key validation failed. Please check key validity and permissions.',
     clearError: 'Could not remove API key.',
   },
   general: {
@@ -397,14 +403,14 @@ export const settingsView = {
             <ol>
                 <li>Clone the repository: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
                 <li>Install dependencies: <code>npm install</code></li>
-                <li>Create a <code>.env</code> file and add your API key: <code>VITE_API_KEY=YOUR_GEMINI_API_KEY</code></li>
-                <li>Run the development server: <code>npm run dev</code></li>
+            <li>Run the development server: <code>npm run dev</code></li>
+            <li>Open Settings → General & UI → AI Security (Gemini BYOK) and save your API key in-app.</li>
             </ol>
         `,
         troubleshootingTitle: "Troubleshooting",
         troubleshootingContent: `
             <ul>
-                <li><strong>AI Features Not Working</strong>: Ensure your Gemini API key is correctly set up in your <code>.env</code> file.</li>
+            <li><strong>AI Features Not Working</strong>: Open Settings → General & UI → AI Security (Gemini BYOK), validate your key, and ensure a key is stored on this device.</li>
                 <li><strong>App Not Updating (PWA Caching)</strong>: If you've made changes but don't see them, clear your browser data or unregister the Service Worker in the developer tools.</li>
             </ul>
         `,

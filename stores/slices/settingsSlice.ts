@@ -2,6 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { AppSettings, Language, Theme, View, SortKey, SortDirection } from '@/types'
 import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
+import { GEMINI_API_KEY_STORAGE_KEY } from '@/constants'
 
 const REDUX_STATE_KEY = 'cannaguide-redux-storage'
 
@@ -153,6 +154,7 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
 
 export const resetAllData = createAsyncThunk<void, void>('settings/resetAllData', async () => {
     await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+    await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })

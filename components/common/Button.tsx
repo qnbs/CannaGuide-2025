@@ -33,7 +33,7 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
     const Component: any = as || defaultElement
 
     const baseClasses =
-        'rounded-lg font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgb(var(--color-bg-primary))] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:saturate-50'
+        'touch-manipulation rounded-lg font-semibold transition-[transform,filter,box-shadow,background-color,color,border-color] duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgb(var(--color-bg-primary))] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:saturate-50 disabled:active:scale-100'
 
     const variantClasses = {
         primary:

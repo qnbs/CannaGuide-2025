@@ -15,6 +15,7 @@ export const CalculatorSection: React.FC<{
         <div className="space-y-4">{children}</div>
     </div>
 ))
+CalculatorSection.displayName = 'CalculatorSection'
 
 export const Input: React.FC<
     React.InputHTMLAttributes<HTMLInputElement> & { label: string; unit?: string; tooltip?: string }
@@ -52,7 +53,7 @@ export const Select: React.FC<{
     label: string
     options: { value: string | number; label: string }[]
     value?: string | number
-    onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
+    onChange?: (e: { target: { value: string | number } }) => void
     [key: string]: any
 }> = ({ label, options, ...props }) => {
     const id = useId()
@@ -80,3 +81,4 @@ export const ResultDisplay: React.FC<{
         {children}
     </div>
 ))
+ResultDisplay.displayName = 'ResultDisplay'

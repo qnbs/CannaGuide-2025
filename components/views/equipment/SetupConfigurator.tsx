@@ -278,13 +278,18 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
 
     if (isLoading) return <AiLoadingIndicator loadingMessage={loadingMessage} />
 
+    const setupErrorMessage =
+        error && typeof error === 'object' && 'message' in error
+            ? String((error as { message?: unknown }).message ?? t('ai.error.unknown'))
+            : t('ai.error.unknown')
+
     if (error)
         return (
             <div className="text-center p-8">
                 <PhosphorIcons.XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
                 <p className="text-red-400">{t('equipmentView.configurator.error')}</p>
                 <p className="text-sm text-slate-400 mb-4">
-                    {'message' in error ? (error as any).message : t('ai.error.unknown')}
+                    {setupErrorMessage}
                 </p>
                 <Button onClick={handleGenerate}>{t('equipmentView.configurator.tryAgain')}</Button>
             </div>

@@ -211,7 +211,13 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                 />
                 
                 {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                {error && !isLoading && <div className="text-center text-sm text-red-400">{'message' in (error as any) ? (error as any).message : t('ai.error.unknown')}</div>}
+                {Boolean(error) && !isLoading && (
+                    <div className="text-center text-sm text-red-400">
+                        {typeof error === 'object' && error !== null && 'message' in error
+                            ? String((error as { message?: unknown }).message ?? t('ai.error.unknown'))
+                            : t('ai.error.unknown')}
+                    </div>
+                )}
 
                 {isImageLoading ? (
                     <SkeletonLoader className="w-full h-64 rounded-lg" />

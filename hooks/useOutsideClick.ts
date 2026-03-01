@@ -10,7 +10,7 @@ type Event = MouseEvent | TouchEvent
  */
 export const useOutsideClick = <T extends HTMLElement = HTMLElement>(
     handler: (event: Event) => void
-): RefObject<T> => {
+): RefObject<T | null> => {
     const ref = useRef<T>(null)
 
     useEffect(() => {

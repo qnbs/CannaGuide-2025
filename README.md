@@ -15,6 +15,8 @@ This README file supports two languages.
 
 CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire cannabis cultivation lifecycle. Engineered for both novice enthusiasts and master growers, this state-of-the-art **Progressive Web App (PWA)** guides you from seed selection to a perfectly cured harvest. Simulate grows with an advanced VPD-based engine, explore a vast library of 700+ strains with a powerful genealogy tracker, diagnose plant issues with a photo, breed new genetics in the lab, plan equipment with Gemini-powered intelligence, and master your craft with an interactive, data-driven guide.
 
+**Live App (GitHub Pages):** https://qnbs.github.io/CannaGuide-2025/
+
 ---
 
 ## Table of Contents
@@ -31,6 +33,8 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 - [💻 Technical Deep Dive](#-technical-deep-dive)
 - [🏁 Getting Started (User Guide)](#-getting-started-user-guide)
 - [🛠️ Local Development (Developer Guide)](#️-local-development-developer-guide)
+- [🔐 Gemini BYOK (Complete Guide)](#-gemini-byok-complete-guide)
+- [🚀 GitHub Pages Deployment](#-github-pages-deployment)
 - [🤔 Troubleshooting](#-troubleshooting)
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
 - [🤝 Contributing](#-contributing)
@@ -134,7 +138,7 @@ CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed f
 | **Async Operations** | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                  | Manages all interactions with the Gemini API, providing caching and state management.    |
 | **Concurrency**      | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                               | Runs the complex plant simulation off the main thread to ensure a smooth UI.           |
 | **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)                                   | Provides a robust, client-side database for full offline functionality.                |
-| **PWA & Offline**    | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                        | Implements a "Cache First, then Network" strategy for offline access.                  |
+| **PWA & Offline**    | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                        | Uses Network-First navigation, Cache-First assets, and automatic SW update activation.   |
 | **Styling**          | [Tailwind CSS](https://tailwindcss.com/) (via CDN)                                                            | Enables a rapid, utility-first approach to building a consistent and responsive design.  |
 
 ### Gemini Service Abstraction (`geminiService.ts`)
@@ -155,6 +159,16 @@ All AI-powered features in the application route their requests through this ser
     *   `generateStrainImage`: This method uses the specialized `gemini-2.5-flash-image` model and configures `responseModalities: [Modality.IMAGE]` to generate a unique, artistic image for a given strain, which is then used in the AI Grow Tips feature.
 *   **Model Selection**: The service intelligently selects the appropriate model for the task. It uses the cost-effective and fast `gemini-2.5-flash` for most text and vision tasks, but switches to the more powerful `gemini-2.5-pro` for the complex `generateDeepDive` feature, which requires more advanced reasoning.
 *   **Error Handling**: Each method includes `try...catch` blocks that wrap the API call. On failure, it logs the error and throws a new, user-friendly error message (using keys from the translation files, e.g., `'ai.error.diagnostics'`), which RTK Query then provides to the UI for graceful display.
+
+### PWA Update Strategy (Deployment)
+
+The app now uses a low-friction update flow designed to avoid manual hard refreshes in most cases:
+
+*   **Proactive Update Checks**: The registration triggers `registration.update()` on load, on tab focus, when the page becomes visible again, and every 5 minutes in active sessions.
+*   **Fresh Service Worker Fetching**: Registration uses `updateViaCache: 'none'` so browser cache is less likely to delay new SW script discovery.
+*   **Navigation Network-First**: Page navigations attempt network first, then fall back to cache/offline. This helps deployments surface quickly.
+*   **Auto-Activation + Auto-Reload**: When a new worker is waiting, the app sends `SKIP_WAITING` and reloads automatically on `controllerchange`.
+*   **Manual Fallback**: The in-app update banner remains available as a safety fallback if automatic activation is delayed.
 
 ### Project Structure
 The codebase is organized into logical directories to promote maintainability and scalability:
@@ -206,6 +220,10 @@ This project is designed to run within Google's AI Studio, which handles the dev
     ```
     This will start the Vite development server, typically at `http://localhost:5173`.
 
+4.  **Set Gemini API key at runtime (BYOK):**
+    Open the app and go to **Settings → General & UI → AI Security (Gemini BYOK)**.
+    Enter your Gemini key there. The key is stored only in local IndexedDB on your current device/browser profile.
+
 5.  **Quality checks:**
     ```bash
     npm run lint          # fast gate: lint changed JS/TS files (errors only)
@@ -218,9 +236,32 @@ This project is designed to run within Google's AI Studio, which handles the dev
     npm run lint:strict   # lint full project (warnings fail)
     ```
 
-4.  **Set Gemini API key at runtime (BYOK):**
-    Open the app and go to **Settings → General & UI → AI Security (Gemini BYOK)**.
-    Enter your Gemini key there. The key is stored only in local IndexedDB on your current device/browser profile.
+---
+
+## 🔐 Gemini BYOK (Complete Guide)
+
+This app follows a strict **Bring Your Own Key (BYOK)** model for Gemini:
+
+1. **Get a Gemini API key in Google AI Studio**
+    - Open: https://ai.studio.google.com/app/apikey
+    - Sign in with your Google account.
+    - Click **Create API key** (or **Create API key in new project**).
+    - Copy the generated key (starts with `AIza...`).
+
+2. **Set your key inside CannaGuide**
+    - Open **Settings → General & UI → AI Security (Gemini BYOK)**.
+    - Paste your key and click **Save Key**.
+    - Optionally click **Validate Key** to run a live connectivity/permissions check.
+
+3. **What BYOK covers in this app**
+    - The stored key is used by **all Gemini-backed features**: diagnostics, mentor, proactive advice, strain tips, image generation, deep dives, equipment recommendations, and garden summaries.
+    - Keys are stored **locally only** in browser IndexedDB for your current device/profile.
+    - Keys are **not** bundled into builds, committed to git, or shipped via `.env` in production.
+
+4. **Security and operations notes**
+    - Never share your key.
+    - Remove keys on shared/public devices.
+    - If key validation fails, verify that Gemini API access is enabled for your Google project and that quota/billing limits are not blocking requests.
 
 ---
 
@@ -231,7 +272,8 @@ This repository includes a ready-to-use GitHub Actions workflow at `.github/work
 1. Push changes to `main`.
 2. In GitHub: `Settings → Pages → Source: GitHub Actions`.
 3. Wait until workflow **Deploy to GitHub Pages** completes.
-4. App URL: `https://<your-username>.github.io/CannaGuide-2025/`
+4. App URL (this repository): `https://qnbs.github.io/CannaGuide-2025/`
+5. If you fork this repo, your URL is typically: `https://<your-username>.github.io/CannaGuide-2025/`
 
 Important:
 - `vite.config.ts` uses `base: '/CannaGuide-2025/'`.
@@ -242,12 +284,11 @@ Important:
 ## 🤔 Troubleshooting
 
 *   **AI Features Not Working**: Usually caused by a missing/invalid Gemini API key. Open `Settings → General & UI → AI Security (Gemini BYOK)`, set your key, and retry.
-*   **App Not Updating (PWA Caching)**: If you've made changes but don't see them, the Service Worker might be serving a cached version.
-    1.  Open your browser's developer tools.
-    2.  Go to the `Application` tab.
-    3.  Find `Service Workers`, check "Update on reload", and click "Unregister".
-    4.  Go to `Storage`, click "Clear site data".
-    5.  Refresh the page.
+*   **App Not Updating (PWA Caching)**: Deploy updates are usually detected automatically. If an update still seems delayed:
+    1.  Bring the tab to foreground (focus/visibility triggers an update check).
+    2.  Wait a few seconds for automatic activation and reload.
+    3.  If needed, use the in-app update banner button.
+    4.  Only as last resort: browser `Application → Service Workers → Update/Unregister`.
 *   **Data Corruption**: If the application state becomes corrupted, you can perform a hard reset by navigating to `Settings > Data Management > Reset All App Data`. **Warning: This will delete all your local data.**
 
 ---
@@ -299,6 +340,8 @@ Please follow the existing code style and ensure your changes are well-documente
 
 CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Cannabisanbaus. Entwickelt für sowohl neugierige Einsteiger als auch für erfahrene Meisterzüchter, führt Sie diese hochmoderne **Progressive Web App (PWA)** von der Samenauswahl bis zur perfekt ausgehärteten Ernte. Simulieren Sie Anbauvorgänge mit einer fortschrittlichen VPD-basierten Engine, erkunden Sie eine Bibliothek mit 700+ Sorten mit einem leistungsstarken Genealogie-Tracker, diagnostizieren Sie Pflanzenprobleme per Foto, züchten Sie neue Genetiken im Labor, planen Sie Ihre Ausrüstung mit Gemini-gestützter Intelligenz und meistern Sie Ihr Handwerk mit einem interaktiven, datengesteuerten Leitfaden.
 
+**Live-App (GitHub Pages):** https://qnbs.github.io/CannaGuide-2025/
+
 ---
 
 ## Inhaltsverzeichnis
@@ -315,6 +358,8 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 - [💻 Technischer Deep Dive](#-technischer-deep-dive-1)
 - [🏁 Erste Schritte (Benutzerhandbuch)](#-erste-schritte-benutzerhandbuch)
 - [🛠️ Lokale Entwicklung (Entwicklerhandbuch)](#️-lokale-entwicklung-entwicklerhandbuch)
+- [🔐 Gemini BYOK (Komplettleitfaden)](#-gemini-byok-komplettleitfaden)
+- [🚀 GitHub Pages Deployment](#-github-pages-deployment-1)
 - [🤔 Fehlerbehebung (Troubleshooting)](#-fehlerbehebung-troubleshooting)
 - [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
 - [🤝 Mitwirken (Contributing)](#-mitwirken-contributing-1)
@@ -417,7 +462,7 @@ CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack
 | **Asynchrone Op.**    | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                   | Verwaltet alle Interaktionen mit der Gemini API, bietet Caching und Zustandsmanagement. |
 | **Nebenläufigkeit**   | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                                | Führt die komplexe Pflanzensimulation außerhalb des Haupt-Threads aus, um die UI flüssig zu halten. |
 | **Datenpersistenz**   | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API)                                    | Bietet eine robuste, clientseitige Datenbank für volle Offline-Funktionalität.          |
-| **PWA & Offline**     | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                         | Implementiert eine "Cache First, then Network"-Strategie für Offline-Zugriff.           |
+| **PWA & Offline**     | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API)                         | Nutzt Network-First für Navigation, Cache-First für Assets und automatische SW-Updates.   |
 | **Styling**           | [Tailwind CSS](https://tailwindcss.com/) (via CDN)                                                             | Ermöglicht einen schnellen, Utility-First-Ansatz für ein konsistentes Designsystem.     |
 
 ### Gemini-Service-Abstraktion (`geminiService.ts`)
@@ -438,6 +483,16 @@ Alle KI-gestützten Funktionen in der Anwendung leiten ihre Anfragen über diese
     *   `generateStrainImage`: Diese Methode verwendet das spezialisierte `gemini-2.5-flash-image`-Modell und konfiguriert `responseModalities: [Modality.IMAGE]`, um ein einzigartiges, künstlerisches Bild für eine bestimmte Sorte zu generieren, das dann in der Funktion "KI-Anbau-Tipps" verwendet wird.
 *   **Modellauswahl**: Der Dienst wählt intelligent das passende Modell für die jeweilige Aufgabe aus. Er verwendet das kostengünstige und schnelle `gemini-2.5-flash` für die meisten Text- und Bildanalyseaufgaben, wechselt aber zum leistungsfähigeren `gemini-2.5-pro` für die komplexe `generateDeepDive`-Funktion, die fortgeschrittenere Schlussfolgerungen erfordert.
 *   **Fehlerbehandlung**: Jede Methode enthält `try...catch`-Blöcke, die den API-Aufruf umschließen. Bei einem Fehler wird der Fehler protokolliert und eine neue, benutzerfreundliche Fehlermeldung (unter Verwendung von Schlüsseln aus den Übersetzungsdateien, z. B. `'ai.error.diagnostics'`) geworfen, die RTK Query dann der Benutzeroberfläche zur anmutigen Anzeige zur Verfügung stellt.
+
+### PWA-Update-Strategie (Deployment)
+
+Die App nutzt nun einen möglichst reibungslosen Update-Flow, damit in der Regel kein manueller Hard-Refresh nötig ist:
+
+*   **Proaktive Update-Checks**: Die Registrierung ruft `registration.update()` beim Laden, beim Tab-Fokus, beim erneuten Sichtbarwerden der Seite und alle 5 Minuten auf.
+*   **Frische SW-Abfrage**: Die Registrierung verwendet `updateViaCache: 'none'`, damit Browser-Caches neue SW-Skripte schneller erkennen.
+*   **Navigation Network-First**: Seiten-Navigationen gehen zuerst ins Netz und fallen erst dann auf Cache/Offline zurück.
+*   **Auto-Aktivierung + Auto-Reload**: Sobald ein neuer Worker wartet, sendet die App `SKIP_WAITING` und lädt bei `controllerchange` automatisch neu.
+*   **Manueller Fallback**: Das Update-Banner in der App bleibt als Sicherheitsnetz erhalten.
 
 ### Projektstruktur
 Die Codebasis ist in logische Verzeichnisse organisiert, um Wartbarkeit und Skalierbarkeit zu fördern:
@@ -483,34 +538,81 @@ Dieses Projekt ist für die Ausführung im Google AI Studio konzipiert, das den 
     npm install
     ```
 
-3.  **Umgebungsvariablen einrichten:**
-    Die Anwendung benötigt einen Google Gemini API-Schlüssel. Erstellen Sie eine `.env`-Datei im Stammverzeichnis des Projekts:
-    ```bash
-    touch .env
-    ```
-    Öffnen Sie die `.env`-Datei und fügen Sie Ihren API-Schlüssel hinzu:
-    ```
-    VITE_API_KEY=DEIN_GEMINI_API_SCHLÜSSEL
-    ```
-    > **Hinweis**: Die App verwendet Vite, das `VITE_`-präfixierte Variablen für den Client verfügbar macht. Der Anwendungscode greift darauf über `import.meta.env.VITE_API_KEY` zu (für die Kompatibilität mit AI Studio auf `process.env.API_KEY` abstrahiert).
-
-4.  **Entwicklungsserver starten:**
+3.  **Entwicklungsserver starten:**
     ```bash
     npm run dev
     ```
     Dies startet den Vite-Entwicklungsserver, typischerweise unter `http://localhost:5173`.
 
+4.  **Gemini API-Key zur Laufzeit setzen (BYOK):**
+    Öffnen Sie die App und gehen Sie zu **Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK)**.
+    Hinterlegen Sie dort Ihren Gemini-Key. Der Key wird nur lokal in IndexedDB auf diesem Gerät/Browserprofil gespeichert.
+
+5.  **Qualitätsprüfungen:**
+    ```bash
+    npm run lint          # schneller Gate: geänderte JS/TS-Dateien (nur Errors)
+    npm run test -- --run # komplette Testsuite
+    npm run build         # Produktionsbuild
+    ```
+    Optional für technischen Schuldenabbau:
+    ```bash
+    npm run lint:full     # gesamtes Projekt linten (Warnings erlaubt)
+    npm run lint:strict   # gesamtes Projekt linten (Warnings schlagen fehl)
+    ```
+
+---
+
+## 🔐 Gemini BYOK (Komplettleitfaden)
+
+Die App arbeitet mit einem klaren **Bring Your Own Key (BYOK)**-Modell für Gemini:
+
+1. **Gemini API-Key in Google AI Studio erstellen**
+    - Öffnen Sie: https://ai.studio.google.com/app/apikey
+    - Melden Sie sich mit Ihrem Google-Konto an.
+    - Klicken Sie auf **Create API key** (oder **Create API key in new project**).
+    - Kopieren Sie den erzeugten Key (beginnt mit `AIza...`).
+
+2. **Key in CannaGuide hinterlegen**
+    - Öffnen Sie **Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK)**.
+    - Key einfügen und auf **Key speichern** klicken.
+    - Optional **Key prüfen** nutzen, um Erreichbarkeit/Berechtigungen direkt zu testen.
+
+3. **Was BYOK in der App abdeckt**
+    - Der gespeicherte Key wird für **alle Gemini-Funktionen** verwendet: Diagnose, Mentor, proaktive Beratung, Sorten-Tipps, Bildgenerierung, Deep Dives, Equipment-Empfehlungen und Garden-Zusammenfassungen.
+    - Der Key wird **nur lokal** in IndexedDB im aktuellen Browserprofil gespeichert.
+    - Der Key ist **nicht** im Build enthalten, wird nicht in Git committet und nicht über `.env` im Produktionsbetrieb verteilt.
+
+4. **Sicherheits- und Betriebs-Hinweise**
+    - Teilen Sie Ihren Key niemals.
+    - Entfernen Sie den Key auf gemeinsam genutzten Geräten.
+    - Falls die Prüfung fehlschlägt: prüfen Sie Gemini-API-Zugriff, Projektberechtigungen sowie Quota-/Billing-Limits in Ihrem Google-Projekt.
+
+---
+
+## 🚀 GitHub Pages Deployment
+
+Dieses Repository enthält einen einsatzbereiten GitHub-Actions-Workflow unter `.github/workflows/deploy.yml`.
+
+1. Änderungen nach `main` pushen.
+2. In GitHub: `Settings → Pages → Source: GitHub Actions`.
+3. Warten, bis der Workflow **Deploy to GitHub Pages** erfolgreich abgeschlossen ist.
+4. App-URL (dieses Repository): `https://qnbs.github.io/CannaGuide-2025/`
+5. Bei Forks ist die URL typischerweise: `https://<dein-benutzername>.github.io/CannaGuide-2025/`
+
+Wichtig:
+- `vite.config.ts` nutzt `base: '/CannaGuide-2025/'`.
+- Der Gemini API-Key ist **nicht** Teil des Builds; Nutzer hinterlegen ihn in der App via BYOK.
+
 ---
 
 ## 🤔 Fehlerbehebung (Troubleshooting)
 
-*   **KI-Funktionen funktionieren nicht**: Dies liegt fast immer an einem fehlenden oder ungültigen Gemini API-Schlüssel. Stellen Sie sicher, dass Ihre Umgebungsvariable (`VITE_API_KEY` für lokale Entwicklung) korrekt eingerichtet ist. Überprüfen Sie die Entwicklerkonsole Ihres Browsers auf `4xx`-Fehler.
-*   **App aktualisiert sich nicht (PWA-Caching)**: Wenn Sie Änderungen vorgenommen haben, diese aber nicht sehen, könnte der Service Worker eine zwischengespeicherte Version ausliefern.
-    1.  Öffnen Sie die Entwicklertools Ihres Browsers.
-    2.  Gehen Sie zum Tab `Anwendung` (Application).
-    3.  Suchen Sie `Service Workers`, aktivieren Sie "Update on reload" und klicken Sie auf "Unregister".
-    4.  Gehen Sie zu `Speicher` (Storage) und klicken Sie auf "Site data löschen".
-    5.  Aktualisieren Sie die Seite.
+*   **KI-Funktionen funktionieren nicht**: Meist fehlt ein gültiger Gemini-API-Key. Öffnen Sie `Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK)`, speichern Sie den Key und versuchen Sie es erneut. Prüfen Sie zusätzlich die Entwicklerkonsole auf `4xx`-Fehler.
+*   **App aktualisiert sich nicht (PWA-Caching)**: Deploy-Updates werden normalerweise automatisch erkannt. Falls ein Update verzögert wirkt:
+    1.  Tab in den Vordergrund holen (Fokus/Sichtbarkeit triggert Update-Check).
+    2.  Einige Sekunden auf automatische Aktivierung + Reload warten.
+    3.  Falls nötig, den Update-Button im In-App-Banner nutzen.
+    4.  Nur als letzter Schritt in den Browser-DevTools unter `Application → Service Workers` manuell `Update/Unregister` ausführen.
 *   **Datenprobleme**: Sollte der Zustand der Anwendung beschädigt werden, können Sie einen Hard-Reset durchführen, indem Sie zu `Einstellungen > Datenverwaltung > Alle App-Daten zurücksetzen` navigieren. **Achtung: Dies löscht alle Ihre lokalen Daten.**
 
 ---

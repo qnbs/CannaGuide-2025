@@ -83,7 +83,7 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     const [descendants, setDescendants] = useState<{ children: Strain[], grandchildren: Strain[] } | null>(null);
     
     const svgRef = useRef<SVGSVGElement>(null);
-    const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>();
+    const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
     const tree = useMemo(() => selectedStrainId ? computedTrees[selectedStrainId] : null, [computedTrees, selectedStrainId]);
 

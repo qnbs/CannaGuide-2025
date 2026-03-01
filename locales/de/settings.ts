@@ -21,14 +21,20 @@ export const settingsView = {
     apiKey: 'Gemini-API-Key',
     apiKeyDesc: 'Für alle KI-Funktionen in dieser statisch gehosteten App erforderlich.',
     save: 'Key speichern',
+    test: 'Key prüfen',
     clear: 'Key entfernen',
+    openAiStudio: 'API-Key holen',
     stored: 'Ein Gemini-API-Key ist aktuell auf diesem Gerät gespeichert.',
     notStored: 'Noch kein Gemini-API-Key gespeichert.',
+    maskedPrefix: 'Gespeicherter Key:',
     invalid: 'Bitte gib einen gültigen API-Key ein.',
     saved: 'API-Key erfolgreich gespeichert.',
+    testSuccessStored: 'Gespeicherter API-Key ist gültig und für alle KI-Funktionen einsatzbereit.',
+    testSuccessUnsaved: 'Eingegebener API-Key ist gültig. Speichere ihn, um alle KI-Funktionen zu nutzen.',
     cleared: 'API-Key entfernt.',
     loadError: 'API-Key-Status konnte nicht geladen werden.',
     saveError: 'API-Key konnte nicht gespeichert werden.',
+    testError: 'API-Key-Prüfung fehlgeschlagen. Bitte prüfe Gültigkeit und Berechtigungen des Keys.',
     clearError: 'API-Key konnte nicht entfernt werden.',
   },
   general: {
@@ -397,14 +403,14 @@ export const settingsView = {
             <ol>
                 <li>Repository klonen: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
                 <li>Abhängigkeiten installieren: <code>npm install</code></li>
-                <li>Erstellen Sie eine <code>.env</code>-Datei und fügen Sie Ihren API-Schlüssel hinzu: <code>VITE_API_KEY=DEIN_GEMINI_API_SCHLÜSSEL</code></li>
-                <li>Entwicklungsserver starten: <code>npm run dev</code></li>
+            <li>Entwicklungsserver starten: <code>npm run dev</code></li>
+            <li>Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK) und speichern Sie den API-Key direkt in der App.</li>
             </ol>
         `,
         troubleshootingTitle: "Fehlerbehebung",
         troubleshootingContent: `
             <ul>
-                <li><strong>KI-Funktionen funktionieren nicht</strong>: Stellen Sie sicher, dass Ihr Gemini API-Schlüssel in der <code>.env</code>-Datei korrekt eingerichtet ist.</li>
+            <li><strong>KI-Funktionen funktionieren nicht</strong>: Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK), prüfen Sie den Key und stellen Sie sicher, dass ein Key auf diesem Gerät gespeichert ist.</li>
                 <li><strong>App aktualisiert sich nicht</strong>: Dies kann am PWA-Caching liegen. Leeren Sie Ihre Browserdaten oder deregistrieren Sie den Service Worker in den Entwicklertools.</li>
             </ul>
         `,

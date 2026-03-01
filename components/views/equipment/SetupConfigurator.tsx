@@ -26,19 +26,19 @@ interface SetupConfiguratorProps {
 }
 
 const Stepper: React.FC<{ currentStep: number; steps: string[] }> = ({ currentStep, steps }) => (
-    <div className="flex items-center justify-center mb-6">
+    <div className="flex items-center justify-center mb-4 sm:mb-6">
         {steps.map((step, index) => (
             <React.Fragment key={index}>
                 <div className="flex flex-col items-center">
                     <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-colors ${
                             index + 1 <= currentStep ? 'bg-primary-500 text-white' : 'bg-slate-700 text-slate-400'
                         }`}
                     >
                         {index + 1}
                     </div>
                     <span
-                        className={`text-xs mt-1 transition-colors ${
+                        className={`text-[11px] sm:text-xs mt-1 transition-colors ${
                             index + 1 <= currentStep
                                 ? 'text-primary-300 font-semibold'
                                 : 'text-slate-400'

@@ -15,11 +15,12 @@ interface StrainListProps {
     onToggleFavorite: (id: string) => void;
 }
 
-export const StrainList: React.FC<StrainListProps> = memo(({
+const StrainListComponent: React.FC<StrainListProps> = ({
     strains, onSelect, selectedIds, onToggleSelection, isUserStrain, onDelete,
     isPending, favorites, onToggleFavorite
 }) => {
     const scrollElementRef = useRef<HTMLElement | null>(null);
+    const mobileBottomSafeOffset = 112;
 
     // On component mount, find the main scrolling element of the app layout.
     useEffect(() => {
@@ -37,7 +38,7 @@ export const StrainList: React.FC<StrainListProps> = memo(({
         <div 
             className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
             style={{
-                height: `${rowVirtualizer.totalSize}px`,
+                height: `${rowVirtualizer.totalSize + mobileBottomSafeOffset}px`,
                 width: '100%',
                 position: 'relative',
             }}
@@ -74,4 +75,6 @@ export const StrainList: React.FC<StrainListProps> = memo(({
             })}
         </div>
     );
-});
+};
+
+export const StrainList: React.FC<StrainListProps> = memo(StrainListComponent);

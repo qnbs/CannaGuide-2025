@@ -52,8 +52,8 @@ describe('Button', () => {
     it('renders an icon with text', () => {
         render(<Button><PhosphorIcons.Plus /> Add</Button>);
         expect(screen.getByText('Add')).toBeInTheDocument();
-        // Check if SVG is rendered
-        expect(screen.getByText('Add').previousSibling).toBeInTheDocument();
-        expect(screen.getByText('Add').previousSibling?.nodeName).toBe('svg');
+        const button = screen.getByRole('button', { name: /add/i });
+        const icon = button.querySelector('svg');
+        expect(icon).toBeInTheDocument();
     });
 });

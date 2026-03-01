@@ -200,28 +200,48 @@ This project is designed to run within Google's AI Studio, which handles the dev
     npm install
     ```
 
-3.  **Set up environment variables:**
-    The application requires a Google Gemini API key. Create a `.env` file in the root of the project:
-    ```bash
-    touch .env
-    ```
-    Open the `.env` file and add your API key:
-    ```
-    VITE_API_KEY=YOUR_GEMINI_API_KEY
-    ```
-    > **Note**: The app uses Vite, which exposes `VITE_` prefixed variables to the client. The application code will need to access it as `import.meta.env.VITE_API_KEY`. (This has been abstracted to `process.env.API_KEY` for compatibility with AI Studio).
-
-4.  **Run the development server:**
+3.  **Run the development server:**
     ```bash
     npm run dev
     ```
     This will start the Vite development server, typically at `http://localhost:5173`.
 
+5.  **Quality checks:**
+    ```bash
+    npm run lint          # fast gate: lint changed JS/TS files (errors only)
+    npm run test -- --run # run full test suite
+    npm run build         # production build
+    ```
+    Optional for technical debt cleanup:
+    ```bash
+    npm run lint:full     # lint full project (warnings allowed)
+    npm run lint:strict   # lint full project (warnings fail)
+    ```
+
+4.  **Set Gemini API key at runtime (BYOK):**
+    Open the app and go to **Settings → General & UI → AI Security (Gemini BYOK)**.
+    Enter your Gemini key there. The key is stored only in local IndexedDB on your current device/browser profile.
+
+---
+
+## 🚀 GitHub Pages Deployment
+
+This repository includes a ready-to-use GitHub Actions workflow at `.github/workflows/deploy.yml`.
+
+1. Push changes to `main`.
+2. In GitHub: `Settings → Pages → Source: GitHub Actions`.
+3. Wait until workflow **Deploy to GitHub Pages** completes.
+4. App URL: `https://<your-username>.github.io/CannaGuide-2025/`
+
+Important:
+- `vite.config.ts` uses `base: '/CannaGuide-2025/'`.
+- The Gemini API key is **not** part of the build; users must add it in-app via BYOK.
+
 ---
 
 ## 🤔 Troubleshooting
 
-*   **AI Features Not Working**: This is almost always due to a missing or invalid Gemini API key. Ensure your environment variable (`VITE_API_KEY` for local dev) is correctly set up and the key is valid. Check your browser's developer console for any `4xx` errors related to the Google API.
+*   **AI Features Not Working**: Usually caused by a missing/invalid Gemini API key. Open `Settings → General & UI → AI Security (Gemini BYOK)`, set your key, and retry.
 *   **App Not Updating (PWA Caching)**: If you've made changes but don't see them, the Service Worker might be serving a cached version.
     1.  Open your browser's developer tools.
     2.  Go to the `Application` tab.
@@ -262,6 +282,8 @@ Please follow the existing code style and ensure your changes are well-documente
 ## ⚠️ Disclaimer
 
 > All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.
+
+> This app does not provide legal or medical advice.
 
 ---
 ---

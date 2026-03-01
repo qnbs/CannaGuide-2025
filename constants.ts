@@ -18,6 +18,7 @@ export const STORAGE_PREFIX = 'cannaguide-2025-';
 export const PWA_INSTALLED_KEY = 'cannaGuidePwaInstalled';
 export const REDUX_STATE_KEY = 'cannaguide-redux-storage';
 export const STRAIN_DATA_VERSION_KEY = 'strainDataVersion';
+export const GEMINI_API_KEY_STORAGE_KEY = 'geminiApiKey';
 
 // --- DATABASE ---
 export const DB_NAME = 'CannaGuideDB';

@@ -191,6 +191,7 @@ export const problemMessages = {
 export const ai = {
     error: {
         generic: 'An AI error occurred. Please try again.',
+        missingApiKey: 'No Gemini API key found. Please add your key in Settings > General & UI > AI Security.',
         equipment: 'Could not generate equipment recommendation.',
         diagnostics: 'Could not generate plant diagnosis.',
         tips: 'Could not generate strain tips.',

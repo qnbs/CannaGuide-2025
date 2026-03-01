@@ -1,7 +1,10 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
+        const scopeUrl = new URL('./', window.location.href)
+        const swUrl = new URL('sw.js', scopeUrl)
+
         navigator.serviceWorker
-            .register('/sw.js')
+            .register(swUrl.pathname, { scope: scopeUrl.pathname })
             .then((registration) => {
                 console.log('ServiceWorker registration successful:', registration);
 

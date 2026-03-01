@@ -1,8 +1,8 @@
 {
   "name": "CannaGuide 2025",
   "short_name": "CannaGuide",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/CannaGuide-2025/",
+  "scope": "/CannaGuide-2025/",
   "display": "standalone",
   "background_color": "#0F172A",
   "theme_color": "#0F172A",

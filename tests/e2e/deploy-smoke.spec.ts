@@ -95,3 +95,49 @@ test('deploy smoke: app starts without Web Speech API support', async ({ page, b
   const navButtons = page.locator('[data-view-id]:visible')
   await expect(navButtons.first()).toBeVisible()
 })
+
+test('deploy smoke: app starts without SpeechRecognition support', async ({ page, baseURL }) => {
+  await page.addInitScript(() => {
+    try {
+      Object.defineProperty(window, 'SpeechRecognition', {
+        configurable: true,
+        value: undefined,
+      })
+    } catch {
+      // no-op: best-effort for locked browser implementations
+    }
+
+    try {
+      Object.defineProperty(window, 'webkitSpeechRecognition', {
+        configurable: true,
+        value: undefined,
+      })
+    } catch {
+      // no-op: best-effort for locked browser implementations
+    }
+  })
+
+  await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
+
+  const onboardingDialog = page.getByRole('dialog')
+  if (await onboardingDialog.isVisible().catch(() => false)) {
+    for (let step = 0; step < 6; step += 1) {
+      const isVisible = await onboardingDialog.isVisible().catch(() => false)
+      if (!isVisible) {
+        break
+      }
+
+      await onboardingDialog.locator('button').last().click()
+      await page.waitForTimeout(150)
+    }
+  }
+
+  await expect(page).toHaveTitle(/CannaGuide|Cannaguide/i)
+
+  for (const pattern of crashPatterns) {
+    await expect(page.getByText(pattern)).toHaveCount(0)
+  }
+
+  const navButtons = page.locator('[data-view-id]:visible')
+  await expect(navButtons.first()).toBeVisible()
+})

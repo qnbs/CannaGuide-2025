@@ -34,7 +34,7 @@ export const EquipmentSubNav: React.FC<EquipmentSubNavProps> = ({ activeTab, onT
                         type="button"
                         key={item.id}
                         onClick={() => onTabChange(item.id as EquipmentViewTab)}
-                        className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
+                        className={`flex flex-col items-center justify-center gap-0.5 sm:gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200
                             ${activeTab === item.id 
                                 ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400' 
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
@@ -43,7 +43,7 @@ export const EquipmentSubNav: React.FC<EquipmentSubNavProps> = ({ activeTab, onT
                         aria-current={activeTab === item.id ? 'page' : undefined}
                     >
                         <div className="w-6 h-6">{item.icon}</div>
-                        <span className="text-xs font-semibold text-center">{item.label}</span>
+                        <span className="text-[11px] sm:text-xs font-semibold text-center leading-tight">{item.label}</span>
                     </button>
                 );
             })}

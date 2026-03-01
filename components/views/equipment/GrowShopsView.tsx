@@ -8,7 +8,7 @@ import { Modal } from '@/components/common/Modal';
 
 type ShopRegion = 'europe' | 'us';
 
-const ShopDetailModal: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = memo(({ shop, t, onClose }) => (
+const ShopDetailModalComponent: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = ({ shop, t, onClose }) => (
     <Modal isOpen={true} onClose={onClose} title={shop.name} size="lg">
         <div className="flex flex-col h-full">
             <div className="flex justify-between items-start mb-4">
@@ -53,7 +53,9 @@ const ShopDetailModal: React.FC<{ shop: any; t: (key: string, params?: any) => a
             </div>
         </div>
     </Modal>
-));
+);
+
+const ShopDetailModal = memo(ShopDetailModalComponent);
 
 export const GrowShopsView: React.FC = () => {
     const { t } = useTranslation();
@@ -76,12 +78,12 @@ export const GrowShopsView: React.FC = () => {
     const selectedShop = selectedShopKey ? allShops[selectedShopKey] : null;
 
     return (
-        <div>
+        <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:pb-0">
             {selectedShop && <ShopDetailModal shop={selectedShop} t={t} onClose={() => setSelectedShopKey(null)} />}
             
-            <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 mb-4">
-                <button onClick={() => setRegion('europe')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>{t('equipmentView.growShops.region.europe')}</button>
-                <button onClick={() => setRegion('us')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>{t('equipmentView.growShops.region.usa')}</button>
+            <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 mb-3">
+                <button type="button" onClick={() => setRegion('europe')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>{t('equipmentView.growShops.region.europe')}</button>
+                <button type="button" onClick={() => setRegion('us')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>{t('equipmentView.growShops.region.usa')}</button>
             </div>
             
             <div className="space-y-3">

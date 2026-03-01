@@ -32,19 +32,19 @@ export const EquipmentView: React.FC = () => {
     const viewIcons = useMemo(
         () => ({
             [EquipmentViewTab.Configurator]: (
-                <PhosphorIcons.MagicWand className="w-16 h-16 mx-auto text-purple-400" />
+                <PhosphorIcons.MagicWand className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-purple-400" />
             ),
             [EquipmentViewTab.Setups]: (
-                <PhosphorIcons.ArchiveBox className="w-16 h-16 mx-auto text-orange-400" />
+                <PhosphorIcons.ArchiveBox className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-orange-400" />
             ),
             [EquipmentViewTab.Calculators]: (
-                <PhosphorIcons.Calculator className="w-16 h-16 mx-auto text-cyan-400" />
+                <PhosphorIcons.Calculator className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-cyan-400" />
             ),
             [EquipmentViewTab.GrowShops]: (
-                <PhosphorIcons.Storefront className="w-16 h-16 mx-auto text-lime-400" />
+                <PhosphorIcons.Storefront className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-lime-400" />
             ),
             [EquipmentViewTab.Seedbanks]: (
-                <PhosphorIcons.Cannabis className="w-16 h-16 mx-auto text-green-400" />
+                <PhosphorIcons.Cannabis className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-green-400" />
             ),
         }),
         [],
@@ -95,10 +95,10 @@ export const EquipmentView: React.FC = () => {
     }
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            <div className="text-center mb-6 animate-fade-in">
+        <div className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="text-center mb-4 sm:mb-6 animate-fade-in">
                 {viewIcons[activeTab]}
-                <h2 className="text-3xl font-bold font-display text-primary-300 mt-2">
+                <h2 className="text-2xl sm:text-3xl font-bold font-display text-primary-300 mt-2">
                     {viewTitles[activeTab]}
                 </h2>
             </div>

@@ -29,6 +29,7 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
             {navItems.map(item => {
                 return (
                     <button
+                        type="button"
                         key={item.id}
                         onClick={() => onTabChange(item.id as StrainViewTab)}
                         className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
@@ -36,6 +37,8 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
                                 ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400' 
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                             }`}
+                        aria-label={item.label}
+                        aria-current={activeTab === item.id ? 'page' : undefined}
                     >
                         <div className="w-6 h-6">{item.icon}</div>
                         <span className="text-xs font-semibold text-center">{item.label}</span>

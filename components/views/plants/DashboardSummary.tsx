@@ -20,7 +20,7 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string; }> =
     </div>
 );
 
-export const DashboardSummary: React.FC = memo(() => {
+const DashboardSummaryComponent: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { gardenHealth, activePlantsCount, avgTemp, avgHumidity, avgVPD } = useAppSelector(selectGardenHealthMetrics);
@@ -74,6 +74,12 @@ export const DashboardSummary: React.FC = memo(() => {
                 <VPDGauge temperature={avgTemp} humidity={avgHumidity} />
             </div>
 
+            <div className="mb-4">
+                 <Button onClick={handleWaterAll} variant="secondary" disabled={!hasActiveGrows || wateringState === 'pending'} className="w-full">
+                    {renderWaterButtonContent()}
+                </Button>
+            </div>
+
             {/* AI Status Section */}
             <div className="p-3 bg-slate-800/50 rounded-lg space-y-3">
                 {isAiLoading ? (
@@ -96,9 +102,6 @@ export const DashboardSummary: React.FC = memo(() => {
             </div>
 
             <div className="mt-4 pt-4 border-t border-slate-700/50">
-                 <Button onClick={handleWaterAll} variant="secondary" disabled={!hasActiveGrows || wateringState === 'pending'} className="w-full">
-                    {renderWaterButtonContent()}
-                </Button>
                 <details className="group mt-4">
                     <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center justify-between">
                         <span>{t('plantsView.gardenVitals.advancedControls')}</span>
@@ -134,4 +137,6 @@ export const DashboardSummary: React.FC = memo(() => {
             </div>
         </Card>
     );
-});
+};
+
+export const DashboardSummary: React.FC = memo(DashboardSummaryComponent);

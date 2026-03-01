@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:gh": "vite build",
+    "build:gh": "vite build && cp dist/index.html dist/404.html",
     "lint": "node ./scripts/lint-changed.mjs",
     "lint:changed": "node ./scripts/lint-changed.mjs",
     "lint:scopes": "node ./scripts/lint-scopes.mjs",

@@ -4,7 +4,6 @@ import { SavedExport, Strain } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { exportService } from '@/services/exportService';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -16,7 +15,8 @@ interface ExportsManagerViewProps {
 const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, allStrains, onDelete, onUpdate }) => {
     const { t } = useTranslation();
 
-    const handleDownload = (exp: SavedExport) => {
+    const handleDownload = async (exp: SavedExport) => {
+        const { exportService } = await import('@/services/exportService');
         const strainsToExport = allStrains.filter(s => exp.strainIds.includes(s.id));
         const fileName = exp.name;
         if (exp.format === 'pdf') {

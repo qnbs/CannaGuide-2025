@@ -29,6 +29,12 @@ test('deploy smoke: shell, assets and main navigation render without crash', asy
   await expect(navButtons.first()).toBeVisible()
 
   const count = await navButtons.count()
+
+  await navButtons.first().focus()
+  await page.keyboard.press('Enter')
+  const currentAfterKeyboard = page.locator('[data-view-id]:visible[aria-current="page"]').first()
+  await expect(currentAfterKeyboard).toBeVisible()
+
   for (let index = 0; index < count; index += 1) {
     await navButtons.nth(index).click()
     for (const pattern of crashPatterns) {

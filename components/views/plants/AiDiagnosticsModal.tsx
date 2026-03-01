@@ -10,7 +10,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { addNotification } from '@/stores/slices/uiSlice'
 import { addJournalEntry } from '@/stores/slices/simulationSlice'
 import { Card } from '@/components/common/Card'
-import { geminiService } from '@/services/geminiService'
+import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
 import { dbService } from '@/services/dbService'
 import { Input } from '@/components/ui/ThemePrimitives'
 import { selectLanguage } from '@/stores/selectors'
@@ -172,7 +172,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
 
     useEffect(() => {
         if (isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({
+            const messages = getDynamicLoadingMessages({
                 useCase: 'diagnostics',
                 data: {},
             })

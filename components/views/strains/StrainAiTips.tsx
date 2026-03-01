@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Strain, StructuredGrowTips } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { geminiService } from '@/services/geminiService';
+import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -136,7 +136,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
     useEffect(() => {
         if (isLoading) {
             const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experienceLevel}`);
-            const messages = geminiService.getDynamicLoadingMessages({ 
+            const messages = getDynamicLoadingMessages({ 
                 useCase: 'growTips',
                 data: {
                     strainName: strain.name,

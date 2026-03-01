@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react'
 import { Plant, AIResponse, ArchivedAdvisorResponse } from '@/types'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
-import { geminiService } from '@/services/geminiService'
+import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { EditResponseModal } from '@/components/common/EditResponseModal'
@@ -54,7 +54,7 @@ export const AiTab: React.FC<AiTabProps> = memo(({ plant }) => {
 
     useEffect(() => {
         if (advisorState.isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({
+            const messages = getDynamicLoadingMessages({
                 useCase: 'advisor',
                 data: { plantName: plant.name },
             })
@@ -66,7 +66,7 @@ export const AiTab: React.FC<AiTabProps> = memo(({ plant }) => {
             return () => clearInterval(intervalId)
         }
         if (diagnosisState.isLoading) {
-            const messages = geminiService.getDynamicLoadingMessages({
+            const messages = getDynamicLoadingMessages({
                 useCase: 'proactiveDiagnosis',
                 data: { plantName: plant.name },
             })

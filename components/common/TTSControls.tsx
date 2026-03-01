@@ -18,7 +18,7 @@ export const TTSControls: React.FC = () => {
     }
 
     return (
-        <div className="fixed bottom-[80px] sm:bottom-4 right-4 z-40 flex items-center gap-2 p-2 rounded-full shadow-lg glass-pane animate-fade-in">
+        <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 right-4 z-40 flex items-center gap-2 p-2 rounded-full shadow-lg glass-pane animate-fade-in">
             {isTtsSpeaking && !isTtsPaused ? (
                 <Button
                     variant="secondary"

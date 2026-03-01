@@ -103,7 +103,9 @@ const savedItemsSlice = createSlice({
         deleteSetup: (state, action: PayloadAction<string>) => {
             savedSetupsAdapter.removeOne(state.savedSetups, action.payload);
         },
-        deleteMultipleSetups: savedSetupsAdapter.removeMany,
+        deleteMultipleSetups: (state, action: PayloadAction<string[]>) => {
+            savedSetupsAdapter.removeMany(state.savedSetups, action.payload);
+        },
         addStrainTip: (state, action: PayloadAction<{ strain: Strain, tip: StructuredGrowTips, title: string, imageUrl?: string }>) => {
             const { strain, tip, title, imageUrl } = action.payload;
              if (!tip || !tip.nutrientTip || !tip.trainingTip || !tip.environmentalTip || !tip.proTip) {

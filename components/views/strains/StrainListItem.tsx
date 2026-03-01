@@ -128,7 +128,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         variant="ghost"
                         size="sm"
                         className="!p-2"
-                        onClick={(e) => handleActionClick(e, () => dispatch(initiateGrowFromStrainList(strain)))}
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => dispatch(initiateGrowFromStrainList(strain)))}
                         title={t('strainsView.startGrowing')}
                         aria-label={t('strainsView.startGrowing')}
                     >
@@ -138,7 +138,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         variant="ghost"
                         size="sm"
                         className={`!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`}
-                        onClick={(e) => handleActionClick(e, () => onToggleFavorite(strain.id))}
+                        onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
                         title={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                         aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
                     >
@@ -149,3 +149,5 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
         </div>
     );
 });
+
+StrainListItem.displayName = 'StrainListItem';

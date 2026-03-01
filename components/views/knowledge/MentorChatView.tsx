@@ -83,7 +83,10 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                 setHistory((prev) => [...prev, modelMessage])
                 dispatch(addArchivedMentorResponse({ query: currentInput, ...response }))
             } catch (error) {
-                const message = error instanceof Error ? error.message : t('ai.error.unknown');
+                const message =
+                    typeof error === 'object' && error !== null && 'message' in error
+                        ? String((error as { message?: unknown }).message ?? t('ai.error.unknown'))
+                        : t('ai.error.unknown')
                 const errorMessage: MentorMessage = {
                     id: `msg-error-${Date.now()}`,
                     role: 'model',

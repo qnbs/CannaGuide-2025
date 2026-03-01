@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react'
-import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory } from '@/types'
+import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory, Language } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -138,7 +138,13 @@ ${response.prevention}
 interface AiDiagnosticsModalProps {
     plant: Plant
     onClose: () => void
-    diagnosePlant: (args: unknown) => void
+    diagnosePlant: (args: {
+        base64Image: string
+        mimeType: string
+        plant: Plant
+        userNotes: string
+        lang: Language
+    }) => unknown
     isLoading: boolean
     response: PlantDiagnosisResponse | undefined
     error: unknown
@@ -368,7 +374,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                     {step === 'result' && (
                         <div>
                             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-                            {error && (
+                            {Boolean(error) && (
                                 <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">
                                     {errorMessage}
                                 </div>

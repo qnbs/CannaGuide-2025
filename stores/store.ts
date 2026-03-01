@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import type { ForkedTask } from '@reduxjs/toolkit';
 
@@ -25,7 +25,7 @@ import { migrateState } from '../services/migrationLogic';
 import { REDUX_STATE_KEY } from '@/constants';
 import { View } from '@/types';
 
-const rootReducer = {
+const rootReducer = combineReducers({
     simulation: simulationReducer,
     ui: uiReducer,
     settings: settingsReducer,
@@ -43,12 +43,24 @@ const rootReducer = {
     genealogy: genealogyReducer,
     navigation: navigationReducer,
     [geminiApi.reducerPath]: geminiApi.reducer,
-};
+});
 
-const tempStoreForTypes = configureStore({ reducer: rootReducer });
-export type RootState = ReturnType<typeof tempStoreForTypes.getState>;
+const makeStore = (preloadedState?: Partial<RootState>) =>
+    configureStore({
+        reducer: rootReducer,
+        preloadedState,
+        middleware: (getDefaultMiddleware) =>
+            getDefaultMiddleware({
+                serializableCheck: false,
+            })
+                .concat(geminiApi.middleware)
+                .prepend(listenerMiddleware.middleware),
+    });
+
+export type RootState = ReturnType<typeof rootReducer>;
+const tempStoreForTypes = makeStore();
 export type AppDispatch = typeof tempStoreForTypes.dispatch;
-export type AppStore = typeof tempStoreForTypes;
+export type AppStore = ReturnType<typeof makeStore>;
 export type { ForkedTask };
 
 export const useAppDispatch: () => AppDispatch = useDispatch;
@@ -76,13 +88,7 @@ export const createAppStore = async (): Promise<AppStore> => {
         await indexedDBStorage.removeItem(REDUX_STATE_KEY);
     }
     
-    const store = configureStore({
-        reducer: rootReducer,
-        preloadedState,
-        middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-            serializableCheck: false,
-        }).concat(geminiApi.middleware).prepend(listenerMiddleware.middleware),
-    });
+    const store = makeStore(preloadedState);
 
     // After store creation, set the initial view. Prioritize user's default setting over last active view.
     if (preloadedState?.settings?.settings?.general?.defaultView) {

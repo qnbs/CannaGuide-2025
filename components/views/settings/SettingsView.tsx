@@ -41,8 +41,20 @@ const GeminiSecurityCard: React.FC = () => {
     const { t } = useTranslation()
     const [apiKeyInput, setApiKeyInput] = useState('')
     const [hasStoredKey, setHasStoredKey] = useState(false)
+    const [maskedStoredKey, setMaskedStoredKey] = useState<string | null>(null)
     const [statusMessage, setStatusMessage] = useState<string | null>(null)
     const [isBusy, setIsBusy] = useState(false)
+
+    const getErrorMessage = (error: unknown, fallbackKey: string): string => {
+        if (error instanceof Error && typeof error.message === 'string' && error.message.length > 0) {
+            if (error.message.startsWith('ai.error.') || error.message.startsWith('settingsView.security.')) {
+                return t(error.message)
+            }
+            return error.message
+        }
+
+        return t(fallbackKey)
+    }
 
     useEffect(() => {
         let isMounted = true
@@ -52,6 +64,7 @@ const GeminiSecurityCard: React.FC = () => {
                 const key = await apiKeyService.getApiKey()
                 if (isMounted) {
                     setHasStoredKey(Boolean(key))
+                    setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
                 }
             } catch {
                 if (isMounted) {
@@ -68,7 +81,7 @@ const GeminiSecurityCard: React.FC = () => {
 
     const handleSaveApiKey = async () => {
         const trimmed = apiKeyInput.trim()
-        if (trimmed.length < 20) {
+        if (!apiKeyService.isValidApiKeyFormat(trimmed)) {
             setStatusMessage(t('settingsView.security.invalid'))
             return
         }
@@ -78,9 +91,28 @@ const GeminiSecurityCard: React.FC = () => {
             await apiKeyService.setApiKey(trimmed)
             setApiKeyInput('')
             setHasStoredKey(true)
+            setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
             setStatusMessage(t('settingsView.security.saved'))
-        } catch {
-            setStatusMessage(t('settingsView.security.saveError'))
+        } catch (error) {
+            setStatusMessage(getErrorMessage(error, 'settingsView.security.saveError'))
+        } finally {
+            setIsBusy(false)
+        }
+    }
+
+    const handleValidateApiKey = async () => {
+        setIsBusy(true)
+        try {
+            const candidate = apiKeyInput.trim()
+            if (candidate.length > 0) {
+                await apiKeyService.validateApiKey(candidate)
+                setStatusMessage(t('settingsView.security.testSuccessUnsaved'))
+            } else {
+                await apiKeyService.validateStoredApiKey()
+                setStatusMessage(t('settingsView.security.testSuccessStored'))
+            }
+        } catch (error) {
+            setStatusMessage(getErrorMessage(error, 'settingsView.security.testError'))
         } finally {
             setIsBusy(false)
         }
@@ -92,9 +124,10 @@ const GeminiSecurityCard: React.FC = () => {
             await apiKeyService.clearApiKey()
             setApiKeyInput('')
             setHasStoredKey(false)
+            setMaskedStoredKey(null)
             setStatusMessage(t('settingsView.security.cleared'))
-        } catch {
-            setStatusMessage(t('settingsView.security.clearError'))
+        } catch (error) {
+            setStatusMessage(getErrorMessage(error, 'settingsView.security.clearError'))
         } finally {
             setIsBusy(false)
         }
@@ -114,15 +147,37 @@ const GeminiSecurityCard: React.FC = () => {
                             onChange={(e) => setApiKeyInput(e.target.value)}
                             placeholder="AIza..."
                             autoComplete="off"
+                            spellCheck={false}
                         />
                     </SettingsRow>
+                    {maskedStoredKey && (
+                        <p className="text-xs text-slate-400">
+                            {t('settingsView.security.maskedPrefix')} <span className="font-mono">{maskedStoredKey}</span>
+                        </p>
+                    )}
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handleSaveApiKey} disabled={isBusy || apiKeyInput.trim().length === 0}>
                             {t('settingsView.security.save')}
                         </Button>
+                        <Button
+                            variant="secondary"
+                            onClick={handleValidateApiKey}
+                            disabled={isBusy || (!hasStoredKey && apiKeyInput.trim().length === 0)}
+                        >
+                            {t('settingsView.security.test')}
+                        </Button>
                         <Button variant="secondary" onClick={handleClearApiKey} disabled={isBusy || !hasStoredKey}>
                             {t('settingsView.security.clear')}
                         </Button>
+                        <a
+                            href="https://ai.studio.google.com/app/apikey"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center rounded-lg border border-transparent px-4 py-2 font-semibold text-slate-300 transition-colors hover:bg-primary-500/10 hover:text-primary-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                            aria-label={t('settingsView.security.openAiStudio')}
+                        >
+                            {t('settingsView.security.openAiStudio')}
+                        </a>
                     </div>
                     <p className="text-xs text-slate-400">
                         {hasStoredKey

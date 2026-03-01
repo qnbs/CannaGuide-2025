@@ -5,6 +5,8 @@ import { StrainToolbar } from './StrainToolbar';
 import { StrainList } from './StrainList';
 import { StrainGrid } from './StrainGrid';
 import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { BulkActionsBar } from './BulkActionsBar';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { LoadMoreButton } from '@/components/common/LoadMoreButton';
@@ -87,8 +89,14 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                     <SkeletonLoader variant={viewMode} count={10} />
                 ) : totalStrainCount === 0 ? (
                     <Card className="text-center py-10 text-slate-500">
-                        <h3 className="font-semibold">{t('strainsView.emptyStates.noResults.title')}</h3>
-                        <p className="text-sm">{t('strainsView.emptyStates.noResults.text')}</p>
+                        <PhosphorIcons.MagnifyingGlass className="w-14 h-14 mx-auto text-slate-400 mb-3" />
+                        <h3 className="font-semibold text-slate-300">{t('strainsView.emptyStates.noResults.title')}</h3>
+                        <p className="text-sm mb-4">{t('strainsView.emptyStates.noResults.text')}</p>
+                        {searchTerm && (
+                            <Button size="sm" variant="secondary" onClick={() => onSearchTermChange('')}>
+                                {t('common.clear')}
+                            </Button>
+                        )}
                     </Card>
                 ) : (
                     <>
@@ -110,7 +118,6 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                                 onToggleSelection={onToggleSelection}
                                 onSelect={onSelect}
                                 isUserStrain={isUserStrain}
-                                onDelete={onDeleteUserStrain}
                                 favorites={favoriteIds}
                                 onToggleFavorite={onToggleFavorite}
                             />
@@ -138,5 +145,7 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
         </>
     );
 });
+
+StrainLibraryView.displayName = 'StrainLibraryView';
 
 export default StrainLibraryView;

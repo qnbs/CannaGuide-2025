@@ -40,7 +40,9 @@ const simulationSlice = createSlice({
             plantsAdapter.addOne(state.plants, plant);
             state.plantSlots[slotIndex] = plant.id;
         },
-        updatePlant: plantsAdapter.updateOne,
+        updatePlant: (state, action: PayloadAction<{ id: string; changes: Partial<Plant> }>) => {
+            plantsAdapter.updateOne(state.plants, action.payload);
+        },
         plantStateUpdated: (state, action: PayloadAction<{ updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] }>) => {
             const { updatedPlant, newJournalEntries, newTasks } = action.payload;
             const existingPlant = state.plants.entities[updatedPlant.id];
@@ -194,7 +196,18 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 return;
             }
             
-            const newPlant = plantSimulationService.createPlant(strain, validation.data, `${strain.name} #${finalSlotIndex + 1}`);
+            const normalizedSetup: GrowSetup = {
+                lightType: validation.data.lightType ?? 'LED',
+                lightWattage: validation.data.lightWattage ?? 300,
+                lightHours: validation.data.lightHours,
+                ventilation: validation.data.ventilation ?? 'medium',
+                hasCirculationFan: validation.data.hasCirculationFan ?? true,
+                potSize: validation.data.potSize,
+                potType: validation.data.potType ?? 'Fabric',
+                medium: validation.data.medium,
+            }
+
+            const newPlant = plantSimulationService.createPlant(strain, normalizedSetup, `${strain.name} #${finalSlotIndex + 1}`);
             dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: finalSlotIndex }));
             
             const t = getT();

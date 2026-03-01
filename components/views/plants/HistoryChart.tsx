@@ -29,7 +29,17 @@ const eventIcons: Record<JournalEntryType, React.ReactNode> = {
 
 type Metric = 'height' | 'stressLevel' | 'ph' | 'ec' | 'moisture';
 
-const pathConfig = {
+type PathInfo = {
+    key: Metric
+    labelKey: string
+    color: string
+    strokeWidth: number
+    dash: boolean
+    unit: string
+    opacity?: number
+}
+
+const pathConfig: Record<ChartView, PathInfo[]> = {
     growth: [
         { key: 'height' as Metric, labelKey: 'plantsView.detailedView.height', color: 'rgb(var(--color-primary-500))', strokeWidth: 2, dash: false, unit: 'cm' },
         { key: 'stressLevel' as Metric, labelKey: 'plantsView.detailedView.stress', color: 'rgb(var(--color-accent-500))', strokeWidth: 1.5, dash: true, unit: '%' },
@@ -47,9 +57,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     const [hoveredData, setHoveredData] = useState<{ point: PlantHistoryEntry, x: number } | null>(null);
     const svgRef = useRef<SVGSVGElement>(null);
 
-    if (!history || history.length < 2) {
-        return <div className="flex items-center justify-center h-full text-slate-500 text-sm">{t('plantsView.detailedView.historyNoData')}</div>;
-    }
+    const hasEnoughData = Boolean(history && history.length >= 2)
 
     const width = 300;
     const height = 150;
@@ -92,6 +100,10 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);
 
     const paths = pathConfig[view];
+
+    if (!hasEnoughData) {
+        return <div className="flex items-center justify-center h-full text-slate-500 text-sm">{t('plantsView.detailedView.historyNoData')}</div>;
+    }
 
     const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
         const svg = svgRef.current;
@@ -224,3 +236,5 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         </div>
     );
 });
+
+HistoryChart.displayName = 'HistoryChart';

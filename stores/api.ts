@@ -21,6 +21,19 @@ const getGeminiService = async () => {
     return module.geminiService
 }
 
+const mapAiErrorMessage = (error: unknown): string => {
+    const t = getT()
+
+    if (error instanceof Error && typeof error.message === 'string' && error.message.length > 0) {
+        if (error.message.startsWith('ai.error.') || error.message.startsWith('settingsView.security.')) {
+            return t(error.message)
+        }
+        return error.message
+    }
+
+    return t('ai.error.unknown')
+}
+
 // This API slice uses a custom `queryFn` for all endpoints to interact with the Gemini service.
 // `fakeBaseQuery` is used as a placeholder to satisfy RTK Query's `baseQuery` requirement
 // and ensure the endpoint builder is correctly typed.
@@ -41,9 +54,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -72,9 +83,7 @@ export const geminiApi = createApi({
                     )
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -91,9 +100,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getPlantAdvice(plant, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -110,9 +117,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getProactiveDiagnosis(plant, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -131,9 +136,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getMentorResponse(plant, query, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -152,9 +155,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getStrainTips(strain, context, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -173,9 +174,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.generateStrainImage(strain, style as any, criteria)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -194,9 +193,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.generateDeepDive(topic, plant, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),
@@ -213,9 +210,7 @@ export const geminiApi = createApi({
                     const data = await geminiService.getGardenStatusSummary(plants, lang)
                     return { data }
                 } catch (error) {
-                    const message =
-                        error instanceof Error && error.message ? error.message : 'ai.error.unknown'
-                    return { error: { message } }
+                    return { error: { message: mapAiErrorMessage(error) } }
                 }
             },
         }),

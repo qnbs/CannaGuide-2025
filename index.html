@@ -238,7 +238,7 @@
       .speakable-highlight { background-color: rgb(var(--color-primary-500)/0.1); }
       
       /* New UI Density styles */
-      .ui-density-compact main { padding: 0.5rem !important; padding-bottom: 5rem !important; }
+      .ui-density-compact main { padding: 0.5rem !important; padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0)) !important; }
       .ui-density-compact .glass-pane, .ui-density-compact details { padding: 0.75rem !important; }
 
       /* --- ACCESSIBILITY --- */

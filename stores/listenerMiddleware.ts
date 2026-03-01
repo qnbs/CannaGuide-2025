@@ -2,6 +2,7 @@ import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs
 import type { RootState, AppDispatch } from './store';
 import { i18nInstance, getT } from '@/i18n';
 import { Language, Strain, View } from '@/types';
+import type { PlantProblem } from '@/types';
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
 import { plantStateUpdated, resetPlants, addJournalEntry, waterAllPlants } from './slices/simulationSlice';
 import { addNotification, setOnboardingStep, setActiveView, closeAddModal, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
@@ -46,10 +47,10 @@ startAppListening({
       
       if (!oldPlant) return;
 
-      const oldProblems = new Set(oldPlant.problems.filter(p => p.status === 'active').map(p => p.type));
-      const newProblems = updatedPlant.problems.filter(p => p.status === 'active');
+      const oldProblems = new Set(oldPlant.problems.filter((p: PlantProblem) => p.status === 'active').map((p: PlantProblem) => p.type));
+      const newProblems = updatedPlant.problems.filter((p: PlantProblem) => p.status === 'active');
 
-      newProblems.forEach(problem => {
+      newProblems.forEach((problem: PlantProblem) => {
           if (!oldProblems.has(problem.type)) {
               const t = getT();
               const problemKey = problem.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());

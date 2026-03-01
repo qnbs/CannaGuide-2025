@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v18-pwa-cache';
+const CACHE_NAME = 'cannaguide-v19-pwa-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
@@ -125,6 +125,26 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.hostname.includes(API_HOSTNAME)) {
+    return;
+  }
+
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(async () => {
+          const cachedResponse = await caches.match(request);
+          return cachedResponse || offlineFallback;
+        }),
+    );
     return;
   }
   

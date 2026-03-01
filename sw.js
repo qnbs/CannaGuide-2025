@@ -1,16 +1,15 @@
-const CACHE_NAME = 'cannaguide-v16-pwa-cache';
+const CACHE_NAME = 'cannaguide-v17-pwa-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
-  '/',
-  '/index.html',
-  '/index.js',
-  '/manifest.json',
-  '/icon-192.svg',
-  '/icon-512.svg',
-  '/icon.svg',
-  '/favicon.ico',
-  '/register-sw.js',
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.svg',
+  './icon-512.svg',
+  './icon.svg',
+  './favicon.ico',
+  './register-sw.js',
 ];
 
 const THIRD_PARTY_URLS = [

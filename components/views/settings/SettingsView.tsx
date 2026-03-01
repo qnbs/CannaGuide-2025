@@ -1,4 +1,4 @@
-import React, { memo, useState, useMemo, lazy, Suspense } from 'react'
+import React, { memo, useState, useMemo, lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { AppSettings, Language, Theme, View } from '@/types'
@@ -16,6 +16,7 @@ import { useStorageEstimate } from '@/hooks/useStorageEstimate'
 import { Card } from '@/components/common/Card'
 import { SettingsSubNav } from './SettingsSubNav'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
+import { apiKeyService } from '@/services/apiKeyService'
 
 const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
@@ -36,6 +37,105 @@ const SettingsRow: React.FC<{
     </div>
 )
 
+const GeminiSecurityCard: React.FC = () => {
+    const { t } = useTranslation()
+    const [apiKeyInput, setApiKeyInput] = useState('')
+    const [hasStoredKey, setHasStoredKey] = useState(false)
+    const [statusMessage, setStatusMessage] = useState<string | null>(null)
+    const [isBusy, setIsBusy] = useState(false)
+
+    useEffect(() => {
+        let isMounted = true
+
+        const loadKeyStatus = async () => {
+            try {
+                const key = await apiKeyService.getApiKey()
+                if (isMounted) {
+                    setHasStoredKey(Boolean(key))
+                }
+            } catch {
+                if (isMounted) {
+                    setStatusMessage(t('settingsView.security.loadError'))
+                }
+            }
+        }
+
+        loadKeyStatus()
+        return () => {
+            isMounted = false
+        }
+    }, [t])
+
+    const handleSaveApiKey = async () => {
+        const trimmed = apiKeyInput.trim()
+        if (trimmed.length < 20) {
+            setStatusMessage(t('settingsView.security.invalid'))
+            return
+        }
+
+        setIsBusy(true)
+        try {
+            await apiKeyService.setApiKey(trimmed)
+            setApiKeyInput('')
+            setHasStoredKey(true)
+            setStatusMessage(t('settingsView.security.saved'))
+        } catch {
+            setStatusMessage(t('settingsView.security.saveError'))
+        } finally {
+            setIsBusy(false)
+        }
+    }
+
+    const handleClearApiKey = async () => {
+        setIsBusy(true)
+        try {
+            await apiKeyService.clearApiKey()
+            setApiKeyInput('')
+            setHasStoredKey(false)
+            setStatusMessage(t('settingsView.security.cleared'))
+        } catch {
+            setStatusMessage(t('settingsView.security.clearError'))
+        } finally {
+            setIsBusy(false)
+        }
+    }
+
+    return (
+        <Card>
+            <FormSection title={t('settingsView.security.title')} icon={<PhosphorIcons.ShieldCheck />} defaultOpen>
+                <div className="sm:col-span-2 space-y-4">
+                    <p className="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-3">
+                        {t('settingsView.security.warning')}
+                    </p>
+                    <SettingsRow label={t('settingsView.security.apiKey')} description={t('settingsView.security.apiKeyDesc')}>
+                        <Input
+                            type="password"
+                            value={apiKeyInput}
+                            onChange={(e) => setApiKeyInput(e.target.value)}
+                            placeholder="AIza..."
+                            autoComplete="off"
+                        />
+                    </SettingsRow>
+                    <div className="flex flex-wrap gap-2">
+                        <Button onClick={handleSaveApiKey} disabled={isBusy || apiKeyInput.trim().length === 0}>
+                            {t('settingsView.security.save')}
+                        </Button>
+                        <Button variant="secondary" onClick={handleClearApiKey} disabled={isBusy || !hasStoredKey}>
+                            {t('settingsView.security.clear')}
+                        </Button>
+                    </div>
+                    <p className="text-xs text-slate-400">
+                        {hasStoredKey
+                            ? t('settingsView.security.stored')
+                            : t('settingsView.security.notStored')}
+                    </p>
+                    {statusMessage && <p className="text-sm text-slate-300">{statusMessage}</p>}
+                </div>
+            </FormSection>
+        </Card>
+    )
+}
+
 const GeneralSettingsTab: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
@@ -53,6 +153,7 @@ const GeneralSettingsTab: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            <GeminiSecurityCard />
             <Card>
                 <FormSection title={t('settingsView.categories.lookAndFeel')} icon={<PhosphorIcons.Cube />} defaultOpen>
                     <div className="sm:col-span-2 space-y-6">

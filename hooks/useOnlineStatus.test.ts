@@ -1,9 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { useOnlineStatus } from './useOnlineStatus';
 
 describe('useOnlineStatus', () => {
-  const onlineSpy = vi.spyOn(navigator, 'onLine', 'get');
+  let onlineSpy: ReturnType<typeof vi.spyOn>;
+
+  beforeEach(() => {
+    onlineSpy = vi.spyOn(navigator, 'onLine', 'get');
+  });
 
   afterEach(() => {
     vi.restoreAllMocks();

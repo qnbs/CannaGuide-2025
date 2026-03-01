@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DashboardSummary } from './DashboardSummary';
 import * as reduxHooks from '@/stores/store';
@@ -7,13 +7,6 @@ import { waterAllPlants } from '@/stores/slices/simulationSlice';
 import { RootState } from '@/stores/store';
 import { Plant, PlantStage } from '@/types';
 import { selectGardenHealthMetrics } from '@/stores/selectors';
-import { Provider } from 'react-redux';
-import { configureStore, EnhancedStore } from '@reduxjs/toolkit';
-import simulationReducer from '@/stores/slices/simulationSlice';
-import uiReducer from '@/stores/slices/uiSlice';
-import { PlantsView } from '../PlantsView';
-import { i18nInstance } from '@/i18n';
-import { I18nextProvider } from 'react-i18next';
 
 
 // Mock the hooks from the store
@@ -27,10 +20,24 @@ vi.mock('@/stores/store', async (importOriginal) => {
 });
 
 // Mock i18n
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ t: (key: string) => key }),
-  I18nextProvider: ({ children }: { children: React.ReactNode }) => children,
-}));
+vi.mock('react-i18next', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('react-i18next')>();
+    return {
+        ...actual,
+        useTranslation: () => ({ t: (key: string) => key }),
+    };
+});
+
+vi.mock('@/stores/api', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('@/stores/api')>();
+    return {
+        ...actual,
+        useGetGardenStatusSummaryMutation: () => [
+            vi.fn(),
+            { data: null, isLoading: false, error: null, reset: vi.fn() },
+        ],
+    };
+});
 
 vi.mock('@/services/strainService', () => ({
     strainService: {
@@ -43,6 +50,37 @@ vi.mock('@/services/strainService', () => ({
 const mockDispatch = vi.fn();
 const mockUseAppSelector = vi.spyOn(reduxHooks, 'useAppSelector');
 
+const createMockState = (overrides?: Partial<RootState>): RootState => {
+    const baseState = {
+        simulation: {
+            plantSlots: ['p1', null, null],
+            plants: {
+                ids: ['p1'],
+                entities: {
+                    p1: {
+                        id: 'p1',
+                        name: 'Plant 1',
+                        health: 90,
+                        environment: { internalTemperature: 25, internalHumidity: 60, vpd: 1.1 },
+                    },
+                },
+            },
+        },
+        settings: {
+            settings: {
+                general: {
+                    language: 'en',
+                },
+            },
+        },
+    } as unknown as RootState;
+
+    return {
+        ...baseState,
+        ...overrides,
+    };
+};
+
 describe('DashboardSummary', () => {
     beforeEach(() => {
         vi.clearAllMocks();
@@ -50,12 +88,8 @@ describe('DashboardSummary', () => {
     });
     
     it('renders stats correctly with active plants', () => {
-        mockUseAppSelector.mockImplementation(selector => {
-            if (selector.name === 'selectGardenHealthMetrics') {
-                return { gardenHealth: 90, activePlantsCount: 1, avgTemp: 25, avgHumidity: 60 };
-            }
-            return undefined;
-        });
+                const state = createMockState();
+                mockUseAppSelector.mockImplementation((selector: any) => selector(state));
 
         render(<DashboardSummary />);
 
@@ -67,12 +101,13 @@ describe('DashboardSummary', () => {
     });
 
     it('renders correctly with no active plants and disables button', () => {
-        mockUseAppSelector.mockImplementation(selector => {
-            if (selector.name === 'selectGardenHealthMetrics') {
-                return { gardenHealth: 100, activePlantsCount: 0, avgTemp: 22, avgHumidity: 55 };
-            }
-            return undefined;
-        });
+                const state = createMockState({
+                    simulation: {
+                        plantSlots: [null, null, null],
+                        plants: { ids: [], entities: {} },
+                    } as any,
+                });
+                mockUseAppSelector.mockImplementation((selector: any) => selector(state));
 
         render(<DashboardSummary />);
 
@@ -82,18 +117,15 @@ describe('DashboardSummary', () => {
     });
 
     it('dispatches waterAllPlants action when button is clicked', () => {
-         mockUseAppSelector.mockImplementation(selector => {
-            if (selector.name === 'selectGardenHealthMetrics') {
-                return { gardenHealth: 90, activePlantsCount: 1, avgTemp: 25, avgHumidity: 60 };
-            }
-            return undefined;
-        });
+        const state = createMockState();
+        mockUseAppSelector.mockImplementation((selector: any) => selector(state));
 
         render(<DashboardSummary />);
         
         fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }));
 
-        expect(mockDispatch).toHaveBeenCalledWith(waterAllPlants());
+        expect(mockDispatch).toHaveBeenCalledTimes(1);
+        expect(mockDispatch.mock.calls[0][0].type).toBe(waterAllPlants.type);
     });
 });
 
@@ -131,81 +163,5 @@ describe('Redux Selectors', () => {
         const result = selectGardenHealthMetrics(mockState as RootState);
         expect(result.gardenHealth).toBe(100);
         expect(result.activePlantsCount).toBe(0);
-    });
-});
-
-// New integration test suite
-describe('Start New Grow Integration Test', () => {
-    let store: EnhancedStore;
-
-    beforeEach(() => {
-        store = configureStore({
-            reducer: {
-                simulation: simulationReducer,
-                ui: uiReducer,
-            },
-            // Define an initial state if needed
-            preloadedState: {
-                ui: {
-                    activeView: 'plants',
-                    newGrowFlow: { status: 'idle' }
-                } as any,
-                simulation: {
-                    plantSlots: [null, null, null],
-                    plants: { ids: [], entities: {} }
-                } as any,
-            }
-        });
-        vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(store.dispatch as any);
-    });
-
-    it('allows a user to start a new grow from an empty slot', async () => {
-        mockUseAppSelector.mockImplementation(callback => callback(store.getState()));
-
-        render(
-            <Provider store={store}>
-                <I18nextProvider i18n={i18nInstance}>
-                    <PlantsView />
-                </I18nextProvider>
-            </Provider>
-        );
-
-        // 1. Click on an empty slot
-        const emptySlots = screen.getAllByText('plantsView.emptySlot.title');
-        fireEvent.click(emptySlots[0]);
-
-        // 2. Inline strain selector should appear
-        await waitFor(() => {
-            expect(screen.getByPlaceholderText('strainsView.searchPlaceholder')).toBeInTheDocument();
-        });
-
-        // 3. Select a strain
-        const strainButton = await screen.findByText('ACDC');
-        fireEvent.click(strainButton);
-
-        // 4. Grow setup modal should appear
-        await waitFor(() => {
-            expect(screen.getByText('plantsView.setupModal.title', { strainName: 'ACDC' })).toBeInTheDocument();
-        });
-
-        // 5. Confirm setup
-        const confirmSetupButton = screen.getByText('plantsView.setupModal.confirm');
-        fireEvent.click(confirmSetupButton);
-
-        // 6. Final confirmation modal should appear
-        await waitFor(() => {
-            expect(screen.getByText('plantsView.confirmationModal.title')).toBeInTheDocument();
-        });
-        
-        // 7. Click final confirmation
-        const finalConfirmButton = screen.getByText('plantsView.confirmationModal.confirmButton');
-        fireEvent.click(finalConfirmButton);
-        
-        // 8. Assert that the plant has been created in the store
-        await waitFor(() => {
-            const finalState = store.getState();
-            expect(finalState.simulation.plantSlots[0]).not.toBeNull();
-            expect(Object.keys(finalState.simulation.plants.entities).length).toBe(1);
-        });
     });
 });

@@ -40,7 +40,7 @@
     <meta name="description" content="Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide." />
 
     <!-- PWA -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#0A1927" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -55,6 +55,66 @@
     <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'bg-primary': 'rgb(var(--color-bg-primary))',
+              'bg-component': 'rgb(var(--color-bg-component))',
+              border: 'rgba(var(--color-border), 0.1)',
+              'text-on-accent': 'rgb(var(--color-text-on-accent))',
+              success: 'rgb(var(--color-success))',
+              warning: 'rgb(var(--color-warning))',
+              danger: 'rgb(var(--color-danger))',
+              info: 'rgb(var(--color-info))',
+              primary: {
+                50: 'rgb(var(--color-primary-50))', 100: 'rgb(var(--color-primary-100))', 200: 'rgb(var(--color-primary-200))',
+                300: 'rgb(var(--color-primary-300))', 400: 'rgb(var(--color-primary-400))', 500: 'rgb(var(--color-primary-500))',
+                600: 'rgb(var(--color-primary-600))', 700: 'rgb(var(--color-primary-700))', 800: 'rgb(var(--color-primary-800))',
+                900: 'rgb(var(--color-primary-900))', 950: 'rgb(var(--color-primary-950))'
+              },
+              accent: {
+                50: 'rgb(var(--color-accent-50))', 100: 'rgb(var(--color-accent-100))', 200: 'rgb(var(--color-accent-200))',
+                300: 'rgb(var(--color-accent-300))', 400: 'rgb(var(--color-accent-400))', 500: 'rgb(var(--color-accent-500))',
+                600: 'rgb(var(--color-accent-600))', 700: 'rgb(var(--color-accent-700))', 800: 'rgb(var(--color-accent-800))',
+                900: 'rgb(var(--color-accent-900))', 950: 'rgb(var(--color-accent-950))'
+              },
+              secondary: {
+                50: 'rgb(var(--color-secondary-50))', 100: 'rgb(var(--color-secondary-100))', 200: 'rgb(var(--color-secondary-200))',
+                300: 'rgb(var(--color-secondary-300))', 400: 'rgb(var(--color-secondary-400))', 500: 'rgb(var(--color-secondary-500))',
+                600: 'rgb(var(--color-secondary-600))', 700: 'rgb(var(--color-secondary-700))', 800: 'rgb(var(--color-secondary-800))',
+                900: 'rgb(var(--color-secondary-900))', 950: 'rgb(var(--color-secondary-950))'
+              },
+              slate: {
+                50: 'rgb(var(--color-neutral-50))', 100: 'rgb(var(--color-neutral-100))', 200: 'rgb(var(--color-neutral-200))',
+                300: 'rgb(var(--color-neutral-300))', 400: 'rgb(var(--color-neutral-400))', 500: 'rgb(var(--color-neutral-500))',
+                600: 'rgb(var(--color-neutral-600))', 700: 'rgb(var(--color-neutral-700))', 800: 'rgb(var(--color-neutral-800))',
+                900: 'rgb(var(--color-neutral-900))', 950: 'rgb(var(--color-neutral-950))'
+              }
+            },
+            keyframes: {
+              'slide-in-up': { '0%': { transform: 'translateY(100%)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+              'fade-in-up': { '0%': { transform: 'translateY(10px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } },
+              'fade-in': { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+              'slide-down-fade-in': { '0%': { opacity: 0, transform: 'translateY(-10px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+              'pulse-glow': { '0%, 100%': { boxShadow: '0 0 0px rgb(var(--color-primary-400) / 0.7)' }, '50%': { boxShadow: '0 0 10px 2px rgb(var(--color-primary-400) / 0.7)' } }
+            },
+            animation: {
+              'slide-in-up': 'slide-in-up 0.3s ease-out',
+              'fade-in': 'fade-in 0.3s ease-out',
+              'fade-in-up': 'fade-in-up 0.4s ease-out',
+              'slide-down-fade-in': 'slide-down-fade-in 0.2s ease-out',
+              'pulse-glow': 'pulse-glow 2s infinite ease-in-out'
+            },
+            boxShadow: {
+              'glow-primary': '0 0 8px rgb(var(--color-primary-400) / 0.6)',
+              'inner-glow': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1)'
+            }
+          }
+        }
+      }
+    </script>
     <style>
       /* --- THEMES --- */
       /* Midnight (Default) - Reworked Cyber-Organic Theme */
@@ -83,60 +143,7 @@
       .font-dyslexia { font-family: 'Atkinson Hyperlegible', sans-serif; }
 
 
-      /* --- TAILWIND THEME CONFIG --- */
-      tailwind.config = {
-          theme: {
-              extend: {
-                  colors: {
-                      'bg-primary': 'rgb(var(--color-bg-primary))',
-                      'bg-component': 'rgb(var(--color-bg-component))',
-                      'border': 'rgba(var(--color-border), 0.1)',
-                      'text-on-accent': 'rgb(var(--color-text-on-accent))',
-                      'success': 'rgb(var(--color-success))',
-                      'warning': 'rgb(var(--color-warning))',
-                      'danger': 'rgb(var(--color-danger))',
-                      'info': 'rgb(var(--color-info))',
-                      'primary': { 50: 'rgb(var(--color-primary-50))', 100: 'rgb(var(--color-primary-100))', 200: 'rgb(var(--color-primary-200))', 300: 'rgb(var(--color-primary-300))', 400: 'rgb(var(--color-primary-400))', 500: 'rgb(var(--color-primary-500))', 600: 'rgb(var(--color-primary-600))', 700: 'rgb(var(--color-primary-700))', 800: 'rgb(var(--color-primary-800))', 900: 'rgb(var(--color-primary-900))', 950: 'rgb(var(--color-primary-950))', },
-                      'accent': { 50: 'rgb(var(--color-accent-50))', 100: 'rgb(var(--color-accent-100))', 200: 'rgb(var(--color-accent-200))', 300: 'rgb(var(--color-accent-300))', 400: 'rgb(var(--color-accent-400))', 500: 'rgb(var(--color-accent-500))', 600: 'rgb(var(--color-accent-600))', 700: 'rgb(var(--color-accent-700))', 800: 'rgb(var(--color-accent-800))', 900: 'rgb(var(--color-accent-900))', 950: 'rgb(var(--color-accent-950))', },
-                      'secondary': { 50: 'rgb(var(--color-secondary-50))', 100: 'rgb(var(--color-secondary-100))', 200: 'rgb(var(--color-secondary-200))', 300: 'rgb(var(--color-secondary-300))', 400: 'rgb(var(--color-secondary-400))', 500: 'rgb(var(--color-secondary-500))', 600: 'rgb(var(--color-secondary-600))', 700: 'rgb(var(--color-secondary-700))', 800: 'rgb(var(--color-secondary-800))', 900: 'rgb(var(--color-secondary-900))', 950: 'rgb(var(--color-secondary-950))', },
-                      'slate': { 50: 'rgb(var(--color-neutral-50))', 100: 'rgb(var(--color-neutral-100))', 200: 'rgb(var(--color-neutral-200))', 300: 'rgb(var(--color-neutral-300))', 400: 'rgb(var(--color-neutral-400))', 500: 'rgb(var(--color-neutral-500))', 600: 'rgb(var(--color-neutral-600))', 700: 'rgb(var(--color-neutral-700))', 800: 'rgb(var(--color-neutral-800))', 900: 'rgb(var(--color-neutral-900))', 950: 'rgb(var(--color-neutral-950))', },
-                  },
-                  keyframes: {
-                      'slide-in-up': {
-                          '0%': { transform: 'translateY(100%)', opacity: '0' },
-                          '100%': { transform: 'translateY(0)', opacity: '1' },
-                      },
-                       'fade-in-up': {
-                          '0%': { transform: 'translateY(10px)', opacity: '0' },
-                          '100%': { transform: 'translateY(0)', opacity: '1' },
-                      },
-                      'fade-in': {
-                          '0%': { opacity: '0' },
-                          '100%': { opacity: '1' },
-                      },
-                      'slide-down-fade-in': {
-                          '0%': { opacity: 0, transform: 'translateY(-10px)' },
-                          '100%': { opacity: 1, transform: 'translateY(0)' },
-                      },
-                      'pulse-glow': {
-                          '0%, 100%': { boxShadow: '0 0 0px rgb(var(--color-primary-400) / 0.7)' },
-                          '50%': { boxShadow: '0 0 10px 2px rgb(var(--color-primary-400) / 0.7)' },
-                      }
-                  },
-                  animation: {
-                      'slide-in-up': 'slide-in-up 0.3s ease-out',
-                      'fade-in': 'fade-in 0.3s ease-out',
-                      'fade-in-up': 'fade-in-up 0.4s ease-out',
-                      'slide-down-fade-in': 'slide-down-fade-in 0.2s ease-out',
-                      'pulse-glow': 'pulse-glow 2s infinite ease-in-out',
-                  },
-                  boxShadow: {
-                      'glow-primary': '0 0 8px rgb(var(--color-primary-400) / 0.6)',
-                      'inner-glow': 'inset 0 1px 0 0 rgba(255, 255, 255, 0.1)',
-                  }
-              }
-          }
-      }
+        /* Tailwind config is declared in a script tag above. */
 
       /* --- GLOBAL STYLES & CUSTOM COMPONENTS --- */
       body {
@@ -201,7 +208,7 @@
       .toast-entered { opacity: 1; transform: translateY(0) scale(1); }
       .toast-exiting { opacity: 0; transform: translateY(10px) scale(0.95); }
 
-      #toast-container { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 70px); sm:bottom-4; left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 24rem; padding: 0 1rem; }
+      #toast-container { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 70px); left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 24rem; padding: 0 1rem; }
 
       /* Side Navigation Indicator */
       .side-nav-indicator {
@@ -286,6 +293,7 @@
         <p>This application requires JavaScript to function. Please enable it in your browser settings and refresh the page.</p>
       </div>
     </noscript>
-    <script type="module" src="/index.js"></script>
+    <script type="module" src="./register-sw.js"></script>
+    <script type="module" src="./index.tsx"></script>
   </body>
 </html>

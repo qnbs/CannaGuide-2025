@@ -11,6 +11,7 @@ import {
     Language,
 } from '@/types'
 import { getT } from '@/i18n'
+import { apiKeyService } from '@/services/apiKeyService'
 
 const formatPlantContextForPrompt = (
     plant: Plant,
@@ -71,19 +72,20 @@ const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'm
 
 
 class GeminiService {
-    private ai: GoogleGenAI
-
-    constructor() {
-        if (!process.env.API_KEY) {
-            throw new Error('API_KEY environment variable not set')
+    private async getAi(): Promise<GoogleGenAI> {
+        const apiKey = await apiKeyService.getApiKey()
+        if (!apiKey) {
+            throw new Error('ai.error.missingApiKey')
         }
-        this.ai = new GoogleGenAI({ apiKey: process.env.API_KEY })
+
+        return new GoogleGenAI({ apiKey })
     }
 
     private async generateText(prompt: string, lang: Language): Promise<string> {
         try {
+            const ai = await this.getAi()
             const localizedPrompt = createLocalizedPrompt(prompt, lang)
-            const response = await this.ai.models.generateContent({
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: localizedPrompt,
             })
@@ -97,10 +99,11 @@ class GeminiService {
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
         const t = getT()
         try {
+            const ai = await this.getAi()
             const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
             const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang)
 
-            const response = await this.ai.models.generateContent({
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: prompt,
                 config: {
@@ -245,10 +248,11 @@ PLANT CONTEXT:
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
 
         try {
+            const ai = await this.getAi()
             const imagePart = { inlineData: { data: base64Image, mimeType } }
             const textPart = { text: localizedPrompt }
 
-            const response = await this.ai.models.generateContent({
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: { parts: [imagePart, textPart] },
                 config: {
@@ -305,10 +309,11 @@ PLANT CONTEXT:
         })
 
         try {
+            const ai = await this.getAi()
             const systemInstruction = t('ai.prompts.mentor.systemInstruction')
             const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang)
             const localizedPrompt = createLocalizedPrompt(prompt, lang)
-            const response = await this.ai.models.generateContent({
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: localizedPrompt,
                 config: {
@@ -357,7 +362,8 @@ PLANT CONTEXT:
         })
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
         try {
-            const response = await this.ai.models.generateContent({
+            const ai = await this.getAi()
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash',
                 contents: localizedPrompt,
                 config: {
@@ -429,7 +435,8 @@ PLANT CONTEXT:
 
 
         try {
-            const response = await this.ai.models.generateContent({
+            const ai = await this.getAi()
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-flash-image',
                 contents: {
                     parts: [
@@ -463,7 +470,8 @@ PLANT CONTEXT:
         })
         const localizedPrompt = createLocalizedPrompt(prompt, lang)
         try {
-            const response = await this.ai.models.generateContent({
+            const ai = await this.getAi()
+            const response = await ai.models.generateContent({
                 model: 'gemini-2.5-pro',
                 contents: localizedPrompt,
                 config: {

@@ -8,6 +8,7 @@ import { Button } from './Button';
 
 // Browser compatibility for the Web Speech API
 const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+const hasSpeechRecognitionSupport = typeof SpeechRecognitionAPI === 'function';
 
 export const VoiceControl: React.FC = () => {
     const { t } = useTranslation();
@@ -47,7 +48,7 @@ export const VoiceControl: React.FC = () => {
     }, [dispatch]);
 
     useEffect(() => {
-        if (!isAvailable) return;
+        if (!isAvailable || !hasSpeechRecognitionSupport) return;
 
         const recognition = new SpeechRecognitionAPI();
         recognition.continuous = false;
@@ -77,7 +78,7 @@ export const VoiceControl: React.FC = () => {
     }, [lang]);
 
     const toggleListening = () => {
-        if (!isAvailable || !recognitionRef.current) return;
+        if (!isAvailable || !hasSpeechRecognitionSupport || !recognitionRef.current) return;
         
         if (isListening) {
             recognitionRef.current.stop();
@@ -100,7 +101,7 @@ export const VoiceControl: React.FC = () => {
         }
     };
     
-    if (!isAvailable) {
+    if (!isAvailable || !hasSpeechRecognitionSupport) {
         return null;
     }
 

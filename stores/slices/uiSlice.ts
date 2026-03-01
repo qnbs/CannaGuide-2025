@@ -76,7 +76,8 @@ export const initialState: UIState = {
         isListening: false,
         isAvailable:
             typeof window !== 'undefined' &&
-            ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window),
+            (typeof (window as any).SpeechRecognition === 'function' ||
+                typeof (window as any).webkitSpeechRecognition === 'function'),
         lastTranscript: null,
         statusMessage: null,
     },

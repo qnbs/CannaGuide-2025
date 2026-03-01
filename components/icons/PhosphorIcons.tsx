@@ -8,7 +8,6 @@
  * @version 2.0.0
  * @author CannaGuide 2025 AI Assistant
  */
-/* eslint-disable react/display-name */
 import React, { memo } from 'react';
 
 // --- Base Component & Type Definitions ---

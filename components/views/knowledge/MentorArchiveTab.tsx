@@ -30,19 +30,12 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
     const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedIds, setSelectedIds] = useState(new Set<string>())
-
-    // Defensive check to prevent rendering with invalid data structure
-    if (!Array.isArray(archivedResponses)) {
-        return (
-            <Card>
-                <SkeletonLoader count={3} />
-            </Card>
-        )
-    }
+    const hasInvalidArchiveData = !Array.isArray(archivedResponses)
+    const normalizedArchiveResponses = Array.isArray(archivedResponses) ? archivedResponses : []
 
     const sortedArchive = useMemo(
-        () => [...(archivedResponses || [])].sort((a, b) => b.createdAt - a.createdAt),
-        [archivedResponses],
+        () => [...normalizedArchiveResponses].sort((a, b) => b.createdAt - a.createdAt),
+        [normalizedArchiveResponses],
     )
 
     const filteredArchive = useMemo(() => {
@@ -57,6 +50,14 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
                 (res.content || '').toLowerCase().includes(lowerCaseSearch),
         )
     }, [sortedArchive, searchTerm])
+
+    if (hasInvalidArchiveData) {
+        return (
+            <Card>
+                <SkeletonLoader count={3} />
+            </Card>
+        )
+    }
 
     const handleToggleSelection = (id: string) => {
         setSelectedIds((prev) => {
@@ -137,7 +138,7 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
                                         />
                                         <div className="flex-grow">
                                             <p className="text-xs text-slate-400 italic">
-                                                {t('knowledgeView.archive.queryLabel')}: "{res.query}"
+                                                {t('knowledgeView.archive.queryLabel')}: &quot;{res.query}&quot;
                                             </p>
                                             <h4 className="font-bold text-primary-300 mt-1">
                                                 {res.title}

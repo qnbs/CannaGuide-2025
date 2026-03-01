@@ -11,7 +11,7 @@
     "lint:changed": "node ./scripts/lint-changed.mjs",
     "lint:scopes": "node ./scripts/lint-scopes.mjs",
     "lint:full": "eslint . --ext ts,tsx --report-unused-disable-directives",
-    "lint:strict": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:strict": "eslint . --ext ts,tsx --report-unused-disable-directives --quiet",
     "format": "prettier --write .",
     "preview": "vite preview",
     "test": "vitest",

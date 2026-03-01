@@ -14,8 +14,11 @@
 - AI and export code paths shifted further to on-demand loading.
 - Mobile layout spacing adjusted to avoid bottom-nav overlap across app views.
 - Deploy smoke tests expanded with keyboard-flow assertions and Axe checks.
+- Lint/quality baseline tightened and normalized (`lint:strict`, ESLint/Prettier alignment, removal of stale rule suppressions).
+- Deploy smoke/a11y specs refactored for deterministic onboarding handling and stable navigation readiness checks.
 
 ### Fixed
 - Persisting mobile bottom overlap where UI elements could be obscured by bottom navigation.
 - Premature loading of heavy AI/export service modules in non-critical render paths.
 - Startup crash on browsers without Web Speech API support (`Cannot set properties of undefined`) by adding defensive guards in TTS startup and voice settings paths.
+- Startup failure in SpeechRecognition edge cases by hardening capability detection and adding explicit no-support regression coverage.

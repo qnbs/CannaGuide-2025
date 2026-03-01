@@ -77,7 +77,6 @@ export const StrainsView: React.FC = () => {
                 dispatch(hydrateFilters(parsedState));
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch]);
 
     const viewIcons = useMemo(() => ({

@@ -2,32 +2,49 @@
 import { TTSSettings, Language } from '@/types';
 
 class TTSService {
-    private synth: SpeechSynthesis;
+    private synth: SpeechSynthesis | null = null;
     private voices: SpeechSynthesisVoice[] = [];
     private onEndCallback: (() => void) | null = null;
     private isInitialized: boolean = false;
 
     constructor() {
-        this.synth = window.speechSynthesis;
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window && window.speechSynthesis) {
+            this.synth = window.speechSynthesis;
+        }
+    }
+
+    public isSupported(): boolean {
+        return this.synth !== null;
     }
     
     public init() {
-        if (this.isInitialized) return;
+        if (this.isInitialized || !this.synth) return;
         this.synth.onvoiceschanged = this.loadVoices.bind(this);
         this.loadVoices(); // Initial attempt
         this.isInitialized = true;
     }
 
     private loadVoices() {
+        if (!this.synth) {
+            this.voices = [];
+            return;
+        }
         this.voices = this.synth.getVoices();
     }
 
     public getVoices(lang: Language): SpeechSynthesisVoice[] {
-        const langCode = lang === 'de' ? 'de-DE' : 'en-US';
+        if (!this.synth) {
+            return [];
+        }
         return this.voices.filter(voice => voice.lang.startsWith(lang));
     }
 
     speak(text: string, lang: Language, onEnd: () => void, settings: TTSSettings) {
+        if (!this.synth || typeof SpeechSynthesisUtterance === 'undefined') {
+            onEnd();
+            return;
+        }
+
         if (this.synth.speaking) {
             this.synth.cancel();
         }
@@ -68,14 +85,23 @@ class TTSService {
     
     cancel() {
         this.onEndCallback = null;
+        if (!this.synth) {
+            return;
+        }
         this.synth.cancel();
     }
 
     pause() {
+        if (!this.synth) {
+            return;
+        }
         this.synth.pause();
     }
 
     resume() {
+        if (!this.synth) {
+            return;
+        }
         this.synth.resume();
     }
 }

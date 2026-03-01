@@ -47,6 +47,8 @@ const VoiceSettingsTab: React.FC = () => {
 
     const handleTestVoice = () => {
         if (!settings.tts.enabled) return;
+        if (typeof window === 'undefined' || !('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
+
         const utterance = new SpeechSynthesisUtterance(t('settingsView.tts.testVoiceSentence'));
         const langCode = settings.general.language === 'de' ? 'de-DE' : 'en-US';
         
@@ -60,8 +62,9 @@ const VoiceSettingsTab: React.FC = () => {
         utterance.pitch = settings.tts.pitch;
         utterance.volume = settings.tts.volume;
 
-        window.speechSynthesis.cancel();
-        window.speechSynthesis.speak(utterance);
+        const synth = window.speechSynthesis;
+        synth.cancel();
+        synth.speak(utterance);
     };
 
     const allCommands = useMemo(() => ([

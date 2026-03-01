@@ -9,6 +9,11 @@ export const useAvailableVoices = () => {
     const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
 
     useEffect(() => {
+        if (!ttsService.isSupported()) {
+            setVoices([])
+            return
+        }
+
         const updateVoices = () => {
             setVoices(ttsService.getVoices(language))
         }
@@ -17,10 +22,11 @@ export const useAvailableVoices = () => {
         updateVoices()
 
         // Update when voices change
-        window.speechSynthesis.onvoiceschanged = updateVoices
+        const synth = window.speechSynthesis
+        synth.onvoiceschanged = updateVoices
 
         return () => {
-            window.speechSynthesis.onvoiceschanged = null
+            synth.onvoiceschanged = null
         }
     }, [language])
 

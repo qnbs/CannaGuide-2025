@@ -162,7 +162,7 @@ export const App: React.FC = () => {
     return (
         <div className="flex flex-col md:flex-row h-screen bg-[rgb(var(--color-bg-primary))] text-slate-300 font-sans">
             <SideNav />
-            <div className="flex flex-col flex-grow overflow-hidden">
+            <div className="flex flex-col flex-grow overflow-hidden min-h-0">
                 <Header
                     onCommandPaletteOpen={() => dispatch(setIsCommandPaletteOpen(true))}
                     deferredPrompt={deferredPrompt}
@@ -170,7 +170,7 @@ export const App: React.FC = () => {
                     onInstallClick={handleInstallClick}
                 />
                 <main
-                    className="flex-grow overflow-y-auto p-4 sm:p-6 pb-6 scroll-pb-8"
+                    className="flex-grow min-h-0 overflow-y-auto p-4 sm:p-6 pb-6 scroll-pb-8"
                 >
                     {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>

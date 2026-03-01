@@ -132,9 +132,9 @@ const openDB = (): Promise<IDBDatabase> => {
  * @param {(store: IDBObjectStore) => IDBRequest<T>} action A callback that receives the store and should return an IDBRequest.
  * @returns {Promise<T>} A promise that resolves with the result of the request upon transaction completion.
  */
-const performTx = <T>(storeName: string, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> => {
-    return new Promise(async (resolve, reject) => {
-        await openDB();
+const performTx = async <T>(storeName: string, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> => {
+    await openDB();
+    return new Promise((resolve, reject) => {
         const transaction = db.transaction(storeName, mode);
         let requestResult: T;
 

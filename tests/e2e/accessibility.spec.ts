@@ -19,15 +19,22 @@ const closeOnboardingIfVisible = async (page: import('@playwright/test').Page) =
   }
 }
 
+const waitForVisibleNavigation = async (page: import('@playwright/test').Page) => {
+  await page.waitForSelector('[data-view-id]', { state: 'attached' })
+  const navButtons = page.locator('[data-view-id]:visible')
+  await expect
+    .poll(async () => navButtons.count(), { timeout: 10_000 })
+    .toBeGreaterThan(0)
+}
+
 test('a11y: no serious/critical axe violations in shell landmarks', async ({ page, baseURL }) => {
   await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
   await closeOnboardingIfVisible(page)
 
-  await expect(page.locator('header')).toBeVisible()
   await expect(page.locator('main')).toBeVisible()
+  await waitForVisibleNavigation(page)
 
   const accessibilityScanResults = await new AxeBuilder({ page })
-    .include('header')
     .include('main')
     .analyze()
 

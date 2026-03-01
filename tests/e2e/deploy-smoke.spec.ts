@@ -2,30 +2,47 @@ import { expect, test } from '@playwright/test'
 
 const crashPatterns = [/Something went wrong\./i, /An unexpected error occurred\./i, /Application Error/i]
 
-test('deploy smoke: shell, assets and main navigation render without crash', async ({ page, request, baseURL }) => {
-  await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
-
+const closeOnboardingIfVisible = async (page: import('@playwright/test').Page) => {
   const onboardingDialog = page.getByRole('dialog')
-  if (await onboardingDialog.isVisible().catch(() => false)) {
-    for (let step = 0; step < 6; step += 1) {
-      const isVisible = await onboardingDialog.isVisible().catch(() => false)
-      if (!isVisible) {
-        break
-      }
-
-      const actionButton = onboardingDialog.locator('button').last()
-      await actionButton.click()
-      await page.waitForTimeout(150)
-    }
+  if (!(await onboardingDialog.isVisible().catch(() => false))) {
+    return
   }
 
-  await expect(page).toHaveTitle(/CannaGuide|Cannaguide/i)
+  for (let step = 0; step < 6; step += 1) {
+    const isVisible = await onboardingDialog.isVisible().catch(() => false)
+    if (!isVisible) {
+      break
+    }
 
+    const actionButton = onboardingDialog.locator('button').last()
+    await actionButton.click()
+    await page.waitForTimeout(150)
+  }
+}
+
+const expectNoCrashPatterns = async (page: import('@playwright/test').Page) => {
   for (const pattern of crashPatterns) {
     await expect(page.getByText(pattern)).toHaveCount(0)
   }
+}
 
+const waitForVisibleNavigation = async (page: import('@playwright/test').Page) => {
+  await page.waitForSelector('[data-view-id]', { state: 'attached' })
   const navButtons = page.locator('[data-view-id]:visible')
+  await expect
+    .poll(async () => navButtons.count(), { timeout: 10_000 })
+    .toBeGreaterThan(0)
+  return navButtons
+}
+
+test('deploy smoke: shell, assets and main navigation render without crash', async ({ page, request, baseURL }) => {
+  await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
+  await closeOnboardingIfVisible(page)
+
+  await expect(page).toHaveTitle(/CannaGuide|Cannaguide/i)
+  await expectNoCrashPatterns(page)
+
+  const navButtons = await waitForVisibleNavigation(page)
   await expect(navButtons.first()).toBeVisible()
 
   const count = await navButtons.count()
@@ -37,9 +54,7 @@ test('deploy smoke: shell, assets and main navigation render without crash', asy
 
   for (let index = 0; index < count; index += 1) {
     await navButtons.nth(index).click()
-    for (const pattern of crashPatterns) {
-      await expect(page.getByText(pattern)).toHaveCount(0)
-    }
+    await expectNoCrashPatterns(page)
   }
 
   const manifestUrl = new URL('manifest.json', baseURL).toString()
@@ -72,27 +87,12 @@ test('deploy smoke: app starts without Web Speech API support', async ({ page, b
   })
 
   await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
-
-  const onboardingDialog = page.getByRole('dialog')
-  if (await onboardingDialog.isVisible().catch(() => false)) {
-    for (let step = 0; step < 6; step += 1) {
-      const isVisible = await onboardingDialog.isVisible().catch(() => false)
-      if (!isVisible) {
-        break
-      }
-
-      await onboardingDialog.locator('button').last().click()
-      await page.waitForTimeout(150)
-    }
-  }
+  await closeOnboardingIfVisible(page)
 
   await expect(page).toHaveTitle(/CannaGuide|Cannaguide/i)
+  await expectNoCrashPatterns(page)
 
-  for (const pattern of crashPatterns) {
-    await expect(page.getByText(pattern)).toHaveCount(0)
-  }
-
-  const navButtons = page.locator('[data-view-id]:visible')
+  const navButtons = await waitForVisibleNavigation(page)
   await expect(navButtons.first()).toBeVisible()
 })
 
@@ -118,26 +118,11 @@ test('deploy smoke: app starts without SpeechRecognition support', async ({ page
   })
 
   await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
-
-  const onboardingDialog = page.getByRole('dialog')
-  if (await onboardingDialog.isVisible().catch(() => false)) {
-    for (let step = 0; step < 6; step += 1) {
-      const isVisible = await onboardingDialog.isVisible().catch(() => false)
-      if (!isVisible) {
-        break
-      }
-
-      await onboardingDialog.locator('button').last().click()
-      await page.waitForTimeout(150)
-    }
-  }
+  await closeOnboardingIfVisible(page)
 
   await expect(page).toHaveTitle(/CannaGuide|Cannaguide/i)
+  await expectNoCrashPatterns(page)
 
-  for (const pattern of crashPatterns) {
-    await expect(page.getByText(pattern)).toHaveCount(0)
-  }
-
-  const navButtons = page.locator('[data-view-id]:visible')
+  const navButtons = await waitForVisibleNavigation(page)
   await expect(navButtons.first()).toBeVisible()
 })

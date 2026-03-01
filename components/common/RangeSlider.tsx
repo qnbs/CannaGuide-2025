@@ -22,30 +22,58 @@ type RangeSliderProps = {
 )
 
 export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
-    const { min, max, step, label, unit, color = 'primary' } = props;
-    const rangeId = useId();
+    const { min, max, step, label, unit, color = 'primary' } = props
+    const rangeId = useId()
+    const isSingleValue = props.singleValue === true
+
+    const [minZIndex, setMinZIndex] = useState(1)
+    const [maxZIndex, setMaxZIndex] = useState(1)
 
     const colorMap = {
         primary: { active: 'rgb(var(--color-primary-400))', inactive: 'rgb(var(--color-primary-500))', bg: 'bg-primary-500' },
         green: { active: 'rgb(var(--color-secondary-300))', inactive: 'rgb(var(--color-secondary-400))', bg: 'bg-secondary-500' },
         blue: { active: 'rgb(var(--color-info))', inactive: 'rgb(var(--color-info))', bg: 'bg-info' },
-    };
-    const { active, inactive, bg } = colorMap[color] || colorMap.primary;
+    }
+    const { active, inactive, bg } = colorMap[color] || colorMap.primary
+
+    const rangeValue = isSingleValue ? ([min, max] as [number, number]) : props.value
+
+    const handleMinChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (isSingleValue) {
+                return
+            }
+            const newMinVal = Math.min(Number(e.target.value), rangeValue[1] - step)
+            ;(props.onChange as (v: [number, number]) => void)([newMinVal, rangeValue[1]])
+        },
+        [isSingleValue, rangeValue, props.onChange, step],
+    )
+
+    const handleMaxChange = useCallback(
+        (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (isSingleValue) {
+                return
+            }
+            const newMaxVal = Math.max(Number(e.target.value), rangeValue[0] + step)
+            ;(props.onChange as (v: [number, number]) => void)([rangeValue[0], newMaxVal])
+        },
+        [isSingleValue, rangeValue, props.onChange, step],
+    )
 
     // --- SINGLE VALUE MODE ---
-    if (props.singleValue) {
-        const { value, onChange } = props;
+    if (isSingleValue) {
+        const { value, onChange } = props
 
         const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             onChange(Number(e.target.value));
-        };
+        }
         
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const numValue = e.target.value === '' ? min : Number(e.target.value);
             if (!isNaN(numValue)) {
                 onChange(numValue);
             }
-        };
+        }
 
         const handleInputBlur = (e: React.FocusEvent<HTMLInputElement>) => {
             let numValue = Number(e.target.value);
@@ -53,9 +81,9 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
             if (numValue < min) numValue = min;
             if (numValue > max) numValue = max;
             onChange(numValue);
-        };
+        }
 
-        const pos = max > min ? ((value - min) / (max - min)) * 100 : 0;
+        const pos = max > min ? ((value - min) / (max - min)) * 100 : 0
 
         return (
             <div>
@@ -98,33 +126,25 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                     </div>
                 </div>
             </div>
-        );
+        )
     } 
     // --- RANGE MODE ---
     else {
-        const { value, onChange } = props;
-        const [minZIndex, setMinZIndex] = useState(1);
-        const [maxZIndex, setMaxZIndex] = useState(1);
-
-        const handleMinChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-            const val = value as [number, number];
-            const newMinVal = Math.min(Number(e.target.value), val[1] - step);
-            (onChange as (v: [number, number]) => void)([newMinVal, val[1]]);
-        }, [onChange, value, step]);
-
-        const handleMaxChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-            const val = value as [number, number];
-            const newMaxVal = Math.max(Number(e.target.value), val[0] + step);
-            (onChange as (v: [number, number]) => void)([val[0], newMaxVal]);
-        }, [onChange, value, step]);
+        const value = props.value as [number, number]
         
-        const handleMinInteraction = () => { setMinZIndex(2); setMaxZIndex(1); };
-        const handleMaxInteraction = () => { setMaxZIndex(2); setMinZIndex(1); };
+        const handleMinInteraction = () => {
+            setMinZIndex(2)
+            setMaxZIndex(1)
+        }
+        const handleMaxInteraction = () => {
+            setMaxZIndex(2)
+            setMinZIndex(1)
+        }
 
-        const minPos = ((value[0] - min) / (max - min)) * 100;
-        const maxPos = ((value[1] - min) / (max - min)) * 100;
-        const minIsActive = minZIndex > maxZIndex;
-        const maxIsActive = maxZIndex > minZIndex;
+        const minPos = ((value[0] - min) / (max - min)) * 100
+        const maxPos = ((value[1] - min) / (max - min)) * 100
+        const minIsActive = minZIndex > maxZIndex
+        const maxIsActive = maxZIndex > minZIndex
 
         return (
             <div>
@@ -173,6 +193,6 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                     </div>
                 </div>
             </div>
-        );
+        )
     }
 }

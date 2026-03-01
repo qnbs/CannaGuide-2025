@@ -59,7 +59,7 @@ const Stepper: React.FC<{ currentStep: number; steps: string[] }> = ({ currentSt
     </div>
 )
 
-const SetupResultDisplay: React.FC<{
+const SetupResultDisplayComponent: React.FC<{
     recommendation: Recommendation
     sourceDetails: Omit<
         SavedSetup,
@@ -67,7 +67,7 @@ const SetupResultDisplay: React.FC<{
     >['sourceDetails']
     onSave: () => void
     onReset: () => void
-}> = memo(({ recommendation, sourceDetails, onSave, onReset }) => {
+}> = ({ recommendation, sourceDetails, onSave, onReset }) => {
     const { t } = useTranslation()
     const categoryOrder: RecommendationCategory[] = [
         'tent',
@@ -125,7 +125,7 @@ const SetupResultDisplay: React.FC<{
                                     {item.price.toFixed(2)} {t('common.units.currency_eur')}
                                 </p>
                             </div>
-                            <p className="text-xs text-slate-400 mt-1 italic">"{item.rationale}"</p>
+                            <p className="text-xs text-slate-400 mt-1 italic">&quot;{item.rationale}&quot;</p>
                         </div>
                     )
                 })}
@@ -158,7 +158,9 @@ const SetupResultDisplay: React.FC<{
             </div>
         </div>
     )
-})
+}
+
+const SetupResultDisplay = memo(SetupResultDisplayComponent)
 
 export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetup }) => {
     const { t } = useTranslation()

@@ -25,7 +25,7 @@ interface AiTabProps {
     plant: Plant
 }
 
-export const AiTab: React.FC<AiTabProps> = memo(({ plant }) => {
+const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const lang = useAppSelector(selectLanguage)
@@ -287,4 +287,6 @@ export const AiTab: React.FC<AiTabProps> = memo(({ plant }) => {
             </Card>
         </div>
     )
-});
+}
+
+export const AiTab: React.FC<AiTabProps> = memo(AiTabComponent)

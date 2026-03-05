@@ -24,7 +24,8 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
             'colorblind-deuteranopia',
             'colorblind-tritanopia',
             // All possible theme classes. We must list them manually as Theme is a TypeScript type, not a runtime object.
-            'theme-midnight', 'theme-forest', 'theme-purpleHaze', 'theme-desertSky', 'theme-roseQuartz', 'theme-rainbowKush'
+            'theme-midnight', 'theme-forest', 'theme-purpleHaze', 'theme-desertSky', 'theme-roseQuartz', 'theme-rainbowKush',
+            'theme-ogKushGreen', 'theme-runtzRainbow', 'theme-lemonSkunk'
         ];
         
         // --- ATOMIC UPDATE: Step 1: Reset ---
@@ -51,7 +52,18 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
         root.lang = general.language;
 
         const themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
-        const fallbackBgColor = window.getComputedStyle(root).getPropertyValue('--color-bg-primary').trim()
+        // Per-theme base colours (match --color-bg-primary from styles.css)
+        const themeColorMap: Partial<Record<string, string>> = {
+            midnight: '#050A14',
+            forest: '#121D1B',
+            purpleHaze: '#1C122B',
+            desertSky: '#111827',
+            roseQuartz: '#2B1221',
+            rainbowKush: '#141419',
+            ogKushGreen: '#0C140E',
+            runtzRainbow: '#0F0C16',
+            lemonSkunk: '#101208',
+        }
         const viewThemeMap: Partial<Record<View, string>> = {
             [View.Plants]: '#0b1f19',
             [View.Strains]: '#131c2e',
@@ -61,7 +73,9 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
             [View.Help]: '#1f1722',
         }
         if (themeMeta) {
-            themeMeta.content = (activeView && viewThemeMap[activeView]) || (fallbackBgColor ? `rgb(${fallbackBgColor})` : '#0F172A')
+            themeMeta.content = (activeView && viewThemeMap[activeView]) ||
+                themeColorMap[general.theme] ||
+                '#0F172A'
         }
         
     }, [settings, activeView]) // The hook re-runs whenever any part of the settings object changes.

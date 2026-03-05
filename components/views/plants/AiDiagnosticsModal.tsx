@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Plant, PlantDiagnosisResponse, JournalEntryType, PhotoCategory, Language } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/common/Button'
@@ -169,6 +169,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     const [image, setImage] = useState<string | null>(null)
     const [isDragging, setIsDragging] = useState(false)
     const [isCameraOpen, setIsCameraOpen] = useState(false)
+    const cameraButtonRef = useRef<HTMLButtonElement>(null)
     const [userNotes, setUserNotes] = useState('')
     const [loadingMessage, setLoadingMessage] = useState('')
     const [consentGiven, setConsentGiven] = useState(() => localStorage.getItem(IMAGE_CONSENT_KEY) === '1')
@@ -289,6 +290,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                 <CameraModal
                     isOpen={isCameraOpen}
                     onClose={() => setIsCameraOpen(false)}
+                    triggerRef={cameraButtonRef}
                     onCapture={handleCapture}
                 />
             )}
@@ -358,6 +360,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                             />
                             <Button
                                 onClick={() => setIsCameraOpen(true)}
+                                ref={cameraButtonRef}
                                 variant="secondary"
                                 className="w-full min-h-11"
                                 disabled={!consentGiven}

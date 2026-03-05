@@ -20,4 +20,32 @@ export const onboarding = {
     text: 'Learn with the interactive guide, ask the AI mentor for advice, and use the lexicons to deepen your knowledge.',
   },
   startGrow: "Let's Start Your First Grow!",
-};
+  wizard: {
+    stepExperience: {
+      title: '🌱 Your Experience Level',
+      text: 'This personalises the simulation difficulty and AI advice for you.',
+      beginner: { label: 'Beginner', desc: 'First grow ever – keep it simple!' },
+      intermediate: { label: 'Intermediate', desc: 'A few grows under my belt.' },
+      expert: { label: 'Expert', desc: 'Advanced grower – max realism.' },
+    },
+    stepGoal: {
+      title: '🎯 Your Main Goal',
+      text: 'We will highlight the most relevant features and strains for you.',
+      medical: { label: 'Medical / CBD', desc: 'High-CBD, low-stress cultivation.' },
+      recreational: { label: 'Recreational', desc: 'Top yields and potency.' },
+      hobbyist: { label: 'Hobbyist', desc: 'Learn and explore at my own pace.' },
+    },
+    stepSetup: {
+      title: '🏠 Space & Budget',
+      text: 'We will suggest the best starter setup and top 3 strains for you.',
+      small: { label: 'Small (< 0.5 m²)', desc: 'Micro-tent or closet.' },
+      medium: { label: 'Medium (0.6–1.5 m²)', desc: 'Classic 80×80 or 1×1 tent.' },
+      large: { label: 'Large (> 1.5 m²)', desc: '1.2×1.2 tent or room.' },
+      budgetLabel: 'Starter Budget',
+      budgetLow: '< €150',
+      budgetMid: '€150 – €400',
+      budgetHigh: '> €400',
+    },
+    finish: "Perfect – let's grow! 🎉",
+  },
+}

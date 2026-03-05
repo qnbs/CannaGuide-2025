@@ -38,7 +38,8 @@ export type HeightLevel = 'Short' | 'Medium' | 'Tall';
 
 export type Language = 'en' | 'de';
 
-export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz' | 'rainbowKush';
+export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz' | 'rainbowKush' | 'ogKushGreen' | 'runtzRainbow' | 'lemonSkunk';
+export type GrowGoal = 'medical' | 'recreational' | 'hobbyist';
 
 export type SortKey = 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'yield' | 'height';
 export type SortDirection = 'asc' | 'desc';

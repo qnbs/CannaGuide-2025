@@ -1,8 +1,10 @@
 import React, { memo, useMemo, useState } from 'react'
 import { CalculatorSection, Input } from './common'
 import { chemotypeService } from '@/services/chemotypeService'
+import { useTranslation } from 'react-i18next'
 
 export const ChemotypeCalculator: React.FC = memo(() => {
+    const { t } = useTranslation()
     const [values, setValues] = useState({
         thc: 18,
         cbd: 1.2,
@@ -22,8 +24,8 @@ export const ChemotypeCalculator: React.FC = memo(() => {
 
     return (
         <CalculatorSection
-            title="Terpen-/Cannabinoid-Profil Rechner"
-            description="Profilanalyse fur THC/CBD/CBG und dominante Terpene inklusive Vorsichtshinweisen."
+            title={t('equipmentView.calculators.chemotype.title')}
+            description={t('equipmentView.calculators.chemotype.description')}
         >
             <div className="grid grid-cols-2 gap-3">
                 <Input label="THC" unit="%" type="number" step="0.1" value={values.thc} onChange={(e) => update('thc', e.target.value)} />
@@ -37,11 +39,11 @@ export const ChemotypeCalculator: React.FC = memo(() => {
             </div>
 
             <div className="bg-slate-800/60 rounded-lg p-3 ring-1 ring-inset ring-white/20 space-y-1">
-                <p>Total cannabinoids: {result.totalCannabinoids.toFixed(2)}%</p>
-                <p>Total terpenes: {result.totalTerpenes.toFixed(2)}%</p>
-                <p>Dominant cannabinoid: {result.dominantCannabinoid}</p>
-                <p>Dominant terpene: {result.dominantTerpene}</p>
-                <p className="font-semibold text-primary-300 mt-1">Profile: {result.profileLabel}</p>
+                <p>{t('equipmentView.calculators.chemotype.totalCannabinoids')}: {result.totalCannabinoids.toFixed(2)}%</p>
+                <p>{t('equipmentView.calculators.chemotype.totalTerpenes')}: {result.totalTerpenes.toFixed(2)}%</p>
+                <p>{t('equipmentView.calculators.chemotype.dominantCannabinoid')}: {result.dominantCannabinoid}</p>
+                <p>{t('equipmentView.calculators.chemotype.dominantTerpene')}: {result.dominantTerpene}</p>
+                <p className="font-semibold text-primary-300 mt-1">{t('equipmentView.calculators.chemotype.profile')}: {result.profileLabel}</p>
             </div>
 
             <ul className="text-sm text-slate-300 space-y-1">

@@ -271,4 +271,16 @@ export const plantsView = {
     checkNowBtn: 'Jetzt prüfen',
     statusLabel: 'Status: {{permission}}. Periodische Hintergrundsynchronisierung wird genutzt, wenn verfügbar.',
   },
+  sensor: {
+    title: 'ESP32 Sensor Hub',
+    description: 'WebBluetooth-Integration für Temperatur-/Feuchte-Sensoren. Unterstützt ESP32 (Environmental Sensing).',
+    connect: 'Sensor lesen',
+    connecting: 'Verbinde...',
+    success: 'Sensorwerte übernommen.',
+    error: 'Sensorverbindung fehlgeschlagen.',
+    temperature: 'Temperatur',
+    humidity: 'Feuchte',
+    lastUpdated: 'Zuletzt aktualisiert',
+    noData: 'Noch keine Sensordaten.',
+  },
 };

@@ -35,6 +35,12 @@ body {
 	overflow: hidden; /* Prevent body scrollbar, relying on internal scrolling */
 }
 
+.dialog-open,
+.dialog-open body {
+	overflow: hidden;
+	overscroll-behavior: none;
+}
+
 /* Style to hide spinners on number inputs */
 .no-spinner::-webkit-inner-spin-button,
 .no-spinner::-webkit-outer-spin-button {

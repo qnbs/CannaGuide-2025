@@ -78,7 +78,7 @@ const EditResponseModalComponent = <T extends EditableResponse>({
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => applyFormat('bold')}
-                                className="!p-1.5"
+                                className="!p-0 min-h-11 min-w-11 inline-flex items-center justify-center"
                                 aria-label={t('common.editor.bold')}
                             >
                                 <PhosphorIcons.TextBolder className="w-5 h-5" />
@@ -88,7 +88,7 @@ const EditResponseModalComponent = <T extends EditableResponse>({
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => applyFormat('italic')}
-                                className="!p-1.5"
+                                className="!p-0 min-h-11 min-w-11 inline-flex items-center justify-center"
                                 aria-label={t('common.editor.italic')}
                             >
                                 <PhosphorIcons.TextItalic className="w-5 h-5" />
@@ -98,7 +98,7 @@ const EditResponseModalComponent = <T extends EditableResponse>({
                                 variant="secondary"
                                 size="sm"
                                 onClick={() => applyFormat('insertUnorderedList')}
-                                className="!p-1.5"
+                                className="!p-0 min-h-11 min-w-11 inline-flex items-center justify-center"
                                 aria-label={t('common.editor.list')}
                             >
                                 <PhosphorIcons.ListBullets className="w-5 h-5" />

@@ -40,7 +40,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                     key={tab.id}
                     data-tab-id={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-shrink-0 flex items-center justify-center gap-2 px-3 sm:px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap focus:outline-none focus-visible:bg-slate-700/50 rounded-t-md ${
+                    className={`flex-shrink-0 flex items-center justify-center min-h-11 gap-2 px-3 sm:px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap focus:outline-none focus-visible:bg-slate-700/50 rounded-t-md ${
                         activeTab === tab.id
                             ? 'text-primary-300 text-glow'
                             : 'text-slate-400 hover:text-slate-100'

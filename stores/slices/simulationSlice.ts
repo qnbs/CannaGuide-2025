@@ -265,9 +265,11 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
         const state = getState();
         const plant = state.simulation.plants.entities[plantId];
         if (plant) {
-            const deltaTime = Date.now() - plant.lastUpdated;
-            if (deltaTime > 1000 * 60) { // Only update if more than a minute has passed
-                const worker = new Worker(new URL('/simulation.worker.ts', import.meta.url), { type: 'module' });
+            const actualElapsed = Date.now() - plant.lastUpdated;
+            // Apply devSpeedMultiplier so sped-up dev sessions simulate more days per real second
+            const deltaTime = actualElapsed * (state.simulation.devSpeedMultiplier ?? 1);
+            if (actualElapsed > 1000 * 60) { // Only update if more than a minute has passed
+                const worker = new Worker(new URL('../../simulation.worker.ts', import.meta.url), { type: 'module' });
                 worker.onmessage = (e) => {
                     dispatch(simulationSlice.actions.plantStateUpdated(e.data));
                     worker.terminate();

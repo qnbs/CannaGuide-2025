@@ -210,6 +210,8 @@ export interface Plant {
     tasks: Task[];
     harvestData: HarvestData | null;
     structuralModel: { branches: number; nodes: number };
+    // Per-individual phenotype expression; may diverge from strain defaults via training or amendments
+    phenotypeModifiers?: GeneticModifiers;
     history: PlantHistoryEntry[];
     // Real-time chemical synthesis tracking
     cannabinoidProfile: { thc: number; cbd: number; cbn: number; };

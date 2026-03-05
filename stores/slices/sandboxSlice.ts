@@ -21,7 +21,7 @@ export const runComparisonScenario = createAsyncThunk<
             return reject(new Error('Base plant not found for scenario.'))
         }
 
-        const worker = new Worker(new URL('/workers/scenario.worker.ts', import.meta.url), {
+        const worker = new Worker(new URL('../../workers/scenario.worker.ts', import.meta.url), {
             type: 'module',
         })
 

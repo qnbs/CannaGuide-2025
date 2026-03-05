@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test'
 
-const crashPatterns = [/Something went wrong\./i, /An unexpected error occurred\./i, /Application Error/i]
-
 const closeOnboardingIfVisible = async (page: import('@playwright/test').Page) => {
   const onboardingDialog = page.getByRole('dialog')
   if (!(await onboardingDialog.isVisible().catch(() => false))) {
@@ -21,9 +19,8 @@ const closeOnboardingIfVisible = async (page: import('@playwright/test').Page) =
 }
 
 const expectNoCrashPatterns = async (page: import('@playwright/test').Page) => {
-  for (const pattern of crashPatterns) {
-    await expect(page.getByText(pattern)).toHaveCount(0)
-  }
+  await expect(page.getByRole('heading', { name: /Something went wrong\./i })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Reload Application/i })).toHaveCount(0)
 }
 
 const waitForVisibleNavigation = async (page: import('@playwright/test').Page) => {

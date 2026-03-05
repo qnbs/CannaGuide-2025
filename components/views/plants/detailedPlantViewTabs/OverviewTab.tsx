@@ -13,6 +13,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { PlantVisualizer } from '../PlantVisualizer'
 import { exportService } from '@/services/exportService'
 import { dbService } from '@/services/dbService'
+import { VPDChart } from '../VPDChart'
 
 interface OverviewTabProps {
     plant: Plant
@@ -118,6 +119,12 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                         />
                     </div>
                 </div>
+            </Card>
+
+            {/* 6. Hourly VPD Simulation */}
+            <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-3">VPD 24h Simulation</h3>
+                <VPDChart plant={plant} />
             </Card>
         </div>
     )

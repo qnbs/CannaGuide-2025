@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
 import { Plant, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType, TrainingType, AmendmentType, VentilationPower, SimulationState, PlantStage } from '@/types';
-import { plantSimulationService, PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
+import { plantSimulationService, PLANT_STAGE_DETAILS, vpdService } from '@/services/plantSimulationService';
 import { RootState } from '../store';
 import { addNotification, cancelNewGrow, setActiveView } from './uiSlice';
 import { getT } from '@/i18n';
 import { GrowSetupSchema, WaterDataSchema, TrainingDataSchema, PestControlDataSchema, AmendmentDataSchema, FeedDataSchema } from '@/types/schemas';
 import { View } from '@/types';
+import type { SimulationPoint } from '@/types/simulation.types';
 
 
 export const plantsAdapter = createEntityAdapter<Plant>();
@@ -15,6 +16,7 @@ const initialState: SimulationState = {
     plantSlots: [null, null, null],
     selectedPlantId: null,
     devSpeedMultiplier: 1,
+    vpdProfiles: {},
 };
 
 // This is a pure function, copied here to avoid circular dependencies with plantSimulationService
@@ -46,6 +48,7 @@ const simulationSlice = createSlice({
             state.plants = action.payload.plants;
             state.plantSlots = action.payload.plantSlots;
             state.selectedPlantId = action.payload.selectedPlantId;
+            state.vpdProfiles = action.payload.vpdProfiles || {};
         },
         addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
             const { plant, slotIndex } = action.payload;
@@ -175,9 +178,25 @@ const simulationSlice = createSlice({
             plantsAdapter.removeAll(state.plants);
             state.plantSlots = [null, null, null];
             state.selectedPlantId = null;
+            state.vpdProfiles = {};
+        },
+        setPlantVpdProfile: (state, action: PayloadAction<{ plantId: string; points: SimulationPoint[] }>) => {
+            state.vpdProfiles[action.payload.plantId] = action.payload.points;
         },
     }
 });
+
+export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: RootState }>(
+    'simulation/generatePlantVpdProfile',
+    async (plantId, { getState, dispatch }) => {
+        const plant = getState().simulation.plants.entities[plantId];
+        if (!plant) return;
+
+        const input = vpdService.createInputFromPlant(plant);
+        const points = await vpdService.runDailyVPD(input);
+        dispatch(simulationSlice.actions.setPlantVpdProfile({ plantId, points }));
+    },
+);
 
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
@@ -373,7 +392,8 @@ export const {
     setVentilationPower,
     setGlobalEnvironment,
     processPostHarvest,
-    resetPlants
+    resetPlants,
+    setPlantVpdProfile,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

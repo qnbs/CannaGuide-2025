@@ -49,6 +49,12 @@ export const useDocumentEffects = (settings: AppSettings) => {
         root.style.fontSize =
             general.fontSize === 'sm' ? '14px' : general.fontSize === 'lg' ? '18px' : '16px';
         root.lang = general.language;
+
+        const themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
+        const bgColorToken = window.getComputedStyle(root).getPropertyValue('--color-bg-primary').trim()
+        if (themeMeta && bgColorToken) {
+            themeMeta.content = `rgb(${bgColorToken})`
+        }
         
     }, [settings]) // The hook re-runs whenever any part of the settings object changes.
 }

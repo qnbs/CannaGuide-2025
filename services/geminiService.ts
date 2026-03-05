@@ -9,6 +9,7 @@ import {
     DeepDiveGuide,
     MentorMessage,
     Language,
+    JournalEntry,
 } from '@/types'
 import { getT } from '@/i18n'
 import { apiKeyService } from '@/services/apiKeyService'
@@ -66,6 +67,71 @@ const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
     return `${languageInstruction}\n\n${basePrompt}`
 }
 
+const MAX_PROMPT_CHARS = 12000
+const MAX_OUTPUT_TOKENS_TEXT = 900
+const MAX_OUTPUT_TOKENS_JSON = 1400
+
+const truncatePromptForModel = (prompt: string, maxChars = MAX_PROMPT_CHARS): string => {
+    if (prompt.length <= maxChars) {
+        return prompt
+    }
+
+    const head = prompt.slice(0, Math.floor(maxChars * 0.7))
+    const tail = prompt.slice(-Math.floor(maxChars * 0.3))
+    return `${head}\n\n[...context truncated to fit token window...]\n\n${tail}`
+}
+
+const summarizeJournalForPrompt = (journal: JournalEntry[], maxRecent = 10): string => {
+    if (!journal || journal.length === 0) {
+        return 'No journal entries available.'
+    }
+
+    const byType = journal.reduce<Record<string, number>>((acc, entry) => {
+        acc[entry.type] = (acc[entry.type] || 0) + 1
+        return acc
+    }, {})
+
+    const typeSummary = Object.entries(byType)
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(', ')
+
+    const recentEntries = journal
+        .slice(-maxRecent)
+        .map((entry) => `- day=${new Date(entry.createdAt).toISOString()} type=${entry.type} notes=${entry.notes.slice(0, 140)}`)
+        .join('\n')
+
+    return `Total entries: ${journal.length}\nBy type: ${typeSummary}\nRecent entries:\n${recentEntries}`
+}
+
+const createCompactPlantSnapshot = (plant: Plant) => ({
+    id: plant.id,
+    name: plant.name,
+    strain: {
+        id: plant.strain.id,
+        name: plant.strain.name,
+        type: plant.strain.type,
+        thc: plant.strain.thc,
+        cbd: plant.strain.cbd,
+    },
+    stage: plant.stage,
+    age: plant.age,
+    health: plant.health,
+    stressLevel: plant.stressLevel,
+    mediumType: plant.mediumType,
+    vitals: {
+        temp: plant.environment.internalTemperature,
+        humidity: plant.environment.internalHumidity,
+        vpd: plant.environment.vpd,
+        ph: plant.medium.ph,
+        ec: plant.medium.ec,
+        moisture: plant.medium.moisture,
+        rootHealth: plant.rootSystem.health,
+    },
+    activeProblems: plant.problems.filter((p) => p.status === 'active').map((p) => ({ type: p.type, severity: p.severity })),
+    recentHistory: plant.history.slice(-20),
+    journalSummary: summarizeJournalForPrompt(plant.journal, 8),
+})
+
 type ImageCriteria = { focus: string; composition: string; mood: string };
 type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk';
 const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'macro', 'cyberpunk'];
@@ -80,8 +146,99 @@ const AI_ERROR_KEYS = new Set([
     'ai.error.unknown',
 ])
 
+const GEMINI_SAFETY_SETTINGS = [
+    {
+        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
+        threshold: 'BLOCK_NONE',
+    },
+]
+
+const getEducationalUseOnlyInstruction = (lang: Language): string =>
+    lang === 'de'
+        ? 'KONTEXT: Diese Anfrage dient ausschließlich legalen, edukativen Gartenbauzwecken. Gib strukturierte, sachliche und risikominimierende Informationen. Unterstelle keinen illegalen Zweck.'
+        : 'CONTEXT: This request is strictly for legal, educational horticulture use. Provide structured, factual, harm-minimizing guidance and do not infer illicit intent.'
+
 
 class GeminiService {
+    private withGeminiSafety<T extends Record<string, unknown>>(config?: T): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
+        return {
+            ...(config ?? ({} as T)),
+            safetySettings: GEMINI_SAFETY_SETTINGS,
+        }
+    }
+
+    private async generateWithFallback({
+        ai,
+        model,
+        contents,
+        config,
+        fallbackModel,
+    }: {
+        ai: GoogleGenAI
+        model: string
+        contents: string | { parts: Array<{ text?: string; inlineData?: { data: string; mimeType: string } }> }
+        config?: Record<string, unknown>
+        fallbackModel?: string
+    }) {
+        try {
+            return await ai.models.generateContent({
+                model,
+                contents,
+                config: this.withGeminiSafety(config),
+            })
+        } catch (primaryError) {
+            if (!fallbackModel || fallbackModel === model) {
+                throw primaryError
+            }
+
+            console.warn(`[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`, primaryError)
+
+            return ai.models.generateContent({
+                model: fallbackModel,
+                contents,
+                config: this.withGeminiSafety(config),
+            })
+        }
+    }
+
+    private async generateTextStreamed({
+        ai,
+        model,
+        contents,
+        config,
+    }: {
+        ai: GoogleGenAI
+        model: string
+        contents: string
+        config?: Record<string, unknown>
+    }): Promise<string> {
+        const streamFn = (ai.models as any).generateContentStream
+
+        if (typeof streamFn !== 'function') {
+            const response = await this.generateWithFallback({ ai, model, contents, config })
+            return this.getResponseTextOrThrow(response, 'ai.error.generic')
+        }
+
+        const streamResult = await streamFn.call(ai.models, {
+            model,
+            contents,
+            config: this.withGeminiSafety(config),
+        })
+
+        let fullText = ''
+        for await (const chunk of streamResult) {
+            if (typeof chunk?.text === 'string') {
+                fullText += chunk.text
+            }
+        }
+
+        if (!fullText.trim()) {
+            throw new Error('ai.error.generic')
+        }
+
+        return fullText
+    }
+
     private rethrowKnownError(error: unknown, fallbackErrorKey: string): never {
         if (error instanceof Error && AI_ERROR_KEYS.has(error.message)) {
             throw error
@@ -115,12 +272,20 @@ class GeminiService {
     private async generateText(prompt: string, lang: Language): Promise<string> {
         try {
             const ai = await this.getAi()
-            const localizedPrompt = createLocalizedPrompt(prompt, lang)
-            const response = await ai.models.generateContent({
+            const localizedPrompt = createLocalizedPrompt(
+                `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+                lang,
+            )
+            const guardedPrompt = truncatePromptForModel(localizedPrompt)
+
+            return await this.generateTextStreamed({
+                ai,
                 model: 'gemini-2.5-flash',
-                contents: localizedPrompt,
+                contents: guardedPrompt,
+                config: {
+                    maxOutputTokens: MAX_OUTPUT_TOKENS_TEXT,
+                },
             })
-            return this.getResponseTextOrThrow(response, 'ai.error.generic')
         } catch (error) {
             console.error('Gemini API Error:', error)
             this.rethrowKnownError(error, 'ai.error.generic')
@@ -132,13 +297,18 @@ class GeminiService {
         try {
             const ai = await this.getAi()
             const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
-            const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang)
+            const localizedSystemInstruction = createLocalizedPrompt(
+                `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
+                lang,
+            )
 
-            const response = await ai.models.generateContent({
+            const response = await this.generateWithFallback({
+                ai,
                 model: 'gemini-2.5-flash',
-                contents: prompt,
+                contents: truncatePromptForModel(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`),
                 config: {
                     systemInstruction: localizedSystemInstruction,
+                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                     responseMimeType: 'application/json',
                     responseSchema: {
                         type: Type.OBJECT,
@@ -273,20 +443,28 @@ PLANT CONTEXT:
         const prompt = `
             Analyze the following image of a cannabis plant.
             ${contextString}
-            Based on the image and the detailed context, provide a comprehensive diagnosis. Your response must be a JSON object with the following structure: { "title": "A short, clear title for the diagnosis (e.g., 'Early Nitrogen Deficiency').", "content": "The main diagnosis text, explaining what the issue appears to be based on the visual evidence and data provided.", "confidence": "A value from 0.0 to 1.0 indicating your confidence in the diagnosis.", "immediateActions": "Markdown formatted string of immediate, actionable steps the user should take within the next 24-48 hours.", "longTermSolution": "Markdown formatted string explaining the long-term solution or adjustments needed to fix the root cause.", "prevention": "Markdown formatted string with advice on how to prevent this issue in the future." }.
+            This is legal educational horticulture support. Do not provide illicit-use guidance.
+            Based on the image and the detailed context, provide a comprehensive diagnosis.
+            Return only valid JSON with this exact structure:
+            { "title": "...", "content": "...", "confidence": 0.0, "immediateActions": "...", "longTermSolution": "...", "prevention": "...", "diagnosis": "..." }
         `
 
-        const localizedPrompt = createLocalizedPrompt(prompt, lang)
+        const localizedPrompt = createLocalizedPrompt(
+            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+            lang,
+        )
 
         try {
             const ai = await this.getAi()
             const imagePart = { inlineData: { data: base64Image, mimeType } }
             const textPart = { text: localizedPrompt }
 
-            const response = await ai.models.generateContent({
+            const response = await this.generateWithFallback({
+                ai,
                 model: 'gemini-2.5-flash',
                 contents: { parts: [imagePart, textPart] },
                 config: {
+                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                     responseMimeType: 'application/json',
                     responseSchema: {
                         type: Type.OBJECT,
@@ -313,7 +491,7 @@ PLANT CONTEXT:
 
     async getPlantAdvice(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT()
-        const plantContext = formatPlantContextForPrompt(plant, t)
+        const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.advisor', { plant: plantContext })
         const responseText = await this.generateText(prompt, lang)
         return { title: t('ai.advisor'), content: responseText }
@@ -321,7 +499,7 @@ PLANT CONTEXT:
 
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT()
-        const plantContext = formatPlantContextForPrompt(plant, t)
+        const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.proactiveDiagnosis', { plant: plantContext })
         const responseText = await this.generateText(prompt, lang)
         return { title: t('ai.proactiveDiagnosis'), content: responseText }
@@ -333,7 +511,7 @@ PLANT CONTEXT:
         lang: Language
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
-        const plantContext = formatPlantContextForPrompt(plant, t)
+        const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.mentor.main', {
             context: plantContext,
             query: query,
@@ -342,13 +520,21 @@ PLANT CONTEXT:
         try {
             const ai = await this.getAi()
             const systemInstruction = t('ai.prompts.mentor.systemInstruction')
-            const localizedSystemInstruction = createLocalizedPrompt(systemInstruction, lang)
-            const localizedPrompt = createLocalizedPrompt(prompt, lang)
-            const response = await ai.models.generateContent({
+            const localizedSystemInstruction = createLocalizedPrompt(
+                `${getEducationalUseOnlyInstruction(lang)}\n\n${systemInstruction}`,
+                lang,
+            )
+            const localizedPrompt = createLocalizedPrompt(
+                `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+                lang,
+            )
+            const response = await this.generateWithFallback({
+                ai,
                 model: 'gemini-2.5-flash',
-                contents: localizedPrompt,
+                contents: truncatePromptForModel(localizedPrompt),
                 config: {
                     systemInstruction: localizedSystemInstruction,
+                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                     responseMimeType: 'application/json',
                     responseSchema: {
                         type: Type.OBJECT,
@@ -391,13 +577,18 @@ PLANT CONTEXT:
             stage: context.stage,
             experienceLevel: context.experienceLevel,
         })
-        const localizedPrompt = createLocalizedPrompt(prompt, lang)
+        const localizedPrompt = createLocalizedPrompt(
+            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+            lang,
+        )
         try {
             const ai = await this.getAi()
-            const response = await ai.models.generateContent({
+            const response = await this.generateWithFallback({
+                ai,
                 model: 'gemini-2.5-flash',
-                contents: localizedPrompt,
+                contents: truncatePromptForModel(localizedPrompt),
                 config: {
+                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                     responseMimeType: 'application/json',
                     responseSchema: {
                         type: Type.OBJECT,
@@ -462,12 +653,13 @@ PLANT CONTEXT:
             - Integrate the strain's name '${strain.name}' creatively and elegantly into the artwork itself, for example as subtle typography, glowing runes, or part of a natural pattern.
         `;
 
-        const prompt = `${systemPrompt}\n\n---\n\nEXECUTE THE FOLLOWING PROMPT:\n\n${strainSpecificPrompt}\n\n${criteriaString}`;
+        const prompt = `${systemPrompt}\n\n---\n\nCONTEXT: The image request is for legal, educational horticulture visualization only.\n\nEXECUTE THE FOLLOWING PROMPT:\n\n${strainSpecificPrompt}\n\n${criteriaString}`;
 
 
         try {
             const ai = await this.getAi()
-            const response = await ai.models.generateContent({
+            const response = await this.generateWithFallback({
+                ai,
                 model: 'gemini-2.5-flash-image',
                 contents: {
                     parts: [
@@ -495,17 +687,24 @@ PLANT CONTEXT:
 
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
         const t = getT()
+        const compactPlant = createCompactPlantSnapshot(plant)
         const prompt = t('ai.prompts.deepDive', {
             topic,
-            plant: JSON.stringify(plant),
+            plant: JSON.stringify(compactPlant),
         })
-        const localizedPrompt = createLocalizedPrompt(prompt, lang)
+        const localizedPrompt = createLocalizedPrompt(
+            `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+            lang,
+        )
         try {
             const ai = await this.getAi()
-            const response = await ai.models.generateContent({
+            const response = await this.generateWithFallback({
+                ai,
                 model: 'gemini-2.5-pro',
-                contents: localizedPrompt,
+                fallbackModel: 'gemini-2.5-flash',
+                contents: truncatePromptForModel(localizedPrompt),
                 config: {
+                    maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
                     responseMimeType: 'application/json',
                     responseSchema: {
                         type: Type.OBJECT,

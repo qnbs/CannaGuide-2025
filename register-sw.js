@@ -1,12 +1,17 @@
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-        const scopeUrl = new URL('./', window.location.href)
+        const manifestHref = document.querySelector('link[rel="manifest"]')?.getAttribute('href') || './manifest.json'
+        const scopeUrl = new URL('./', new URL(manifestHref, window.location.href))
         const swUrl = new URL('sw.js', scopeUrl)
 
         navigator.serviceWorker
             .register(swUrl.pathname, { scope: scopeUrl.pathname, updateViaCache: 'none' })
             .then((registration) => {
                 console.log('ServiceWorker registration successful:', registration);
+
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    window.location.reload();
+                }, { once: true });
 
                 const dispatchSwUpdate = () => {
                     const event = new CustomEvent('swUpdate', { detail: registration });

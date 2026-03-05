@@ -25,13 +25,51 @@ export const PLANT_STAGE_DETAILS: Record<PlantStage, {
 };
 
 class PlantSimulationService {
+    private _clamp(value: number, min: number, max: number): number {
+        return Math.min(max, Math.max(min, value));
+    }
+
+    private _getLeafTemperatureOffset(plant: Plant): number {
+        const baseOffset = plant.equipment.light.type === 'HPS' ? 3.5 : 2.5;
+        const circulationAdjustment = plant.equipment.circulationFan.isOn ? -0.3 : 0.4;
+        return this._clamp(baseOffset + circulationAdjustment, 2, 4);
+    }
+
+    private _getSubstrateRhCorrection(plant: Plant): number {
+        const byMediumType: Record<Plant['mediumType'], number> = {
+            Soil: 0,
+            Coco: -2,
+            Hydro: 2,
+        };
+
+        const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0;
+        return byMediumType[plant.mediumType || 'Soil'] + potAdjustment;
+    }
+
+    private _getCorrectedRh(plant: Plant): number {
+        return this._clamp(
+            plant.environment.internalHumidity + this._getSubstrateRhCorrection(plant),
+            25,
+            95,
+        );
+    }
+
+    applyEnvironmentalCorrections(plant: Plant): Plant {
+        const p = this.clonePlant(plant);
+        const correctedRh = this._getCorrectedRh(p);
+        const leafOffset = this._getLeafTemperatureOffset(p);
+        p.environment.vpd = this._calculateVPD(p.environment.internalTemperature, correctedRh, leafOffset);
+        return p;
+    }
+
     createPlant(strain: Strain, setup: GrowSetup, name: string): Plant {
         const now = Date.now();
         const waterHoldingCapacity = setup.potSize * 1000 * (setup.potType === 'Fabric' ? 0.28 : 0.35);
-        return {
+        const newPlant: Plant = {
             id: `plant-${now}`,
             name,
             strain,
+            mediumType: setup.medium,
             createdAt: now,
             lastUpdated: now,
             age: 0,
@@ -46,7 +84,7 @@ class PlantSimulationService {
             environment: {
                 internalTemperature: 24,
                 internalHumidity: 65,
-                vpd: this._calculateVPD(24, 65, -2),
+                vpd: 0,
                 co2Level: 400,
             },
             medium: {
@@ -86,6 +124,8 @@ class PlantSimulationService {
             terpeneProfile: {},
             stressCounters: { vpd: 0, ph: 0, ec: 0, moisture: 0 },
         };
+
+        return this.applyEnvironmentalCorrections(newPlant);
     }
     
     calculateStateForTimeDelta(plant: Plant, deltaTime: number): { updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] } {
@@ -136,7 +176,7 @@ class PlantSimulationService {
         const heatFromLight = p.equipment.light.wattage * (p.equipment.light.type === 'HPS' ? 0.2 : 0.1);
         const circulationFactor = p.equipment.circulationFan.isOn ? 1.0 : 1.05;
 
-        p.environment.vpd = this._calculateVPD(p.environment.internalTemperature, p.environment.internalHumidity, -2);
+        p.environment = this.applyEnvironmentalCorrections(p).environment;
         
         const vpd = p.environment.vpd;
         const vpdOptimum = (p.strain.geneticModifiers.vpdTolerance.min + p.strain.geneticModifiers.vpdTolerance.max) / 2;

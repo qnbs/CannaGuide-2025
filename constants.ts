@@ -1,7 +1,7 @@
 import { PlantStage, AdvancedFilterState } from '@/types';
 
 // --- APP ---
-export const APP_VERSION = 2;
+export const APP_VERSION = 3;
 export const CURRENT_STRAIN_DATA_VERSION = 3;
 export const APP_METADATA = {
   "name": "CannaGuide 2025 - Cannabis Grow Guide with Gemini",

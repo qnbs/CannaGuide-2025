@@ -112,6 +112,7 @@ export const App: React.FC = () => {
             { once: true },
         )
 
+        navigator.serviceWorker.controller?.postMessage({ type: 'SKIP_WAITING' })
         waitingWorkerRef.current.postMessage({ type: 'SKIP_WAITING' })
     }, [])
 

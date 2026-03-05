@@ -1,6 +1,7 @@
 import { Strain } from '@/types';
 import { dbService } from './dbService';
 import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants';
+import { mergeStrainCatalogForUpdate } from '@/services/migrationLogic';
 
 type StrainModule = Record<string, unknown>
 
@@ -46,11 +47,14 @@ class StrainService {
                 console.log('[StrainService] Loading strains from IndexedDB.');
                 this.allStrains = await dbService.getAllStrains();
             } else {
-                console.log('[StrainService] Populating IndexedDB with fresh strain data.');
-                await dbService.addStrains(allStrainsData);
+                console.log('[StrainService] Merging and migrating strain catalog into IndexedDB.');
+                const existingDbStrains = dbCount > 0 ? await dbService.getAllStrains() : [];
+                const mergedStrains = mergeStrainCatalogForUpdate(existingDbStrains, allStrainsData);
+
+                await dbService.addStrains(mergedStrains);
                 await dbService.setMetadata(STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION);
-                this.allStrains = allStrainsData;
-                console.log(`[StrainService] Initialized with ${allStrainsData.length} strains.`);
+                this.allStrains = mergedStrains;
+                console.log(`[StrainService] Initialized with ${mergedStrains.length} strains after migration merge.`);
             }
             this.isInitialized = true;
         } catch (error) {

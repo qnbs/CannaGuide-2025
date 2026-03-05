@@ -1,4 +1,27 @@
 import { IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT, IMAGE_JPEG_QUALITY } from '@/constants';
+import imageCompression from 'browser-image-compression';
+
+const dataUrlToFile = (dataUrl: string, fileName = `image-${Date.now()}.jpg`): File => {
+    const [meta, base64Data] = dataUrl.split(',');
+    const mimeMatch = meta.match(/data:(.*?);base64/);
+    const mimeType = mimeMatch?.[1] ?? 'image/jpeg';
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+
+    for (let i = 0; i < binaryString.length; i += 1) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+
+    return new File([bytes], fileName, { type: mimeType });
+};
+
+const fileToDataUrl = (file: Blob): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
 
 export const resizeImage = (
     base64Str: string,
@@ -6,42 +29,16 @@ export const resizeImage = (
     maxHeight = IMAGE_MAX_HEIGHT,
     quality = IMAGE_JPEG_QUALITY,
 ): Promise<string> => {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = base64Str;
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width;
-            let height = img.height;
+    const sourceFile = dataUrlToFile(base64Str);
+    const maxDimension = Math.max(maxWidth, maxHeight);
 
-            if (width > height) {
-                if (width > maxWidth) {
-                    height *= maxWidth / width;
-                    width = maxWidth;
-                }
-            } else {
-                if (height > maxHeight) {
-                    width *= maxHeight / height;
-                    height = maxHeight;
-                }
-            }
-
-            canvas.width = width;
-            canvas.height = height;
-
-            const ctx = canvas.getContext('2d');
-            if (!ctx) {
-                return reject(new Error('Could not get canvas context'));
-            }
-            ctx.drawImage(img, 0, 0, width, height);
-
-            const dataUrl = canvas.toDataURL('image/jpeg', quality);
-            resolve(dataUrl);
-        };
-        img.onerror = (error) => {
-            reject(error);
-        };
-    });
+    return imageCompression(sourceFile, {
+        maxSizeMB: 0.7,
+        maxWidthOrHeight: maxDimension,
+        useWebWorker: true,
+        initialQuality: quality,
+        fileType: 'image/jpeg',
+    }).then((compressedBlob) => fileToDataUrl(compressedBlob));
 };
 
 export const base64ToMimeType = (base64: string): string => {

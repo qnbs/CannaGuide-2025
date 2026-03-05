@@ -8,10 +8,18 @@ import { setSetting, exportAllData, resetAllData } from '@/stores/slices/setting
 import { setOnboardingStep } from '@/stores/slices/uiSlice'
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { Switch } from '@/components/common/Switch'
-import { Select, Input, FormSection } from '@/components/ui/ThemePrimitives'
+import { FormSection } from '@/components/ui/ThemePrimitives'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
 import { RangeSlider } from '@/components/common/RangeSlider'
-import { Button } from '@/components/common/Button'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
 import { useStorageEstimate } from '@/hooks/useStorageEstimate'
 import { Card } from '@/components/common/Card'
 import { SettingsSubNav } from './SettingsSubNav'
@@ -35,6 +43,25 @@ const SettingsRow: React.FC<{
         </div>
         <div className="w-full flex-shrink-0 sm:w-auto sm:max-w-xs">{children}</div>
     </div>
+)
+
+const SettingsSelect: React.FC<{
+    value: string
+    options: { value: string; label: string }[]
+    onChange: (value: string) => void
+}> = ({ value, options, onChange }) => (
+    <Select value={value} onValueChange={onChange}>
+        <SelectTrigger>
+            <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+            {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                </SelectItem>
+            ))}
+        </SelectContent>
+    </Select>
 )
 
 const GeminiSecurityCard: React.FC = () => {
@@ -212,8 +239,20 @@ const GeneralSettingsTab: React.FC = () => {
             <Card>
                 <FormSection title={t('settingsView.categories.lookAndFeel')} icon={<PhosphorIcons.Cube />} defaultOpen>
                     <div className="sm:col-span-2 space-y-6">
-                        <SettingsRow label={t('settingsView.general.language')}><Select value={general.language} onChange={(e) => handleSetSetting('language', e.target.value as Language)} options={[{ value: 'en', label: t('settingsView.languages.en') }, { value: 'de', label: t('settingsView.languages.de') }]} /></SettingsRow>
-                        <SettingsRow label={t('settingsView.general.theme')}><Select value={general.theme} onChange={(e) => handleSetSetting('theme', e.target.value as Theme)} options={Object.keys(t('settingsView.general.themes', { returnObjects: true })).map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))} /></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.language')}>
+                            <SettingsSelect
+                                value={general.language}
+                                onChange={(value) => handleSetSetting('language', value as Language)}
+                                options={[{ value: 'en', label: t('settingsView.languages.en') }, { value: 'de', label: t('settingsView.languages.de') }]}
+                            />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.general.theme')}>
+                            <SettingsSelect
+                                value={general.theme}
+                                onChange={(value) => handleSetSetting('theme', value as Theme)}
+                                options={Object.keys(t('settingsView.general.themes', { returnObjects: true })).map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))}
+                            />
+                        </SettingsRow>
                         <SettingsRow label={t('settingsView.general.fontSize')}><SegmentedControl value={[general.fontSize]} onToggle={(val) => handleSetSetting('fontSize', val)} options={Object.keys(t('settingsView.general.fontSizes', { returnObjects: true })).map(k => ({ value: k, label: t(`settingsView.general.fontSizes.${k}`) }))} /></SettingsRow>
                     </div>
                 </FormSection>
@@ -222,7 +261,13 @@ const GeneralSettingsTab: React.FC = () => {
                 <FormSection title={t('settingsView.categories.interactivity')} icon={<PhosphorIcons.GameController />} defaultOpen>
                      <div className="sm:col-span-2 space-y-6">
                          <SettingsRow label={t('settingsView.general.uiDensity')}><SegmentedControl value={[general.uiDensity]} onToggle={(val) => handleSetSetting('uiDensity', val)} options={[{ value: 'comfortable', label: t('settingsView.general.uiDensities.comfortable') }, { value: 'compact', label: t('settingsView.general.uiDensities.compact') }]} /></SettingsRow>
-                        <SettingsRow label={t('settingsView.general.defaultView')}><Select value={general.defaultView} onChange={(e) => handleSetSetting('defaultView', e.target.value as View)} options={[{ value: View.Plants, label: t('nav.plants') }, { value: View.Strains, label: t('nav.strains') }, { value: View.Equipment, label: t('nav.equipment') }, { value: View.Knowledge, label: t('nav.knowledge') },]} /></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.defaultView')}>
+                            <SettingsSelect
+                                value={general.defaultView}
+                                onChange={(value) => handleSetSetting('defaultView', value as View)}
+                                options={[{ value: View.Plants, label: t('nav.plants') }, { value: View.Strains, label: t('nav.strains') }, { value: View.Equipment, label: t('nav.equipment') }, { value: View.Knowledge, label: t('nav.knowledge') }]}
+                            />
+                        </SettingsRow>
                     </div>
                 </FormSection>
             </Card>
@@ -236,7 +281,11 @@ const GeneralSettingsTab: React.FC = () => {
                             <Switch checked={general.reducedMotion} onChange={val => handleSetSetting('reducedMotion', val)} />
                         </SettingsRow>
                         <SettingsRow label={t('settingsView.general.colorblindMode')} description={t('settingsView.general.colorblindModeDesc')}>
-                            <Select value={general.colorblindMode} onChange={(e) => handleSetSetting('colorblindMode', e.target.value)} options={colorblindModeOptions} />
+                            <SettingsSelect
+                                value={general.colorblindMode}
+                                onChange={(value) => handleSetSetting('colorblindMode', value)}
+                                options={colorblindModeOptions as { value: string; label: string }[]}
+                            />
                         </SettingsRow>
                     </div>
                 </FormSection>

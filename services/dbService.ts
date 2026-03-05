@@ -10,7 +10,7 @@
  * - Comprehensive type safety and JSDoc documentation.
  */
 
-import { StoredImageData, Strain } from '@/types';
+import { StoredImageData, Strain, SimulationState, Plant, JournalEntry } from '@/types';
 import { 
     DB_NAME, 
     DB_VERSION,
@@ -24,6 +24,7 @@ import {
     STRAIN_INDEX_CBD,
     STRAIN_INDEX_FLOWERING,
 } from '@/constants';
+import { resizeImage } from '@/services/imageService';
 
 
 // --- TYPE DEFINITIONS ---
@@ -39,6 +40,23 @@ interface StrainIndexItem {
     word: string;
     ids: string[];
 }
+
+interface StorageEstimateSnapshot {
+    usage: number;
+    quota: number;
+    usageRatio: number;
+}
+
+type ArchivedJournalMap = Record<string, JournalEntry[]>;
+
+const ARCHIVED_LOGS_METADATA_KEY = 'archived_plant_logs_v1';
+const STORAGE_USAGE_WARNING_RATIO = 0.78;
+const STORAGE_USAGE_CRITICAL_RATIO = 0.9;
+const DEFAULT_JOURNAL_KEEP_PER_PLANT = 350;
+const WARNING_JOURNAL_KEEP_PER_PLANT = 220;
+const CRITICAL_JOURNAL_KEEP_PER_PLANT = 120;
+const MAX_ARCHIVED_LOGS_PER_PLANT = 1200;
+const IMAGE_PRUNE_BATCH_SIZE = 20;
 
 
 // --- CONNECTION MANAGEMENT ---
@@ -156,8 +174,69 @@ const performTx = async <T>(storeName: string, mode: IDBTransactionMode, action:
     });
 };
 
+const getStorageEstimateSnapshot = async (): Promise<StorageEstimateSnapshot> => {
+    if (typeof navigator === 'undefined' || !navigator.storage?.estimate) {
+        return {
+            usage: 0,
+            quota: Number.MAX_SAFE_INTEGER,
+            usageRatio: 0,
+        };
+    }
+
+    try {
+        const estimate = await navigator.storage.estimate();
+        const usage = estimate.usage ?? 0;
+        const quota = estimate.quota ?? Number.MAX_SAFE_INTEGER;
+        const usageRatio = quota > 0 ? usage / quota : 0;
+        return { usage, quota, usageRatio };
+    } catch (error) {
+        console.warn('[dbService] navigator.storage.estimate() failed, using fallback values.', error);
+        return {
+            usage: 0,
+            quota: Number.MAX_SAFE_INTEGER,
+            usageRatio: 0,
+        };
+    }
+};
+
+const compactArchivedEntry = (entry: JournalEntry): JournalEntry => {
+    if (!entry.details) {
+        return entry;
+    }
+
+    const details = { ...entry.details } as Record<string, unknown>;
+    delete details.imageUrl;
+
+    return {
+        ...entry,
+        notes: typeof entry.notes === 'string' ? entry.notes.slice(0, 300) : entry.notes,
+        details: details as JournalEntry['details'],
+    };
+};
+
+const chooseJournalRetentionLimit = (usageRatio: number): number => {
+    if (usageRatio >= STORAGE_USAGE_CRITICAL_RATIO) {
+        return CRITICAL_JOURNAL_KEEP_PER_PLANT;
+    }
+    if (usageRatio >= STORAGE_USAGE_WARNING_RATIO) {
+        return WARNING_JOURNAL_KEEP_PER_PLANT;
+    }
+    return DEFAULT_JOURNAL_KEEP_PER_PLANT;
+};
+
+const isQuotaExceededError = (error: unknown): boolean => {
+    if (!(error instanceof DOMException)) {
+        return false;
+    }
+    return error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED';
+};
+
 
 export const dbService = {
+    async getStorageEstimate(): Promise<StorageEstimateSnapshot> {
+        return getStorageEstimateSnapshot();
+    },
+
     // --- Metadata Store ---
     async getMetadata<T = any>(key: string): Promise<T | undefined> {
         const result = await performTx<MetadataItem<T> | undefined>(METADATA_STORE, 'readonly', store => store.get(key));
@@ -264,7 +343,59 @@ export const dbService = {
 
     // --- Images Store ---
     async addImage(imageData: StoredImageData): Promise<void> {
-        await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', store => store.put(imageData));
+        const estimateBeforeWrite = await getStorageEstimateSnapshot();
+        if (estimateBeforeWrite.usageRatio >= STORAGE_USAGE_WARNING_RATIO) {
+            await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE);
+        }
+
+        let normalizedImageData = imageData;
+        try {
+            const compressedData = await resizeImage(imageData.data);
+            normalizedImageData = {
+                ...imageData,
+                data: compressedData,
+            };
+        } catch (compressionError) {
+            console.warn('[dbService] Could not compress image before storing. Using original payload.', compressionError);
+        }
+
+        try {
+            await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', store => store.put(normalizedImageData));
+        } catch (error) {
+            if (!isQuotaExceededError(error)) {
+                throw error;
+            }
+
+            console.warn('[dbService] Quota exceeded while storing image. Pruning old images and retrying once.');
+            await this.pruneOldImages(IMAGE_PRUNE_BATCH_SIZE * 2);
+            await performTx<IDBValidKey>(IMAGES_STORE, 'readwrite', store => store.put(normalizedImageData));
+        }
+    },
+
+    async pruneOldImages(maxToDelete = IMAGE_PRUNE_BATCH_SIZE): Promise<number> {
+        await openDB();
+
+        const allImages = await performTx<StoredImageData[]>(IMAGES_STORE, 'readonly', store => store.getAll());
+        if (allImages.length === 0) {
+            return 0;
+        }
+
+        const sortedByAge = [...allImages].sort((a, b) => a.createdAt - b.createdAt);
+        const imagesToDelete = sortedByAge.slice(0, Math.min(maxToDelete, sortedByAge.length));
+
+        await new Promise<void>((resolve, reject) => {
+            const transaction = db.transaction(IMAGES_STORE, 'readwrite');
+            const store = transaction.objectStore(IMAGES_STORE);
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = () => reject(transaction.error);
+
+            imagesToDelete.forEach((image) => {
+                store.delete(image.id);
+            });
+        });
+
+        return imagesToDelete.length;
     },
 
     async getImage(id: string): Promise<StoredImageData | undefined> {
@@ -372,5 +503,68 @@ export const dbService = {
      */
     async addOfflineAction(action: any): Promise<void> {
         await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', store => store.add(action));
+    },
+
+    async optimizeSimulationForPersistence(simulationState: SimulationState): Promise<SimulationState> {
+        const estimate = await getStorageEstimateSnapshot();
+        const keepPerPlant = chooseJournalRetentionLimit(estimate.usageRatio);
+
+        const entityIds = simulationState.plants.ids as string[];
+        const archivedByPlant: ArchivedJournalMap = {};
+        const nextEntities: Record<string, Plant> = {};
+        let hasChanges = false;
+
+        for (const plantId of entityIds) {
+            const plant = simulationState.plants.entities[plantId];
+            if (!plant) {
+                continue;
+            }
+
+            if (plant.journal.length <= keepPerPlant) {
+                nextEntities[plantId] = plant;
+                continue;
+            }
+
+            hasChanges = true;
+            const archiveCutoff = plant.journal.length - keepPerPlant;
+            const archivedEntries = plant.journal.slice(0, archiveCutoff).map(compactArchivedEntry);
+            const keptEntries = plant.journal.slice(-keepPerPlant);
+
+            archivedByPlant[plantId] = archivedEntries;
+            nextEntities[plantId] = {
+                ...plant,
+                journal: keptEntries,
+            };
+        }
+
+        if (Object.keys(archivedByPlant).length > 0) {
+            const existingArchive = (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {};
+            const mergedArchive: ArchivedJournalMap = { ...existingArchive };
+
+            Object.entries(archivedByPlant).forEach(([plantId, entries]) => {
+                const current = mergedArchive[plantId] ?? [];
+                const combined = [...current, ...entries];
+                mergedArchive[plantId] = combined.slice(-MAX_ARCHIVED_LOGS_PER_PLANT);
+            });
+
+            await this.setMetadata(ARCHIVED_LOGS_METADATA_KEY, mergedArchive);
+        }
+
+        if (!hasChanges) {
+            return simulationState;
+        }
+
+        return {
+            ...simulationState,
+            plants: {
+                ...simulationState.plants,
+                entities: nextEntities,
+            },
+        };
+    },
+
+    async getArchivedPlantLogs(plantId: string): Promise<JournalEntry[]> {
+        const archive = (await this.getMetadata<ArchivedJournalMap>(ARCHIVED_LOGS_METADATA_KEY)) ?? {};
+        return archive[plantId] ?? [];
     },
 };

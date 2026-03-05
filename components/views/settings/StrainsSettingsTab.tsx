@@ -1,13 +1,19 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { setSetting } from '@/stores/slices/settingsSlice';
 import { Switch } from '@/components/common/Switch';
-import { Select, FormSection } from '@/components/ui/ThemePrimitives';
+import { FormSection } from '@/components/ui/ThemePrimitives';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { RangeSlider } from '@/components/common/RangeSlider';
 import { SortKey, SortDirection } from '@/types';
@@ -25,6 +31,25 @@ const SettingsRow: React.FC<{
         </div>
         <div className="w-full flex-shrink-0 sm:w-auto sm:max-w-xs">{children}</div>
     </div>
+)
+
+const SettingsSelect: React.FC<{
+    value: string
+    options: { value: string; label: string }[]
+    onChange: (value: string) => void
+}> = ({ value, options, onChange }) => (
+    <Select value={value} onValueChange={onChange}>
+        <SelectTrigger>
+            <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+            {options.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                </SelectItem>
+            ))}
+        </SelectContent>
+    </Select>
 )
 
 const StrainsSettingsTab: React.FC = () => {
@@ -63,8 +88,16 @@ const StrainsSettingsTab: React.FC = () => {
                     <div className="sm:col-span-2 space-y-4">
                         <SettingsRow label={t('settingsView.strains.defaultSort')}>
                             <div className="grid grid-cols-2 gap-2">
-                                <Select value={strainsViewSettings.defaultSortKey} onChange={(e) => handleSetSetting('strainsView.defaultSortKey', e.target.value)} options={sortKeyOptions} />
-                                <Select value={strainsViewSettings.defaultSortDirection} onChange={(e) => handleSetSetting('strainsView.defaultSortDirection', e.target.value)} options={sortDirectionOptions} />
+                                <SettingsSelect
+                                    value={strainsViewSettings.defaultSortKey}
+                                    onChange={(value) => handleSetSetting('strainsView.defaultSortKey', value)}
+                                    options={sortKeyOptions as { value: string; label: string }[]}
+                                />
+                                <SettingsSelect
+                                    value={strainsViewSettings.defaultSortDirection}
+                                    onChange={(value) => handleSetSetting('strainsView.defaultSortDirection', value)}
+                                    options={sortDirectionOptions as { value: string; label: string }[]}
+                                />
                             </div>
                         </SettingsRow>
                          <SettingsRow label={t('settingsView.strains.defaultViewMode')}>
@@ -108,16 +141,16 @@ const StrainsSettingsTab: React.FC = () => {
                              <RangeSlider singleValue value={strainsViewSettings.genealogyDefaultDepth} onChange={val => handleSetSetting('strainsView.genealogyDefaultDepth', val)} min={1} max={5} step={1} label="" unit="" />
                         </SettingsRow>
                          <SettingsRow label={t('settingsView.strains.advanced.aiTipsExperience')}>
-                             <Select
+                                                         <SettingsSelect
                                 value={strainsViewSettings.aiTipsDefaultExperience}
-                                onChange={(e) => handleSetSetting('strainsView.aiTipsDefaultExperience', e.target.value)}
+                                                                onChange={(value) => handleSetSetting('strainsView.aiTipsDefaultExperience', value)}
                                 options={Object.keys(t('strainsView.tips.form.experienceOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.experienceOptions.${k}`) }))}
                             />
                         </SettingsRow>
                          <SettingsRow label={t('settingsView.strains.advanced.aiTipsFocus')}>
-                              <Select
+                                                            <SettingsSelect
                                 value={strainsViewSettings.aiTipsDefaultFocus}
-                                onChange={(e) => handleSetSetting('strainsView.aiTipsDefaultFocus', e.target.value)}
+                                                                onChange={(value) => handleSetSetting('strainsView.aiTipsDefaultFocus', value)}
                                 options={Object.keys(t('strainsView.tips.form.focusOptions', { returnObjects: true })).map(k => ({ value: k, label: t(`strainsView.tips.form.focusOptions.${k}`) }))}
                             />
                         </SettingsRow>

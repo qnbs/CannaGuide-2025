@@ -1,16 +1,14 @@
-import React, { useMemo, useState, useEffect, useCallback, lazy, Suspense, memo } from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Strain, SortKey, SortDirection, StrainType, StrainViewTab } from '@/types';
 import { StrainToolbar } from './StrainToolbar';
 import { StrainList } from './StrainList';
 import { StrainGrid } from './StrainGrid';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { BulkActionsBar } from './BulkActionsBar';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-import { LoadMoreButton } from '@/components/common/LoadMoreButton';
-import { ITEMS_PER_PAGE } from '@/constants';
 
 interface StrainLibraryViewProps {
     strains: Strain[];
@@ -51,20 +49,6 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
     } = props;
 
     const { t } = useTranslation();
-    const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
-
-    useEffect(() => {
-        // Reset display count when the source data changes
-        setDisplayCount(ITEMS_PER_PAGE);
-    }, [strains]);
-
-    const paginatedStrains = useMemo(() => {
-        return strains.slice(0, displayCount);
-    }, [strains, displayCount]);
-    
-    const handleLoadMore = () => {
-        setDisplayCount(prev => Math.min(prev + ITEMS_PER_PAGE, totalStrainCount));
-    };
 
     return (
         <>
@@ -102,7 +86,7 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                     <>
                         {viewMode === 'list' ? (
                             <StrainList
-                                strains={paginatedStrains}
+                                strains={strains}
                                 selectedIds={selectedIds}
                                 onToggleSelection={onToggleSelection}
                                 onSelect={onSelect}
@@ -113,20 +97,13 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                             />
                         ) : (
                             <StrainGrid
-                                strains={paginatedStrains}
+                                strains={strains}
                                 selectedIds={selectedIds}
                                 onToggleSelection={onToggleSelection}
                                 onSelect={onSelect}
                                 isUserStrain={isUserStrain}
                                 favorites={favoriteIds}
                                 onToggleFavorite={onToggleFavorite}
-                            />
-                        )}
-                        {paginatedStrains.length < totalStrainCount && (
-                            <LoadMoreButton 
-                                onClick={handleLoadMore}
-                                visibleCount={paginatedStrains.length}
-                                totalCount={totalStrainCount}
                             />
                         )}
                     </>

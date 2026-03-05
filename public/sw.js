@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v19-pwa-cache';
+const CACHE_NAME = 'cannaguide-v20-pwa-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
@@ -27,7 +27,9 @@ const THIRD_PARTY_URLS = [
   "https://aistudiocdn.com/d3-hierarchy@^3.1.2",
 ];
 
-const urlsToCache = [...APP_SHELL_URLS, ...THIRD_PARTY_URLS];
+const workboxManifest = Array.isArray(self.__WB_MANIFEST) ? self.__WB_MANIFEST : [];
+const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
+const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])];
 
 // --- BACKGROUND SYNC CONSTANTS ---
 const DB_NAME = 'CannaGuideDB';

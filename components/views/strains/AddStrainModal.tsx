@@ -6,7 +6,7 @@ import { useForm } from '@/hooks/useForm';
 import { Modal } from '@/components/common/Modal';
 import { useAppDispatch } from '@/stores/store';
 import { addNotification } from '@/stores/slices/uiSlice';
-import { Input, Select, FormSection } from '@/components/ui/ThemePrimitives';
+import { Input, Select, FormSection } from '@/components/ui/form';
 import { createStrainObject } from '@/services/strainFactory';
 
 interface AddStrainModalProps {

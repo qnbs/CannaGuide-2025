@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Removed incorrect imports and will use the onConfirm prop as intended by App.tsx
 import { selectNewGrowFlow, selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
-import { FormSection } from '@/components/ui/ThemePrimitives';
+import { FormSection } from '@/components/ui/form';
 import { RangeSlider } from '@/components/common/RangeSlider';
 import { Switch } from '@/components/common/Switch';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';

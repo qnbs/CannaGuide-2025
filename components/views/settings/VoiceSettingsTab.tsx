@@ -5,7 +5,7 @@ import { selectSettings } from '@/stores/selectors';
 import { setSetting } from '@/stores/slices/settingsSlice';
 import { useAvailableVoices } from '@/hooks/useAvailableVoices';
 import { Card } from '@/components/common/Card';
-import { FormSection } from '@/components/ui/ThemePrimitives';
+import { FormSection } from '@/components/ui/form';
 import { Switch } from '@/components/common/Switch';
 import {
     Select,

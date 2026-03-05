@@ -1,6 +1,6 @@
 import React, { useId, memo } from 'react'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { Input as PrimitiveInput, Select as PrimitiveSelect } from '@/components/ui/ThemePrimitives'
+import { Input as PrimitiveInput, Select as PrimitiveSelect } from '@/components/ui/form'
 
 export const CalculatorSection: React.FC<{
     title: string

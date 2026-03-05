@@ -10,7 +10,7 @@ import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTyp
 import { setParentA, setParentB, clearBreedingSlots } from '@/stores/slices/breedingSlice';
 import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice';
 import { strainService } from '@/services/strainService';
-import { Input } from '@/components/ui/ThemePrimitives';
+import { Input } from '@/components/ui/form';
 import { createStrainObject } from '@/services/strainFactory';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 

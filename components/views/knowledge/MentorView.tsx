@@ -7,7 +7,7 @@ import { useAppDispatch } from '@/stores/store'
 import { setActiveMentorPlantId } from '@/stores/slices/uiSlice'
 import { KnowledgeArticle, Plant } from '@/types'
 import { knowledgeBase } from '@/data/knowledgebase'
-import { Select } from '@/components/ui/ThemePrimitives'
+import { Select } from '@/components/ui/form'
 import { Card } from '@/components/common/Card'
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {

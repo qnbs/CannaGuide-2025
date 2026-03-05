@@ -8,7 +8,7 @@ import { setSetting, exportAllData, resetAllData } from '@/stores/slices/setting
 import { setOnboardingStep } from '@/stores/slices/uiSlice'
 import { clearArchives } from '@/stores/slices/archivesSlice'
 import { Switch } from '@/components/common/Switch'
-import { FormSection } from '@/components/ui/ThemePrimitives'
+import { FormSection } from '@/components/ui/form'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
 import { RangeSlider } from '@/components/common/RangeSlider'
 import { Button } from '@/components/ui/button'

@@ -12,7 +12,7 @@ import { useGetStrainTipsMutation, useGenerateStrainImageMutation } from '@/stor
 import { selectLanguage } from '@/stores/selectors';
 import { Speakable } from '@/components/common/Speakable';
 import { addStrainTip } from '@/stores/slices/savedItemsSlice';
-import { Select } from '@/components/ui/ThemePrimitives';
+import { Select } from '@/components/ui/form';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 
 const StructuredTipDisplay: React.FC<{ tips: StructuredGrowTips; onSave: () => void; isSaved: boolean; strainId: string; }> = ({ tips, onSave, isSaved, strainId }) => {

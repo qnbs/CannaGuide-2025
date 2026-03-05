@@ -17,7 +17,7 @@ import { StrainTreeNode } from './StrainTreeNode';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Select } from '@/components/ui/ThemePrimitives';
+import { Select } from '@/components/ui/form';
 import { geneticsService } from '@/services/geneticsService';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { Modal } from '@/components/common/Modal';

@@ -29,6 +29,11 @@ export const VitalBar: React.FC<VitalBarProps> = memo(({ label, value, min, max,
         </div>
       <div className="w-full bg-slate-700 rounded-full h-2.5 my-1">
         <div
+          role="progressbar"
+          aria-label={label}
+          aria-valuenow={Math.round(percentage)}
+          aria-valuemin={0}
+          aria-valuemax={100}
           className={`h-2.5 rounded-full ${isIdeal ? 'bg-green-500' : 'bg-amber-500'}`}
           style={{ width: `${percentage}%` }}
         ></div>

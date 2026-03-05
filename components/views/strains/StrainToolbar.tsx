@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, memo, useCallback } from 'react'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'
@@ -25,7 +25,7 @@ interface StrainToolbarProps {
     handleSetLetterFilter: (letter: string | null) => void
 }
 
-export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
+const StrainToolbarComponent: React.FC<StrainToolbarProps> = (props) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const {
@@ -44,6 +44,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
 
     const [isSortOpen, setIsSortOpen] = useState(false)
     const sortRef = useOutsideClick<HTMLDivElement>(() => setIsSortOpen(false))
+    const handleToggleSort = useCallback(() => setIsSortOpen((prev) => !prev), [])
 
     const typeOptions = [
         { value: 'Sativa' as StrainType, label: t('strainsView.sativa') },
@@ -78,6 +79,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                     onClick={() => dispatch(openAddModal())}
                     variant="secondary"
                     className="!p-2.5"
+                    aria-label={t('strainsView.addStrain')}
                     title={t('strainsView.addStrain')}
                 >
                     <PhosphorIcons.PlusCircle className="w-5 h-5" />
@@ -87,6 +89,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                     onClick={() => dispatch(openExportModal())}
                     variant="secondary"
                     className="!p-2.5"
+                    aria-label={t('common.export')}
                     title={t('common.export')}
                 >
                     <PhosphorIcons.DownloadSimple className="w-5 h-5" />
@@ -95,9 +98,12 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
 
                 <div ref={sortRef} className="relative hidden sm:block">
                     <Button
-                        onClick={() => setIsSortOpen((prev) => !prev)}
+                        onClick={handleToggleSort}
                         variant="secondary"
                         className="!px-3 !py-2.5"
+                        aria-label={`${t('strainsView.sortBy')}: ${currentSortLabel}`}
+                        aria-haspopup="listbox"
+                        aria-expanded={isSortOpen}
                     >
                         <span className="text-sm">{currentSortLabel}</span>
                         {sort.direction === 'asc' ? (
@@ -107,10 +113,16 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                         )}
                     </Button>
                     {isSortOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-20 p-1 animate-slide-down-fade-in">
+                        <div
+                            role="listbox"
+                            aria-label={t('strainsView.sortBy')}
+                            className="absolute top-full right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-md shadow-lg z-20 p-1 animate-slide-down-fade-in"
+                        >
                             {sortOptions.map((opt) => (
                                 <button
                                     key={opt.value}
+                                    role="option"
+                                    aria-selected={sort.key === opt.value}
                                     onClick={() => {
                                         handleSort(opt.value)
                                         setIsSortOpen(false)
@@ -134,7 +146,13 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                     )}
                 </div>
 
-                <Button onClick={onOpenDrawer} variant="secondary" className="relative !p-2.5">
+                <Button
+                    onClick={onOpenDrawer}
+                    variant="secondary"
+                    className="relative !p-2.5"
+                    aria-label={activeFilterCount > 0 ? `${t('strainsView.advancedFilters')} (${activeFilterCount})` : t('strainsView.advancedFilters')}
+                    title={t('strainsView.advancedFilters')}
+                >
                     <PhosphorIcons.FunnelSimple className="w-5 h-5" />
                     {activeFilterCount > 0 && (
                         <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-white text-[10px] font-bold ring-2 ring-slate-800">
@@ -148,6 +166,7 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
                     }
                     variant="secondary"
                     className="!p-2.5"
+                    aria-label={t('strainsView.toggleView')}
                     title={t('strainsView.toggleView')}
                 >
                     {viewMode === 'list' ? (
@@ -171,3 +190,5 @@ export const StrainToolbar: React.FC<StrainToolbarProps> = (props) => {
         </div>
     )
 }
+
+export const StrainToolbar = memo(StrainToolbarComponent)

@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react';
+import React, { useMemo, useRef, useEffect, useState, memo } from 'react';
 import { Strain } from '@/types';
 import StrainGridItem from './StrainGridItem';
 import { useVirtualizer } from '@/hooks/useVirtualizer';
@@ -14,7 +14,7 @@ interface StrainGridProps {
     onToggleFavorite: (id: string) => void;
 }
 
-export const StrainGrid: React.FC<StrainGridProps> = ({ strains, onSelect, selectedIds, onToggleSelection, isUserStrain, isPending, favorites, onToggleFavorite }) => {
+const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, selectedIds, onToggleSelection, isUserStrain, isPending, favorites, onToggleFavorite }) => {
     const scrollElementRef = useRef<HTMLElement | null>(null);
     const [columns, setColumns] = useState(2);
     const rowHeight = 260;
@@ -103,3 +103,4 @@ export const StrainGrid: React.FC<StrainGridProps> = ({ strains, onSelect, selec
         </div>
     );
 };
+export const StrainGrid = memo(StrainGridComponent);

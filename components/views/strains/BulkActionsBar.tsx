@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -11,7 +11,7 @@ interface BulkActionsBarProps {
     onDelete?: () => void;
 }
 
-export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
+const BulkActionsBarComponent: React.FC<BulkActionsBarProps> = ({
     selectedCount,
     onClearSelection,
     onAddToFavorites,
@@ -26,27 +26,37 @@ export const BulkActionsBar: React.FC<BulkActionsBarProps> = ({
                 <span className="text-sm font-semibold px-2">{t('strainsView.selectedCount', { count: selectedCount })}</span>
                 
                 {onAddToFavorites && (
-                    <Button size="sm" variant="secondary" onClick={onAddToFavorites} title={t('strainsView.bulkActions.addToFavorites')}>
+                    <Button size="sm" variant="secondary" onClick={onAddToFavorites}
+                        aria-label={t('strainsView.bulkActions.addToFavorites')}
+                        title={t('strainsView.bulkActions.addToFavorites')}>
                         <PhosphorIcons.Heart weight="fill" className="w-4 h-4" />
                     </Button>
                 )}
                 {onRemoveFromFavorites && (
-                    <Button size="sm" variant="secondary" onClick={onRemoveFromFavorites} title={t('strainsView.bulkActions.removeFromFavorites')}>
+                    <Button size="sm" variant="secondary" onClick={onRemoveFromFavorites}
+                        aria-label={t('strainsView.bulkActions.removeFromFavorites')}
+                        title={t('strainsView.bulkActions.removeFromFavorites')}>
                         <PhosphorIcons.Heart className="w-4 h-4" />
                     </Button>
                 )}
                 {onDelete && (
-                     <Button size="sm" variant="danger" onClick={onDelete} title={t('common.delete')}>
+                     <Button size="sm" variant="danger" onClick={onDelete}
+                        aria-label={t('common.delete')}
+                        title={t('common.delete')}>
                         <PhosphorIcons.TrashSimple className="w-4 h-4" />
                     </Button>
                 )}
                 
                 <div className="w-px h-6 bg-slate-600 mx-1"></div>
                 
-                <Button size="sm" variant="secondary" onClick={onClearSelection} title={t('strainsView.clearSelection')}>
+                <Button size="sm" variant="secondary" onClick={onClearSelection}
+                    aria-label={t('strainsView.clearSelection')}
+                    title={t('strainsView.clearSelection')}>
                     <PhosphorIcons.X className="w-4 h-4" />
                 </Button>
             </div>
         </div>
     );
 };
+
+export const BulkActionsBar = memo(BulkActionsBarComponent);

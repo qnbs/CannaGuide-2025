@@ -262,4 +262,13 @@ export const plantsView = {
     day: 'Tag',
   },
   syncProgress: 'Synchronisiere Simulationsfortschritt...',
+  growReminderPanel: {
+    title: 'Grow-Erinnerungen',
+    description: 'Push-Benachrichtigungen für VPD-Alarme, Bewässerung und Ernte-Fenster.',
+    due: '{{count}} fällig',
+    enableBtn: 'Benachrichtigungen aktivieren',
+    enabledBtn: 'Benachrichtigungen aktiv',
+    checkNowBtn: 'Jetzt prüfen',
+    statusLabel: 'Status: {{permission}}. Periodische Hintergrundsynchronisierung wird genutzt, wenn verfügbar.',
+  },
 };

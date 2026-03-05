@@ -281,6 +281,8 @@ export const settingsView = {
     storageWarningBody: 'Consider running cleanup soon to avoid save failures.',
     storageCriticalTitle: 'Storage critically full.',
     storageCriticalBody: 'Run cleanup now to reduce the risk of IndexedDB quota errors.',
+    storageCalculating: 'Calculating storage...',
+    storageUnavailable: 'Storage information unavailable.',
     storageUsage: 'Storage Usage',
     storageBreakdown: {
         plants: 'Plant Data & Journals',

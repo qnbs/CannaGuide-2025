@@ -1,9 +1,13 @@
 {
+  "id": "/CannaGuide-2025/",
   "name": "CannaGuide 2025",
   "short_name": "CannaGuide",
   "start_url": "/CannaGuide-2025/",
   "scope": "/CannaGuide-2025/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "lang": "en",
   "background_color": "#0F172A",
   "theme_color": "#0F172A",
   "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.",

@@ -28,6 +28,7 @@ export const common = {
     successfullyExported_one: 'Successfully exported 1 item as {{format}}.',
     successfullyExported_other: 'Successfully exported {{count}} items as {{format}}.',
     installPwa: 'Install App',
+    installPwaHint: 'Tip: You can install this app for offline use from your browser menu.',
     installPwaSuccess: 'App installed successfully!',
     installPwaDismissed: 'Installation dismissed.',
     offlineWarning: 'You are currently offline. Some features may be unavailable.',

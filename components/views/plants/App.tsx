@@ -95,7 +95,7 @@ export const App: React.FC = () => {
     const waitingWorkerRef = useRef<ServiceWorker | null>(null)
     const isApplyingUpdateRef = useRef(false)
 
-    useDocumentEffects(settings)
+    useDocumentEffects(settings, activeView)
 
     const handleUpdate = useCallback(() => {
         if (!waitingWorkerRef.current || isApplyingUpdateRef.current) {

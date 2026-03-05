@@ -1,4 +1,5 @@
 import { GoogleGenAI, Type, Modality } from '@google/genai'
+import DOMPurify from 'dompurify'
 import {
     Plant,
     Recommendation,
@@ -162,6 +163,23 @@ const getEducationalUseOnlyInstruction = (lang: Language): string =>
 
 
 class GeminiService {
+    private sanitizeValue<T>(value: T): T {
+        if (typeof value === 'string') {
+            return DOMPurify.sanitize(value) as T
+        }
+        if (Array.isArray(value)) {
+            return value.map((item) => this.sanitizeValue(item)) as T
+        }
+        if (value && typeof value === 'object') {
+            const nextEntries = Object.entries(value as Record<string, unknown>).map(([key, val]) => [
+                key,
+                this.sanitizeValue(val),
+            ])
+            return Object.fromEntries(nextEntries) as T
+        }
+        return value
+    }
+
     private shouldUseLocalFallback(error: unknown): boolean {
         const offline = typeof navigator !== 'undefined' && navigator.onLine === false
         if (offline) return true
@@ -264,12 +282,13 @@ class GeminiService {
             throw new Error(errorKey)
         }
 
-        return response.text
+        return this.sanitizeValue(response.text)
     }
 
     private parseJsonResponse<T>(response: { text?: string }, errorKey: string): T {
         const text = this.getResponseTextOrThrow(response, errorKey)
-        return JSON.parse(text.trim()) as T
+        const parsed = JSON.parse(text.trim()) as T
+        return this.sanitizeValue(parsed)
     }
 
     private async getAi(): Promise<GoogleGenAI> {

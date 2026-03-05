@@ -6,6 +6,18 @@ import path from 'path'
 export default defineConfig({
   base: '/CannaGuide-2025/',
   plugins: [react()],
+  server: {
+    headers: {
+      'Content-Security-Policy': "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';",
+      'Permissions-Policy': 'geolocation=(), camera=(self), microphone=(self), bluetooth=(self), usb=(), payment=(), gyroscope=(), magnetometer=()',
+    },
+  },
+  preview: {
+    headers: {
+      'Content-Security-Policy': "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';",
+      'Permissions-Policy': 'geolocation=(), camera=(self), microphone=(self), bluetooth=(self), usb=(), payment=(), gyroscope=(), magnetometer=()',
+    },
+  },
   build: {
     rollupOptions: {
       output: {
@@ -67,5 +79,13 @@ export default defineConfig({
       '**/.{idea,git,cache,output,temp}/**',
       'tests/e2e/**',
     ],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'html', 'lcov'],
+      reportsDirectory: './coverage',
+      all: true,
+      include: ['services/**/*.ts', 'hooks/**/*.ts', 'stores/**/*.ts', 'components/**/*.tsx'],
+      exclude: ['tests/**', '**/*.d.ts'],
+    },
   },
 })

@@ -33,4 +33,20 @@
       "purpose": "maskable"
     }
   ]
+  ,"screenshots": [
+    {
+      "src": "./screenshots/plants-overview.svg",
+      "sizes": "1280x720",
+      "type": "image/svg+xml",
+      "form_factor": "wide",
+      "label": "Plants overview dashboard"
+    },
+    {
+      "src": "./screenshots/mentor-chat.svg",
+      "sizes": "720x1280",
+      "type": "image/svg+xml",
+      "form_factor": "narrow",
+      "label": "AI mentor chat view"
+    }
+  ]
 }

@@ -45,21 +45,6 @@ const defaultStrainValues = strainToFormValues({
     agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' }
 });
 
-const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
-    <div>
-        <label htmlFor={props.id || props.name} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-        <Input id={props.id || props.name} {...props} />
-    </div>
-);
-
-const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
-     <div className="sm:col-span-2">
-        <label htmlFor={props.id || props.name} className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-        <Input as="textarea" rows={3} id={props.id || props.name} {...props} />
-    </div>
-);
-
-
 export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStrain, onUpdateStrain, strainToEdit, ...props }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();

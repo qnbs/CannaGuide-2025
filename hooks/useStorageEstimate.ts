@@ -17,7 +17,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
 
-const getObjectSize = (obj: any) => {
+const getObjectSize = (obj: unknown) => {
     try {
         return new TextEncoder().encode(JSON.stringify(obj)).length
     } catch (e) {

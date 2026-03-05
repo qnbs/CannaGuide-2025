@@ -39,6 +39,8 @@ type PathInfo = {
     opacity?: number
 }
 
+type NonMediumMetric = Exclude<Metric, 'ph' | 'ec' | 'moisture'>;
+
 const pathConfig: Record<ChartView, PathInfo[]> = {
     growth: [
         { key: 'height' as Metric, labelKey: 'plantsView.detailedView.height', color: 'rgb(var(--color-primary-500))', strokeWidth: 2, dash: false, unit: 'cm' },
@@ -99,7 +101,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
             .x(d => xScale(d.day))
             .y0(CHART_HEIGHT - CHART_PADDING.bottom)
             .y1(d => yScales.height(d.height)),
-    [xScale, yScales.height]);
+    [xScale, yScales]);
 
     const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);
 
@@ -217,7 +219,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                             if (pathInfo.key === 'ph' || pathInfo.key === 'ec' || pathInfo.key === 'moisture') {
                                 yValue = hoveredData.point.medium[pathInfo.key];
                             } else {
-                                yValue = (hoveredData.point as any)[pathInfo.key];
+                                yValue = hoveredData.point[pathInfo.key as NonMediumMetric];
                             }
                             const yPos = yScales[pathInfo.key](yValue);
 
@@ -237,7 +239,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                                       if (pathInfo.key === 'ph' || pathInfo.key === 'ec' || pathInfo.key === 'moisture') {
                                           value = hoveredData.point.medium[pathInfo.key];
                                       } else {
-                                          value = (hoveredData.point as any)[pathInfo.key];
+                                          value = hoveredData.point[pathInfo.key as NonMediumMetric];
                                       }
                                       return <p key={`tooltip-${pathInfo.key}`} style={{color: pathInfo.color}} className="font-semibold">{t(pathInfo.labelKey)}: {value.toFixed(1)}{pathInfo.unit}</p>
                                 })}

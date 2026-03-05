@@ -30,7 +30,7 @@ import { resizeImage } from '@/services/imageService';
 // --- TYPE DEFINITIONS ---
 
 /** Represents a key-value pair in the metadata store. */
-interface MetadataItem<T = any> {
+interface MetadataItem<T = unknown> {
     key: string;
     value: T;
 }
@@ -233,7 +233,7 @@ export const dbService = {
     },
 
     // --- Metadata Store ---
-    async getMetadata<T = any>(key: string): Promise<T | undefined> {
+    async getMetadata<T = unknown>(key: string): Promise<T | undefined> {
         const result = await performTx<MetadataItem<T> | undefined>(METADATA_STORE, 'readonly', store => store.get(key));
         return result?.value;
     },
@@ -493,7 +493,7 @@ export const dbService = {
      * @param action The Redux action object to queue.
      * @returns {Promise<void>}
      */
-    async addOfflineAction(action: any): Promise<void> {
+    async addOfflineAction(action: unknown): Promise<void> {
         await performTx<IDBValidKey>(OFFLINE_ACTIONS_STORE, 'readwrite', store => store.add(action));
     },
 

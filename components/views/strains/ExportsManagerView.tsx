@@ -12,7 +12,7 @@ interface ExportsManagerViewProps {
     onUpdate: (updatedExport: SavedExport) => void;
 }
 
-const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, allStrains, onDelete, onUpdate }) => {
+const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, allStrains, onDelete, onUpdate: _onUpdate }) => {
     const { t } = useTranslation();
 
     const handleDownload = async (exp: SavedExport) => {

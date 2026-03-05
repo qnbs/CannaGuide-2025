@@ -5,7 +5,7 @@ export const getDynamicLoadingMessages = ({
     data,
 }: {
     useCase: string
-    data?: Record<string, any>
+    data?: Record<string, unknown>
 }): string[] => {
     const t = getT()
     const messagesResult = t(`ai.loading.${useCase}`, {

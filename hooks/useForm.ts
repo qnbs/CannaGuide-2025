@@ -12,7 +12,7 @@ interface UseFormProps<T> {
     onSubmit: (values: T) => void
 }
 
-export const useForm = <T extends Record<string, any>>({
+export const useForm = <T extends Record<string, unknown>>({
     initialValues,
     validate,
     onSubmit,

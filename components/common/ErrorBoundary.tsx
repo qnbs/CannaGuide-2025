@@ -1,4 +1,5 @@
 import React, { ReactNode, ErrorInfo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Button } from './Button'
 
@@ -8,6 +9,30 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
     hasError: boolean
+}
+
+const ErrorFallback: React.FC<{ onSafeRecovery: () => void }> = ({ onSafeRecovery }) => {
+    const { t } = useTranslation()
+    return (
+        <div className="flex flex-col h-full bg-slate-900 text-slate-300 font-sans items-center justify-center p-4 text-center">
+            <PhosphorIcons.WarningCircle
+                weight="fill"
+                className="w-24 h-24 text-red-400 mb-4"
+            />
+            <h1 className="text-2xl font-bold font-display text-red-400 mb-2">
+                {t('common.errorBoundary.title')}
+            </h1>
+            <p className="text-slate-400 mb-6 max-w-sm">
+                {t('common.errorBoundary.description')}
+            </p>
+            <Button variant="danger" onClick={() => window.location.reload()}>
+                {t('common.errorBoundary.reload')}
+            </Button>
+            <Button variant="secondary" onClick={onSafeRecovery} className="mt-2">
+                {t('common.errorBoundary.safeRecovery')}
+            </Button>
+        </div>
+    )
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
@@ -46,28 +71,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
     render(): React.ReactNode {
         if (this.state.hasError) {
-            // You can render any custom fallback UI
-            return (
-                <div className="flex flex-col h-full bg-slate-900 text-slate-300 font-sans items-center justify-center p-4 text-center">
-                    <PhosphorIcons.WarningCircle
-                        weight="fill"
-                        className="w-24 h-24 text-red-400 mb-4"
-                    />
-                    <h1 className="text-2xl font-bold font-display text-red-400 mb-2">
-                        Something went wrong.
-                    </h1>
-                    <p className="text-slate-400 mb-6 max-w-sm">
-                        An unexpected error occurred. Please try reloading the application. If the
-                        problem persists, you may need to clear your site data.
-                    </p>
-                    <Button variant="danger" onClick={() => window.location.reload()}>
-                        Reload Application
-                    </Button>
-                    <Button variant="secondary" onClick={this.requestSafeRecovery} className="mt-2">
-                        Try Safe Recovery
-                    </Button>
-                </div>
-            )
+            return <ErrorFallback onSafeRecovery={this.requestSafeRecovery} />
         }
 
         return this.props.children

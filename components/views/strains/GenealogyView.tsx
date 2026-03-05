@@ -12,7 +12,7 @@ import {
     setGenealogyLayout,
     toggleGenealogyNode,
 } from '@/stores/slices/genealogySlice';
-import { Strain, GenealogyNode, GeneticContribution, StrainType } from '@/types';
+import { Strain, GenealogyNode } from '@/types';
 import { StrainTreeNode } from './StrainTreeNode';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -120,8 +120,8 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         }
     }, [dispatch, selectedStrainId]);
 
-    const handleSelectChange = (e: any) => {
-        dispatch(setSelectedGenealogyStrain(e.target.value || null));
+    const handleSelectChange = (e: { target: { value: string | number } }) => {
+        dispatch(setSelectedGenealogyStrain(e.target.value ? String(e.target.value) : null));
     };
     
     const handleShowDescendants = () => {

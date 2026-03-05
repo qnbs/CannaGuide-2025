@@ -7,8 +7,21 @@ import { PaymentIcons } from '@/components/icons/PaymentIcons';
 import { Modal } from '@/components/common/Modal';
 
 type ShopRegion = 'europe' | 'us';
+type TranslateFn = (key: string, params?: Record<string, unknown>) => string;
 
-const ShopDetailModalComponent: React.FC<{ shop: any; t: (key: string, params?: any) => any; onClose: () => void }> = ({ shop, t, onClose }) => (
+interface Shop {
+    name: string;
+    location: string;
+    rating: number;
+    description: string;
+    strengths: string[];
+    shipping: string;
+    paymentMethods: string[];
+    url: string;
+    key?: string;
+}
+
+const ShopDetailModalComponent: React.FC<{ shop: Shop; t: TranslateFn; onClose: () => void }> = ({ shop, t, onClose }) => (
     <Modal isOpen={true} onClose={onClose} title={shop.name} size="lg">
         <div className="flex flex-col h-full">
             <div className="flex justify-between items-start mb-4">
@@ -62,7 +75,7 @@ export const GrowShopsView: React.FC = () => {
     const [region, setRegion] = useState<ShopRegion>('europe');
     const [selectedShopKey, setSelectedShopKey] = useState<string | null>(null);
 
-    const allShops = useMemo(() => t('equipmentView.growShops.shops', { returnObjects: true }) as Record<string, any>, [t]);
+    const allShops = useMemo(() => t('equipmentView.growShops.shops', { returnObjects: true }) as Record<string, Shop>, [t]);
 
     const filteredAndSortedShops = useMemo(() => {
         const regionKey = region === 'europe' ? 'european' : 'us';

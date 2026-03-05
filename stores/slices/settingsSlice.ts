@@ -164,9 +164,10 @@ const settingsSlice = createSlice({
         setSettingsState: (_state, action: PayloadAction<SettingsState>) => {
             return action.payload
         },
-        setSetting: (state, action: PayloadAction<{ path: string; value: any }>) => {
+        setSetting: (state, action: PayloadAction<{ path: string; value: unknown }>) => {
             const { path, value } = action.payload
             const keys = path.split('.')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let current: any = state.settings
             for (let i = 0; i < keys.length - 1; i++) {
                 current = current[keys[i]]
@@ -176,6 +177,7 @@ const settingsSlice = createSlice({
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
             const { path } = action.payload
             const keys = path.split('.')
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let current: any = state.settings
             for (let i = 0; i < keys.length - 1; i++) {
                 current = current[keys[i]]

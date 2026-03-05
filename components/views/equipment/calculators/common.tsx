@@ -54,7 +54,7 @@ export const Select: React.FC<{
     options: { value: string | number; label: string }[]
     value?: string | number
     onChange?: (e: { target: { value: string | number } }) => void
-    [key: string]: any
+    className?: string
 }> = ({ label, options, ...props }) => {
     const id = useId()
     return (

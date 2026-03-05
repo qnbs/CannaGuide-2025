@@ -3,6 +3,35 @@ import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
+interface BankSection {
+    title: string;
+    content?: string;
+    strains?: string[];
+    points?: string[];
+    conclusion?: string;
+    methods?: string[];
+    // service contact fields
+    phone?: string;
+    digital?: string;
+    address?: string;
+    email?: string;
+    // nested sub-sections
+    payment?: { title: string; methods?: string[] };
+    shipping?: { title: string; points?: string[] };
+}
+
+interface BankData {
+    title?: string;
+    profile?: BankSection;
+    availability?: BankSection;
+    policies?: BankSection;
+    service?: BankSection;
+    offers?: BankSection;
+    assessment?: BankSection;
+}
+
+type ConclusionsCategory = { title: string; content: string };
+
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
     <div>
         <h5 className="font-bold text-primary-300 mb-2">{title}</h5>
@@ -12,7 +41,7 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
 
 const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bankKey, isOpen }) => {
     const { t } = useTranslation();
-    const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as any;
+    const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as BankData;
 
     if (!bank || !bank.title) return null;
 
@@ -86,7 +115,7 @@ const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bank
 
 const SeedbanksView: React.FC = () => {
     const { t } = useTranslation();
-    const allBanksData = t('equipmentView.seedbanks', { returnObjects: true }) as any;
+    const allBanksData = t('equipmentView.seedbanks', { returnObjects: true }) as Record<string, BankData & { categories?: Record<string, ConclusionsCategory>; content?: string; summary?: string }>;
     const bankKeys = Object.keys(allBanksData).filter(key => key !== 'conclusions' && typeof allBanksData[key] === 'object');
     const conclusions = allBanksData.conclusions;
 
@@ -100,7 +129,7 @@ const SeedbanksView: React.FC = () => {
                     <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{conclusions.title}</h3>
                     <div className="space-y-4 text-sm text-slate-300">
                         <p>{conclusions.content}</p>
-                        {conclusions.categories && Object.values(conclusions.categories).map((cat: any, i: number) => (
+                        {conclusions.categories && Object.values(conclusions.categories).map((cat: ConclusionsCategory, i: number) => (
                              <div key={i} className="p-3 bg-slate-800/50 rounded-lg">
                                  <h4 className="font-bold text-slate-100">{cat.title}</h4>
                                  <p className="mt-1">{cat.content}</p>

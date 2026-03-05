@@ -302,7 +302,7 @@ export const waterAllPlants = createAsyncThunk<void, void, { state: RootState }>
 
 // --- RING 3 VALIDATING THUNKS ---
 
-export const applyWateringAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
+export const applyWateringAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
     'simulation/applyWatering',
     ({ plantId, data, notes }, { dispatch, getState }) => {
         const validation = WaterDataSchema.safeParse(data);
@@ -327,7 +327,7 @@ export const applyWateringAction = createAsyncThunk<void, { plantId: string, dat
     }
 );
 
-export const applyTrainingAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
+export const applyTrainingAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
     'simulation/applyTraining',
     ({ plantId, data, notes }, { dispatch, getState }) => {
         const validation = TrainingDataSchema.safeParse(data);
@@ -351,7 +351,7 @@ export const applyTrainingAction = createAsyncThunk<void, { plantId: string, dat
     }
 );
 
-export const applyPestControlAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
+export const applyPestControlAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
     'simulation/applyPestControl',
     ({ plantId, data, notes }, { dispatch }) => {
         const validation = PestControlDataSchema.safeParse(data);
@@ -364,7 +364,7 @@ export const applyPestControlAction = createAsyncThunk<void, { plantId: string, 
     }
 );
 
-export const applyAmendmentAction = createAsyncThunk<void, { plantId: string, data: any, notes: string }, { state: RootState }>(
+export const applyAmendmentAction = createAsyncThunk<void, { plantId: string, data: unknown, notes: string }, { state: RootState }>(
     'simulation/applyAmendment',
     ({ plantId, data, notes }, { dispatch }) => {
         const validation = AmendmentDataSchema.safeParse(data);

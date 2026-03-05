@@ -37,14 +37,14 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
 
     const output = JSON.parse(JSON.stringify(defaultSettings)) // Deep clone defaults
 
-    function merge(target: Record<string, any>, source: Record<string, any>) {
+    function merge(target: Record<string, unknown>, source: Record<string, unknown>) {
         for (const key of Object.keys(source)) {
             const sourceValue = source[key]
             if (isObject(sourceValue)) {
                 if (!target[key] || !isObject(target[key])) {
                     target[key] = {}
                 }
-                merge(target[key], sourceValue)
+                merge(target[key] as Record<string, unknown>, sourceValue as Record<string, unknown>)
             } else if (sourceValue !== undefined) {
                 target[key] = sourceValue
             }
@@ -74,8 +74,11 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
         migratedState.settings = { settings: defaultSettings, version: 1 }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (typeof (migratedState.settings.settings.plantsView as any)?.showArchivedInPlantsView !== 'undefined') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         migratedState.settings.settings.plantsView.showArchived = (migratedState.settings.settings.plantsView as any).showArchivedInPlantsView
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (migratedState.settings.settings.plantsView as any).showArchivedInPlantsView
     }
 
@@ -99,6 +102,7 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
 
     if (migratedState.simulation?.plants?.entities) {
         for (const id in migratedState.simulation.plants.entities) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const plant = migratedState.simulation.plants.entities[id] as any
             if (plant && !plant.mediumType) {
                 plant.mediumType = 'Soil'

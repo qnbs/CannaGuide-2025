@@ -5,8 +5,6 @@ import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { Button } from '@/components/ui/button';
-import { useAppDispatch } from '@/stores/store';
-import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 
 interface StrainGridItemProps {
     strain: Strain;
@@ -34,7 +32,6 @@ const typeClasses: Record<StrainType, string> = {
 
 const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
-    const dispatch = useAppDispatch();
 
     const handleActionClick = (e: React.MouseEvent, action: () => void) => {
         e.stopPropagation();

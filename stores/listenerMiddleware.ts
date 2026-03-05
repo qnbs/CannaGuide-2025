@@ -1,4 +1,4 @@
-import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit';
+import { createListenerMiddleware, isAnyOf, TypedStartListening, ForkedTask } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from './store';
 import { i18nInstance, getT, loadLocale } from '@/i18n';
 import { Language, Strain, View } from '@/types';
@@ -69,7 +69,7 @@ startAppListening({
 let audioCtx: AudioContext | null = null;
 const playConfirmationSound = () => {
     if (!audioCtx) {
-        audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioCtx = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
     }
     if (!audioCtx) return;
 
@@ -157,7 +157,7 @@ startAppListening({
 });
 
 // --- URL Sync Logic for Strain Filters ---
-let urlUpdateTask: any;
+let urlUpdateTask: ForkedTask<void> | undefined;
 
 startAppListening({
     matcher: isAnyOf(
@@ -227,7 +227,8 @@ startAppListening({
 startAppListening({
     matcher: isAnyOf(updateSetup, updateStrainTip),
     effect: (action, { dispatch }) => {
-        const payload = (action.payload as any).changes || action.payload;
+        const p = action.payload as { id?: string; changes?: { name?: string; title?: string }; name?: string; title?: string };
+        const payload = p.changes ?? p;
         const name = payload.name || payload.title;
         let message = `Item "${name}" updated.`;
         if (action.type.includes('Export')) message = t('strainsView.exportsManager.updateExportSuccess', { name });
@@ -282,7 +283,7 @@ startAppListening({
         try {
             const registration = await navigator.serviceWorker.ready;
             if ('sync' in registration) {
-                await (registration.sync as any).register('data-sync');
+                await (registration.sync as { register: (tag: string) => Promise<void> }).register('data-sync');
                 dispatch(addNotification({ message: 'Offline. Action queued for sync.', type: 'info' }));
             }
         } catch (err) {

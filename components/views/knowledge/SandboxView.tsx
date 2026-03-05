@@ -84,9 +84,11 @@ const SandboxView: React.FC = () => {
     const handleSave = () => {
         if (currentExperiment) {
             const basePlant = activePlants.find(
-                (p) => p.id === (currentExperiment as any).basePlantId,
+                (p) => p.id === currentExperiment.basePlantId,
             )
-            const scenario = scenarioService.getScenarioById((currentExperiment as any).scenarioId)
+            const scenario = currentExperiment.scenarioId
+                ? scenarioService.getScenarioById(currentExperiment.scenarioId)
+                : null
             if (basePlant && scenario) {
                 dispatch(saveExperiment({ scenario, basePlantName: basePlant.name }))
             }

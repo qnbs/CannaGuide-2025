@@ -6,8 +6,41 @@ import { setVoiceListening, setVoiceStatusMessage, processVoiceCommand } from '@
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Button } from './Button';
 
-// Browser compatibility for the Web Speech API
-const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+// Web Speech API – not yet fully standardized in TypeScript's DOM lib
+interface WSpeechRecognitionResult {
+    readonly isFinal: boolean;
+    readonly length: number;
+    [index: number]: { transcript: string; confidence: number };
+}
+interface WSpeechRecognitionResultList {
+    readonly length: number;
+    [index: number]: WSpeechRecognitionResult;
+}
+interface WSpeechRecognitionEvent extends Event {
+    readonly results: WSpeechRecognitionResultList;
+}
+interface WSpeechRecognitionErrorEvent extends Event {
+    readonly error: string;
+}
+interface WSpeechRecognition extends EventTarget {
+    continuous: boolean;
+    interimResults: boolean;
+    lang: string;
+    addEventListener(type: 'result', listener: (event: WSpeechRecognitionEvent) => void): void;
+    addEventListener(type: 'error', listener: (event: WSpeechRecognitionErrorEvent) => void): void;
+    addEventListener(type: 'end', listener: () => void): void;
+    removeEventListener(type: 'result', listener: (event: WSpeechRecognitionEvent) => void): void;
+    removeEventListener(type: 'error', listener: (event: WSpeechRecognitionErrorEvent) => void): void;
+    removeEventListener(type: 'end', listener: () => void): void;
+    start(): void;
+    stop(): void;
+    abort(): void;
+}
+type WSpeechRecognitionCtor = { new(): WSpeechRecognition };
+
+const SpeechRecognitionAPI: WSpeechRecognitionCtor | undefined =
+    (window as Window & { SpeechRecognition?: WSpeechRecognitionCtor }).SpeechRecognition ||
+    (window as Window & { webkitSpeechRecognition?: WSpeechRecognitionCtor }).webkitSpeechRecognition;
 const hasSpeechRecognitionSupport = typeof SpeechRecognitionAPI === 'function';
 
 export const VoiceControl: React.FC = () => {
@@ -15,9 +48,9 @@ export const VoiceControl: React.FC = () => {
     const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
     const { isListening, isAvailable } = useAppSelector(state => state.ui.voiceControl);
-    const recognitionRef = useRef<any | null>(null);
+    const recognitionRef = useRef<WSpeechRecognition | null>(null);
 
-    const handleResult = useCallback((event: any) => {
+    const handleResult = useCallback((event: WSpeechRecognitionEvent) => {
         const latest = event.results[event.results.length - 1]
         const transcript = latest[0].transcript.trim();
         if (latest && !latest.isFinal) {
@@ -34,7 +67,7 @@ export const VoiceControl: React.FC = () => {
         }
     }, [dispatch, t]);
 
-    const handleError = useCallback((event: any) => {
+    const handleError = useCallback((event: WSpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
         let errorMessageKey = 'voiceControl.errors.generic';
         if (event.error === 'no-speech') {

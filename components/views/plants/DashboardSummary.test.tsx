@@ -2,7 +2,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DashboardSummary } from './DashboardSummary';
 import * as reduxHooks from '@/stores/store';
-import { waterAllPlants } from '@/stores/slices/simulationSlice';
 import { RootState } from '@/stores/store';
 import { Plant } from '@/types';
 import { selectGardenHealthMetrics } from '@/stores/selectors';

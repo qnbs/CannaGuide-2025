@@ -15,7 +15,7 @@ interface DeepDiveModalProps {
   onRunScenario: (scenario: Scenario) => void;
   data?: DeepDiveGuide;
   isLoading: boolean;
-  error?: any;
+  error?: unknown;
 }
 
 export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onClose, onRunScenario, data: response, isLoading, error }) => {
@@ -28,7 +28,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
             data: { topic, plantName: plant.name }
         });
         return messages[Math.floor(Math.random() * messages.length)];
-    }, [topic, plant.name, isLoading, t]);
+    }, [topic, plant.name, isLoading]);
 
 
     const relevantScenario = useMemo(() => {
@@ -41,7 +41,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
     return (
         <Modal isOpen={true} onClose={onClose} title={`${t('common.deepDive')}: ${topic}`} size="2xl">
             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
-            {error && <div className="text-red-400">{'message' in (error as any) ? (error as any).message : t('ai.error.unknown')}</div>}
+            {!!error && <div className="text-red-400">{error instanceof Error ? error.message : t('ai.error.unknown')}</div>}
             {response && (
                 <div className="space-y-4 pb-1">
                     <div className="flex items-start gap-3 bg-slate-800/50 p-3 rounded-lg">

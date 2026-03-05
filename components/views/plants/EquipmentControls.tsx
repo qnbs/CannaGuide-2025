@@ -88,7 +88,7 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
                         <Select
                             label={t('plantsView.setupModal.lightCycle')}
                             value={light.lightHours}
-                            onChange={(e) => dispatch(setLightHours({ plantId: plant.id, hours: Number(e.target.value) }))}
+                            onChange={(e: { target: { value: string | number } }) => dispatch(setLightHours({ plantId: plant.id, hours: Number(e.target.value) }))}
                             options={[
                                 { value: '18', label: t('plantsView.setupModal.cycles.veg') },
                                 { value: '12', label: t('plantsView.setupModal.cycles.flower') },

@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type, Modality } from '@google/genai'
+import { GoogleGenAI, Type, Modality, HarmCategory, HarmBlockThreshold } from '@google/genai'
 import DOMPurify from 'dompurify'
 import {
     Plant,
@@ -151,8 +151,8 @@ const AI_ERROR_KEYS = new Set([
 
 const GEMINI_SAFETY_SETTINGS = [
     {
-        category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-        threshold: 'BLOCK_NONE',
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_NONE,
     },
 ]
 

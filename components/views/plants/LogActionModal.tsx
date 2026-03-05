@@ -163,7 +163,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <Select
                             label={t('plantsView.actionModals.logTraining')}
                             value={(details as Partial<TrainingDetails>)?.type || ''}
-                            onChange={(e) => setDetails({ type: e.target.value as TrainingType })}
+                            onChange={(e: { target: { value: string | number } }) => setDetails({ type: e.target.value as TrainingType })}
                             options={(['LST', 'Topping', 'FIMing', 'Defoliation'] as TrainingType[]).map(
                                 (tValue) => ({
                                     value: tValue,
@@ -176,7 +176,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <Select
                             label={t('plantsView.actionModals.logAmendment')}
                             value={(details as Partial<AmendmentDetails>)?.type || ''}
-                            onChange={(e) => setDetails({ type: e.target.value as AmendmentType })}
+                            onChange={(e: { target: { value: string | number } }) => setDetails({ type: e.target.value as AmendmentType })}
                             options={(['Mycorrhizae', 'WormCastings'] as AmendmentType[]).map((a) => ({
                                 value: a,
                                 label: t(`plantsView.actionModals.amendmentTypes.${a}`),
@@ -188,7 +188,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                             <Select
                                 label={t('plantsView.actionModals.photo.category')}
                                 value={(details as PhotoDetailsType)?.photoCategory || ''}
-                                onChange={(e) =>
+                                onChange={(e: { target: { value: string | number } }) =>
                                     setDetails({
                                         photoCategory: e.target.value as PhotoCategory,
                                     })

@@ -71,7 +71,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    minWorkers: 1,
     maxWorkers: 1,
     setupFiles: './vitest.setup.ts',
     exclude: [
@@ -82,10 +81,9 @@ export default defineConfig({
       'tests/e2e/**',
     ],
     coverage: {
-      provider: 'v8',
+      provider: 'v8' as const,
       reporter: ['text', 'html', 'lcov'],
       reportsDirectory: './coverage',
-      all: true,
       include: ['services/**/*.ts', 'hooks/**/*.ts', 'stores/**/*.ts', 'components/**/*.tsx'],
       exclude: ['tests/**', '**/*.d.ts'],
     },

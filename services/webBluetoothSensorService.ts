@@ -1,3 +1,24 @@
+declare global {
+    interface Navigator {
+        bluetooth: {
+            requestDevice(options: { filters: Array<{ namePrefix?: string }>; optionalServices?: number[] }): Promise<BluetoothDevice>
+        }
+    }
+    interface BluetoothDevice {
+        gatt?: { connect(): Promise<BluetoothRemoteGATTServer> }
+    }
+    interface BluetoothRemoteGATTServer {
+        getPrimaryService(service: number): Promise<BluetoothRemoteGATTService>
+        disconnect(): void
+    }
+    interface BluetoothRemoteGATTService {
+        getCharacteristic(characteristic: number): Promise<BluetoothRemoteGATTCharacteristic>
+    }
+    interface BluetoothRemoteGATTCharacteristic {
+        readValue(): Promise<DataView>
+    }
+}
+
 export interface SensorReading {
     temperatureC: number
     humidityPercent: number

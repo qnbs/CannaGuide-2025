@@ -57,10 +57,11 @@ export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
             <XAxis dataKey="hour" tick={{ fontSize: 12 }} tickMargin={6} />
             <YAxis tick={{ fontSize: 12 }} domain={[0, 2.2]} tickMargin={6} />
             <Tooltip
-              formatter={(value: number, name: string) => {
+              formatter={((value: number | undefined, name: string | undefined) => {
+                if (value == null) return ['-', name ?? '']
                 if (name === 'vpd' || name === 'targetVPD') return [`${value.toFixed(2)} kPa`, name]
-                return [String(value), name]
-              }}
+                return [String(value), name ?? '']
+              }) as never}
               contentStyle={{
                 backgroundColor: 'rgba(15, 23, 42, 0.95)',
                 border: '1px solid rgba(148, 163, 184, 0.4)',

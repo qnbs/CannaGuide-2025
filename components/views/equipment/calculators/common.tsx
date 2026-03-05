@@ -62,7 +62,7 @@ export const Select: React.FC<{
             <label htmlFor={id} className="block text-sm font-semibold text-slate-300 mb-1">
                 {label}
             </label>
-            <PrimitiveSelect id={id} options={options} {...props} />
+            <PrimitiveSelect options={options} {...props} />
         </div>
     )
 }

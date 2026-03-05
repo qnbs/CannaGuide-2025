@@ -274,6 +274,10 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                     dispatch(simulationSlice.actions.plantStateUpdated(e.data));
                     worker.terminate();
                 };
+                worker.onerror = (e) => {
+                    console.error('[SimWorker] Error during plant state update:', e.message);
+                    worker.terminate();
+                };
                 worker.postMessage({ plant, deltaTime });
             }
         }

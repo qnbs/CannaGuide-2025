@@ -72,5 +72,4 @@ export const usePlantById = (plantId: string | null) => {
  * Custom hook to check if the simulation is currently in a "catch-up" state.
  * @returns A boolean indicating the catch-up status.
  */
-// @ts-expect-error simulation catch-up flag is injected by slice runtime but not yet declared in the RootState type
 export const useIsSimulationCatchingUp = () => useAppSelector(state => state.simulation.isCatchingUp);

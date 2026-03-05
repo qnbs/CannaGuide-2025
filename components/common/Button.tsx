@@ -5,8 +5,7 @@ export type ButtonProps = {
     children?: React.ReactNode
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
     size?: 'sm' | 'base' | 'lg'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    as?: any
+    as?: React.ElementType
     className?: string
     glow?: boolean
     href?: string

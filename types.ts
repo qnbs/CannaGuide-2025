@@ -291,6 +291,8 @@ export interface SimulationState {
     selectedPlantId: string | null;
     devSpeedMultiplier: number;
     vpdProfiles: Record<string, SimulationPoint[]>;
+    /** Set to true while the background worker is processing a catch-up delta. */
+    isCatchingUp?: boolean;
 }
 
 // AI related types

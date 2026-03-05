@@ -32,8 +32,8 @@ export const fetchAndBuildGenealogy = createAsyncThunk<
     { state: RootState }
 >('genealogy/fetchAndBuild', async ({ strainId, allStrains }, { getState }) => {
     const { genealogy } = getState()
-    // Check cache first
-    if (genealogy.computedTrees[strainId]) {
+    // Check cache: use `in` so even a null result (strain not found) is cached and not re-fetched
+    if (strainId in genealogy.computedTrees) {
         return { strainId, tree: genealogy.computedTrees[strainId] }
     }
     const tree = geneticsService.buildGenealogyTree(strainId, allStrains)

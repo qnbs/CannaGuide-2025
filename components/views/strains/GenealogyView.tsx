@@ -84,11 +84,15 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     
     const svgRef = useRef<SVGSVGElement>(null);
     const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+    // Keep a ref that always reflects the latest zoomTransform without triggering zoom re-initialization
+    const zoomTransformRef = useRef(zoomTransform);
+    zoomTransformRef.current = zoomTransform;
 
-    const tree = useMemo(() => selectedStrainId ? computedTrees[selectedStrainId] : null, [computedTrees, selectedStrainId]);
+    const tree = useMemo(() => selectedStrainId ? computedTrees[selectedStrainId] ?? null : null, [computedTrees, selectedStrainId]);
 
     useEffect(() => {
-        if (selectedStrainId && !computedTrees[selectedStrainId]) {
+        // Only dispatch when the key is truly absent (undefined) – null means already fetched but strain not found
+        if (selectedStrainId && computedTrees[selectedStrainId] === undefined) {
             dispatch(fetchAndBuildGenealogy({ strainId: selectedStrainId, allStrains }));
         }
     }, [selectedStrainId, allStrains, computedTrees, dispatch]);
@@ -157,16 +161,19 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         svg.call(zoomBehavior);
         zoomRef.current = zoomBehavior;
 
-        if (zoomTransform === null) { // Recenter logic
+        // Read via ref so pan/zoom events do NOT re-trigger this entire effect
+        const savedTransform = zoomTransformRef.current;
+        if (savedTransform === null) { // Recenter logic
             const { width, height } = svg.node()!.getBoundingClientRect();
             const initialTranslate = layoutOrientation === 'horizontal' ? [width * 0.1, height / 2] : [width / 2, height * 0.1];
             const initialTransform = d3.zoomIdentity.translate(initialTranslate[0], initialTranslate[1]);
             svg.transition().duration(750).call(zoomBehavior.transform, initialTransform);
         } else {
-            const transform = d3.zoomIdentity.translate(zoomTransform.x, zoomTransform.y).scale(zoomTransform.k);
+            const transform = d3.zoomIdentity.translate(savedTransform.x, savedTransform.y).scale(savedTransform.k);
             svg.call(zoomBehavior.transform, transform);
         }
-    }, [dispatch, tree, layoutOrientation, zoomTransform]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch, tree, layoutOrientation]); // zoomTransform intentionally omitted – read via ref above
 
     const handleResetZoom = useCallback(() => {
         if (svgRef.current && zoomRef.current) {
@@ -226,17 +233,32 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                         options={[{ value: '', label: t('strainsView.genealogyView.selectStrain') }, ...sortedStrains.map(s => ({ value: s.id, label: s.name }))]}
                     />
                     <div className="flex items-center gap-2">
-                        <Button variant="secondary" onClick={handleResetZoom}><PhosphorIcons.Cube /> {t('strainsView.genealogyView.resetView')}</Button>
+                        <Button variant="secondary" onClick={handleResetZoom}><PhosphorIcons.ArrowClockwise /> {t('strainsView.genealogyView.resetView')}</Button>
                         <Button variant="secondary" onClick={() => dispatch(setGenealogyLayout(layoutOrientation === 'horizontal' ? 'vertical' : 'horizontal'))}><PhosphorIcons.TreeStructure /> {t('strainsView.genealogyView.toggleLayout')}</Button>
                     </div>
                 </div>
             </Card>
 
             {status === 'loading' && <Card><SkeletonLoader count={3} /></Card>}
+
+            {status === 'failed' && (
+                <Card className="text-center py-10 text-red-400">
+                    <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p className="font-semibold">{t('common.error')}</p>
+                    <p className="text-sm text-slate-400 mt-1">{t('strainsView.genealogyView.noStrainSelected')}</p>
+                </Card>
+            )}
             
             {status !== 'loading' && !selectedStrainId && (
                 <Card className="text-center py-10 text-slate-500">
                     <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto text-slate-400 mb-4" />
+                    <p>{t('strainsView.genealogyView.noStrainSelected')}</p>
+                </Card>
+            )}
+
+            {status === 'succeeded' && selectedStrainId && !tree && (
+                <Card className="text-center py-10 text-slate-400">
+                    <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p>{t('strainsView.genealogyView.noStrainSelected')}</p>
                 </Card>
             )}

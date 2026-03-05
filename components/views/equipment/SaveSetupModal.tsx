@@ -3,7 +3,7 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { SavedSetup } from '@/types';
-import { Input } from '@/components/ui/ThemePrimitives';
+import { Input } from '@/components/ui/input';
 
 interface SaveSetupModalProps {
     isOpen: boolean;

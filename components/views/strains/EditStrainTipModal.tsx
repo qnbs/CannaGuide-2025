@@ -3,7 +3,8 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { SavedStrainTip } from '@/types';
-import { Input } from '@/components/ui/ThemePrimitives';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 interface EditStrainTipModalProps {
     tip: SavedStrainTip;
@@ -14,7 +15,14 @@ interface EditStrainTipModalProps {
 const TipTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> & { label: string }> = ({ label, ...props }) => (
     <div>
         <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
-        <Input as="textarea" rows={3} {...props} />
+        <Textarea rows={3} {...props} />
+    </div>
+);
+
+const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label: string }> = ({ label, ...props }) => (
+    <div>
+        <label className="block text-sm font-semibold text-slate-300 mb-1">{label}</label>
+        <Input {...props} />
     </div>
 );
 
@@ -36,7 +44,7 @@ export const EditStrainTipModal: React.FC<EditStrainTipModalProps> = ({ tip, onC
     return (
         <Modal isOpen={true} onClose={onClose} title={t('strainsView.tips.editTipTitle')} size="lg" footer={footer}>
             <div className="space-y-4">
-                <Input
+                <FormInput
                     label={t('common.name')}
                     type="text"
                     value={editedTip.title}

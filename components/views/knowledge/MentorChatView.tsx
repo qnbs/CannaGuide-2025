@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
-import { Input } from '@/components/ui/ThemePrimitives'
+import { Textarea } from '@/components/ui/textarea'
 import { useGetMentorResponseMutation } from '@/stores/api'
 import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice'
 import { selectLanguage } from '@/stores/selectors'
@@ -149,8 +149,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
             </div>
             <div className="flex-shrink-0 mt-4 pt-4 border-t border-slate-700">
                 <div className="flex items-start gap-2">
-                    <Input
-                        as="textarea"
+                    <Textarea
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={handleKeyPress}

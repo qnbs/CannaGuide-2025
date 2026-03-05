@@ -1,4 +1,5 @@
-import React, { useState, useRef, memo } from 'react'
+import { useState, useRef, memo } from 'react'
+import DOMPurify from 'dompurify'
 import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -108,7 +109,7 @@ const EditResponseModalComponent = <T extends EditableResponse>({
                             ref={contentRef}
                             contentEditable={true}
                             onInput={handleContentChange}
-                            dangerouslySetInnerHTML={{ __html: content }}
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
                             className="w-full min-h-[150px] p-2 focus:outline-none prose prose-sm dark:prose-invert max-w-none"
                             aria-label={t('common.notes')}
                         />

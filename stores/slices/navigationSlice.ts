@@ -36,7 +36,7 @@ const navigationSlice = createSlice({
         clearNavigationCache: (state) => {
             state.viewStates = {}
         },
-        setNavigationState: (state, action: PayloadAction<NavigationState>) => {
+        setNavigationState: (_state, action: PayloadAction<NavigationState>) => {
             // Used for data import/export if we decide to persist this state.
             return action.payload
         },

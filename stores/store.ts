@@ -23,7 +23,6 @@ import { listenerMiddleware } from './listenerMiddleware';
 import { indexedDBStorage } from './indexedDBStorage';
 import { migrateState } from '../services/migrationLogic';
 import { REDUX_STATE_KEY } from '@/constants';
-import { View } from '@/types';
 
 const rootReducer = combineReducers({
     simulation: simulationReducer,
@@ -51,16 +50,19 @@ const makeStore = (preloadedState?: Partial<RootState>) =>
         preloadedState,
         middleware: (getDefaultMiddleware) =>
             getDefaultMiddleware({
-                serializableCheck: false,
+                serializableCheck: {
+                    // RTK Query caches and timestamps are not plain-serializable;
+                    // ignore the geminiApi slice paths to keep the guard active elsewhere.
+                    ignoredPaths: ['geminiApi'],
+                },
             })
                 .concat(geminiApi.middleware)
                 .prepend(listenerMiddleware.middleware),
     });
 
 export type RootState = ReturnType<typeof rootReducer>;
-const tempStoreForTypes = makeStore();
-export type AppDispatch = typeof tempStoreForTypes.dispatch;
 export type AppStore = ReturnType<typeof makeStore>;
+export type AppDispatch = AppStore['dispatch'];
 export type { ForkedTask };
 
 export const useAppDispatch: () => AppDispatch = useDispatch;

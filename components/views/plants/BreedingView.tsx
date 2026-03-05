@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectCollectedSeeds, selectBreedingSlots } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
-import { Seed, Strain, StrainType, GeneticModifiers } from '@/types';
+import { Seed, Strain, StrainType } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { setParentA, setParentB, clearBreedingSlots } from '@/stores/slices/breedingSlice';

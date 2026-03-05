@@ -35,12 +35,7 @@ interface MetadataItem<T = any> {
     value: T;
 }
 
-/** Represents an entry in the full-text search index store. */
-interface StrainIndexItem {
-    word: string;
-    ids: string[];
-}
-
+/** Represents a snapshot of storage estimate data. */
 interface StorageEstimateSnapshot {
     usage: number;
     quota: number;
@@ -456,7 +451,6 @@ export const dbService = {
             const transaction = db.transaction(STRAIN_SEARCH_INDEX_STORE, 'readonly');
             const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
             const resultSets: Set<string>[] = [];
-            let completedRequests = 0;
 
             transaction.onerror = () => reject(transaction.error);
             
@@ -483,13 +477,11 @@ export const dbService = {
                     } else {
                         // Cursor for this token is done.
                         resultSets.push(idsForToken);
-                        completedRequests++;
                     }
                 };
                 request.onerror = () => {
                      // If one request fails, we can still try to complete the transaction with the others
                      console.error(`[dbService] Search index request failed for token: ${token}`);
-                     completedRequests++;
                 }
             });
         });

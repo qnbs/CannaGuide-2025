@@ -8,12 +8,8 @@ import {
     Task,
     PlantProblem,
     Notification,
-    Strain,
-    SavedSetup,
-    SavedStrainTip,
     View,
     Plant,
-    SavedExport,
     TTSSettings,
     SandboxState,
     Language,
@@ -145,7 +141,7 @@ const selectAllArchivedAdvisorResponses = createSelector(
 const emptyArchivedAdvisorResponses: ArchivedAdvisorResponse[] = []
 
 export const selectArchivedAdvisorResponsesForPlant = createSelector(
-    [selectAllArchivedAdvisorResponses, (state: RootState, plantId: string) => plantId],
+    [selectAllArchivedAdvisorResponses, (_state: RootState, plantId: string) => plantId],
     (archives, plantId): ArchivedAdvisorResponse[] => archives[plantId] || emptyArchivedAdvisorResponses,
 )
 

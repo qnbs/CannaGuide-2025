@@ -1,4 +1,3 @@
-import { Strain, StrainType } from '@/types';
-import { createStrainObject } from '@/services/strainFactory';
+import type { Strain } from '@/types';
 
 export const strains: Strain[] = [];

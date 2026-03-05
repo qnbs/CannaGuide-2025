@@ -41,7 +41,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
     plant,
     type,
     onClose,
-    onLearnMore,
+    onLearnMore: _onLearnMore,
 }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()

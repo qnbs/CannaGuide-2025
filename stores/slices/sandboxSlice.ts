@@ -64,7 +64,7 @@ const sandboxSlice = createSlice({
         deleteExperiment: (state, action: PayloadAction<string>) => {
             state.savedExperiments = state.savedExperiments.filter((exp) => exp.id !== action.payload)
         },
-        setSandboxState: (state, action: PayloadAction<SandboxState>) => {
+        setSandboxState: (_state, action: PayloadAction<SandboxState>) => {
             return action.payload
         },
     },

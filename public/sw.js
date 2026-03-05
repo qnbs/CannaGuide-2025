@@ -9,23 +9,9 @@ const APP_SHELL_URLS = [
   './favicon.ico',
 ];
 
-const THIRD_PARTY_URLS = [
-  'https://cdn.tailwindcss.com?plugins=typography',
-  "https://aistudiocdn.com/zod@^3.23.8",
-  "https://aistudiocdn.com/jspdf-autotable@^3.8.2",
-  "https://aistudiocdn.com/jspdf@^2.5.1",
-  "https://aistudiocdn.com/@google/genai@^1.19.0",
-  "https://aistudiocdn.com/react-dom@^19.1.1",
-  "https://aistudiocdn.com/react@^19.1.1",
-  "https://aistudiocdn.com/i18next@^25.5.2",
-  "https://aistudiocdn.com/react-i18next@^15.0.0",
-  "https://aistudiocdn.com/reselect@^5.1.1",
-  "https://aistudiocdn.com/immer@^10.1.3",
-  "https://aistudiocdn.com/d3@^7.9.0",
-  "https://aistudiocdn.com/@reduxjs/toolkit@^2.2.6",
-  "https://aistudiocdn.com/react-redux@^9.1.2",
-  "https://aistudiocdn.com/d3-hierarchy@^3.1.2",
-];
+// THIRD_PARTY_URLS: The app is Vite-bundled; all dependencies are self-hosted in /assets/.
+// No external CDN URLs need to be pre-cached.
+const THIRD_PARTY_URLS = [];
 
 const workboxManifest = Array.isArray(self.__WB_MANIFEST) ? self.__WB_MANIFEST : [];
 const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
@@ -35,7 +21,8 @@ const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...work
 const DB_NAME = 'CannaGuideDB';
 const DB_VERSION = 4;
 const OFFLINE_ACTIONS_STORE = 'offline_actions';
-const SYNC_API_ENDPOINT = '/api/sync-action'; // Placeholder for the backend endpoint
+// Note: This app is client-only (no backend). The background sync handler notifies
+// open clients to replay queued actions locally rather than POSTing to a server.
 const REMINDER_DB_NAME = 'CannaGuideReminderDB';
 const REMINDER_DB_VERSION = 1;
 const REMINDER_STORE = 'grow_reminders';
@@ -337,7 +324,9 @@ async function notifyDueReminders() {
 }
 
 /**
- * The core sync logic. Retrieves actions and attempts to POST them.
+ * The core sync logic. Notifies all open clients about queued offline actions
+ * so they can replay them locally. This app is client-only — there is no backend
+ * server to POST to. Adding a real server endpoint here is left as a future extension.
  */
 async function syncData() {
   console.log('[SW] Attempting to sync data...');
@@ -349,33 +338,19 @@ async function syncData() {
     }
 
     console.log(`[SW] Found ${queuedActions.length} action(s) to sync.`);
+    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
 
     for (const action of queuedActions) {
-      const { id, ...actionToSync } = action;
-      
-      // In a real app, you would POST this to your server.
-      // We simulate this with a fetch that will likely fail, as the endpoint doesn't exist.
-      // The browser's SyncManager will automatically retry on failure.
-      const response = await fetch(SYNC_API_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(actionToSync),
-      });
-
-      if (response.ok) {
-        console.log(`[SW] Successfully synced action with id ${id}.`);
-        // If synced successfully, remove it from the IndexedDB queue.
-        await deleteQueuedAction(id);
-      } else {
-        console.error(`[SW] Server error syncing action ${id}. Status: ${response.status}`);
-        // Throw an error to signal failure to the SyncManager, prompting a retry.
-        throw new Error('server-sync-error');
+      const { id, ...actionData } = action;
+      // Notify all open app windows so they can replay the action in Redux.
+      for (const client of clients) {
+        client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData });
       }
+      await deleteQueuedAction(id);
     }
-    console.log('[SW] All queued actions synced successfully.');
+    console.log('[SW] All queued actions dispatched to clients.');
   } catch (error) {
     console.error('[SW] Sync failed, will retry later.', error);
-    // Re-throw the error to ensure the SyncManager retries. This is crucial.
     throw error;
   }
 }

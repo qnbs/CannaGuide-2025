@@ -10,7 +10,7 @@ import {
     openExportModal,
 } from '@/stores/slices/uiSlice';
 import { setSetting } from '@/stores/slices/settingsSlice';
-import { resetAllFilters, setShowFavoritesOnly, toggleTypeFilter } from '@/stores/slices/filtersSlice';
+import { resetAllFilters, toggleTypeFilter } from '@/stores/slices/filtersSlice';
 import { setStrainsViewTab } from '@/stores/slices/strainsViewSlice';
 import { waterAllPlants } from '@/stores/slices/simulationSlice';
 

@@ -4,7 +4,6 @@ import { useAppDispatch, useAppSelector } from '@/stores/store'
 import {
     selectSandboxState,
     selectActivePlants,
-    selectSavedExperiments,
 } from '@/stores/selectors'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -17,7 +16,6 @@ import {
 } from '@/stores/slices/sandboxSlice'
 import { scenarioService } from '@/services/scenarioService'
 import { ComparisonView } from '../plants/ComparisonView'
-import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { Card } from '@/components/common/Card'
 import { SavedExperiment } from '@/types'
 
@@ -25,7 +23,7 @@ const SavedExperimentCard: React.FC<{
     experiment: SavedExperiment
     onDelete: () => void
     onView: () => void
-}> = ({ experiment, onDelete, onView }) => {
+}> = ({ experiment, onDelete, onView: _onView }) => {
     const { t } = useTranslation()
     const scenario = scenarioService.getScenarioById(experiment.scenarioId)
     if (!scenario) return null

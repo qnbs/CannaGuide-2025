@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import { Strain, StrainType } from '@/types'
+import { Strain } from '@/types'
 import { useAppSelector } from '@/stores/store'
 import { strainService } from '@/services/strainService'
 import { useTranslation } from 'react-i18next'

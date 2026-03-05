@@ -1,5 +1,5 @@
 import React, { useState, memo, useEffect } from 'react';
-import { Plant, PlantStage, ModalType } from '@/types';
+import { Plant, PlantStage } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -11,7 +11,6 @@ import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
 import { useAppDispatch } from '@/stores/store';
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice';
-import { openActionModal as openActionModalAction, openDiagnosticsModal } from '@/stores/slices/uiSlice';
 
 interface DetailedPlantViewProps {
     plant: Plant;

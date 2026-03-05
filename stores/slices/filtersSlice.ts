@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { AdvancedFilterState, DifficultyLevel, YieldLevel, HeightLevel, StrainType, SortKey, SortDirection } from '@/types';
+import { AdvancedFilterState, StrainType, SortKey, SortDirection } from '@/types';
 import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 
 export interface FiltersState {
@@ -26,7 +26,7 @@ const filtersSlice = createSlice({
     name: 'filters',
     initialState,
     reducers: {
-        setFiltersState: (state, action: PayloadAction<FiltersState>) => {
+        setFiltersState: (_state, action: PayloadAction<FiltersState>) => {
             return action.payload;
         },
         setSearchTerm: (state, action: PayloadAction<string>) => {

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { TrainingType, AmendmentType } from '@/types';
 
 // Ring 1: Schemas for core data structures
 export const GrowSetupSchema = z.object({

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
 import { useAppSelector } from '@/stores/store';
 import {
     selectActivePlants,
@@ -6,7 +6,6 @@ import {
     selectOpenTasksSummary,
     selectActiveProblemsSummary,
     selectSelectedPlantId,
-    selectPlantById,
     selectHasAvailableSlots,
     selectPlantSlots
 } from '@/stores/selectors';

@@ -10,6 +10,7 @@ import { RangeSlider } from '@/components/common/RangeSlider';
 import { VPDGauge } from './VPDGauge';
 import { useGetGardenStatusSummaryMutation } from '@/stores/api';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { SafeHtml } from '@/components/common/SafeHtml';
 import { Speakable } from '@/components/common/Speakable';
 
 const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string; }> = ({ icon, value, label }) => (
@@ -23,7 +24,7 @@ const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string; }> =
 const DashboardSummaryComponent: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity, avgVPD } = useAppSelector(selectGardenHealthMetrics);
+    const { gardenHealth, activePlantsCount, avgTemp, avgHumidity } = useAppSelector(selectGardenHealthMetrics);
     const activePlants = useAppSelector(selectActivePlants);
     const lang = useAppSelector(selectLanguage);
     const hasActiveGrows = activePlantsCount > 0;
@@ -96,7 +97,7 @@ const DashboardSummaryComponent: React.FC = () => {
                              <h4 className="font-bold text-lg text-primary-300 flex items-center gap-2"><PhosphorIcons.Sparkle/> {aiStatus.title}</h4>
                              <Button size="sm" variant="ghost" className="!p-1" onClick={() => resetAiStatus()}><PhosphorIcons.X/></Button>
                         </div>
-                        <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: aiStatus.content }}></div>
+                        <SafeHtml className="prose prose-sm dark:prose-invert max-w-none" html={aiStatus.content} />
                     </Speakable>
                 ) : (
                     <Button onClick={handleGetAiStatus} variant="secondary" size="sm" disabled={!hasActiveGrows} className="w-full">

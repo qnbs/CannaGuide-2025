@@ -52,6 +52,10 @@ export const knowledgeView = {
         toppingVsLst: {
             title: "Experiment 'Topping vs. LST' starten",
             description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht eine Pflanze, die LST erhält, mit einer, die getoppt wurde."
+        },
+        tempPlus2c: {
+            title: "Experiment Temperatur +2\u00b0C starten",
+            description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht Ausgangsbedingungen mit einem Anstieg der Dachtemperatur um +2\u00b0C."
         }
     },
     knowledgebase: {

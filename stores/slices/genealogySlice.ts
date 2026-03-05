@@ -65,7 +65,7 @@ const genealogySlice = createSlice({
     name: 'genealogy',
     initialState,
     reducers: {
-        setGenealogyState: (state, action: PayloadAction<GenealogyState>) => {
+        setGenealogyState: (_state, action: PayloadAction<GenealogyState>) => {
             return action.payload
         },
         setSelectedGenealogyStrain: (state, action: PayloadAction<string | null>) => {

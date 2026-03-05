@@ -1,18 +1,16 @@
 import React, { useMemo, useState } from 'react'
-import { Card } from '@/components/common/Card'
+import { SafeHtml } from '@/components/common/SafeHtml'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { ArchivedAdvisorResponse, Plant } from '@/types'
 import { selectArchivedAdvisorResponses } from '@/stores/selectors'
-import { Button } from '@/components/common/Button'
+import { Card } from '@/components/common/Card'
 import { useActivePlants } from '@/hooks/useSimulationBridge'
-import { useAppDispatch, useAppSelector } from '@/stores/store'
-import { addNotification } from '@/stores/slices/uiSlice'
+import { useAppSelector } from '@/stores/store'
 import { SearchBar } from '@/components/common/SearchBar'
 
 export const GlobalAdvisorArchiveView: React.FC = () => {
     const { t } = useTranslation()
-    const dispatch = useAppDispatch()
     const archive = useAppSelector(selectArchivedAdvisorResponses)
     const activePlants = useActivePlants()
 
@@ -126,10 +124,10 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                                                 <p>{new Date(res.createdAt).toLocaleDateString()}</p>
                                             </div>
                                         </div>
-                                        <div
+                                        <SafeHtml
                                             className="prose prose-sm dark:prose-invert max-w-none mt-2"
-                                            dangerouslySetInnerHTML={{ __html: res.content }}
-                                        ></div>
+                                            html={res.content}
+                                        />
                                     </div>
                                 </Card>
                             )

@@ -12,7 +12,7 @@ import {
     toggleCirculationFan,
     setVentilationPower
 } from '@/stores/slices/simulationSlice';
-import { Select } from '@/components/ui/ThemePrimitives';
+import { Select } from '@/components/ui/form';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { RangeSlider } from '@/components/common/RangeSlider';

@@ -3,7 +3,7 @@ import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
-import { Input, FormSection } from '@/components/ui/ThemePrimitives';
+import { Input, FormSection } from '@/components/ui/form';
 
 interface EditSetupModalProps {
     setup: SavedSetup;

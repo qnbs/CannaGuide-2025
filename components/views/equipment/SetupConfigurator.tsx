@@ -19,7 +19,7 @@ import { useGetEquipmentRecommendationMutation } from '@/stores/api'
 import { selectLanguage } from '@/stores/selectors'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
 import { RangeSlider } from '@/components/common/RangeSlider'
-import { Input, FormSection } from '@/components/ui/ThemePrimitives'
+import { Input, FormSection } from '@/components/ui/form'
 
 interface SetupConfiguratorProps {
     onSaveSetup: (setupData: Omit<SavedSetup, 'id' | 'createdAt' | 'name'>) => void

@@ -6,7 +6,7 @@ import { Strain, GrowSetup, LightType, VentilationPower, PotType } from '@/types
 import { useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { Card } from '@/components/common/Card'
-import { FormSection } from '@/components/ui/ThemePrimitives'
+import { FormSection } from '@/components/ui/form'
 import { RangeSlider } from '@/components/common/RangeSlider'
 import { Switch } from '@/components/common/Switch'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'

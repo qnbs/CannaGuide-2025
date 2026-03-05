@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { selectSettings } from '@/stores/selectors';
 import { setSetting } from '@/stores/slices/settingsSlice';
 import { Switch } from '@/components/common/Switch';
-import { FormSection } from '@/components/ui/ThemePrimitives';
+import { FormSection } from '@/components/ui/form';
 import {
     Select,
     SelectContent,

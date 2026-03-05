@@ -88,7 +88,7 @@ Why: Improves assistive output quality, touch interaction parity, and installabl
 - TypeScript warning from `@typescript-eslint/typescript-estree` support range remains informational and non-blocking.
 
 ## Next Recommended Pass (Remaining Scope)
-1. Migrate remaining `ThemePrimitives` select/input usage to shadcn/Radix variants for complete consistency.
+1. Keep form primitives consolidated in `components/ui/form.tsx` and avoid reintroducing `ThemePrimitives`.
 2. Standardize all icon-only destructive actions to guaranteed 44x44 hit areas app-wide.
 3. Add explicit screen-reader labels to all chart toggles and data-mode switches.
 4. Add mobile E2E assertions for no-clipping/no-overflow in key dialogs.

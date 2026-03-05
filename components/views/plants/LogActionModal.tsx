@@ -22,7 +22,7 @@ import {
     applyPestControlAction,
     applyAmendmentAction,
 } from '@/stores/slices/simulationSlice'
-import { Select } from '@/components/ui/ThemePrimitives'
+import { Select } from '@/components/ui/form'
 import { Textarea } from '@/components/ui/textarea'
 import { CameraModal } from '@/components/common/CameraModal'
 import { dbService } from '@/services/dbService'

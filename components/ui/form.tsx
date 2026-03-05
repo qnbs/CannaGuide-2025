@@ -58,7 +58,6 @@ interface SelectProps {
   label?: string
   className?: string
   disabled?: boolean
-  [key: string]: unknown
 }
 
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(

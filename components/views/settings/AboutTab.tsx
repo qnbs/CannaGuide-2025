@@ -70,13 +70,17 @@ const AboutAppContent: React.FC = memo(() => {
                         <ul className="space-y-3">
                             <ListItem icon={<PhosphorIcons.MagicWand />}><strong>Phosphor Icons:</strong> {t('settingsView.about.credits.phosphor')}</ListItem>
                             <ListItem icon={<PhosphorIcons.CommandLine />}>
-                                <Button as="a" href="https://github.com/qnbs/CannaGuide-2025" target="_blank" rel="noopener noreferrer" variant="secondary" size="sm" className="inline-flex items-center">
-                                    {t('settingsView.about.githubLinkText')} <PhosphorIcons.ArrowSquareOut className="w-4 h-4 ml-1.5" />
+                                <Button asChild variant="secondary" size="sm">
+                                    <a href="https://github.com/qnbs/CannaGuide-2025" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
+                                        {t('settingsView.about.githubLinkText')} <PhosphorIcons.ArrowSquareOut className="w-4 h-4 ml-1.5" />
+                                    </a>
                                 </Button>
                             </ListItem>
                             <ListItem icon={<PhosphorIcons.Globe />}>
-                                 <Button as="a" href="https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-" target="_blank" rel="noopener noreferrer" variant="secondary" size="sm" className="inline-flex items-center">
-                                    {t('settingsView.about.aiStudioLinkText')} <PhosphorIcons.ArrowSquareOut className="w-4 h-4 ml-1.5" />
+                                 <Button asChild variant="secondary" size="sm">
+                                    <a href="https://ai.studio/apps/drive/1_F6ArMCdXQt-1fWzTf0R6Sgge9lXxz4-" target="_blank" rel="noopener noreferrer" className="inline-flex items-center">
+                                        {t('settingsView.about.aiStudioLinkText')} <PhosphorIcons.ArrowSquareOut className="w-4 h-4 ml-1.5" />
+                                    </a>
                                 </Button>
                             </ListItem>
                         </ul>

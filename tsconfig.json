@@ -22,5 +22,5 @@
         "types": ["vitest/globals", "vite/client"]
     },
     "include": ["**/*.ts", "**/*.tsx"],
-    "exclude": ["node_modules"]
+    "exclude": ["node_modules", "capacitor.config.ts"]
 }

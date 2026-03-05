@@ -19,7 +19,7 @@ const getOrCreateEncryptionKey = async (): Promise<CryptoKey> => {
 
     if (storedRaw) {
         const raw = base64ToBytes(storedRaw)
-        return crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
+        return crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
     }
 
     const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
@@ -47,7 +47,7 @@ const decryptApiKey = async (payload: string): Promise<string> => {
     const iv = base64ToBytes(parsed.iv)
     const encrypted = base64ToBytes(parsed.data)
 
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, encrypted)
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv.buffer as ArrayBuffer }, key, encrypted.buffer as ArrayBuffer)
     return new TextDecoder().decode(decrypted)
 }
 

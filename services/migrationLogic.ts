@@ -11,7 +11,7 @@ const ensureSimulationShape = (state: PersistedState): void => {
         return
     }
 
-    const sim = state.simulation as Record<string, unknown>
+    const sim = state.simulation as unknown as Record<string, unknown>
     if (!Array.isArray(sim.plantSlots)) {
         sim.plantSlots = [null, null, null]
     }

@@ -138,7 +138,7 @@ class GrowReminderService {
         }
 
         if ('sync' in registration) {
-            await registration.sync.register('grow-reminders-sync')
+            await (registration as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } }).sync.register('grow-reminders-sync')
         }
     }
 

@@ -1,23 +1,20 @@
-import React, { memo } from 'react'
+import React from 'react'
 
-// Define own props to be used in the component
-type ButtonOwnProps<E extends React.ElementType> = {
+// Non-generic public type — accepts `as`, own styling props, and common HTML attributes
+export type ButtonProps = {
     children?: React.ReactNode
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
     size?: 'sm' | 'base' | 'lg'
-    as?: E
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    as?: any
     className?: string
     glow?: boolean
-}
+    href?: string
+    target?: string
+    rel?: string
+} & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'>
 
-// Combine own props with all possible props of the given element type, omitting duplicates
-type ButtonProps<E extends React.ElementType> = ButtonOwnProps<E> &
-    Omit<React.ComponentProps<E>, keyof ButtonOwnProps<E>>
-
-const defaultElement = 'button'
-
-// Use a generic E that extends React.ElementType, with a default of 'button'
-const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
+export const Button = ({
     children,
     className,
     variant = 'primary',
@@ -25,12 +22,8 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
     as,
     glow = false,
     ...props
-}: ButtonProps<E>) => {
-    // The use of 'any' here is a deliberate and controlled type assertion.
-    // This is a widely recognized pattern for creating polymorphic components in React with TypeScript.
-    // It allows the 'Button' to be rendered as any valid HTML element (e.g., 'a', 'div')
-    // while correctly inheriting and type-checking the props of that element.
-    const Component: any = as || defaultElement
+}: ButtonProps) => {
+    const Component: React.ElementType = as || 'button'
 
     const baseClasses =
         'touch-manipulation rounded-lg font-semibold transition-[transform,filter,box-shadow,background-color,color,border-color] duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgb(var(--color-bg-primary))] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:saturate-50 disabled:active:scale-100'
@@ -61,5 +54,3 @@ const ButtonComponent = <E extends React.ElementType = typeof defaultElement>({
         </Component>
     )
 }
-
-export const Button = memo(ButtonComponent)

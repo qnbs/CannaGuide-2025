@@ -75,7 +75,7 @@ export const MentorView: React.FC = () => {
                         <Select
                             label={t('knowledgeView.hub.selectPlant')}
                             value={selectedPlantId || ''}
-                            onChange={(e) => setSelectedPlantId(e.target.value as string)}
+                            onChange={(e: { target: { value: string | number } }) => setSelectedPlantId(e.target.value as string)}
                             options={activePlants.map((p) => ({
                                 value: p.id,
                                 label: `${p.name} (${t(`plantStages.${p.stage}`)})`,

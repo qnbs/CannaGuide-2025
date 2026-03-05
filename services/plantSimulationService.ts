@@ -566,12 +566,13 @@ class VPDSimulationService {
             );
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             worker.onmessage = (e: MessageEvent<VPDWorkerResponse>) => {
                 if (e.data.type === 'DAILY_RESULT') {
                     resolve(e.data.data);
                 }
             };
+            worker.onerror = (e) => reject(new Error(e.message));
 
             worker.postMessage({
                 type: 'RUN_DAILY',
@@ -621,12 +622,13 @@ class VPDSimulationService {
             return Promise.resolve(projectedPlant);
         }
 
-        return new Promise((resolve) => {
+        return new Promise((resolve, reject) => {
             worker.onmessage = (e: MessageEvent<VPDWorkerResponse>) => {
                 if (e.data.type === 'GROWTH_RESULT') {
                     resolve(e.data.plant);
                 }
             };
+            worker.onerror = (e) => reject(new Error(e.message));
 
             worker.postMessage({
                 type: 'RUN_GROWTH',

@@ -2,8 +2,9 @@ import React, { useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface VPDGaugeProps {
-  temperature: number; // in Celsius
+  temperature: number; // air temperature in Celsius
   humidity: number; // in %
+  leafTempOffset?: number; // offset from air temp (usually negative, e.g. -2)
 }
 
 // Calculates Saturated Vapor Pressure (SVP) in kPa
@@ -11,13 +12,14 @@ const calculateSVP = (temp: number): number => {
   return 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
 };
 
-export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }) => {
+export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, leafTempOffset = 0 }) => {
     const { t } = useTranslation();
+    const leafTemp = temperature + leafTempOffset;
     
     const vpd = useMemo(() => {
-        const svp = calculateSVP(temperature);
+        const svp = calculateSVP(leafTemp);
         return svp * (1 - (humidity / 100));
-    }, [temperature, humidity]);
+    }, [leafTemp, humidity]);
 
     // Define ideal ranges for different stages (in kPa)
     const idealRanges = {
@@ -50,7 +52,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }
         <div
             className="flex flex-col items-center justify-center"
             role="img"
-            aria-label={`VPD ${vpd.toFixed(2)} kPa. ${status}.`}
+            aria-label={`VPD ${vpd.toFixed(2)} kPa. ${status}. Leaf temp: ${leafTemp.toFixed(1)}°C.`}
         >
             <div className="relative w-24 h-24 sm:w-28 sm:h-28">
                 <svg className="w-full h-full transform -rotate-90" aria-hidden="true">
@@ -71,6 +73,11 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
                     <p className="text-xl sm:text-2xl font-bold">{vpd.toFixed(2)}</p>
                     <p className="text-xs text-slate-400 -mt-1">kPa</p>
+                    {leafTempOffset !== 0 && (
+                        <p className="text-[10px] text-slate-500 mt-0.5" title={`Leaf temp: ${leafTemp.toFixed(1)}°C`}>
+                            🍃 {leafTemp.toFixed(1)}°
+                        </p>
+                    )}
                 </div>
             </div>
             <p className={`text-xs sm:text-sm font-semibold mt-2 ${statusColor}`}>{status}</p>

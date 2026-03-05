@@ -4,7 +4,7 @@ import React from 'react'
 export type ButtonProps = {
     children?: React.ReactNode
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
-    size?: 'sm' | 'base' | 'lg'
+    size?: 'sm' | 'base' | 'lg' | 'icon'
     as?: React.ElementType
     className?: string
     glow?: boolean
@@ -13,15 +13,10 @@ export type ButtonProps = {
     rel?: string
 } & Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'size'>
 
-export const Button = ({
-    children,
-    className,
-    variant = 'primary',
-    size = 'base',
-    as,
-    glow = false,
-    ...props
-}: ButtonProps) => {
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button(
+    { children, className, variant = 'primary', size = 'base', as, glow = false, ...props },
+    ref,
+) {
     const Component: React.ElementType = as || 'button'
 
     const baseClasses =
@@ -40,10 +35,12 @@ export const Button = ({
         sm: 'px-2 py-1 text-sm',
         base: 'px-4 py-2',
         lg: 'px-6 py-3 text-lg',
+        icon: 'h-11 w-11 p-0 flex items-center justify-center shrink-0',
     }
 
     return (
         <Component
+            ref={ref}
             className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${
                 glow ? 'animate-pulse-glow' : ''
             } ${className || ''}`}
@@ -52,4 +49,4 @@ export const Button = ({
             {children}
         </Component>
     )
-}
+})

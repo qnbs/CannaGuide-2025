@@ -8,9 +8,10 @@ interface CameraModalProps {
     isOpen: boolean
     onClose: () => void
     onCapture: (dataUrl: string) => void
+    triggerRef?: React.RefObject<HTMLButtonElement | null>
 }
 
-export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture }) => {
+export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture, triggerRef }) => {
     const { t } = useTranslation()
     const videoRef = useRef<HTMLVideoElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -18,6 +19,12 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
     const [stream, setStream] = useState<MediaStream | null>(null)
     const [error, setError] = useState<string | null>(null)
     const [capturedImage, setCapturedImage] = useState<string | null>(null)
+
+    const handleClose = useCallback(() => {
+        onClose()
+        // Restore focus to the element that opened this modal
+        requestAnimationFrame(() => triggerRef?.current?.focus())
+    }, [onClose, triggerRef])
 
     const cleanupStream = useCallback(() => {
         if (stream) {
@@ -120,7 +127,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
     return (
         <Modal
             isOpen={isOpen}
-            onClose={onClose}
+            onClose={handleClose}
             size="lg"
             footer={footerContent}
             containerClassName="!bg-slate-900"

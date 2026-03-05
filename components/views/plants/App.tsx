@@ -165,7 +165,7 @@ export const App: React.FC = () => {
         return <LoadingGate />
     }
 
-    if (!settings.onboardingCompleted && onboardingStep < 5) {
+    if (!settings.onboardingCompleted && onboardingStep < 8) {
         return <OnboardingModal onClose={() => dispatch(setSetting({ path: 'onboardingCompleted', value: true }))} />
     }
 

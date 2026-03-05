@@ -48,6 +48,9 @@ export const settingsView = {
       desertSky: 'Wüstenhimmel',
       roseQuartz: 'Rosenquarz',
       rainbowKush: 'Regenbogen Kush',
+      ogKushGreen: 'OG Kush Grün',
+      runtzRainbow: 'Runtz Regenbogen',
+      lemonSkunk: 'Lemon Skunk',
     },
     fontSize: 'Schriftgröße',
     fontSizes: {

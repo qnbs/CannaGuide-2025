@@ -99,17 +99,17 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         <div className="w-full flex justify-center gap-4">
             {capturedImage ? (
                 <>
-                    <Button onClick={handleRetake} variant="secondary">
+                    <Button onClick={handleRetake} variant="secondary" className="min-h-11">
                         <PhosphorIcons.ArrowClockwise className="w-5 h-5 mr-2" />
                         {t('plantsView.aiDiagnostics.retake')}
                     </Button>
-                    <Button onClick={handleConfirmCapture}>
+                    <Button onClick={handleConfirmCapture} className="min-h-11">
                         <PhosphorIcons.CheckCircle className="w-5 h-5 mr-2" />
                         {t('common.confirm')}
                     </Button>
                 </>
             ) : (
-                <Button onClick={handleCapture} disabled={!stream}>
+                <Button onClick={handleCapture} disabled={!stream} className="min-h-11">
                     <PhosphorIcons.Camera className="w-5 h-5 mr-2" />
                     {t('plantsView.aiDiagnostics.capture')}
                 </Button>
@@ -133,11 +133,11 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
                         ref={videoRef}
                         autoPlay
                         playsInline
-                        className={`w-full h-auto rounded-md ${capturedImage ? 'hidden' : 'block'}`}
+                        className={`w-full h-auto max-h-[60dvh] object-contain rounded-md ${capturedImage ? 'hidden' : 'block'}`}
                     ></video>
                     <canvas ref={canvasRef} className="hidden"></canvas>
                     {capturedImage && (
-                        <img src={capturedImage} alt="Captured" className="w-full h-auto rounded-md" />
+                        <img src={capturedImage} alt="Captured" className="w-full h-auto max-h-[60dvh] object-contain rounded-md" />
                     )}
                 </div>
             )}

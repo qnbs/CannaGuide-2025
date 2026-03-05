@@ -50,7 +50,7 @@ const typeInfo: Record<StrainType, { icon: React.ReactNode; color: string }> = {
 const SeedCard: React.FC<{ seed: Seed, onClick: () => void, isSelected?: boolean, strain?: Strain | null }> = ({ seed, onClick, isSelected, strain }) => {
     const TypeInfo = strain ? typeInfo[strain.type] : null;
     return (
-        <button onClick={onClick} className={`w-full text-left p-2 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${isSelected ? 'bg-primary-900/50 ring-2 ring-primary-500' : 'bg-slate-800 hover:bg-slate-700/50'}`}>
+        <button onClick={onClick} className={`w-full min-h-12 text-left p-3 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${isSelected ? 'bg-primary-900/50 ring-2 ring-primary-500' : 'bg-slate-800 hover:bg-slate-700/50'}`}>
             {TypeInfo && <div className={`w-6 h-6 flex-shrink-0 ${TypeInfo.color}`}>{TypeInfo.icon}</div>}
             <div className="flex-grow min-w-0">
                 <p className="font-bold truncate">{seed.strainName}</p>
@@ -65,7 +65,7 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
     const TypeInfo = parentStrain ? typeInfo[parentStrain.type] : null;
 
     return (
-        <Card className="flex flex-col items-center justify-center h-48 text-center relative bg-slate-800/30">
+        <Card className="relative flex min-h-[13rem] flex-col items-center justify-center bg-slate-800/30 px-3 py-5 text-center">
             <h4 className="absolute top-2 text-sm font-semibold text-slate-400">{title}</h4>
             {seed && parentStrain && TypeInfo ? (
                 <>
@@ -75,7 +75,7 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
                         <p>THC: {parentStrain.thc.toFixed(1)}% | CBD: {parentStrain.cbd.toFixed(1)}%</p>
                         <p>Quality: {(seed.quality * 100).toFixed(0)}%</p>
                     </div>
-                    <Button size="sm" variant="danger" className="!absolute top-1 right-1 !p-1" onClick={onClear} aria-label={`Clear ${title}`}><PhosphorIcons.X/></Button>
+                    <Button variant="danger" className="!absolute top-2 right-2 !h-11 !w-11 !p-0" onClick={onClear} aria-label={`Clear ${title}`}><PhosphorIcons.X/></Button>
                 </>
             ) : (
                 <div className="text-slate-500">
@@ -167,7 +167,7 @@ const BreedingView: React.FC = () => {
                             <p className="text-sm font-semibold text-slate-300">{t('knowledgeView.breeding.noSeeds')}</p>
                         </div>
                     ) : (
-                        <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+                        <div className="space-y-2 max-h-[50dvh] overflow-y-auto pr-2">
                             {collectedSeeds.map(seed => <SeedCard key={seed.id} seed={seed} onClick={() => handleSeedClick(seed.id)} isSelected={seed.id === parentA_id || seed.id === parentB_id} strain={allStrains.find(s => s.id === seed.strainId)} />)}
                         </div>
                     )}
@@ -192,7 +192,7 @@ const BreedingView: React.FC = () => {
                 <Card className="animate-fade-in bg-slate-800/50">
                     <div className="flex justify-between items-center">
                          <h3 className="text-xl font-bold text-primary-400">{t('knowledgeView.breeding.resultsTitle')}</h3>
-                         <Button variant="secondary" size="sm" onClick={handleReset}><PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" /> Start Over</Button>
+                        <Button variant="secondary" onClick={handleReset} className="min-h-11"><PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" /> Start Over</Button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div className="space-y-4">

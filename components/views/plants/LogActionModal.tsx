@@ -129,10 +129,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
 
     const footer = (
         <>
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose} className="min-h-11">
                 {t('common.cancel')}
             </Button>
-            <Button onClick={handleSubmit} glow={true}>
+            <Button onClick={handleSubmit} glow={true} className="min-h-11">
                 {t('common.save')}
             </Button>
         </>
@@ -161,7 +161,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 <div className="space-y-4">
                     {type === 'training' && (
                         <Select
-                            label="Training Type"
+                            label={t('plantsView.actionModals.logTraining')}
                             value={(details as Partial<TrainingDetails>)?.type || ''}
                             onChange={(e) => setDetails({ type: e.target.value as TrainingType })}
                             options={(['LST', 'Topping', 'FIMing', 'Defoliation'] as TrainingType[]).map(
@@ -174,7 +174,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     )}
                     {type === 'amendment' && (
                         <Select
-                            label="Amendment Type"
+                            label={t('plantsView.actionModals.logAmendment')}
                             value={(details as Partial<AmendmentDetails>)?.type || ''}
                             onChange={(e) => setDetails({ type: e.target.value as AmendmentType })}
                             options={(['Mycorrhizae', 'WormCastings'] as AmendmentType[]).map((a) => ({
@@ -203,18 +203,18 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                     <img src={image} alt="preview" className="rounded-md" />
                                     <Button
                                         variant="danger"
-                                        size="sm"
-                                        className="!p-1 absolute top-2 right-2"
+                                        className="!h-11 !w-11 !p-0 absolute top-2 right-2"
                                         onClick={() => setImage(null)}
+                                        aria-label={t('common.removeImage')}
                                     >
                                         <PhosphorIcons.X />
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="flex gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <Button
                                         variant="secondary"
-                                        className="flex-1"
+                                        className="w-full min-h-11"
                                         onClick={() =>
                                             document.getElementById('photo-upload')?.click()
                                         }
@@ -246,7 +246,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                     />
                                     <Button
                                         variant="secondary"
-                                        className="flex-1"
+                                        className="w-full min-h-11"
                                         onClick={() => setIsCameraOpen(true)}
                                     >
                                         <PhosphorIcons.Camera /> {t('plantsView.aiDiagnostics.capture')}
@@ -259,7 +259,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <label className="block text-sm font-semibold text-slate-300 mb-1">
                             {t('common.notes')}
                         </label>
-                        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+                        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-[120px]" />
                     </div>
                 </div>
             </Modal>

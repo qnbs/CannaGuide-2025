@@ -132,17 +132,17 @@ const NotesTab: React.FC<{ strain: Strain }> = ({ strain }) => {
         <InfoSection title={t('strainsView.strainModal.notes')}>
             <div className="bg-slate-800 rounded-md border border-slate-700">
                 <div className="flex items-center p-2 border-b border-slate-700 gap-2">
-                    <Button size="sm" variant="secondary" onClick={() => dispatch(undoNoteChange({ strainId: strain.id }))} disabled={!canUndo} className="!p-1.5">
+                    <Button variant="secondary" onClick={() => dispatch(undoNoteChange({ strainId: strain.id }))} disabled={!canUndo} className="!h-11 !w-11 !p-0" aria-label={t('common.undo')}>
                         <PhosphorIcons.ArrowClockwise className="w-4 h-4 transform scale-x-[-1]" />
                     </Button>
-                    <Button size="sm" variant="secondary" onClick={() => dispatch(redoNoteChange({ strainId: strain.id }))} disabled={!canRedo} className="!p-1.5">
+                    <Button variant="secondary" onClick={() => dispatch(redoNoteChange({ strainId: strain.id }))} disabled={!canRedo} className="!h-11 !w-11 !p-0" aria-label={t('common.redo')}>
                         <PhosphorIcons.ArrowClockwise className="w-4 h-4" />
                     </Button>
                 </div>
                 <textarea
                     value={noteContent}
                     onChange={handleNoteChange}
-                    className='w-full bg-transparent resize-none focus:outline-none min-h-[150px] p-2'
+                    className='w-full bg-transparent resize-none min-h-[180px] p-3 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500 rounded-b-md'
                     placeholder={t('strainsView.addStrainModal.aromasPlaceholder')}
                 />
             </div>
@@ -193,16 +193,16 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
     return (
         <div className="space-y-6">
             <header>
-                 <div className="flex items-center justify-between">
-                    <Button variant="secondary" onClick={onBack}>
+                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <Button variant="secondary" onClick={onBack} className="min-h-11 w-full sm:w-auto">
                         <PhosphorIcons.ArrowLeft className="w-5 h-5 mr-1" />
                         {t('common.back')}
                     </Button>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 w-full sm:w-auto">
                         <div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : undefined}>
-                            <Button onClick={() => dispatch(initiateGrowFromStrainList(strain))} disabled={!hasAvailableSlots} size="sm" className="inline-flex">{t('strainsView.startGrowing')}</Button>
+                            <Button onClick={() => dispatch(initiateGrowFromStrainList(strain))} disabled={!hasAvailableSlots} className="inline-flex min-h-11 w-full sm:w-auto">{t('strainsView.startGrowing')}</Button>
                         </div>
-                        <Button variant="secondary" onClick={() => dispatch(toggleFavorite(strain.id))} aria-pressed={isFavorite} className={`favorite-btn-glow p-2 ${isFavorite ? 'is-favorite' : ''}`}>
+                        <Button variant="secondary" onClick={() => dispatch(toggleFavorite(strain.id))} aria-pressed={isFavorite} className={`favorite-btn-glow !h-11 !w-11 !p-0 ${isFavorite ? 'is-favorite' : ''}`}>
                             <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                         </Button>
                     </div>

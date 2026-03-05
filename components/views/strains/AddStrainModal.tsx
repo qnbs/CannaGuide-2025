@@ -131,6 +131,12 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
     }, [errors, dispatch]);
 
     const modalTitle = isEditMode ? t('strainsView.addStrainModal.editTitle') : t('strainsView.addStrainModal.title');
+    const footer = (
+        <>
+            <Button type="button" variant="secondary" onClick={props.onClose} className="min-h-11">{t('common.cancel')}</Button>
+            <Button type="submit" form="add-strain-form" glow={true} className="min-h-11">{t('common.save')}</Button>
+        </>
+    );
 
     return (
         <Modal
@@ -138,6 +144,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
             onClose={props.onClose}
             title={modalTitle}
             size="2xl"
+            footer={footer}
         >
             <form onSubmit={handleSubmit} id="add-strain-form" className="flex flex-col h-full">
                 <div className="space-y-6">
@@ -187,10 +194,6 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                         <Input label={t('strainsView.strainModal.aromas')} value={values.aromasString} onChange={(e) => handleChange('aromasString', e.target.value)} placeholder={t('strainsView.addStrainModal.aromasPlaceholder')} />
                         <Input label={t('strainsView.strainModal.dominantTerpenes')} value={values.terpenesString} onChange={(e) => handleChange('terpenesString', e.target.value)} placeholder={t('strainsView.addStrainModal.terpenesPlaceholder')} />
                     </FormSection>
-                </div>
-                 <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-slate-700">
-                    <Button type="button" variant="secondary" onClick={props.onClose}>{t('common.cancel')}</Button>
-                    <Button type="submit" form="add-strain-form" glow={true}>{t('common.save')}</Button>
                 </div>
             </form>
         </Modal>

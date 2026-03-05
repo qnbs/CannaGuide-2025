@@ -1,5 +1,5 @@
-import React from 'react'
-import { Plant, ModalType } from '@/types'
+import React, { useState } from 'react'
+import { Plant, ModalType, JournalEntryType } from '@/types'
 import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
 import { HistoryChart } from '../HistoryChart'
@@ -11,6 +11,8 @@ import { PlantLifecycleTimeline } from '../PlantLifecycleTimeline'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { PlantVisualizer } from '../PlantVisualizer'
+import { exportService } from '@/services/exportService'
+import { dbService } from '@/services/dbService'
 
 interface OverviewTabProps {
     plant: Plant
@@ -19,9 +21,43 @@ interface OverviewTabProps {
 export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    const [isExporting, setIsExporting] = useState(false)
 
     const openActionModalAction = (type: ModalType) => {
         dispatch(openActionModal({ plantId: plant.id, type }))
+    }
+
+    const handleExportReport = async () => {
+        setIsExporting(true)
+        try {
+            const photoEntries = plant.journal
+                .filter((entry) => entry.type === JournalEntryType.Photo)
+                .slice(-6)
+
+            const photoDataUrls: string[] = []
+            for (const entry of photoEntries) {
+                const details = entry.details as { imageUrl?: string; imageId?: string } | undefined
+                if (details?.imageUrl) {
+                    photoDataUrls.push(details.imageUrl)
+                    continue
+                }
+                if (details?.imageId) {
+                    const storedImage = await dbService.getImage(details.imageId)
+                    if (storedImage?.data) {
+                        photoDataUrls.push(storedImage.data)
+                    }
+                }
+            }
+
+            await exportService.exportPlantReportPdf({
+                plant,
+                t,
+                chartElement: document.getElementById(`history-chart-${plant.id}`),
+                photos: photoDataUrls,
+            })
+        } finally {
+            setIsExporting(false)
+        }
     }
 
     return (
@@ -64,11 +100,17 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
 
             {/* 5. Growth History Chart */}
             <Card>
-                <h3 className="text-xl font-bold font-display text-primary-400 mb-3">
-                    {t('plantsView.detailedView.history')}
-                </h3>
+                <div className="flex items-center justify-between gap-3 mb-3">
+                    <h3 className="text-xl font-bold font-display text-primary-400">
+                        {t('plantsView.detailedView.history')}
+                    </h3>
+                    <Button size="sm" variant="secondary" onClick={handleExportReport} disabled={isExporting}>
+                        <PhosphorIcons.FilePdf className="w-5 h-5 mr-1" />
+                        {isExporting ? 'Exporting...' : 'Export PDF'}
+                    </Button>
+                </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg">
-                    <div className="h-64 rounded-lg" data-highlight-id="history-chart">
+                    <div className="h-64 rounded-lg" data-highlight-id="history-chart" id={`history-chart-${plant.id}`}>
                         <HistoryChart
                             history={plant.history}
                             journal={plant.journal}

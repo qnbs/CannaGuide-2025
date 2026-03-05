@@ -14,6 +14,7 @@ import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { indexedDBStorage } from './stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from './constants'
 import { dbService } from './services/dbService'
+import { growReminderService } from './services/growReminderService'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 
@@ -31,6 +32,9 @@ const registerServiceWorker = () => {
             .register(swUrl.pathname, { scope: scopeUrl.pathname, updateViaCache: 'none' })
             .then((registration) => {
                 console.log('ServiceWorker registration successful:', registration)
+                void growReminderService.registerPeriodicSync(registration).catch((error) => {
+                    console.warn('[SW] Could not register periodic reminder sync:', error)
+                })
 
                 navigator.serviceWorker.addEventListener(
                     'controllerchange',

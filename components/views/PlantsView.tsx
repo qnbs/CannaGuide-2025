@@ -7,9 +7,11 @@ import { PlantSlot } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';
 import { TipOfTheDay } from './plants/TipOfTheDay';
 import { DashboardSummary } from './plants/DashboardSummary';
+import { GrowStatsDashboard } from './plants/GrowStatsDashboard';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
+import { GrowReminderPanel } from './plants/GrowReminderPanel';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Removed unused `selectIsExpertMode` which was causing an import error.
@@ -98,6 +100,7 @@ export const PlantsView: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
                             <DashboardSummary />
+                            <GrowStatsDashboard />
                             <TipOfTheDay />
                             {showGrowFromStrainBanner && (
                                 <Card className="bg-primary-900/40 border-primary-500/50 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -134,6 +137,7 @@ export const PlantsView: React.FC = () => {
                             )}
                         </div>
                         <div className="lg:col-span-1 space-y-6">
+                            <GrowReminderPanel />
                             <TasksAndWarnings tasks={tasks} problems={problems} />
                             <GlobalAdvisorArchiveView />
                         </div>

@@ -36,6 +36,10 @@ const DB_NAME = 'CannaGuideDB';
 const DB_VERSION = 4;
 const OFFLINE_ACTIONS_STORE = 'offline_actions';
 const SYNC_API_ENDPOINT = '/api/sync-action'; // Placeholder for the backend endpoint
+const REMINDER_DB_NAME = 'CannaGuideReminderDB';
+const REMINDER_DB_VERSION = 1;
+const REMINDER_STORE = 'grow_reminders';
+const REMINDER_COOLDOWN_MS = 4 * 60 * 60 * 1000;
 
 const offlineFallback = new Response(`
 <!DOCTYPE html>
@@ -241,6 +245,97 @@ function deleteQueuedAction(id) {
     });
 }
 
+function openReminderDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(REMINDER_DB_NAME, REMINDER_DB_VERSION);
+    request.onerror = () => reject(request.error);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(REMINDER_STORE)) {
+        db.createObjectStore(REMINDER_STORE, { keyPath: 'id' });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+  });
+}
+
+function replaceReminders(reminders) {
+  return openReminderDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(REMINDER_STORE, 'readwrite');
+      const store = tx.objectStore(REMINDER_STORE);
+      const clearReq = store.clear();
+
+      clearReq.onsuccess = () => {
+        reminders.forEach((reminder) => {
+          store.put({ ...reminder, lastNotifiedAt: reminder.lastNotifiedAt || 0 });
+        });
+      };
+
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  });
+}
+
+function getStoredReminders() {
+  return openReminderDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(REMINDER_STORE, 'readonly');
+      const store = tx.objectStore(REMINDER_STORE);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  });
+}
+
+function updateReminderNotificationTime(id, timestamp) {
+  return openReminderDB().then((db) => {
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(REMINDER_STORE, 'readwrite');
+      const store = tx.objectStore(REMINDER_STORE);
+      const getReq = store.get(id);
+      getReq.onsuccess = () => {
+        const existing = getReq.result;
+        if (existing) {
+          store.put({ ...existing, lastNotifiedAt: timestamp });
+        }
+      };
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  });
+}
+
+async function notifyDueReminders() {
+  const reminders = await getStoredReminders();
+  if (!reminders.length) return;
+
+  const now = Date.now();
+
+  for (const reminder of reminders) {
+    const dueAt = reminder.dueAt || now;
+    const lastNotifiedAt = reminder.lastNotifiedAt || 0;
+    const isDue = dueAt <= now;
+    const isCooledDown = now - lastNotifiedAt >= REMINDER_COOLDOWN_MS;
+
+    if (!isDue || !isCooledDown) {
+      continue;
+    }
+
+    await self.registration.showNotification(reminder.title || 'Grow Reminder', {
+      body: reminder.body || 'You have a pending grow reminder.',
+      icon: './icon.svg',
+      badge: './icon.svg',
+      tag: `grow-reminder-${reminder.id}`,
+      data: { plantId: reminder.plantId, reminderId: reminder.id },
+    });
+
+    await updateReminderNotificationTime(reminder.id, now);
+  }
+}
+
 /**
  * The core sync logic. Retrieves actions and attempts to POST them.
  */
@@ -290,5 +385,40 @@ self.addEventListener('sync', (event) => {
   if (event.tag === 'data-sync') {
     console.log('[SW] Sync event received for "data-sync"');
     event.waitUntil(syncData());
+    return;
   }
+
+  if (event.tag === 'grow-reminders-sync') {
+    console.log('[SW] Sync event received for "grow-reminders-sync"');
+    event.waitUntil(notifyDueReminders());
+  }
+});
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'grow-reminders') {
+    console.log('[SW] Periodic sync event for grow reminders');
+    event.waitUntil(notifyDueReminders());
+  }
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'UPDATE_REMINDERS' && Array.isArray(event.data.payload)) {
+    event.waitUntil(replaceReminders(event.data.payload));
+  }
+
+  if (event.data?.type === 'REQUEST_REMINDER_CHECK') {
+    event.waitUntil(notifyDueReminders());
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      if (clients.length > 0) {
+        return clients[0].focus();
+      }
+      return self.clients.openWindow('./');
+    })
+  );
 });

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import {
@@ -29,11 +29,12 @@ const SavedExperimentCard: React.FC<{
     const { t } = useTranslation()
     const scenario = scenarioService.getScenarioById(experiment.scenarioId)
     if (!scenario) return null
+    const scenarioTitle = scenario.title || t(scenario.titleKey, { defaultValue: scenario.titleKey })
     return (
         <Card className="!p-3 bg-slate-800">
             <div className="flex justify-between items-start">
                 <div>
-                    <h4 className="font-bold text-slate-100">{t(scenario.titleKey)}</h4>
+                    <h4 className="font-bold text-slate-100">{scenarioTitle}</h4>
                     <p className="text-xs text-slate-400">Based on: {experiment.basePlantName}</p>
                     <p className="text-xs text-slate-500">
                         Run: {new Date(experiment.createdAt).toLocaleDateString()}
@@ -54,8 +55,12 @@ const SandboxView: React.FC = () => {
     const dispatch = useAppDispatch()
     const { currentExperiment, status, savedExperiments } = useAppSelector(selectSandboxState)
     const activePlants = useAppSelector(selectActivePlants)
+    const availableScenarios = useMemo(() => scenarioService.getAllScenarios(), [])
     const [isModalOpen, setIsModalOpen] = React.useState(false)
     const [selectedPlantId, setSelectedPlantId] = React.useState<string | null>(null)
+    const [selectedScenarioId, setSelectedScenarioId] = React.useState<string>(
+        () => availableScenarios[0]?.id || 'topping-vs-lst',
+    )
 
     React.useEffect(() => {
         if (
@@ -70,7 +75,7 @@ const SandboxView: React.FC = () => {
 
     const handleRunScenario = () => {
         if (selectedPlantId) {
-            const scenario = scenarioService.getScenarioById('topping-vs-lst')
+            const scenario = scenarioService.getScenarioById(selectedScenarioId)
             if (scenario) {
                 dispatch(runComparisonScenario({ plantId: selectedPlantId, scenario }))
                 setIsModalOpen(false)
@@ -128,6 +133,22 @@ const SandboxView: React.FC = () => {
                                         {p.name}
                                     </option>
                                 ))}
+                            </select>
+                            <select
+                                value={selectedScenarioId}
+                                onChange={(e) => setSelectedScenarioId(e.target.value)}
+                                className="w-full bg-slate-800 border border-slate-700 rounded-md p-2"
+                            >
+                                {availableScenarios.map((scenario) => {
+                                    const title =
+                                        scenario.title ||
+                                        t(scenario.titleKey, { defaultValue: scenario.titleKey })
+                                    return (
+                                        <option key={scenario.id} value={scenario.id}>
+                                            {title}
+                                        </option>
+                                    )
+                                })}
                             </select>
                             <Button onClick={handleRunScenario} className="w-full">
                                 {t('knowledgeView.sandbox.modal.runScenario')}

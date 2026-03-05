@@ -85,8 +85,16 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
 
     if (!scenario) return <p>Error: Scenario not found.</p>;
 
-    const labelA = scenario.plantAModifier.action;
-    const labelB = scenario.plantBModifier.action;
+    const resolveActionLabel = (action: string) => {
+        if (action === 'TEMP_PLUS_2') return '+2 C'
+        if (action === 'TEMP_MINUS_2') return '-2 C'
+        return action
+    }
+
+    const labelA = resolveActionLabel(scenario.plantAModifier.action);
+    const labelB = resolveActionLabel(scenario.plantBModifier.action);
+    const scenarioTitle = scenario.title || t(scenario.titleKey, { defaultValue: scenario.titleKey })
+    const scenarioDescription = scenario.description || t(scenario.descriptionKey, { defaultValue: scenario.descriptionKey })
 
     const diffHeight = experiment.modifiedFinalState.height - experiment.originalFinalState.height;
     const diffBiomass = experiment.modifiedFinalState.biomass.total - experiment.originalFinalState.biomass.total;
@@ -95,7 +103,8 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
         <div className="space-y-6 animate-fade-in">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold font-display text-primary-400">{t(scenario.titleKey)}</h2>
+                    <h2 className="text-2xl font-bold font-display text-primary-400">{scenarioTitle}</h2>
+                    <p className="text-slate-400">{scenarioDescription}</p>
                     <p className="text-slate-400">Results based on: {experiment.basePlantName}</p>
                 </div>
                 <Button onClick={onFinish} variant="secondary">

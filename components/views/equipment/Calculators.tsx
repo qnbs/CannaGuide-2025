@@ -6,9 +6,10 @@ import { CostCalculator } from './calculators/CostCalculator'
 import { NutrientCalculator } from './calculators/NutrientCalculator'
 import { ConverterCalculator } from './calculators/ConverterCalculator'
 import { YieldCalculator } from './calculators/YieldCalculator'
+import { ChemotypeCalculator } from './calculators/ChemotypeCalculator'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
-type CalculatorType = 'ventilation' | 'light' | 'cost' | 'nutrients' | 'converter' | 'yield'
+type CalculatorType = 'ventilation' | 'light' | 'cost' | 'nutrients' | 'converter' | 'yield' | 'chemotype'
 
 const calculatorList: {
     id: CalculatorType
@@ -51,6 +52,12 @@ const calculatorList: {
         Component: YieldCalculator,
         icon: <PhosphorIcons.ChartPieSlice />,
         titleKey: 'equipmentView.calculators.yield.title',
+    },
+    {
+        id: 'chemotype',
+        Component: ChemotypeCalculator,
+        icon: <PhosphorIcons.Flask />,
+        titleKey: 'Terpen/Cannabinoid Calculator',
     },
 ]
 

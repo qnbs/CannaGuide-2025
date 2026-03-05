@@ -13,6 +13,8 @@ import {
 } from '@/types'
 import { getT } from '@/i18n'
 import { apiKeyService } from '@/services/apiKeyService'
+import { growLogRagService } from '@/services/growLogRagService'
+import { localAiFallbackService } from '@/services/localAiFallbackService'
 
 const formatPlantContextForPrompt = (
     plant: Plant,
@@ -160,6 +162,16 @@ const getEducationalUseOnlyInstruction = (lang: Language): string =>
 
 
 class GeminiService {
+    private shouldUseLocalFallback(error: unknown): boolean {
+        const offline = typeof navigator !== 'undefined' && navigator.onLine === false
+        if (offline) return true
+
+        return (
+            error instanceof Error &&
+            (error.message === 'ai.error.missingApiKey' || error.message.includes('NetworkError'))
+        )
+    }
+
     private withGeminiSafety<T extends Record<string, unknown>>(config?: T): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
         return {
             ...(config ?? ({} as T)),
@@ -493,16 +505,30 @@ PLANT CONTEXT:
         const t = getT()
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.advisor', { plant: plantContext })
-        const responseText = await this.generateText(prompt, lang)
-        return { title: t('ai.advisor'), content: responseText }
+        try {
+            const responseText = await this.generateText(prompt, lang)
+            return { title: t('ai.advisor'), content: responseText }
+        } catch (error) {
+            if (this.shouldUseLocalFallback(error)) {
+                return localAiFallbackService.getPlantAdvice(plant, lang)
+            }
+            throw error
+        }
     }
 
     async getProactiveDiagnosis(plant: Plant, lang: Language): Promise<AIResponse> {
         const t = getT()
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.proactiveDiagnosis', { plant: plantContext })
-        const responseText = await this.generateText(prompt, lang)
-        return { title: t('ai.proactiveDiagnosis'), content: responseText }
+        try {
+            const responseText = await this.generateText(prompt, lang)
+            return { title: t('ai.proactiveDiagnosis'), content: responseText }
+        } catch (error) {
+            if (this.shouldUseLocalFallback(error)) {
+                return localAiFallbackService.getPlantAdvice(plant, lang)
+            }
+            throw error
+        }
     }
 
     async getMentorResponse(
@@ -512,8 +538,9 @@ PLANT CONTEXT:
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
+        const ragContext = growLogRagService.retrieveRelevantContext([plant], query)
         const prompt = t('ai.prompts.mentor.main', {
-            context: plantContext,
+            context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}`,
             query: query,
         })
 
@@ -561,6 +588,9 @@ PLANT CONTEXT:
             return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(response, 'ai.error.generic')
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error)
+            if (this.shouldUseLocalFallback(error)) {
+                return localAiFallbackService.getMentorResponse(plant, query, ragContext, lang)
+            }
             this.rethrowKnownError(error, 'ai.error.generic')
         }
     }
@@ -606,6 +636,9 @@ PLANT CONTEXT:
             return this.parseJsonResponse<StructuredGrowTips>(response, 'ai.error.tips')
         } catch (e) {
             console.error('Gemini getStrainTips Error:', e)
+            if (this.shouldUseLocalFallback(e)) {
+                return localAiFallbackService.getStrainTips(strain, lang)
+            }
             this.rethrowKnownError(e, 'ai.error.tips')
         }
     }
@@ -740,9 +773,33 @@ PLANT CONTEXT:
         ).join('\n');
         
         const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries });
+        try {
+            const responseText = await this.generateText(prompt, lang);
+            return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText };
+        } catch (error) {
+            if (this.shouldUseLocalFallback(error)) {
+                return localAiFallbackService.getGardenStatusSummary(plants, lang)
+            }
+            throw error
+        }
+    }
 
-        const responseText = await this.generateText(prompt, lang);
-        return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText };
+    async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
+        const ragContext = growLogRagService.retrieveRelevantContext(plants, query)
+        const prompt = `Answer the question using only the provided grow-log context.\n\nQuestion:\n${query}\n\nGrow-log context:\n${ragContext}\n\nIf information is uncertain, explicitly say so.`
+
+        try {
+            const responseText = await this.generateText(prompt, lang)
+            return {
+                title: lang === 'de' ? 'RAG Grow-Log Analyse' : 'RAG Grow Log Analysis',
+                content: responseText,
+            }
+        } catch (error) {
+            if (this.shouldUseLocalFallback(error)) {
+                return localAiFallbackService.getGrowLogRagAnswer(query, ragContext, lang)
+            }
+            throw error
+        }
     }
 
     getDynamicLoadingMessages({

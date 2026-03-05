@@ -12,6 +12,7 @@ import { TasksAndWarnings } from './plants/TasksAndWarnings';
 import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { GrowReminderPanel } from './plants/GrowReminderPanel';
+import { SensorIntegrationPanel } from './plants/SensorIntegrationPanel';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Removed unused `selectIsExpertMode` which was causing an import error.
@@ -138,6 +139,7 @@ export const PlantsView: React.FC = () => {
                         </div>
                         <div className="lg:col-span-1 space-y-6">
                             <GrowReminderPanel />
+                            <SensorIntegrationPanel />
                             <TasksAndWarnings tasks={tasks} problems={problems} />
                             <GlobalAdvisorArchiveView />
                         </div>

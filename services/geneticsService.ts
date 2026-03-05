@@ -140,6 +140,61 @@ class GeneticsService {
 
         return { children, grandchildren: uniqueGrandchildren };
     }
+
+    public estimateOffspringProfile(
+        parentA: Strain,
+        parentB: Strain,
+        phenotypes: {
+            parentA: { vigor: number; resin: number; aroma: number; resistance: number }
+            parentB: { vigor: number; resin: number; aroma: number; resistance: number }
+        },
+    ): {
+        thc: number
+        cbd: number
+        floweringWeeks: number
+        stabilityScore: number
+        vigorScore: number
+        resinScore: number
+        aromaScore: number
+        resistanceScore: number
+    } {
+        const avg = (a: number, b: number) => (a + b) / 2
+        const norm = (value: number) => Math.max(0, Math.min(10, value))
+
+        const vigorScore = avg(norm(phenotypes.parentA.vigor), norm(phenotypes.parentB.vigor))
+        const resinScore = avg(norm(phenotypes.parentA.resin), norm(phenotypes.parentB.resin))
+        const aromaScore = avg(norm(phenotypes.parentA.aroma), norm(phenotypes.parentB.aroma))
+        const resistanceScore = avg(
+            norm(phenotypes.parentA.resistance),
+            norm(phenotypes.parentB.resistance),
+        )
+
+        const thc = avg(parentA.thc, parentB.thc) + (resinScore - 5) * 0.35
+        const cbd = Math.max(0, avg(parentA.cbd, parentB.cbd) + (resistanceScore - 5) * 0.08)
+        const floweringWeeks = Math.max(6, avg(parentA.floweringTime, parentB.floweringTime) - (vigorScore - 5) * 0.15)
+
+        const stabilityScore = Math.max(
+            0,
+            Math.min(
+                100,
+                55 +
+                    (10 - Math.abs(parentA.thc - parentB.thc)) * 2 +
+                    (10 - Math.abs(parentA.floweringTime - parentB.floweringTime)) * 1.5 +
+                    resistanceScore * 1.2,
+            ),
+        )
+
+        return {
+            thc,
+            cbd,
+            floweringWeeks,
+            stabilityScore,
+            vigorScore,
+            resinScore,
+            aromaScore,
+            resistanceScore,
+        }
+    }
 }
 
 export const geneticsService = new GeneticsService();

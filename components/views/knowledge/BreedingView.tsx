@@ -13,6 +13,7 @@ import { strainService } from '@/services/strainService';
 import { Input } from '@/components/ui/form';
 import { createStrainObject } from '@/services/strainFactory';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
+import { geneticsService } from '@/services/geneticsService';
 
 // --- SELF-CONTAINED BREEDING LOGIC ---
 // Moved this pure function outside the component to prevent re-creation on every render.
@@ -105,6 +106,8 @@ const BreedingView: React.FC = () => {
     const { parentA: parentA_id, parentB: parentB_id } = useAppSelector(selectBreedingSlots);
     const [newStrainName, setNewStrainName] = useState('');
     const [result, setResult] = useState<Omit<Strain, 'id'> | null>(null);
+    const [phenoA, setPhenoA] = useState({ vigor: 6, resin: 6, aroma: 6, resistance: 6 });
+    const [phenoB, setPhenoB] = useState({ vigor: 6, resin: 6, aroma: 6, resistance: 6 });
 
     useEffect(() => {
         strainService.getAllStrains().then(setAllStrains);
@@ -114,6 +117,13 @@ const BreedingView: React.FC = () => {
     const seedB = useMemo(() => collectedSeeds.find(s => s.id === parentB_id), [collectedSeeds, parentB_id]);
     const parentA = useMemo(() => seedA ? allStrains.find(s => s.id === seedA.strainId) : null, [allStrains, seedA]);
     const parentB = useMemo(() => seedB ? allStrains.find(s => s.id === seedB.strainId) : null, [allStrains, seedB]);
+    const automatedGenetics = useMemo(() => {
+        if (!parentA || !parentB) return null
+        return geneticsService.estimateOffspringProfile(parentA, parentB, {
+            parentA: phenoA,
+            parentB: phenoB,
+        })
+    }, [parentA, parentB, phenoA, phenoB])
 
     const handleSeedClick = (seedId: string) => {
         if (!parentA_id) {
@@ -179,6 +189,25 @@ const BreedingView: React.FC = () => {
                         <PhosphorIcons.Plus className="w-8 h-8 text-slate-500 mx-auto" />
                         <ParentSlot title={t('knowledgeView.breeding.parentB')} seed={seedB} onClear={() => dispatch(setParentB(null))} allStrains={allStrains} />
                     </div>
+                    <Card className="bg-slate-800/40 !p-4">
+                        <h4 className="font-bold text-slate-100 mb-3">Pheno Tracking</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <p className="text-sm font-semibold text-slate-300">Parent A</p>
+                                <Input type="number" min={0} max={10} label="Vigor" value={phenoA.vigor} onChange={(e) => setPhenoA((prev) => ({ ...prev, vigor: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label="Resin" value={phenoA.resin} onChange={(e) => setPhenoA((prev) => ({ ...prev, resin: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label="Aroma" value={phenoA.aroma} onChange={(e) => setPhenoA((prev) => ({ ...prev, aroma: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label="Disease Resistance" value={phenoA.resistance} onChange={(e) => setPhenoA((prev) => ({ ...prev, resistance: Number(e.target.value) }))} />
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-sm font-semibold text-slate-300">Parent B</p>
+                                <Input type="number" min={0} max={10} label="Vigor" value={phenoB.vigor} onChange={(e) => setPhenoB((prev) => ({ ...prev, vigor: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label="Resin" value={phenoB.resin} onChange={(e) => setPhenoB((prev) => ({ ...prev, resin: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label="Aroma" value={phenoB.aroma} onChange={(e) => setPhenoB((prev) => ({ ...prev, aroma: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label="Disease Resistance" value={phenoB.resistance} onChange={(e) => setPhenoB((prev) => ({ ...prev, resistance: Number(e.target.value) }))} />
+                            </div>
+                        </div>
+                    </Card>
                      <Button onClick={handleBreed} disabled={!parentA_id || !parentB_id || !!result || isBreeding} className="w-full">
                         <PhosphorIcons.TestTube className="w-5 h-5 mr-2" />
                         {isBreeding ? t('ai.generating') : t('knowledgeView.breeding.breedButton')}
@@ -213,6 +242,15 @@ const BreedingView: React.FC = () => {
                                     {(result.dominantTerpenes || []).map(a => <span key={a} className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{a}</span>)}
                                 </div>
                             </div>
+                            {automatedGenetics && (
+                                <div className="bg-slate-900/50 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-sm text-slate-200 space-y-1">
+                                    <p className="font-semibold text-primary-300">Automated Genetics Estimate</p>
+                                    <p>THC: ~{automatedGenetics.thc.toFixed(1)}%</p>
+                                    <p>CBD: ~{automatedGenetics.cbd.toFixed(1)}%</p>
+                                    <p>Flowering: ~{automatedGenetics.floweringWeeks.toFixed(1)} weeks</p>
+                                    <p>Stability Score: {automatedGenetics.stabilityScore.toFixed(0)} / 100</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="text-right mt-6">

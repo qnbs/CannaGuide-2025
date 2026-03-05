@@ -21,6 +21,7 @@ import { REDUX_STATE_KEY } from '@/constants';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { dbService } from '@/services/dbService';
 import { selectSimulation } from '@/stores/selectors';
+import { CommunitySharePanel } from './CommunitySharePanel';
 
 const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -226,6 +227,8 @@ const DataManagementTab: React.FC = () => {
                     </Button>
                 </div>
             </Card>
+
+            <CommunitySharePanel />
 
              <Card className="border border-red-500/30 bg-red-900/10">
                 <h3 className="text-xl font-bold font-display text-red-400 mb-3 flex items-center gap-2"><PhosphorIcons.WarningCircle /> {t('settingsView.data.dangerZone')}</h3>

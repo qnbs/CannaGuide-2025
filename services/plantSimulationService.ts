@@ -1,5 +1,15 @@
 import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType } from '@/types';
 import { STAGES_ORDER, SIM_PAR_PER_WATT_LED, SIM_LIGHT_EXTINCTION_COEFFICIENT_K, SIM_BIOMASS_CONVERSION_EFFICIENCY, SIM_SECONDS_PER_DAY } from '@/constants';
+import type {
+    AirflowLevel,
+    GrowthStage,
+    MediumType,
+    PlantState as VPDPlantState,
+    SimulationPoint,
+    VPDInput,
+    VPDWorkerResponse,
+} from '@/types/simulation.types';
+import { calculateVPD as calculateVpdValue, getVPDStatus, runDailySimulation } from '@/utils/vpdCalculator';
 
 // More detailed stage information for the mechanistic model
 export const PLANT_STAGE_DETAILS: Record<PlantStage, { 
@@ -420,3 +430,175 @@ class PlantSimulationService {
 }
 
 export const plantSimulationService = new PlantSimulationService();
+
+const stageToGrowthStage = (stage: PlantStage): GrowthStage => {
+    if (stage === PlantStage.Seed || stage === PlantStage.Germination || stage === PlantStage.Seedling) {
+        return 'seedling';
+    }
+    if (stage === PlantStage.Vegetative) {
+        return 'vegetative';
+    }
+    if (stage === PlantStage.Flowering) {
+        return 'earlyFlower';
+    }
+    return 'lateFlower';
+};
+
+const mediumToVPDMedium = (medium: Plant['mediumType']): MediumType => {
+    if (medium === 'Hydro') return 'hydro';
+    if (medium === 'Coco') return 'coco';
+    return 'soil';
+};
+
+const airflowToLevel = (power: Plant['equipment']['exhaustFan']['power']): AirflowLevel => {
+    return power;
+};
+
+class VPDSimulationService {
+    private worker: Worker | null = null;
+
+    private getWorker(): Worker | null {
+        if (typeof Worker === 'undefined') {
+            return null;
+        }
+
+        if (!this.worker) {
+            this.worker = new Worker(new URL('../workers/vpdSimulation.worker.ts', import.meta.url), { type: 'module' });
+        }
+
+        return this.worker;
+    }
+
+    private createProfiles(input: VPDInput): { tempProfile: number[]; rhProfile: number[] } {
+        const tempProfile: number[] = [];
+        const rhProfile: number[] = [];
+
+        for (let hour = 0; hour < 24; hour += 1) {
+            const lightOn = hour >= 6 && hour < 18;
+            const tempDelta = lightOn ? 2.5 : -2.0;
+            const rhDelta = lightOn ? -5 : 5;
+            tempProfile.push(Number((input.airTemp + tempDelta).toFixed(2)));
+            rhProfile.push(Math.max(25, Math.min(90, Number((input.rh + rhDelta).toFixed(2)))));
+        }
+
+        return { tempProfile, rhProfile };
+    }
+
+    createInputFromPlant(plant: Plant): VPDInput {
+        return {
+            airTemp: plant.environment.internalTemperature,
+            rh: plant.environment.internalHumidity,
+            medium: mediumToVPDMedium(plant.mediumType),
+            airflow: airflowToLevel(plant.equipment.exhaustFan.power),
+            lightOn: plant.equipment.light.isOn,
+            phase: stageToGrowthStage(plant.stage),
+        };
+    }
+
+    createProjectionStateFromPlant(plant: Plant): VPDPlantState {
+        return {
+            id: plant.id,
+            ageDays: plant.age,
+            growthStage: stageToGrowthStage(plant.stage),
+            biomass: plant.biomass.total,
+            health: plant.health,
+            projectedYield: plant.harvestData?.dryWeight || 0,
+            stressLevel: plant.stressLevel,
+            vpdHistory: (plant.history || []).map((entry) => ({
+                date: new Date(plant.createdAt + entry.day * 86400000).toISOString(),
+                vpd: Number(plant.environment.vpd.toFixed(3)),
+                status: 'optimal' as const,
+            })),
+        };
+    }
+
+    runDailyVPD(input: VPDInput, tempProfile?: number[], rhProfile?: number[]): Promise<SimulationPoint[]> {
+        const profiles = tempProfile && rhProfile ? { tempProfile, rhProfile } : this.createProfiles(input);
+        const worker = this.getWorker();
+
+        if (!worker) {
+            return Promise.resolve(
+                runDailySimulation(
+                    {
+                        medium: input.medium,
+                        airflow: input.airflow,
+                        phase: input.phase,
+                        leafTempOffset: input.leafTempOffset,
+                    },
+                    profiles.tempProfile,
+                    profiles.rhProfile,
+                ),
+            );
+        }
+
+        return new Promise((resolve) => {
+            worker.onmessage = (e: MessageEvent<VPDWorkerResponse>) => {
+                if (e.data.type === 'DAILY_RESULT') {
+                    resolve(e.data.data);
+                }
+            };
+
+            worker.postMessage({
+                type: 'RUN_DAILY',
+                payload: {
+                    baseInput: {
+                        medium: input.medium,
+                        airflow: input.airflow,
+                        phase: input.phase,
+                        leafTempOffset: input.leafTempOffset,
+                    },
+                    tempProfile: profiles.tempProfile,
+                    rhProfile: profiles.rhProfile,
+                },
+            });
+        });
+    }
+
+    runGrowthProjection(plant: VPDPlantState, env: VPDInput, days = 7): Promise<VPDPlantState> {
+        const worker = this.getWorker();
+
+        if (!worker) {
+            let projectedPlant = { ...plant };
+            const runDays = Math.max(1, days);
+
+            for (let day = 0; day < runDays; day += 1) {
+                const vpd = calculateVpdValue(env);
+                const status = getVPDStatus(vpd, 1.2);
+                const stressDelta = status === 'optimal' ? -1.2 : status === 'danger' ? 4.5 : 2.2;
+                projectedPlant = {
+                    ...projectedPlant,
+                    ageDays: projectedPlant.ageDays + 1,
+                    stressLevel: Math.max(0, Math.min(100, projectedPlant.stressLevel + stressDelta)),
+                    health: Math.max(0, Math.min(100, projectedPlant.health - Math.max(0, stressDelta * 0.8))),
+                    biomass: Number((projectedPlant.biomass * (1 + 0.01)).toFixed(4)),
+                    projectedYield: Number((projectedPlant.projectedYield + projectedPlant.biomass * 0.01).toFixed(3)),
+                    vpdHistory: [
+                        ...projectedPlant.vpdHistory,
+                        {
+                            date: new Date().toISOString(),
+                            vpd,
+                            status,
+                        },
+                    ],
+                };
+            }
+
+            return Promise.resolve(projectedPlant);
+        }
+
+        return new Promise((resolve) => {
+            worker.onmessage = (e: MessageEvent<VPDWorkerResponse>) => {
+                if (e.data.type === 'GROWTH_RESULT') {
+                    resolve(e.data.plant);
+                }
+            };
+
+            worker.postMessage({
+                type: 'RUN_GROWTH',
+                payload: { plant, env, days },
+            });
+        });
+    }
+}
+
+export const vpdService = new VPDSimulationService();

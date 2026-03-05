@@ -1,5 +1,6 @@
 import { EntityState } from '@reduxjs/toolkit';
 import type { FC } from 'react';
+import type { SimulationPoint } from '@/types/simulation.types';
 
 // Enums and String Literal Types
 export enum View {
@@ -287,6 +288,7 @@ export interface SimulationState {
     plantSlots: (string | null)[];
     selectedPlantId: string | null;
     devSpeedMultiplier: number;
+    vpdProfiles: Record<string, SimulationPoint[]>;
 }
 
 // AI related types

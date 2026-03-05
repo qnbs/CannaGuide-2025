@@ -9,6 +9,7 @@ import { KnowledgeArticle, Plant } from '@/types'
 import { knowledgeBase } from '@/data/knowledgebase'
 import { Select } from '@/components/ui/form'
 import { Card } from '@/components/common/Card'
+import { GrowLogRagPanel } from './GrowLogRagPanel'
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
     return knowledgeBase.filter((article) => {
@@ -120,6 +121,8 @@ export const MentorView: React.FC = () => {
                     </details>
                 </div>
             )}
+
+            <GrowLogRagPanel />
         </div>
     )
 }

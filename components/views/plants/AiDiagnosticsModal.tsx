@@ -12,7 +12,7 @@ import { addJournalEntry } from '@/stores/slices/simulationSlice'
 import { Card } from '@/components/common/Card'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
 import { dbService } from '@/services/dbService'
-import { Input } from '@/components/ui/ThemePrimitives'
+import { Textarea } from '@/components/ui/textarea'
 import { selectLanguage } from '@/stores/selectors'
 import { resizeImage, base64ToMimeType } from '@/services/imageService'
 
@@ -354,8 +354,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                 <p className="text-sm text-slate-400">
                                     {t('plantsView.aiDiagnostics.stepContextDesc')}
                                 </p>
-                                <Input
-                                    as="textarea"
+                                <Textarea
                                     value={userNotes}
                                     onChange={(e) => setUserNotes(e.target.value)}
                                     placeholder={t('plantsView.aiDiagnostics.userNotesPlaceholder')}

@@ -3,7 +3,7 @@ import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Modal } from './Modal'
-import { Input } from '@/components/ui/ThemePrimitives'
+import { Input } from '@/components/ui/input'
 
 interface EditableResponse {
     id: string

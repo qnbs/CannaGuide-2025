@@ -22,7 +22,8 @@ import {
     applyPestControlAction,
     applyAmendmentAction,
 } from '@/stores/slices/simulationSlice'
-import { Input, Select } from '@/components/ui/ThemePrimitives'
+import { Select } from '@/components/ui/ThemePrimitives'
+import { Textarea } from '@/components/ui/textarea'
 import { CameraModal } from '@/components/common/CameraModal'
 import { dbService } from '@/services/dbService'
 import { addNotification } from '@/stores/slices/uiSlice'
@@ -254,12 +255,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                             )}
                         </>
                     )}
-                    <Input
-                        as="textarea"
-                        label={t('common.notes')}
-                        value={notes}
-                        onChange={(e) => setNotes(e.target.value)}
-                    />
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-300 mb-1">
+                            {t('common.notes')}
+                        </label>
+                        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+                    </div>
                 </div>
             </Modal>
         </>

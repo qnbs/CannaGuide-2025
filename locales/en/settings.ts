@@ -446,5 +446,17 @@ export const settingsView = {
         disclaimerTitle: "Disclaimer",
         disclaimerContent: `<p>All information in this app is for educational and entertainment purposes only. The cultivation of cannabis is subject to strict legal regulations. Please inform yourself about the laws in your region and always act responsibly and in accordance with the law.</p>`
       }
-    }
+    },
+  communityShare: {
+    title: 'Community Strain Shares',
+    description: 'Anonymous sharing via GitHub Gist (lightweight alternative to IPFS).',
+    exportButton: 'Export User Strains to Anonymous Gist',
+    gistPlaceholder: 'Paste Gist URL or ID',
+    importButton: 'Import Strains from Gist',
+    exportSuccess: 'Anonymous Gist created.',
+    exportError: 'Gist export failed.',
+    importSuccess_one: '1 strain imported.',
+    importSuccess_other: '{{count}} strains imported.',
+    importError: 'Gist import failed.',
+  },
 };

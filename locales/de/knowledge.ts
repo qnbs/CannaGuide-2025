@@ -206,6 +206,14 @@ export const knowledgeView = {
         coreConcepts: 'Grundkonzepte',
         troubleshooting: 'Fehlerbehebung',
     },
+    growLog: {
+        title: 'Grow-Log RAG',
+        description: 'Frage dein eigenes Journal direkt ab. Relevante Log-Einträge werden zuerst geladen und dann von der KI analysiert.',
+        placeholder: 'z. B. Warum schwankt mein VPD in Woche 4?',
+        analyzing: 'Analysiere...',
+        startAnalysis: 'RAG Analyse starten',
+        activeCorpus: 'Aktive Pflanzen im RAG-Korpus: {{count}}',
+    },
 };
 
 export const tipOfTheDay = {

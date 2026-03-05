@@ -179,6 +179,7 @@ const simulationSlice = createSlice({
             plantsAdapter.removeAll(state.plants);
             state.plantSlots = [null, null, null];
             state.selectedPlantId = null;
+            state.devSpeedMultiplier = 1;
             state.vpdProfiles = {};
         },
         setPlantVpdProfile: (state, action: PayloadAction<{ plantId: string; points: SimulationPoint[] }>) => {

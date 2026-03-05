@@ -8,8 +8,10 @@ import { communityShareService } from '@/services/communityShareService'
 import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice'
 import { addNotification } from '@/stores/slices/uiSlice'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useTranslation } from 'react-i18next'
 
 const CommunitySharePanelComponent: React.FC = () => {
+    const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const userStrains = useAppSelector(selectUserStrains)
     const [gistInput, setGistInput] = useState('')
@@ -21,11 +23,11 @@ const CommunitySharePanelComponent: React.FC = () => {
         try {
             const gist = await communityShareService.exportStrainsToAnonymousGist(userStrains)
             setLastGistUrl(gist.url)
-            dispatch(addNotification({ message: 'Anonymous Gist created.', type: 'success' }))
+            dispatch(addNotification({ message: t('settingsView.communityShare.exportSuccess'), type: 'success' }))
         } catch (error) {
             dispatch(
                 addNotification({
-                    message: error instanceof Error ? error.message : 'Gist export failed.',
+                    message: error instanceof Error ? error.message : t('settingsView.communityShare.exportError'),
                     type: 'error',
                 }),
             )
@@ -42,12 +44,12 @@ const CommunitySharePanelComponent: React.FC = () => {
             imported.forEach((strain) => {
                 dispatch(addUserStrainWithValidation(strain))
             })
-            dispatch(addNotification({ message: `${imported.length} strains imported.`, type: 'success' }))
+            dispatch(addNotification({ message: t('settingsView.communityShare.importSuccess_other', { count: imported.length }), type: 'success' }))
             setGistInput('')
         } catch (error) {
             dispatch(
                 addNotification({
-                    message: error instanceof Error ? error.message : 'Gist import failed.',
+                    message: error instanceof Error ? error.message : t('settingsView.communityShare.importError'),
                     type: 'error',
                 }),
             )
@@ -59,15 +61,15 @@ const CommunitySharePanelComponent: React.FC = () => {
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2">
-                <PhosphorIcons.ShareNetwork /> Community Strain Shares
+                <PhosphorIcons.ShareNetwork /> {t('settingsView.communityShare.title')}
             </h3>
             <p className="text-sm text-slate-300 mb-3">
-                Anonymous sharing via GitHub Gist (lightweight alternative to IPFS).
+                {t('settingsView.communityShare.description')}
             </p>
             <div className="space-y-3">
                 <Button onClick={handleExport} disabled={isBusy || userStrains.length === 0} className="w-full">
                     <PhosphorIcons.UploadSimple className="w-5 h-5 mr-2" />
-                    Export User Strains to Anonymous Gist
+                    {t('settingsView.communityShare.exportButton')}
                 </Button>
                 {lastGistUrl && (
                     <a
@@ -82,11 +84,11 @@ const CommunitySharePanelComponent: React.FC = () => {
                 <Input
                     value={gistInput}
                     onChange={(e) => setGistInput(e.target.value)}
-                    placeholder="Paste Gist URL or ID"
+                    placeholder={t('settingsView.communityShare.gistPlaceholder')}
                 />
                 <Button onClick={handleImport} variant="secondary" disabled={isBusy || !gistInput.trim()} className="w-full">
                     <PhosphorIcons.DownloadSimple className="w-5 h-5 mr-2" />
-                    Import Strains from Gist
+                    {t('settingsView.communityShare.importButton')}
                 </Button>
             </div>
         </Card>

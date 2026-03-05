@@ -18,7 +18,8 @@ export const SaveSetupModalContainer: React.FC = () => {
                 .then(() => {
                     dispatch(closeSaveSetupModal());
                     dispatch(setEquipmentViewTab(EquipmentViewTab.Setups));
-                });
+                })
+                .catch(console.error);
         }
     };
 

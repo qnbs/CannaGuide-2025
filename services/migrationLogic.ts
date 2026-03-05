@@ -24,6 +24,49 @@ const ensureSimulationShape = (state: PersistedState): void => {
     if (!sim.vpdProfiles || typeof sim.vpdProfiles !== 'object') {
         sim.vpdProfiles = {}
     }
+
+    // Patch any persisted plant objects that are missing fields introduced after
+    // the initial simulation build. This prevents the engine from crashing on
+    // old localStorage data after an update.
+    const entities = (sim.plants as Record<string, unknown>)?.entities
+    if (entities && typeof entities === 'object') {
+        for (const id in entities as Record<string, unknown>) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const plant = (entities as Record<string, any>)[id]
+            if (!plant) continue
+
+            if (!plant.rootSystem || typeof plant.rootSystem !== 'object') {
+                plant.rootSystem = { health: 100, rootMass: 0.01 }
+            }
+            if (!plant.stressCounters || typeof plant.stressCounters !== 'object') {
+                plant.stressCounters = { vpd: 0, ph: 0, ec: 0, moisture: 0 }
+            }
+            if (!plant.cannabinoidProfile || typeof plant.cannabinoidProfile !== 'object') {
+                plant.cannabinoidProfile = { thc: 0, cbd: 0, cbn: 0 }
+            }
+            if (!plant.terpeneProfile || typeof plant.terpeneProfile !== 'object') {
+                plant.terpeneProfile = {}
+            }
+            if (!plant.structuralModel || typeof plant.structuralModel !== 'object') {
+                plant.structuralModel = { branches: 1, nodes: 1 }
+            }
+            if (!plant.medium || typeof plant.medium !== 'object') {
+                plant.medium = { ph: 6.5, ec: 0.8, moisture: 80, microbeHealth: 80, substrateWater: 0, nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 } }
+            } else {
+                if (typeof plant.medium.microbeHealth !== 'number') plant.medium.microbeHealth = 80
+                if (typeof plant.medium.substrateWater !== 'number') plant.medium.substrateWater = 0
+                if (!plant.medium.nutrientConcentration) plant.medium.nutrientConcentration = { nitrogen: 100, phosphorus: 100, potassium: 100 }
+            }
+            if (!plant.nutrientPool || typeof plant.nutrientPool !== 'object') {
+                plant.nutrientPool = { nitrogen: 5, phosphorus: 5, potassium: 5 }
+            }
+            // phenotypeModifiers is optional – fill it from strain defaults so the
+            // engine can use per-plant modifiers without crashing on old saves.
+            if (!plant.phenotypeModifiers && plant.strain?.geneticModifiers) {
+                plant.phenotypeModifiers = { ...plant.strain.geneticModifiers }
+            }
+        }
+    }
 }
 
 /**

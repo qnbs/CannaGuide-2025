@@ -110,7 +110,7 @@ const BreedingView: React.FC = () => {
     const [phenoB, setPhenoB] = useState({ vigor: 6, resin: 6, aroma: 6, resistance: 6 });
 
     useEffect(() => {
-        strainService.getAllStrains().then(setAllStrains);
+        strainService.getAllStrains().then(setAllStrains).catch(console.error);
     }, []);
 
     const seedA = useMemo(() => collectedSeeds.find(s => s.id === parentA_id), [collectedSeeds, parentA_id]);

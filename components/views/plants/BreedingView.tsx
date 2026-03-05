@@ -107,7 +107,7 @@ const BreedingView: React.FC = () => {
     const [result, setResult] = useState<Omit<Strain, 'id'> | null>(null);
 
     useEffect(() => {
-        strainService.getAllStrains().then(setAllStrains);
+        strainService.getAllStrains().then(setAllStrains).catch(console.error);
     }, []);
 
     const seedA = useMemo(() => collectedSeeds.find(s => s.id === parentA_id), [collectedSeeds, parentA_id]);

@@ -1,0 +1,45 @@
+name: Strain Catalog Merge Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'data/strains/**'
+      - 'scripts/merge-strains.mjs'
+      - '.github/workflows/strains-merge.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  merge-catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Merge static strain catalog
+        run: npm run strains:merge
+
+      - name: Check for newly introduced duplicate IDs
+        env:
+          BASE_REF: origin/${{ github.base_ref || 'main' }}
+        run: npm run strains:check-new-duplicates
+
+      - name: Upload merge report
+        uses: actions/upload-artifact@v4
+        with:
+          name: strain-merge-report
+          path: artifacts/strain-merge-report.json

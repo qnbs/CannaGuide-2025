@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/components/ui/button';
 import { useAppDispatch } from '@/stores/store';
 import { initiateGrowFromStrainList } from '@/stores/slices/uiSlice';
 

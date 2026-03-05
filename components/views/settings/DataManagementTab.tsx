@@ -1,16 +1,26 @@
 import React, { memo, useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch } from '@/stores/store';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice';
 import { clearArchives } from '@/stores/slices/archivesSlice';
+import { setSimulationState } from '@/stores/slices/simulationSlice';
 import { Card } from '@/components/common/Card';
-import { Input } from '@/components/ui/ThemePrimitives';
-import { Button } from '@/components/common/Button';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Modal } from '@/components/common/Modal';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { indexedDBStorage } from '@/stores/indexedDBStorage';
 import { REDUX_STATE_KEY } from '@/constants';
 import { addNotification } from '@/stores/slices/uiSlice';
+import { dbService } from '@/services/dbService';
+import { selectSimulation } from '@/stores/selectors';
 
 const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -20,12 +30,13 @@ const formatBytes = (bytes: number) => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
-const StorageInfo: React.FC = memo(() => {
+const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) => {
     const { t } = useTranslation();
     const [storage, setStorage] = useState<{ usage: number; quota: number } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        setIsLoading(true);
         if (navigator.storage && navigator.storage.estimate) {
             navigator.storage.estimate().then(estimate => {
                 setStorage({
@@ -37,7 +48,7 @@ const StorageInfo: React.FC = memo(() => {
         } else {
             setIsLoading(false);
         }
-    }, []);
+    }, [refreshTick]);
 
     if (isLoading) {
         return <p className="text-sm text-center text-slate-400">Speicher wird berechnet...</p>;
@@ -49,14 +60,28 @@ const StorageInfo: React.FC = memo(() => {
 
     const usagePercent = ((storage.usage / storage.quota) * 100).toFixed(1);
 
+    const usageRatio = storage.quota > 0 ? storage.usage / storage.quota : 0;
+    const isWarning = usageRatio >= 0.8 && usageRatio < 0.9;
+    const isCritical = usageRatio >= 0.9;
+
     return (
-        <div className="space-y-2">
+        <div className="space-y-3">
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
                 <div className="bg-primary-500 h-4 rounded-full" style={{ width: `${usagePercent}%` }}></div>
             </div>
             <div className="text-center text-sm text-slate-300 font-mono">
                 {formatBytes(storage.usage)} / {formatBytes(storage.quota)} ({usagePercent}%)
             </div>
+            {isWarning && (
+                <p className="text-xs text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-2">
+                    <strong>{t('settingsView.data.storageWarningTitle')}</strong> {t('settingsView.data.storageWarningBody')}
+                </p>
+            )}
+            {isCritical && (
+                <p className="text-xs text-red-300 bg-red-500/10 border border-red-500/30 rounded-md p-2">
+                    <strong>{t('settingsView.data.storageCriticalTitle')}</strong> {t('settingsView.data.storageCriticalBody')}
+                </p>
+            )}
         </div>
     );
 });
@@ -64,9 +89,12 @@ const StorageInfo: React.FC = memo(() => {
 const DataManagementTab: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const simulationState = useAppSelector(selectSimulation);
     const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false);
     const [fileToImport, setFileToImport] = useState<string | null>(null);
     const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+    const [isCleanupRunning, setIsCleanupRunning] = useState(false);
+    const [storageRefreshTick, setStorageRefreshTick] = useState(0);
     const [resetConfirmText, setResetConfirmText] = useState('');
     const resetPhrase = String(t('settingsView.data.resetAllConfirmPhrase'));
     const isResetDisabled = resetConfirmText.toLowerCase() !== resetPhrase;
@@ -115,35 +143,65 @@ const DataManagementTab: React.FC = () => {
         setIsResetConfirmOpen(false);
     };
 
+    const handleRunStorageCleanup = async () => {
+        setIsCleanupRunning(true);
+        try {
+            const optimizedSimulation = await dbService.optimizeSimulationForPersistence(simulationState);
+            if (optimizedSimulation !== simulationState) {
+                dispatch(setSimulationState(optimizedSimulation));
+            }
+
+            const deletedImages = await dbService.pruneOldImages(80);
+            setStorageRefreshTick((prev) => prev + 1);
+
+            dispatch(addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.cleanupSuccess', { count: deletedImages })),
+            }));
+        } catch (error) {
+            console.error('[DataManagement] Storage cleanup failed:', error);
+            dispatch(addNotification({ type: 'error', message: String(t('settingsView.data.cleanupError')) }));
+        } finally {
+            setIsCleanupRunning(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
-            {isImportConfirmOpen && (
-                 <Modal isOpen={true} onClose={() => setIsImportConfirmOpen(false)} title={String(t('settingsView.data.importConfirmTitle'))} size="lg">
-                    <p>{t('settingsView.data.importConfirmText')}</p>
-                    <div className="mt-4 flex justify-end gap-2">
+            <Dialog open={isImportConfirmOpen} onOpenChange={setIsImportConfirmOpen}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>{String(t('settingsView.data.importConfirmTitle'))}</DialogTitle>
+                        <DialogDescription>{t('settingsView.data.importConfirmText')}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-2">
                         <Button variant="secondary" onClick={() => setIsImportConfirmOpen(false)}>{t('common.cancel')}</Button>
-                        <Button variant="danger" onClick={confirmImport}>{t('settingsView.data.importConfirmButton')}</Button>
-                    </div>
-                </Modal>
-            )}
-            {isResetConfirmOpen && (
-                 <Modal isOpen={true} onClose={() => setIsResetConfirmOpen(false)} title={String(t('settingsView.data.resetAll'))} size="lg">
-                     <div className="p-4 bg-red-900/20 rounded-lg border border-red-500/30 space-y-3">
+                        <Button variant="destructive" onClick={confirmImport}>{t('settingsView.data.importConfirmButton')}</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isResetConfirmOpen} onOpenChange={setIsResetConfirmOpen}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>{String(t('settingsView.data.resetAll'))}</DialogTitle>
+                    </DialogHeader>
+                    <div className="p-4 bg-red-900/20 rounded-lg border border-red-500/30 space-y-3">
                         <h4 className="font-bold text-red-300">{t('settingsView.data.resetAll')}</h4>
-                         <p className="text-sm text-slate-300">{t('settingsView.data.resetAllConfirmInput', { phrase: resetPhrase })}</p>
-                         <Input
+                        <p className="text-sm text-slate-300">{t('settingsView.data.resetAllConfirmInput', { phrase: resetPhrase })}</p>
+                        <Input
                             type="text"
                             value={resetConfirmText}
                             onChange={(e) => setResetConfirmText(e.target.value)}
                             placeholder={resetPhrase}
                             autoFocus
                         />
-                        <Button variant="danger" onClick={handleResetAll} disabled={isResetDisabled} className="w-full justify-center">
+                        <Button variant="destructive" onClick={handleResetAll} disabled={isResetDisabled} className="w-full justify-center">
                             {t('settingsView.data.resetAll')}
                         </Button>
                     </div>
-                </Modal>
-            )}
+                </DialogContent>
+            </Dialog>
             <input type="file" id="import-file-input" accept=".json" className="hidden" onChange={handleFileChange} />
             
             <Card>
@@ -159,7 +217,14 @@ const DataManagementTab: React.FC = () => {
 
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2"><PhosphorIcons.ChartPieSlice /> {t('settingsView.data.storageInsights')}</h3>
-                <StorageInfo />
+                <StorageInfo refreshTick={storageRefreshTick} />
+                <div className="mt-4 pt-4 border-t border-slate-700/50 flex flex-col gap-2">
+                    <p className="text-sm text-slate-400">{t('settingsView.data.runCleanupDesc')}</p>
+                    <Button onClick={handleRunStorageCleanup} disabled={isCleanupRunning} className="justify-center">
+                        <PhosphorIcons.Broom className="mr-2" />
+                        {isCleanupRunning ? t('settingsView.data.cleanupRunning') : t('settingsView.data.runCleanup')}
+                    </Button>
+                </div>
             </Card>
 
              <Card className="border border-red-500/30 bg-red-900/10">
@@ -170,14 +235,14 @@ const DataManagementTab: React.FC = () => {
                             <h4 className="font-bold text-slate-100">{t('settingsView.data.clearArchives')}</h4>
                             <p className="text-sm text-slate-400">{t('settingsView.data.clearArchivesDesc')}</p>
                         </div>
-                        <Button variant="danger" size="sm" onClick={() => { if (window.confirm(String(t('settingsView.data.clearArchivesConfirm')))) { dispatch(clearArchives()) } }}>{t('common.delete')}</Button>
+                        <Button variant="destructive" size="sm" onClick={() => { if (window.confirm(String(t('settingsView.data.clearArchivesConfirm')))) { dispatch(clearArchives()) } }}>{t('common.delete')}</Button>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
                          <div>
                             <h4 className="font-bold text-slate-100">{t('settingsView.data.resetAll')}</h4>
                             <p className="text-sm text-slate-400">{t('settingsView.data.resetAllConfirm')}</p>
                         </div>
-                        <Button variant="danger" size="sm" onClick={() => setIsResetConfirmOpen(true)}>{t('common.delete')}</Button>
+                        <Button variant="destructive" size="sm" onClick={() => setIsResetConfirmOpen(true)}>{t('common.delete')}</Button>
                     </div>
                 </div>
             </Card>

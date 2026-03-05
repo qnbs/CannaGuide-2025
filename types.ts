@@ -169,6 +169,7 @@ export interface Plant {
     id: string;
     name: string;
     strain: Strain;
+    mediumType: GrowSetup['medium'];
     createdAt: number;
     lastUpdated: number;
     age: number; // in days

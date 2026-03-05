@@ -1,4 +1,4 @@
-import { AppSettings } from '@/types'
+import { AppSettings, Strain } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 import { RootState } from '@/stores/store'
 import { APP_VERSION } from '@/constants'
@@ -72,6 +72,42 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
     return migratedState
 }
 
+const migrateV2ToV3 = (state: PersistedState): PersistedState => {
+    console.log('[MigrationLogic] Migrating state from v2 to v3...')
+
+    const migratedState: PersistedState = state
+
+    if (migratedState.simulation?.plants?.entities) {
+        for (const id in migratedState.simulation.plants.entities) {
+            const plant = migratedState.simulation.plants.entities[id] as any
+            if (plant && !plant.mediumType) {
+                plant.mediumType = 'Soil'
+            }
+        }
+    }
+
+    return migratedState
+}
+
+/**
+ * Merges strain catalogs by id and keeps a stable superset during updates.
+ * New bundled entries win for overlapping ids, while unknown legacy ids are retained.
+ */
+export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStrains: Strain[]): Strain[] => {
+    const mergedById = new Map<string, Strain>()
+
+    legacyStrains.forEach((strain) => {
+        mergedById.set(strain.id, strain)
+    })
+
+    bundledStrains.forEach((strain) => {
+        const legacy = mergedById.get(strain.id)
+        mergedById.set(strain.id, legacy ? { ...legacy, ...strain } : strain)
+    })
+
+    return Array.from(mergedById.values())
+}
+
 /**
  * Orchestrates the migration of a persisted state object to the current app version.
  * @param persistedState The raw state object loaded from storage.
@@ -95,8 +131,9 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     if (stateVersion < 2) {
         migratedState = migrateV1ToV2(migratedState)
     }
-    // Future migrations would be chained here, e.g.:
-    // if (stateVersion < 3) { migratedState = migrateV2ToV3(migratedState); }
+    if (stateVersion < 3) {
+        migratedState = migrateV2ToV3(migratedState)
+    }
 
     migratedState.version = APP_VERSION
 

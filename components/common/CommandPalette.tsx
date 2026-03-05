@@ -1,12 +1,10 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react'
-import ReactDOM from 'react-dom'
+import React, { useDeferredValue, useMemo, useState, useEffect } from 'react'
+import { Command as Cmdk } from 'cmdk'
 import { Command } from '@/types'
 import { useTranslation } from 'react-i18next'
-import { useFocusTrap } from '@/hooks/useFocusTrap'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { groupAndSortCommands } from '@/services/commandService'
 import { useCommandPalette } from '@/hooks/useCommandPalette'
-import { Input } from '@/components/ui/ThemePrimitives'
 
 interface CommandPaletteProps {
     isOpen: boolean
@@ -19,28 +17,20 @@ const escapeRegExp = (string: string) => {
 
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
     const { t } = useTranslation()
-    const modalRef = useFocusTrap(isOpen)
-    const inputRef = useRef<HTMLInputElement>(null)
-    const listRef = useRef<HTMLUListElement>(null)
     const [query, setQuery] = useState('')
+    const deferredQuery = useDeferredValue(query)
     const { allCommands } = useCommandPalette()
 
     useEffect(() => {
         if (isOpen) {
-            // Let useFocusTrap handle the initial focus.
-            // It will correctly focus the input on desktop and the first item on mobile.
             setQuery('')
-            listRef.current?.scrollTo({ top: 0 })
         }
     }, [isOpen])
 
     const displayedCommands = useMemo(() => {
-        if (listRef.current) {
-            listRef.current.scrollTop = 0;
-        }
-        if (!query.trim()) return groupAndSortCommands(allCommands)
+        if (!deferredQuery.trim()) return groupAndSortCommands(allCommands)
 
-        const lowerCaseQuery = query.toLowerCase()
+        const lowerCaseQuery = deferredQuery.toLowerCase()
         const fuzzyRegex = new RegExp(lowerCaseQuery.split('').map(escapeRegExp).join('.*?'), 'i')
 
         const filtered = allCommands.filter((command) => {
@@ -56,7 +46,33 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         })
 
         return groupAndSortCommands(filtered)
-    }, [query, allCommands])
+    }, [deferredQuery, allCommands])
+
+    const groupedCommands = useMemo(() => {
+        const groups: Array<{ id: string; title: string; commands: Command[] }> = []
+        let currentGroup: { id: string; title: string; commands: Command[] } | null = null
+
+        displayedCommands.forEach((command) => {
+            if (command.isHeader) {
+                currentGroup = { id: command.id, title: command.title, commands: [] }
+                groups.push(currentGroup)
+                return
+            }
+
+            if (!currentGroup) {
+                currentGroup = {
+                    id: `group-${command.group}`,
+                    title: command.group,
+                    commands: [],
+                }
+                groups.push(currentGroup)
+            }
+
+            currentGroup.commands.push(command)
+        })
+
+        return groups.filter((group) => group.commands.length > 0)
+    }, [displayedCommands])
 
     const handleCommandClick = (command: Command) => {
         if (!command.isHeader) {
@@ -65,98 +81,76 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
         }
     }
 
-    if (!isOpen) return null
-
-    return ReactDOM.createPortal(
-        <div
-            className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-[100] flex items-start justify-center p-4 pt-[15vh]"
-            onClick={onClose}
-            role="dialog"
-            aria-modal="true"
-            aria-label={t('commandPalette.title')}
+    return (
+        <Cmdk.Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+                if (!open) onClose()
+            }}
+            label={t('commandPalette.title')}
+            className="fixed left-1/2 top-[15vh] z-[101] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-lg border border-white/20 bg-[rgba(var(--color-bg-component),0.92)] shadow-2xl"
+            overlayClassName="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md"
         >
-            <div
-                ref={modalRef as React.RefObject<HTMLDivElement>}
-                className="w-full max-w-xl glass-pane !p-0 rounded-lg shadow-2xl modal-content-animate"
-                onClick={(e) => e.stopPropagation()}
-            >
-                <div className="flex items-center gap-3 p-4 border-b border-slate-700/50">
-                    <PhosphorIcons.CommandLine className="w-6 h-6 flex-shrink-0" />
-                    <h2 className="text-lg font-bold font-display text-slate-100">
-                        {t('commandPalette.title')}
-                    </h2>
-                </div>
-                <div className="p-3 border-b border-slate-700/50 relative hidden sm:block">
-                    <PhosphorIcons.MagnifyingGlass className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
-                    <Input
-                        ref={inputRef}
-                        type="text"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        placeholder={t('commandPalette.placeholder')}
-                        className="w-full pl-10"
-                    />
-                </div>
-                {displayedCommands.length > 0 ? (
-                    <ul
-                        id="command-results-list"
-                        ref={listRef}
-                        role="listbox"
-                        className="max-h-[50vh] overflow-y-auto p-2"
-                    >
-                        {displayedCommands.map((command) => {
-                            if (command.isHeader) {
-                                return (
-                                    <li
-                                        key={command.id}
-                                        role="presentation"
-                                        className="px-3 pt-4 pb-1 text-xs font-semibold text-slate-400 uppercase tracking-wider select-none"
-                                    >
-                                        {command.title}
-                                    </li>
-                                )
-                            }
+            <div className="flex items-center gap-3 border-b border-slate-700/50 p-4">
+                <PhosphorIcons.CommandLine className="h-6 w-6 flex-shrink-0" />
+                <h2 className="font-display text-lg font-bold text-slate-100">{t('commandPalette.title')}</h2>
+            </div>
 
+            <div className="relative border-b border-slate-700/50 p-3">
+                <PhosphorIcons.MagnifyingGlass className="pointer-events-none absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Cmdk.Input
+                    value={query}
+                    onValueChange={setQuery}
+                    placeholder={t('commandPalette.placeholder')}
+                    className="flex h-10 w-full rounded-md border border-white/20 bg-slate-800 px-3 py-2 pl-10 text-sm text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+            </div>
+
+            <Cmdk.List className="max-h-[50vh] overflow-y-auto p-2">
+                <Cmdk.Empty className="flex flex-col items-center gap-3 p-10 text-center text-slate-400">
+                    <PhosphorIcons.CommandLine className="h-8 w-8 text-slate-500" />
+                    <p>{t('commandPalette.noResults')}</p>
+                </Cmdk.Empty>
+
+                {groupedCommands.map((group) => (
+                    <Cmdk.Group
+                        key={group.id}
+                        heading={group.title}
+                        className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:pb-1 [&_[cmdk-group-heading]]:pt-4 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-slate-400"
+                    >
+                        {group.commands.map((command) => {
                             const CommandIcon = command.icon
                             return (
-                                <li
+                                <Cmdk.Item
                                     key={command.id}
-                                    role="option"
-                                    onClick={() => handleCommandClick(command)}
-                                    className="flex items-center justify-between gap-4 p-3 rounded-md cursor-pointer transition-colors duration-100 text-slate-300 hover:bg-slate-700/50 hover:text-primary-300"
+                                    value={`${command.title} ${command.group} ${command.keywords || ''} ${command.subtitle || ''}`}
+                                    onSelect={() => handleCommandClick(command)}
+                                    className="group flex cursor-pointer items-center justify-between gap-4 rounded-md p-3 text-slate-300 data-[selected=true]:bg-slate-700/50 data-[selected=true]:text-primary-300"
                                 >
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-5 h-5 flex-shrink-0">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className="h-5 w-5 flex-shrink-0">
                                             <CommandIcon />
                                         </div>
                                         <div className="truncate">
-                                            <p className="font-semibold truncate">{command.title}</p>
+                                            <p className="truncate font-semibold">{command.title}</p>
                                             {command.subtitle && (
-                                                <p className="text-xs text-slate-400 truncate">
-                                                    {command.subtitle}
-                                                </p>
+                                                <p className="truncate text-xs text-slate-400">{command.subtitle}</p>
                                             )}
                                         </div>
                                     </div>
                                     {command.shortcut && (
-                                        <div className="flex gap-1 flex-shrink-0">
+                                        <div className="flex flex-shrink-0 gap-1">
                                             {command.shortcut.map((key) => (
                                                 <kbd key={key}>{key}</kbd>
                                             ))}
                                         </div>
                                     )}
-                                </li>
+                                </Cmdk.Item>
                             )
                         })}
-                    </ul>
-                ) : (
-                    <div className="p-10 text-center text-slate-400 flex flex-col items-center gap-3">
-                        <PhosphorIcons.CommandLine className="w-8 h-8 text-slate-500" />
-                        <p>{t('commandPalette.noResults')}</p>
-                    </div>
-                )}
-            </div>
-        </div>,
-        document.body
+                    </Cmdk.Group>
+                ))}
+            </Cmdk.List>
+        </Cmdk.Dialog>
     )
 }

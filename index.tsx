@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import './styles.css'
 import { Provider } from 'react-redux'
 import { I18nextProvider } from 'react-i18next'
 import { App } from '@/components/views/plants/App'
@@ -12,6 +13,7 @@ import { ttsService } from './services/ttsService'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { indexedDBStorage } from './stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from './constants'
+import { dbService } from './services/dbService'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 
@@ -21,13 +23,22 @@ const registerServiceWorker = () => {
     }
 
     const baseUrl = import.meta.env.BASE_URL || '/'
-    const swPath = `${baseUrl}sw.js`
+    const scopeUrl = new URL(baseUrl, window.location.origin)
+    const swUrl = new URL('sw.js', scopeUrl)
 
     window.addEventListener('load', () => {
         navigator.serviceWorker
-            .register(swPath, { scope: baseUrl, updateViaCache: 'none' })
+            .register(swUrl.pathname, { scope: scopeUrl.pathname, updateViaCache: 'none' })
             .then((registration) => {
                 console.log('ServiceWorker registration successful:', registration)
+
+                navigator.serviceWorker.addEventListener(
+                    'controllerchange',
+                    () => {
+                        window.location.reload()
+                    },
+                    { once: true },
+                )
 
                 const dispatchSwUpdate = () => {
                     const event = new CustomEvent('swUpdate', { detail: registration })
@@ -109,14 +120,15 @@ const startApp = async () => {
         );
 
         // 4. Setup robust, event-driven persistence
-        const saveState = () => {
+        const saveState = async () => {
             try {
                 const state = store.getState() as RootState;
+                const optimizedSimulation = await dbService.optimizeSimulationForPersistence(state.simulation);
                 // Construct a state object with only the slices we want to persist.
                 const stateToSave = {
                     version: state.settings.version,
                     settings: state.settings,
-                    simulation: state.simulation,
+                    simulation: optimizedSimulation,
                     userStrains: state.userStrains,
                     favorites: state.favorites,
                     notes: state.notes,
@@ -133,7 +145,7 @@ const startApp = async () => {
                     },
                 };
                 const serializedState = JSON.stringify(stateToSave);
-                indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
+                await indexedDBStorage.setItem(REDUX_STATE_KEY, serializedState);
             } catch (e) {
                 console.error("[Persistence] Failed to save state:", e);
             }
@@ -143,20 +155,22 @@ const startApp = async () => {
         store.subscribe(() => {
             // Debounced save for frequent actions
             clearTimeout(saveTimeout);
-            saveTimeout = window.setTimeout(saveState, 1000);
+            saveTimeout = window.setTimeout(() => {
+                void saveState();
+            }, 1000);
         });
 
         // Save immediately when the page is being closed or hidden
         window.addEventListener('visibilitychange', () => {
             if (document.visibilityState === 'hidden') {
                 clearTimeout(saveTimeout); // Cancel any pending debounced save
-                saveState();
+                void saveState();
             }
         });
 
         window.addEventListener('pagehide', () => {
             clearTimeout(saveTimeout);
-            saveState();
+            void saveState();
         });
         
         // 5. Now that the store is hydrated and the app is rendered, initialize services

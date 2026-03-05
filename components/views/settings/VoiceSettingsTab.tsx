@@ -7,9 +7,15 @@ import { useAvailableVoices } from '@/hooks/useAvailableVoices';
 import { Card } from '@/components/common/Card';
 import { FormSection } from '@/components/ui/ThemePrimitives';
 import { Switch } from '@/components/common/Switch';
-import { Select } from '@/components/ui/ThemePrimitives';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { RangeSlider } from '@/components/common/RangeSlider';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SearchBar } from '@/components/common/SearchBar';
 
@@ -32,6 +38,26 @@ const CommandItem: React.FC<{ icon: React.ReactNode, text: string }> = ({ icon, 
         <div className="w-5 h-5 text-primary-300 flex-shrink-0">{icon}</div>
         <code className="text-sm text-slate-300">{text}</code>
     </div>
+);
+
+const VoiceSelect: React.FC<{
+    value: string;
+    onChange: (value: string) => void;
+    disabled?: boolean;
+    options: { value: string; label: string }[];
+}> = ({ value, onChange, disabled, options }) => (
+    <Select value={value} onValueChange={onChange} disabled={disabled}>
+        <SelectTrigger>
+            <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+            {options.map((option) => (
+                <SelectItem key={option.value || '__empty'} value={option.value || '__empty'}>
+                    {option.label}
+                </SelectItem>
+            ))}
+        </SelectContent>
+    </Select>
 );
 
 const VoiceSettingsTab: React.FC = () => {
@@ -90,7 +116,14 @@ const VoiceSettingsTab: React.FC = () => {
                         <SettingsRow label={t('settingsView.tts.ttsEnabled')} description={t('settingsView.tts.ttsEnabledDesc')}><Switch checked={settings.tts.enabled} onChange={(val) => handleSetSetting('tts.enabled', val)}/></SettingsRow>
                         <SettingsRow label={t('settingsView.tts.voice')}>
                             <div className="flex flex-col gap-2">
-                                <Select value={settings.tts.voiceName || ''} onChange={(e) => handleSetSetting('tts.voiceName', e.target.value)} options={ availableVoices.length > 0 ? availableVoices.map((v) => ({ value: v.name, label: `${v.name} (${v.lang})` })) : [{ value: '', label: t('settingsView.tts.noVoices') }] } disabled={!settings.tts.enabled || availableVoices.length === 0}/>
+                                <VoiceSelect
+                                    value={settings.tts.voiceName || '__empty'}
+                                    onChange={(value) => handleSetSetting('tts.voiceName', value === '__empty' ? '' : value)}
+                                    options={availableVoices.length > 0
+                                        ? availableVoices.map((v) => ({ value: v.name, label: `${v.name} (${v.lang})` }))
+                                        : [{ value: '__empty', label: t('settingsView.tts.noVoices') }]}
+                                    disabled={!settings.tts.enabled || availableVoices.length === 0}
+                                />
                                 <Button size="sm" variant="secondary" onClick={handleTestVoice} disabled={!settings.tts.enabled}>{t('settingsView.tts.testVoice')}</Button>
                             </div>
                         </SettingsRow>

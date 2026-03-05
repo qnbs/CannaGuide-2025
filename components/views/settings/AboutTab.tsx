@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
+import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon';
 import { APP_VERSION } from '@/constants';

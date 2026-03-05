@@ -32,6 +32,9 @@ self.onmessage = (e: MessageEvent<{ basePlant: Plant; scenario: Scenario }>) => 
             plantB = applyAction(plantB, scenario.plantBModifier.action)
         }
 
+        plantA = plantSimulationService.applyEnvironmentalCorrections(plantA)
+        plantB = plantSimulationService.applyEnvironmentalCorrections(plantB)
+
         const resultA = plantSimulationService.calculateStateForTimeDelta(plantA, oneDayInMillis)
         plantA = resultA.updatedPlant
         historyA.push({

@@ -26,6 +26,18 @@ const calculateVPD = (tempC: number, rh: number, leafTempOffset: number): number
     return svpLeaf - avp;
 };
 
+const getDynamicLeafOffset = (plant: Plant): number => {
+    const baseOffset = plant.equipment.light.type === 'HPS' ? 3.5 : 2.5;
+    const circulationAdjustment = plant.equipment.circulationFan.isOn ? -0.3 : 0.4;
+    return Math.min(4, Math.max(2, baseOffset + circulationAdjustment));
+};
+
+const getCorrectedRhByMedium = (plant: Plant): number => {
+    const mediumCorrection = plant.mediumType === 'Hydro' ? 2 : plant.mediumType === 'Coco' ? -2 : 0;
+    const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0;
+    return Math.min(95, Math.max(25, plant.environment.internalHumidity + mediumCorrection + potAdjustment));
+};
+
 const simulationSlice = createSlice({
     name: 'simulation',
     initialState,
@@ -131,7 +143,9 @@ const simulationSlice = createSlice({
                         if (humidity !== undefined) {
                             plant.environment.internalHumidity = humidity;
                         }
-                        plant.environment.vpd = calculateVPD(plant.environment.internalTemperature, plant.environment.internalHumidity, -2);
+                        const correctedRh = getCorrectedRhByMedium(plant);
+                        const leafOffset = getDynamicLeafOffset(plant);
+                        plant.environment.vpd = calculateVPD(plant.environment.internalTemperature, correctedRh, leafOffset);
                     }
                 }
             });

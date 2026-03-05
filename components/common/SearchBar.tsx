@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Input } from '@/components/ui/ThemePrimitives';
+import { Input } from '@/components/ui/input';
 
 interface SearchBarProps extends React.InputHTMLAttributes<HTMLInputElement> {
     onClear?: () => void;

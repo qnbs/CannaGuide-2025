@@ -1,7 +1,7 @@
 import { Command } from '@/types';
 
 export const groupAndSortCommands = (commands: Command[]): Command[] => {
-    if (!commands.length) return [];
+    if (!commands?.length) return [];
 
     const grouped: { [key: string]: Command[] } = {};
     commands.forEach(command => {

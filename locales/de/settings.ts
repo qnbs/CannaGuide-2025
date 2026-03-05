@@ -446,5 +446,17 @@ export const settingsView = {
         disclaimerTitle: "Haftungsausschluss",
         disclaimerContent: `<p>Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.</p>`
       }
-    }
+    },
+  communityShare: {
+    title: 'Community Sorten-Teilen',
+    description: 'Anonymes Teilen über GitHub Gist (leichtgewichtige Alternative zu IPFS).',
+    exportButton: 'Eigene Sorten als anonymes Gist exportieren',
+    gistPlaceholder: 'Gist-URL oder ID einfügen',
+    importButton: 'Sorten aus Gist importieren',
+    exportSuccess: 'Anonymes Gist erstellt.',
+    exportError: 'Gist-Export fehlgeschlagen.',
+    importSuccess_one: '1 Sorte importiert.',
+    importSuccess_other: '{{count}} Sorten importiert.',
+    importError: 'Gist-Import fehlgeschlagen.',
+  },
 };

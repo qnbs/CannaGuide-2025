@@ -50,20 +50,26 @@ export const exportAndSaveStrains = createAsyncThunk<void, { strains: Strain[], 
     async ({ strains, format, fileName, sourceDescription }, { dispatch }) => {
         const t = getT();
         const exportService = await getExportService();
-        if (format === 'pdf') {
-            exportService.exportStrainsAsPdf(strains, fileName, t);
-        } else {
-            exportService.exportStrainsAsTxt(strains, fileName, t);
+        try {
+            if (format === 'pdf') {
+                exportService.exportStrainsAsPdf(strains, fileName, t);
+            } else {
+                exportService.exportStrainsAsTxt(strains, fileName, t);
+            }
+
+            dispatch(addExport({
+                name: fileName,
+                format,
+                strainIds: strains.map(s => s.id),
+                sourceDescription
+            }));
+
+            dispatch(addNotification({ message: t('common.successfullyExported_other', { count: strains.length, format: format.toUpperCase() }), type: 'success' }));
+            dispatch(closeExportModal());
+        } catch (error) {
+            const message = error instanceof Error ? error.message : String(error);
+            dispatch(addNotification({ message, type: 'error' }));
         }
-        
-        dispatch(addExport({
-            name: fileName,
-            format,
-            strainIds: strains.map(s => s.id),
-            sourceDescription
-        }));
-        
-        dispatch(closeExportModal());
     }
 );
 

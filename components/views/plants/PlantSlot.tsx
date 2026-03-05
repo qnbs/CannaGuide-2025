@@ -16,6 +16,8 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     const { t } = useTranslation();
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
 
+    if (!stageDetails) return null;
+
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
     return (

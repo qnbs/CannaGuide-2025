@@ -28,11 +28,11 @@ const ensureSimulationShape = (state: PersistedState): void => {
     // Patch any persisted plant objects that are missing fields introduced after
     // the initial simulation build. This prevents the engine from crashing on
     // old localStorage data after an update.
+    type LegacyPlant = Record<string, unknown>
     const entities = (sim.plants as Record<string, unknown>)?.entities
     if (entities && typeof entities === 'object') {
         for (const id in entities as Record<string, unknown>) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const plant = (entities as Record<string, any>)[id]
+            const plant = (entities as Record<string, LegacyPlant | undefined>)[id]
             if (!plant) continue
 
             if (!plant.rootSystem || typeof plant.rootSystem !== 'object') {
@@ -53,17 +53,19 @@ const ensureSimulationShape = (state: PersistedState): void => {
             if (!plant.medium || typeof plant.medium !== 'object') {
                 plant.medium = { ph: 6.5, ec: 0.8, moisture: 80, microbeHealth: 80, substrateWater: 0, nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 } }
             } else {
-                if (typeof plant.medium.microbeHealth !== 'number') plant.medium.microbeHealth = 80
-                if (typeof plant.medium.substrateWater !== 'number') plant.medium.substrateWater = 0
-                if (!plant.medium.nutrientConcentration) plant.medium.nutrientConcentration = { nitrogen: 100, phosphorus: 100, potassium: 100 }
+                const medium = plant.medium as Record<string, unknown>
+                if (typeof medium.microbeHealth !== 'number') medium.microbeHealth = 80
+                if (typeof medium.substrateWater !== 'number') medium.substrateWater = 0
+                if (!medium.nutrientConcentration) medium.nutrientConcentration = { nitrogen: 100, phosphorus: 100, potassium: 100 }
             }
             if (!plant.nutrientPool || typeof plant.nutrientPool !== 'object') {
                 plant.nutrientPool = { nitrogen: 5, phosphorus: 5, potassium: 5 }
             }
             // phenotypeModifiers is optional – fill it from strain defaults so the
             // engine can use per-plant modifiers without crashing on old saves.
-            if (!plant.phenotypeModifiers && plant.strain?.geneticModifiers) {
-                plant.phenotypeModifiers = { ...plant.strain.geneticModifiers }
+            const legacyStrain = plant.strain as Record<string, unknown> | undefined
+            if (!plant.phenotypeModifiers && legacyStrain?.geneticModifiers) {
+                plant.phenotypeModifiers = { ...(legacyStrain.geneticModifiers as object) }
             }
         }
     }
@@ -117,12 +119,10 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
         migratedState.settings = { settings: defaultSettings, version: 1 }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof (migratedState.settings.settings.plantsView as any)?.showArchivedInPlantsView !== 'undefined') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        migratedState.settings.settings.plantsView.showArchived = (migratedState.settings.settings.plantsView as any).showArchivedInPlantsView
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        delete (migratedState.settings.settings.plantsView as any).showArchivedInPlantsView
+    const legacyPlantsView = migratedState.settings.settings.plantsView as unknown as Record<string, unknown>
+    if (typeof legacyPlantsView.showArchivedInPlantsView !== 'undefined') {
+        migratedState.settings.settings.plantsView.showArchived = legacyPlantsView.showArchivedInPlantsView as boolean
+        delete legacyPlantsView.showArchivedInPlantsView
     }
 
     if (migratedState.simulation?.plants?.entities) {
@@ -145,8 +145,7 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
 
     if (migratedState.simulation?.plants?.entities) {
         for (const id in migratedState.simulation.plants.entities) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const plant = migratedState.simulation.plants.entities[id] as any
+            const plant = migratedState.simulation.plants.entities[id] as unknown as Record<string, unknown> | undefined
             if (plant && !plant.mediumType) {
                 plant.mediumType = 'Soil'
             }

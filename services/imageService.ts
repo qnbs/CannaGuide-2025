@@ -1,6 +1,26 @@
 import { IMAGE_MAX_WIDTH, IMAGE_MAX_HEIGHT, IMAGE_JPEG_QUALITY } from '@/constants';
 import imageCompression from 'browser-image-compression';
 
+const ALLOWED_MIME_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif']);
+const MAX_RAW_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB pre-compression limit
+
+export type ImageValidationError = 'tooLarge' | 'invalidFormat';
+
+/** Validates a File before upload. Returns null on success, or an error key on failure. */
+export const validateImageFile = (file: File): ImageValidationError | null => {
+    if (file.size > MAX_RAW_SIZE_BYTES) {
+        return 'tooLarge';
+    }
+    // Accept also empty/unset MIME types (HEIC may report as '') and check by extension fallback
+    const mime = file.type.toLowerCase();
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const extOk = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif'].includes(ext);
+    if (mime && !ALLOWED_MIME_TYPES.has(mime) && !extOk) {
+        return 'invalidFormat';
+    }
+    return null;
+};
+
 const dataUrlToFile = (dataUrl: string, fileName = `image-${Date.now()}.jpg`): File => {
     const [meta, base64Data] = dataUrl.split(',');
     const mimeMatch = meta.match(/data:(.*?);base64/);

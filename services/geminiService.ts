@@ -716,7 +716,8 @@ PLANT CONTEXT:
             const ai = await this.getAi()
             const response = await this.generateWithFallback({
                 ai,
-                model: 'gemini-2.5-flash-image',
+                model: 'gemini-2.0-flash-preview-image-generation',
+                fallbackModel: 'gemini-2.0-flash-exp-image-generation',
                 contents: {
                     parts: [
                         {

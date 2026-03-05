@@ -13,7 +13,7 @@ const APP_SHELL_URLS = [
 // No external CDN URLs need to be pre-cached.
 const THIRD_PARTY_URLS = [];
 
-const workboxManifest = Array.isArray(self.__WB_MANIFEST) ? self.__WB_MANIFEST : [];
+const workboxManifest = self.__WB_MANIFEST || [];
 const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
 const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])];
 

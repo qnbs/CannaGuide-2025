@@ -14,7 +14,7 @@ interface VPDChartProps {
 export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
   const dispatch = useAppDispatch()
   const [data, setData] = useState<SimulationPoint[]>([])
-  const profileFromStore = useAppSelector((state) => state.simulation.vpdProfiles[plant.id])
+  const profileFromStore = useAppSelector((state) => state.simulation.vpdProfiles?.[plant.id])
 
   const input = useMemo(() => vpdService.createInputFromPlant(plant), [plant])
   const band = VPD_TARGET_BANDS[input.phase]

@@ -6,6 +6,26 @@ import { APP_VERSION } from '@/constants'
 // This represents the shape of the persisted state object.
 export type PersistedState = Partial<RootState> & { version?: number }
 
+const ensureSimulationShape = (state: PersistedState): void => {
+    if (!state.simulation) {
+        return
+    }
+
+    const sim = state.simulation as Record<string, unknown>
+    if (!Array.isArray(sim.plantSlots)) {
+        sim.plantSlots = [null, null, null]
+    }
+    if (typeof sim.selectedPlantId === 'undefined') {
+        sim.selectedPlantId = null
+    }
+    if (typeof sim.devSpeedMultiplier !== 'number') {
+        sim.devSpeedMultiplier = 1
+    }
+    if (!sim.vpdProfiles || typeof sim.vpdProfiles !== 'object') {
+        sim.vpdProfiles = {}
+    }
+}
+
 /**
  * Merges persisted settings with default settings to ensure new properties are added.
  * This is a recursive deep merge.
@@ -122,6 +142,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         if (persistedState.settings?.settings) {
             persistedState.settings.settings = deepMergeSettings(persistedState.settings.settings)
         }
+        ensureSimulationShape(persistedState)
         return persistedState
     }
 
@@ -141,6 +162,8 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     if (migratedState.settings) {
         migratedState.settings.version = APP_VERSION
     }
+
+    ensureSimulationShape(migratedState)
 
     return migratedState
 }

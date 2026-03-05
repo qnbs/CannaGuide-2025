@@ -271,4 +271,16 @@ export const plantsView = {
     checkNowBtn: 'Check now',
     statusLabel: 'Status: {{permission}}. Periodic Background Sync is used when supported.',
   },
+  sensor: {
+    title: 'ESP32 Sensor Hub',
+    description: 'WebBluetooth integration for temperature/humidity sensors. Supports ESP32 (Environmental Sensing).',
+    connect: 'Read Sensor',
+    connecting: 'Connecting...',
+    success: 'Sensor values applied.',
+    error: 'Sensor connection failed.',
+    temperature: 'Temperature',
+    humidity: 'Humidity',
+    lastUpdated: 'Last updated',
+    noData: 'No sensor data yet.',
+  },
 };

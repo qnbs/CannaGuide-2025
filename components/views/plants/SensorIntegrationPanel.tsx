@@ -6,8 +6,10 @@ import { webBluetoothSensorService, SensorReading } from '@/services/webBluetoot
 import { useAppDispatch } from '@/stores/store'
 import { setGlobalEnvironment } from '@/stores/slices/simulationSlice'
 import { addNotification } from '@/stores/slices/uiSlice'
+import { useTranslation } from 'react-i18next'
 
 const SensorIntegrationPanelComponent: React.FC = () => {
+    const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const [reading, setReading] = useState<SensorReading | null>(null)
     const [isConnecting, setIsConnecting] = useState(false)
@@ -23,11 +25,11 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                     humidity: nextReading.humidityPercent,
                 }),
             )
-            dispatch(addNotification({ message: 'Sensorwerte ubernommen.', type: 'success' }))
+            dispatch(addNotification({ message: t('plantsView.sensor.success'), type: 'success' }))
         } catch (error) {
             dispatch(
                 addNotification({
-                    message: error instanceof Error ? error.message : 'Sensorverbindung fehlgeschlagen.',
+                    message: error instanceof Error ? error.message : t('plantsView.sensor.error'),
                     type: 'error',
                 }),
             )
@@ -38,9 +40,9 @@ const SensorIntegrationPanelComponent: React.FC = () => {
 
     return (
         <Card>
-            <h3 className="text-lg font-bold font-display text-primary-300">ESP32 Sensor Hub</h3>
+            <h3 className="text-lg font-bold font-display text-primary-300">{t('plantsView.sensor.title')}</h3>
             <p className="text-sm text-slate-300 mt-1">
-                WebBluetooth-Integration fur Temperatur-/Feuchte-Sensoren. Unterstutzt ESP32 (Environmental Sensing).
+                {t('plantsView.sensor.description')}
             </p>
 
             <Button
@@ -49,20 +51,20 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                 disabled={!webBluetoothSensorService.isSupported() || isConnecting}
             >
                 <PhosphorIcons.Bluetooth className="w-5 h-5 mr-2" />
-                {isConnecting ? 'Verbinde...' : 'Sensor lesen'}
+                {isConnecting ? t('plantsView.sensor.connecting') : t('plantsView.sensor.connect')}
             </Button>
 
             <div className="mt-3 text-sm text-slate-300 bg-slate-900/50 rounded-lg p-3 ring-1 ring-inset ring-white/20">
                 {reading ? (
                     <>
-                        <p>Temperatur: {reading.temperatureC.toFixed(1)} C</p>
-                        <p>Feuchte: {reading.humidityPercent.toFixed(1)}%</p>
+                        <p>{t('plantsView.sensor.temperature')}: {reading.temperatureC.toFixed(1)} °C</p>
+                        <p>{t('plantsView.sensor.humidity')}: {reading.humidityPercent.toFixed(1)}%</p>
                         <p className="text-xs text-slate-400 mt-1">
-                            Zuletzt aktualisiert: {new Date(reading.receivedAt).toLocaleTimeString()}
+                            {t('plantsView.sensor.lastUpdated')}: {new Date(reading.receivedAt).toLocaleTimeString()}
                         </p>
                     </>
                 ) : (
-                    <p>Noch keine Sensordaten.</p>
+                    <p>{t('plantsView.sensor.noData')}</p>
                 )}
             </div>
         </Card>

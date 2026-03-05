@@ -43,28 +43,28 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
             {error && <div className="text-red-400">{'message' in (error as any) ? (error as any).message : t('ai.error.unknown')}</div>}
             {response && (
-                <div className="space-y-4">
+                <div className="space-y-4 pb-1">
                     <div className="flex items-start gap-3 bg-slate-800/50 p-3 rounded-lg">
                         <PhosphorIcons.Info className="w-6 h-6 text-primary-400 mt-1 flex-shrink-0" />
                         <p className="text-sm text-slate-300">{response.introduction}</p>
                     </div>
 
                     <div>
-                        <h3 className="font-bold text-lg text-primary-300 mb-2">Step-by-Step</h3>
-                        <ol className="list-decimal list-inside space-y-2 text-sm text-slate-300">
+                        <h3 className="font-bold text-base sm:text-lg text-primary-300 mb-2">Step-by-Step</h3>
+                        <ol className="list-decimal list-inside space-y-2 text-sm leading-6 text-slate-300">
                             {response.stepByStep.map((step, i) => <li key={i}>{step}</li>)}
                         </ol>
                     </div>
 
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <h3 className="font-bold text-lg text-green-400 mb-2">Pros</h3>
+                            <h3 className="font-bold text-base sm:text-lg text-green-400 mb-2">Pros</h3>
                             <ul className="list-disc list-inside space-y-1 text-sm text-slate-300">
                                 {response.prosAndCons.pros.map((pro, i) => <li key={i}>{pro}</li>)}
                             </ul>
                         </div>
                         <div>
-                            <h3 className="font-bold text-lg text-red-400 mb-2">Cons</h3>
+                            <h3 className="font-bold text-base sm:text-lg text-red-400 mb-2">Cons</h3>
                             <ul className="list-disc list-inside space-y-1 text-sm text-slate-300">
                                 {response.prosAndCons.cons.map((con, i) => <li key={i}>{con}</li>)}
                             </ul>

@@ -27,7 +27,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }
         late_flower: { min: 1.4, max: 1.8, color: 'text-orange-400' }
     };
 
-    let status = 'Outside ideal range';
+    let status = t('common.outsideIdealRange', { defaultValue: 'Outside ideal range' });
     let statusColor = 'text-slate-400';
 
     if (vpd >= idealRanges.seedling.min && vpd < idealRanges.seedling.max) {
@@ -47,9 +47,13 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }
     const strokeDashoffset = circumference - (Math.min(vpd, 2) / 2) * circumference;
 
     return (
-        <div className="flex flex-col items-center justify-center">
-            <div className="relative w-28 h-28">
-                <svg className="w-full h-full transform -rotate-90">
+        <div
+            className="flex flex-col items-center justify-center"
+            role="img"
+            aria-label={`VPD ${vpd.toFixed(2)} kPa. ${status}.`}
+        >
+            <div className="relative w-24 h-24 sm:w-28 sm:h-28">
+                <svg className="w-full h-full transform -rotate-90" aria-hidden="true">
                     <circle className="text-slate-700" strokeWidth="8" stroke="currentColor" fill="transparent" r={radius} cx="56" cy="56" />
                     <circle
                         className={`transition-all duration-500 ${statusColor}`}
@@ -65,11 +69,11 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity }
                     />
                 </svg>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                    <p className="text-2xl font-bold">{vpd.toFixed(2)}</p>
+                    <p className="text-xl sm:text-2xl font-bold">{vpd.toFixed(2)}</p>
                     <p className="text-xs text-slate-400 -mt-1">kPa</p>
                 </div>
             </div>
-            <p className={`text-sm font-semibold mt-2 ${statusColor}`}>{status}</p>
+            <p className={`text-xs sm:text-sm font-semibold mt-2 ${statusColor}`}>{status}</p>
         </div>
     );
 });

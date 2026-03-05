@@ -288,15 +288,15 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                 title={`${t('plantsView.aiDiagnostics.title')} for ${plant.name}`}
                 size="2xl"
             >
-                <div className="min-h-[400px]">
+                <div className="min-h-[50dvh] sm:min-h-[420px]">
                     {step === 'upload' && (
-                        <div className="space-y-4 p-4">
+                        <div className="space-y-4 p-1 sm:p-2">
                             <div
                                 onDragEnter={handleDragIn}
                                 onDragLeave={handleDragOut}
                                 onDragOver={handleDrag}
                                 onDrop={handleDrop}
-                                className={`p-10 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${
+                                className={`min-h-[220px] rounded-xl border-2 border-dashed p-6 sm:p-10 text-center cursor-pointer transition-colors flex flex-col items-center justify-center ${
                                     isDragging
                                         ? 'border-primary-500 bg-primary-900/20'
                                         : 'border-slate-600 hover:border-slate-500'
@@ -304,6 +304,15 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                 onClick={() =>
                                     document.getElementById('ai-diag-image-upload')?.click()
                                 }
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault()
+                                        document.getElementById('ai-diag-image-upload')?.click()
+                                    }
+                                }}
+                                role="button"
+                                tabIndex={0}
+                                aria-label={t('plantsView.actionModals.photo.selectImage')}
                             >
                                 <PhosphorIcons.UploadSimple className="w-12 h-12 mx-auto text-slate-400 mb-2" />
                                 <p className="font-semibold text-slate-300">
@@ -320,7 +329,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                             <Button
                                 onClick={() => setIsCameraOpen(true)}
                                 variant="secondary"
-                                className="w-full"
+                                className="w-full min-h-11"
                             >
                                 <PhosphorIcons.Camera className="w-5 h-5 mr-1.5" />
                                 {t('plantsView.aiDiagnostics.capture')}
@@ -328,17 +337,16 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                         </div>
                     )}
                     {step === 'context' && image && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in p-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in p-1 sm:p-2">
                             <div className="relative">
                                 <img
                                     src={image}
-                                    alt="plant preview"
+                                    alt={t('plantsView.aiDiagnostics.title')}
                                     className="w-full h-auto rounded-lg max-h-64 object-contain"
                                 />
                                 <Button
-                                    size="sm"
                                     variant="danger"
-                                    className="absolute top-2 right-2 !p-1.5"
+                                    className="absolute top-2 right-2 !h-11 !w-11 !p-0"
                                     onClick={() => {
                                         setImage(null)
                                     }}
@@ -363,7 +371,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                 <Button
                                     onClick={handleGetDiagnosis}
                                     disabled={isLoading}
-                                    className="w-full"
+                                    className="w-full min-h-11"
                                 >
                                     {t('ai.diagnostics')}
                                 </Button>
@@ -374,7 +382,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                         <div>
                             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                             {Boolean(error) && (
-                                <div className="text-red-400 p-4 bg-red-900/20 rounded-lg">
+                                <div className="text-red-400 p-4 bg-red-900/20 rounded-lg" role="alert">
                                     {errorMessage}
                                 </div>
                             )}

@@ -25,6 +25,23 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     // This lifecycle method is used for logging error information.
     componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error:', error, errorInfo)
+        try {
+            window.dispatchEvent(
+                new CustomEvent('cannaguide-runtime-error', {
+                    detail: { message: error.message },
+                }),
+            )
+        } catch {
+            // no-op in non-browser contexts
+        }
+    }
+
+    private requestSafeRecovery = () => {
+        try {
+            window.dispatchEvent(new Event('cannaguide-safe-recovery-request'))
+        } catch {
+            // no-op in non-browser contexts
+        }
     }
 
     render(): React.ReactNode {
@@ -45,6 +62,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
                     </p>
                     <Button variant="danger" onClick={() => window.location.reload()}>
                         Reload Application
+                    </Button>
+                    <Button variant="secondary" onClick={this.requestSafeRecovery} className="mt-2">
+                        Try Safe Recovery
                     </Button>
                 </div>
             )

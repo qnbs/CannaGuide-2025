@@ -17,6 +17,25 @@ import { dbService } from './services/dbService'
 import { growReminderService } from './services/growReminderService'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
+const SAFE_RECOVERY_ATTEMPT_KEY = 'cannaguide.safeRecoveryAttempted'
+
+const triggerSafeRecovery = async (reason: string, error?: unknown): Promise<boolean> => {
+    try {
+        const alreadyAttempted = sessionStorage.getItem(SAFE_RECOVERY_ATTEMPT_KEY) === '1'
+        if (alreadyAttempted) {
+            return false
+        }
+
+        sessionStorage.setItem(SAFE_RECOVERY_ATTEMPT_KEY, '1')
+        console.warn(`[SafeRecovery] Triggered by: ${reason}`, error)
+        await indexedDBStorage.removeItem(REDUX_STATE_KEY)
+        window.location.reload()
+        return true
+    } catch (recoveryError) {
+        console.error('[SafeRecovery] Failed to reset persisted state.', recoveryError)
+        return false
+    }
+}
 
 const registerServiceWorker = () => {
     if (!('serviceWorker' in navigator)) {
@@ -103,6 +122,13 @@ const renderError = (error: Error) => {
 
 const startApp = async () => {
     try {
+        window.addEventListener('cannaguide-runtime-error', () => {
+            void triggerSafeRecovery('runtime-error-event')
+        })
+        window.addEventListener('cannaguide-safe-recovery-request', () => {
+            void triggerSafeRecovery('manual-safe-recovery')
+        })
+
         // 1. Wait for i18n to be ready
         await i18nPromise;
 
@@ -185,8 +211,13 @@ const startApp = async () => {
 
         // 6. Signal that the app is fully ready and hide the loading gate.
         store.dispatch(setAppReady(true));
+        sessionStorage.removeItem(SAFE_RECOVERY_ATTEMPT_KEY)
     } catch (error) {
         console.error("Failed to initialize the application:", error);
+        const recovered = await triggerSafeRecovery('boot-initialization-failure', error)
+        if (recovered) {
+            return
+        }
         if (error instanceof Error) {
             renderError(error);
         } else {

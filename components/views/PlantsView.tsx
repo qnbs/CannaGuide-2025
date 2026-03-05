@@ -14,13 +14,12 @@ import { InlineStrainSelector } from './plants/InlineStrainSelector';
 import { GrowReminderPanel } from './plants/GrowReminderPanel';
 import { SensorIntegrationPanel } from './plants/SensorIntegrationPanel';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
+
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Removed unused `selectIsExpertMode` which was causing an import error.
 import { selectNewGrowFlow } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, cancelNewGrow, selectSlotForGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
-import { SkeletonLoader } from '../common/SkeletonLoader';
-import { Task, PlantProblem } from '@/types';
 
 const EmptyPlantSlot: React.FC<{ onStart: () => void }> = memo(({ onStart }) => {
     const { t } = useTranslation();

@@ -10,6 +10,7 @@ import { useGetMentorResponseMutation } from '@/stores/api'
 import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice'
 import { selectLanguage } from '@/stores/selectors'
 import { Speakable } from '@/components/common/Speakable'
+import { SafeHtml } from '@/components/common/SafeHtml'
 
 interface MentorChatViewProps {
     plant: Plant
@@ -25,9 +26,9 @@ const Message: React.FC<{ message: MentorMessage }> = memo(({ message }) => {
             }`}
         >
             {message.title && <h4 className="font-bold text-primary-300">{message.title}</h4>}
-            <div
+            <SafeHtml
                 className="prose prose-sm dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: message.content }}
+                html={message.content}
             />
         </div>
     )

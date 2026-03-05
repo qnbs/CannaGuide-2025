@@ -1,11 +1,7 @@
 import React, { memo } from 'react';
 import { SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
 import { useTranslation } from 'react-i18next';
-import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useAppDispatch } from '@/stores/store';
-import { addNotification } from '@/stores/slices/uiSlice';
 
 interface SetupCardProps {
     setup: SavedSetup;
@@ -13,10 +9,10 @@ interface SetupCardProps {
     onDelete: (id: string) => void;
 }
 
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+
 export const SetupCard: React.FC<SetupCardProps> = memo(({ setup, onEdit, onDelete }) => {
     const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    
     const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'circulationFan', 'pots', 'soil', 'nutrients', 'extra'];
 
     return (

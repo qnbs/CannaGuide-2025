@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useId } from 'react'
+import React, { useCallback, useMemo, useState, useId } from 'react'
 
 // Define props using a discriminated union for type safety between range and single value modes
 type RangeSliderProps = {
@@ -36,7 +36,10 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
     }
     const { active, inactive, bg } = colorMap[color] || colorMap.primary
 
-    const rangeValue = isSingleValue ? ([min, max] as [number, number]) : props.value
+    const rangeValue = useMemo(
+        () => isSingleValue ? ([min, max] as [number, number]) : props.value,
+        [isSingleValue, min, max, props.value],
+    )
 
     const handleMinChange = useCallback(
         (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,6 +1,24 @@
-import { Strain } from '@/types'
+import { z } from 'zod'
+import { Strain, StrainType } from '@/types'
 
 const GIST_FILE_NAME = 'cannaguide-strains.json'
+
+// Minimal Zod schema that validates the required core fields of an imported strain.
+// .passthrough() allows extra fields so older/newer exports remain compatible.
+const StrainImportSchema = z
+    .object({
+        id: z.string().min(1),
+        name: z.string().min(1),
+        type: z.nativeEnum(StrainType),
+        thc: z.number(),
+        cbd: z.number(),
+    })
+    .passthrough()
+
+const GistPayloadSchema = z.object({
+    version: z.number(),
+    strains: z.array(StrainImportSchema),
+})
 
 const extractGistId = (value: string): string => {
     const trimmed = value.trim()
@@ -62,12 +80,13 @@ class CommunityShareService {
             throw new Error('Gist contains no importable strain payload.')
         }
 
-        const parsed = JSON.parse(file.content) as { strains?: Strain[] }
-        if (!parsed.strains || !Array.isArray(parsed.strains)) {
-            throw new Error('Invalid strain payload in gist.')
+        const parsed = JSON.parse(file.content)
+        const result = GistPayloadSchema.safeParse(parsed)
+        if (!result.success) {
+            throw new Error(`Invalid strain payload in gist: ${result.error.issues.map((i) => i.message).join(', ')}`)
         }
 
-        return parsed.strains
+        return result.data.strains as unknown as Strain[]
     }
 }
 

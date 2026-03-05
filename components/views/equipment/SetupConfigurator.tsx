@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, memo } from 'react'
-import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useTranslation } from 'react-i18next'

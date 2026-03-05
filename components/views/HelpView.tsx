@@ -5,12 +5,12 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { faqData } from '@/data/faq';
 import { visualGuidesData } from '@/data/visualGuides';
 import { lexiconData } from '@/data/lexicon';
-import { LexiconEntry, VisualGuide, FAQItem } from '@/types';
 import { VisualGuideCard } from './help/VisualGuideCard';
 import { LexiconCard } from './help/LexiconCard';
 import { Button } from '@/components/common/Button';
 import { Speakable } from '@/components/common/Speakable';
 import { SearchBar } from '@/components/common/SearchBar';
+import { SafeHtml } from '@/components/common/SafeHtml';
 import { HelpSubNav } from './help/HelpSubNav';
 
 const FAQSection: React.FC = memo(() => {
@@ -52,7 +52,7 @@ const FAQSection: React.FC = memo(() => {
                                 <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
                             </summary>
                             <Speakable elementId={`faq-${item.id}`}>
-                                <div className="p-4 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                                <SafeHtml html={item.answer} className="p-4 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" />
                             </Speakable>
                         </details>
                     ))
@@ -188,7 +188,7 @@ const ManualSection: React.FC = memo(() => {
                     </summary>
                     <Speakable elementId={`manual-sub-${sectionKey}`}>
                         <div className="p-3 border-t border-slate-700/50">
-                            {content && <div className="prose prose-sm dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: content }} />}
+                            {content && <SafeHtml html={content} className="prose prose-sm dark:prose-invert max-w-none" />}
                         </div>
                     </Speakable>
                 </details>
@@ -206,7 +206,7 @@ const ManualSection: React.FC = memo(() => {
                     <PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" />
                 </summary>
                 <div className="px-4 pb-2 border-t border-slate-700/50">
-                    {content && <Speakable elementId={`manual-main-${sectionKey}`}><div className="prose prose-sm dark:prose-invert max-w-none my-4" dangerouslySetInnerHTML={{ __html: content }} /></Speakable>}
+                    {content && <Speakable elementId={`manual-main-${sectionKey}`}><SafeHtml html={content} className="prose prose-sm dark:prose-invert max-w-none my-4" /></Speakable>}
                     {subSections.length > 0 && (
                         <div className="space-y-2 py-2">
                             {subSections.map(key => renderSection(key, sectionData[key], true, level + 1))}

@@ -1,19 +1,19 @@
 import { createListenerMiddleware, isAnyOf, TypedStartListening } from '@reduxjs/toolkit';
 import type { RootState, AppDispatch } from './store';
-import { i18nInstance, getT } from '@/i18n';
+import { i18nInstance, getT, loadLocale } from '@/i18n';
 import { Language, Strain, View } from '@/types';
 import type { PlantProblem } from '@/types';
 import { setSetting, exportAllData, resetAllData } from './slices/settingsSlice';
 import { plantStateUpdated, resetPlants, addJournalEntry, waterAllPlants } from './slices/simulationSlice';
-import { addNotification, setOnboardingStep, setActiveView, closeAddModal, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
-import { setSearchTerm, resetAllFilters, setShowFavoritesOnly, setSort, hydrateFilters, toggleTypeFilter, setAdvancedFilters, setLetterFilter } from './slices/filtersSlice';
+import { addNotification, setOnboardingStep, setActiveView, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
+import { setSearchTerm, resetAllFilters, setShowFavoritesOnly, setSort, toggleTypeFilter, setAdvancedFilters, setLetterFilter } from './slices/filtersSlice';
 import { urlService } from '@/services/urlService';
 
 // Import actions to listen for
 import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice';
 import { addStrainTip, updateStrainTip, deleteStrainTip, addSetup, updateSetup, deleteSetup, addExport } from './slices/savedItemsSlice';
-import { addArchivedMentorResponse, addArchivedAdvisorResponse, clearArchives } from './slices/archivesSlice';
-import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice';
+import { addArchivedMentorResponse, clearArchives } from './slices/archivesSlice';
+import { addMultipleToFavorites, removeMultipleFromFavorites } from './slices/favoritesSlice';
 
 export const listenerMiddleware = createListenerMiddleware();
 
@@ -29,6 +29,11 @@ startAppListening({
     if (action.payload.path === 'general.language') {
       const newLang = action.payload.value as Language;
       if (i18nInstance.language !== newLang) {
+        // Load the new language bundle on demand if not already loaded
+        if (!i18nInstance.hasResourceBundle(newLang, 'translation')) {
+          const translations = await loadLocale(newLang as 'en' | 'de');
+          i18nInstance.addResourceBundle(newLang, 'translation', translations);
+        }
         await i18nInstance.changeLanguage(newLang);
       }
     }
@@ -164,8 +169,7 @@ startAppListening({
         resetAllFilters,
         setSort
     ),
-    effect: (action, listenerApi) => {
-        // Only run for strains view
+    effect: (_action, listenerApi) => {
         if (listenerApi.getState().ui.activeView !== View.Strains) {
             return;
         }

@@ -19,7 +19,7 @@ const strainsViewSlice = createSlice({
     name: 'strainsView',
     initialState,
     reducers: {
-        setStrainsViewState: (state, action: PayloadAction<StrainsViewState>) => {
+        setStrainsViewState: (_state, action: PayloadAction<StrainsViewState>) => {
             return action.payload
         },
         setStrainsViewTab: (state, action: PayloadAction<StrainViewTab>) => {

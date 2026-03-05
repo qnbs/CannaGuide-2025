@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType, TrainingType, AmendmentType, VentilationPower, SimulationState, PlantStage } from '@/types';
+import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType, VentilationPower, SimulationState, PlantStage } from '@/types';
 import { plantSimulationService, PLANT_STAGE_DETAILS, vpdService } from '@/services/plantSimulationService';
 import { RootState } from '../store';
 import { addNotification, cancelNewGrow, setActiveView } from './uiSlice';
 import { getT } from '@/i18n';
-import { GrowSetupSchema, WaterDataSchema, TrainingDataSchema, PestControlDataSchema, AmendmentDataSchema, FeedDataSchema } from '@/types/schemas';
+import { GrowSetupSchema, WaterDataSchema, TrainingDataSchema, PestControlDataSchema, AmendmentDataSchema } from '@/types/schemas';
 import { View } from '@/types';
 import type { SimulationPoint } from '@/types/simulation.types';
 
@@ -22,9 +22,10 @@ const initialState: SimulationState = {
 // This is a pure function, copied here to avoid circular dependencies with plantSimulationService
 const calculateVPD = (tempC: number, rh: number, leafTempOffset: number): number => {
     const tempLeaf = tempC + leafTempOffset;
-    const svpAir = 0.61078 * Math.exp((17.27 * tempC) / (tempC + 237.3));
+    // Coefficient 0.6108 matches the canonical vpdCalculator.ts implementation
+    const svpAir = 0.6108 * Math.exp((17.27 * tempC) / (tempC + 237.3));
     const avp = svpAir * (rh / 100);
-    const svpLeaf = 0.61078 * Math.exp((17.27 * tempLeaf) / (tempLeaf + 237.3));
+    const svpLeaf = 0.6108 * Math.exp((17.27 * tempLeaf) / (tempLeaf + 237.3));
     return svpLeaf - avp;
 };
 

@@ -9,7 +9,7 @@ import { setSetting } from '@/stores/slices/settingsSlice'
 import { setOnboardingStep } from '@/stores/slices/uiSlice'
 import { selectOnboardingStep } from '@/stores/selectors'
 import { FlagDE, FlagEN } from '@/components/icons/Flags'
-import { i18nInstance } from '@/i18n'
+import { i18nInstance, loadLocale } from '@/i18n'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'
 
 interface OnboardingModalProps {
@@ -48,6 +48,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     )
 
     const handleLanguageSelect = async (lang: Language) => {
+        // Load the selected language bundle on demand if not already loaded
+        if (!i18nInstance.hasResourceBundle(lang, 'translation')) {
+            const translations = await loadLocale(lang as 'en' | 'de')
+            i18nInstance.addResourceBundle(lang, 'translation', translations)
+        }
         // Explicitly await the language change before proceeding
         await i18nInstance.changeLanguage(lang)
         dispatch(setSetting({ path: 'general.language', value: lang }))

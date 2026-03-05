@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
-import { Strain, GrowSetup, LightType, VentilationPower, PotType, AppSettings } from '@/types';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
+import { Strain, GrowSetup, LightType, VentilationPower, PotType } from '@/types';
+import { useAppSelector } from '@/stores/store';
 // FIX: Removed incorrect imports and will use the onConfirm prop as intended by App.tsx
-import { selectNewGrowFlow, selectSettings } from '@/stores/selectors';
+import { selectSettings } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { FormSection } from '@/components/ui/form';
 import { RangeSlider } from '@/components/common/RangeSlider';
@@ -28,9 +28,7 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
   const settings = useAppSelector(selectSettings);
-  const { slotIndex } = useAppSelector(selectNewGrowFlow);
   
   const [setup, setSetup] = useState<GrowSetup>({
     ...settings.defaults.growSetup,

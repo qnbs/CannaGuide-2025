@@ -3,8 +3,7 @@ import { LogActionModal } from './LogActionModal';
 import { selectPlantById, selectActionModalState } from '@/stores/selectors';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { closeActionModal, openDeepDiveModal } from '@/stores/slices/uiSlice';
-import { Plant, ModalType } from '@/types';
-import { UIState } from '@/stores/slices/uiSlice';
+
 
 export const LogActionModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();

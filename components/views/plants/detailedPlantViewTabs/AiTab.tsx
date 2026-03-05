@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react'
-import { Plant, AIResponse, ArchivedAdvisorResponse } from '@/types'
+import { Plant, ArchivedAdvisorResponse } from '@/types'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
@@ -9,7 +9,6 @@ import { EditResponseModal } from '@/components/common/EditResponseModal'
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectArchivedAdvisorResponsesForPlant, selectLanguage } from '@/stores/selectors'
-import { addNotification } from '@/stores/slices/uiSlice'
 import {
     useGetPlantAdviceMutation,
     useGetProactiveDiagnosisMutation,
@@ -20,6 +19,7 @@ import {
     deleteArchivedAdvisorResponse,
 } from '@/stores/slices/archivesSlice'
 import { Speakable } from '@/components/common/Speakable'
+import { SafeHtml } from '@/components/common/SafeHtml'
 
 interface AiTabProps {
     plant: Plant
@@ -146,10 +146,10 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                     <h4 className="font-bold text-primary-300">
                                         {diagnosisState.data.title}
                                     </h4>
-                                    <div
+                                    <SafeHtml
                                         className="prose prose-sm dark:prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: diagnosisState.data.content }}
-                                    ></div>
+                                        html={diagnosisState.data.content}
+                                    />
                                 </Speakable>
                                 <div className="text-right mt-2">
                                     <Button
@@ -193,10 +193,10 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                             <Card className="bg-slate-900/70 animate-fade-in">
                                 <Speakable elementId={`advisor-content-${plant.id}`}>
                                     <h4 className="font-bold text-primary-300">{advisorState.data.title}</h4>
-                                    <div
+                                    <SafeHtml
                                         className="prose prose-sm dark:prose-invert max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: advisorState.data.content }}
-                                    ></div>
+                                        html={advisorState.data.content}
+                                    />
                                 </Speakable>
                                 {!advisorState.error && (
                                     <div className="text-right mt-2">
@@ -245,10 +245,10 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                     </p>
                                     <Speakable elementId={`advisor-archive-${res.id}`}>
                                         <h4 className="font-bold text-primary-300 mt-1">{res.title}</h4>
-                                        <div
+                                        <SafeHtml
                                             className="prose prose-sm dark:prose-invert max-w-none"
-                                            dangerouslySetInnerHTML={{ __html: res.content }}
-                                        ></div>
+                                            html={res.content}
+                                        />
                                     </Speakable>
                                     <div className="flex justify-end items-center gap-2 mt-2">
                                         <Button

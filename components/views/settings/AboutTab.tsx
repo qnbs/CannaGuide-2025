@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon';
 import { APP_VERSION } from '@/constants';
+import { SafeHtml } from '@/components/common/SafeHtml';
 
 const InfoSection: React.FC<{ title: string; icon?: React.ReactNode; children: React.ReactNode; id?: string }> = ({ title, icon, children, id }) => (
     <div id={id}>
@@ -104,30 +105,30 @@ const ReadmeProjectContent: React.FC = memo(() => {
     return (
         <Card className="animate-fade-in">
             <div className="space-y-8">
-                 <div dangerouslySetInnerHTML={{ __html: readmeContent.header }} />
+                 <SafeHtml html={readmeContent.header} />
                  <InfoSection title={readmeContent.philosophyTitle} icon={<PhosphorIcons.Sparkle />} id="philosophy">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.philosophyContent }} />
+                     <SafeHtml html={readmeContent.philosophyContent} />
                  </InfoSection>
                  <InfoSection title={readmeContent.featuresTitle} icon={<PhosphorIcons.ListChecks />} id="features">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.featuresContent }} />
+                     <SafeHtml html={readmeContent.featuresContent} />
                  </InfoSection>
                  <InfoSection title={readmeContent.techTitle} icon={<PhosphorIcons.BracketsCurly />} id="tech">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.techContent }} />
+                     <SafeHtml html={readmeContent.techContent} />
                  </InfoSection>
                  <InfoSection title={readmeContent.devTitle} icon={<PhosphorIcons.BracketsCurly />} id="dev">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.devContent }} />
+                     <SafeHtml html={readmeContent.devContent} />
                  </InfoSection>
                  <InfoSection title={readmeContent.troubleshootingTitle} icon={<PhosphorIcons.Wrench />} id="troubleshooting">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.troubleshootingContent }} />
+                     <SafeHtml html={readmeContent.troubleshootingContent} />
                  </InfoSection>
                  <InfoSection title={readmeContent.aiStudioTitle} icon={<PhosphorIcons.Brain />} id="aistudio">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.aiStudioContent }} />
+                     <SafeHtml html={readmeContent.aiStudioContent} />
                  </InfoSection>
                   <InfoSection title={readmeContent.contributingTitle} icon={<PhosphorIcons.Heart />} id="contributing">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.contributingContent }} />
+                     <SafeHtml html={readmeContent.contributingContent} />
                  </InfoSection>
                  <InfoSection title={readmeContent.disclaimerTitle} icon={<PhosphorIcons.WarningCircle />} id="disclaimer">
-                     <div dangerouslySetInnerHTML={{ __html: readmeContent.disclaimerContent }} />
+                     <SafeHtml html={readmeContent.disclaimerContent} />
                  </InfoSection>
             </div>
         </Card>

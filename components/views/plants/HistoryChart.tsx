@@ -51,6 +51,10 @@ const pathConfig: Record<ChartView, PathInfo[]> = {
     ]
 };
 
+const CHART_WIDTH = 300;
+const CHART_HEIGHT = 150;
+const CHART_PADDING = { top: 10, right: 10, bottom: 30, left: 30 };
+
 export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journal, plantCreatedAt }) => {
     const { t } = useTranslation();
     const [view, setView] = useState<ChartView>('growth');
@@ -59,12 +63,12 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
 
     const hasEnoughData = Boolean(history && history.length >= 2)
 
-    const width = 300;
-    const height = 150;
-    const padding = { top: 10, right: 10, bottom: 30, left: 30 };
+    const width = CHART_WIDTH;
+    const height = CHART_HEIGHT;
+    const padding = CHART_PADDING;
 
     const maxDay = Math.max(1, d3.max(history, h => h.day) || 1);
-    const xScale = useMemo(() => d3.scaleLinear().domain([0, maxDay]).range([padding.left, width - padding.right]), [maxDay]);
+    const xScale = useMemo(() => d3.scaleLinear().domain([0, maxDay]).range([CHART_PADDING.left, CHART_WIDTH - CHART_PADDING.right]), [maxDay]);
 
     const yDomains = useMemo(() => ({
         height: [0, Math.max(10, d3.max(history, h => h.height) || 10)],
@@ -75,12 +79,12 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     }), [history]);
 
     const yScales = useMemo(() => ({
-        height: d3.scaleLinear().domain(yDomains.height).range([height - padding.bottom, padding.top]),
-        stressLevel: d3.scaleLinear().domain(yDomains.stressLevel).range([height - padding.bottom, padding.top]),
-        ph: d3.scaleLinear().domain(yDomains.ph).range([height - padding.bottom, padding.top]),
-        ec: d3.scaleLinear().domain(yDomains.ec).range([height - padding.bottom, padding.top]),
-        moisture: d3.scaleLinear().domain(yDomains.moisture).range([height - padding.bottom, padding.top]),
-    }), [yDomains, height, padding]);
+        height: d3.scaleLinear().domain(yDomains.height).range([CHART_HEIGHT - CHART_PADDING.bottom, CHART_PADDING.top]),
+        stressLevel: d3.scaleLinear().domain(yDomains.stressLevel).range([CHART_HEIGHT - CHART_PADDING.bottom, CHART_PADDING.top]),
+        ph: d3.scaleLinear().domain(yDomains.ph).range([CHART_HEIGHT - CHART_PADDING.bottom, CHART_PADDING.top]),
+        ec: d3.scaleLinear().domain(yDomains.ec).range([CHART_HEIGHT - CHART_PADDING.bottom, CHART_PADDING.top]),
+        moisture: d3.scaleLinear().domain(yDomains.moisture).range([CHART_HEIGHT - CHART_PADDING.bottom, CHART_PADDING.top]),
+    }), [yDomains]);
 
     const lineGenerators = useMemo(() => ({
         height: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.height(d.height)),
@@ -93,9 +97,9 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     const areaGenerator = useMemo(() => 
         d3.area<PlantHistoryEntry>()
             .x(d => xScale(d.day))
-            .y0(height - padding.bottom)
+            .y0(CHART_HEIGHT - CHART_PADDING.bottom)
             .y1(d => yScales.height(d.height)),
-    [xScale, yScales.height, height, padding.bottom]);
+    [xScale, yScales.height]);
 
     const eventEntries = useMemo(() => journal.filter(e => eventTypes.includes(e.type)), [journal]);
 

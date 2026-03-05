@@ -5,7 +5,6 @@ import { selectTtsState, selectTtsEnabled } from '@/stores/selectors'
 import { Button } from '@/components/common/Button'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { playTts, pauseTts, stopTts, nextTts } from '@/stores/slices/ttsSlice'
-import { TtsState } from '@/stores/slices/ttsSlice'
 
 export const TTSControls: React.FC = () => {
     const { t } = useTranslation()

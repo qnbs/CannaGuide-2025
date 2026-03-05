@@ -1,10 +1,8 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
-import { AppSettings, Language, Theme, View, SortKey, SortDirection } from '@/types'
+import { AppSettings, View } from '@/types'
 import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
-import { GEMINI_API_KEY_STORAGE_KEY } from '@/constants'
-
-const REDUX_STATE_KEY = 'cannaguide-redux-storage'
+import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY } from '@/constants'
 
 export const defaultSettings: AppSettings = {
     version: 2,
@@ -163,7 +161,7 @@ const settingsSlice = createSlice({
     name: 'settings',
     initialState,
     reducers: {
-        setSettingsState: (state, action: PayloadAction<SettingsState>) => {
+        setSettingsState: (_state, action: PayloadAction<SettingsState>) => {
             return action.payload
         },
         setSetting: (state, action: PayloadAction<{ path: string; value: any }>) => {

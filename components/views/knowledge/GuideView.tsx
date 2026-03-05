@@ -4,7 +4,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { KnowledgeArticle } from '@/types';
 import { knowledgeBase } from '@/data/knowledgebase';
 import { Speakable } from '@/components/common/Speakable';
-import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import { SafeHtml } from '@/components/common/SafeHtml';
 
 const GuideViewComponent: React.FC = () => {
     const { t } = useTranslation();
@@ -143,7 +143,7 @@ const GuideViewComponent: React.FC = () => {
                                         </summary>
                                         <Speakable elementId={`guide-${article.id}`}>
                                             <div className="p-4 border-t border-slate-700/50">
-                                                <div className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1" dangerouslySetInnerHTML={{ __html: t(article.contentKey) }} />
+                                                <SafeHtml className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1" html={t(article.contentKey)} />
                                             </div>
                                         </Speakable>
                                     </details>

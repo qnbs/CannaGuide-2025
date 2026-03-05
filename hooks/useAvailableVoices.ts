@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { ttsService } from '@/services/ttsService'
 import { selectLanguage } from '@/stores/selectors'
 import { useAppSelector } from '@/stores/store'
-import { Language } from '@/types'
 
 export const useAvailableVoices = () => {
     const language = useAppSelector(selectLanguage);

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, lazy, Suspense, useState, useCallback } from 'react'
-import { View, AppSettings } from '@/types'
+import { View } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { Header } from '@/components/navigation/Header'
 import { BottomNav } from '@/components/navigation/BottomNav'
@@ -14,7 +14,7 @@ import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
 import { LogActionModalContainer } from '@/components/views/plants/LogActionModalContainer'
 import { DeepDiveModalContainer } from '@/hooks/DeepDiveModalContainer'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
-import { useAppDispatch, useAppSelector, RootState } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import {
     selectActiveView,
     selectIsCommandPaletteOpen,
@@ -26,7 +26,6 @@ import {
 import {
     setIsCommandPaletteOpen,
     addNotification,
-    setActiveView,
     cancelNewGrow,
     confirmSetupAndShowConfirmation,
 } from '@/stores/slices/uiSlice'
@@ -36,7 +35,6 @@ import { AiDiagnosticsModalContainer } from '@/components/views/plants/AiDiagnos
 import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupModalContainer'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal'
 import { GrowConfirmationModal } from '@/components/views/plants/GrowConfirmationModal'
 

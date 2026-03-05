@@ -10,6 +10,7 @@ import { knowledgeBase } from '@/data/knowledgebase'
 import { Select } from '@/components/ui/form'
 import { Card } from '@/components/common/Card'
 import { GrowLogRagPanel } from './GrowLogRagPanel'
+import { SafeHtml } from '@/components/common/SafeHtml'
 
 const getRelevantArticles = (plant: Plant): KnowledgeArticle[] => {
     return knowledgeBase.filter((article) => {
@@ -113,9 +114,9 @@ export const MentorView: React.FC = () => {
                             <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
                         </summary>
                         <div className="p-4 border-t border-slate-700/50">
-                            <div
+                            <SafeHtml
                                 className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1"
-                                dangerouslySetInnerHTML={{ __html: t(relevantArticles[0].contentKey) }}
+                                html={t(relevantArticles[0].contentKey)}
                             />
                         </div>
                     </details>

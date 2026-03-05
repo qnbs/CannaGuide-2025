@@ -11,8 +11,8 @@ import {
     updateArchivedMentorResponse,
     deleteArchivedMentorResponse,
 } from '@/stores/slices/archivesSlice'
-import { addNotification } from '@/stores/slices/uiSlice'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
+import { SafeHtml } from '@/components/common/SafeHtml'
 import { SearchBar } from '@/components/common/SearchBar'
 
 interface MentorArchiveTabProps {
@@ -27,11 +27,15 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
     const storeResponses = useAppSelector(selectArchivedMentorResponses)
     const archivedResponses = propsResponses || storeResponses
 
+    const hasInvalidArchiveData = !Array.isArray(archivedResponses)
+
     const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedIds, setSelectedIds] = useState(new Set<string>())
-    const hasInvalidArchiveData = !Array.isArray(archivedResponses)
-    const normalizedArchiveResponses = Array.isArray(archivedResponses) ? archivedResponses : []
+    const normalizedArchiveResponses = useMemo(
+        () => Array.isArray(archivedResponses) ? archivedResponses : [],
+        [archivedResponses],
+    )
 
     const sortedArchive = useMemo(
         () => [...normalizedArchiveResponses].sort((a, b) => b.createdAt - a.createdAt),
@@ -143,10 +147,10 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
                                             <h4 className="font-bold text-primary-300 mt-1">
                                                 {res.title}
                                             </h4>
-                                            <div
+                                            <SafeHtml
                                                 className="prose prose-sm dark:prose-invert max-w-none"
-                                                dangerouslySetInnerHTML={{ __html: res.content }}
-                                            ></div>
+                                                html={res.content}
+                                            />
                                             <div className="flex justify-end items-center gap-2 mt-2">
                                                 <Button
                                                     size="sm"

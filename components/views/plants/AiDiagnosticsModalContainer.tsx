@@ -4,7 +4,7 @@ import { selectPlantById, selectIsDiagnosticsModalOpen, selectDiagnosticsPlantId
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { closeDiagnosticsModal } from '@/stores/slices/uiSlice';
 import { useDiagnosePlantMutation } from '@/stores/api';
-import { Plant } from '@/types';
+
 
 export const AiDiagnosticsModalContainer: React.FC = () => {
     const dispatch = useAppDispatch();

@@ -3,7 +3,7 @@ import { initReactI18next } from 'react-i18next'
 
 type LocalePayload = Record<string, unknown>
 
-const loadLocale = async (lang: 'en' | 'de'): Promise<LocalePayload> => {
+export const loadLocale = async (lang: 'en' | 'de'): Promise<LocalePayload> => {
     if (lang === 'de') {
         const module = await import('./locales/de')
         return module.de as LocalePayload
@@ -29,14 +29,15 @@ const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en'
 
 // The initialization is now a promise that the app will wait for
 export const i18nPromise = (async () => {
-    const [en, de] = await Promise.all([loadLocale('en'), loadLocale('de')])
+    // Only load the initially detected language at startup to minimize bundle loading time.
+    // The other language is loaded on demand when the user switches languages.
+    const initialTranslations = await loadLocale(initialLang)
 
     await i18nInstance.use(initReactI18next).init({
         lng: initialLang,
         fallbackLng: 'en',
         resources: {
-            en: { translation: en },
-            de: { translation: de },
+            [initialLang]: { translation: initialTranslations },
         },
         interpolation: {
             escapeValue: false,

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { View, BeforeInstallPromptEvent, AppSettings } from '@/types'
+import { View, BeforeInstallPromptEvent } from '@/types'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '../icons/PhosphorIcons'
 import { CannabisLeafIcon } from '../icons/CannabisLeafIcon'

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { Plant, Scenario } from '@/types'
+import { Scenario } from '@/types'
 import { useAppSelector, useAppDispatch } from '@/stores/store'
 import { closeDeepDiveModal } from '@/stores/slices/uiSlice'
 import { useGetDeepDiveMutation } from '@/stores/api'

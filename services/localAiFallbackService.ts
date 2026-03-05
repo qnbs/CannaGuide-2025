@@ -10,7 +10,7 @@ class LocalAiFallbackService {
         if (isGerman(lang)) {
             return {
                 title: `Lokaler Mentor-Fallback: ${plant.name}`,
-                content: `<p><strong>Hinweis:</strong> Gemini ist aktuell nicht verfugbar. Antwort basiert auf lokalem Heuristik-Modell.</p><p><strong>Frage:</strong> ${query}</p><p><strong>Pflanze:</strong> ${formatPlantLine(plant)}</p><p><strong>Relevante Grow-Logs:</strong><br/>${ragContext.replace(/\n/g, '<br/>')}</p><p><strong>Empfehlung:</strong> Stabilisiere VPD, arbeite in kleinen Schritten und dokumentiere jede Anderung im Journal.</p>`,
+                content: `<p><strong>Hinweis:</strong> Gemini ist aktuell nicht verfügbar. Antwort basiert auf lokalem Heuristik-Modell.</p><p><strong>Frage:</strong> ${query}</p><p><strong>Pflanze:</strong> ${formatPlantLine(plant)}</p><p><strong>Relevante Grow-Logs:</strong><br/>${ragContext.replace(/\n/g, '<br/>')}</p><p><strong>Empfehlung:</strong> Stabilisiere VPD, arbeite in kleinen Schritten und dokumentiere jede Änderung im Journal.</p>`,
             }
         }
 
@@ -24,7 +24,7 @@ class LocalAiFallbackService {
         if (isGerman(lang)) {
             return {
                 title: `Lokale Beratung: ${plant.name}`,
-                content: `Prioritat 1: VPD und Feuchte stabilisieren. Prioritat 2: pH/EC im Zielbereich halten. Prioritat 3: Stressquellen reduzieren. Aktuell: ${formatPlantLine(plant)}.`,
+                content: `Priorität 1: VPD und Feuchte stabilisieren. Priorität 2: pH/EC im Zielbereich halten. Priorität 3: Stressquellen reduzieren. Aktuell: ${formatPlantLine(plant)}.`,
             }
         }
 
@@ -39,7 +39,7 @@ class LocalAiFallbackService {
         if (isGerman(lang)) {
             return {
                 title: 'Lokaler Gartenstatus',
-                content: `Gemini nicht verfugbar. Lokale Zusammenfassung: ${lines || 'Keine aktiven Pflanzen.'}`,
+                content: `Gemini nicht verfügbar. Lokale Zusammenfassung: ${lines || 'Keine aktiven Pflanzen.'}`,
             }
         }
         return {
@@ -51,9 +51,9 @@ class LocalAiFallbackService {
     getStrainTips(strain: Strain, lang: Language): StructuredGrowTips {
         if (isGerman(lang)) {
             return {
-                nutrientTip: `Nahrstoffe fur ${strain.name} langsam steigern und EC engmaschig messen.`,
-                trainingTip: 'Fruh mit sanftem LST beginnen, vor starken Eingriffen 48h Erholung einplanen.',
-                environmentalTip: 'Tag/Nacht-Differenz klein halten, VPD zielgerichtet fur die Phase steuern.',
+                nutrientTip: `Nährstoffe für ${strain.name} langsam steigern und EC engmaschig messen.`,
+                trainingTip: 'Früh mit sanftem LST beginnen, vor starken Eingriffen 48h Erholung einplanen.',
+                environmentalTip: 'Tag/Nacht-Differenz klein halten, VPD zielgerichtet für die Phase steuern.',
                 proTip: 'Jede Anpassung einzeln testen und im Journal mit Datum dokumentieren.',
             }
         }
@@ -70,7 +70,7 @@ class LocalAiFallbackService {
         if (isGerman(lang)) {
             return {
                 title: 'RAG-Analyse (lokaler Fallback)',
-                content: `Frage: ${query}\n\nRelevante Eintrage:\n${ragContext}\n\nKurzfazit: Wiederkehrende Muster zuerst beheben (Bewasserung, VPD, Lichtabstand) und Wirkung 24-48h verfolgen.`,
+                content: `Frage: ${query}\n\nRelevante Einträge:\n${ragContext}\n\nKurzfazit: Wiederkehrende Muster zuerst beheben (Bewässerung, VPD, Lichtabstand) und Wirkung 24-48h verfolgen.`,
             }
         }
 

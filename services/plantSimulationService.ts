@@ -1,4 +1,4 @@
-import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, TaskPriority, JournalEntryType } from '@/types';
+import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, JournalEntryType } from '@/types';
 import { STAGES_ORDER, SIM_PAR_PER_WATT_LED, SIM_LIGHT_EXTINCTION_COEFFICIENT_K, SIM_BIOMASS_CONVERSION_EFFICIENCY, SIM_SECONDS_PER_DAY } from '@/constants';
 import type {
     AirflowLevel,
@@ -181,13 +181,9 @@ class PlantSimulationService {
 
     private _runDailyMetabolism(plant: Plant): Plant {
         const p = this.clonePlant(plant);
-        
-        const ventilationFactor = { low: 0.8, medium: 1.0, high: 1.5 }[p.equipment.exhaustFan.power || 'medium'];
-        const heatFromLight = p.equipment.light.wattage * (p.equipment.light.type === 'HPS' ? 0.2 : 0.1);
-        const circulationFactor = p.equipment.circulationFan.isOn ? 1.0 : 1.05;
 
         p.environment = this.applyEnvironmentalCorrections(p).environment;
-        
+
         const vpd = p.environment.vpd;
         const vpdOptimum = (p.strain.geneticModifiers.vpdTolerance.min + p.strain.geneticModifiers.vpdTolerance.max) / 2;
         const vpdStressFactor = 1 - Math.abs(vpd - vpdOptimum);

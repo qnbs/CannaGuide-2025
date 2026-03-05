@@ -52,6 +52,10 @@ export const knowledgeView = {
         toppingVsLst: {
             title: "Run Topping vs. LST Experiment",
             description: "Simulates a 14-day growth period comparing a plant that receives LST against one that has been topped."
+        },
+        tempPlus2c: {
+            title: "Run Temperature +2\u00b0C Experiment",
+            description: "Simulates a 14-day growth period comparing baseline conditions against a +2\u00b0C canopy temperature increase."
         }
     },
     knowledgebase: {

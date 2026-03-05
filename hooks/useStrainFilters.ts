@@ -2,7 +2,6 @@ import { useMemo, useCallback } from 'react';
 import {
     Strain,
     SortKey,
-    SortDirection,
     StrainType,
     DifficultyLevel,
     YieldLevel,

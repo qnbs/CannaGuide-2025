@@ -1,4 +1,4 @@
-import { SpeechQueueItem, TTSSettings, Language } from '@/types';
+import { SpeechQueueItem } from '@/types';
 import { ttsService } from '../../services/ttsService';
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import type { RootState } from '../store';
@@ -56,7 +56,7 @@ export const playTts = createAsyncThunk<void, void, { state: RootState }>(
 
 export const nextTts = createAsyncThunk<void, void, { state: RootState }>(
     'tts/next',
-    (_, { dispatch }) => {
+    (_, { dispatch: _dispatch }) => {
         ttsService.cancel();
     }
 );

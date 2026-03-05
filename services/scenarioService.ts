@@ -3,10 +3,8 @@ import { Scenario } from '@/types';
 const scenarios: Scenario[] = [
     {
         id: 'temperature-plus-2c',
-        titleKey: 'Temperature +2 C',
-        descriptionKey: 'What happens if canopy temperature increases by 2 C?',
-        title: 'Temperature +2 C',
-        description: 'Compares baseline conditions against a +2 C environment shift.',
+        titleKey: 'knowledgeView.scenarios.tempPlus2c.title',
+        descriptionKey: 'knowledgeView.scenarios.tempPlus2c.description',
         durationDays: 14,
         plantAModifier: { day: 1, action: 'NONE' },
         plantBModifier: { day: 1, action: 'TEMP_PLUS_2' },

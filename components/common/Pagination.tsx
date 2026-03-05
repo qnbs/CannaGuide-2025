@@ -51,7 +51,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
-                className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
+                className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                 aria-label={t('common.pagination.previous')}
             >
                 <PhosphorIcons.ArrowLeft className="w-4 h-4" />
@@ -63,7 +63,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
                     <button
                         key={num}
                         onClick={() => onPageChange(num)}
-                        className={`w-8 h-8 rounded-md text-sm font-semibold transition-colors ${
+                        className={`min-h-11 min-w-11 inline-flex items-center justify-center rounded-md text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400 ${
                             currentPage === num
                                 ? 'bg-primary-600 text-white shadow-md'
                                 : 'bg-slate-700/50 hover:bg-slate-700 text-slate-300'
@@ -78,7 +78,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
             <button
                 onClick={() => onPageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
-                className="p-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors"
+                className="min-h-11 min-w-11 inline-flex items-center justify-center rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                 aria-label={t('common.pagination.next')}
             >
                 <PhosphorIcons.ArrowRight className="w-4 h-4" />

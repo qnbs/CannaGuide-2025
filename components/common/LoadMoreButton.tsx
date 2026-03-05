@@ -22,7 +22,7 @@ export const LoadMoreButton: React.FC<LoadMoreButtonProps> = ({ onClick, visible
                 onClick={onClick}
                 variant="secondary"
                 size="sm"
-                className="w-full max-w-sm mx-auto !py-2"
+                className="w-full max-w-sm mx-auto !py-3 min-h-11"
             >
                 <PhosphorIcons.ChevronDown className="w-5 h-5 mr-2"/>
                 {t('strainsView.loadMore', { count: visibleCount, total: totalCount })}

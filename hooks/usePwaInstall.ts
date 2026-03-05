@@ -54,9 +54,21 @@ export const usePwaInstall = () => {
         window.addEventListener('beforeinstallprompt', beforeInstallPromptHandler);
         window.addEventListener('appinstalled', appInstalledHandler);
 
+        // SW update detection: register-sw.js dispatches 'swUpdate' when a new SW is waiting.
+        // The existing controllerchange listener in register-sw.js auto-reloads the page;
+        // this handler shows a brief info toast so the user understands the imminent reload.
+        const swUpdateHandler = () => {
+            dispatch(addNotification({
+                message: t('common.swUpdateAvailable'),
+                type: 'info',
+            }));
+        };
+        window.addEventListener('swUpdate', swUpdateHandler);
+
         return () => {
             window.removeEventListener('beforeinstallprompt', beforeInstallPromptHandler);
             window.removeEventListener('appinstalled', appInstalledHandler);
+            window.removeEventListener('swUpdate', swUpdateHandler);
         };
     }, [t, dispatch]);
 

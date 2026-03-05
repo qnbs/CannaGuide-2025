@@ -1,11 +1,34 @@
 import { defineConfig } from 'vitest/config'
 import react from '@vitejs/plugin-react'
+import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   base: '/CannaGuide-2025/',
-  plugins: [react()],
+  plugins: [
+    react(),
+    VitePWA({
+      // Keep our hand-crafted sw.js; only inject the precache asset manifest.
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'sw.js',
+      // Don't let the plugin re-generate manifest.json – we manage it in public/.
+      manifest: false,
+      // Re-use the existing register-sw.js / usePwaInstall hook.
+      registerType: 'prompt',
+      injectManifest: {
+        // Glob patterns for build assets that should be precached.
+        globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
+        // Do NOT inject anything for assets already >4 MB (audio, large images, etc.)
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+      },
+      devOptions: {
+        // Keep dev working without the plugin intercepting the manual sw.js.
+        enabled: false,
+      },
+    }),
+  ],
   server: {
     headers: {
       'Content-Security-Policy': "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';",

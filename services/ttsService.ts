@@ -80,7 +80,13 @@ class TTSService {
         utterance.rate = settings.rate;
         utterance.volume = settings.volume;
 
-        this.synth.speak(utterance);
+        try {
+            this.synth.speak(utterance);
+        } catch (speakError) {
+            // Firefox/Android: speak() can throw synchronously (e.g. no audio focus, API not ready)
+            console.error('SpeechSynthesis.speak() threw synchronously:', speakError);
+            onEnd();
+        }
     }
     
     cancel() {

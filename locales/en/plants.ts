@@ -57,6 +57,13 @@ export const plantsView = {
     waitingDesc: 'Upload an image and provide context to get a diagnosis.',
     validation: {
         imageOnly: 'Please upload an image file.',
+        tooLarge: 'Image is too large (max 10 MB). Please choose a smaller file.',
+        invalidFormat: 'Unsupported format. Please use JPEG, PNG, WebP, or HEIC.',
+    },
+    consent: {
+        banner: 'The image will be sent to Google Gemini for analysis. GPS/EXIF metadata is stripped automatically.',
+        accept: 'I understand and consent',
+        accepted: 'Consent given',
     },
     retake: 'Retake',
     stepContextTitle: 'Step 2: Add Context (Optional)',

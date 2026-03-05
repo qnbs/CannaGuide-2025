@@ -75,6 +75,12 @@ export const createAppStore = async (): Promise<AppStore> => {
         const persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY);
         if (persistedString) {
             console.log('[Store] Hydrating state from IndexedDB.');
+            // Save a backup snapshot before migration so data can be recovered if migration fails.
+            try {
+                await indexedDBStorage.setItem(REDUX_STATE_KEY + '-backup', persistedString);
+            } catch (backupErr) {
+                console.warn('[Store] Could not save pre-migration backup:', backupErr);
+            }
             const persistedState = JSON.parse(persistedString);
             const migrated = migrateState(persistedState) as Partial<RootState>;
             
@@ -86,7 +92,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             preloadedState = migrated;
         }
     } catch (e) {
-        console.error("Could not load or migrate state from IndexedDB, starting fresh.", e);
+        console.error("Could not load or migrate state from IndexedDB, starting fresh. A backup may be available at key '" + REDUX_STATE_KEY + "-backup'.", e);
         await indexedDBStorage.removeItem(REDUX_STATE_KEY);
     }
     

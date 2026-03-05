@@ -31,6 +31,8 @@ export const common = {
     installPwaHint: 'Tip: You can install this app for offline use from your browser menu.',
     installPwaSuccess: 'App installed successfully!',
     installPwaDismissed: 'Installation dismissed.',
+    swUpdateAvailable: 'A new version is available. Reload to update.',
+    swUpdateReload: 'Reload now',
     offlineWarning: 'You are currently offline. Some features may be unavailable.',
     preparingGuide: 'Preparing your guide...',
     error: 'Error',

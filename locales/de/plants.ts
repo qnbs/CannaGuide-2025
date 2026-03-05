@@ -57,6 +57,13 @@ export const plantsView = {
     waitingDesc: 'Lade ein Bild hoch und gib Kontext an, um eine Diagnose zu erhalten.',
     validation: {
         imageOnly: 'Bitte lade eine Bilddatei hoch.',
+        tooLarge: 'Bild ist zu groß (max. 10 MB). Bitte wähle eine kleinere Datei.',
+        invalidFormat: 'Nicht unterstütztes Format. Bitte JPEG, PNG, WebP oder HEIC verwenden.',
+    },
+    consent: {
+        banner: 'Das Bild wird zur Analyse an Google Gemini übermittelt. GPS-/EXIF-Metadaten werden automatisch entfernt.',
+        accept: 'Ich verstehe und stimme zu',
+        accepted: 'Zustimmung erteilt',
     },
     retake: 'Erneut aufnehmen',
     stepContextTitle: 'Schritt 2: Kontext hinzufügen (Optional)',

@@ -14,7 +14,9 @@ import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages'
 import { dbService } from '@/services/dbService'
 import { Textarea } from '@/components/ui/textarea'
 import { selectLanguage } from '@/stores/selectors'
-import { resizeImage, base64ToMimeType } from '@/services/imageService'
+import { resizeImage, base64ToMimeType, validateImageFile } from '@/services/imageService'
+
+const IMAGE_CONSENT_KEY = 'cg.image.ai.consent.v1'
 
 interface DiagnosisResultProps {
     response: PlantDiagnosisResponse
@@ -169,6 +171,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     const [isCameraOpen, setIsCameraOpen] = useState(false)
     const [userNotes, setUserNotes] = useState('')
     const [loadingMessage, setLoadingMessage] = useState('')
+    const [consentGiven, setConsentGiven] = useState(() => localStorage.getItem(IMAGE_CONSENT_KEY) === '1')
 
     const step = useMemo(() => {
         if (isLoading || response || error) return 'result'
@@ -195,10 +198,11 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
     const handleFile = useCallback(
         async (file: File) => {
             resetDiagnosis()
-            if (!file.type.startsWith('image/')) {
+            const validationError = validateImageFile(file)
+            if (validationError) {
                 dispatch(
                     addNotification({
-                        message: t('plantsView.aiDiagnostics.validation.imageOnly'),
+                        message: t(`plantsView.aiDiagnostics.validation.${validationError}`),
                         type: 'error',
                     }),
                 )
@@ -207,6 +211,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             const reader = new FileReader()
             reader.onload = async () => {
                 try {
+                    // browser-image-compression re-encodes via canvas → strips EXIF/GPS metadata
                     const resizedImage = await resizeImage(reader.result as string)
                     setImage(resizedImage)
                 } catch (err) {
@@ -268,6 +273,11 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
         diagnosePlant({ base64Image: base64Data, mimeType, plant, userNotes, lang })
     }
 
+    const handleAcceptConsent = useCallback(() => {
+        localStorage.setItem(IMAGE_CONSENT_KEY, '1')
+        setConsentGiven(true)
+    }, [])
+
     const errorMessage =
         error && typeof error === 'object' && 'message' in error
             ? (error as { message: string }).message
@@ -291,28 +301,47 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                 <div className="min-h-[50dvh] sm:min-h-[420px]">
                     {step === 'upload' && (
                         <div className="space-y-4 p-1 sm:p-2">
+                            {!consentGiven ? (
+                                <div className="rounded-xl border border-amber-500/40 bg-amber-900/20 p-4 space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <PhosphorIcons.WarningCircle weight="fill" className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
+                                        <p className="text-sm text-amber-200">
+                                            {t('plantsView.aiDiagnostics.consent.banner')}
+                                        </p>
+                                    </div>
+                                    <Button onClick={handleAcceptConsent} variant="secondary" className="w-full min-h-11">
+                                        <PhosphorIcons.CheckCircle className="w-5 h-5 mr-2" />
+                                        {t('plantsView.aiDiagnostics.consent.accept')}
+                                    </Button>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <PhosphorIcons.CheckCircle className="w-4 h-4 text-primary-500 shrink-0" />
+                                    {t('plantsView.aiDiagnostics.consent.accepted')}
+                                </div>
+                            )}
                             <div
-                                onDragEnter={handleDragIn}
-                                onDragLeave={handleDragOut}
-                                onDragOver={handleDrag}
-                                onDrop={handleDrop}
+                                onDragEnter={consentGiven ? handleDragIn : undefined}
+                                onDragLeave={consentGiven ? handleDragOut : undefined}
+                                onDragOver={consentGiven ? handleDrag : undefined}
+                                onDrop={consentGiven ? handleDrop : undefined}
                                 className={`min-h-[220px] rounded-xl border-2 border-dashed p-6 sm:p-10 text-center cursor-pointer transition-colors flex flex-col items-center justify-center ${
                                     isDragging
                                         ? 'border-primary-500 bg-primary-900/20'
                                         : 'border-slate-600 hover:border-slate-500'
                                 }`}
-                                onClick={() =>
-                                    document.getElementById('ai-diag-image-upload')?.click()
+                                onClick={() => consentGiven && document.getElementById('ai-diag-image-upload')?.click()
                                 }
                                 onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
+                                    if ((e.key === 'Enter' || e.key === ' ') && consentGiven) {
                                         e.preventDefault()
                                         document.getElementById('ai-diag-image-upload')?.click()
                                     }
                                 }}
                                 role="button"
-                                tabIndex={0}
+                                tabIndex={consentGiven ? 0 : -1}
                                 aria-label={t('plantsView.actionModals.photo.selectImage')}
+                                aria-disabled={!consentGiven}
                             >
                                 <PhosphorIcons.UploadSimple className="w-12 h-12 mx-auto text-slate-400 mb-2" />
                                 <p className="font-semibold text-slate-300">
@@ -322,14 +351,16 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                             <input
                                 id="ai-diag-image-upload"
                                 type="file"
-                                accept="image/*"
+                                accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                                 className="hidden"
+                                disabled={!consentGiven}
                                 onChange={(e) => e.target.files && handleFile(e.target.files[0])}
                             />
                             <Button
                                 onClick={() => setIsCameraOpen(true)}
                                 variant="secondary"
                                 className="w-full min-h-11"
+                                disabled={!consentGiven}
                             >
                                 <PhosphorIcons.Camera className="w-5 h-5 mr-1.5" />
                                 {t('plantsView.aiDiagnostics.capture')}

@@ -4,9 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
 import { selectCollectedSeeds, selectBreedingSlots } from '@/stores/selectors';
 import { Button } from '@/components/common/Button';
-import { Seed, Strain, StrainType } from '@/types';
+import { Seed, Strain } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { setParentA, setParentB, clearBreedingSlots } from '@/stores/slices/breedingSlice';
 import { addUserStrainWithValidation } from '@/stores/slices/userStrainsSlice';
 import { strainService } from '@/services/strainService';
@@ -14,42 +13,12 @@ import { Input } from '@/components/ui/form';
 import { createStrainObject } from '@/services/strainFactory';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { geneticsService } from '@/services/geneticsService';
-
-// --- SELF-CONTAINED BREEDING LOGIC ---
-// Moved this pure function outside the component to prevent re-creation on every render.
-const cross = (parentA: Strain, parentB: Strain): Omit<Strain, 'id'> => {
-    const newName = `${parentA.name.split(' ')[0]} ${parentB.name.split(' ').pop()}`;
-    const randomFactor = (magnitude = 0.2) => 1 + (Math.random() - 0.5) * magnitude;
-
-    const newStrainData: Partial<Strain> = {
-        name: newName,
-        type: parentA.type === parentB.type ? parentA.type : StrainType.Hybrid,
-        genetics: `${parentA.name} x ${parentB.name}`,
-        floweringType: 'Photoperiod',
-        thc: ((parentA.thc + parentB.thc) / 2) * randomFactor(),
-        cbd: (parentA.cbd + parentB.cbd) / 2,
-        floweringTime: ((parentA.floweringTime + parentB.floweringTime) / 2) * randomFactor(0.1),
-        agronomic: {
-            difficulty: Math.random() > 0.5 ? parentA.agronomic.difficulty : parentB.agronomic.difficulty,
-            yield: Math.random() > 0.5 ? parentA.agronomic.yield : parentB.agronomic.yield,
-            height: Math.random() > 0.5 ? parentA.agronomic.height : parentB.agronomic.height,
-        },
-        aromas: [...new Set([...(parentA.aromas || []), ...(parentB.aromas || [])])].sort(() => 0.5 - Math.random()).slice(0, 4),
-        dominantTerpenes: [...new Set([...(parentA.dominantTerpenes || []), ...(parentB.dominantTerpenes || [])])].sort(() => 0.5 - Math.random()).slice(0, 3),
-    };
-    
-    return createStrainObject(newStrainData);
-};
+import { crossStrains, strainTypeInfo } from '@/utils/breedingUtils';
 
 
-const typeInfo: Record<StrainType, { icon: React.ReactNode; color: string }> = {
-    [StrainType.Sativa]: { icon: <SativaIcon />, color: 'text-amber-400' },
-    [StrainType.Indica]: { icon: <IndicaIcon />, color: 'text-indigo-400' },
-    [StrainType.Hybrid]: { icon: <HybridIcon />, color: 'text-blue-400' },
-};
 
 const SeedCard: React.FC<{ seed: Seed, onClick: () => void, isSelected?: boolean, strain?: Strain | null }> = ({ seed, onClick, isSelected, strain }) => {
-    const TypeInfo = strain ? typeInfo[strain.type] : null;
+    const TypeInfo = strain ? strainTypeInfo[strain.type] : null;
     return (
         <button onClick={onClick} className={`w-full text-left p-2 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${isSelected ? 'bg-primary-900/50 ring-2 ring-primary-500' : 'bg-slate-800 hover:bg-slate-700/50'}`}>
             {TypeInfo && <div className={`w-6 h-6 flex-shrink-0 ${TypeInfo.color}`}>{TypeInfo.icon}</div>}
@@ -63,7 +32,7 @@ const SeedCard: React.FC<{ seed: Seed, onClick: () => void, isSelected?: boolean
 
 const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () => void, allStrains: Strain[] }> = ({ title, seed, onClear, allStrains }) => {
     const parentStrain = seed ? allStrains.find(s => s.id === seed.strainId) : null;
-    const TypeInfo = parentStrain ? typeInfo[parentStrain.type] : null;
+    const TypeInfo = parentStrain ? strainTypeInfo[parentStrain.type] : null;
 
     return (
         <Card className="flex flex-col items-center justify-center h-48 text-center relative bg-slate-800/30">
@@ -137,7 +106,7 @@ const BreedingView: React.FC = () => {
         if (parentA && parentB) {
             setIsBreeding(true);
             setTimeout(() => {
-                const crossResult = cross(parentA, parentB);
+                const crossResult = crossStrains(parentA, parentB);
                 setResult(crossResult);
                 setNewStrainName(crossResult?.name || '');
                 setIsBreeding(false);

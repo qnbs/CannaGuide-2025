@@ -371,7 +371,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
                     <FormSection title={t('equipmentView.configurator.floweringTypeTitle')} defaultOpen>
                         <SegmentedControl
                             value={[floweringTypePreference]}
-                            onToggle={(v) => setFloweringTypePreference(v as any)}
+                            onToggle={(v) => setFloweringTypePreference(v as 'any' | 'autoflower' | 'photoperiod')}
                             options={[
                                 { value: 'any', label: t('equipmentView.configurator.floweringTypeAny') },
                                 {

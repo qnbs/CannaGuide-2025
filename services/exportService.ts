@@ -4,6 +4,23 @@ import 'jspdf-autotable';
 import { TFunction } from 'i18next';
 import html2canvas from 'html2canvas';
 
+type AutoTableOptions = {
+    startY?: number;
+    head?: (string | number)[][];
+    body?: (string | number | undefined)[][];
+    theme?: string;
+    headStyles?: Record<string, unknown>;
+    styles?: Record<string, unknown>;
+    columnStyles?: Record<string, unknown>;
+    margin?: Record<string, number>;
+    didDrawPage?: (data: { cursor: { y: number } }) => void;
+};
+type JsPDFWithAutoTable = jsPDF & {
+    autoTable: (options: AutoTableOptions) => void;
+    lastAutoTable: { finalY: number };
+    internal: jsPDF['internal'] & { getNumberOfPages: () => number };
+};
+
 class ExportService {
   private generateTxt(content: string, fileName: string) {
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -113,7 +130,7 @@ class ExportService {
     });
 
     // --- Add Footers to all pages ---
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = ((doc as JsPDFWithAutoTable)).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
@@ -235,20 +252,20 @@ class ExportService {
                 [t('equipmentView.savedSetups.pdfReport.priorities'), setup.sourceDetails.priorities.map(p => t(`equipmentView.configurator.priorities.${p}`)).join(', ') || t('common.none')],
                 [t('equipmentView.savedSetups.pdfReport.customNotes'), setup.sourceDetails.customNotes || t('common.none')],
             ];
-            (doc as any).autoTable({
+            ((doc as JsPDFWithAutoTable)).autoTable({
                 startY: y,
                 body: sourceDetails,
                 theme: 'plain',
                 styles: { fontSize: 10, cellPadding: 1.5, halign: 'left' },
                 columnStyles: { 0: { fontStyle: 'bold', textColor: 50, cellWidth: 40 }, 1: { textColor: 20 } },
-                didDrawPage: (data: any) => { y = data.cursor.y; }
+                didDrawPage: (data: { cursor: { y: number } }) => { y = data.cursor.y; }
             });
-            y = (doc as any).lastAutoTable.finalY + 10;
+            y = ((doc as JsPDFWithAutoTable)).lastAutoTable.finalY + 10;
         }
 
         // Equipment Table
         if (setup.recommendation) {
-            const body: any[] = [];
+            const body: (string | number | undefined)[][] = [];
             const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'circulationFan', 'pots', 'soil', 'nutrients', 'extra'];
             for (const key of categoryOrder) {
                 const item = setup.recommendation[key as keyof typeof setup.recommendation] as RecommendationItem | string;
@@ -257,15 +274,15 @@ class ExportService {
                 }
             }
             
-            (doc as any).autoTable({
+            ((doc as JsPDFWithAutoTable)).autoTable({
                 startY: y,
                 head: [[t('common.type'), t('equipmentView.savedSetups.pdfReport.product'), t('equipmentView.savedSetups.pdfReport.price'), t('equipmentView.savedSetups.pdfReport.rationale')]],
                 body: body,
                 theme: 'striped',
                 headStyles: { fillColor: [40, 50, 70] },
-                didDrawPage: (data: any) => { y = data.cursor.y; }
+                didDrawPage: (data: { cursor: { y: number } }) => { y = data.cursor.y; }
             });
-            y = (doc as any).lastAutoTable.finalY + 10;
+            y = ((doc as JsPDFWithAutoTable)).lastAutoTable.finalY + 10;
 
             // Pro Tip
             if (setup.recommendation.proTip) {
@@ -288,7 +305,7 @@ class ExportService {
         doc.text(`${t('equipmentView.savedSetups.pdfReport.totalCost')}: ${setup.totalCost.toFixed(2)} ${t('common.units.currency_eur')}`, 210 - rightMargin, y, { align: 'right' });
     });
     
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = ((doc as JsPDFWithAutoTable)).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
@@ -380,7 +397,7 @@ class ExportService {
                 entry.notes,
             ]);
 
-        (doc as any).autoTable({
+        ((doc as JsPDFWithAutoTable)).autoTable({
             startY: y,
             head: [['Date', 'Type', 'Notes']],
             body: journalRows,
@@ -390,7 +407,7 @@ class ExportService {
             margin: { left: leftMargin, right: rightMargin },
         });
 
-        y = (doc as any).lastAutoTable.finalY + 8;
+        y = ((doc as JsPDFWithAutoTable)).lastAutoTable.finalY + 8;
 
         if (chartElement) {
             if (y > 230) {
@@ -437,7 +454,7 @@ class ExportService {
             }
         }
 
-        const pageCount = (doc as any).internal.getNumberOfPages();
+        const pageCount = ((doc as JsPDFWithAutoTable)).internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
             doc.setFontSize(8);

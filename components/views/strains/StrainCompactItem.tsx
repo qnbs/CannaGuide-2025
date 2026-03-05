@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { Strain } from '@/types';
 import { useAppSelector } from '@/stores/store';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslation } from 'react-i18next';
 import { selectUserStrains } from '@/stores/selectors';
 
 interface StrainCompactItemProps {
@@ -11,7 +10,6 @@ interface StrainCompactItemProps {
 }
 
 export const StrainCompactItem: React.FC<StrainCompactItemProps> = memo(({ strain, onClick }) => {
-    const { t } = useTranslation();
     const userStrains = useAppSelector(selectUserStrains);
     const isUserStrain = userStrains.some(s => s.id === strain.id);
 

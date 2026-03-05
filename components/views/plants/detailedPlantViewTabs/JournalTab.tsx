@@ -184,8 +184,8 @@ export const JournalTab: React.FC<JournalTabProps> = memo(({ journal }) => {
                                     {String(
                                         t(entry.notes, {
                                             ...entry.details,
-                                            from: t(`plantStages.${(entry.details as any)?.from}`),
-                                            to: t(`plantStages.${(entry.details as any)?.to}`),
+                                            from: t(`plantStages.${(entry.details as SystemDetails)?.from}`),
+                                            to: t(`plantStages.${(entry.details as SystemDetails)?.to}`),
                                         }),
                                     )}
                                 </p>

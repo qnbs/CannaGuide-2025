@@ -58,7 +58,7 @@ const StrainsSettingsTab: React.FC = () => {
     const settings = useAppSelector(selectSettings);
     const strainsViewSettings = settings.strainsView;
 
-    const handleSetSetting = (path: string, value: any) => {
+    const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path, value }))
     }
 

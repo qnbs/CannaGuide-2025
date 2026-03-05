@@ -13,6 +13,12 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { SafeHtml } from '@/components/common/SafeHtml';
 import { HelpSubNav } from './help/HelpSubNav';
 
+type ManualSectionData = {
+    title?: string;
+    content?: string;
+    [key: string]: ManualSectionData | string | undefined;
+};
+
 const FAQSection: React.FC = memo(() => {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
@@ -162,9 +168,9 @@ const LexiconSection: React.FC = memo(() => {
 
 const ManualSection: React.FC = memo(() => {
     const { t } = useTranslation();
-    const manualContent = t('helpView.manual', { returnObjects: true }) as Record<string, any>;
+    const manualContent = t('helpView.manual', { returnObjects: true }) as Record<string, ManualSectionData>;
 
-    const renderSection = (sectionKey: string, sectionData: any, isSubSection = false, level = 0) => {
+    const renderSection = (sectionKey: string, sectionData: ManualSectionData, isSubSection = false, level = 0) => {
         const title = sectionData.title;
         const content = sectionData.content;
         const subSections = Object.keys(sectionData).filter(key => key !== 'title' && key !== 'content');
@@ -209,7 +215,10 @@ const ManualSection: React.FC = memo(() => {
                     {content && <Speakable elementId={`manual-main-${sectionKey}`}><SafeHtml html={content} className="prose prose-sm dark:prose-invert max-w-none my-4" /></Speakable>}
                     {subSections.length > 0 && (
                         <div className="space-y-2 py-2">
-                            {subSections.map(key => renderSection(key, sectionData[key], true, level + 1))}
+                            {subSections.map(key => {
+                                const sub = sectionData[key];
+                                return typeof sub === 'object' && sub !== null ? renderSection(key, sub as ManualSectionData, true, level + 1) : null;
+                            })}
                         </div>
                     )}
                 </div>

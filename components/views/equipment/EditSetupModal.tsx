@@ -31,13 +31,13 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
             if (!prev.recommendation) return prev;
             const newRecommendation = { ...prev.recommendation };
             if (field === 'proTip' && category === 'proTip') {
-                (newRecommendation as any).proTip = value as string;
+                newRecommendation.proTip = value as string;
             } else if (category !== 'proTip' && newRecommendation[category]) {
-                 const item = { ...newRecommendation[category] };
-                 (item as any)[field] = (field === 'price' || field === 'watts') ? Number(value) : value;
-                 newRecommendation[category] = item;
+                 const item = { ...newRecommendation[category] } as Record<string, string | number | undefined>;
+                 item[field] = (field === 'price' || field === 'watts') ? Number(value) : value as string;
+                 newRecommendation[category] = item as unknown as RecommendationItem;
             }
-            return { ...prev, recommendation: newRecommendation as any };
+            return { ...prev, recommendation: newRecommendation };
         });
     };
 

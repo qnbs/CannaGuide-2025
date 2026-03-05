@@ -159,6 +159,12 @@ export const common = {
         previous: 'Vorherige Seite',
         next: 'Nächste Seite',
     },
+    errorBoundary: {
+        title: 'Etwas ist schiefgelaufen.',
+        description: 'Ein unerwarteter Fehler ist aufgetreten. Bitte lade die App neu. Falls das Problem weiterhin besteht, musst du möglicherweise deine Website-Daten löschen.',
+        reload: 'App neu laden',
+        safeRecovery: 'Sichere Wiederherstellung versuchen',
+    },
     appShortDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
 };
 

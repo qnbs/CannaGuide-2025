@@ -94,6 +94,8 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
 
                         <div className={`p-4 rounded-lg space-y-4 ${plant.stage === PlantStage.Curing ? 'bg-slate-800' : 'bg-slate-800/50 opacity-70'}`}>
                             <h4 className="font-bold text-lg text-slate-100">{t('plantsView.postHarvest.curing')}</h4>
+                            <ProgressBar label={t('plantsView.postHarvest.curingProgress')} progress={curingProgress} />
+                            <p className="text-sm text-slate-400">{t('plantsView.postHarvest.day')} {harvestData.currentCureDay} / {PLANT_STAGE_DETAILS[PlantStage.Curing].duration}</p>
                              <BurpCalendar currentDay={harvestData.currentCureDay} lastBurpDay={harvestData.lastBurpDay} />
                             <div className="flex gap-2 mt-4">
                                 <Button size="sm" variant="secondary" className="flex-1" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'burp' }))} disabled={plant.stage !== PlantStage.Curing}>

@@ -19,7 +19,7 @@ import { localAiFallbackService } from '@/services/localAiFallbackService'
 
 const formatPlantContextForPrompt = (
     plant: Plant,
-    t: (key: string, options?: Record<string, any>) => string
+    t: (key: string, options?: Record<string, unknown>) => string
 ): string => {
     const stageDetails = t(`plantStages.${plant.stage}`)
     const problems =
@@ -136,7 +136,7 @@ const createCompactPlantSnapshot = (plant: Plant) => ({
 })
 
 type ImageCriteria = { focus: string; composition: string; mood: string };
-type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk';
+export type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk';
 const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'macro', 'cyberpunk'];
 
 const AI_ERROR_KEYS = new Set([
@@ -242,18 +242,22 @@ class GeminiService {
         contents: string
         config?: Record<string, unknown>
     }): Promise<string> {
-        const streamFn = (ai.models as any).generateContentStream
+        type ModelsWithStream = typeof ai.models & {
+            generateContentStream?: (options: Record<string, unknown>) => Promise<unknown>;
+        };
+        const streamFn = (ai.models as ModelsWithStream).generateContentStream
 
         if (typeof streamFn !== 'function') {
             const response = await this.generateWithFallback({ ai, model, contents, config })
             return this.getResponseTextOrThrow(response, 'ai.error.generic')
         }
 
+        type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<{ text?: string }> };
         const streamResult = await streamFn.call(ai.models, {
             model,
             contents,
             config: this.withGeminiSafety(config),
-        })
+        }) as StreamResult
 
         let fullText = ''
         for await (const chunk of streamResult) {
@@ -826,7 +830,7 @@ PLANT CONTEXT:
         data,
     }: {
         useCase: string
-        data?: Record<string, any>
+        data?: Record<string, unknown>
     }): string[] {
         const t = getT()
         const messagesResult = t(`ai.loading.${useCase}`, {

@@ -1,12 +1,10 @@
 import React, { memo, useState, useMemo, lazy, Suspense, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { AppSettings, Language, Theme, View } from '@/types'
+import { Language, Theme, View } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
-import { setSetting, exportAllData, resetAllData } from '@/stores/slices/settingsSlice'
-import { setOnboardingStep } from '@/stores/slices/uiSlice'
-import { clearArchives } from '@/stores/slices/archivesSlice'
+import { setSetting } from '@/stores/slices/settingsSlice'
 import { Switch } from '@/components/common/Switch'
 import { FormSection } from '@/components/ui/form'
 import { SegmentedControl } from '@/components/common/SegmentedControl'
@@ -20,7 +18,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select'
-import { useStorageEstimate } from '@/hooks/useStorageEstimate'
 import { Card } from '@/components/common/Card'
 import { SettingsSubNav } from './SettingsSubNav'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
@@ -224,7 +221,7 @@ const GeneralSettingsTab: React.FC = () => {
     const settings = useAppSelector(selectSettings);
     const general = settings.general;
 
-    const handleSetSetting = (path: string, value: any) => {
+    const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path: `general.${path}`, value }));
     };
 
@@ -301,7 +298,7 @@ const PlantsSettingsTab: React.FC = () => {
     const settings = useAppSelector(selectSettings);
     const simSettings = settings.simulation;
 
-    const handleSetSetting = (path: string, value: any) => {
+    const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path, value }));
     };
 

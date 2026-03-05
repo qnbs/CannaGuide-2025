@@ -32,21 +32,6 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-primary-400',
 };
 
-const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }> = ({ difficulty }) => {
-    const { t } = useTranslation();
-    const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 };
-    const level = difficultyMap[difficulty] || 2;
-    const color = { Easy: 'text-secondary-400', Medium: 'text-amber-400', Hard: 'text-danger'}[difficulty];
-    return (
-        <div className="flex gap-0.5 items-center" title={t(`strainsView.difficulty.${difficulty.toLowerCase()}`)}>
-             <span className="mr-1 text-slate-300">{t(`strainsView.difficulty.${difficulty.toLowerCase()}`)}</span>
-            {[...Array(3)].map((_, i) => (
-                <PhosphorIcons.Cannabis key={i} weight="fill" className={`w-4 h-4 ${i < level ? color : 'text-slate-600'}`} />
-            ))}
-        </div>
-    );
-};
-
 export const StrainListItem: React.FC<StrainListItemProps> = memo(({
     strain, onSelect, isSelected, onToggleSelection, isUserStrain,
     style, isFavorite, onToggleFavorite

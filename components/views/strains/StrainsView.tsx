@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Strain, StrainViewTab, AppSettings, SavedStrainTip, StrainType, SavedExport } from '@/types';
+import { Strain, StrainViewTab, AppSettings, SavedStrainTip, SavedExport } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -19,16 +19,15 @@ import {
 import { 
     setStrainsViewTab, 
     toggleStrainSelection, 
-    toggleAllStrainSelection, 
     clearStrainSelection, 
     setSelectedStrainId
 } from '@/stores/slices/strainsViewSlice';
-import { openAddModal, closeAddModal, addNotification, initiateGrowFromStrainList, openExportModal, closeExportModal } from '@/stores/slices/uiSlice';
+import { closeAddModal, addNotification, closeExportModal } from '@/stores/slices/uiSlice';
 import { toggleFavorite, addMultipleToFavorites, removeMultipleFromFavorites } from '@/stores/slices/favoritesSlice';
 import { addUserStrainWithValidation, updateUserStrainAndCloseModal, deleteUserStrain } from '@/stores/slices/userStrainsSlice';
 import { StrainDetailView } from './StrainDetailView';
 import { AddStrainModal } from './AddStrainModal';
-import { addStrainTip, updateStrainTip, deleteStrainTip, addExport, updateExport, deleteExport, exportAndSaveStrains } from '@/stores/slices/savedItemsSlice';
+import { updateStrainTip, deleteStrainTip, updateExport, deleteExport, exportAndSaveStrains } from '@/stores/slices/savedItemsSlice';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { FilterDrawer } from './FilterDrawer';
@@ -51,7 +50,7 @@ export const StrainsView: React.FC = () => {
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [_currentPage, setCurrentPage] = useState(1);
 
     const settings = useAppSelector(selectSettings) as AppSettings;
     const { strainsViewTab, strainsViewMode, selectedStrainIds, selectedStrainId } = useAppSelector(selectStrainsView) as StrainsViewState;

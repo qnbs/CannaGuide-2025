@@ -7,7 +7,6 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Drawer } from '@/components/common/Drawer';
 import { SegmentedControl } from '@/components/common/SegmentedControl';
 import { Switch } from '@/components/common/Switch';
-import { AlphabeticalFilter } from '@/components/views/strains/AlphabeticalFilter';
 
 interface FilterDrawerProps {
     isOpen: boolean;
@@ -41,7 +40,7 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode, isActi
     </details>
 )};
 
-export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, isAnyFilterActive }) => {
+export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, isAnyFilterActive: _isAnyFilterActive }) => {
     const { t } = useTranslation();
     
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
@@ -54,7 +53,8 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
     ];
     
     const handleToggleArray = (key: keyof AdvancedFilterState, value: string) => {
-        const currentArray = (tempFilterState as any)[key] as string[];
+        const current = tempFilterState[key];
+        const currentArray = Array.isArray(current) ? (current as string[]) : [];
         const newArray = currentArray.includes(value)
             ? currentArray.filter((item: string) => item !== value)
             : [...currentArray, value];

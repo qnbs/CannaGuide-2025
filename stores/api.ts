@@ -171,7 +171,7 @@ export const geminiApi = createApi({
             }): Promise<{ data: string } | { error: { message: string } }> {
                 try {
                     const geminiService = await getGeminiService()
-                    const data = await geminiService.generateStrainImage(strain, style as any, criteria)
+                    const data = await geminiService.generateStrainImage(strain, style as import('@/services/geminiService').ImageStyle, criteria)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }

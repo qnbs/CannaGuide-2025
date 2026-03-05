@@ -15,7 +15,7 @@ export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(({ classNa
                 <PhosphorIcons.MagnifyingGlass className="h-5 w-5 text-slate-400" aria-hidden="true" />
             </span>
             <Input
-                ref={ref as any}
+                ref={ref}
                 type="search"
                 className={`pl-10 ${value && onClear ? 'pr-10' : ''} ${className || ''}`}
                 value={value}

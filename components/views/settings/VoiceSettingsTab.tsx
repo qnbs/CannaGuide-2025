@@ -67,7 +67,7 @@ const VoiceSettingsTab: React.FC = () => {
     const availableVoices = useAvailableVoices();
     const [commandSearch, setCommandSearch] = useState('');
 
-    const handleSetSetting = (path: string, value: any) => {
+    const handleSetSetting = (path: string, value: unknown) => {
         dispatch(setSetting({ path, value }));
     };
 

@@ -158,6 +158,12 @@ export const common = {
         previous: 'Previous Page',
         next: 'Next Page',
     },
+    errorBoundary: {
+        title: 'Something went wrong.',
+        description: 'An unexpected error occurred. Please try reloading the application. If the problem persists, you may need to clear your site data.',
+        reload: 'Reload Application',
+        safeRecovery: 'Try Safe Recovery',
+    },
     appShortDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.',
 };
 

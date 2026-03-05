@@ -45,7 +45,7 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
         onSearchTermChange, sort, handleSort, letterFilter, handleSetLetterFilter, typeFilter, onToggleTypeFilter,
         onOpenDrawer, activeFilterCount, selectedIds, onToggleSelection, onSelect,
         favoriteIds, onToggleFavorite, isUserStrain, onDeleteUserStrain, onClearSelection,
-        onAddToFavorites, onRemoveFromFavorites, onDelete, strainsViewTab
+        onAddToFavorites, onRemoveFromFavorites, onDelete, strainsViewTab: _strainsViewTab
     } = props;
 
     const { t } = useTranslation();

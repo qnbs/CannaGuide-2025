@@ -1,4 +1,4 @@
-import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, JournalEntryType } from '@/types';
+import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, JournalEntryType, GeneticModifiers } from '@/types';
 import { STAGES_ORDER, SIM_PAR_PER_WATT_LED, SIM_LIGHT_EXTINCTION_COEFFICIENT_K, SIM_BIOMASS_CONVERSION_EFFICIENCY, SIM_SECONDS_PER_DAY } from '@/constants';
 import type {
     AirflowLevel,
@@ -37,6 +37,11 @@ export const PLANT_STAGE_DETAILS: Record<PlantStage, {
 class PlantSimulationService {
     private _clamp(value: number, min: number, max: number): number {
         return Math.min(max, Math.max(min, value));
+    }
+
+    /** Returns per-plant phenotype modifiers, falling back to strain defaults for legacy/uninitialized plants. */
+    private _getModifiers(plant: Plant): GeneticModifiers {
+        return plant.phenotypeModifiers ?? plant.strain.geneticModifiers;
     }
 
     private _getLeafTemperatureOffset(plant: Plant): number {
@@ -129,6 +134,8 @@ class PlantSimulationService {
             tasks: [],
             harvestData: null,
             structuralModel: { branches: 1, nodes: 1 },
+            // Copy strain defaults as starting phenotype; can be tuned per-plant via training or amendments
+            phenotypeModifiers: { ...strain.geneticModifiers },
             history: [{ day: 0, health: 100, height: 0, stressLevel: 0, medium: { ph: 6.5, ec: 0.8, moisture: 100 } }],
             cannabinoidProfile: { thc: 0, cbd: 0, cbn: 0 },
             terpeneProfile: {},
@@ -156,6 +163,7 @@ class PlantSimulationService {
         for (let i = 0; i < daysToSimulate; i++) {
             updatedPlant.age += 1;
 
+            updatedPlant = this._runDailyEcosystem(updatedPlant);
             updatedPlant = this._runDailyMetabolism(updatedPlant);
             updatedPlant = this._runDailyGrowth(updatedPlant);
             updatedPlant = this._runDailySynthesis(updatedPlant);
@@ -179,24 +187,53 @@ class PlantSimulationService {
         return { updatedPlant, newJournalEntries, newTasks };
     }
 
+    private _runDailyEcosystem(plant: Plant): Plant {
+        const p = this.clonePlant(plant);
+
+        // Exhaust fan replenishes CO2 toward ambient (400 ppm).
+        // With poor or disabled ventilation, photosynthesis steadily depletes CO2.
+        const co2RefreshRate: Record<string, number> = { high: 0.9, medium: 0.7, low: 0.4 };
+        const fanRefreshRate = p.equipment.exhaustFan.isOn
+            ? (co2RefreshRate[p.equipment.exhaustFan.power] ?? 0.7)
+            : 0.1;
+        const ambientCo2 = 400;
+        const co2Consumption = p.equipment.light.isOn ? p.biomass.leaves * 8 : 0;
+        const co2After = p.environment.co2Level - co2Consumption;
+        p.environment.co2Level = this._clamp(
+            co2After + (ambientCo2 - co2After) * fanRefreshRate,
+            200,
+            1500,
+        );
+
+        return p;
+    }
+
     private _runDailyMetabolism(plant: Plant): Plant {
         const p = this.clonePlant(plant);
 
         p.environment = this.applyEnvironmentalCorrections(p).environment;
 
+        const mods = this._getModifiers(p);
         const vpd = p.environment.vpd;
-        const vpdOptimum = (p.strain.geneticModifiers.vpdTolerance.min + p.strain.geneticModifiers.vpdTolerance.max) / 2;
+        const vpdOptimum = (mods.vpdTolerance.min + mods.vpdTolerance.max) / 2;
         const vpdStressFactor = 1 - Math.abs(vpd - vpdOptimum);
-        const transpirationRate = p.biomass.leaves * p.strain.geneticModifiers.transpirationFactor * vpdStressFactor;
+        const transpirationRate = p.biomass.leaves * mods.transpirationFactor * vpdStressFactor;
         
         const waterUsed = Math.min(p.medium.substrateWater, transpirationRate * 100);
         p.medium.substrateWater -= waterUsed;
         const waterCapacity = p.equipment.potSize * 1000 * (p.equipment.potType === 'Fabric' ? 0.28 : 0.35);
         p.medium.moisture = (p.medium.substrateWater / waterCapacity) * 100;
 
-        const uptakeFactor = p.strain.geneticModifiers.nutrientUptakeRate * (p.rootSystem.health / 100);
+        // pH lockout: nutrient availability is reduced when pH deviates beyond the ideal window
+        const idealPh = PLANT_STAGE_DETAILS[p.stage].idealVitals.ph;
+        const phOptimal = (idealPh.min + idealPh.max) / 2;
+        const phHalfRange = Math.max(0.01, (idealPh.max - idealPh.min) / 2);
+        const phDeviation = Math.max(0, Math.abs(p.medium.ph - phOptimal) - phHalfRange);
+        const phLockoutFactor = this._clamp(1.0 - (phDeviation / phHalfRange) * 0.8, 0.2, 1.0);
+
+        const uptakeFactor = mods.nutrientUptakeRate * (p.rootSystem.health / 100);
         const nutrientDemand = (p.biomass.total + p.rootSystem.rootMass) * 0.05;
-        const availableNutrients = waterUsed * p.medium.ec * uptakeFactor;
+        const availableNutrients = waterUsed * p.medium.ec * uptakeFactor * phLockoutFactor;
         
         const nutrientsTaken = Math.min(nutrientDemand, availableNutrients);
         if (nutrientsTaken > 0) {
@@ -216,7 +253,9 @@ class PlantSimulationService {
         const parEfficiency = p.equipment.light.type === 'LED' ? SIM_PAR_PER_WATT_LED : SIM_PAR_PER_WATT_LED * 0.8;
         const dailyLightIntegral = (p.equipment.light.wattage * parEfficiency * p.equipment.light.lightHours * 3600) / 1000000;
         const lightAbsorbed = 1 - Math.exp(-SIM_LIGHT_EXTINCTION_COEFFICIENT_K * p.leafAreaIndex);
-        const potentialBiomassGain = (dailyLightIntegral / 4) * lightAbsorbed * p.strain.geneticModifiers.rue;
+        // CO2 enrichment factor: 1.0 at ambient 400 ppm, scales proportionally, capped at 2.0×
+        const co2Factor = this._clamp(p.environment.co2Level / 400, 0.5, 2.0);
+        const potentialBiomassGain = (dailyLightIntegral / 4) * lightAbsorbed * this._getModifiers(p).rue * co2Factor;
         
         const nutrientSupply = (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) * SIM_BIOMASS_CONVERSION_EFFICIENCY;
         const actualBiomassGain = Math.min(potentialBiomassGain, nutrientSupply) * (p.health / 100);
@@ -364,7 +403,7 @@ class PlantSimulationService {
         
         // High VPD (too dry) -> Pest Risk
         if (p.stressCounters.vpd > 3 && !hasProblem(ProblemType.PestInfestation)) {
-            const vpdStressChance = (p.stressCounters.vpd - 3) * 0.05 / p.strain.geneticModifiers.pestResistance;
+            const vpdStressChance = (p.stressCounters.vpd - 3) * 0.05 / this._getModifiers(p).pestResistance;
             if (Math.random() < vpdStressChance) {
                 p.problems.push({ type: ProblemType.PestInfestation, severity: 1, onsetDay: p.age, status: 'active' });
                 p.stressCounters.vpd = 0; // Reset counter after problem triggers
@@ -373,7 +412,7 @@ class PlantSimulationService {
         
         // Nutrient/pH/EC Stress -> Nutrient Deficiency Risk
         if ((p.stressCounters.ph > 3 || p.stressCounters.ec > 3) && !hasProblem(ProblemType.NutrientDeficiency)) {
-            const nutrientStressChance = ((p.stressCounters.ph + p.stressCounters.ec) - 3) * 0.04 / p.strain.geneticModifiers.stressTolerance;
+            const nutrientStressChance = ((p.stressCounters.ph + p.stressCounters.ec) - 3) * 0.04 / this._getModifiers(p).stressTolerance;
             if (Math.random() < nutrientStressChance) {
                  p.problems.push({ type: ProblemType.NutrientDeficiency, severity: 1, onsetDay: p.age, status: 'active' });
                  p.stressCounters.ph = 0;

@@ -211,7 +211,6 @@ const startApp = async () => {
 
         // 6. Signal that the app is fully ready and hide the loading gate.
         store.dispatch(setAppReady(true));
-        sessionStorage.removeItem(SAFE_RECOVERY_ATTEMPT_KEY)
     } catch (error) {
         console.error("Failed to initialize the application:", error);
         const recovered = await triggerSafeRecovery('boot-initialization-failure', error)

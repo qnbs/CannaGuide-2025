@@ -582,11 +582,13 @@ export interface Scenario {
     id: string;
     titleKey: string;
     descriptionKey: string;
+    title?: string;
+    description?: string;
     durationDays: number;
     plantAModifier: { day: number, action: ScenarioAction };
     plantBModifier: { day: number, action: ScenarioAction };
 }
-export type ScenarioAction = 'TOP' | 'LST' | 'NONE';
+export type ScenarioAction = 'TOP' | 'LST' | 'NONE' | 'TEMP_PLUS_2' | 'TEMP_MINUS_2';
 
 export interface ExperimentResult {
     originalHistory: PlantHistoryEntry[];

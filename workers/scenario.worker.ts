@@ -8,6 +8,16 @@ const applyAction = (plant: Plant, action: ScenarioAction): Plant => {
             return plantSimulationService.topPlant(plant).updatedPlant
         case 'LST':
             return plantSimulationService.applyLst(plant).updatedPlant
+        case 'TEMP_PLUS_2': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.environment.internalTemperature += 2
+            return plantSimulationService.applyEnvironmentalCorrections(updated)
+        }
+        case 'TEMP_MINUS_2': {
+            const updated = plantSimulationService.clonePlant(plant)
+            updated.environment.internalTemperature -= 2
+            return plantSimulationService.applyEnvironmentalCorrections(updated)
+        }
         case 'NONE':
         default:
             return plant

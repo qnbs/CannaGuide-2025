@@ -183,8 +183,8 @@ class GrowReminderService {
             if (registration) {
                 await registration.showNotification(reminder.title, {
                     body: reminder.body,
-                    icon: '/icon.svg',
-                    badge: '/icon.svg',
+                    icon: registration.scope + 'icon.svg',
+                    badge: registration.scope + 'icon.svg',
                     tag: `grow-reminder-${reminder.id}`,
                     data: { reminderId: reminder.id, plantId: reminder.plantId },
                 })

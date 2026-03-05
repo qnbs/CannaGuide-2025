@@ -281,6 +281,8 @@ export const settingsView = {
     storageWarningBody: 'Starte bald eine Bereinigung, um Speicherfehler zu vermeiden.',
     storageCriticalTitle: 'Speicher kritisch voll.',
     storageCriticalBody: 'Bereinigung jetzt starten, um das Risiko von IndexedDB-Quota-Fehlern zu reduzieren.',
+    storageCalculating: 'Speicher wird berechnet...',
+    storageUnavailable: 'Speicherinformationen nicht verfügbar.',
     storageUsage: 'Speichernutzung',
     storageBreakdown: {
         plants: 'Pflanzendaten & Journale',

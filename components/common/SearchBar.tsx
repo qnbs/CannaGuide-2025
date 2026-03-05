@@ -10,15 +10,16 @@ interface SearchBarProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(({ className, value, onClear, ...props }, ref) => {
     const { t } = useTranslation();
     return (
-        <div className="relative w-full">
+        <div className="relative w-full" role="search">
             <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <PhosphorIcons.MagnifyingGlass className="h-5 w-5 text-slate-400" />
+                <PhosphorIcons.MagnifyingGlass className="h-5 w-5 text-slate-400" aria-hidden="true" />
             </span>
             <Input
                 ref={ref as any}
                 type="search"
                 className={`pl-10 ${value && onClear ? 'pr-10' : ''} ${className || ''}`}
                 value={value}
+                aria-label={props['aria-label'] ?? (props.placeholder as string | undefined) ?? t('common.search')}
                 {...props}
             />
             {value && onClear && (

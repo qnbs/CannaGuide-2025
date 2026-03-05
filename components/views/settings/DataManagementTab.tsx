@@ -52,11 +52,11 @@ const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) =>
     }, [refreshTick]);
 
     if (isLoading) {
-        return <p className="text-sm text-center text-slate-400">Speicher wird berechnet...</p>;
+        return <p className="text-sm text-center text-slate-400">{t('settingsView.data.storageCalculating')}</p>;
     }
 
     if (!storage || !storage.quota) {
-        return <p className="text-sm text-center text-slate-400">Speicherinformationen nicht verfügbar.</p>;
+        return <p className="text-sm text-center text-slate-400">{t('settingsView.data.storageUnavailable')}</p>;
     }
 
     const usagePercent = ((storage.usage / storage.quota) * 100).toFixed(1);
@@ -68,7 +68,15 @@ const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) =>
     return (
         <div className="space-y-3">
             <div className="w-full bg-slate-700 rounded-full h-4 overflow-hidden">
-                <div className="bg-primary-500 h-4 rounded-full" style={{ width: `${usagePercent}%` }}></div>
+                <div
+                    className="bg-primary-500 h-4 rounded-full"
+                    style={{ width: `${usagePercent}%` }}
+                    role="progressbar"
+                    aria-label={t('settingsView.data.storageUsage')}
+                    aria-valuenow={parseFloat(usagePercent)}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                ></div>
             </div>
             <div className="text-center text-sm text-slate-300 font-mono">
                 {formatBytes(storage.usage)} / {formatBytes(storage.quota)} ({usagePercent}%)

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v20-pwa-cache';
+const CACHE_NAME = 'cannaguide-v21-pwa-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [

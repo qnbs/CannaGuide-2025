@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
+import { Plant } from '@/types';
 import { PlantSlot } from './plants/PlantSlot';
 import { DetailedPlantView } from './plants/DetailedPlantView';
 import { TipOfTheDay } from './plants/TipOfTheDay';
@@ -21,11 +22,18 @@ import { selectNewGrowFlow } from '@/stores/selectors';
 import { startGrowInSlot, selectStrainForGrow, cancelNewGrow, selectSlotForGrow } from '@/stores/slices/uiSlice';
 import { setSelectedPlantId } from '@/stores/slices/simulationSlice';
 
-const EmptyPlantSlot: React.FC<{ onStart: () => void }> = memo(({ onStart }) => {
+interface EmptyPlantSlotProps {
+    index: number;
+    onSlotClick: (index: number) => void;
+}
+
+const EmptyPlantSlot: React.FC<EmptyPlantSlotProps> = memo(({ index, onSlotClick }) => {
     const { t } = useTranslation();
+    const handleStart = useCallback(() => onSlotClick(index), [onSlotClick, index]);
     return (
         <Card
-            onClick={onStart}
+            onClick={handleStart}
+            aria-label={t('plantsView.emptySlot.title')}
             className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-white/30 hover:border-primary-500 hover:bg-primary-900/20 cursor-pointer transition-all card-interactive-glow empty-slot-pulse"
         >
             <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
@@ -34,6 +42,17 @@ const EmptyPlantSlot: React.FC<{ onStart: () => void }> = memo(({ onStart }) => 
         </Card>
     );
 });
+
+EmptyPlantSlot.displayName = 'EmptyPlantSlot';
+
+// Wrapper creates stable onInspect callback so PlantSlot's memo is never defeated
+const PlantSlotWrapper: React.FC<{ plant: Plant }> = memo(({ plant }) => {
+    const dispatch = useAppDispatch();
+    const handleInspect = useCallback(() => dispatch(setSelectedPlantId(plant.id)), [dispatch, plant.id]);
+    return <PlantSlot plant={plant} onInspect={handleInspect} />;
+});
+
+PlantSlotWrapper.displayName = 'PlantSlotWrapper';
 
 const PlantSlotsSkeleton: React.FC = memo(() => (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -128,9 +147,9 @@ export const PlantsView: React.FC = () => {
                                             );
                                         }
                                         return plant ? (
-                                            <PlantSlot key={plant.id} plant={plant} onInspect={() => dispatch(setSelectedPlantId(plant.id))} />
+                                            <PlantSlotWrapper key={plant.id} plant={plant} />
                                         ) : (
-                                            <EmptyPlantSlot key={`empty-${index}`} onStart={() => handleEmptySlotClick(index)} />
+                                            <EmptyPlantSlot key={`empty-${index}`} index={index} onSlotClick={handleEmptySlotClick} />
                                         );
                                     })}
                                 </div>

@@ -19,7 +19,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
     const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
 
     return (
-        <Card onClick={onInspect} className="flex flex-col h-full cursor-pointer card-interactive p-3">
+        <Card onClick={onInspect} aria-label={`${plant.name} – ${t(`plantStages.${plant.stage}`)}`} className="flex flex-col h-full cursor-pointer card-interactive p-3">
             <div className="flex justify-between items-start">
                 <div className="min-w-0">
                     <h3 className="font-bold text-lg text-slate-100 truncate">{plant.name}</h3>

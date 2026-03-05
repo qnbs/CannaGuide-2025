@@ -262,4 +262,13 @@ export const plantsView = {
     day: 'Day',
   },
   syncProgress: 'Syncing simulation progress...',
+  growReminderPanel: {
+    title: 'Grow Reminders',
+    description: 'Push reminders for VPD alarms, watering and harvest windows.',
+    due: '{{count}} due',
+    enableBtn: 'Enable notifications',
+    enabledBtn: 'Notifications enabled',
+    checkNowBtn: 'Check now',
+    statusLabel: 'Status: {{permission}}. Periodic Background Sync is used when supported.',
+  },
 };

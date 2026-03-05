@@ -98,10 +98,12 @@ export const StrainsView: React.FC = () => {
 
 
     useEffect(() => {
-        strainService.getAllStrains().then(strains => {
-            setAllStrains(strains);
-            setIsLoading(false);
-        });
+        strainService.getAllStrains()
+            .then(strains => {
+                setAllStrains(strains);
+                setIsLoading(false);
+            })
+            .catch(() => setIsLoading(false));
     }, []);
 
     const { allAromas, allTerpenes } = useMemo(() => {

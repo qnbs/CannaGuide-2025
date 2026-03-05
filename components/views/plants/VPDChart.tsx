@@ -32,11 +32,13 @@ export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
     }
 
     let mounted = true
-    vpdService.runDailyVPD(input).then((points) => {
-      if (mounted) {
-        setData(points)
-      }
-    })
+    vpdService.runDailyVPD(input)
+      .then((points) => {
+        if (mounted) {
+          setData(points)
+        }
+      })
+      .catch(console.error)
 
     return () => {
       mounted = false

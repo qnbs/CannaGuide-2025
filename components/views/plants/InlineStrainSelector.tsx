@@ -135,10 +135,12 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     const favorites = useAppSelector(selectFavoriteIds) as Set<string>
 
     useEffect(() => {
-        strainService.getAllStrains().then((strains) => {
-            setAllStrains(strains)
-            setIsLoading(false)
-        })
+        strainService.getAllStrains()
+            .then((strains) => {
+                setAllStrains(strains)
+                setIsLoading(false)
+            })
+            .catch(() => setIsLoading(false))
     }, [])
 
     const filteredStrains = useMemo(() => {

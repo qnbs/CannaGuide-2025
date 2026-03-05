@@ -71,7 +71,7 @@ export const BottomNav: React.FC = () => {
                         key={view}
                         data-view-id={view}
                         onClick={() => dispatch(setActiveView(view))}
-                        className={`touch-manipulation flex-1 flex flex-col items-center justify-center py-1.5 px-1 text-center transition-colors duration-200 relative z-10 active:scale-[0.98] ${
+                        className={`touch-manipulation flex-1 flex flex-col items-center justify-center py-2 px-1 text-center transition-colors duration-200 relative z-10 active:scale-[0.98] min-h-11 ${
                             activeView === view
                                 ? 'text-primary-300'
                                 : 'text-slate-400 hover:text-primary-300'
@@ -79,7 +79,7 @@ export const BottomNav: React.FC = () => {
                         aria-label={navLabels[view]}
                         aria-current={activeView === view ? 'page' : undefined}
                     >
-                        <div className="w-5 h-5 mb-0.5">{navIcons[view]}</div>
+                        <div className="w-6 h-6 mb-0.5">{navIcons[view]}</div>
                         <span className="text-[11px] font-semibold tracking-tight leading-tight">{navLabels[view]}</span>
                     </button>
                 ))}

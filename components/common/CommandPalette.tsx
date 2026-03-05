@@ -88,7 +88,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 if (!open) onClose()
             }}
             label={t('commandPalette.title')}
-            className="fixed left-1/2 top-[15vh] z-[101] w-[calc(100%-2rem)] max-w-xl -translate-x-1/2 overflow-hidden rounded-lg border border-white/20 bg-[rgba(var(--color-bg-component),0.92)] shadow-2xl"
+            className="fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))] bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[101] h-[calc(100dvh-max(1rem,env(safe-area-inset-top)+env(safe-area-inset-bottom)))] w-[calc(100%-1rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-white/20 bg-[rgba(var(--color-bg-component),0.94)] shadow-2xl sm:top-[15vh] sm:bottom-auto sm:h-auto sm:w-[calc(100%-2rem)] sm:max-w-xl sm:rounded-lg"
             overlayClassName="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md"
         >
             <div className="flex items-center gap-3 border-b border-slate-700/50 p-4">
@@ -106,7 +106,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 />
             </div>
 
-            <Cmdk.List className="max-h-[50vh] overflow-y-auto p-2">
+            <Cmdk.List className="max-h-[calc(100dvh-13rem)] overflow-y-auto p-2 sm:max-h-[50vh]">
                 <Cmdk.Empty className="flex flex-col items-center gap-3 p-10 text-center text-slate-400">
                     <PhosphorIcons.CommandLine className="h-8 w-8 text-slate-500" />
                     <p>{t('commandPalette.noResults')}</p>

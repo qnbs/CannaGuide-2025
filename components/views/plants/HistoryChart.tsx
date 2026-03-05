@@ -105,7 +105,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         return <div className="flex items-center justify-center h-full text-slate-500 text-sm">{t('plantsView.detailedView.historyNoData')}</div>;
     }
 
-    const handleMouseMove = (event: React.MouseEvent<SVGRectElement>) => {
+    const handlePointerMove = (event: React.PointerEvent<SVGRectElement>) => {
         const svg = svgRef.current;
         if (!svg) return;
         
@@ -122,7 +122,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         setHoveredData({ point, x: xScale(point.day) });
     };
 
-    const handleMouseLeave = () => {
+    const handlePointerLeave = () => {
         setHoveredData(null);
     };
 
@@ -180,8 +180,8 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                     width={width - padding.left - padding.right}
                     height={height - padding.top - padding.bottom}
                     fill="transparent"
-                    onMouseMove={handleMouseMove}
-                    onMouseLeave={handleMouseLeave}
+                    onPointerMove={handlePointerMove}
+                    onPointerLeave={handlePointerLeave}
                 />
 
                 {hoveredData && (

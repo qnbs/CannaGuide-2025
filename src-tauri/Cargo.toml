@@ -1,0 +1,17 @@
+[package]
+name = "cannaguide_desktop"
+version = "0.1.0"
+description = "CannaGuide 2025 desktop wrapper"
+authors = ["CannaGuide Team"]
+license = "MIT"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

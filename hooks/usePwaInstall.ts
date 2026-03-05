@@ -5,6 +5,9 @@ import { addNotification } from '../stores/slices/uiSlice'
 import { BeforeInstallPromptEvent } from '@/types'
 import { PWA_INSTALLED_KEY } from '@/constants';
 
+const PWA_INSTALL_HINT_KEY = 'cg.pwa.install_hint.dismissed_at'
+const INSTALL_HINT_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000
+
 /**
  * A custom hook to manage the PWA installation prompt and status.
  * It reliably tracks whether the app is installed using a combination of
@@ -27,6 +30,11 @@ export const usePwaInstall = () => {
             console.log('[PWA] beforeinstallprompt event fired.');
             e.preventDefault(); // Prevent the mini-infobar from appearing automatically.
             setDeferredPrompt(e as BeforeInstallPromptEvent);
+
+            const lastDismissedAt = Number(localStorage.getItem(PWA_INSTALL_HINT_KEY) || 0)
+            if (Date.now() - lastDismissedAt > INSTALL_HINT_COOLDOWN_MS) {
+                dispatch(addNotification({ message: t('common.installPwaHint'), type: 'info' }))
+            }
             
             // If this event fires, it means the app is not installed,
             // so we ensure our state and flag reflect that. This handles uninstallation cases.
@@ -67,6 +75,7 @@ export const usePwaInstall = () => {
         } else {
             console.log('PWA installation dismissed by user.');
             dispatch(addNotification({ message: t('common.installPwaDismissed'), type: 'info' }));
+            localStorage.setItem(PWA_INSTALL_HINT_KEY, String(Date.now()))
         }
         
         // The prompt can only be used once.

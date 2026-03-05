@@ -18,7 +18,12 @@ export const VoiceControl: React.FC = () => {
     const recognitionRef = useRef<any | null>(null);
 
     const handleResult = useCallback((event: any) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.trim();
+        const latest = event.results[event.results.length - 1]
+        const transcript = latest[0].transcript.trim();
+        if (latest && !latest.isFinal) {
+            dispatch(setVoiceStatusMessage(t('voiceControl.processing', { transcript })));
+            return;
+        }
         if (transcript) {
             dispatch(setVoiceStatusMessage(t('voiceControl.processing', { transcript })));
             dispatch(processVoiceCommand(transcript));
@@ -52,7 +57,7 @@ export const VoiceControl: React.FC = () => {
 
         const recognition = new SpeechRecognitionAPI();
         recognition.continuous = false;
-        recognition.interimResults = false;
+        recognition.interimResults = true;
         
         recognition.addEventListener('result', handleResult);
         recognition.addEventListener('error', handleError);

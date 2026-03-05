@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { AppSettings, Theme } from '@/types'
+import { AppSettings, View } from '@/types'
 
 /**
  * A custom hook to manage global side effects on the document's root element (<html>).
@@ -8,7 +8,7 @@ import { AppSettings, Theme } from '@/types'
  * stale classes from persisting, which could otherwise lead to a broken UI state.
  * @param settings - The application's settings object.
  */
-export const useDocumentEffects = (settings: AppSettings) => {
+export const useDocumentEffects = (settings: AppSettings, activeView?: View) => {
     useEffect(() => {
         const root = window.document.documentElement
         const { general, tts } = settings;
@@ -51,10 +51,18 @@ export const useDocumentEffects = (settings: AppSettings) => {
         root.lang = general.language;
 
         const themeMeta = document.querySelector('meta[name="theme-color"]') as HTMLMetaElement | null
-        const bgColorToken = window.getComputedStyle(root).getPropertyValue('--color-bg-primary').trim()
-        if (themeMeta && bgColorToken) {
-            themeMeta.content = `rgb(${bgColorToken})`
+        const fallbackBgColor = window.getComputedStyle(root).getPropertyValue('--color-bg-primary').trim()
+        const viewThemeMap: Partial<Record<View, string>> = {
+            [View.Plants]: '#0b1f19',
+            [View.Strains]: '#131c2e',
+            [View.Equipment]: '#1f1a0f',
+            [View.Knowledge]: '#1d1226',
+            [View.Settings]: '#0f172a',
+            [View.Help]: '#1f1722',
+        }
+        if (themeMeta) {
+            themeMeta.content = (activeView && viewThemeMap[activeView]) || (fallbackBgColor ? `rgb(${fallbackBgColor})` : '#0F172A')
         }
         
-    }, [settings]) // The hook re-runs whenever any part of the settings object changes.
+    }, [settings, activeView]) // The hook re-runs whenever any part of the settings object changes.
 }

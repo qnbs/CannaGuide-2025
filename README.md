@@ -33,6 +33,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 - [💻 Technical Deep Dive](#-technical-deep-dive)
 - [🏁 Getting Started (User Guide)](#-getting-started-user-guide)
 - [🛠️ Local Development (Developer Guide)](#️-local-development-developer-guide)
+- [📦 Distribution Targets](#-distribution-targets)
 - [🔐 Gemini BYOK (Complete Guide)](#-gemini-byok-complete-guide)
 - [🚀 GitHub Pages Deployment](#-github-pages-deployment)
 - [🤔 Troubleshooting](#-troubleshooting)
@@ -235,6 +236,18 @@ This project is designed to run within Google's AI Studio, which handles the dev
     npm run lint:full     # lint full project (warnings allowed)
     npm run lint:strict   # lint full project (warnings fail)
     ```
+
+---
+
+## 📦 Distribution Targets
+
+Distribution starter scaffolding is available for desktop/mobile wrappers and self-hosting:
+
+- Docker self-hosting: `Dockerfile`, `docker/nginx.conf`, `docker-compose.yml`
+- Tauri desktop wrapper: `src-tauri/`
+- Capacitor mobile wrapper: `capacitor.config.ts`
+
+See full setup notes in `docs/distribution.md`.
 
 ---
 

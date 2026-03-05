@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Security audit
+        run: npm audit --audit-level=moderate
+
       - name: Lint changed files
         env:
           LINT_BASE_REF: origin/${{ github.base_ref }}
@@ -37,8 +40,14 @@ jobs:
       - name: Test
         run: npm run test -- --run
 
+      - name: Coverage
+        run: npm run test:coverage
+
       - name: Build
         run: npm run build
+
+      - name: Lighthouse CI
+        run: npm run lighthouse:ci
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium

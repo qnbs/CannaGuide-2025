@@ -101,7 +101,9 @@ startAppListening({
             { match: [t('nav.equipment').toLowerCase(), 'gehe zu ausrüstung'], action: () => dispatch(setActiveView(View.Equipment)) },
             { match: [t('nav.knowledge').toLowerCase(), 'show knowledge', 'gehe zu wissen'], action: () => dispatch(setActiveView(View.Knowledge)) },
             { match: [t('nav.settings').toLowerCase(), 'show settings', 'gehe zu einstellungen'], action: () => dispatch(setActiveView(View.Settings)) },
+            { match: ['open settings', 'settings öffnen', 'settings offnen'], action: () => dispatch(setActiveView(View.Settings)) },
             { match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'], action: () => dispatch(setActiveView(View.Help)) },
+            { match: ['open help', 'hilfe öffnen', 'hilfe offnen'], action: () => dispatch(setActiveView(View.Help)) },
             
             // Strain Actions
             { match: [`${t('common.search', {lng: 'en'}).toLowerCase()} for`, `${t('common.search', {lng: 'de'}).toLowerCase()} nach`], action: () => {
@@ -119,6 +121,7 @@ startAppListening({
             
             // Plant Actions
             { match: [t('plantsView.summary.waterAll').toLowerCase(), 'alle pflanzen gießen'], action: () => dispatch(waterAllPlants()) },
+            { match: ['water all plants', 'water all'], action: () => dispatch(waterAllPlants()) },
 
             // UI Control
             { match: ['go back', 'zurück'], action: () => {

@@ -129,10 +129,30 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     return (
         <div className="w-full h-full">
             <div className="flex justify-center gap-1 mb-2">
-                <button onClick={() => setView('growth')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.history')}</button>
-                <button onClick={() => setView('substrate')} className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}>{t('plantsView.detailedView.vitals')}</button>
+                <button
+                    onClick={() => setView('growth')}
+                    className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}
+                    aria-label="Show growth metrics chart"
+                    aria-pressed={view === 'growth'}
+                >
+                    {t('plantsView.detailedView.history')}
+                </button>
+                <button
+                    onClick={() => setView('substrate')}
+                    className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}
+                    aria-label="Show substrate metrics chart"
+                    aria-pressed={view === 'substrate'}
+                >
+                    {t('plantsView.detailedView.vitals')}
+                </button>
             </div>
-            <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} className="w-full h-full">
+            <svg
+                ref={svgRef}
+                viewBox={`0 0 ${width} ${height}`}
+                className="w-full h-full"
+                role="img"
+                aria-label="Plant history chart showing growth and substrate metrics over time"
+            >
                  <defs>
                     <linearGradient id="heightGradient" x1="0%" y1="0%" x2="0%" y2="100%">
                         <stop offset="0%" stopColor="rgb(var(--color-primary-500))" stopOpacity={0.4} />

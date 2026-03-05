@@ -154,7 +154,8 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
             })
             .on('end', (event) => {
                 if (event.sourceEvent) {
-                    dispatch(setGenealogyZoom(event.transform));
+                    const t = event.transform;
+                    dispatch(setGenealogyZoom({ k: t.k, x: t.x, y: t.y }));
                 }
             });
         
@@ -164,7 +165,9 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
         // Read via ref so pan/zoom events do NOT re-trigger this entire effect
         const savedTransform = zoomTransformRef.current;
         if (savedTransform === null) { // Recenter logic
-            const { width, height } = svg.node()!.getBoundingClientRect();
+            const svgNode = svg.node();
+            if (!svgNode) return;
+            const { width, height } = svgNode.getBoundingClientRect();
             const initialTranslate = layoutOrientation === 'horizontal' ? [width * 0.1, height / 2] : [width / 2, height * 0.1];
             const initialTransform = d3.zoomIdentity.translate(initialTranslate[0], initialTranslate[1]);
             svg.transition().duration(750).call(zoomBehavior.transform, initialTransform);
@@ -178,7 +181,9 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
     const handleResetZoom = useCallback(() => {
         if (svgRef.current && zoomRef.current) {
             const svg = d3.select(svgRef.current);
-            const { width, height } = svg.node()!.getBoundingClientRect();
+            const svgNode = svg.node();
+            if (!svgNode) return;
+            const { width, height } = svgNode.getBoundingClientRect();
             const initialTranslate = layoutOrientation === 'horizontal' ? [width * 0.1, height / 2] : [width / 2, height * 0.1];
             const initialTransform = d3.zoomIdentity.translate(initialTranslate[0], initialTranslate[1]);
             svg.transition().duration(750).call(zoomRef.current.transform, initialTransform);
@@ -270,13 +275,13 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                              <svg ref={svgRef} className="w-full h-full cursor-move">
                                 <g className="genealogy-content">
                                     {links.map((link, i) => <Link key={`${link.source.data.id}-${link.target.data.id}-${i}`} link={link} orientation={layoutOrientation} />)}
-                                    {nodes.map((node) => {
+                                    {nodes.map((node, idx) => {
                                         const isHorizontal = layoutOrientation === 'horizontal';
                                         const x = isHorizontal ? node.y : node.x;
                                         const y = isHorizontal ? node.x : node.y;
                                         return (
                                             <g
-                                                key={node.data.id}
+                                                key={`${node.data.id}-${node.depth}-${idx}`}
                                                 transform={`translate(${x}, ${y})`}
                                                 style={{ transition: 'transform 0.4s ease-in-out' }}
                                             >

@@ -63,7 +63,12 @@ interface SelectProps {
 export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
   ({ options, value, onChange, label, className, disabled, ...props }, ref) => {
     const id = useId()
-    const stringValue = value !== undefined ? String(value) : ''
+    const stringValue = value !== undefined && value !== '' ? String(value) : undefined
+
+    // Radix SelectItem throws on empty-string values, so separate the
+    // placeholder option (value === '') from the real items.
+    const placeholderOption = options.find((o) => String(o.value) === '')
+    const realOptions = options.filter((o) => String(o.value) !== '')
 
     return (
       <div>
@@ -75,16 +80,16 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
         <UiSelect
           value={stringValue}
           onValueChange={(next) => {
-            const matched = options.find((option) => String(option.value) === next)
+            const matched = realOptions.find((option) => String(option.value) === next)
             onChange?.({ target: { value: matched ? matched.value : next } })
           }}
           disabled={disabled}
         >
           <SelectTrigger id={id} ref={ref} className={className} {...props}>
-            <SelectValue />
+            <SelectValue placeholder={placeholderOption?.label} />
           </SelectTrigger>
           <SelectContent>
-            {options.map((option) => (
+            {realOptions.map((option) => (
               <SelectItem key={String(option.value)} value={String(option.value)}>
                 {option.label}
               </SelectItem>

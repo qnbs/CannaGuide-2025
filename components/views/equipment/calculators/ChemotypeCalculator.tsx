@@ -31,11 +31,11 @@ export const ChemotypeCalculator: React.FC = memo(() => {
                 <Input label="THC" unit="%" type="number" step="0.1" value={values.thc} onChange={(e) => update('thc', e.target.value)} />
                 <Input label="CBD" unit="%" type="number" step="0.1" value={values.cbd} onChange={(e) => update('cbd', e.target.value)} />
                 <Input label="CBG" unit="%" type="number" step="0.1" value={values.cbg} onChange={(e) => update('cbg', e.target.value)} />
-                <Input label="Limonene" unit="%" type="number" step="0.01" value={values.limonene} onChange={(e) => update('limonene', e.target.value)} />
-                <Input label="Myrcene" unit="%" type="number" step="0.01" value={values.myrcene} onChange={(e) => update('myrcene', e.target.value)} />
-                <Input label="Pinene" unit="%" type="number" step="0.01" value={values.pinene} onChange={(e) => update('pinene', e.target.value)} />
-                <Input label="Linalool" unit="%" type="number" step="0.01" value={values.linalool} onChange={(e) => update('linalool', e.target.value)} />
-                <Input label="Caryophyllene" unit="%" type="number" step="0.01" value={values.caryophyllene} onChange={(e) => update('caryophyllene', e.target.value)} />
+                <Input label={t('equipmentView.calculators.chemotype.labels.limonene')} unit="%" type="number" step="0.01" value={values.limonene} onChange={(e) => update('limonene', e.target.value)} />
+                <Input label={t('equipmentView.calculators.chemotype.labels.myrcene')} unit="%" type="number" step="0.01" value={values.myrcene} onChange={(e) => update('myrcene', e.target.value)} />
+                <Input label={t('equipmentView.calculators.chemotype.labels.pinene')} unit="%" type="number" step="0.01" value={values.pinene} onChange={(e) => update('pinene', e.target.value)} />
+                <Input label={t('equipmentView.calculators.chemotype.labels.linalool')} unit="%" type="number" step="0.01" value={values.linalool} onChange={(e) => update('linalool', e.target.value)} />
+                <Input label={t('equipmentView.calculators.chemotype.labels.caryophyllene')} unit="%" type="number" step="0.01" value={values.caryophyllene} onChange={(e) => update('caryophyllene', e.target.value)} />
             </div>
 
             <div className="bg-slate-800/60 rounded-lg p-3 ring-1 ring-inset ring-white/20 space-y-1">

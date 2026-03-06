@@ -47,6 +47,15 @@ export const knowledgeView = {
         potentialTraits: 'Potential Traits',
         saveStrain: 'Save Strain',
         breedingSuccess: 'Successfully bred "{{name}}"! It has been added to "My Strains".',
+        splicingGenes: 'Splicing genes...',
+        flowering: 'Flowering',
+        phenoTracking: 'Pheno Tracking',
+        vigor: 'Vigor',
+        resin: 'Resin',
+        aroma: 'Aroma',
+        diseaseResistance: 'Disease Resistance',
+        automatedGenetics: 'Automated Genetics Estimate',
+        stabilityScore: 'Stability Score',
     },
     scenarios: {
         toppingVsLst: {
@@ -200,6 +209,8 @@ export const knowledgeView = {
         },
         savedExperiments: 'Saved Experiments',
         noExperiments: 'No experiments saved yet.',
+        basedOn: 'Based on: {{name}}',
+        run: 'Run: {{date}}',
     },
     guide: {
         phases: 'Phases',

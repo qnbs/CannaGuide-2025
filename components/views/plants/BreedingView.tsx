@@ -17,19 +17,21 @@ import { crossStrains, strainTypeInfo } from '@/utils/breedingUtils';
 
 
 const SeedCard: React.FC<{ seed: Seed, onClick: () => void, isSelected?: boolean, strain?: Strain | null }> = ({ seed, onClick, isSelected, strain }) => {
+    const { t } = useTranslation();
     const TypeInfo = strain ? strainTypeInfo[strain.type] : null;
     return (
         <button onClick={onClick} className={`w-full min-h-12 text-left p-3 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${isSelected ? 'bg-primary-900/50 ring-2 ring-primary-500' : 'bg-slate-800 hover:bg-slate-700/50'}`}>
             {TypeInfo && <div className={`w-6 h-6 flex-shrink-0 ${TypeInfo.color}`}>{TypeInfo.icon}</div>}
             <div className="flex-grow min-w-0">
                 <p className="font-bold truncate">{seed.strainName}</p>
-                <p className="text-xs text-slate-400">Quality: {(seed.quality * 100).toFixed(0)}%</p>
+                <p className="text-xs text-slate-400">{t('common.quality')}: {(seed.quality * 100).toFixed(0)}%</p>
             </div>
         </button>
     )
 };
 
 const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () => void, allStrains: Strain[] }> = ({ title, seed, onClear, allStrains }) => {
+    const { t } = useTranslation();
     const parentStrain = seed ? allStrains.find(s => s.id === seed.strainId) : null;
     const TypeInfo = parentStrain ? strainTypeInfo[parentStrain.type] : null;
 
@@ -42,14 +44,14 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
                     <p className="font-bold text-slate-100">{seed.strainName}</p>
                     <div className="text-xs text-slate-400 mt-1">
                         <p>THC: {parentStrain.thc.toFixed(1)}% | CBD: {parentStrain.cbd.toFixed(1)}%</p>
-                        <p>Quality: {(seed.quality * 100).toFixed(0)}%</p>
+                        <p>{t('common.quality')}: {(seed.quality * 100).toFixed(0)}%</p>
                     </div>
                     <Button variant="danger" className="!absolute top-2 right-2 !h-11 !w-11 !p-0" onClick={onClear} aria-label={`Clear ${title}`}><PhosphorIcons.X/></Button>
                 </>
             ) : (
                 <div className="text-slate-500">
                     <PhosphorIcons.Drop className="w-12 h-12 mb-2"/>
-                    <p>Select a seed</p>
+                    <p>{t('knowledgeView.breeding.selectSeed')}</p>
                 </div>
             )}
         </Card>
@@ -155,19 +157,19 @@ const BreedingView: React.FC = () => {
                 </div>
             </div>
 
-            {isBreeding && <AiLoadingIndicator loadingMessage="Splicing genes..." />}
+            {isBreeding && <AiLoadingIndicator loadingMessage={t('knowledgeView.breeding.splicingGenes')} />}
 
             {result && parentA && parentB && (
                 <Card className="animate-fade-in bg-slate-800/50">
                     <div className="flex justify-between items-center">
                          <h3 className="text-xl font-bold text-primary-400">{t('knowledgeView.breeding.resultsTitle')}</h3>
-                        <Button variant="secondary" onClick={handleReset} className="min-h-11"><PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" /> Start Over</Button>
+                        <Button variant="secondary" onClick={handleReset} className="min-h-11"><PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" /> {t('common.startOver')}</Button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div className="space-y-4">
                             <Input type="text" value={newStrainName} onChange={e => setNewStrainName(e.target.value)} placeholder={t('knowledgeView.breeding.newStrainName')} />
                             <TraitComparison label="THC" valA={`${parentA.thc.toFixed(1)}%`} valB={`${parentB.thc.toFixed(1)}%`} valChild={`~${result.thc.toFixed(1)}%`} icon={<PhosphorIcons.Lightning weight="fill" />} />
-                            <TraitComparison label="Flowering" valA={`${parentA.floweringTime} w`} valB={`${parentB.floweringTime} w`} valChild={`~${result.floweringTime.toFixed(0)} w`} icon={<PhosphorIcons.ArrowClockwise />} />
+                            <TraitComparison label={t('knowledgeView.breeding.flowering')} valA={`${parentA.floweringTime} w`} valB={`${parentB.floweringTime} w`} valChild={`~${result.floweringTime.toFixed(0)} w`} icon={<PhosphorIcons.ArrowClockwise />} />
                         </div>
                         <div className="space-y-4">
                              <div>

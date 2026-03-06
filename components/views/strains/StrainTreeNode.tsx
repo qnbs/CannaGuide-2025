@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { GenealogyNode, StrainType } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { useTranslation } from 'react-i18next';
 import type { HierarchyNode } from 'd3-hierarchy';
 
 interface StrainTreeNodeProps {
@@ -18,6 +19,7 @@ const typeInfo: Record<StrainType, { icon: React.ReactNode; color: string }> = {
 };
 
 export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNodeClick, onNodeFocus, onToggle }) => {
+    const { t } = useTranslation();
     const { data } = node;
     const isExpandable = !!data._children && data._children.length > 0;
     const isCollapsible = !!data.children && data.children.length > 0;
@@ -48,7 +50,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                     <div className="text-xs text-slate-400 flex items-center gap-2">
                         <span>{data.type}</span>
                         {data.isLandrace && (
-                            <span className="text-green-400 font-semibold" title="Landrace Strain">
+                            <span className="text-green-400 font-semibold" title={t('strainsView.landraceStrain')}>
                                 L
                             </span>
                         )}
@@ -59,7 +61,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                         className="flex-shrink-0 p-0.5 rounded text-slate-400 hover:text-primary-300 hover:bg-slate-700 transition-colors"
                         onClick={handleDetailClick}
                         aria-label={`Open details for ${data.name}`}
-                        title="Open strain details"
+                        title={t('common.accessibility.openStrainDetails')}
                     >
                         <PhosphorIcons.Info className="w-4 h-4" />
                     </button>

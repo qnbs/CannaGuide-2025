@@ -57,7 +57,7 @@ const calculatorList: {
         id: 'chemotype',
         Component: ChemotypeCalculator,
         icon: <PhosphorIcons.Flask />,
-        titleKey: 'Terpen/Cannabinoid Calculator',
+        titleKey: 'equipmentView.calculators.chemotype.title',
     },
 ]
 

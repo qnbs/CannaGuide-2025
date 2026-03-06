@@ -315,4 +315,30 @@ export const plantsView = {
     resultA: 'Result A: {{label}}',
     resultB: 'Result B: {{label}}',
   },
+  vpd: {
+    currentVpd: 'Current VPD',
+    targetBand: 'Target Band ({{band}})',
+    status: 'Status',
+    simulation24h: 'VPD 24h Simulation',
+    leafTemp: 'Leaf temp',
+    altitudeCorrection: 'Altitude correction',
+    gaugeLabel: 'VPD {{vpd}} kPa. {{status}}. Leaf temp: {{leafTemp}}\u00b0C.',
+    bands: {
+      seedling: 'Seedling/Clones',
+      vegetative: 'Vegetative',
+      earlyFlower: 'Early Flower',
+      lateFlower: 'Late Flower',
+    },
+    advice: {
+      optimal: 'VPD is in target range. Keep climate stable.',
+      low: 'VPD too low: reduce RH or increase canopy temperature.',
+      high: 'VPD too high: increase RH or lower canopy temperature.',
+      danger: 'VPD in danger zone: immediate correction recommended to avoid stress.',
+    },
+  },
+  deepDive: {
+    stepByStep: 'Step-by-Step',
+    pros: 'Pros',
+    cons: 'Cons',
+  },
 };

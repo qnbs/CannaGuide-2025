@@ -50,7 +50,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
                     </div>
 
                     <div>
-                        <h3 className="font-bold text-base sm:text-lg text-primary-300 mb-2">Step-by-Step</h3>
+                        <h3 className="font-bold text-base sm:text-lg text-primary-300 mb-2">{t('plantsView.deepDive.stepByStep')}</h3>
                         <ol className="list-decimal list-inside space-y-2 text-sm leading-6 text-slate-300">
                             {response.stepByStep.map((step, i) => <li key={i}>{step}</li>)}
                         </ol>
@@ -58,13 +58,13 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
 
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <h3 className="font-bold text-base sm:text-lg text-green-400 mb-2">Pros</h3>
+                            <h3 className="font-bold text-base sm:text-lg text-green-400 mb-2">{t('plantsView.deepDive.pros')}</h3>
                             <ul className="list-disc list-inside space-y-1 text-sm text-slate-300">
                                 {response.prosAndCons.pros.map((pro, i) => <li key={i}>{pro}</li>)}
                             </ul>
                         </div>
                         <div>
-                            <h3 className="font-bold text-base sm:text-lg text-red-400 mb-2">Cons</h3>
+                            <h3 className="font-bold text-base sm:text-lg text-red-400 mb-2">{t('plantsView.deepDive.cons')}</h3>
                             <ul className="list-disc list-inside space-y-1 text-sm text-slate-300">
                                 {response.prosAndCons.cons.map((con, i) => <li key={i}>{con}</li>)}
                             </ul>
@@ -73,7 +73,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
 
                     <div className="bg-primary-900/30 p-3 rounded-lg">
                         <h3 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
-                            <PhosphorIcons.Sparkle /> Pro-Tip
+                            <PhosphorIcons.Sparkle /> {t('common.proTip')}
                         </h3>
                         <p className="text-sm text-slate-300">{response.proTip}</p>
                     </div>

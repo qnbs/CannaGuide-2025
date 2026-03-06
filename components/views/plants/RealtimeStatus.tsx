@@ -49,7 +49,7 @@ export const RealtimeStatus: React.FC<RealtimeStatusProps> = memo(({ createdAt }
                             <span className="font-semibold text-slate-300">{t('plantsView.detailedView.status.syncActive')}</span>
                             <div className="flex items-center gap-1 text-green-400">
                                 <PhosphorIcons.CheckCircle weight="fill" />
-                                <span>On</span>
+                                <span>{t('common.on')}</span>
                             </div>
                         </div>
                     </div>

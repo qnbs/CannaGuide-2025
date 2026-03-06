@@ -1,3 +1,5 @@
+import { getT } from '@/i18n'
+
 export interface ChemotypeInput {
     thc: number
     cbd: number
@@ -24,33 +26,34 @@ const dominantKey = (entries: Array<[string, number]>) =>
 
 class ChemotypeService {
     public calculate(input: ChemotypeInput): ChemotypeResult {
+        const t = getT()
         const cannabinoids: Array<[string, number]> = [
             ['THC', input.thc],
             ['CBD', input.cbd],
             ['CBG', input.cbg],
         ]
         const terpenes: Array<[string, number]> = [
-            ['Limonene', input.limonene],
-            ['Myrcene', input.myrcene],
-            ['Pinene', input.pinene],
-            ['Linalool', input.linalool],
-            ['Caryophyllene', input.caryophyllene],
+            [t('equipmentView.calculators.chemotype.labels.limonene'), input.limonene],
+            [t('equipmentView.calculators.chemotype.labels.myrcene'), input.myrcene],
+            [t('equipmentView.calculators.chemotype.labels.pinene'), input.pinene],
+            [t('equipmentView.calculators.chemotype.labels.linalool'), input.linalool],
+            [t('equipmentView.calculators.chemotype.labels.caryophyllene'), input.caryophyllene],
         ]
 
         const dominantCannabinoid = dominantKey(cannabinoids)
         const dominantTerpene = dominantKey(terpenes)
 
-        let profileLabel = 'Balanced profile'
-        if (input.thc >= 18 && input.cbd < 1) profileLabel = 'THC-forward'
-        if (input.cbd >= 8 && input.thc <= 12) profileLabel = 'CBD-forward'
-        if (input.myrcene >= 0.6) profileLabel = 'Relaxing terpene profile'
-        if (input.limonene >= 0.5 && input.pinene >= 0.3) profileLabel = 'Uplifting terpene profile'
+        let profileLabel = t('equipmentView.calculators.chemotype.profiles.balanced')
+        if (input.thc >= 18 && input.cbd < 1) profileLabel = t('equipmentView.calculators.chemotype.profiles.thcForward')
+        if (input.cbd >= 8 && input.thc <= 12) profileLabel = t('equipmentView.calculators.chemotype.profiles.cbdForward')
+        if (input.myrcene >= 0.6) profileLabel = t('equipmentView.calculators.chemotype.profiles.relaxing')
+        if (input.limonene >= 0.5 && input.pinene >= 0.3) profileLabel = t('equipmentView.calculators.chemotype.profiles.uplifting')
 
         const guidance = [
-            `Dominant cannabinoid: ${dominantCannabinoid}`,
-            `Dominant terpene: ${dominantTerpene}`,
-            'Record observed effects with dose, timing, and set/setting.',
-            'Avoid driving or operating machinery after consumption.',
+            t('equipmentView.calculators.chemotype.guidance.dominantCannabinoid', { name: dominantCannabinoid }),
+            t('equipmentView.calculators.chemotype.guidance.dominantTerpene', { name: dominantTerpene }),
+            t('equipmentView.calculators.chemotype.guidance.recordEffects'),
+            t('equipmentView.calculators.chemotype.guidance.avoidDriving'),
         ]
 
         return {
@@ -61,8 +64,7 @@ class ChemotypeService {
             dominantTerpene,
             profileLabel,
             guidance,
-            disclaimer:
-                'Medical disclaimer: This calculator is educational only and not medical advice. Always consult qualified healthcare professionals before making treatment decisions.',
+            disclaimer: t('equipmentView.calculators.chemotype.disclaimer'),
         }
     }
 }

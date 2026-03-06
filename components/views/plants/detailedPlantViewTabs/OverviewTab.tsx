@@ -107,7 +107,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                     </h3>
                     <Button size="sm" variant="secondary" onClick={handleExportReport} disabled={isExporting}>
                         <PhosphorIcons.FilePdf className="w-5 h-5 mr-1" />
-                        {isExporting ? 'Exporting...' : 'Export PDF'}
+                        {isExporting ? t('common.exporting') : t('common.exportPdf')}
                     </Button>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg">
@@ -123,7 +123,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
 
             {/* 6. Hourly VPD Simulation */}
             <Card>
-                <h3 className="text-xl font-bold font-display text-primary-400 mb-3">VPD 24h Simulation</h3>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-3">{t('plantsView.vpd.simulation24h')}</h3>
                 <VPDChart plant={plant} />
             </Card>
         </div>

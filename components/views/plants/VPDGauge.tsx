@@ -48,7 +48,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
         <div
             className="flex flex-col items-center justify-center"
             role="img"
-            aria-label={`VPD ${vpd.toFixed(2)} kPa. ${status}. Leaf temp: ${leafTemp.toFixed(1)}°C.`}
+            aria-label={t('plantsView.vpd.gaugeLabel', { vpd: vpd.toFixed(2), status, leafTemp: leafTemp.toFixed(1) })}
         >
             <div className="relative w-24 h-24 sm:w-28 sm:h-28">
                 <svg className="w-full h-full transform -rotate-90" aria-hidden="true">
@@ -70,14 +70,14 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
                     <p className="text-xl sm:text-2xl font-bold">{vpd.toFixed(2)}</p>
                     <p className="text-xs text-slate-400 -mt-1">kPa</p>
                     {leafTempOffset !== 0 && (
-                        <p className="text-[10px] text-slate-500 mt-0.5" title={`Leaf temp: ${leafTemp.toFixed(1)}°C`}>
+                        <p className="text-[10px] text-slate-500 mt-0.5" title={`${t('plantsView.vpd.leafTemp')}: ${leafTemp.toFixed(1)}°C`}>
                             🍃 {leafTemp.toFixed(1)}°
                         </p>
                     )}
                     {altitudeM > 0 && (
                         <p
                             className="text-[10px] text-slate-500 mt-0.5"
-                            title={`Altitude correction ×${altitudeCorrectionFactor(altitudeM).toFixed(2)} @ ${altitudeM} m`}
+                            title={`${t('plantsView.vpd.altitudeCorrection')} ×${altitudeCorrectionFactor(altitudeM).toFixed(2)} @ ${altitudeM} m`}
                         >
                             ⛰ {altitudeM} m
                         </p>

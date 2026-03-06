@@ -81,7 +81,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
             }
         >
             <div className="space-y-6">
-                <FilterSection title="Quick Filters" isActive={isQuickFilterActive}>
+                <FilterSection title={t('strainsView.quickFilters')} isActive={isQuickFilterActive}>
                      <div className="flex items-center justify-between">
                         <label className="font-semibold text-slate-300">{t('strainsView.favorites')}</label>
                         <Switch checked={showFavorites} onChange={onToggleFavorites} />

@@ -36,18 +36,21 @@ interface GenealogyViewProps {
 // ---------------------------------------------------------------------------
 // Error-Fallback – wird angezeigt, wenn ein lokaler Fehler aufgetreten ist.
 // ---------------------------------------------------------------------------
-const GenealogyError: React.FC<{ message: string; onReset: () => void }> = ({ message, onReset }) => (
+const GenealogyError: React.FC<{ message: string; onReset: () => void }> = ({ message, onReset }) => {
+    const { t } = useTranslation();
+    return (
     <Card className="text-center py-10">
         <PhosphorIcons.WarningCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
         <p className="text-red-300 font-semibold">{message}</p>
         <p className="text-slate-400 text-sm mt-2">
-            Bitte Seite neu laden oder Support kontaktieren.
+            {t('strainsView.genealogyView.pleaseReloadOrContact')}
         </p>
         <Button variant="danger" size="sm" className="mt-4" onClick={onReset}>
-            <PhosphorIcons.ArrowClockwise className="mr-1" /> State zurücksetzen
+            <PhosphorIcons.ArrowClockwise className="mr-1" /> {t('common.resetState')}
         </Button>
     </Card>
-);
+    );
+};
 
 // ---------------------------------------------------------------------------
 // GenealogyLink – rechtwinklige Verbindungslinien zwischen Knoten.
@@ -570,7 +573,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         return (
             <Card key="data-loading" className="text-center py-10 text-slate-400">
                 <SkeletonLoader count={3} />
-                <p className="mt-4">Daten werden geladen…</p>
+                <p className="mt-4">{t('strainsView.genealogyView.dataLoading')}</p>
             </Card>
         );
     }
@@ -584,11 +587,10 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         <PhosphorIcons.WarningCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
                         <div className="flex-grow">
                             <p className="text-amber-200 text-sm font-semibold">
-                                Stammbaum-State wurde automatisch zurückgesetzt
+                                {t('strainsView.genealogyView.stateAutoReset')}
                             </p>
                             <p className="text-amber-300/70 text-xs mt-0.5">
-                                Der gespeicherte Zustand war beschädigt (alte Version oder unterbrochener
-                                Ladevorgang). Der Stammbaum wird beim nächsten Öffnen neu berechnet.
+                                {t('strainsView.genealogyView.stateCorrupted')}
                             </p>
                         </div>
                         <Button variant="secondary" size="sm" onClick={() => setWasReset(false)}>
@@ -700,7 +702,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         <Button
                             variant="danger"
                             size="sm"
-                            title="Reset genealogy cache (clears corrupted persisted trees)"
+                            title={t('strainsView.genealogyView.resetCache')}
                             onClick={() => {
                                 try {
                                     dispatch(resetGenealogyCache());
@@ -736,7 +738,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         className="mt-4"
                         onClick={handleResetError}
                     >
-                        <PhosphorIcons.ArrowClockwise className="mr-1" /> State zurücksetzen
+                        <PhosphorIcons.ArrowClockwise className="mr-1" /> {t('common.resetState')}
                     </Button>
                 </Card>
             )}

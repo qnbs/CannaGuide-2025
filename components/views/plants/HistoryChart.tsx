@@ -138,7 +138,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 <button
                     onClick={() => setView('growth')}
                     className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'growth' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}
-                    aria-label="Show growth metrics chart"
+                    aria-label={t('common.accessibility.showGrowthMetrics')}
                     aria-pressed={view === 'growth'}
                 >
                     {t('plantsView.detailedView.history')}
@@ -146,7 +146,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 <button
                     onClick={() => setView('substrate')}
                     className={`px-2 py-0.5 text-xs rounded-md ring-1 ring-inset ring-slate-700/50 ${view === 'substrate' ? 'bg-slate-700 font-semibold' : 'bg-slate-800'}`}
-                    aria-label="Show substrate metrics chart"
+                    aria-label={t('common.accessibility.showSubstrateMetrics')}
                     aria-pressed={view === 'substrate'}
                 >
                     {t('plantsView.detailedView.vitals')}
@@ -157,7 +157,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 viewBox={`0 0 ${width} ${height}`}
                 className="w-full h-full"
                 role="img"
-                aria-label="Plant history chart showing growth and substrate metrics over time"
+                aria-label={t('common.accessibility.plantHistoryChart')}
             >
                  <defs>
                     <linearGradient id="heightGradient" x1="0%" y1="0%" x2="0%" y2="100%">

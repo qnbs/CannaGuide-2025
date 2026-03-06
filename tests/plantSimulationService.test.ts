@@ -42,6 +42,23 @@ const testSetup = {
     medium: 'Soil' as const,
 }
 
+const tunedSimulationSettings = {
+    autoJournaling: {
+        logStageChanges: true,
+        logProblems: true,
+        logTasks: true,
+    },
+    simulationProfile: 'expert' as const,
+    pestPressure: 0.1,
+    nutrientSensitivity: 1.0,
+    environmentalStability: 0.9,
+    leafTemperatureOffset: -2,
+    lightExtinctionCoefficient: 0.7,
+    nutrientConversionEfficiency: 0.5,
+    stomataSensitivity: 1.0,
+    altitudeM: 0,
+}
+
 // Advance time by N simulation days (milliseconds)
 const daysMs = (n: number) => n * SIM_SECONDS_PER_DAY * 1000
 
@@ -118,6 +135,17 @@ describe('plantSimulationService', () => {
             const heated = plantSimulationService.applyEnvironmentalCorrections(hot)
             expect(heated.environment.vpd).toBeGreaterThan(cooled.environment.vpd)
         })
+
+        it('uses configured leaf offset and altitude for VPD calibration', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            const tuned = plantSimulationService.applyEnvironmentalCorrections(plant, {
+                ...tunedSimulationSettings,
+                leafTemperatureOffset: -3,
+                altitudeM: 1800,
+            })
+
+            expect(tuned.environment.vpd).not.toBeCloseTo(plant.environment.vpd, 3)
+        })
     })
 
     // ── CO2 ecosystem (_runDailyEcosystem) ────────────────────────────────────
@@ -181,6 +209,27 @@ describe('plantSimulationService', () => {
             const after = simulate(plant, 5)
             // Biomass should not increase meaningfully without nutrients
             expect(after.biomass.total).toBeCloseTo(1, 0)
+        })
+
+        it('changes biomass response when expert light and nutrient coefficients are tuned', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Vegetative
+            plant.age = 18
+            plant.nutrientPool = { nitrogen: 60, phosphorus: 60, potassium: 60 }
+            plant.biomass = { total: 1.2, stem: 0.5, leaves: 0.6, flowers: 0 }
+            plant.leafAreaIndex = 0.45
+
+            const start = Date.now()
+            vi.setSystemTime(start + daysMs(10))
+            const baseline = plantSimulationService.calculateStateForTimeDelta(plant, daysMs(10), tunedSimulationSettings).updatedPlant
+            const tuned = plantSimulationService.calculateStateForTimeDelta(plant, daysMs(10), {
+                ...tunedSimulationSettings,
+                lightExtinctionCoefficient: 1.1,
+                nutrientConversionEfficiency: 0.8,
+            }).updatedPlant
+            vi.setSystemTime(start)
+
+            expect(tuned.biomass.total).toBeGreaterThan(baseline.biomass.total)
         })
     })
 

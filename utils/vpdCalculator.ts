@@ -6,6 +6,7 @@ import type {
   VPDInput,
   VPDStatus,
 } from '@/types/simulation.types'
+import { calculateVPD as calculateScientificVPD } from '@/lib/vpd/calculator'
 
 const MEDIUM_MULTIPLIER: Record<MediumType, number> = {
   hydro: 1.25,
@@ -56,12 +57,7 @@ export const estimateTranspiration = (vpd: number, medium: MediumType): number =
 
 export const calculateVPD = (input: VPDInput): number => {
   const offset = input.leafTempOffset ?? getDynamicLeafOffset(input.airTemp, input.lightOn)
-  const leafTemp = input.airTemp + offset
-  const svpAir = calculateSVP(input.airTemp)
-  const svpLeaf = calculateSVP(leafTemp)
-  const avp = svpAir * (input.rh / 100)
-
-  let vpd = svpLeaf - avp
+  let vpd = calculateScientificVPD(input.airTemp, input.rh, offset, input.altitudeM ?? 0)
   vpd *= MEDIUM_MULTIPLIER[input.medium] * AIRFLOW_MULTIPLIER[input.airflow]
 
   return Number(vpd.toFixed(3))

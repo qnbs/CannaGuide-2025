@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType, VentilationPower, SimulationState, PlantStage } from '@/types';
+import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType, VentilationPower, SimulationState, PlantStage, AppSettings } from '@/types';
 import { plantSimulationService, PLANT_STAGE_DETAILS, vpdService } from '@/services/plantSimulationService';
 import { RootState } from '../store';
 import { addNotification, cancelNewGrow, setActiveView } from './uiSlice';
@@ -17,28 +17,6 @@ const initialState: SimulationState = {
     selectedPlantId: null,
     vpdProfiles: {},
     isCatchingUp: false,
-};
-
-// This is a pure function, copied here to avoid circular dependencies with plantSimulationService
-const calculateVPD = (tempC: number, rh: number, leafTempOffset: number): number => {
-    const tempLeaf = tempC + leafTempOffset;
-    // Coefficient 0.6108 matches the canonical vpdCalculator.ts implementation
-    const svpAir = 0.6108 * Math.exp((17.27 * tempC) / (tempC + 237.3));
-    const avp = svpAir * (rh / 100);
-    const svpLeaf = 0.6108 * Math.exp((17.27 * tempLeaf) / (tempLeaf + 237.3));
-    return svpLeaf - avp;
-};
-
-const getDynamicLeafOffset = (plant: Plant): number => {
-    const baseOffset = plant.equipment.light.type === 'HPS' ? 3.5 : 2.5;
-    const circulationAdjustment = plant.equipment.circulationFan.isOn ? -0.3 : 0.4;
-    return Math.min(4, Math.max(2, baseOffset + circulationAdjustment));
-};
-
-const getCorrectedRhByMedium = (plant: Plant): number => {
-    const mediumCorrection = plant.mediumType === 'Hydro' ? 2 : plant.mediumType === 'Coco' ? -2 : 0;
-    const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0;
-    return Math.min(95, Math.max(25, plant.environment.internalHumidity + mediumCorrection + potAdjustment));
 };
 
 const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
@@ -178,8 +156,8 @@ const simulationSlice = createSlice({
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) plant.equipment.exhaustFan.power = action.payload.power;
         },
-        setGlobalEnvironment: (state, action: PayloadAction<{ temperature?: number; humidity?: number }>) => {
-            const { temperature, humidity } = action.payload;
+        setGlobalEnvironment: (state, action: PayloadAction<{ temperature?: number; humidity?: number; simulationSettings?: AppSettings['simulation'] }>) => {
+            const { temperature, humidity, simulationSettings } = action.payload;
             state.plantSlots.forEach(plantId => {
                 if (plantId) {
                     const plant = state.plants.entities[plantId];
@@ -190,9 +168,7 @@ const simulationSlice = createSlice({
                         if (humidity !== undefined) {
                             plant.environment.internalHumidity = humidity;
                         }
-                        const correctedRh = getCorrectedRhByMedium(plant);
-                        const leafOffset = getDynamicLeafOffset(plant);
-                        plant.environment.vpd = calculateVPD(plant.environment.internalTemperature, correctedRh, leafOffset);
+                        plant.environment = plantSimulationService.applyEnvironmentalCorrections(plant, simulationSettings).environment;
                     }
                 }
             });
@@ -236,10 +212,11 @@ const simulationSlice = createSlice({
 export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: RootState }>(
     'simulation/generatePlantVpdProfile',
     async (plantId, { getState, dispatch }) => {
-        const plant = getState().simulation.plants.entities[plantId];
+        const state = getState();
+        const plant = state.simulation.plants.entities[plantId];
         if (!plant) return;
 
-        const input = vpdService.createInputFromPlant(plant);
+        const input = vpdService.createInputFromPlant(plant, state.settings.settings.simulation);
         const points = await vpdService.runDailyVPD(input);
         dispatch(simulationSlice.actions.setPlantVpdProfile({ plantId, points }));
     },
@@ -324,7 +301,7 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                 try {
                     const result = await new Promise<{ updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] }>((resolve, reject) => {
                         if (typeof Worker === 'undefined') {
-                            resolve(plantSimulationService.calculateStateForTimeDelta(plant, deltaTime))
+                            resolve(plantSimulationService.calculateStateForTimeDelta(plant, deltaTime, settings.simulation))
                             return
                         }
 
@@ -337,7 +314,7 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                             worker.terminate();
                             reject(new Error(e.message))
                         };
-                        worker.postMessage({ plant, deltaTime });
+                        worker.postMessage({ plant, deltaTime, simulationSettings: settings.simulation });
                     })
 
                     const filteredJournalEntries = result.newJournalEntries.filter((entry) => {

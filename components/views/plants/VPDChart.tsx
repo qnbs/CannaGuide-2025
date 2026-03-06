@@ -6,6 +6,7 @@ import { getVPDStatusAdvice, VPD_TARGET_BANDS } from '@/lib/vpd/recommendations'
 import type { SimulationPoint } from '@/types/simulation.types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { generatePlantVpdProfile } from '@/stores/slices/simulationSlice'
+import { selectSettings } from '@/stores/selectors'
 import { useTranslation } from 'react-i18next'
 
 interface VPDChartProps {
@@ -18,8 +19,9 @@ export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
   const [data, setData] = useState<SimulationPoint[]>([])
   const [error, setError] = useState(false)
   const profileFromStore = useAppSelector((state) => state.simulation.vpdProfiles?.[plant.id])
+  const simulationSettings = useAppSelector(selectSettings).simulation
 
-  const input = useMemo(() => vpdService.createInputFromPlant(plant), [plant])
+  const input = useMemo(() => vpdService.createInputFromPlant(plant, simulationSettings), [plant, simulationSettings])
   const band = VPD_TARGET_BANDS[input.phase]
 
   useEffect(() => {

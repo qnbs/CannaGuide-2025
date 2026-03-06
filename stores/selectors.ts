@@ -1,4 +1,5 @@
 import { createSelector } from '@reduxjs/toolkit'
+import { calculateVPD as calculateScientificVPD } from '@/lib/vpd/calculator'
 import { RootState } from './store'
 import {
     ArchivedAdvisorResponse,
@@ -212,19 +213,11 @@ export const selectActiveProblemsSummary = createSelector(
         ),
 )
 
-// Copied from simulationSlice to avoid circular dependencies
-const calculateVPD = (tempC: number, rh: number, leafTempOffset: number): number => {
-    const tempLeaf = tempC + leafTempOffset;
-    const svpAir = 0.61078 * Math.exp((17.27 * tempC) / (tempC + 237.3));
-    const avp = svpAir * (rh / 100);
-    const svpLeaf = 0.61078 * Math.exp((17.27 * tempLeaf) / (tempLeaf + 237.3));
-    return svpLeaf - avp;
-};
-
 export const selectGardenHealthMetrics = createSelector(
     [selectActivePlants, selectSettings],
     (activePlants, settings) => {
     const leafTempOffset = settings.simulation?.leafTemperatureOffset ?? -2;
+    const altitudeM = settings.simulation?.altitudeM ?? 0;
     const activePlantsCount = activePlants.length;
     if (activePlantsCount === 0) {
         const defaultTemp = 22;
@@ -234,7 +227,7 @@ export const selectGardenHealthMetrics = createSelector(
             activePlantsCount: 0, 
             avgTemp: defaultTemp, 
             avgHumidity: defaultHumidity,
-            avgVPD: calculateVPD(defaultTemp, defaultHumidity, leafTempOffset)
+            avgVPD: calculateScientificVPD(defaultTemp, defaultHumidity, leafTempOffset, altitudeM)
         };
     }
     const totalHealth = activePlants.reduce((sum, p) => sum + p.health, 0);
@@ -249,7 +242,7 @@ export const selectGardenHealthMetrics = createSelector(
         activePlantsCount,
         avgTemp,
         avgHumidity,
-        avgVPD: calculateVPD(avgTemp, avgHumidity, leafTempOffset)
+        avgVPD: calculateScientificVPD(avgTemp, avgHumidity, leafTempOffset, altitudeM)
     };
 });
 

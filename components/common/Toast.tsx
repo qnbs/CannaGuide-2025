@@ -67,6 +67,7 @@ const Toast: React.FC<ToastProps> = ({ notification, onClose }) => {
 }
 
 export const ToastContainer: React.FC = () => {
+    const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const notifications = useAppSelector(selectNotifications)
     const container = document.getElementById('toast-container')
@@ -78,11 +79,11 @@ export const ToastContainer: React.FC = () => {
     if (!container) return null
 
     return ReactDOM.createPortal(
-        <>
+        <div role="log" aria-live="assertive" aria-label={t('common.accessibility.toastNotifications')}>
             {notifications.map((n) => (
                 <Toast key={n.id} notification={n} onClose={handleClose} />
             ))}
-        </>,
+        </div>,
         container,
     )
 }

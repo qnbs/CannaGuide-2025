@@ -204,6 +204,18 @@ export const common = {
         showSubstrateMetrics: 'Substratdaten anzeigen',
         plantHistoryChart: 'Pflanzenverlauf mit Wachstums- und Substratmesswerten über die Zeit',
         openStrainDetails: 'Sortendetails öffnen',
+        skipToMain: 'Zum Hauptinhalt springen',
+        mainContent: 'Hauptinhalt',
+        mainNavigation: 'Hauptnavigation',
+        genealogyTree: 'Stammbaum der Sortenherkunft',
+        genealogyTreeNode: '{{name}}, {{type}}-Sorte, THC {{thc}}%',
+        expandAncestors: 'Vorfahren von {{name}} anzeigen',
+        collapseAncestors: 'Vorfahren von {{name}} zuklappen',
+        filterByLetter: 'Sorten nach Buchstabe filtern',
+        filterResultsCount: '{{count}} Sorten entsprechen Ihren Filtern',
+        searchResultsCount: '{{count}} Ergebnisse gefunden',
+        layoutOrientation: 'Baumlayout: {{orientation}}',
+        toastNotifications: 'Benachrichtigungen',
     },
 };
 

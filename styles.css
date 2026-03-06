@@ -141,6 +141,25 @@ body {
 .ui-density-compact .glass-pane, .ui-density-compact details { padding: 0.75rem !important; }
 
 /* --- ACCESSIBILITY --- */
+
+/* Skip-to-main link – visible only on keyboard focus (WCAG 2.4.1) */
+.skip-link {
+	position: absolute;
+	left: -9999px;
+	z-index: 999;
+	padding: 0.75rem 1.5rem;
+	background-color: rgb(var(--color-primary-500));
+	color: white;
+	font-weight: 700;
+	border-radius: 0 0 0.5rem 0;
+	text-decoration: none;
+	white-space: nowrap;
+}
+.skip-link:focus {
+	left: 0;
+	top: 0;
+}
+
 .font-dyslexia body { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
 .font-dyslexia .font-display, .font-dyslexia .font-mono { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
 

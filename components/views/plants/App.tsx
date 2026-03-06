@@ -173,6 +173,12 @@ export const App: React.FC = () => {
 
     return (
         <div className="flex flex-col md:flex-row h-screen bg-[rgb(var(--color-bg-primary))] text-slate-300 font-sans">
+            <a
+                href="#main-content"
+                className="skip-link"
+            >
+                {t('common.accessibility.skipToMain')}
+            </a>
             <SideNav />
             <div className="flex flex-col flex-grow overflow-hidden min-h-0">
                 <Header
@@ -182,6 +188,8 @@ export const App: React.FC = () => {
                     onInstallClick={handleInstallClick}
                 />
                 <main
+                    id="main-content"
+                    aria-label={t('common.accessibility.mainContent')}
                     className="flex-grow min-h-0 overflow-y-auto p-4 sm:p-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pb-6 scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:scroll-pb-8"
                 >
                     {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}

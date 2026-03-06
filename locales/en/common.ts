@@ -203,6 +203,18 @@ export const common = {
         showSubstrateMetrics: 'Show substrate metrics chart',
         plantHistoryChart: 'Plant history chart showing growth and substrate metrics over time',
         openStrainDetails: 'Open strain details',
+        skipToMain: 'Skip to main content',
+        mainContent: 'Main content',
+        mainNavigation: 'Main navigation',
+        genealogyTree: 'Genealogy tree showing strain lineage',
+        genealogyTreeNode: '{{name}}, {{type}} strain, THC {{thc}}%',
+        expandAncestors: 'Expand ancestors for {{name}}',
+        collapseAncestors: 'Collapse ancestors for {{name}}',
+        filterByLetter: 'Filter strains by letter',
+        filterResultsCount: '{{count}} strains match your filters',
+        searchResultsCount: '{{count}} results found',
+        layoutOrientation: 'Tree layout: {{orientation}}',
+        toastNotifications: 'Notifications',
     },
 };
 

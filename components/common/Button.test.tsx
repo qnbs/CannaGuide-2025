@@ -18,10 +18,12 @@ describe('Button', () => {
 
     it('applies variant classes correctly', () => {
         const { rerender } = render(<Button variant="primary">Primary</Button>);
-        expect(screen.getByText('Primary')).toHaveClass('from-primary-500');
+        expect(screen.getByText('Primary')).toHaveClass('border-primary-400/35');
+        expect(screen.getByText('Primary')).toHaveClass('text-white');
 
         rerender(<Button variant="secondary">Secondary</Button>);
-        expect(screen.getByText('Secondary')).toHaveClass('text-slate-200');
+        expect(screen.getByText('Secondary')).toHaveClass('border-white/12');
+        expect(screen.getByText('Secondary')).toHaveClass('text-slate-100');
     });
 
     it('applies size classes correctly', () => {

@@ -9,14 +9,15 @@ const DB_NAME = 'CannaGuideStateDB';
 const DB_VERSION = 1;
 const STORE_NAME = 'zustand_state';
 
-let db: IDBDatabase;
+let db: IDBDatabase | null = null;
+// Promise lock – prevents concurrent openDB() calls from opening duplicate connections
+let dbPromise: Promise<IDBDatabase> | null = null;
 
 const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    if (db) {
-      return resolve(db);
-    }
+  if (db) return Promise.resolve(db);
+  if (dbPromise) return dbPromise;
 
+  dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
     request.onupgradeneeded = (event) => {
@@ -28,51 +29,61 @@ const openDB = (): Promise<IDBDatabase> => {
 
     request.onsuccess = (event) => {
       db = (event.target as IDBOpenDBRequest).result;
+      // Handle connection loss (storage pressure, version upgrade from another tab)
+      db.onclose = () => { db = null; dbPromise = null; };
+      db.onversionchange = () => { db?.close(); db = null; dbPromise = null; };
       resolve(db);
     };
 
     request.onerror = (event) => {
+      dbPromise = null;
       console.error("IndexedDB error:", (event.target as IDBOpenDBRequest).error);
       reject((event.target as IDBOpenDBRequest).error);
     };
   });
+
+  return dbPromise;
 };
 
-const getStore = (mode: IDBTransactionMode): IDBObjectStore => {
-  const transaction = db.transaction(STORE_NAME, mode);
+const getStore = async (mode: IDBTransactionMode): Promise<IDBObjectStore> => {
+  const conn = await openDB();
+  const transaction = conn.transaction(STORE_NAME, mode);
   return transaction.objectStore(STORE_NAME);
 };
 
 export const indexedDBStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    await openDB();
-    return new Promise((resolve, reject) => {
-      const store = getStore('readonly');
-      const request = store.get(name);
-      request.onsuccess = () => {
-        resolve((request.result as string) || null);
-      };
-      request.onerror = () => {
-        reject(request.error);
-      };
+    return new Promise(async (resolve, reject) => {
+      try {
+        const store = await getStore('readonly');
+        const request = store.get(name);
+        request.onsuccess = () => {
+          resolve((request.result as string) || null);
+        };
+        request.onerror = () => {
+          reject(request.error);
+        };
+      } catch (e) { reject(e); }
     });
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await openDB();
-    return new Promise((resolve, reject) => {
-      const store = getStore('readwrite');
-      const request = store.put(value, name);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+    return new Promise(async (resolve, reject) => {
+      try {
+        const store = await getStore('readwrite');
+        const request = store.put(value, name);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      } catch (e) { reject(e); }
     });
   },
   removeItem: async (name: string): Promise<void> => {
-    await openDB();
-    return new Promise((resolve, reject) => {
-      const store = getStore('readwrite');
-      const request = store.delete(name);
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+    return new Promise(async (resolve, reject) => {
+      try {
+        const store = await getStore('readwrite');
+        const request = store.delete(name);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+      } catch (e) { reject(e); }
     });
   },
 };

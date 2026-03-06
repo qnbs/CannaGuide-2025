@@ -56,19 +56,21 @@ const IMAGE_PRUNE_BATCH_SIZE = 20;
 
 // --- CONNECTION MANAGEMENT ---
 
-let db: IDBDatabase;
+let db: IDBDatabase | null = null;
+// Promise lock – prevents concurrent openDB() calls from opening duplicate connections
+let dbPromise: Promise<IDBDatabase> | null = null;
 
 /**
  * Opens and initializes the IndexedDB database.
- * This function acts as a singleton, returning a cached connection if available.
- * It includes a robust, versioned schema migration strategy.
+ * Uses a promise lock so concurrent callers share a single connection attempt.
+ * Handles connection loss (storage pressure, version upgrade from another tab).
  * @returns {Promise<IDBDatabase>} A promise that resolves with the database connection.
  */
 const openDB = (): Promise<IDBDatabase> => {
-    return new Promise((resolve, reject) => {
-        if (db) {
-            return resolve(db);
-        }
+    if (db) return Promise.resolve(db);
+    if (dbPromise) return dbPromise;
+
+    dbPromise = new Promise<IDBDatabase>((resolve, reject) => {
 
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -123,14 +125,20 @@ const openDB = (): Promise<IDBDatabase> => {
 
         request.onsuccess = (event) => {
             db = (event.target as IDBOpenDBRequest).result;
+            // Handle connection loss (storage pressure, version upgrade from another tab)
+            db.onclose = () => { db = null; dbPromise = null; };
+            db.onversionchange = () => { db?.close(); db = null; dbPromise = null; };
             resolve(db);
         };
 
         request.onerror = (event) => {
+            dbPromise = null;
             console.error("[dbService] IndexedDB connection error:", (event.target as IDBOpenDBRequest).error);
             reject((event.target as IDBOpenDBRequest).error);
         };
     });
+
+    return dbPromise;
 };
 
 /**
@@ -146,9 +154,9 @@ const openDB = (): Promise<IDBDatabase> => {
  * @returns {Promise<T>} A promise that resolves with the result of the request upon transaction completion.
  */
 const performTx = async <T>(storeName: string, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> => {
-    await openDB();
+    const conn = await openDB();
     return new Promise((resolve, reject) => {
-        const transaction = db.transaction(storeName, mode);
+        const transaction = conn.transaction(storeName, mode);
         let requestResult: T;
 
         transaction.onerror = () => {
@@ -252,9 +260,9 @@ export const dbService = {
      * @returns {Promise<void>} A promise that resolves on successful completion or rejects on error.
      */
     async addStrains(strains: Strain[]): Promise<void> {
-        await openDB();
+        const conn = await openDB();
         return new Promise<void>((resolve, reject) => {
-            const transaction = db.transaction(STRAINS_STORE, 'readwrite');
+            const transaction = conn.transaction(STRAINS_STORE, 'readwrite');
             const store = transaction.objectStore(STRAINS_STORE);
     
             transaction.oncomplete = () => {
@@ -292,9 +300,9 @@ export const dbService = {
      * @returns {Promise<Strain[]>} A promise that resolves with an array of all strains.
      */
     async getAllStrains(): Promise<Strain[]> {
-        await openDB();
+        const conn = await openDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STRAINS_STORE, 'readonly');
+            const transaction = conn.transaction(STRAINS_STORE, 'readonly');
             const store = transaction.objectStore(STRAINS_STORE);
             const request = store.openCursor();
             const results: Strain[] = [];
@@ -324,9 +332,9 @@ export const dbService = {
      * @returns {Promise<Strain[]>} A promise that resolves with the matching strains.
      */
     async queryStrainsByIndex(indexName: string, query: IDBValidKey | IDBKeyRange): Promise<Strain[]> {
-        await openDB();
+        const conn = await openDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STRAINS_STORE, 'readonly');
+            const transaction = conn.transaction(STRAINS_STORE, 'readonly');
             const store = transaction.objectStore(STRAINS_STORE);
             const index = store.index(indexName);
             const request = index.getAll(query);
@@ -368,7 +376,7 @@ export const dbService = {
     },
 
     async pruneOldImages(maxToDelete = IMAGE_PRUNE_BATCH_SIZE): Promise<number> {
-        await openDB();
+        const conn = await openDB();
 
         const allImages = await performTx<StoredImageData[]>(IMAGES_STORE, 'readonly', store => store.getAll());
         if (allImages.length === 0) {
@@ -379,7 +387,7 @@ export const dbService = {
         const imagesToDelete = sortedByAge.slice(0, Math.min(maxToDelete, sortedByAge.length));
 
         await new Promise<void>((resolve, reject) => {
-            const transaction = db.transaction(IMAGES_STORE, 'readwrite');
+            const transaction = conn.transaction(IMAGES_STORE, 'readwrite');
             const store = transaction.objectStore(IMAGES_STORE);
 
             transaction.oncomplete = () => resolve();
@@ -409,9 +417,9 @@ export const dbService = {
      * @returns {Promise<void>} A promise that resolves on completion.
      */
     async updateSearchIndex(index: Record<string, string[]>): Promise<void> {
-        await openDB();
+        const conn = await openDB();
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STRAIN_SEARCH_INDEX_STORE, 'readwrite');
+            const transaction = conn.transaction(STRAIN_SEARCH_INDEX_STORE, 'readwrite');
             const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
 
             transaction.oncomplete = () => resolve();
@@ -445,10 +453,10 @@ export const dbService = {
      */
     async searchIndex(tokens: string[]): Promise<Set<string>> {
         if (tokens.length === 0) return new Set();
-        await openDB();
+        const conn = await openDB();
 
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(STRAIN_SEARCH_INDEX_STORE, 'readonly');
+            const transaction = conn.transaction(STRAIN_SEARCH_INDEX_STORE, 'readonly');
             const store = transaction.objectStore(STRAIN_SEARCH_INDEX_STORE);
             const resultSets: Set<string>[] = [];
 

@@ -69,6 +69,10 @@ const createMockState = (overrides?: Partial<RootState>): RootState => {
                 general: {
                     language: 'en',
                 },
+                simulation: {
+                    leafTemperatureOffset: -2,
+                    altitudeM: 0,
+                },
             },
         },
     } as unknown as RootState;

@@ -16,6 +16,7 @@ const initialState: SimulationState = {
     plantSlots: [null, null, null],
     selectedPlantId: null,
     vpdProfiles: {},
+    isCatchingUp: false,
 };
 
 // This is a pure function, copied here to avoid circular dependencies with plantSimulationService
@@ -91,6 +92,7 @@ const simulationSlice = createSlice({
             state.plantSlots = action.payload.plantSlots;
             state.selectedPlantId = action.payload.selectedPlantId;
             state.vpdProfiles = action.payload.vpdProfiles || {};
+            state.isCatchingUp = action.payload.isCatchingUp ?? false;
         },
         addPlant: (state, action: PayloadAction<{ plant: Plant, slotIndex: number }>) => {
             const { plant, slotIndex } = action.payload;
@@ -225,6 +227,9 @@ const simulationSlice = createSlice({
         setPlantVpdProfile: (state, action: PayloadAction<{ plantId: string; points: SimulationPoint[] }>) => {
             state.vpdProfiles[action.payload.plantId] = action.payload.points;
         },
+        setCatchUpState: (state, action: PayloadAction<boolean>) => {
+            state.isCatchingUp = action.payload;
+        },
     }
 });
 
@@ -243,7 +248,7 @@ export const generatePlantVpdProfile = createAsyncThunk<void, string, { state: R
 export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
     'simulation/startNewPlant',
     (_, { dispatch, getState }) => {
-        const { ui, simulation } = getState();
+        const { ui, simulation, settings } = getState();
         const { strain, setup, slotIndex } = ui.newGrowFlow;
 
         let finalSlotIndex = slotIndex;
@@ -262,7 +267,12 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
         }
 
         if (strain && setup) {
-            const validation = GrowSetupSchema.safeParse(setup);
+            const mergedSetup = {
+                ...settings.settings.defaults.growSetup,
+                ...setup,
+            }
+
+            const validation = GrowSetupSchema.safeParse(mergedSetup);
             if (!validation.success) {
                 const t = getT();
                 console.error("Grow setup validation failed:", validation.error);
@@ -310,9 +320,26 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
             const settings = state.settings.settings
             const deltaTime = actualElapsed;
             if (actualElapsed > 1000 * 60) { // Only update if more than a minute has passed
-                const worker = new Worker(new URL('../../simulation.worker.ts', import.meta.url), { type: 'module' });
-                worker.onmessage = (e) => {
-                    const result = e.data as { updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] }
+                dispatch(simulationSlice.actions.setCatchUpState(true))
+                try {
+                    const result = await new Promise<{ updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] }>((resolve, reject) => {
+                        if (typeof Worker === 'undefined') {
+                            resolve(plantSimulationService.calculateStateForTimeDelta(plant, deltaTime))
+                            return
+                        }
+
+                        const worker = new Worker(new URL('../../simulation.worker.ts', import.meta.url), { type: 'module' });
+                        worker.onmessage = (e) => {
+                            worker.terminate();
+                            resolve(e.data as { updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] })
+                        };
+                        worker.onerror = (e) => {
+                            worker.terminate();
+                            reject(new Error(e.message))
+                        };
+                        worker.postMessage({ plant, deltaTime });
+                    })
+
                     const filteredJournalEntries = result.newJournalEntries.filter((entry) => {
                         if (entry.type !== JournalEntryType.System) {
                             return true
@@ -333,7 +360,6 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                                 createdAt: Date.now(),
                                 type: JournalEntryType.System,
                                 notes: `Problem detected: ${problem.type}`,
-                                details: { type: problem.type, severity: problem.severity },
                             }))
                         : []
 
@@ -344,7 +370,6 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                             createdAt: Date.now(),
                             type: JournalEntryType.System,
                             notes: `Task generated: ${task.title}`,
-                            details: { title: task.title, priority: task.priority },
                         }))
                         : []
 
@@ -371,13 +396,11 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                         newJournalEntries: [...filteredJournalEntries, ...newProblemEntries, ...taskJournalEntries],
                         newTasks: filteredTasks,
                     }));
-                    worker.terminate();
-                };
-                worker.onerror = (e) => {
-                    console.error('[SimWorker] Error during plant state update:', e.message);
-                    worker.terminate();
-                };
-                worker.postMessage({ plant, deltaTime });
+                } catch (error) {
+                    console.error('[SimWorker] Error during plant state update:', error);
+                } finally {
+                    dispatch(simulationSlice.actions.setCatchUpState(false))
+                }
             }
         }
     }
@@ -500,6 +523,7 @@ export const {
     processPostHarvest,
     resetPlants,
     setPlantVpdProfile,
+    setCatchUpState,
 } = simulationSlice.actions;
 
 export default simulationSlice.reducer;

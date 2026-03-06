@@ -11,6 +11,7 @@ import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { TTSControls } from '@/components/common/TTSControls'
 import { useDocumentEffects } from '@/hooks/useDocumentEffects'
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import {
@@ -58,7 +59,7 @@ const PinLockScreen: React.FC<{
         <div className="flex h-screen items-center justify-center bg-[rgb(var(--color-bg-primary))] p-6 text-slate-200">
             <div className="glass-pane w-full max-w-md rounded-2xl p-6 space-y-5">
                 <div className="text-center space-y-2">
-                    <PhosphorIcons.LockKey className="mx-auto h-14 w-14 text-primary-400" />
+                    <PhosphorIcons.ShieldCheck className="mx-auto h-14 w-14 text-primary-400" />
                     <h2 className="text-2xl font-bold font-display text-slate-100">{t('settingsView.privacy.unlockTitle')}</h2>
                     <p className="text-sm text-slate-400">{t('settingsView.privacy.unlockDesc')}</p>
                 </div>

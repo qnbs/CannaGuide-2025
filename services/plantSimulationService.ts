@@ -11,6 +11,18 @@ import type {
 } from '@/types/simulation.types';
 import { calculateVPD as calculateVpdValue, getVPDStatus, runDailySimulation } from '@/utils/vpdCalculator';
 
+const SIM_MILLISECONDS_PER_DAY = SIM_SECONDS_PER_DAY * 1000;
+
+const DEFAULT_GENETIC_MODIFIERS: GeneticModifiers = {
+    pestResistance: 1,
+    nutrientUptakeRate: 1,
+    stressTolerance: 1,
+    rue: 1.5,
+    vpdTolerance: { min: 0.8, max: 1.4 },
+    transpirationFactor: 1,
+    stomataSensitivity: 1,
+};
+
 // More detailed stage information for the mechanistic model
 export const PLANT_STAGE_DETAILS: Record<PlantStage, { 
     duration: number, // days
@@ -39,9 +51,130 @@ class PlantSimulationService {
         return Math.min(max, Math.max(min, value));
     }
 
+    private _normalizeModifiers(modifiers?: Partial<GeneticModifiers> | null): GeneticModifiers {
+        const merged = {
+            ...DEFAULT_GENETIC_MODIFIERS,
+            ...(modifiers ?? {}),
+            vpdTolerance: {
+                ...DEFAULT_GENETIC_MODIFIERS.vpdTolerance,
+                ...(modifiers?.vpdTolerance ?? {}),
+            },
+        };
+
+        return {
+            pestResistance: this._clamp(Number.isFinite(merged.pestResistance) ? merged.pestResistance : DEFAULT_GENETIC_MODIFIERS.pestResistance, 0.2, 3),
+            nutrientUptakeRate: this._clamp(Number.isFinite(merged.nutrientUptakeRate) ? merged.nutrientUptakeRate : DEFAULT_GENETIC_MODIFIERS.nutrientUptakeRate, 0.2, 3),
+            stressTolerance: this._clamp(Number.isFinite(merged.stressTolerance) ? merged.stressTolerance : DEFAULT_GENETIC_MODIFIERS.stressTolerance, 0.2, 3),
+            rue: this._clamp(Number.isFinite(merged.rue) ? merged.rue : DEFAULT_GENETIC_MODIFIERS.rue, 0.5, 3),
+            vpdTolerance: {
+                min: this._clamp(Number.isFinite(merged.vpdTolerance.min) ? merged.vpdTolerance.min : DEFAULT_GENETIC_MODIFIERS.vpdTolerance.min, 0.2, 2),
+                max: this._clamp(Number.isFinite(merged.vpdTolerance.max) ? merged.vpdTolerance.max : DEFAULT_GENETIC_MODIFIERS.vpdTolerance.max, 0.4, 2.5),
+            },
+            transpirationFactor: this._clamp(Number.isFinite(merged.transpirationFactor) ? merged.transpirationFactor : DEFAULT_GENETIC_MODIFIERS.transpirationFactor, 0.2, 3),
+            stomataSensitivity: this._clamp(Number.isFinite(merged.stomataSensitivity) ? merged.stomataSensitivity : DEFAULT_GENETIC_MODIFIERS.stomataSensitivity, 0.2, 3),
+        };
+    }
+
+    private _normalizePlant(plant: Plant): Plant {
+        const waterCapacity = Math.max(1, (plant.equipment?.potSize ?? 11) * 1000 * ((plant.equipment?.potType ?? 'Fabric') === 'Fabric' ? 0.28 : 0.35));
+        const strainModifiers = this._normalizeModifiers(plant.strain?.geneticModifiers);
+        const phenotypeModifiers = this._normalizeModifiers(plant.phenotypeModifiers ?? strainModifiers);
+
+        return {
+            ...plant,
+            mediumType: plant.mediumType ?? 'Soil',
+            createdAt: Number.isFinite(plant.createdAt) ? plant.createdAt : Date.now(),
+            lastUpdated: Number.isFinite(plant.lastUpdated) ? plant.lastUpdated : Date.now(),
+            age: Number.isFinite(plant.age) ? plant.age : 0,
+            health: this._clamp(Number.isFinite(plant.health) ? plant.health : 100, 0, 100),
+            stressLevel: this._clamp(Number.isFinite(plant.stressLevel) ? plant.stressLevel : 0, 0, 100),
+            height: Number.isFinite(plant.height) ? plant.height : 0,
+            biomass: {
+                total: Number.isFinite(plant.biomass?.total) ? plant.biomass.total : 0.01,
+                stem: Number.isFinite(plant.biomass?.stem) ? plant.biomass.stem : 0.01,
+                leaves: Number.isFinite(plant.biomass?.leaves) ? plant.biomass.leaves : 0,
+                flowers: Number.isFinite(plant.biomass?.flowers) ? plant.biomass.flowers : 0,
+            },
+            leafAreaIndex: Number.isFinite(plant.leafAreaIndex) ? plant.leafAreaIndex : 0.01,
+            environment: {
+                internalTemperature: Number.isFinite(plant.environment?.internalTemperature) ? plant.environment.internalTemperature : 24,
+                internalHumidity: this._clamp(Number.isFinite(plant.environment?.internalHumidity) ? plant.environment.internalHumidity : 65, 0, 100),
+                vpd: Number.isFinite(plant.environment?.vpd) ? plant.environment.vpd : 0,
+                co2Level: this._clamp(Number.isFinite(plant.environment?.co2Level) ? plant.environment.co2Level : 400, 200, 1500),
+            },
+            medium: {
+                ph: Number.isFinite(plant.medium?.ph) ? plant.medium.ph : 6.5,
+                ec: Math.max(0, Number.isFinite(plant.medium?.ec) ? plant.medium.ec : 0.8),
+                moisture: this._clamp(Number.isFinite(plant.medium?.moisture) ? plant.medium.moisture : 100, 0, 100),
+                microbeHealth: this._clamp(Number.isFinite(plant.medium?.microbeHealth) ? plant.medium.microbeHealth : 80, 0, 100),
+                substrateWater: Math.max(0, Number.isFinite(plant.medium?.substrateWater) ? plant.medium.substrateWater : waterCapacity),
+                nutrientConcentration: {
+                    nitrogen: Math.max(0, Number.isFinite(plant.medium?.nutrientConcentration?.nitrogen) ? plant.medium.nutrientConcentration.nitrogen : 100),
+                    phosphorus: Math.max(0, Number.isFinite(plant.medium?.nutrientConcentration?.phosphorus) ? plant.medium.nutrientConcentration.phosphorus : 100),
+                    potassium: Math.max(0, Number.isFinite(plant.medium?.nutrientConcentration?.potassium) ? plant.medium.nutrientConcentration.potassium : 100),
+                },
+            },
+            nutrientPool: {
+                nitrogen: Math.max(0, Number.isFinite(plant.nutrientPool?.nitrogen) ? plant.nutrientPool.nitrogen : 5),
+                phosphorus: Math.max(0, Number.isFinite(plant.nutrientPool?.phosphorus) ? plant.nutrientPool.phosphorus : 5),
+                potassium: Math.max(0, Number.isFinite(plant.nutrientPool?.potassium) ? plant.nutrientPool.potassium : 5),
+            },
+            rootSystem: {
+                health: this._clamp(Number.isFinite(plant.rootSystem?.health) ? plant.rootSystem.health : 100, 0, 100),
+                rootMass: Math.max(0.01, Number.isFinite(plant.rootSystem?.rootMass) ? plant.rootSystem.rootMass : 0.01),
+            },
+            equipment: {
+                light: {
+                    type: plant.equipment?.light?.type ?? 'LED',
+                    wattage: Math.max(10, Number.isFinite(plant.equipment?.light?.wattage) ? plant.equipment.light.wattage : 300),
+                    isOn: Boolean(plant.equipment?.light?.isOn ?? true),
+                    lightHours: this._clamp(Number.isFinite(plant.equipment?.light?.lightHours) ? plant.equipment.light.lightHours : 18, 0, 24),
+                },
+                exhaustFan: {
+                    power: plant.equipment?.exhaustFan?.power ?? 'medium',
+                    isOn: Boolean(plant.equipment?.exhaustFan?.isOn ?? true),
+                },
+                circulationFan: {
+                    isOn: Boolean(plant.equipment?.circulationFan?.isOn ?? true),
+                },
+                potSize: Math.max(1, Number.isFinite(plant.equipment?.potSize) ? plant.equipment.potSize : 11),
+                potType: plant.equipment?.potType ?? 'Fabric',
+            },
+            problems: Array.isArray(plant.problems) ? plant.problems : [],
+            journal: Array.isArray(plant.journal) ? plant.journal : [],
+            tasks: Array.isArray(plant.tasks) ? plant.tasks : [],
+            harvestData: plant.harvestData ?? null,
+            structuralModel: {
+                branches: Math.max(1, Number.isFinite(plant.structuralModel?.branches) ? plant.structuralModel.branches : 1),
+                nodes: Math.max(1, Number.isFinite(plant.structuralModel?.nodes) ? plant.structuralModel.nodes : 1),
+            },
+            phenotypeModifiers,
+            strain: {
+                ...plant.strain,
+                geneticModifiers: strainModifiers,
+            },
+            history: Array.isArray(plant.history) ? plant.history : [],
+            cannabinoidProfile: {
+                thc: Math.max(0, Number.isFinite(plant.cannabinoidProfile?.thc) ? plant.cannabinoidProfile.thc : 0),
+                cbd: Math.max(0, Number.isFinite(plant.cannabinoidProfile?.cbd) ? plant.cannabinoidProfile.cbd : 0),
+                cbn: Math.max(0, Number.isFinite(plant.cannabinoidProfile?.cbn) ? plant.cannabinoidProfile.cbn : 0),
+            },
+            terpeneProfile: plant.terpeneProfile && typeof plant.terpeneProfile === 'object' ? plant.terpeneProfile : {},
+            stressCounters: {
+                vpd: Math.max(0, Number.isFinite(plant.stressCounters?.vpd) ? plant.stressCounters.vpd : 0),
+                ph: Math.max(0, Number.isFinite(plant.stressCounters?.ph) ? plant.stressCounters.ph : 0),
+                ec: Math.max(0, Number.isFinite(plant.stressCounters?.ec) ? plant.stressCounters.ec : 0),
+                moisture: Math.max(0, Number.isFinite(plant.stressCounters?.moisture) ? plant.stressCounters.moisture : 0),
+            },
+            simulationClock: {
+                accumulatedDayMs: Math.max(0, Number.isFinite(plant.simulationClock?.accumulatedDayMs) ? plant.simulationClock.accumulatedDayMs : 0),
+            },
+        };
+    }
+
     /** Returns per-plant phenotype modifiers, falling back to strain defaults for legacy/uninitialized plants. */
     private _getModifiers(plant: Plant): GeneticModifiers {
-        return plant.phenotypeModifiers ?? plant.strain.geneticModifiers;
+        return this._normalizeModifiers(plant.phenotypeModifiers ?? plant.strain.geneticModifiers);
     }
 
     private _getLeafTemperatureOffset(plant: Plant): number {
@@ -70,7 +203,7 @@ class PlantSimulationService {
     }
 
     applyEnvironmentalCorrections(plant: Plant): Plant {
-        const p = this.clonePlant(plant);
+        const p = this._normalizePlant(this.clonePlant(plant));
         const correctedRh = this._getCorrectedRh(p);
         const leafOffset = this._getLeafTemperatureOffset(p);
         p.environment.vpd = this._calculateVPD(p.environment.internalTemperature, correctedRh, leafOffset);
@@ -140,23 +273,25 @@ class PlantSimulationService {
             cannabinoidProfile: { thc: 0, cbd: 0, cbn: 0 },
             terpeneProfile: {},
             stressCounters: { vpd: 0, ph: 0, ec: 0, moisture: 0 },
+            simulationClock: { accumulatedDayMs: 0 },
         };
 
         return this.applyEnvironmentalCorrections(newPlant);
     }
     
     calculateStateForTimeDelta(plant: Plant, deltaTime: number): { updatedPlant: Plant, newJournalEntries: JournalEntry[], newTasks: Task[] } {
-        let updatedPlant = this.clonePlant(plant);
+        let updatedPlant = this._normalizePlant(this.clonePlant(plant));
         const newJournalEntries: JournalEntry[] = [];
         const newTasks: Task[] = [];
-        const now = Date.now();
+        const safeDeltaTime = Math.max(0, Number.isFinite(deltaTime) ? deltaTime : 0);
+        const nextTimestamp = updatedPlant.lastUpdated + safeDeltaTime;
+        const totalMillisToSimulate = updatedPlant.simulationClock.accumulatedDayMs + safeDeltaTime;
+        const daysToSimulate = Math.floor(totalMillisToSimulate / SIM_MILLISECONDS_PER_DAY);
 
-        const elapsedMillis = now - updatedPlant.lastUpdated;
-        const totalMillisToSimulate = deltaTime < elapsedMillis ? elapsedMillis : deltaTime;
-        const daysToSimulate = Math.floor(totalMillisToSimulate / SIM_SECONDS_PER_DAY / 1000);
-        
+        updatedPlant.simulationClock.accumulatedDayMs = totalMillisToSimulate % SIM_MILLISECONDS_PER_DAY;
+
         if (daysToSimulate < 1) {
-            updatedPlant.lastUpdated = now;
+            updatedPlant.lastUpdated = nextTimestamp;
             return { updatedPlant, newJournalEntries, newTasks };
         }
 
@@ -183,7 +318,7 @@ class PlantSimulationService {
             });
         }
 
-        updatedPlant.lastUpdated = now;
+        updatedPlant.lastUpdated = nextTimestamp;
         return { updatedPlant, newJournalEntries, newTasks };
     }
 
@@ -441,6 +576,10 @@ class PlantSimulationService {
     }
 
     clonePlant(plant: Plant): Plant {
+        if (typeof structuredClone === 'function') {
+            return structuredClone(plant);
+        }
+
         return JSON.parse(JSON.stringify(plant));
     }
     

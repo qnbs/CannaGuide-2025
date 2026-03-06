@@ -188,6 +188,57 @@ export type LightType = 'LED' | 'HPS';
 export type VentilationPower = 'low' | 'medium' | 'high';
 export type PotType = 'Plastic' | 'Fabric';
 
+export interface PlantEnvironment {
+    internalTemperature: number;
+    internalHumidity: number;
+    vpd: number;
+    co2Level: number;
+}
+
+export interface PlantMedium {
+    ph: number;
+    ec: number;
+    moisture: number;
+    microbeHealth: number;
+    substrateWater: number;
+    nutrientConcentration: { nitrogen: number; phosphorus: number; potassium: number };
+}
+
+export interface PlantNutrientPool {
+    nitrogen: number;
+    phosphorus: number;
+    potassium: number;
+}
+
+export interface PlantRootSystem {
+    health: number;
+    rootMass: number;
+}
+
+export interface PlantEquipment {
+    light: { type: LightType; wattage: number; isOn: boolean; lightHours: number };
+    exhaustFan: { power: VentilationPower; isOn: boolean };
+    circulationFan: { isOn: boolean };
+    potSize: number;
+    potType: PotType;
+}
+
+export interface PlantStructuralModel {
+    branches: number;
+    nodes: number;
+}
+
+export interface PlantStressCounters {
+    vpd: number;
+    ph: number;
+    ec: number;
+    moisture: number;
+}
+
+export interface PlantSimulationClock {
+    accumulatedDayMs: number;
+}
+
 export interface Plant {
     id: string;
     name: string;
@@ -204,46 +255,24 @@ export interface Plant {
     leafAreaIndex: number;
     isTopped: boolean;
     lstApplied: number;
-    environment: {
-        internalTemperature: number;
-        internalHumidity: number;
-        vpd: number;
-        co2Level: number;
-    };
-    medium: {
-        ph: number;
-        ec: number;
-        moisture: number; // 0-100%
-        microbeHealth: number;
-        substrateWater: number;
-        nutrientConcentration: { nitrogen: number; phosphorus: number; potassium: number };
-    };
-    nutrientPool: { nitrogen: number; phosphorus: number; potassium: number };
-    rootSystem: { health: number; rootMass: number };
-    equipment: {
-        light: { type: LightType; wattage: number; isOn: boolean; lightHours: number };
-        exhaustFan: { power: VentilationPower; isOn: boolean };
-        circulationFan: { isOn: boolean };
-        potSize: number;
-        potType: PotType;
-    };
+    environment: PlantEnvironment;
+    medium: PlantMedium;
+    nutrientPool: PlantNutrientPool;
+    rootSystem: PlantRootSystem;
+    equipment: PlantEquipment;
     problems: PlantProblem[];
     journal: JournalEntry[];
     tasks: Task[];
     harvestData: HarvestData | null;
-    structuralModel: { branches: number; nodes: number };
+    structuralModel: PlantStructuralModel;
     // Per-individual phenotype expression; may diverge from strain defaults via training or amendments
     phenotypeModifiers?: GeneticModifiers;
     history: PlantHistoryEntry[];
     // Real-time chemical synthesis tracking
     cannabinoidProfile: { thc: number; cbd: number; cbn: number; };
     terpeneProfile: Record<string, number>;
-    stressCounters: {
-        vpd: number;
-        ph: number;
-        ec: number;
-        moisture: number;
-    };
+    stressCounters: PlantStressCounters;
+    simulationClock: PlantSimulationClock;
 }
 
 export interface PlantProblem {

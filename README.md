@@ -8,10 +8,15 @@ This README file supports two languages.
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/badge/release-v1.0.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
+[![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
 [![Tech Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
+[![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
+[![DSGVO](https://img.shields.io/badge/DSGVO-compliant-blue)]()
+[![Built with ❤️ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
@@ -24,7 +29,8 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 ## Table of Contents
 
 - [⭐ Project Philosophy](#-project-philosophy)
-- [🚀 Key Features](#-key-features)
+- [�️ Screenshots](#️-screenshots)
+- [�🚀 Key Features](#-key-features)
   - [1. The Grow Room (`Plants` View)](#1-the-grow-room-plants-view)
   - [2. The Strain Encyclopedia (`Strains` View)](#2-the-strain-encyclopedia-strains-view)
   - [3. The Workshop (`Equipment` View)](#3-the-workshop-equipment-view)
@@ -33,6 +39,8 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
   - [6. The Command Center (`Settings` View)](#6-the-command-center-settings-view)
   - [7. Platform-Wide Features](#7-platform-wide-features)
 - [💻 Technical Deep Dive](#-technical-deep-dive)
+- [🔒 Security & DSGVO/GDPR](#-security--dsgvogdpr)
+- [🤖 Multi-Provider AI (BYOK)](#-multi-provider-ai-byok)
 - [🏁 Getting Started (User Guide)](#-getting-started-user-guide)
 - [🛠️ Local Development (Developer Guide)](#️-local-development-developer-guide)
 - [📦 Distribution Targets](#-distribution-targets)
@@ -41,8 +49,19 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 - [🤔 Troubleshooting](#-troubleshooting)
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
 - [🤝 Contributing](#-contributing)
+- [🗺️ Roadmap](#️-roadmap)
 - [⚠️ Disclaimer](#️-disclaimer)
 - [Deutsche Version](#-cannaguide-2025-deutsch)
+
+---
+
+## 🖼️ Screenshots
+
+| Plants Overview | AI Mentor Chat |
+|:---:|:---:|
+| ![Plants Overview](public/screenshots/plants-overview.svg) | ![Mentor Chat](public/screenshots/mentor-chat.svg) |
+
+> More screenshots coming soon — contributions welcome!
 
 ---
 
@@ -231,6 +250,45 @@ The codebase is organized into logical directories to promote maintainability an
 
 ---
 
+## 🔒 Security & DSGVO/GDPR
+
+CannaGuide 2025 is designed with privacy-first principles and German cannabis law (KCanG) compliance:
+
+### Legal Compliance
+- **Age Gate (18+)**: Full-screen age verification modal blocks all content until the user confirms they are 18+ — required under KCanG §1.
+- **DSGVO/GDPR Consent**: A consent banner requires explicit user approval before any data is stored in localStorage/IndexedDB.
+- **Privacy Policy (Datenschutzerklärung)**: Full 8-section privacy policy modal including data storage, AI services, image processing, cookies, third-party services, user rights (DSGVO), and contact. Accessible from the consent banner and settings.
+- **Impressum**: Legal notice included within the privacy policy modal as required by German TMG.
+- **Geo-Legal Banner**: One-time legal notice reminding users to verify cannabis cultivation laws in their jurisdiction.
+
+### Security Measures
+- **Content Security Policy (CSP)**: Hardened across 4 delivery paths (Vite dev/preview, index.html meta, Netlify `_headers`, Docker nginx). `connect-src` restricted to specific AI API domains only. `form-action 'self'`, `upgrade-insecure-requests`, `frame-ancestors 'none'`.
+- **API Key Encryption**: All API keys encrypted at rest with **AES-256-GCM** (Web Crypto API). Consolidated single `cryptoService.ts`.
+- **EXIF/GPS Stripping**: Images re-encoded via canvas before AI transmission. Explicit consent required.
+- **Consent Revocation**: Users can revoke image consent at any time.
+- **AI Disclaimer**: Displayed on every AI response (Mentor, DeepDive, StrainTips, Diagnostics) plus a medical disclaimer on diagnostic results.
+- **Injection Defense**: 30+ regex patterns in `geminiService.ts` prevent prompt injection attacks.
+- **Rate Limiting**: Sliding-window rate limiter (15 req/min) with per-day token cost tracking.
+- **DOMPurify**: All `dangerouslySetInnerHTML` content sanitized via DOMPurify v3.
+- **Link Security**: All external links use `rel="noopener noreferrer"`.
+
+---
+
+## 🤖 Multi-Provider AI (BYOK)
+
+CannaGuide supports **Bring Your Own Key (BYOK)** for multiple AI providers. All keys are encrypted at rest with AES-256-GCM:
+
+| Provider | Models | Key Format |
+|:--|:--|:--|
+| **Google Gemini** (default) | `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash-preview-image-generation` | `AIza...` |
+| **OpenAI** | `gpt-4o-mini`, `gpt-4o` | `sk-...` |
+| **xAI (Grok)** | `grok-3-mini-fast`, `grok-3` | `xai-...` |
+| **Anthropic (Claude)** | `claude-sonnet-4-20250514` | `sk-ant-...` |
+
+Configure your provider in **Settings → General & UI → AI Security**. The selected provider is used for all AI features: Mentor, Diagnostics, DeepDive, StrainTips, and Equipment Recommendations. Image generation is currently Gemini-exclusive.
+
+---
+
 ## 🏁 Getting Started (User Guide)
 
 No installation is required beyond a modern web browser.
@@ -378,7 +436,36 @@ We welcome contributions from the community! Whether you want to fix a bug, add 
     *   Push to the branch (`git push origin feature/my-new-feature`).
     *   Create a new Pull Request.
 
-Please follow the existing code style and ensure your changes are well-documented.
+Please follow the existing code style and ensure your changes are well-documented. For details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## 🗺️ Roadmap
+
+### v1.0 ✅ (Current Release)
+- 700+ strain encyclopedia with genealogy tracking
+- VPD-based plant simulation engine (Web Worker)
+- Multi-provider AI integration (Gemini, OpenAI, xAI, Anthropic)
+- Full DSGVO/GDPR compliance (Age Gate, Consent, Privacy Policy)
+- WCAG 2.2 AA accessibility
+- 258 tests, 0 TS errors, 0 lint errors
+- PWA with 100% offline capability
+- ESP32 sensor integration via WebBluetooth
+- Breeding Lab with Punnett Square genetics
+- EN/DE internationalization
+
+### v1.1 (Planned)
+- Additional language support (ES, FR, NL)
+- Advanced nutrient scheduling with EC/pH automation
+- Community strain marketplace
+- Mobile-native builds via Capacitor
+- Auto-generated grow reports (PDF)
+
+### v1.2 (Planned)
+- Integration with additional IoT sensors
+- Time-lapse photo journal
+- Strain comparison tool
+- Advanced analytics dashboard
 
 ---
 
@@ -395,10 +482,15 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![Lizenz: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/badge/release-v1.0.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![Build-Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
+[![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
 [![Tech-Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
+[![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
+[![DSGVO](https://img.shields.io/badge/DSGVO-konform-blue)]()
+[![Built with ❤️ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 
@@ -411,6 +503,7 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 ## Inhaltsverzeichnis
 
 - [⭐ Projektphilosophie](#-projektphilosophie-1)
+- [�️ Screenshots](#️-screenshots-1)
 - [🚀 Hauptfunktionen](#-hauptfunktionen)
   - [1. Der Grow Room (`Pflanzen`-Ansicht)](#1-der-grow-room-pflanzen-ansicht)
   - [2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)](#2-die-sorten-enzyklopädie-sorten-ansicht)
@@ -420,6 +513,8 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
   - [6. Die Kommandozentrale (`Einstellungen`-Ansicht)](#6-die-kommandozentrale-einstellungen-ansicht)
   - [7. Plattformweite Funktionen](#7-plattformweite-funktionen)
 - [💻 Technischer Deep Dive](#-technischer-deep-dive-1)
+- [🔒 Sicherheit & DSGVO](#-sicherheit--dsgvo)
+- [🤖 Multi-Provider KI (BYOK)](#-multi-provider-ki-byok)
 - [🏁 Erste Schritte (Benutzerhandbuch)](#-erste-schritte-benutzerhandbuch)
 - [🛠️ Lokale Entwicklung (Entwicklerhandbuch)](#️-lokale-entwicklung-entwicklerhandbuch)
 - [📦 Distributionsziele](#-distributionsziele)
@@ -428,6 +523,7 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 - [🤔 Fehlerbehebung (Troubleshooting)](#-fehlerbehebung-troubleshooting)
 - [🤖 Entwicklung mit AI Studio & Open Source](#-entwicklung-mit-ai-studio--open-source-1)
 - [🤝 Mitwirken (Contributing)](#-mitwirken-contributing-1)
+- [🗺️ Roadmap](#️-roadmap-1)
 - [⚠️ Haftungsausschluss](#️-haftungsausschluss-1)
 
 ---
@@ -448,7 +544,17 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 
 ---
 
-## 🚀 Hauptfunktionen
+## �️ Screenshots
+
+| Pflanzen-Übersicht | KI-Mentor-Chat |
+|:---:|:---:|
+| ![Pflanzen-Übersicht](public/screenshots/plants-overview.svg) | ![Mentor-Chat](public/screenshots/mentor-chat.svg) |
+
+> Weitere Screenshots folgen — Beiträge willkommen!
+
+---
+
+## �🚀 Hauptfunktionen
 
 ### 1. Der Grow Room (`Pflanzen`-Ansicht)
 Ihre Kommandozentrale zur Verwaltung und Simulation von bis zu drei gleichzeitigen Anbauprojekten.
@@ -599,6 +705,45 @@ Wie im [DeepWiki des Projekts](https://deepwiki.com/qnbs/CannaGuide-2025) erwäh
 
 ---
 
+## 🔒 Sicherheit & DSGVO
+
+CannaGuide 2025 wurde mit Privacy-First-Prinzipien und Konformität zum deutschen Cannabisgesetz (KCanG) entwickelt:
+
+### Rechtliche Konformität
+- **Altersverifikation (18+)**: Vollbild-Altersverifikationsmodal blockiert alle Inhalte, bis der Nutzer bestätigt, 18+ Jahre alt zu sein — erforderlich nach KCanG §1.
+- **DSGVO-Einwilligung**: Ein Consent-Banner erfordert die ausdrückliche Zustimmung des Nutzers, bevor Daten in localStorage/IndexedDB gespeichert werden.
+- **Datenschutzerklärung**: Vollständige 8-Abschnitte-Datenschutzerklärung inkl. Datenspeicherung, KI-Dienste, Bildverarbeitung, Cookies, Drittanbieter, Betroffenenrechte (DSGVO) und Kontakt. Erreichbar über das Consent-Banner und die Einstellungen.
+- **Impressum**: Rechtlich erforderlicher Anbieterkennzeichnung nach TMG, integriert in die Datenschutzerklärung.
+- **Geo-Legal-Banner**: Einmalige Rechtshinweismeldung, die Nutzer daran erinnert, die Cannabis-Anbaugesetze in ihrer Rechtsordnung zu prüfen.
+
+### Sicherheitsmaßnahmen
+- **Content Security Policy (CSP)**: Gehärtet über 4 Auslieferungswege (Vite dev/preview, index.html Meta, Netlify `_headers`, Docker nginx). `connect-src` auf spezifische KI-API-Domains beschränkt. `form-action 'self'`, `upgrade-insecure-requests`, `frame-ancestors 'none'`.
+- **API-Schlüssel-Verschlüsselung**: Alle API-Schlüssel werden mit **AES-256-GCM** (Web Crypto API) verschlüsselt gespeichert. Konsolidierter `cryptoService.ts`.
+- **EXIF/GPS-Entfernung**: Bilder werden vor der KI-Übertragung via Canvas neu kodiert. Explizite Einwilligung erforderlich.
+- **Einwilligungswiderruf**: Nutzer können die Bildeinwilligung jederzeit widerrufen.
+- **KI-Haftungsausschluss**: Bei jeder KI-Antwort angezeigt (Mentor, DeepDive, Sorten-Tipps, Diagnostik) plus medizinischer Disclaimer bei Diagnoseergebnissen.
+- **Injection-Schutz**: 30+ Regex-Muster in `geminiService.ts` verhindern Prompt-Injection-Angriffe.
+- **Rate Limiting**: Sliding-Window-Rate-Limiter (15 Req/Min) mit täglichem Token-Kosten-Tracking.
+- **DOMPurify**: Alle `dangerouslySetInnerHTML`-Inhalte werden mit DOMPurify v3 bereinigt.
+- **Link-Sicherheit**: Alle externen Links verwenden `rel="noopener noreferrer"`.
+
+---
+
+## 🤖 Multi-Provider KI (BYOK)
+
+CannaGuide unterstützt **Bring Your Own Key (BYOK)** für mehrere KI-Anbieter. Alle Schlüssel werden mit AES-256-GCM verschlüsselt gespeichert:
+
+| Anbieter | Modelle | Schlüsselformat |
+|:--|:--|:--|
+| **Google Gemini** (Standard) | `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.0-flash-preview-image-generation` | `AIza...` |
+| **OpenAI** | `gpt-4o-mini`, `gpt-4o` | `sk-...` |
+| **xAI (Grok)** | `grok-3-mini-fast`, `grok-3` | `xai-...` |
+| **Anthropic (Claude)** | `claude-sonnet-4-20250514` | `sk-ant-...` |
+
+Konfigurieren Sie Ihren Anbieter unter **Einstellungen → Allgemein & UI → KI-Sicherheit**. Der ausgewählte Anbieter wird für alle KI-Funktionen verwendet: Mentor, Diagnostik, DeepDive, Sorten-Tipps und Ausrüstungsempfehlungen. Bilderzeugung ist derzeit Gemini-exklusiv.
+
+---
+
 ## 🏁 Erste Schritte (Benutzerhandbuch)
 
 Außer einem modernen Webbrowser ist keine Installation erforderlich.
@@ -736,7 +881,7 @@ Dieses Projekt ist zudem vollständig Open Source. Tauchen Sie in den Code ein, 
 
 ## 🤝 Mitwirken (Contributing)
 
-Wir freuen uns über Beiträge aus der Community! Ob Sie einen Fehler beheben, eine neue Funktion hinzufügen oder Übersetzungen verbessern möchten, Ihre Hilfe ist willkommen.
+Wir freuen uns über Beiträge aus der Community! Ob Sie einen Fehler beheben, eine neue Funktion hinzufügen oder Übersetzungen verbessern möchten, Ihre Hilfe ist willkommen. Lesen Sie unsere [CONTRIBUTING.md](CONTRIBUTING.md) für detaillierte Richtlinien.
 
 1.  **Probleme melden**: Wenn Sie einen Fehler finden oder eine Idee haben, [eröffnen Sie bitte zuerst ein Issue](https://github.com/qnbs/CannaGuide-2025/issues) auf GitHub, um es zu besprechen.
 2.  **Änderungen vornehmen**:
@@ -750,6 +895,37 @@ Bitte halten Sie sich an den bestehenden Codestil und stellen Sie sicher, dass I
 
 ---
 
+## 🗺️ Roadmap
+
+### v1.0 ✅ (Aktuelles Release)
+- 700+ Sorten-Enzyklopädie mit Genealogie-Tracking
+- VPD-basierte Pflanzensimulations-Engine (Web Worker)
+- Multi-Provider KI-Integration (Gemini, OpenAI, xAI, Anthropic)
+- Volle DSGVO-Konformität (Altersverifikation, Einwilligung, Datenschutzerklärung)
+- WCAG 2.2 AA Barrierefreiheit
+- 258 Tests, 0 TS-Fehler, 0 Lint-Fehler
+- PWA mit 100% Offline-Funktionalität
+- ESP32-Sensor-Integration via WebBluetooth
+- Züchtungslabor mit Punnett-Quadrat-Genetik
+- EN/DE Internationalisierung
+
+### v1.1 (Geplant)
+- Zusätzliche Sprachunterstützung (ES, FR, NL)
+- Erweiterte Nährstoffplanung mit EC/pH-Automatisierung
+- Community-Sorten-Marktplatz
+- Mobile-native Builds via Capacitor
+- Automatisch generierte Grow-Berichte (PDF)
+
+### v1.2 (Geplant)
+- Integration zusätzlicher IoT-Sensoren
+- Zeitraffer-Foto-Journal
+- Sorten-Vergleichstool
+- Erweitertes Analyse-Dashboard
+
+---
+
 ## ⚠️ Haftungsausschluss
 
 > Alle Informationen in dieser App dienen ausschließlich zu Bildungs- und Unterhaltungszwecken. Der Anbau von Cannabis unterliegt strengen gesetzlichen Bestimmungen. Bitte informieren Sie sich über die Gesetze in Ihrer Region und handeln Sie stets verantwortungsbewusst und im Einklang mit dem Gesetz.
+
+> Diese App bietet keine Rechts- oder Medizinberatung.

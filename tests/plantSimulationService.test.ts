@@ -336,6 +336,14 @@ describe('plantSimulationService', () => {
     })
 
     describe('post-harvest processing', () => {
+        it('does not initialize harvest data outside the post-harvest stages', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Vegetative
+
+            const updatedPlant = plantSimulationService.ensurePostHarvestData(plant)
+            expect(updatedPlant.harvestData).toBeNull()
+        })
+
         it('initializes harvest data when a plant enters harvest flow', () => {
             const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
             plant.stage = PlantStage.Harvest
@@ -360,6 +368,62 @@ describe('plantSimulationService', () => {
             expect([PlantStage.Drying, PlantStage.Curing, PlantStage.Finished]).toContain(currentPlant.stage)
             expect(currentPlant.harvestData?.chlorophyllPercent).toBeLessThan(100)
             expect(currentPlant.harvestData?.finalQuality).toBeGreaterThan(0)
+        })
+
+        it('ignores burp actions outside curing and leaves harvest metrics unchanged', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Drying
+            plant.harvestData = {
+                wetWeight: 72,
+                dryWeight: 18,
+                currentDryDay: 4,
+                currentCureDay: 0,
+                lastBurpDay: 0,
+                jarHumidity: 64,
+                chlorophyllPercent: 58,
+                terpeneRetentionPercent: 91,
+                moldRiskPercent: 12,
+                finalQuality: 74,
+                cannabinoidProfile: { thc: 18.2, cbn: 0.3 },
+                terpeneProfile: {},
+            }
+
+            const baseline = plantSimulationService.clonePlant(plant)
+            const result = plantSimulationService.advancePostHarvestState(plant, 'burp', tunedSimulationSettings)
+
+            expect(result.newJournalEntries).toHaveLength(0)
+            expect(result.updatedPlant.stage).toBe(PlantStage.Drying)
+            expect(result.updatedPlant.harvestData).toEqual(baseline.harvestData)
+        })
+
+        it('penalizes overdue curing burps and finishes the batch at the cure horizon', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Curing
+            plant.environment.internalTemperature = 23
+            plant.environment.internalHumidity = 68
+            plant.equipment.exhaustFan.power = 'low'
+            plant.harvestData = {
+                wetWeight: 84,
+                dryWeight: 19.5,
+                currentDryDay: 9,
+                currentCureDay: 20,
+                lastBurpDay: 13,
+                jarHumidity: 64.5,
+                chlorophyllPercent: 24,
+                terpeneRetentionPercent: 86,
+                moldRiskPercent: 10,
+                finalQuality: 79,
+                cannabinoidProfile: { thc: 19.6, cbn: 0.42 },
+                terpeneProfile: {},
+            }
+
+            const result = plantSimulationService.advancePostHarvestState(plant, 'cure', tunedSimulationSettings)
+
+            expect(result.updatedPlant.harvestData?.currentCureDay).toBe(21)
+            expect(result.updatedPlant.harvestData?.moldRiskPercent).toBeGreaterThan(10)
+            expect(result.updatedPlant.harvestData?.jarHumidity).toBeGreaterThan(64.5)
+            expect(result.updatedPlant.stage).toBe(PlantStage.Finished)
+            expect(result.newJournalEntries).toHaveLength(1)
         })
     })
 

@@ -1,4 +1,4 @@
-import { AppSettings, Strain, StrainType } from '@/types'
+import { AppSettings, PlantStage, Strain, StrainType } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 import { RootState } from '@/stores/store'
 import { APP_VERSION, GENEALOGY_STATE_VERSION, SLICE_SCHEMA_VERSIONS, VersionedSliceName } from '@/constants'
@@ -50,6 +50,34 @@ const ensureSimulationShape = (state: PersistedState): void => {
             }
             if (typeof plant.harvestData === 'undefined') {
                 plant.harvestData = null
+            } else if (plant.harvestData && typeof plant.harvestData === 'object') {
+                const harvestData = plant.harvestData as Record<string, unknown>
+                const terpeneProfile = plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
+                    ? plant.terpeneProfile as Record<string, unknown>
+                    : {}
+                const plantStage = typeof plant.stage === 'string' ? plant.stage as PlantStage : PlantStage.Seed
+                const isPostHarvestStage = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plantStage)
+
+                if (typeof harvestData.wetWeight !== 'number') harvestData.wetWeight = 0
+                if (typeof harvestData.dryWeight !== 'number') harvestData.dryWeight = 0
+                if (typeof harvestData.currentDryDay !== 'number') harvestData.currentDryDay = plantStage === PlantStage.Drying ? 1 : 0
+                if (typeof harvestData.currentCureDay !== 'number') harvestData.currentCureDay = plantStage === PlantStage.Curing || plantStage === PlantStage.Finished ? 1 : 0
+                if (typeof harvestData.lastBurpDay !== 'number') harvestData.lastBurpDay = 0
+                if (typeof harvestData.jarHumidity !== 'number') harvestData.jarHumidity = plantStage === PlantStage.Curing || plantStage === PlantStage.Finished ? 62 : 68
+                if (typeof harvestData.chlorophyllPercent !== 'number') harvestData.chlorophyllPercent = isPostHarvestStage ? 100 : 0
+                if (typeof harvestData.terpeneRetentionPercent !== 'number') harvestData.terpeneRetentionPercent = isPostHarvestStage ? 100 : 0
+                if (typeof harvestData.moldRiskPercent !== 'number') harvestData.moldRiskPercent = 0
+                if (typeof harvestData.finalQuality !== 'number') harvestData.finalQuality = 0
+                if (!harvestData.cannabinoidProfile || typeof harvestData.cannabinoidProfile !== 'object') {
+                    harvestData.cannabinoidProfile = { thc: 0, cbn: 0 }
+                } else {
+                    const cannabinoidProfile = harvestData.cannabinoidProfile as Record<string, unknown>
+                    if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
+                    if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
+                }
+                if (!harvestData.terpeneProfile || typeof harvestData.terpeneProfile !== 'object') {
+                    harvestData.terpeneProfile = { ...terpeneProfile }
+                }
             }
 
             if (!plant.environment || typeof plant.environment !== 'object') {

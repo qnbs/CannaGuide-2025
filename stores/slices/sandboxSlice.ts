@@ -16,6 +16,7 @@ export const runComparisonScenario = createAsyncThunk<
     return new Promise((resolve, reject) => {
         const state = getState()
         const basePlant = state.simulation.plants.entities[plantId]
+        const simulationSettings = state.settings.settings.simulation
 
         if (!basePlant) {
             return reject(new Error('Base plant not found for scenario.'))
@@ -35,7 +36,7 @@ export const runComparisonScenario = createAsyncThunk<
             worker.terminate()
         }
 
-        worker.postMessage({ basePlant, scenario })
+        worker.postMessage({ basePlant, scenario, simulationSettings })
     })
 })
 

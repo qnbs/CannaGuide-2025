@@ -1,10 +1,14 @@
 import { AppSettings, Strain, StrainType } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 import { RootState } from '@/stores/store'
-import { APP_VERSION, GENEALOGY_STATE_VERSION } from '@/constants'
+import { APP_VERSION, GENEALOGY_STATE_VERSION, SLICE_SCHEMA_VERSIONS, VersionedSliceName } from '@/constants'
 
 // This represents the shape of the persisted state object.
-export type PersistedState = Partial<RootState> & { version?: number }
+export type PersistedState = Partial<RootState> & {
+    version?: number
+    /** Per-slice schema versions stamped at persist time. */
+    _sliceVersions?: Partial<Record<VersionedSliceName, number>>
+}
 
 const ensureSimulationShape = (state: PersistedState): void => {
     if (!state.simulation) {
@@ -186,22 +190,6 @@ const ensureGenealogyShape = (state: PersistedState): void => {
     g._version = GENEALOGY_STATE_VERSION
 }
 
-/**
- * Sanitizes sandbox slice on rehydration.
- * Prevents permanent "running" state if the app crashed during a scenario run.
- */
-const ensureSandboxShape = (state: PersistedState): void => {
-    if (!state.sandbox || typeof state.sandbox !== 'object') return
-    const sb = state.sandbox as unknown as Record<string, unknown>
-    // status: 'running' can never resolve after a restart – reset to idle
-    if (sb.status === 'running') {
-        console.warn('[MigrationLogic] Sandbox status was "running" – resetting to "idle".')
-        sb.status = 'idle'
-        sb.currentExperiment = null
-    }
-}
-
-
 const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
     const isObject = (item: unknown): item is Record<string, unknown> => {
         return !!item && typeof item === 'object' && !Array.isArray(item)
@@ -302,6 +290,116 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
 }
 
 /**
+ * V3→V4 migration.
+ * - Stamps per-slice schema versions (_sliceVersions) so future migrations can
+ *   detect and auto-reset individual stale slices without nuking everything.
+ * - Deep-merges settings to absorb any new defaults.
+ */
+const migrateV3ToV4 = (state: PersistedState): PersistedState => {
+    console.debug('[MigrationLogic] Migrating state from v3 to v4...')
+
+    // Deep-merge settings so new keys from defaultSettings are picked up
+    if (state.settings?.settings) {
+        state.settings.settings = deepMergeSettings(state.settings.settings)
+    } else {
+        state.settings = { settings: defaultSettings, version: 4 }
+    }
+
+    // Stamp per-slice schema versions for the first time
+    state._sliceVersions = { ...SLICE_SCHEMA_VERSIONS }
+
+    return state
+}
+
+/**
+ * Strips transient / runtime-only state that must never survive a restart.
+ * Called on EVERY boot, regardless of version.
+ */
+const stripTransientState = (state: PersistedState): void => {
+    // TTS: always starts idle — queue and speaking state are runtime only
+    if (state.tts) {
+        const tts = state.tts as unknown as Record<string, unknown>
+        tts.ttsQueue = []
+        tts.isTtsSpeaking = false
+        tts.isTtsPaused = false
+        tts.currentlySpeakingId = null
+    }
+
+    // Sandbox: 'running' status can never resolve after restart
+    if (state.sandbox) {
+        const sb = state.sandbox as unknown as Record<string, unknown>
+        if (sb.status === 'running') {
+            sb.status = 'idle'
+            sb.currentExperiment = null
+        }
+    }
+
+    // Genealogy: 'loading' status marks an interrupted fetch
+    if (state.genealogy) {
+        const g = state.genealogy as unknown as Record<string, unknown>
+        if (g.status === 'loading') {
+            g.status = 'idle'
+        }
+    }
+
+    // UI: reset all transient modal/flow state (only essential persisted fields survive via index.tsx)
+    if (state.ui) {
+        const ui = state.ui as unknown as Record<string, unknown>
+        ui.isAppReady = false
+        ui.notifications = []
+        ui.isCommandPaletteOpen = false
+        ui.isAddModalOpen = false
+        ui.isExportModalOpen = false
+        ui.strainToEdit = null
+        ui.actionModal = { isOpen: false, plantId: null, type: null }
+        ui.deepDiveModal = { isOpen: false, plantId: null, topic: null }
+        ui.isDiagnosticsModalOpen = false
+        ui.diagnosticsPlantId = null
+        ui.isSaveSetupModalOpen = false
+        ui.setupToSave = null
+        ui.highlightedElement = null
+        if (ui.newGrowFlow && typeof ui.newGrowFlow === 'object') {
+            const flow = ui.newGrowFlow as Record<string, unknown>
+            flow.status = 'idle'
+            flow.slotIndex = null
+            flow.strain = null
+            flow.setup = null
+        }
+    }
+}
+
+/**
+ * Checks each persisted slice against its expected schema version.
+ * If a slice version mismatch is detected, that slice is reset to its
+ * initial state (from Redux) rather than crashing the whole app.
+ *
+ * Returns the list of slice names that were auto-reset.
+ */
+const validateSliceVersions = (state: PersistedState): VersionedSliceName[] => {
+    const persistedVersions = state._sliceVersions ?? {}
+    const resetSlices: VersionedSliceName[] = []
+
+    for (const [sliceName, expectedVersion] of Object.entries(SLICE_SCHEMA_VERSIONS)) {
+        const name = sliceName as VersionedSliceName
+        const persistedVersion = persistedVersions[name]
+
+        if (persistedVersion !== undefined && persistedVersion !== expectedVersion) {
+            console.warn(
+                `[MigrationLogic] Slice "${name}" version mismatch (stored: ${persistedVersion}, expected: ${expectedVersion}) – resetting to initial state.`,
+            )
+            // Delete the stale slice data so Redux will use its initialState
+            delete (state as Record<string, unknown>)[name]
+            resetSlices.push(name)
+        }
+    }
+
+    // Stamp the current schema versions
+    state._sliceVersions = { ...SLICE_SCHEMA_VERSIONS }
+
+    return resetSlices
+}
+
+/**
  * Orchestrates the migration of a persisted state object to the current app version.
  * @param persistedState The raw state object loaded from storage.
  * @returns The migrated state object, ready to be hydrated into the store.
@@ -309,38 +407,45 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
 export const migrateState = (persistedState: PersistedState): PersistedState => {
     const stateVersion = persistedState.version || 1
 
-    if (stateVersion >= APP_VERSION) {
-        console.debug('[MigrationLogic] Persisted state is up to date.')
-        // Even if up to date, merge settings to catch any new properties added in minor versions
-        if (persistedState.settings?.settings) {
-            persistedState.settings.settings = deepMergeSettings(persistedState.settings.settings)
-        }
-        ensureSimulationShape(persistedState)
-        ensureGenealogyShape(persistedState)
-        ensureSandboxShape(persistedState)
-        return persistedState
-    }
-
     let migratedState: PersistedState = persistedState
-    console.debug(`[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`)
 
-    if (stateVersion < 2) {
-        migratedState = migrateV1ToV2(migratedState)
-    }
-    if (stateVersion < 3) {
-        migratedState = migrateV2ToV3(migratedState)
+    if (stateVersion < APP_VERSION) {
+        console.debug(`[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`)
+
+        if (stateVersion < 2) {
+            migratedState = migrateV1ToV2(migratedState)
+        }
+        if (stateVersion < 3) {
+            migratedState = migrateV2ToV3(migratedState)
+        }
+        if (stateVersion < 4) {
+            migratedState = migrateV3ToV4(migratedState)
+        }
+    } else {
+        console.debug('[MigrationLogic] Persisted state is up to date.')
+        // Even on current version, merge settings to catch new defaults from minor updates
+        if (migratedState.settings?.settings) {
+            migratedState.settings.settings = deepMergeSettings(migratedState.settings.settings)
+        }
     }
 
     migratedState.version = APP_VERSION
-
-    // Also update the version inside the settings slice for consistency
     if (migratedState.settings) {
         migratedState.settings.version = APP_VERSION
     }
 
+    // Per-slice schema validation (auto-resets stale individual slices)
+    const resetSlices = validateSliceVersions(migratedState)
+    if (resetSlices.length > 0) {
+        console.debug(`[MigrationLogic] Auto-reset slices: ${resetSlices.join(', ')}`)
+    }
+
+    // Shape-level sanitization (runs every boot)
     ensureSimulationShape(migratedState)
     ensureGenealogyShape(migratedState)
-    ensureSandboxShape(migratedState)
+
+    // Strip all transient / runtime-only state (runs every boot)
+    stripTransientState(migratedState)
 
     return migratedState
 }

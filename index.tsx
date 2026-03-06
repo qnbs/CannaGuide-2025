@@ -12,7 +12,7 @@ import { initializeSimulation } from './stores/slices/simulationSlice'
 import { ttsService } from './services/ttsService'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { indexedDBStorage } from './stores/indexedDBStorage'
-import { REDUX_STATE_KEY } from './constants'
+import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from './constants'
 import { dbService } from './services/dbService'
 import { growReminderService } from './services/growReminderService'
 
@@ -155,8 +155,10 @@ const startApp = async () => {
                 const state = store.getState() as RootState;
                 const optimizedSimulation = await dbService.optimizeSimulationForPersistence(state.simulation);
                 // Construct a state object with only the slices we want to persist.
+                // TTS and navigation are runtime-only and never persisted.
                 const stateToSave = {
                     version: state.settings.version,
+                    _sliceVersions: SLICE_SCHEMA_VERSIONS,
                     settings: state.settings,
                     simulation: optimizedSimulation,
                     userStrains: state.userStrains,
@@ -166,7 +168,13 @@ const startApp = async () => {
                     savedItems: state.savedItems,
                     knowledge: state.knowledge,
                     breeding: state.breeding,
-                    sandbox: state.sandbox,
+                    genealogy: state.genealogy,
+                    sandbox: {
+                        savedExperiments: state.sandbox.savedExperiments,
+                        // Strip transient runtime status – always starts idle
+                        currentExperiment: null,
+                        status: 'idle' as const,
+                    },
                     ui: { // Only persist essential, non-transient UI state
                         lastActiveView: state.ui.lastActiveView,
                         onboardingStep: state.ui.onboardingStep,

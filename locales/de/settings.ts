@@ -293,7 +293,26 @@ export const settingsView = {
         archives: 'KI-Archive',
         customStrains: 'Eigene Sorten',
         savedItems: 'Gespeicherte Items',
-    }
+    },
+    sliceReset: {
+        title: 'Einzelne Bereiche zurücksetzen',
+        desc: 'Setze einen einzelnen Datenbereich auf Werkseinstellungen zurück, ohne andere Daten zu beeinflussen.',
+        confirmTitle: '"{{slice}}" zurücksetzen?',
+        confirmText: 'Dies löscht alle Daten im Bereich "{{slice}}" unwiderruflich und lädt die App neu.',
+        confirmButton: 'Zurücksetzen & Neuladen',
+        slices: {
+            simulation: 'Pflanzen & Simulation',
+            genealogy: 'Genealogie-Cache',
+            sandbox: 'Sandbox-Experimente',
+            favorites: 'Favoriten',
+            notes: 'Sorten-Notizen',
+            archives: 'KI-Archive',
+            savedItems: 'Gespeicherte Elemente',
+            knowledge: 'Wissensfortschritt',
+            breeding: 'Zuchtdaten',
+            userStrains: 'Eigene Sorten',
+        },
+    },
   },
   privacy: {
     title: 'Privatsphäre & Sicherheit',

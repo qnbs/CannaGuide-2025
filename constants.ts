@@ -1,8 +1,30 @@
 import { PlantStage, AdvancedFilterState } from '@/types';
 
 // --- APP ---
-export const APP_VERSION = 3;
+export const APP_VERSION = 4;
 export const CURRENT_STRAIN_DATA_VERSION = 3;
+
+/**
+ * Per-slice schema versions. Bump a slice version whenever its persisted shape
+ * changes so the migration system can detect stale data and auto-reset that
+ * specific slice without nuking the entire store.
+ */
+export const SLICE_SCHEMA_VERSIONS = {
+    settings: 2,
+    simulation: 2,
+    genealogy: 3,   // kept in sync with GENEALOGY_STATE_VERSION
+    sandbox: 1,
+    userStrains: 1,
+    favorites: 1,
+    notes: 1,
+    archives: 1,
+    savedItems: 1,
+    knowledge: 1,
+    breeding: 1,
+    ui: 1,
+} as const;
+
+export type VersionedSliceName = keyof typeof SLICE_SCHEMA_VERSIONS;
 export const APP_METADATA = {
   "name": "CannaGuide 2025 - Cannabis Grow Guide with Gemini",
   "description": "Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.",

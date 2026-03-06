@@ -39,6 +39,7 @@ export const strainsView = {
     myStrains: 'Meine Sorten',
     favorites: 'Favoriten',
     genealogy: 'Stammbaum',
+    breedingLab: 'Zucht-Labor',
     exports: 'Exporte ({{count}})',
     tips: 'Tipps ({{count}})',
   },

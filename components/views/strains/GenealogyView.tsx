@@ -117,6 +117,23 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
             onNodeClick(strain);
         }
     }, [allStrains, onNodeClick]);
+
+    const handleNodeFocus = useCallback((nodeData: GenealogyNode) => {
+        const target = nodes.find(n => n.data.id === nodeData.id);
+        if (!target || !svgRef.current || !zoomRef.current) return;
+        const { width, height } = svgRef.current.getBoundingClientRect();
+        const isHorizontal = layoutOrientation === 'horizontal';
+        const nodeX = isHorizontal ? (target as d3.HierarchyPointNode<GenealogyNode>).y : (target as d3.HierarchyPointNode<GenealogyNode>).x;
+        const nodeY = isHorizontal ? (target as d3.HierarchyPointNode<GenealogyNode>).x : (target as d3.HierarchyPointNode<GenealogyNode>).y;
+        const scale = Math.max(d3.zoomTransform(svgRef.current).k, 0.8);
+        const tx = width / 2 - nodeX * scale;
+        const ty = height / 2 - nodeY * scale;
+        d3.select(svgRef.current)
+            .transition()
+            .duration(600)
+            .ease(d3.easeCubicInOut)
+            .call(zoomRef.current.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+    }, [nodes, layoutOrientation]);
     
     const handleToggle = useCallback((nodeId: string) => {
         if (selectedStrainId) {
@@ -291,7 +308,7 @@ export const GenealogyView: React.FC<GenealogyViewProps> = ({ allStrains, onNode
                                                     width={GENEALOGY_NODE_SIZE.width}
                                                     height={GENEALOGY_NODE_SIZE.height}
                                                 >
-                                                    <StrainTreeNode node={node} onNodeClick={handleNodeClick} onToggle={handleToggle} />
+                                                    <StrainTreeNode node={node} onNodeClick={handleNodeClick} onNodeFocus={handleNodeFocus} onToggle={handleToggle} />
                                                 </foreignObject>
                                             </g>
                                         );

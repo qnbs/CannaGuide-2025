@@ -20,6 +20,7 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
         { id: StrainViewTab.MyStrains, icon: <PhosphorIcons.Star />, label: t('strainsView.tabs.myStrains') },
         { id: StrainViewTab.Favorites, icon: <PhosphorIcons.Heart />, label: t('strainsView.tabs.favorites') },
         { id: StrainViewTab.Genealogy, icon: <PhosphorIcons.TreeStructure />, label: t('strainsView.tabs.genealogy') },
+        { id: StrainViewTab.BreedingLab, icon: <PhosphorIcons.Flask />, label: t('strainsView.tabs.breedingLab', { defaultValue: 'Breeding Lab' }) },
         { id: StrainViewTab.Exports, icon: <PhosphorIcons.FileText />, label: t('strainsView.tabs.exports', { count: counts.exports }) },
         { id: StrainViewTab.Tips, icon: <PhosphorIcons.LightbulbFilament />, label: t('strainsView.tabs.tips', { count: counts.tips }) },
     ];

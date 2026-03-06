@@ -1,25 +1,21 @@
 import React, { useMemo, memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { calculateVPD, altitudeCorrectionFactor } from '@/lib/vpd/calculator';
 
 interface VPDGaugeProps {
   temperature: number; // air temperature in Celsius
   humidity: number; // in %
   leafTempOffset?: number; // offset from air temp (usually negative, e.g. -2)
+  altitudeM?: number; // elevation above sea level in metres
 }
 
-// Calculates Saturated Vapor Pressure (SVP) in kPa
-const calculateSVP = (temp: number): number => {
-  return 0.61078 * Math.exp((17.27 * temp) / (temp + 237.3));
-};
-
-export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, leafTempOffset = 0 }) => {
+export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, leafTempOffset = 0, altitudeM = 0 }) => {
     const { t } = useTranslation();
     const leafTemp = temperature + leafTempOffset;
-    
+
     const vpd = useMemo(() => {
-        const svp = calculateSVP(leafTemp);
-        return svp * (1 - (humidity / 100));
-    }, [leafTemp, humidity]);
+        return calculateVPD(temperature, humidity, leafTempOffset, altitudeM);
+    }, [temperature, humidity, leafTempOffset, altitudeM]);
 
     // Define ideal ranges for different stages (in kPa)
     const idealRanges = {
@@ -76,6 +72,14 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
                     {leafTempOffset !== 0 && (
                         <p className="text-[10px] text-slate-500 mt-0.5" title={`Leaf temp: ${leafTemp.toFixed(1)}°C`}>
                             🍃 {leafTemp.toFixed(1)}°
+                        </p>
+                    )}
+                    {altitudeM > 0 && (
+                        <p
+                            className="text-[10px] text-slate-500 mt-0.5"
+                            title={`Altitude correction ×${altitudeCorrectionFactor(altitudeM).toFixed(2)} @ ${altitudeM} m`}
+                        >
+                            ⛰ {altitudeM} m
                         </p>
                     )}
                 </div>

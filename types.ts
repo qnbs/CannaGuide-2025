@@ -41,6 +41,22 @@ export type Language = 'en' | 'de';
 export type Theme = 'midnight' | 'forest' | 'purpleHaze' | 'desertSky' | 'roseQuartz' | 'rainbowKush' | 'ogKushGreen' | 'runtzRainbow' | 'lemonSkunk';
 export type GrowGoal = 'medical' | 'recreational' | 'hobbyist';
 
+/** Scientifically recognised cannabis terpenes */
+export type TerpeneName =
+    | 'Myrcene' | 'Limonene' | 'Caryophyllene' | 'Pinene' | 'Linalool'
+    | 'Terpinolene' | 'Humulene' | 'Ocimene' | 'Bisabolol' | 'Valencene'
+    | 'Geraniol' | 'Guaiol' | 'Camphene' | 'Nerolidol' | 'Phytol';
+
+/** Terpene percentage by dry-weight (typical range 0.01 – 2.0 %) */
+export type TerpeneProfile = Partial<Record<TerpeneName, number>>;
+
+/** Predicted consumer/therapeutic effect tags from entourage analysis */
+export type EffectTag =
+    | 'Relaxing' | 'Sedating' | 'Uplifting' | 'Energizing' | 'Focusing'
+    | 'Creative' | 'Euphoric' | 'Pain Relief' | 'Anti-Anxiety'
+    | 'Anti-Inflammatory' | 'Appetite Stimulating' | 'Appetite Suppressing'
+    | 'Neuroprotective' | 'Antiemetic' | 'Antispasmodic';
+
 export type SortKey = 'name' | 'type' | 'thc' | 'cbd' | 'floweringTime' | 'difficulty' | 'yield' | 'height';
 export type SortDirection = 'asc' | 'desc';
 
@@ -67,6 +83,7 @@ export enum StrainViewTab {
     MyStrains = 'my-strains',
     Favorites = 'favorites',
     Genealogy = 'genealogy',
+    BreedingLab = 'breeding-lab',
     Exports = 'exports',
     Tips = 'tips',
 }
@@ -128,6 +145,8 @@ export interface Strain {
     cbd: number;
     thcRange?: string;
     cbdRange?: string;
+    cbg?: number;          // optional CBG %
+    thcv?: number;         // optional THCV %
     floweringTime: number;
     floweringTimeRange?: string;
     description?: string;
@@ -140,6 +159,8 @@ export interface Strain {
     };
     aromas?: string[];
     dominantTerpenes?: string[];
+    /** Quantitative terpene profile (% dry-weight). Derived from dominantTerpenes if not set. */
+    terpeneProfile?: TerpeneProfile;
     geneticModifiers: GeneticModifiers;
 }
 
@@ -394,6 +415,8 @@ export interface AppSettings {
         lightExtinctionCoefficient: number;
         nutrientConversionEfficiency: number;
         stomataSensitivity: number;
+        /** Grow-room altitude above sea level (m). Used for barometric VPD correction. */
+        altitudeM: number;
     };
     notifications: {
         enabled: boolean;

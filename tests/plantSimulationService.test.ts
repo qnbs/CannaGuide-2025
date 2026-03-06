@@ -335,6 +335,48 @@ describe('plantSimulationService', () => {
         })
     })
 
+    describe('post-harvest processing', () => {
+        it('initializes harvest data when a plant enters harvest flow', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Harvest
+
+            const updatedPlant = plantSimulationService.ensurePostHarvestData(plant)
+            expect(updatedPlant.harvestData).not.toBeNull()
+            expect(updatedPlant.harvestData?.wetWeight).toBeGreaterThan(0)
+        })
+
+        it('advances drying into curing with evolving post-harvest chemistry', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Harvest
+            plant.biomass.flowers = 12
+            plant.environment.internalTemperature = 19
+            plant.environment.internalHumidity = 57
+
+            let currentPlant = plantSimulationService.ensurePostHarvestData(plant)
+            for (let day = 0; day < 8; day += 1) {
+                currentPlant = plantSimulationService.advancePostHarvestState(currentPlant, 'dry', tunedSimulationSettings).updatedPlant
+            }
+
+            expect([PlantStage.Drying, PlantStage.Curing, PlantStage.Finished]).toContain(currentPlant.stage)
+            expect(currentPlant.harvestData?.chlorophyllPercent).toBeLessThan(100)
+            expect(currentPlant.harvestData?.finalQuality).toBeGreaterThan(0)
+        })
+    })
+
+    describe('simulation diagnostics', () => {
+        it('reports dominant factors and profile curves for a plant', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            plant.stage = PlantStage.Vegetative
+            plant.biomass = { total: 1.5, stem: 0.6, leaves: 0.7, flowers: 0 }
+            plant.leafAreaIndex = 0.55
+
+            const diagnostics = plantSimulationService.getSimulationDiagnostics(plant, tunedSimulationSettings)
+            expect(diagnostics.profile.name).toBe('expert')
+            expect(diagnostics.dominantFactors.length).toBeGreaterThan(0)
+            expect(diagnostics.growth.lightAbsorption).toBeGreaterThan(0)
+        })
+    })
+
     // ── Training actions ──────────────────────────────────────────────────────
 
     describe('topPlant()', () => {

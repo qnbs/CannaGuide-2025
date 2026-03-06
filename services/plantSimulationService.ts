@@ -1,4 +1,4 @@
-import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, JournalEntryType, GeneticModifiers, AppSettings } from '@/types';
+import { Plant, PlantStage, GrowSetup, Strain, JournalEntry, Task, ProblemType, JournalEntryType, GeneticModifiers, AppSettings, HarvestData } from '@/types';
 import { STAGES_ORDER, SIM_PAR_PER_WATT_LED, SIM_LIGHT_EXTINCTION_COEFFICIENT_K, SIM_BIOMASS_CONVERSION_EFFICIENCY, SIM_SECONDS_PER_DAY } from '@/constants';
 import type {
     AirflowLevel,
@@ -24,6 +24,85 @@ const DEFAULT_GENETIC_MODIFIERS: GeneticModifiers = {
     transpirationFactor: 1,
     stomataSensitivity: 1,
 };
+
+const SIMULATION_PROFILE_CURVES: Record<SimulationSettings['simulationProfile'], {
+    environmentStress: number;
+    nutrientStress: number;
+    pestPressure: number;
+    environmentalDrift: number;
+    postHarvestPrecision: number;
+}> = {
+    beginner: {
+        environmentStress: 0.82,
+        nutrientStress: 0.86,
+        pestPressure: 0.78,
+        environmentalDrift: 0.65,
+        postHarvestPrecision: 0.82,
+    },
+    intermediate: {
+        environmentStress: 1,
+        nutrientStress: 1,
+        pestPressure: 1,
+        environmentalDrift: 1,
+        postHarvestPrecision: 1,
+    },
+    expert: {
+        environmentStress: 1.14,
+        nutrientStress: 1.12,
+        pestPressure: 1.2,
+        environmentalDrift: 1.18,
+        postHarvestPrecision: 1.12,
+    },
+};
+
+export interface SimulationDiagnostics {
+    profile: {
+        name: SimulationSettings['simulationProfile'];
+        environmentStress: number;
+        nutrientStress: number;
+        pestPressure: number;
+        postHarvestPrecision: number;
+    };
+    environment: {
+        temperature: number;
+        humidity: number;
+        correctedRh: number;
+        vpd: number;
+        targetMin: number;
+        targetMax: number;
+        leafOffset: number;
+        altitudeM: number;
+    };
+    growth: {
+        lightAbsorption: number;
+        co2Factor: number;
+        nutrientAvailability: number;
+        nutrientConversionEfficiency: number;
+        lightExtinctionCoefficient: number;
+        stomataSensitivity: number;
+    };
+    stress: {
+        environmentalInstability: number;
+        nutrientSensitivityCurve: number;
+        pestPressureCurve: number;
+        accumulatedSubdayHours: number;
+    };
+    dominantFactors: Array<{
+        label: string;
+        value: string;
+        tone: 'good' | 'warn' | 'critical';
+        reason: string;
+    }>;
+    postHarvest?: {
+        stage: PlantStage;
+        jarHumidity: number;
+        chlorophyllPercent: number;
+        terpeneRetentionPercent: number;
+        moldRiskPercent: number;
+        finalQuality: number;
+        burpDebtDays: number;
+    };
+}
 
 // More detailed stage information for the mechanistic model
 export const PLANT_STAGE_DETAILS: Record<PlantStage, { 
@@ -81,6 +160,44 @@ class PlantSimulationService {
         return this._clamp(simulationSettings?.altitudeM ?? 0, 0, 5000);
     }
 
+    private _getProfileCurve(simulationSettings?: SimulationSettings) {
+        return SIMULATION_PROFILE_CURVES[simulationSettings?.simulationProfile ?? 'intermediate'];
+    }
+
+    private _getEnvironmentalInstabilityCurve(simulationSettings?: SimulationSettings): number {
+        if (!simulationSettings) {
+            return 0.18;
+        }
+
+        const normalizedStability = this._clamp((simulationSettings.environmentalStability - 0.5) / 0.5, 0, 1);
+        return Math.pow(1 - normalizedStability, 1.35);
+    }
+
+    private _getPestPressureCurve(simulationSettings?: SimulationSettings): number {
+        if (!simulationSettings) {
+            return 1;
+        }
+
+        return 0.45 + Math.pow(this._clamp(simulationSettings.pestPressure, 0, 1), 1.6) * 3.2;
+    }
+
+    private _getNutrientSensitivityCurve(simulationSettings?: SimulationSettings): number {
+        if (!simulationSettings) {
+            return 1;
+        }
+
+        const sensitivity = this._clamp(simulationSettings.nutrientSensitivity, 0.5, 2);
+        if (sensitivity >= 1) {
+            return 1 + Math.pow(sensitivity - 1, 1.35) * 2.4;
+        }
+
+        return 1 - Math.pow(1 - sensitivity, 1.1) * 0.45;
+    }
+
+    private _getPlantSignal(plant: Plant): number {
+        return plant.id.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0) / 17;
+    }
+
     private _getSimulationLeafTemperatureOffset(plant: Plant, simulationSettings?: SimulationSettings): number {
         if (simulationSettings && Number.isFinite(simulationSettings.leafTemperatureOffset)) {
             return this._clamp(simulationSettings.leafTemperatureOffset, -5, 5);
@@ -105,27 +222,15 @@ class PlantSimulationService {
     }
 
     private _getEnvironmentalStressMultiplier(simulationSettings?: SimulationSettings): number {
-        if (!simulationSettings) {
-            return 1;
-        }
-
-        return this._clamp(2 - simulationSettings.environmentalStability, 0.6, 1.6);
+        return this._clamp((0.72 + this._getEnvironmentalInstabilityCurve(simulationSettings) * 0.95) * this._getProfileCurve(simulationSettings).environmentStress, 0.55, 1.85);
     }
 
     private _getNutrientStressMultiplier(simulationSettings?: SimulationSettings): number {
-        if (!simulationSettings) {
-            return 1;
-        }
-
-        return this._clamp(simulationSettings.nutrientSensitivity, 0.5, 2);
+        return this._clamp(this._getNutrientSensitivityCurve(simulationSettings) * this._getProfileCurve(simulationSettings).nutrientStress, 0.55, 2.4);
     }
 
     private _getPestPressureMultiplier(simulationSettings?: SimulationSettings): number {
-        if (!simulationSettings) {
-            return 1;
-        }
-
-        return this._clamp(0.5 + simulationSettings.pestPressure * 5, 0.5, 5);
+        return this._clamp(this._getPestPressureCurve(simulationSettings) * this._getProfileCurve(simulationSettings).pestPressure, 0.4, 5.5);
     }
 
     private _normalizePlant(plant: Plant): Plant {
@@ -249,6 +354,240 @@ class PlantSimulationService {
         );
     }
 
+    private _applyDailyEnvironmentalDrift(plant: Plant, simulationSettings?: SimulationSettings): Plant {
+        const p = this.clonePlant(plant);
+        const instability = this._getEnvironmentalInstabilityCurve(simulationSettings);
+        if (instability <= 0.01) {
+            return p;
+        }
+
+        const profileCurve = this._getProfileCurve(simulationSettings);
+        const signal = this._getPlantSignal(p);
+        const driftAmplitude = instability * profileCurve.environmentalDrift;
+        const tempDrift = Math.sin(signal + p.age * 0.73) * 2.4 * driftAmplitude;
+        const humidityDrift = Math.cos(signal * 1.3 + p.age * 0.57) * 6.5 * driftAmplitude;
+
+        p.environment.internalTemperature = this._clamp(p.environment.internalTemperature + tempDrift, 14, 36);
+        p.environment.internalHumidity = this._clamp(p.environment.internalHumidity + humidityDrift, 25, 90);
+        return p;
+    }
+
+    private _createInitialHarvestData(plant: Plant): HarvestData {
+        const wetWeight = Math.max(12, Number((plant.biomass.flowers * 5.5).toFixed(1)));
+        const targetDryRatio = this._clamp(0.2 + (plant.health / 100) * 0.05, 0.18, 0.28);
+        const dryWeight = Number((wetWeight * targetDryRatio).toFixed(1));
+        const thc = this._clamp(plant.strain.thc * 0.78 + plant.health * 0.04 - plant.stressLevel * 0.02, 4, plant.strain.thc * 1.05);
+        const cbn = this._clamp(thc * 0.015, 0.05, 0.8);
+        return {
+            wetWeight,
+            dryWeight,
+            currentDryDay: 0,
+            currentCureDay: 0,
+            lastBurpDay: 0,
+            jarHumidity: 68,
+            chlorophyllPercent: 100,
+            terpeneRetentionPercent: 100,
+            moldRiskPercent: this._clamp((plant.environment.internalHumidity - 50) * 1.2, 4, 25),
+            finalQuality: 72,
+            cannabinoidProfile: {
+                thc: Number(thc.toFixed(2)),
+                cbn: Number(cbn.toFixed(2)),
+            },
+            terpeneProfile: { ...plant.terpeneProfile },
+        };
+    }
+
+    private _computePostHarvestQuality(harvestData: HarvestData, simulationSettings?: SimulationSettings): number {
+        const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision;
+        const humiditySweetSpot = Math.max(0, 12 - Math.abs(harvestData.jarHumidity - 61) * 3.5) * 2.1;
+        const chlorophyllScore = Math.max(0, 100 - harvestData.chlorophyllPercent);
+        const terpeneScore = harvestData.terpeneRetentionPercent;
+        const moldPenalty = harvestData.moldRiskPercent * 1.2;
+        const cannabinoidScore = harvestData.cannabinoidProfile.thc * 1.4 + harvestData.cannabinoidProfile.cbn * 2.5;
+        return this._clamp((humiditySweetSpot + chlorophyllScore * 0.32 + terpeneScore * 0.42 + cannabinoidScore - moldPenalty) * profilePrecision, 0, 100);
+    }
+
+    ensurePostHarvestData(plant: Plant): Plant {
+        const p = this._normalizePlant(this.clonePlant(plant));
+        if (![PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(p.stage)) {
+            return p;
+        }
+        if (!p.harvestData) {
+            p.harvestData = this._createInitialHarvestData(p);
+        }
+        return p;
+    }
+
+    advancePostHarvestState(plant: Plant, action: 'dry' | 'burp' | 'cure', simulationSettings?: SimulationSettings): { updatedPlant: Plant; newJournalEntries: JournalEntry[] } {
+        let p = this.ensurePostHarvestData(plant);
+        const harvestData = p.harvestData;
+        const newJournalEntries: JournalEntry[] = [];
+        if (!harvestData) {
+            return { updatedPlant: p, newJournalEntries };
+        }
+
+        const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision;
+        const roomTemp = p.environment.internalTemperature;
+        const roomHumidity = p.environment.internalHumidity;
+        const ventilationFactor = p.equipment.exhaustFan.power === 'high' ? 1.15 : p.equipment.exhaustFan.power === 'low' ? 0.9 : 1;
+
+        if (action === 'dry' && (p.stage === PlantStage.Harvest || p.stage === PlantStage.Drying)) {
+            if (p.stage === PlantStage.Harvest) {
+                p.stage = PlantStage.Drying;
+            }
+
+            harvestData.currentDryDay += 1;
+            const humidityPenalty = Math.abs(roomHumidity - 58) / 12;
+            const tempPenalty = Math.abs(roomTemp - 19.5) / 8;
+            const controlledDryingScore = this._clamp(1.15 - humidityPenalty - tempPenalty + (ventilationFactor - 1) * 0.35, 0.45, 1.18);
+            const waterLossProgress = this._clamp(0.08 + (62 - roomHumidity) * 0.002 + (roomTemp - 18) * 0.003, 0.04, 0.15);
+            const remainingWater = Math.max(0, 1 - harvestData.currentDryDay * waterLossProgress);
+            const targetWeight = harvestData.wetWeight * (0.22 + remainingWater * 0.78);
+            harvestData.dryWeight = Number(Math.max(harvestData.wetWeight * 0.2, targetWeight).toFixed(1));
+            harvestData.jarHumidity = this._clamp(harvestData.jarHumidity - (2.2 * controlledDryingScore) + (roomHumidity - 58) * 0.12, 58, 72);
+            harvestData.chlorophyllPercent = this._clamp(harvestData.chlorophyllPercent - (8.5 * controlledDryingScore * profilePrecision), 12, 100);
+            harvestData.terpeneRetentionPercent = this._clamp(harvestData.terpeneRetentionPercent - Math.max(0.4, (tempPenalty * 2.4 + humidityPenalty * 1.6) / profilePrecision), 45, 100);
+            harvestData.moldRiskPercent = this._clamp(harvestData.moldRiskPercent + Math.max(0, roomHumidity - 62) * 0.9 + Math.max(0, roomTemp - 21) * 0.6 - ventilationFactor * 2.4, 0, 100);
+            harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings);
+
+            if (harvestData.currentDryDay >= PLANT_STAGE_DETAILS[PlantStage.Drying].duration || (harvestData.jarHumidity <= 62 && harvestData.currentDryDay >= 6)) {
+                p.stage = PlantStage.Curing;
+                harvestData.jarHumidity = this._clamp(harvestData.jarHumidity + 1.6, 60, 64);
+            }
+
+            newJournalEntries.push({
+                id: '',
+                createdAt: 0,
+                type: JournalEntryType.PostHarvest,
+                notes: `Drying day ${harvestData.currentDryDay}: room ${roomTemp.toFixed(1)}°C / ${roomHumidity.toFixed(0)}% RH`,
+            });
+        }
+
+        if (action === 'burp' && p.stage === PlantStage.Curing) {
+            harvestData.lastBurpDay = harvestData.currentCureDay;
+            harvestData.jarHumidity = this._clamp(harvestData.jarHumidity - 2.6, 56, 68);
+            harvestData.moldRiskPercent = this._clamp(harvestData.moldRiskPercent - 6.5 * profilePrecision, 0, 100);
+            harvestData.terpeneRetentionPercent = this._clamp(harvestData.terpeneRetentionPercent - 0.35, 40, 100);
+            harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings);
+            newJournalEntries.push({
+                id: '',
+                createdAt: 0,
+                type: JournalEntryType.PostHarvest,
+                notes: `Burped jars on cure day ${harvestData.currentCureDay}`,
+            });
+        }
+
+        if (action === 'cure' && p.stage === PlantStage.Curing) {
+            harvestData.currentCureDay += 1;
+            const burpDebt = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1);
+            const humidityDrift = (roomHumidity - 60) * 0.08 + burpDebt * 0.45;
+            harvestData.jarHumidity = this._clamp(harvestData.jarHumidity + humidityDrift - ventilationFactor * 0.35, 56, 70);
+            harvestData.chlorophyllPercent = this._clamp(harvestData.chlorophyllPercent - (3.6 * profilePrecision), 2, 100);
+            harvestData.terpeneRetentionPercent = this._clamp(harvestData.terpeneRetentionPercent - Math.max(0.2, Math.abs(harvestData.jarHumidity - 61) * 0.32 + burpDebt * 0.18), 35, 100);
+            harvestData.moldRiskPercent = this._clamp(harvestData.moldRiskPercent + Math.max(0, harvestData.jarHumidity - 64) * 1.8 + burpDebt * 1.4 - ventilationFactor * 1.2, 0, 100);
+            harvestData.cannabinoidProfile.cbn = Number(this._clamp(harvestData.cannabinoidProfile.cbn + harvestData.cannabinoidProfile.thc * 0.0022, 0, 6).toFixed(2));
+            harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings);
+
+            if (harvestData.currentCureDay >= PLANT_STAGE_DETAILS[PlantStage.Curing].duration) {
+                p.stage = PlantStage.Finished;
+            }
+
+            newJournalEntries.push({
+                id: '',
+                createdAt: 0,
+                type: JournalEntryType.PostHarvest,
+                notes: `Curing day ${harvestData.currentCureDay}: jar ${harvestData.jarHumidity.toFixed(1)}% RH`,
+            });
+        }
+
+        harvestData.finalQuality = this._computePostHarvestQuality(harvestData, simulationSettings);
+        return { updatedPlant: p, newJournalEntries };
+    }
+
+    getSimulationDiagnostics(plant: Plant, simulationSettings?: SimulationSettings): SimulationDiagnostics {
+        const p = this.applyEnvironmentalCorrections(this.ensurePostHarvestData(plant), simulationSettings);
+        const ideal = PLANT_STAGE_DETAILS[p.stage].idealVitals;
+        const correctedRh = this._getCorrectedRh(p);
+        const leafOffset = this._getSimulationLeafTemperatureOffset(p, simulationSettings);
+        const altitudeM = this._getSimulationAltitude(simulationSettings);
+        const lightAbsorption = 1 - Math.exp(-this._getSimulationLightExtinctionCoefficient(simulationSettings) * p.leafAreaIndex);
+        const nutrientAvailability = (p.nutrientPool.nitrogen + p.nutrientPool.phosphorus + p.nutrientPool.potassium) * this._getSimulationNutrientConversionEfficiency(simulationSettings);
+        const co2Factor = this._clamp(p.environment.co2Level / 400, 0.5, 2);
+        const profileCurve = this._getProfileCurve(simulationSettings);
+        const dominantFactors: SimulationDiagnostics['dominantFactors'] = [
+            {
+                label: 'VPD',
+                value: `${p.environment.vpd.toFixed(2)} kPa`,
+                tone: p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max ? 'critical' : 'good',
+                reason: `Target ${ideal.vpd.min.toFixed(1)}-${ideal.vpd.max.toFixed(1)} kPa`,
+            },
+            {
+                label: 'Canopy light capture',
+                value: `${(lightAbsorption * 100).toFixed(0)}%`,
+                tone: lightAbsorption < 0.55 ? 'warn' : 'good',
+                reason: `k=${this._getSimulationLightExtinctionCoefficient(simulationSettings).toFixed(2)} with LAI ${p.leafAreaIndex.toFixed(2)}`,
+            },
+            {
+                label: 'Nutrient throughput',
+                value: nutrientAvailability.toFixed(2),
+                tone: nutrientAvailability < 5 ? 'warn' : 'good',
+                reason: `Sensitivity ${this._getNutrientSensitivityCurve(simulationSettings).toFixed(2)}x`,
+            },
+            {
+                label: 'Pest pressure curve',
+                value: `${this._getPestPressureMultiplier(simulationSettings).toFixed(2)}x`,
+                tone: this._getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
+                reason: `Profile ${profileCurve.pestPressure.toFixed(2)}x`,
+            },
+        ];
+
+        return {
+            profile: {
+                name: simulationSettings?.simulationProfile ?? 'intermediate',
+                environmentStress: profileCurve.environmentStress,
+                nutrientStress: profileCurve.nutrientStress,
+                pestPressure: profileCurve.pestPressure,
+                postHarvestPrecision: profileCurve.postHarvestPrecision,
+            },
+            environment: {
+                temperature: p.environment.internalTemperature,
+                humidity: p.environment.internalHumidity,
+                correctedRh,
+                vpd: p.environment.vpd,
+                targetMin: ideal.vpd.min,
+                targetMax: ideal.vpd.max,
+                leafOffset,
+                altitudeM,
+            },
+            growth: {
+                lightAbsorption,
+                co2Factor,
+                nutrientAvailability,
+                nutrientConversionEfficiency: this._getSimulationNutrientConversionEfficiency(simulationSettings),
+                lightExtinctionCoefficient: this._getSimulationLightExtinctionCoefficient(simulationSettings),
+                stomataSensitivity: this._getSimulationStomataSensitivity(p, simulationSettings),
+            },
+            stress: {
+                environmentalInstability: this._getEnvironmentalInstabilityCurve(simulationSettings),
+                nutrientSensitivityCurve: this._getNutrientSensitivityCurve(simulationSettings),
+                pestPressureCurve: this._getPestPressureCurve(simulationSettings),
+                accumulatedSubdayHours: p.simulationClock.accumulatedDayMs / 3600000,
+            },
+            dominantFactors,
+            postHarvest: p.harvestData
+                ? {
+                    stage: p.stage,
+                    jarHumidity: p.harvestData.jarHumidity,
+                    chlorophyllPercent: p.harvestData.chlorophyllPercent,
+                    terpeneRetentionPercent: p.harvestData.terpeneRetentionPercent,
+                    moldRiskPercent: p.harvestData.moldRiskPercent,
+                    finalQuality: p.harvestData.finalQuality,
+                    burpDebtDays: Math.max(0, p.harvestData.currentCureDay - p.harvestData.lastBurpDay - 1),
+                }
+                : undefined,
+        };
+    }
+
     applyEnvironmentalCorrections(plant: Plant, simulationSettings?: SimulationSettings): Plant {
         const p = this._normalizePlant(this.clonePlant(plant));
         const correctedRh = this._getCorrectedRh(p);
@@ -370,7 +709,7 @@ class PlantSimulationService {
     }
 
     private _runDailyEcosystem(plant: Plant, simulationSettings?: SimulationSettings): Plant {
-        const p = this.clonePlant(plant);
+        const p = this._applyDailyEnvironmentalDrift(this.clonePlant(plant), simulationSettings);
 
         // Exhaust fan replenishes CO2 toward ambient (400 ppm).
         // With poor or disabled ventilation, photosynthesis steadily depletes CO2.
@@ -574,6 +913,9 @@ class PlantSimulationService {
         }
     
         if (p.stage !== originalStage) {
+            if (p.stage === PlantStage.Harvest && !p.harvestData) {
+                p.harvestData = this._createInitialHarvestData(p);
+            }
             journalEntries.push({
                 id: '',
                 createdAt: 0,

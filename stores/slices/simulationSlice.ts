@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction, createEntityAdapter, createAsyncThunk } from '@reduxjs/toolkit';
-import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType, VentilationPower, SimulationState, PlantStage, AppSettings } from '@/types';
-import { plantSimulationService, PLANT_STAGE_DETAILS, vpdService } from '@/services/plantSimulationService';
+import { Plant, GrowSetup, JournalEntry, Task, JournalEntryType, VentilationPower, SimulationState, AppSettings } from '@/types';
+import { plantSimulationService, vpdService } from '@/services/plantSimulationService';
 import { RootState } from '../store';
 import { addNotification, cancelNewGrow, setActiveView } from './uiSlice';
 import { getT } from '@/i18n';
@@ -173,25 +173,23 @@ const simulationSlice = createSlice({
                 }
             });
         },
-        processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'burp' | 'cure' }>) => {
+        processPostHarvest: (state, action: PayloadAction<{ plantId: string, action: 'dry' | 'burp' | 'cure'; simulationSettings?: AppSettings['simulation'] }>) => {
             const plant = state.plants.entities[action.payload.plantId];
-            if (plant && plant.harvestData) {
-                // Simplified post-harvest logic
-                if (action.payload.action === 'dry' && plant.stage === PlantStage.Drying) {
-                    plant.harvestData.currentDryDay += 1;
-                    if (plant.harvestData.currentDryDay >= PLANT_STAGE_DETAILS[PlantStage.Drying].duration) {
-                        plant.stage = PlantStage.Curing;
-                    }
-                }
-                if (action.payload.action === 'cure' && plant.stage === PlantStage.Curing) {
-                    plant.harvestData.currentCureDay += 1;
-                    if (plant.harvestData.currentCureDay >= PLANT_STAGE_DETAILS[PlantStage.Curing].duration) {
-                        plant.stage = PlantStage.Finished;
-                    }
-                }
-                 if (action.payload.action === 'burp' && plant.stage === PlantStage.Curing) {
-                    plant.harvestData.lastBurpDay = plant.harvestData.currentCureDay;
-                }
+            if (plant) {
+                const { updatedPlant, newJournalEntries } = plantSimulationService.advancePostHarvestState(
+                    plant,
+                    action.payload.action,
+                    action.payload.simulationSettings,
+                )
+
+                const stampedEntries = newJournalEntries.map((entry, index) => ({
+                    ...entry,
+                    id: `journal-postharvest-${updatedPlant.id}-${Date.now()}-${index}`,
+                    createdAt: Date.now(),
+                }))
+
+                Object.assign(plant, updatedPlant)
+                plant.journal.push(...stampedEntries)
             }
         },
         resetPlants: (state) => {

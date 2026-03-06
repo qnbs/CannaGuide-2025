@@ -9,6 +9,7 @@ import { TasksTab } from './detailedPlantViewTabs/TasksTab';
 import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
 import { AiTab } from './detailedPlantViewTabs/AiTab';
 import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
+import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab';
 import { useAppDispatch } from '@/stores/store';
 import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice';
 
@@ -31,6 +32,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     const tabs = [
         { id: 'overview', label: t('plantsView.detailedView.tabs.overview'), icon: <PhosphorIcons.ChartPieSlice /> },
         ...(isPostHarvest ? [{ id: 'postharvest', label: t('plantsView.detailedView.tabs.postHarvest'), icon: <PhosphorIcons.ArchiveBox /> }] : []),
+        { id: 'simulation', label: t('plantsView.detailedView.tabs.simulation'), icon: <PhosphorIcons.GearSix /> },
         { id: 'journal', label: t('plantsView.detailedView.tabs.journal'), icon: <PhosphorIcons.BookOpenText /> },
         { id: 'tasks', label: t('plantsView.detailedView.tabs.tasks'), icon: <PhosphorIcons.ListChecks /> },
         { id: 'photos', label: t('plantsView.detailedView.tabs.photos'), icon: <PhosphorIcons.Camera /> },
@@ -78,6 +80,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             <div>
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
+                {activeTab === 'simulation' && <SimulationDebugTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}
                 {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={(taskId) => dispatch(completeTask({ plantId: plant.id, taskId }))} />}
                 {activeTab === 'photos' && <PhotosTab journal={plant.journal} />}

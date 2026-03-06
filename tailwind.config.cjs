@@ -10,6 +10,8 @@ module.exports = {
     './stores/**/*.{ts,tsx}',
     './workers/**/*.{ts,tsx}',
     './data/**/*.{ts,tsx}',
+    './utils/**/*.{ts,tsx}',
+    './lib/**/*.{ts,tsx}',
   ],
   theme: {
     extend: {

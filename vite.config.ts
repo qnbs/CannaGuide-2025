@@ -7,7 +7,12 @@ import path from 'path'
 export default defineConfig({
   base: '/CannaGuide-2025/',
   plugins: [
-    react(),
+    react({
+      // React 19 Compiler – automatically memoises components and hooks
+      babel: {
+        plugins: ['babel-plugin-react-compiler'],
+      },
+    }),
     VitePWA({
       // Keep our hand-crafted sw.js; only inject the precache asset manifest.
       strategies: 'injectManifest',
@@ -32,13 +37,13 @@ export default defineConfig({
   server: {
     headers: {
       'Content-Security-Policy': "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';",
-      'Permissions-Policy': 'geolocation=(), camera=(self), microphone=(self), bluetooth=(self), usb=(), payment=(), gyroscope=(), magnetometer=()',
+      'Permissions-Policy': 'accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()',
     },
   },
   preview: {
     headers: {
       'Content-Security-Policy': "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';",
-      'Permissions-Policy': 'geolocation=(), camera=(self), microphone=(self), bluetooth=(self), usb=(), payment=(), gyroscope=(), magnetometer=()',
+      'Permissions-Policy': 'accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()',
     },
   },
   build: {

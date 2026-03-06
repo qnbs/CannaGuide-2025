@@ -1,4 +1,4 @@
-import { useState, useRef, memo } from 'react'
+import { useState, useRef, memo, useEffect } from 'react'
 import DOMPurify from 'dompurify'
 import { Button } from '@/components/common/Button'
 import { useTranslation } from 'react-i18next'
@@ -29,6 +29,11 @@ const EditResponseModalComponent = <T extends EditableResponse>({
     const [title, setTitle] = useState(response.title)
     const [content, setContent] = useState(response.content)
     const contentRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        setTitle(response.title)
+        setContent(response.content)
+    }, [response])
 
     const handleSave = () => {
         onSave({ ...response, title, content })

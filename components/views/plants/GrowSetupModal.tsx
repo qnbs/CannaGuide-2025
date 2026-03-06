@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
@@ -29,11 +29,17 @@ const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) =
 export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose, onConfirm }) => {
   const { t } = useTranslation();
   const settings = useAppSelector(selectSettings);
-  
-  const [setup, setSetup] = useState<GrowSetup>({
+
+  const initialSetup = useMemo<GrowSetup>(() => ({
     ...settings.defaults.growSetup,
     lightHours: strain.floweringType === 'Autoflower' ? 18 : 18,
-  });
+  }), [settings.defaults.growSetup, strain.floweringType]);
+
+  const [setup, setSetup] = useState<GrowSetup>(initialSetup);
+
+  useEffect(() => {
+    setSetup(initialSetup);
+  }, [initialSetup, strain.id]);
   
   const isPhotoperiod = strain.floweringType === 'Photoperiod';
 
@@ -68,7 +74,11 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
       size="2xl"
     >
       <div className="space-y-4">
-        <Card className="!p-3 bg-slate-800/50">
+        <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.16),rgba(15,23,42,0.92))] !p-4">
+            <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                <PhosphorIcons.Plant className="h-3.5 w-3.5" />
+                {t('plantsView.setupModal.title', { strainName: strain.name })}
+            </div>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                 <InfoRow label={t('common.type')} value={strain.type} />
                 <InfoRow label={t('strainsView.table.thc')} value={`${strain.thc}%`} />

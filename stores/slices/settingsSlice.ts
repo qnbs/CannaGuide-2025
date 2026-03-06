@@ -168,8 +168,11 @@ const settingsSlice = createSlice({
         setSetting: (state, action: PayloadAction<{ path: string; value: unknown }>) => {
             const { path, value } = action.payload
             const keys = path.split('.')
+            // Guard against prototype pollution via crafted paths
+            if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) return
             let current: Record<string, unknown> = state.settings as unknown as Record<string, unknown>
             for (let i = 0; i < keys.length - 1; i++) {
+                if (!Object.prototype.hasOwnProperty.call(current, keys[i])) return
                 current = current[keys[i]] as Record<string, unknown>
             }
             current[keys[keys.length - 1]] = value
@@ -177,8 +180,10 @@ const settingsSlice = createSlice({
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
             const { path } = action.payload
             const keys = path.split('.')
+            if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) return
             let current: Record<string, unknown> = state.settings as unknown as Record<string, unknown>
             for (let i = 0; i < keys.length - 1; i++) {
+                if (!Object.prototype.hasOwnProperty.call(current, keys[i])) return
                 current = current[keys[i]] as Record<string, unknown>
             }
             const finalKey = keys[keys.length - 1]

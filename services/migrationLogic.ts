@@ -186,6 +186,21 @@ const ensureGenealogyShape = (state: PersistedState): void => {
     g._version = GENEALOGY_STATE_VERSION
 }
 
+/**
+ * Sanitizes sandbox slice on rehydration.
+ * Prevents permanent "running" state if the app crashed during a scenario run.
+ */
+const ensureSandboxShape = (state: PersistedState): void => {
+    if (!state.sandbox || typeof state.sandbox !== 'object') return
+    const sb = state.sandbox as unknown as Record<string, unknown>
+    // status: 'running' can never resolve after a restart – reset to idle
+    if (sb.status === 'running') {
+        console.warn('[MigrationLogic] Sandbox status was "running" – resetting to "idle".')
+        sb.status = 'idle'
+        sb.currentExperiment = null
+    }
+}
+
 
 const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
     const isObject = (item: unknown): item is Record<string, unknown> => {
@@ -302,6 +317,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         }
         ensureSimulationShape(persistedState)
         ensureGenealogyShape(persistedState)
+        ensureSandboxShape(persistedState)
         return persistedState
     }
 
@@ -324,6 +340,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
 
     ensureSimulationShape(migratedState)
     ensureGenealogyShape(migratedState)
+    ensureSandboxShape(migratedState)
 
     return migratedState
 }

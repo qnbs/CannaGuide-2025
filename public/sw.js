@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cannaguide-v20-pwa-cache';
+const CACHE_NAME = 'cannaguide-v21-pwa-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
@@ -13,6 +13,8 @@ const APP_SHELL_URLS = [
 // No external CDN URLs need to be pre-cached.
 const THIRD_PARTY_URLS = [];
 
+// Workbox injects the precache manifest into __WB_MANIFEST at build time.
+// The variable must appear exactly once for workbox-build's injectManifest to work.
 const workboxManifest = self.__WB_MANIFEST || [];
 const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
 const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])];

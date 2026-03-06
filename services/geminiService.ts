@@ -18,7 +18,6 @@ import {
     DeepDiveGuideSchema,
     MentorMessageContentSchema,
     RecommendationSchema,
-    GardenStatusSummarySchema,
 } from '@/types/schemas'
 import { z } from 'zod'
 import { getT } from '@/i18n'
@@ -875,7 +874,9 @@ PLANT CONTEXT:
 
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
         const ragContext = growLogRagService.retrieveRelevantContext(plants, query)
-        const prompt = `Answer the question using only the provided grow-log context.\n\nQuestion:\n${query}\n\nGrow-log context:\n${ragContext}\n\nIf information is uncertain, explicitly say so.`
+        // Sanitize user query to prevent prompt injection (same as getMentorResponse)
+        const safeQuery = sanitizeForPrompt(query, 600)
+        const prompt = `Answer the question using only the provided grow-log context.\n\nQuestion:\n${safeQuery}\n\nGrow-log context:\n${ragContext}\n\nIf information is uncertain, explicitly say so.`
 
         try {
             const responseText = await this.generateText(prompt, lang)

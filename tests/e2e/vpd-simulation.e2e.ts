@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test'
+import { bootFreshAppWithLegalGates, closeOnboardingIfVisible, expectShellVisible } from './helpers'
 
 test.describe('VPD Simulation', () => {
     test('equipment view loads without crash', async ({ page }) => {
-        await page.goto('/')
-        await page.waitForLoadState('networkidle')
+        await bootFreshAppWithLegalGates(page)
+        await closeOnboardingIfVisible(page)
 
         // Navigate to equipment tab
         const equipNav = page.locator('nav').getByText(/Equipment|Ausrüstung/i).first()
@@ -17,19 +18,16 @@ test.describe('VPD Simulation', () => {
     })
 
     test('plants view renders plant slots', async ({ page }) => {
-        await page.goto('/')
-        await page.waitForLoadState('networkidle')
+        await bootFreshAppWithLegalGates(page)
 
-        // Plants view is the default view
-        const main = page.locator('main').first()
-        await expect(main).toBeVisible({ timeout: 15_000 })
+        await expectShellVisible(page)
     })
 })
 
 test.describe('AI Diagnostics', () => {
     test('knowledge view loads without crash', async ({ page }) => {
-        await page.goto('/')
-        await page.waitForLoadState('networkidle')
+        await bootFreshAppWithLegalGates(page)
+        await closeOnboardingIfVisible(page)
 
         // Navigate to knowledge tab
         const knowledgeNav = page.locator('nav').getByText(/Knowledge|Wissen/i).first()

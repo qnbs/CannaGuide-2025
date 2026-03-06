@@ -32,7 +32,6 @@ import { ToastContainer } from '@/components/common/Toast'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
 import { AgeGateModal, useAgeGate } from '@/components/common/AgeGateModal'
-import { ConsentBanner, useGdprConsent } from '@/components/common/ConsentBanner'
 import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
 
@@ -90,7 +89,6 @@ export const App: React.FC = () => {
 
     // Legal gates
     const { isVerified: isAgeVerified, verify: verifyAge } = useAgeGate()
-    const { hasConsent: hasGdprConsent, accept: acceptGdprConsent } = useGdprConsent()
     const { showBanner: showGeoLegal, dismiss: dismissGeoLegal } = useGeoLegalBanner()
     const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
 
@@ -180,19 +178,6 @@ export const App: React.FC = () => {
     // Legal gate: Age verification (KCanG §1 – 18+)
     if (!isAgeVerified) {
         return <AgeGateModal onVerified={verifyAge} />
-    }
-
-    // Legal gate: GDPR/DSGVO consent for local storage
-    if (!hasGdprConsent) {
-        return (
-            <>
-                <ConsentBanner
-                    onAccept={acceptGdprConsent}
-                    onShowPrivacyPolicy={() => setShowPrivacyPolicy(true)}
-                />
-                <PrivacyPolicyModal isOpen={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
-            </>
-        )
     }
 
     if (!settings.onboardingCompleted && onboardingStep < 8) {

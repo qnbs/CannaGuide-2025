@@ -37,6 +37,8 @@
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
+    "test:e2e:install": "playwright install chromium",
+    "test:e2e:install:ci": "playwright install --with-deps chromium",
     "test:e2e:deploy": "playwright test -c playwright.deploy.config.ts",
     "test:e2e": "playwright test -c playwright.config.ts",
     "lighthouse:ci": "lhci autorun",

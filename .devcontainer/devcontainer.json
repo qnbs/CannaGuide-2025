@@ -1,0 +1,17 @@
+{
+  "name": "CannaGuide 2025",
+  "image": "mcr.microsoft.com/playwright:v1.58.0-noble",
+  "postCreateCommand": "npm ci",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-playwright.playwright"
+      ]
+    }
+  }
+}

@@ -1,12 +1,13 @@
 import { test, expect } from '@playwright/test'
+import { bootFreshAppWithLegalGates, closeOnboardingIfVisible } from './helpers'
 
 test.describe('Offline & PWA', () => {
     test('app renders after going offline', async ({ page, context }) => {
-        await page.goto('/')
-        await page.waitForLoadState('networkidle')
+        await bootFreshAppWithLegalGates(page)
+        await closeOnboardingIfVisible(page)
 
         // Verify initial load
-        await expect(page.locator('body')).toBeVisible()
+        await expect(page.locator('#root')).toBeVisible()
 
         // Go offline
         await context.setOffline(true)
@@ -16,16 +17,26 @@ test.describe('Offline & PWA', () => {
             // Reload might fail offline — that's expected if SW isn't active
         })
 
-        // Even if reload partially fails, existing content should persist
-        await expect(page.locator('body')).toBeVisible()
+        // Offline mode may preserve the SPA shell or switch to the SW fallback page.
+        const offlineHeading = page.getByRole('heading', { name: /you are offline/i })
+        await expect
+            .poll(
+                async () => {
+                    const rootVisible = await page.locator('#root').isVisible().catch(() => false)
+                    const fallbackVisible = await offlineHeading.isVisible().catch(() => false)
+                    return rootVisible || fallbackVisible
+                },
+                { timeout: 15_000 },
+            )
+            .toBe(true)
 
         // Go back online
         await context.setOffline(false)
     })
 
     test('service worker is registered', async ({ page }) => {
-        await page.goto('/')
-        await page.waitForLoadState('networkidle')
+        await bootFreshAppWithLegalGates(page)
+        await closeOnboardingIfVisible(page)
 
         const swRegistered = await page.evaluate(async () => {
             if (!('serviceWorker' in navigator)) return false

@@ -141,6 +141,10 @@ async function clearProviderApiKey(provider: AiProvider): Promise<void> {
     await indexedDBStorage.removeItem(config.keyStorageKey)
 }
 
+async function clearAllProviderApiKeys(): Promise<void> {
+    await Promise.all(Object.keys(PROVIDER_CONFIGS).map((provider) => clearProviderApiKey(provider as AiProvider)))
+}
+
 async function getMaskedProviderApiKey(provider: AiProvider): Promise<string | null> {
     const key = await getProviderApiKey(provider)
     if (!key) return null
@@ -301,6 +305,7 @@ export const aiProviderService = {
     getProviderApiKey,
     setProviderApiKey,
     clearProviderApiKey,
+    clearAllProviderApiKeys,
     getMaskedProviderApiKey,
     isValidProviderKeyFormat,
 

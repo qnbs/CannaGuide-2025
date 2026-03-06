@@ -29,6 +29,10 @@ interface EmptyPlantSlotProps {
     onSlotClick: (index: number) => void;
 }
 
+interface HiddenArchivedSlotProps {
+    plantId: string;
+}
+
 const EmptyPlantSlot: React.FC<EmptyPlantSlotProps> = memo(({ index, onSlotClick }) => {
     const { t } = useTranslation();
     const handleStart = useCallback(() => onSlotClick(index), [onSlotClick, index]);
@@ -46,6 +50,24 @@ const EmptyPlantSlot: React.FC<EmptyPlantSlotProps> = memo(({ index, onSlotClick
 });
 
 EmptyPlantSlot.displayName = 'EmptyPlantSlot';
+
+const HiddenArchivedSlot: React.FC<HiddenArchivedSlotProps> = memo(({ plantId }) => {
+    const { t } = useTranslation();
+    const dispatch = useAppDispatch();
+
+    return (
+        <Card className="flex h-full flex-col items-center justify-center border border-slate-700/60 bg-slate-900/60 text-center">
+            <PhosphorIcons.ArchiveBox className="mb-3 h-10 w-10 text-slate-500" />
+            <h3 className="font-semibold text-slate-200">{t('settingsView.plants.archivedHiddenTitle')}</h3>
+            <p className="mt-1 text-sm text-slate-400">{t('settingsView.plants.archivedHiddenDesc')}</p>
+            <Button variant="secondary" size="sm" className="mt-4" onClick={() => dispatch(setSelectedPlantId(plantId))}>
+                {t('settingsView.plants.inspectArchived')}
+            </Button>
+        </Card>
+    );
+});
+
+HiddenArchivedSlot.displayName = 'HiddenArchivedSlot';
 
 // Wrapper creates stable onInspect callback so PlantSlot's memo is never defeated
 const PlantSlotWrapper: React.FC<{ plant: Plant }> = memo(({ plant }) => {
@@ -142,7 +164,7 @@ export const PlantsView: React.FC = () => {
                                 <PlantSlotsSkeleton />
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                    {slotsWithData.map((plant, index) => {
+                                    {slotsWithData.map((slot, index) => {
                                         if (newGrowFlow.status === 'selectingStrain' && newGrowFlow.slotIndex === index) {
                                             return (
                                                 <InlineStrainSelector 
@@ -152,8 +174,10 @@ export const PlantsView: React.FC = () => {
                                                 />
                                             );
                                         }
-                                        return plant ? (
-                                            <PlantSlotWrapper key={plant.id} plant={plant} />
+                                        return slot.plant ? (
+                                            <PlantSlotWrapper key={slot.plant.id} plant={slot.plant} />
+                                        ) : slot.isArchivedHidden && slot.archivedPlantId ? (
+                                            <HiddenArchivedSlot key={`archived-${slot.archivedPlantId}`} plantId={slot.archivedPlantId} />
                                         ) : (
                                             <EmptyPlantSlot key={`empty-${index}`} index={index} onSlotClick={handleEmptySlotClick} />
                                         );

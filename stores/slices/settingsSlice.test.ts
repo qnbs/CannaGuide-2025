@@ -2,13 +2,13 @@ import { describe, it, expect } from 'vitest'
 import settingsReducer, { defaultSettings, setSetting, toggleSetting } from '@/stores/slices/settingsSlice'
 import type { SettingsState } from '@/stores/slices/settingsSlice'
 
-const initial: SettingsState = { settings: defaultSettings, version: 2 }
+const initial: SettingsState = { settings: defaultSettings, version: 4 }
 
 describe('settingsSlice', () => {
     it('returns initial state', () => {
         const state = settingsReducer(undefined, { type: 'unknown' })
         expect(state.settings).toEqual(defaultSettings)
-        expect(state.version).toBe(2)
+        expect(state.version).toBe(4)
     })
 
     it('setSetting updates nested setting by path', () => {

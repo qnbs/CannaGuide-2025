@@ -4,12 +4,13 @@ import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppSelector } from '@/stores/store'
-import { selectActivePlants } from '@/stores/selectors'
+import { selectActivePlants, selectSettings } from '@/stores/selectors'
 import { growReminderService } from '@/services/growReminderService'
 
 const GrowReminderPanelComponent: React.FC = () => {
     const { t } = useTranslation()
     const activePlants = useAppSelector(selectActivePlants)
+    const settings = useAppSelector(selectSettings)
     const [permission, setPermission] = useState<NotificationPermission>(() =>
         'Notification' in window ? Notification.permission : 'denied',
     )
@@ -23,9 +24,9 @@ const GrowReminderPanelComponent: React.FC = () => {
 
     useEffect(() => {
         if (permission === 'granted' && reminders.length > 0) {
-            void growReminderService.notifyDueReminders(reminders)
+            void growReminderService.notifyDueReminders(reminders, settings)
         }
-    }, [permission, reminders])
+    }, [permission, reminders, settings])
 
     const handleEnable = async () => {
         setIsEnabling(true)
@@ -34,7 +35,7 @@ const GrowReminderPanelComponent: React.FC = () => {
             setPermission(nextPermission)
             if (nextPermission === 'granted') {
                 await growReminderService.registerPeriodicSync()
-                await growReminderService.notifyDueReminders(reminders)
+                await growReminderService.notifyDueReminders(reminders, settings)
             }
         } finally {
             setIsEnabling(false)
@@ -42,7 +43,7 @@ const GrowReminderPanelComponent: React.FC = () => {
     }
 
     const handleCheckNow = async () => {
-        await growReminderService.notifyDueReminders(reminders)
+        await growReminderService.notifyDueReminders(reminders, settings)
         await growReminderService.triggerWorkerReminderCheck()
     }
 

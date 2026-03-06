@@ -20,6 +20,7 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
             'tts-disabled',
             'font-dyslexia',
             'reduced-motion',
+            'high-contrast',
             'colorblind-protanopia',
             'colorblind-deuteranopia',
             'colorblind-tritanopia',
@@ -42,6 +43,7 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
         if (!tts.enabled) root.classList.add('tts-disabled');
         if (general.dyslexiaFont) root.classList.add('font-dyslexia');
         if (general.reducedMotion) root.classList.add('reduced-motion');
+        if (general.highContrastMode) root.classList.add('high-contrast');
         if (general.colorblindMode && general.colorblindMode !== 'none') {
             root.classList.add(`colorblind-${general.colorblindMode}`);
         }

@@ -6,7 +6,7 @@ import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY, VersionedSliceName } from 
 import { aiProviderService } from '@/services/aiProviderService'
 
 export const defaultSettings: AppSettings = {
-    version: 2,
+    version: 4,
     onboardingCompleted: false,
 
     general: {
@@ -17,6 +17,7 @@ export const defaultSettings: AppSettings = {
         uiDensity: 'comfortable',
         dyslexiaFont: false,
         reducedMotion: false,
+        highContrastMode: false,
         colorblindMode: 'none',
     },
 
@@ -54,7 +55,6 @@ export const defaultSettings: AppSettings = {
     },
 
     simulation: {
-        speedMultiplier: 1,
         autoJournaling: {
             logStageChanges: true,
             logProblems: true,
@@ -107,6 +107,7 @@ export const defaultSettings: AppSettings = {
 
     data: {
         autoBackup: 'weekly',
+        persistenceIntervalMs: 1500,
         cloudSync: {
             enabled: false,
             provider: 'none',
@@ -127,7 +128,7 @@ export interface SettingsState {
 
 const initialState: SettingsState = {
     settings: defaultSettings,
-    version: 2,
+    version: 4,
 }
 
 // Async thunks for data management

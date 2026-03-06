@@ -129,6 +129,7 @@ const VoiceSettingsTab: React.FC = () => {
                         </SettingsRow>
                         <SettingsRow label={t('settingsView.tts.rate')}><RangeSlider singleValue value={settings.tts.rate} onChange={v => handleSetSetting('tts.rate', v)} min={0.5} max={2} step={0.1} label="" unit="x" /></SettingsRow>
                         <SettingsRow label={t('settingsView.tts.pitch')}><RangeSlider singleValue value={settings.tts.pitch} onChange={v => handleSetSetting('tts.pitch', v)} min={0.5} max={2} step={0.1} label="" unit="x" /></SettingsRow>
+                        <SettingsRow label={t('settingsView.tts.volume')}><RangeSlider singleValue value={settings.tts.volume} onChange={v => handleSetSetting('tts.volume', v)} min={0} max={1} step={0.05} label="" unit="" /></SettingsRow>
                         <SettingsRow label={t('settingsView.tts.highlightSpeakingText')} description={t('settingsView.tts.highlightSpeakingTextDesc')}><Switch checked={settings.tts.highlightSpeakingText} onChange={(val) => handleSetSetting('tts.highlightSpeakingText', val)}/></SettingsRow>
                     </div>
                 </FormSection>
@@ -137,6 +138,7 @@ const VoiceSettingsTab: React.FC = () => {
                 <FormSection title={t('settingsView.tts.voiceControlInput')} icon={<PhosphorIcons.Microphone/>} defaultOpen>
                     <div className="sm:col-span-2 space-y-6">
                         <SettingsRow label={t('settingsView.tts.voiceControl.enabled')} description={t('settingsView.tts.voiceControl.enabledDesc')}><Switch checked={settings.voiceControl.enabled} onChange={(val) => handleSetSetting('voiceControl.enabled', val)}/></SettingsRow>
+                        <SettingsRow label={t('settingsView.tts.voiceControl.hotwordEnabled')} description={t('settingsView.tts.voiceControl.hotwordEnabledDesc')}><Switch checked={settings.voiceControl.hotwordEnabled} onChange={(val) => handleSetSetting('voiceControl.hotwordEnabled', val)}/></SettingsRow>
                         <SettingsRow label={t('settingsView.tts.voiceControl.confirmationSound')} description={t('settingsView.tts.voiceControl.confirmationSoundDesc')}><Switch checked={settings.voiceControl.confirmationSound} onChange={(val) => handleSetSetting('voiceControl.confirmationSound', val)}/></SettingsRow>
                     </div>
                 </FormSection>

@@ -1,10 +1,11 @@
 import { Plant, PlantStage } from '@/types'
+import type { AppSettings } from '@/types'
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService'
 
 const REMINDER_COOLDOWN_MS = 4 * 60 * 60 * 1000
 const REMINDER_SNOOZE_KEY = 'cg.reminders.lastNotified'
 
-export type GrowReminderType = 'vpd' | 'watering' | 'harvest'
+export type GrowReminderType = 'vpd' | 'watering' | 'harvest' | 'ph'
 
 export interface GrowReminder {
     id: string
@@ -31,6 +32,43 @@ const writeSnoozedMap = (map: Record<string, number>) => {
         localStorage.setItem(REMINDER_SNOOZE_KEY, JSON.stringify(map))
     } catch {
         // Ignore quota/storage errors in reminder helper.
+    }
+}
+
+const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
+    const toMinutes = (value: string) => {
+        const [hours, minutes] = value.split(':').map(Number)
+        if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null
+        return hours * 60 + minutes
+    }
+
+    const startMinutes = toMinutes(start)
+    const endMinutes = toMinutes(end)
+    if (startMinutes === null || endMinutes === null) return false
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes()
+    if (startMinutes === endMinutes) return true
+    if (startMinutes < endMinutes) {
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes
+    }
+
+    return currentMinutes >= startMinutes || currentMinutes < endMinutes
+}
+
+const isReminderEnabled = (reminder: GrowReminder, settings?: AppSettings): boolean => {
+    if (!settings?.notifications.enabled) return false
+
+    switch (reminder.type) {
+        case 'vpd':
+            return settings.notifications.problemDetected
+        case 'watering':
+            return settings.notifications.lowWaterWarning || settings.notifications.newTask
+        case 'harvest':
+            return settings.notifications.harvestReady
+        case 'ph':
+            return settings.notifications.phDriftWarning
+        default:
+            return true
     }
 }
 
@@ -86,6 +124,19 @@ class GrowReminderService {
                     title: `Watering reminder: ${plant.name}`,
                     body: `Soil moisture is ${Math.round(plant.medium.moisture)}%. Consider watering soon.`,
                     severity: plant.medium.moisture < 25 ? 'critical' : 'warning',
+                    dueAt: now,
+                })
+            }
+
+            if (stageVitals && (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)) {
+                reminders.push({
+                    id: `${plant.id}-ph`,
+                    plantId: plant.id,
+                    plantName: plant.name,
+                    type: 'ph',
+                    title: `pH drift detected: ${plant.name}`,
+                    body: `Current pH ${plant.medium.ph.toFixed(1)} is outside ${stageVitals.ph.min.toFixed(1)}-${stageVitals.ph.max.toFixed(1)} for ${plant.stage.toLowerCase()}.`,
+                    severity: 'warning',
                     dueAt: now,
                 })
             }
@@ -167,13 +218,20 @@ class GrowReminderService {
         }
     }
 
-    public async notifyDueReminders(reminders: GrowReminder[]): Promise<void> {
+    public async notifyDueReminders(reminders: GrowReminder[], settings?: AppSettings): Promise<void> {
         if (Notification.permission !== 'granted') return
+        if (settings?.notifications.quietHours.enabled && isWithinQuietHours(settings.notifications.quietHours.start, settings.notifications.quietHours.end)) {
+            return
+        }
 
         const now = Date.now()
         const snoozedMap = readSnoozedMap()
 
         for (const reminder of reminders) {
+            if (!isReminderEnabled(reminder, settings)) {
+                continue
+            }
+
             const lastNotified = snoozedMap[reminder.id] || 0
             if (now - lastNotified < REMINDER_COOLDOWN_MS) {
                 continue

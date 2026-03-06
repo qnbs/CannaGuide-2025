@@ -22,8 +22,8 @@ const ensureSimulationShape = (state: PersistedState): void => {
     if (typeof sim.selectedPlantId === 'undefined') {
         sim.selectedPlantId = null
     }
-    if (typeof sim.devSpeedMultiplier !== 'number') {
-        sim.devSpeedMultiplier = 1
+    if (Object.prototype.hasOwnProperty.call(sim, 'devSpeedMultiplier')) {
+        delete sim.devSpeedMultiplier
     }
     if (!sim.vpdProfiles || typeof sim.vpdProfiles !== 'object') {
         sim.vpdProfiles = {}
@@ -213,6 +213,12 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
     if (isObject(persisted)) {
         merge(output, persisted)
     }
+
+    const simulationSettings = (output as Record<string, unknown>).simulation as Record<string, unknown> | undefined
+    if (simulationSettings && Object.prototype.hasOwnProperty.call(simulationSettings, 'speedMultiplier')) {
+        delete simulationSettings.speedMultiplier
+    }
+
     return output
 }
 

@@ -551,16 +551,20 @@ export const dbService = {
         }
 
         if (!hasChanges) {
-            return simulationState;
+            // Strip vpdProfiles — they are derived data, re-generated on demand
+            const { vpdProfiles: _vp, ...rest } = simulationState;
+            return rest as SimulationState;
         }
 
+        // Strip vpdProfiles — they are derived data, re-generated on demand
+        const { vpdProfiles: _vp2, ...rest } = simulationState;
         return {
-            ...simulationState,
+            ...rest,
             plants: {
                 ...simulationState.plants,
                 entities: nextEntities,
             },
-        };
+        } as SimulationState;
     },
 
     async getArchivedPlantLogs(plantId: string): Promise<JournalEntry[]> {

@@ -2,6 +2,13 @@ import { FiltersState } from '@/stores/slices/filtersSlice';
 import { StrainType, DifficultyLevel, YieldLevel, HeightLevel, SortKey, SortDirection, AdvancedFilterState } from '@/types';
 import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 
+const VALID_STRAIN_TYPES = new Set(Object.values(StrainType));
+const VALID_DIFFICULTIES = new Set<string>(['Easy', 'Medium', 'Hard']);
+const VALID_YIELDS = new Set<string>(['Low', 'Medium', 'High']);
+const VALID_HEIGHTS = new Set<string>(['Short', 'Medium', 'Tall']);
+const VALID_SORT_KEYS = new Set<string>(['name', 'type', 'thc', 'cbd', 'floweringTime', 'difficulty', 'yield', 'height']);
+const VALID_SORT_DIRS = new Set<string>(['asc', 'desc']);
+
 const parseArray = (val: string | null): string[] => val ? val.split(',') : [];
 const parseRange = (val: string | null): [number, number] | undefined => {
     if (!val) return undefined;
@@ -51,7 +58,7 @@ export const urlService = {
 
         if (params.has('q')) parsedState.searchTerm = params.get('q')!;
         if (params.has('l')) parsedState.letterFilter = params.get('l')!;
-        if (params.has('t')) parsedState.typeFilter = parseArray(params.get('t')) as StrainType[];
+        if (params.has('t')) parsedState.typeFilter = parseArray(params.get('t')).filter(v => VALID_STRAIN_TYPES.has(v as StrainType)) as StrainType[];
         if (params.get('fav') === '1') parsedState.showFavoritesOnly = true;
 
         const advFilters: Partial<AdvancedFilterState> = {};
@@ -64,9 +71,9 @@ export const urlService = {
         const frRange = parseRange(params.get('fr'));
         if (frRange) advFilters.floweringRange = frRange;
         
-        if (params.has('d')) advFilters.selectedDifficulties = parseArray(params.get('d')) as DifficultyLevel[];
-        if (params.has('y')) advFilters.selectedYields = parseArray(params.get('y')) as YieldLevel[];
-        if (params.has('h')) advFilters.selectedHeights = parseArray(params.get('h')) as HeightLevel[];
+        if (params.has('d')) advFilters.selectedDifficulties = parseArray(params.get('d')).filter(v => VALID_DIFFICULTIES.has(v)) as DifficultyLevel[];
+          if (params.has('y')) advFilters.selectedYields = parseArray(params.get('y')).filter(v => VALID_YIELDS.has(v)) as YieldLevel[];
+          if (params.has('h')) advFilters.selectedHeights = parseArray(params.get('h')).filter(v => VALID_HEIGHTS.has(v)) as HeightLevel[];
         if (params.has('a')) advFilters.selectedAromas = parseArray(params.get('a'));
         if (params.has('tp')) advFilters.selectedTerpenes = parseArray(params.get('tp'));
         
@@ -76,9 +83,11 @@ export const urlService = {
         
         if (params.has('s')) {
             const [key, dir] = params.get('s')!.split('-');
-            parsedState.sortKey = key as SortKey;
-            parsedState.sortDirection = dir as SortDirection;
-        }
+              if (VALID_SORT_KEYS.has(key) && VALID_SORT_DIRS.has(dir)) {
+                  parsedState.sortKey = key as SortKey;
+                  parsedState.sortDirection = dir as SortDirection;
+              }
+          }
 
         return parsedState;
     }

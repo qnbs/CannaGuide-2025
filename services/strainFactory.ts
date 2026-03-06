@@ -1,4 +1,4 @@
-import { Strain, GeneticModifiers } from '@/types';
+import { Strain, GeneticModifiers, StrainType } from '@/types';
 
 // This factory ensures that every strain object has a consistent shape and default values.
 export const createStrainObject = (data: Partial<Strain>): Strain => {
@@ -29,7 +29,14 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
   };
 
   if (!data.id || !data.name || !data.type || data.thc === undefined || data.cbd === undefined || data.floweringTime === undefined) {
-    console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${data.name || 'Unknown'}. This may cause issues.`, data);
+      console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${data.name || 'Unknown'}. Applying safe defaults.`, data);
+      // Apply safe defaults for missing required fields
+      if (!data.id) data.id = `unknown-${Date.now()}`;
+      if (!data.name) data.name = 'Unknown Strain';
+      if (!data.type) data.type = StrainType.Hybrid;
+      if (data.thc === undefined) data.thc = 0;
+      if (data.cbd === undefined) data.cbd = 0;
+      if (data.floweringTime === undefined) data.floweringTime = 9;
   }
 
   const merged = {

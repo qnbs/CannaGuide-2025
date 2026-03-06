@@ -250,12 +250,13 @@ export const problemMessages = {
 export const ai = {
     error: {
         generic: 'Ein KI-Fehler ist aufgetreten. Bitte versuche es erneut.',
-        missingApiKey: 'Kein Gemini-API-Key gefunden. Bitte hinterlege deinen Key in Einstellungen > Allgemein & UI > KI-Sicherheit.',
+        missingApiKey: 'Kein API-Key gefunden. Bitte hinterlege deinen Key in Einstellungen > Allgemein & UI > KI-Sicherheit.',
         equipment: 'Ausrüstungsempfehlung konnte nicht generiert werden.',
         diagnostics: 'Pflanzendiagnose konnte nicht generiert werden.',
         tips: 'Sorten-Tipps konnten nicht generiert werden.',
         deepDive: 'Deep Dive konnte nicht generiert werden.',
-        unknown: 'Ein unbekannter KI-Fehler ist aufgetreten.'
+        unknown: 'Ein unbekannter KI-Fehler ist aufgetreten.',
+        rateLimited: 'Rate-Limit erreicht. Bitte warte {{seconds}}s bevor du es erneut versuchst.',
     },
     advisor: 'KI-Berater',
     getAdvice: 'Rat einholen',

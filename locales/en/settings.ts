@@ -16,16 +16,18 @@ export const settingsView = {
     interactivity: 'Interactivity',
   },
   security: {
-    title: 'AI Security (Gemini BYOK)',
-    warning: 'Your Gemini API key is stored only on this device in IndexedDB. Never share your key and remove it on shared devices.',
-    apiKey: 'Gemini API Key',
+    title: 'AI Security (Multi-Model BYOK)',
+    warning: 'Your API key is stored only on this device in IndexedDB. Never share your key and remove it on shared devices.',
+    provider: 'AI Provider',
+    providerDesc: 'Select the AI model provider. Each provider requires its own API key.',
+    apiKey: 'API Key',
     apiKeyDesc: 'Required for all AI features in this static app deployment.',
     save: 'Save Key',
     test: 'Validate Key',
     clear: 'Remove Key',
     openAiStudio: 'Get API Key',
-    stored: 'A Gemini API key is currently saved on this device.',
-    notStored: 'No Gemini API key is saved yet.',
+    stored: 'An API key is currently saved on this device.',
+    notStored: 'No API key is saved yet.',
     maskedPrefix: 'Saved key:',
     invalid: 'Please enter a valid API key.',
     saved: 'API key saved successfully.',
@@ -36,6 +38,7 @@ export const settingsView = {
     saveError: 'Could not save API key.',
     testError: 'API key validation failed. Please check key validity and permissions.',
     clearError: 'Could not remove API key.',
+    usageToday: 'Today: {{requests}} requests, ~{{tokens}} tokens estimated, {{remaining}} requests remaining (per minute).',
   },
   general: {
     title: 'General Settings',
@@ -437,13 +440,13 @@ export const settingsView = {
                 <li>Clone the repository: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
                 <li>Install dependencies: <code>npm install</code></li>
             <li>Run the development server: <code>npm run dev</code></li>
-            <li>Open Settings → General & UI → AI Security (Gemini BYOK) and save your API key in-app.</li>
+            <li>Open Settings → General & UI → AI Security (Multi-Model BYOK) and save your API key in-app.</li>
             </ol>
         `,
         troubleshootingTitle: "Troubleshooting",
         troubleshootingContent: `
             <ul>
-            <li><strong>AI Features Not Working</strong>: Open Settings → General & UI → AI Security (Gemini BYOK), validate your key, and ensure a key is stored on this device.</li>
+            <li><strong>AI Features Not Working</strong>: Open Settings → General & UI → AI Security (Multi-Model BYOK), validate your key, and ensure a key is stored on this device.</li>
                 <li><strong>App Not Updating (PWA Caching)</strong>: If you've made changes but don't see them, clear your browser data or unregister the Service Worker in the developer tools.</li>
             </ul>
         `,

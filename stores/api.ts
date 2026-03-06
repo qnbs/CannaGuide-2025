@@ -25,6 +25,12 @@ const mapAiErrorMessage = (error: unknown): string => {
     const t = getT()
 
     if (error instanceof Error && typeof error.message === 'string' && error.message.length > 0) {
+        // Rate limit errors carry retry seconds: "ai.error.rateLimited:30"
+        if (error.message.startsWith('ai.error.rateLimited')) {
+            const parts = error.message.split(':')
+            const seconds = parts[1] ?? '60'
+            return t('ai.error.rateLimited', { seconds })
+        }
         if (error.message.startsWith('ai.error.') || error.message.startsWith('settingsView.security.')) {
             return t(error.message)
         }

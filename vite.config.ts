@@ -53,11 +53,17 @@ export default defineConfig({
     headers: { 'Content-Security-Policy': CSP, 'Permissions-Policy': PERMISSIONS },
   },
 
+  // ── ESBuild Transform ───────────────────────────────────────────────
+  esbuild: {
+    drop: ['debugger'],
+    pure: ['console.debug'],
+  },
+
   // ── Build Optimisations ──────────────────────────────────────────────
   build: {
     // Target modern browsers – enables smaller output (top-level await, ??=, etc.)
     target: 'esnext',
-    // Minify with esbuild (default, fastest) – drop console.debug in prod
+    // Minify with esbuild (default, fastest)
     minify: 'esbuild',
     // Warn when a chunk exceeds 250 kB (gzip ~80 kB)
     chunkSizeWarningLimit: 250,

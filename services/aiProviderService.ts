@@ -6,6 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { encrypt, decrypt, isEncryptedPayload } from '@/services/cryptoService'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,56 +111,16 @@ function getAllProviders(): AiProviderConfig[] {
 }
 
 // ---------------------------------------------------------------------------
-// Per-provider key management (encryption reuses apiKeyService pattern)
+// Per-provider key management (encryption via shared cryptoService)
 // ---------------------------------------------------------------------------
-
-const CRYPTO_KEY_STORAGE = 'cg.ai.provider.crypto'
-
-const bytesToBase64 = (bytes: Uint8Array): string =>
-    btoa(String.fromCharCode(...bytes))
-
-const base64ToBytes = (value: string): Uint8Array => {
-    const binary = atob(value)
-    return Uint8Array.from(binary, (char) => char.charCodeAt(0))
-}
-
-async function getOrCreateEncryptionKey(): Promise<CryptoKey> {
-    const storedRaw = localStorage.getItem(CRYPTO_KEY_STORAGE)
-    if (storedRaw) {
-        const raw = base64ToBytes(storedRaw)
-        return crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
-    }
-    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
-    const exported = await crypto.subtle.exportKey('raw', key)
-    localStorage.setItem(CRYPTO_KEY_STORAGE, bytesToBase64(new Uint8Array(exported)))
-    return key
-}
-
-async function encryptKey(apiKey: string): Promise<string> {
-    const iv = crypto.getRandomValues(new Uint8Array(12))
-    const key = await getOrCreateEncryptionKey()
-    const encoded = new TextEncoder().encode(apiKey)
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded)
-    return JSON.stringify({ v: 1, iv: bytesToBase64(iv), data: bytesToBase64(new Uint8Array(encrypted)) })
-}
-
-async function decryptKey(payload: string): Promise<string> {
-    const parsed = JSON.parse(payload) as { v: number; iv: string; data: string }
-    if (!parsed || parsed.v !== 1 || !parsed.iv || !parsed.data) return payload
-    const key = await getOrCreateEncryptionKey()
-    const iv = base64ToBytes(parsed.iv)
-    const encrypted = base64ToBytes(parsed.data)
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv.buffer as ArrayBuffer }, key, encrypted.buffer as ArrayBuffer)
-    return new TextDecoder().decode(decrypted)
-}
 
 async function getProviderApiKey(provider: AiProvider): Promise<string | null> {
     const config = PROVIDER_CONFIGS[provider]
     const raw = await indexedDBStorage.getItem(config.keyStorageKey)
     if (!raw || typeof raw !== 'string') return null
     let resolved = raw
-    if (raw.trim().startsWith('{')) {
-        try { resolved = await decryptKey(raw) } catch { return null }
+    if (isEncryptedPayload(raw)) {
+        try { resolved = await decrypt(raw) } catch { return null }
     }
     const trimmed = resolved.trim()
     return trimmed.length > 0 ? trimmed : null
@@ -171,7 +132,7 @@ async function setProviderApiKey(provider: AiProvider, apiKey: string): Promise<
     if (!config.keyPattern.test(trimmed)) {
         throw new Error('settingsView.security.invalid')
     }
-    const encrypted = await encryptKey(trimmed)
+    const encrypted = await encrypt(trimmed)
     await indexedDBStorage.setItem(config.keyStorageKey, encrypted)
 }
 

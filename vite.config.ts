@@ -5,7 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import type { PluginOption } from 'vite'
 
-const CSP = "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';"
+const CSP = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
 const PERMISSIONS = 'accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()'
 
 // Tauri v2 sets TAURI_ENV_PLATFORM during builds; Docker sets BUILD_BASE_PATH=/

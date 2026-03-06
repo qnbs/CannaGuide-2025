@@ -148,6 +148,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
                 {isLoading && <AiLoadingIndicator loadingMessage={t('ai.generating')} />}
                 <div ref={messagesEndRef} />
             </div>
+            <p className="text-xs text-slate-500 italic px-1 pt-2">{t('ai.disclaimer')}</p>
             <div className="flex-shrink-0 mt-4 pt-4 border-t border-slate-700">
                 <div className="flex items-start gap-2">
                     <Textarea

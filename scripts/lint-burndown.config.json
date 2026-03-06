@@ -1,7 +1,6 @@
 {
-  "strictScopes": ["scripts/**/*.mjs"],
+  "strictScopes": ["hooks/**/*.ts"],
   "candidateScopes": [
-    "hooks/**/*.ts",
     "components/common/**/*.tsx",
     "services/**/*.ts",
     "stores/**/*.ts"

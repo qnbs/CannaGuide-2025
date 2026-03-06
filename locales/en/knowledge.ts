@@ -39,6 +39,7 @@ export const knowledgeView = {
         noSeeds: 'Collect seeds from harvest-ready plants to start breeding.',
         parentA: 'Parent A',
         parentB: 'Parent B',
+        clearParent: 'Clear {{title}}',
         selectSeed: 'Select a seed',
         dropSeed: 'Drop seed here',
         breedButton: 'Breed New Strain',

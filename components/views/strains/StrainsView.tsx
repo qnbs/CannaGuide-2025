@@ -95,7 +95,7 @@ export const StrainsView: React.FC = () => {
         [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
         [StrainViewTab.Favorites]: t('strainsView.tabs.favorites'),
         [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
-        [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab', { defaultValue: 'Breeding Lab' }),
+        [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab'),
         [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
         [StrainViewTab.Tips]: t('strainsView.tabs.tips', { count: savedTips.length }),
     }), [t, savedTips.length, savedExportsCount]);

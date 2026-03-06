@@ -39,6 +39,7 @@ export const knowledgeView = {
         noSeeds: 'Sammle Samen von erntereifen Pflanzen, um mit dem Züchten zu beginnen.',
         parentA: 'Elternteil A',
         parentB: 'Elternteil B',
+        clearParent: '{{title}} entfernen',
         selectSeed: 'Samen auswählen',
         dropSeed: 'Samen hier ablegen',
         breedButton: 'Neue Sorte züchten',

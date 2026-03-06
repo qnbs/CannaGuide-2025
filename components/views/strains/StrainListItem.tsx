@@ -76,7 +76,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         checked={isSelected}
                         onChange={() => onToggleSelection(strain.id)}
                         className="custom-checkbox flex-shrink-0"
-                        aria-label={`Select ${strain.name}`}
+                        aria-label={t('strainsView.accessibility.selectStrain', { name: strain.name })}
                     />
                 </div>
 
@@ -124,8 +124,12 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         size="sm"
                         className={`!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`}
                         onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                        title={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
-                        aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
+                        title={isFavorite
+                            ? t('strainsView.accessibility.removeFromFavorites', { name: strain.name })
+                            : t('strainsView.accessibility.addToFavorites', { name: strain.name })}
+                        aria-label={isFavorite
+                            ? t('strainsView.accessibility.removeFromFavorites', { name: strain.name })
+                            : t('strainsView.accessibility.addToFavorites', { name: strain.name })}
                     >
                         <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                     </Button>

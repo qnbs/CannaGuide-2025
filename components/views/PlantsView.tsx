@@ -147,7 +147,7 @@ export const PlantsView: React.FC = () => {
                             <div className="min-w-0">
                                 <div className="surface-badge mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-primary-200">
                                     <PhosphorIcons.Sparkle className="h-3.5 w-3.5" />
-                                    Garden Command Center
+                                    {t('plantsView.hero.badge')}
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/10 bg-white/5 shadow-[0_16px_32px_rgba(2,6,23,0.22)]">
@@ -156,22 +156,22 @@ export const PlantsView: React.FC = () => {
                                     <div className="min-w-0">
                                         <h2 className="mt-1 text-3xl font-bold font-display text-slate-50 sm:text-4xl">{t('nav.plants')}</h2>
                                         <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
-                                            Live garden telemetry, plant health and actionable grow workflows in one focused workspace.
+                                            {t('plantsView.hero.description')}
                                         </p>
                                     </div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3 sm:max-w-sm sm:grid-cols-3 lg:min-w-[20rem]">
                                 <div className="stat-tile flex flex-col justify-between p-4">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">Slots</span>
+                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">{t('plantsView.hero.slots')}</span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">{slotsWithData.length}</span>
                                 </div>
                                 <div className="stat-tile flex flex-col justify-between p-4">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">Tasks</span>
+                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">{t('plantsView.hero.tasks')}</span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">{tasks.length}</span>
                                 </div>
                                 <div className="stat-tile col-span-2 flex flex-col justify-between p-4 sm:col-span-1">
-                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">Alerts</span>
+                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">{t('plantsView.hero.alerts')}</span>
                                     <span className="mt-3 text-3xl font-bold font-display text-slate-50">{problems.length}</span>
                                 </div>
                             </div>

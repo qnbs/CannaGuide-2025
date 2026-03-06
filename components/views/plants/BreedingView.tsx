@@ -46,7 +46,7 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
                         <p>THC: {parentStrain.thc.toFixed(1)}% | CBD: {parentStrain.cbd.toFixed(1)}%</p>
                         <p>{t('common.quality')}: {(seed.quality * 100).toFixed(0)}%</p>
                     </div>
-                    <Button variant="danger" className="!absolute top-2 right-2 !h-11 !w-11 !p-0" onClick={onClear} aria-label={`Clear ${title}`}><PhosphorIcons.X/></Button>
+                    <Button variant="danger" className="!absolute top-2 right-2 !h-11 !w-11 !p-0" onClick={onClear} aria-label={t('knowledgeView.breeding.clearParent', { title })}><PhosphorIcons.X/></Button>
                 </>
             ) : (
                 <div className="text-slate-500">

@@ -1,9 +1,15 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
-import { GenealogyNode, Strain } from '@/types'
+import { GenealogyNode, Strain, StrainType } from '@/types'
 import { geneticsService } from '@/services/geneticsService'
 import type { RootState } from '../store'
 
-// Define a plain object for serializable transform state
+// ---------------------------------------------------------------------------
+// Schema version – bump this whenever GenealogyState shape changes.
+// sanitizeGenealogyState detects mismatches at rehydration and wipes the
+// computedTrees cache (pure derived data) while preserving user preferences.
+// ---------------------------------------------------------------------------
+export const GENEALOGY_STATE_VERSION = 2
+
 interface SerializableZoomTransform {
     k: number
     x: number
@@ -11,28 +17,158 @@ interface SerializableZoomTransform {
 }
 
 export interface GenealogyState {
+    /** Schema version – used to detect stale persisted state. */
+    _version: number
     computedTrees: { [strainId: string]: GenealogyNode | null }
+    /** Never persisted as 'loading' – reset to 'idle' on rehydration. */
     status: 'idle' | 'loading' | 'succeeded' | 'failed'
     selectedStrainId: string | null
     zoomTransform: SerializableZoomTransform | null
     layoutOrientation: 'horizontal' | 'vertical'
 }
 
-const initialState: GenealogyState = {
+export const initialGenealogyState: GenealogyState = {
+    _version: GENEALOGY_STATE_VERSION,
     computedTrees: {},
     status: 'idle',
-    selectedStrainId: null, // Start with no strain selected
+    selectedStrainId: null,
     zoomTransform: null,
     layoutOrientation: 'horizontal',
 }
 
+// Use the exported constant internally
+const initialState: GenealogyState = initialGenealogyState
+
+// ---------------------------------------------------------------------------
+// Node-level validation
+// ---------------------------------------------------------------------------
+const VALID_STRAIN_TYPES = new Set<string>(Object.values(StrainType))
+
+const sanitizeNode = (raw: unknown, depth = 0): GenealogyNode | null => {
+    // Guard: max depth 25 prevents stack overflow on circular-looking data
+    if (depth > 25 || !raw || typeof raw !== 'object') return null
+    const n = raw as Record<string, unknown>
+
+    if (typeof n.id !== 'string' || !n.id) return null
+    if (typeof n.name !== 'string' || !n.name) return null
+
+    const type: StrainType = VALID_STRAIN_TYPES.has(n.type as string)
+        ? (n.type as StrainType)
+        : StrainType.Hybrid
+    const thc = typeof n.thc === 'number' && isFinite(n.thc) ? n.thc : 0
+    const isLandrace = typeof n.isLandrace === 'boolean' ? n.isLandrace : false
+
+    const node: GenealogyNode = { id: n.id, name: n.name, type, thc, isLandrace }
+
+    if (n.isPlaceholder === true) node.isPlaceholder = true
+
+    if (Array.isArray(n.children) && n.children.length > 0) {
+        const children = n.children
+            .map((c: unknown) => sanitizeNode(c, depth + 1))
+            .filter((c): c is GenealogyNode => c !== null)
+        if (children.length > 0) node.children = children
+    }
+
+    if (Array.isArray(n._children) && n._children.length > 0) {
+        const collapsed = n._children
+            .map((c: unknown) => sanitizeNode(c, depth + 1))
+            .filter((c): c is GenealogyNode => c !== null)
+        if (collapsed.length > 0) node._children = collapsed
+    }
+
+    return node
+}
+
+// ---------------------------------------------------------------------------
+// sanitizeGenealogyState
+// Called by migrationLogic before state is loaded into Redux.
+// Guarantees a structurally valid GenealogyState on every boot:
+//   - Resets status: 'loading' → 'idle'  (app may have crashed mid-fetch)
+//   - Version mismatch            → wipes computedTrees cache, keeps prefs
+//   - Corrupt node entries        → silently dropped (re-fetched on demand)
+//   - Invalid zoom / layout       → fallback to defaults
+// ---------------------------------------------------------------------------
+export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
+    if (!raw || typeof raw !== 'object') {
+        console.warn('[GenealogySlice] No genealogy state in storage – using initial state.')
+        return { ...initialGenealogyState }
+    }
+
+    const s = raw as Record<string, unknown>
+
+    // Extract preferences first so we can preserve them on version mismatch
+    const layoutOrientation: GenealogyState['layoutOrientation'] =
+        s.layoutOrientation === 'vertical' ? 'vertical' : 'horizontal'
+    const selectedStrainId =
+        typeof s.selectedStrainId === 'string' ? s.selectedStrainId : null
+
+    // Version mismatch → wipe cache, preserve user prefs
+    if (s._version !== GENEALOGY_STATE_VERSION) {
+        console.warn(
+            `[GenealogySlice] State version mismatch (stored: ${s._version}, expected: ${GENEALOGY_STATE_VERSION}) – wiping computedTrees cache.`,
+        )
+        return {
+            ...initialGenealogyState,
+            layoutOrientation,
+            selectedStrainId,
+        }
+    }
+
+    // Validate and sanitize computedTrees (pure cache – corrupt entries are dropped)
+    const computedTrees: GenealogyState['computedTrees'] = {}
+    const rawTrees = s.computedTrees
+    if (rawTrees && typeof rawTrees === 'object' && !Array.isArray(rawTrees)) {
+        for (const [id, tree] of Object.entries(rawTrees as Record<string, unknown>)) {
+            if (typeof id !== 'string') continue
+            if (tree === null) {
+                // null = "fetched, strain not found" – preserve so we don't re-fetch
+                computedTrees[id] = null
+            } else {
+                const sanitized = sanitizeNode(tree)
+                // Corrupt entry is silently dropped → re-fetched on demand
+                if (sanitized !== null) computedTrees[id] = sanitized
+            }
+        }
+    }
+
+    // status: NEVER rehydrate 'loading' (marks an interrupted fetch)
+    const rawStatus = s.status
+    const status: GenealogyState['status'] =
+        rawStatus === 'succeeded' || rawStatus === 'failed' ? rawStatus : 'idle'
+
+    // zoomTransform: validate all three numbers
+    let zoomTransform: SerializableZoomTransform | null = null
+    if (s.zoomTransform && typeof s.zoomTransform === 'object') {
+        const zt = s.zoomTransform as Record<string, unknown>
+        if (
+            typeof zt.k === 'number' && isFinite(zt.k) && zt.k > 0 &&
+            typeof zt.x === 'number' && isFinite(zt.x) &&
+            typeof zt.y === 'number' && isFinite(zt.y)
+        ) {
+            zoomTransform = { k: zt.k, x: zt.x, y: zt.y }
+        }
+    }
+
+    return {
+        _version: GENEALOGY_STATE_VERSION,
+        computedTrees,
+        status,
+        selectedStrainId,
+        zoomTransform,
+        layoutOrientation,
+    }
+}
+
+// ---------------------------------------------------------------------------
+// AsyncThunk
+// ---------------------------------------------------------------------------
 export const fetchAndBuildGenealogy = createAsyncThunk<
     { strainId: string; tree: GenealogyNode | null },
     { strainId: string; allStrains: Strain[] },
     { state: RootState }
 >('genealogy/fetchAndBuild', async ({ strainId, allStrains }, { getState }) => {
     const { genealogy } = getState()
-    // Check cache: use `in` so even a null result (strain not found) is cached and not re-fetched
+    // `in` check: null (strain not found) is a valid cached result
     if (strainId in genealogy.computedTrees) {
         return { strainId, tree: genealogy.computedTrees[strainId] }
     }
@@ -40,7 +176,9 @@ export const fetchAndBuildGenealogy = createAsyncThunk<
     return { strainId, tree }
 })
 
-// Helper function to find and toggle a node in the tree
+// ---------------------------------------------------------------------------
+// Node toggle helper
+// ---------------------------------------------------------------------------
 const findAndToggleNode = (node: GenealogyNode, nodeId: string): boolean => {
     if (node.id === nodeId) {
         if (node.children) {
@@ -61,40 +199,64 @@ const findAndToggleNode = (node: GenealogyNode, nodeId: string): boolean => {
     return false
 }
 
+// ---------------------------------------------------------------------------
+// Slice
+// ---------------------------------------------------------------------------
 const genealogySlice = createSlice({
     name: 'genealogy',
     initialState,
     reducers: {
         setGenealogyState: (_state, action: PayloadAction<GenealogyState>) => {
-            return action.payload
+            // Always sanitize before applying external state
+            return sanitizeGenealogyState(action.payload)
         },
         setSelectedGenealogyStrain: (state, action: PayloadAction<string | null>) => {
-            if (state.selectedStrainId !== action.payload) {
-                state.selectedStrainId = action.payload
-                state.zoomTransform = null // Signal to recenter view
+            const id = typeof action.payload === 'string' ? action.payload : null
+            if (state.selectedStrainId !== id) {
+                state.selectedStrainId = id
+                state.zoomTransform = null
             }
         },
         setGenealogyZoom: (state, action: PayloadAction<SerializableZoomTransform>) => {
-            state.zoomTransform = action.payload
+            const { k, x, y } = action.payload
+            // Reject NaN / Infinity values that would corrupt the persisted state
+            if (
+                typeof k === 'number' && isFinite(k) && k > 0 &&
+                typeof x === 'number' && isFinite(x) &&
+                typeof y === 'number' && isFinite(y)
+            ) {
+                state.zoomTransform = { k, x, y }
+            }
         },
         resetGenealogyZoom: (state) => {
-            state.zoomTransform = null // Signal to recenter view
+            state.zoomTransform = null
         },
         setGenealogyLayout: (state, action: PayloadAction<'horizontal' | 'vertical'>) => {
-            state.layoutOrientation = action.payload
-            state.zoomTransform = null // Signal to recenter view
+            state.layoutOrientation = action.payload === 'vertical' ? 'vertical' : 'horizontal'
+            state.zoomTransform = null
         },
         toggleGenealogyNode: (
             state,
             action: PayloadAction<{ strainId: string; nodeId: string }>,
         ) => {
             const { strainId, nodeId } = action.payload
+            if (typeof strainId !== 'string' || typeof nodeId !== 'string') return
             const tree = state.computedTrees[strainId]
             if (tree) {
-                findAndToggleNode(tree, nodeId)
+                try {
+                    findAndToggleNode(tree, nodeId)
+                } catch {
+                    // Corrupt tree – drop cache entry so it's re-fetched cleanly
+                    delete state.computedTrees[strainId]
+                }
             }
         },
-        resetGenealogy: () => initialState,
+        /** Wipes the computed-trees cache. Trees are rebuilt on next selection. */
+        resetGenealogyCache: (state) => {
+            state.computedTrees = {}
+            state.status = 'idle'
+        },
+        resetGenealogy: () => ({ ...initialGenealogyState }),
     },
     extraReducers: (builder) => {
         builder
@@ -120,6 +282,7 @@ export const {
     resetGenealogyZoom,
     setGenealogyLayout,
     toggleGenealogyNode,
+    resetGenealogyCache,
     resetGenealogy,
 } = genealogySlice.actions
 

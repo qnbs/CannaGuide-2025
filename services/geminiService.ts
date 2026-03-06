@@ -12,6 +12,15 @@ import {
     Language,
     JournalEntry,
 } from '@/types'
+import {
+    PlantDiagnosisResponseSchema,
+    StructuredGrowTipsSchema,
+    DeepDiveGuideSchema,
+    MentorMessageContentSchema,
+    RecommendationSchema,
+    GardenStatusSummarySchema,
+} from '@/types/schemas'
+import { z } from 'zod'
 import { getT } from '@/i18n'
 import { apiKeyService } from '@/services/apiKeyService'
 import { growLogRagService } from '@/services/growLogRagService'
@@ -70,6 +79,47 @@ const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
     return `${languageInstruction}\n\n${basePrompt}`
 }
 
+// ---------------------------------------------------------------------------
+// Prompt-injection protection
+// ---------------------------------------------------------------------------
+
+/**
+ * Patterns that could be used to hijack or escape the LLM system prompt.
+ * Applied to all user-supplied free-text before it is interpolated into prompts.
+ */
+const INJECTION_PATTERNS: RegExp[] = [
+    /ignore\s+(previous|all\s+previous|prior)\s+(instructions?|prompts?|context)/gi,
+    /disregard\s+(previous|all|the|your|prior)/gi,
+    /forget\s+(everything|all|the\s+above|previous)/gi,
+    // LLM special-token sequences
+    /<\|.*?\|>/g,
+    /\[\/?INST\]/gi,
+    /<<\/?SYS>>/gi,
+    // Role-injection via raw labels
+    /^(system|assistant|human|user)\s*:/gim,
+    // Markdown-style role labels that some models parse
+    /^(###?\s*(system|assistant|human|user))\s*$/gim,
+    // Prompt-leaking attempts
+    /repeat\s+(the|your|all|above|previous)\s+(prompt|instructions?|system)/gi,
+    /print\s+(the|your)\s+(system\s+)?prompt/gi,
+]
+
+/**
+ * Sanitize a user-supplied string for safe interpolation inside an LLM prompt.
+ * 1. Strips all HTML/XML markup (DOMPurify)
+ * 2. Removes known prompt-injection patterns
+ * 3. Truncates to `maxLength` characters
+ */
+const sanitizeForPrompt = (input: string, maxLength = 500): string => {
+    // Strip HTML - use text-only output (no tags allowed)
+    const stripped = DOMPurify.sanitize(input, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+    let clean = stripped
+    for (const pattern of INJECTION_PATTERNS) {
+        clean = clean.replace(pattern, '[redacted]')
+    }
+    return clean.slice(0, maxLength).trim()
+}
+
 const MAX_PROMPT_CHARS = 12000
 const MAX_OUTPUT_TOKENS_TEXT = 900
 const MAX_OUTPUT_TOKENS_JSON = 1400
@@ -100,7 +150,7 @@ const summarizeJournalForPrompt = (journal: JournalEntry[], maxRecent = 10): str
 
     const recentEntries = journal
         .slice(-maxRecent)
-        .map((entry) => `- day=${new Date(entry.createdAt).toISOString()} type=${entry.type} notes=${entry.notes.slice(0, 140)}`)
+        .map((entry) => `- day=${new Date(entry.createdAt).toISOString()} type=${entry.type} notes=${sanitizeForPrompt(entry.notes, 140)}`)
         .join('\n')
 
     return `Total entries: ${journal.length}\nBy type: ${typeSummary}\nRecent entries:\n${recentEntries}`
@@ -289,10 +339,24 @@ class GeminiService {
         return this.sanitizeValue(response.text)
     }
 
-    private parseJsonResponse<T>(response: { text?: string }, errorKey: string): T {
+    private parseJsonResponse<T>(response: { text?: string }, errorKey: string, schema?: z.ZodSchema<T>): T {
         const text = this.getResponseTextOrThrow(response, errorKey)
-        const parsed = JSON.parse(text.trim()) as T
-        return this.sanitizeValue(parsed)
+        let parsed: T
+        try {
+            parsed = JSON.parse(text.trim()) as T
+        } catch {
+            throw new Error(errorKey)
+        }
+        const sanitized = this.sanitizeValue(parsed)
+        if (schema) {
+            const result = schema.safeParse(sanitized)
+            if (!result.success) {
+                console.warn('[Gemini] Response schema validation failed:', result.error.format())
+                throw new Error(errorKey)
+            }
+            return result.data
+        }
+        return sanitized
     }
 
     private async getAi(): Promise<GoogleGenAI> {
@@ -438,7 +502,7 @@ class GeminiService {
                 },
             })
 
-            return this.parseJsonResponse<Recommendation>(response, 'ai.error.equipment')
+            return this.parseJsonResponse<Recommendation>(response, 'ai.error.equipment', RecommendationSchema)
         } catch (error) {
             console.error('Gemini getEquipmentRecommendation Error:', error)
             this.rethrowKnownError(error, 'ai.error.equipment')
@@ -472,7 +536,7 @@ PLANT CONTEXT:
 - Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(
             1
         )}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
-- USER NOTES: "${userNotes || 'None provided'}"
+- USER NOTES: "${sanitizeForPrompt(userNotes || 'None provided', 400)}"
         `.trim()
 
         const prompt = `
@@ -517,7 +581,7 @@ PLANT CONTEXT:
                 },
             })
             
-            return this.parseJsonResponse<PlantDiagnosisResponse>(response, 'ai.error.diagnostics')
+            return this.parseJsonResponse<PlantDiagnosisResponse>(response, 'ai.error.diagnostics', PlantDiagnosisResponseSchema)
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
             this.rethrowKnownError(error, 'ai.error.diagnostics')
@@ -562,9 +626,10 @@ PLANT CONTEXT:
         const t = getT()
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+        const sanitizedQuery = sanitizeForPrompt(query, 600)
         const prompt = t('ai.prompts.mentor.main', {
             context: `${plantContext}\n\nRELEVANT GROW LOG CONTEXT\n-------------------------\n${ragContext}`,
-            query: query,
+            query: sanitizedQuery,
         })
 
         try {
@@ -608,7 +673,7 @@ PLANT CONTEXT:
                 },
             })
 
-            return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(response, 'ai.error.generic')
+            return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(response, 'ai.error.generic', MentorMessageContentSchema)
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error)
             if (this.shouldUseLocalFallback(error)) {
@@ -656,7 +721,7 @@ PLANT CONTEXT:
                 },
             })
 
-            return this.parseJsonResponse<StructuredGrowTips>(response, 'ai.error.tips')
+            return this.parseJsonResponse<StructuredGrowTips>(response, 'ai.error.tips', StructuredGrowTipsSchema)
         } catch (e) {
             console.error('Gemini getStrainTips Error:', e)
             if (this.shouldUseLocalFallback(e)) {
@@ -783,7 +848,7 @@ PLANT CONTEXT:
                 },
             })
 
-            return this.parseJsonResponse<DeepDiveGuide>(response, 'ai.error.deepDive')
+            return this.parseJsonResponse<DeepDiveGuide>(response, 'ai.error.deepDive', DeepDiveGuideSchema)
         } catch (e) {
             console.error('Gemini generateDeepDive Error:', e)
             this.rethrowKnownError(e, 'ai.error.deepDive')

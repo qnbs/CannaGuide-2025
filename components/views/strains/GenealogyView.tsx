@@ -169,7 +169,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     }, []);
 
     // ── Defensive Destructuring ──────────────────────────────────────
-    const computedTrees = genealogyState?.computedTrees ?? {};
+    const computedTrees = useMemo(() => genealogyState?.computedTrees ?? {}, [genealogyState?.computedTrees]);
     const status = genealogyState?.status ?? 'idle';
     const selectedStrainId = genealogyState?.selectedStrainId ?? null;
     const zoomTransform = genealogyState?.zoomTransform ?? null;
@@ -244,9 +244,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
         } catch (err) {
             console.error('[GenealogyView] fetchAndBuildGenealogy dispatch error:', err);
-            setLocalError('Fehler beim Laden des Stammbaums');
+            setLocalError(t('strainsView.genealogyView.errorLoadingTree'));
         }
-    }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch]);
+    }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch, t]);
 
     // ── d3-Layout-Berechnung in useEffect (NICHT im Render) ──────────
     useEffect(() => {
@@ -273,11 +273,11 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             setLayoutLinks(root.links());
         } catch (err) {
             console.error('[GenealogyView] d3 hierarchy/tree layout error:', err);
-            setLocalError('Fehler bei der Stammbaum-Berechnung');
+            setLocalError(t('strainsView.genealogyView.errorCalculatingTree'));
             setLayoutNodes([]);
             setLayoutLinks([]);
         }
-    }, [tree, layoutOrientation]);
+    }, [tree, layoutOrientation, t]);
 
     // ── Handler (alle in try/catch) ──────────────────────────────────
     const handleNodeClick = useCallback(
@@ -464,7 +464,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
         } catch (err) {
             console.error('[GenealogyView] d3 zoom setup error:', err);
-            setLocalError('Fehler beim Initialisieren der Zoom-Steuerung');
+            setLocalError(t('strainsView.genealogyView.errorInitZoom'));
         }
 
         return () => {
@@ -475,8 +475,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             }
             zoomRef.current = null;
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dispatch, tree, layoutOrientation]);
+    }, [dispatch, tree, layoutOrientation, t]);
 
     const handleResetZoom = useCallback(() => {
         if (!svgRef.current || !zoomRef.current) return;

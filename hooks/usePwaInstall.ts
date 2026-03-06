@@ -27,7 +27,7 @@ export const usePwaInstall = () => {
     useEffect(() => {
         // This event fires if the app is installable but not yet installed.
         const beforeInstallPromptHandler = (e: Event) => {
-            console.log('[PWA] beforeinstallprompt event fired.');
+            console.debug('[PWA] beforeinstallprompt event fired.');
             e.preventDefault(); // Prevent the mini-infobar from appearing automatically.
             setDeferredPrompt(e as BeforeInstallPromptEvent);
 
@@ -83,9 +83,9 @@ export const usePwaInstall = () => {
         
         if (outcome === 'accepted') {
             // The 'appinstalled' event will handle the final state change.
-            console.log('PWA installation accepted by user.');
+            console.debug('PWA installation accepted by user.');
         } else {
-            console.log('PWA installation dismissed by user.');
+            console.debug('PWA installation dismissed by user.');
             dispatch(addNotification({ message: t('common.installPwaDismissed'), type: 'info' }));
             localStorage.setItem(PWA_INSTALL_HINT_KEY, String(Date.now()))
         }

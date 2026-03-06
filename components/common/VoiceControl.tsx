@@ -130,7 +130,7 @@ export const VoiceControl: React.FC = () => {
                 // This can happen if recognition is already started, so we defensively stop it.
                 try {
                     recognitionRef.current.stop();
-                } catch (stopErr) {
+                } catch {
                     // Ignore errors on stopping if it was already stopped.
                 }
                 dispatch(setVoiceStatusMessage(t('voiceControl.errors.startFailed')));

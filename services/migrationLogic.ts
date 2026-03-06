@@ -235,7 +235,7 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
  * - Adds `lastUpdated` property to plant objects if missing.
  */
 const migrateV1ToV2 = (state: PersistedState): PersistedState => {
-    console.log('[MigrationLogic] Migrating state from v1 to v2...')
+    console.debug('[MigrationLogic] Migrating state from v1 to v2...')
 
     // Note: 'state' is a plain JS object here, it's safe to mutate before it's loaded into Redux.
     const migratedState: PersistedState = state
@@ -266,7 +266,7 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
 }
 
 const migrateV2ToV3 = (state: PersistedState): PersistedState => {
-    console.log('[MigrationLogic] Migrating state from v2 to v3...')
+    console.debug('[MigrationLogic] Migrating state from v2 to v3...')
 
     const migratedState: PersistedState = state
 
@@ -310,7 +310,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     const stateVersion = persistedState.version || 1
 
     if (stateVersion >= APP_VERSION) {
-        console.log('[MigrationLogic] Persisted state is up to date.')
+        console.debug('[MigrationLogic] Persisted state is up to date.')
         // Even if up to date, merge settings to catch any new properties added in minor versions
         if (persistedState.settings?.settings) {
             persistedState.settings.settings = deepMergeSettings(persistedState.settings.settings)
@@ -322,7 +322,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     }
 
     let migratedState: PersistedState = persistedState
-    console.log(`[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`)
+    console.debug(`[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`)
 
     if (stateVersion < 2) {
         migratedState = migrateV1ToV2(migratedState)

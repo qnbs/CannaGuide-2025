@@ -72,7 +72,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 const photoDetails = finalDetails as Partial<PhotoDetailsType>
                 photoDetails.imageId = imageId
                 photoDetails.imageUrl = image // For immediate optimistic UI update
-            } catch (e) {
+            } catch {
                 dispatch(
                     addNotification({
                         message: t('plantsView.aiDiagnostics.saveImageError'),

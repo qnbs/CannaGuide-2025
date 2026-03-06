@@ -3,10 +3,11 @@ import { Plant, PlantStage } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
-import { useAppDispatch } from '@/stores/store';
+import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { processPostHarvest } from '@/stores/slices/simulationSlice';
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { selectSettings } from '@/stores/selectors';
 
 interface PostHarvestTabProps {
     plant: Plant;
@@ -54,6 +55,7 @@ const BurpCalendar: React.FC<{ currentDay: number; lastBurpDay: number }> = ({ c
 export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
+    const settings = useAppSelector(selectSettings)
     const harvestData = plant.harvestData;
     const isFinished = plant.stage === PlantStage.Finished;
 
@@ -63,6 +65,14 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
 
     const dryingProgress = (harvestData.currentDryDay / PLANT_STAGE_DETAILS[PlantStage.Drying].duration) * 100;
     const curingProgress = (harvestData.currentCureDay / PLANT_STAGE_DETAILS[PlantStage.Curing].duration) * 100;
+    const burpDebtDays = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1)
+    const postHarvestRecommendations = [
+        plant.stage === PlantStage.Drying && harvestData.jarHumidity > 64 ? t('plantsView.postHarvest.recommendations.lowerHumidity') : null,
+        plant.stage === PlantStage.Drying && harvestData.moldRiskPercent > 28 ? t('plantsView.postHarvest.recommendations.increaseAirflow') : null,
+        plant.stage === PlantStage.Curing && burpDebtDays > 0 ? t('plantsView.postHarvest.recommendations.burpNow') : null,
+        plant.stage === PlantStage.Curing && Math.abs(harvestData.jarHumidity - 61) > 2 ? t('plantsView.postHarvest.recommendations.stabilizeJarRh') : null,
+        harvestData.finalQuality > 85 ? t('plantsView.postHarvest.recommendations.holdSteady') : null,
+    ].filter(Boolean) as string[]
     
     const topTerpenes = Object.entries(harvestData.terpeneProfile || {}).sort(([,a],[,b]) => (b as number) - (a as number)).slice(0, 3);
 
@@ -83,11 +93,12 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
                             <h4 className="font-bold text-lg text-slate-100">{t('plantsView.postHarvest.drying')}</h4>
                             <ProgressBar label={t('plantsView.postHarvest.dryingProgress')} progress={dryingProgress} />
                             <p className="text-sm text-slate-400">{t('plantsView.postHarvest.day')} {harvestData.currentDryDay} / {PLANT_STAGE_DETAILS[PlantStage.Drying].duration}</p>
+                            <p className="text-xs text-slate-500">{t('plantsView.postHarvest.targetDryingWindow')}</p>
                             <div className="space-y-2">
                                 <ProgressBar label={t('plantsView.postHarvest.terpeneRetention')} progress={harvestData.terpeneRetentionPercent} color="bg-amber-500" />
                                 <ProgressBar label={t('plantsView.postHarvest.moldRisk')} progress={harvestData.moldRiskPercent} color="bg-red-500" />
                             </div>
-                            <Button size="sm" className="w-full" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'dry' }))} disabled={plant.stage !== PlantStage.Drying}>
+                            <Button size="sm" className="w-full" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'dry', simulationSettings: settings.simulation }))} disabled={![PlantStage.Harvest, PlantStage.Drying].includes(plant.stage)}>
                                 {t('plantsView.postHarvest.simulateNextDay')}
                             </Button>
                         </div>
@@ -96,18 +107,49 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
                             <h4 className="font-bold text-lg text-slate-100">{t('plantsView.postHarvest.curing')}</h4>
                             <ProgressBar label={t('plantsView.postHarvest.curingProgress')} progress={curingProgress} />
                             <p className="text-sm text-slate-400">{t('plantsView.postHarvest.day')} {harvestData.currentCureDay} / {PLANT_STAGE_DETAILS[PlantStage.Curing].duration}</p>
+                            <p className="text-xs text-slate-500">{t('plantsView.postHarvest.targetCuringWindow')}</p>
                              <BurpCalendar currentDay={harvestData.currentCureDay} lastBurpDay={harvestData.lastBurpDay} />
                             <div className="flex gap-2 mt-4">
-                                <Button size="sm" variant="secondary" className="flex-1" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'burp' }))} disabled={plant.stage !== PlantStage.Curing}>
+                                <Button size="sm" variant="secondary" className="flex-1" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'burp', simulationSettings: settings.simulation }))} disabled={plant.stage !== PlantStage.Curing}>
                                     <PhosphorIcons.Fan className="w-4 h-4 mr-1"/> {t('plantsView.postHarvest.burpJars')}
                                 </Button>
-                                <Button size="sm" className="flex-1" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'cure' }))} disabled={plant.stage !== PlantStage.Curing}>
+                                <Button size="sm" className="flex-1" onClick={() => dispatch(processPostHarvest({ plantId: plant.id, action: 'cure', simulationSettings: settings.simulation }))} disabled={plant.stage !== PlantStage.Curing}>
                                     {t('plantsView.postHarvest.simulateNextDay')}
                                 </Button>
                             </div>
                         </div>
                     </div>
                 )}
+            </Card>
+
+            <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.processNotes')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
+                        <p className="text-sm text-slate-400">{t('plantsView.postHarvest.jarHumidity')}</p>
+                        <p className="text-2xl font-bold text-cyan-300">{harvestData.jarHumidity.toFixed(1)}%</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
+                        <p className="text-sm text-slate-400">{t('plantsView.postHarvest.chlorophyll')}</p>
+                        <p className="text-2xl font-bold text-lime-300">{harvestData.chlorophyllPercent.toFixed(1)}%</p>
+                    </div>
+                    <div className="rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
+                        <p className="text-sm text-slate-400">{t('plantsView.postHarvest.burpDebt')}</p>
+                        <p className="text-2xl font-bold text-amber-300">{burpDebtDays}</p>
+                    </div>
+                </div>
+                <div className="mt-4 rounded-lg bg-slate-900/60 p-4 ring-1 ring-white/10">
+                    <p className="text-sm font-semibold text-slate-200 mb-2">{t('plantsView.postHarvest.recommendationsTitle')}</p>
+                    {postHarvestRecommendations.length > 0 ? (
+                        <div className="space-y-2 text-sm text-slate-300">
+                            {postHarvestRecommendations.map((recommendation) => (
+                                <p key={recommendation}>• {recommendation}</p>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-sm text-slate-400">{t('plantsView.postHarvest.recommendations.none')}</p>
+                    )}
+                </div>
             </Card>
 
             <Card>

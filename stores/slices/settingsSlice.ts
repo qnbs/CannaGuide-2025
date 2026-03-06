@@ -5,6 +5,36 @@ import { RootState } from '../store'
 import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY, VersionedSliceName } from '@/constants'
 import { aiProviderService } from '@/services/aiProviderService'
 
+export const simulationProfilePresets: Record<AppSettings['simulation']['simulationProfile'], Pick<AppSettings['simulation'], 'pestPressure' | 'nutrientSensitivity' | 'environmentalStability' | 'leafTemperatureOffset' | 'lightExtinctionCoefficient' | 'nutrientConversionEfficiency' | 'stomataSensitivity'>> = {
+    beginner: {
+        pestPressure: 0.04,
+        nutrientSensitivity: 0.85,
+        environmentalStability: 0.97,
+        leafTemperatureOffset: -2.5,
+        lightExtinctionCoefficient: 0.58,
+        nutrientConversionEfficiency: 0.62,
+        stomataSensitivity: 0.82,
+    },
+    intermediate: {
+        pestPressure: 0.1,
+        nutrientSensitivity: 1.0,
+        environmentalStability: 0.9,
+        leafTemperatureOffset: -2,
+        lightExtinctionCoefficient: 0.7,
+        nutrientConversionEfficiency: 0.5,
+        stomataSensitivity: 1.0,
+    },
+    expert: {
+        pestPressure: 0.18,
+        nutrientSensitivity: 1.15,
+        environmentalStability: 0.82,
+        leafTemperatureOffset: -1.5,
+        lightExtinctionCoefficient: 0.78,
+        nutrientConversionEfficiency: 0.44,
+        stomataSensitivity: 1.16,
+    },
+}
+
 export const defaultSettings: AppSettings = {
     version: 4,
     onboardingCompleted: false,
@@ -188,6 +218,16 @@ const settingsSlice = createSlice({
         },
         setSetting: (state, action: PayloadAction<{ path: string; value: unknown }>) => {
             const { path, value } = action.payload
+            if (path === 'simulation.simulationProfile' && typeof value === 'string') {
+                const nextProfile = value as AppSettings['simulation']['simulationProfile']
+                const preset = simulationProfilePresets[nextProfile]
+                if (!preset) return
+
+                state.settings.simulation.simulationProfile = nextProfile
+                Object.assign(state.settings.simulation, preset)
+                return
+            }
+
             const keys = path.split('.')
             // Guard against prototype pollution via crafted paths
             if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) return

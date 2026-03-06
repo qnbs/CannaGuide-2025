@@ -50,7 +50,7 @@ export const NutrientCalculator: React.FC = memo(() => {
                         <Input
                             label={`${t('equipmentView.calculators.nutrients.component')} #${index + 1}`}
                             type="text"
-                            placeholder="e.g., Grow, Bloom"
+                            placeholder={t('equipmentView.calculators.nutrients.componentPlaceholder')}
                             value={comp.name}
                             onChange={e => handleComponentChange(comp.id, 'name', e.target.value)}
                         />

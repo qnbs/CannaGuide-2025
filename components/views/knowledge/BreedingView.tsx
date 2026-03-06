@@ -18,19 +18,21 @@ import { crossStrains, strainTypeInfo } from '@/utils/breedingUtils';
 
 
 const SeedCard: React.FC<{ seed: Seed, onClick: () => void, isSelected?: boolean, strain?: Strain | null }> = ({ seed, onClick, isSelected, strain }) => {
+    const { t } = useTranslation();
     const TypeInfo = strain ? strainTypeInfo[strain.type] : null;
     return (
         <button onClick={onClick} className={`w-full text-left p-2 rounded-lg transition-all ring-1 ring-inset ring-white/20 flex items-center gap-3 ${isSelected ? 'bg-primary-900/50 ring-2 ring-primary-500' : 'bg-slate-800 hover:bg-slate-700/50'}`}>
             {TypeInfo && <div className={`w-6 h-6 flex-shrink-0 ${TypeInfo.color}`}>{TypeInfo.icon}</div>}
             <div className="flex-grow min-w-0">
                 <p className="font-bold truncate">{seed.strainName}</p>
-                <p className="text-xs text-slate-400">Quality: {(seed.quality * 100).toFixed(0)}%</p>
+                <p className="text-xs text-slate-400">{t('common.quality')}: {(seed.quality * 100).toFixed(0)}%</p>
             </div>
         </button>
     )
 };
 
 const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () => void, allStrains: Strain[] }> = ({ title, seed, onClear, allStrains }) => {
+    const { t } = useTranslation();
     const parentStrain = seed ? allStrains.find(s => s.id === seed.strainId) : null;
     const TypeInfo = parentStrain ? strainTypeInfo[parentStrain.type] : null;
 
@@ -43,14 +45,14 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
                     <p className="font-bold text-slate-100">{seed.strainName}</p>
                     <div className="text-xs text-slate-400 mt-1">
                         <p>THC: {parentStrain.thc.toFixed(1)}% | CBD: {parentStrain.cbd.toFixed(1)}%</p>
-                        <p>Quality: {(seed.quality * 100).toFixed(0)}%</p>
+                        <p>{t('common.quality')}: {(seed.quality * 100).toFixed(0)}%</p>
                     </div>
                     <Button size="sm" variant="danger" className="!absolute top-1 right-1 !p-1" onClick={onClear} aria-label={`Clear ${title}`}><PhosphorIcons.X/></Button>
                 </>
             ) : (
                 <div className="text-slate-500">
                     <PhosphorIcons.Drop className="w-12 h-12 mb-2"/>
-                    <p>Select a seed</p>
+                    <p>{t('knowledgeView.breeding.selectSeed')}</p>
                 </div>
             )}
         </Card>
@@ -159,21 +161,21 @@ const BreedingView: React.FC = () => {
                         <ParentSlot title={t('knowledgeView.breeding.parentB')} seed={seedB} onClear={() => dispatch(setParentB(null))} allStrains={allStrains} />
                     </div>
                     <Card className="bg-slate-800/40 !p-4">
-                        <h4 className="font-bold text-slate-100 mb-3">Pheno Tracking</h4>
+                        <h4 className="font-bold text-slate-100 mb-3">{t('knowledgeView.breeding.phenoTracking')}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <p className="text-sm font-semibold text-slate-300">Parent A</p>
-                                <Input type="number" min={0} max={10} label="Vigor" value={phenoA.vigor} onChange={(e) => setPhenoA((prev) => ({ ...prev, vigor: Number(e.target.value) }))} />
-                                <Input type="number" min={0} max={10} label="Resin" value={phenoA.resin} onChange={(e) => setPhenoA((prev) => ({ ...prev, resin: Number(e.target.value) }))} />
-                                <Input type="number" min={0} max={10} label="Aroma" value={phenoA.aroma} onChange={(e) => setPhenoA((prev) => ({ ...prev, aroma: Number(e.target.value) }))} />
-                                <Input type="number" min={0} max={10} label="Disease Resistance" value={phenoA.resistance} onChange={(e) => setPhenoA((prev) => ({ ...prev, resistance: Number(e.target.value) }))} />
+                                <p className="text-sm font-semibold text-slate-300">{t('knowledgeView.breeding.parentA')}</p>
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.vigor')} value={phenoA.vigor} onChange={(e) => setPhenoA((prev) => ({ ...prev, vigor: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.resin')} value={phenoA.resin} onChange={(e) => setPhenoA((prev) => ({ ...prev, resin: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.aroma')} value={phenoA.aroma} onChange={(e) => setPhenoA((prev) => ({ ...prev, aroma: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.diseaseResistance')} value={phenoA.resistance} onChange={(e) => setPhenoA((prev) => ({ ...prev, resistance: Number(e.target.value) }))} />
                             </div>
                             <div className="space-y-2">
-                                <p className="text-sm font-semibold text-slate-300">Parent B</p>
-                                <Input type="number" min={0} max={10} label="Vigor" value={phenoB.vigor} onChange={(e) => setPhenoB((prev) => ({ ...prev, vigor: Number(e.target.value) }))} />
-                                <Input type="number" min={0} max={10} label="Resin" value={phenoB.resin} onChange={(e) => setPhenoB((prev) => ({ ...prev, resin: Number(e.target.value) }))} />
-                                <Input type="number" min={0} max={10} label="Aroma" value={phenoB.aroma} onChange={(e) => setPhenoB((prev) => ({ ...prev, aroma: Number(e.target.value) }))} />
-                                <Input type="number" min={0} max={10} label="Disease Resistance" value={phenoB.resistance} onChange={(e) => setPhenoB((prev) => ({ ...prev, resistance: Number(e.target.value) }))} />
+                                <p className="text-sm font-semibold text-slate-300">{t('knowledgeView.breeding.parentB')}</p>
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.vigor')} value={phenoB.vigor} onChange={(e) => setPhenoB((prev) => ({ ...prev, vigor: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.resin')} value={phenoB.resin} onChange={(e) => setPhenoB((prev) => ({ ...prev, resin: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.aroma')} value={phenoB.aroma} onChange={(e) => setPhenoB((prev) => ({ ...prev, aroma: Number(e.target.value) }))} />
+                                <Input type="number" min={0} max={10} label={t('knowledgeView.breeding.diseaseResistance')} value={phenoB.resistance} onChange={(e) => setPhenoB((prev) => ({ ...prev, resistance: Number(e.target.value) }))} />
                             </div>
                         </div>
                     </Card>
@@ -184,19 +186,19 @@ const BreedingView: React.FC = () => {
                 </div>
             </div>
 
-            {isBreeding && <AiLoadingIndicator loadingMessage="Splicing genes..." />}
+            {isBreeding && <AiLoadingIndicator loadingMessage={t('knowledgeView.breeding.splicingGenes')} />}
 
             {result && parentA && parentB && (
                 <Card className="animate-fade-in bg-slate-800/50">
                     <div className="flex justify-between items-center">
                          <h3 className="text-xl font-bold text-primary-400">{t('knowledgeView.breeding.resultsTitle')}</h3>
-                         <Button variant="secondary" size="sm" onClick={handleReset}><PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" /> Start Over</Button>
+                         <Button variant="secondary" size="sm" onClick={handleReset}><PhosphorIcons.ArrowClockwise className="w-4 h-4 mr-1.5" /> {t('common.startOver')}</Button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div className="space-y-4">
                             <Input type="text" value={newStrainName} onChange={e => setNewStrainName(e.target.value)} placeholder={t('knowledgeView.breeding.newStrainName')} />
                             <TraitComparison label="THC" valA={`${parentA.thc.toFixed(1)}%`} valB={`${parentB.thc.toFixed(1)}%`} valChild={`~${result.thc.toFixed(1)}%`} icon={<PhosphorIcons.Lightning weight="fill" />} />
-                            <TraitComparison label="Flowering" valA={`${parentA.floweringTime} w`} valB={`${parentB.floweringTime} w`} valChild={`~${result.floweringTime.toFixed(0)} w`} icon={<PhosphorIcons.ArrowClockwise />} />
+                            <TraitComparison label={t('knowledgeView.breeding.flowering')} valA={`${parentA.floweringTime} w`} valB={`${parentB.floweringTime} w`} valChild={`~${result.floweringTime.toFixed(0)} w`} icon={<PhosphorIcons.ArrowClockwise />} />
                         </div>
                         <div className="space-y-4">
                              <div>
@@ -213,11 +215,11 @@ const BreedingView: React.FC = () => {
                             </div>
                             {automatedGenetics && (
                                 <div className="bg-slate-900/50 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-sm text-slate-200 space-y-1">
-                                    <p className="font-semibold text-primary-300">Automated Genetics Estimate</p>
+                                    <p className="font-semibold text-primary-300">{t('knowledgeView.breeding.automatedGenetics')}</p>
                                     <p>THC: ~{automatedGenetics.thc.toFixed(1)}%</p>
                                     <p>CBD: ~{automatedGenetics.cbd.toFixed(1)}%</p>
-                                    <p>Flowering: ~{automatedGenetics.floweringWeeks.toFixed(1)} weeks</p>
-                                    <p>Stability Score: {automatedGenetics.stabilityScore.toFixed(0)} / 100</p>
+                                    <p>{t('knowledgeView.breeding.flowering')}: ~{automatedGenetics.floweringWeeks.toFixed(1)} {t('common.units.weeks')}</p>
+                                    <p>{t('knowledgeView.breeding.stabilityScore')}: {automatedGenetics.stabilityScore.toFixed(0)} / 100</p>
                                 </div>
                             )}
                         </div>

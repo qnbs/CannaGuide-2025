@@ -315,4 +315,30 @@ export const plantsView = {
     resultA: 'Ergebnis A: {{label}}',
     resultB: 'Ergebnis B: {{label}}',
   },
+  vpd: {
+    currentVpd: 'Aktueller VPD',
+    targetBand: 'Zielbereich ({{band}})',
+    status: 'Status',
+    simulation24h: 'VPD 24h-Simulation',
+    leafTemp: 'Blatttemperatur',
+    altitudeCorrection: 'Höhenkorrektur',
+    gaugeLabel: 'VPD {{vpd}} kPa. {{status}}. Blatttemperatur: {{leafTemp}}\u00b0C.',
+    bands: {
+      seedling: 'Sämlinge/Klone',
+      vegetative: 'Vegetativ',
+      earlyFlower: 'Frühe Blüte',
+      lateFlower: 'Späte Blüte',
+    },
+    advice: {
+      optimal: 'VPD im Zielbereich. Klima stabil halten.',
+      low: 'VPD zu niedrig: Luftfeuchtigkeit senken oder Blatttemperatur erhöhen.',
+      high: 'VPD zu hoch: Luftfeuchtigkeit erhöhen oder Blatttemperatur senken.',
+      danger: 'VPD in Gefahrenzone: Sofortige Korrektur empfohlen, um Stress zu vermeiden.',
+    },
+  },
+  deepDive: {
+    stepByStep: 'Schritt für Schritt',
+    pros: 'Vorteile',
+    cons: 'Nachteile',
+  },
 };

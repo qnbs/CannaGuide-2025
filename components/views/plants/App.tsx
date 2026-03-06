@@ -194,8 +194,8 @@ export const App: React.FC = () => {
             {showUpdateBanner && (
                 <div className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 left-1/2 -translate-x-1/2 z-[250] w-full max-w-md animate-slide-in-up">
                     <div className="glass-pane p-3 rounded-lg flex items-center justify-between gap-4 mx-4">
-                        <p className="text-sm font-semibold text-slate-200">Eine neue Version ist verfügbar!</p>
-                        <Button size="sm" onClick={handleUpdate} glow>Aktualisieren</Button>
+                        <p className="text-sm font-semibold text-slate-200">{t('common.pwa.updateAvailable')}</p>
+                        <Button size="sm" onClick={handleUpdate} glow>{t('common.pwa.update')}</Button>
                     </div>
                 </div>
             )}

@@ -86,7 +86,7 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
 
                  {formData.recommendation?.proTip && <FormSection title={t('strainsView.tips.form.categories.proTip')}>
                       <div className="sm:col-span-2">
-                        <FormTextarea label="Pro-Tip" value={formData.recommendation.proTip} onChange={e => handleRecommendationChange('proTip', 'proTip', e.target.value)} />
+                        <FormTextarea label={t('common.proTip')} value={formData.recommendation.proTip} onChange={e => handleRecommendationChange('proTip', 'proTip', e.target.value)} />
                       </div>
                  </FormSection>}
                  {!formData.recommendation && (

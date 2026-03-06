@@ -20,9 +20,9 @@ export const ConverterCalculator: React.FC = memo(() => {
 
     return (
         <CalculatorSection title={t('equipmentView.calculators.converter.title')} description={t('equipmentView.calculators.converter.description')}>
-            <Input label="EC (mS/cm)" type="number" step="0.1" value={values.ec.toFixed(2)} onChange={e => handleECChange(Number(e.target.value))} />
-            <Input label="PPM (500 Scale)" type="number" value={Math.round(values.ppm500)} onChange={e => handlePPM500Change(Number(e.target.value))} />
-            <Input label="PPM (700 Scale)" type="number" value={Math.round(values.ppm700)} onChange={e => handlePPM700Change(Number(e.target.value))} />
+            <Input label={t('equipmentView.calculators.converter.labels.ec')} type="number" step="0.1" value={values.ec.toFixed(2)} onChange={e => handleECChange(Number(e.target.value))} />
+            <Input label={t('equipmentView.calculators.converter.labels.ppm500')} type="number" value={Math.round(values.ppm500)} onChange={e => handlePPM500Change(Number(e.target.value))} />
+            <Input label={t('equipmentView.calculators.converter.labels.ppm700')} type="number" value={Math.round(values.ppm700)} onChange={e => handlePPM700Change(Number(e.target.value))} />
             <p className="text-xs text-slate-400 text-center">{t('equipmentView.calculators.converter.resultInfo')}</p>
         </CalculatorSection>
     );

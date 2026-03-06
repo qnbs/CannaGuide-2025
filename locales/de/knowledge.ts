@@ -47,6 +47,15 @@ export const knowledgeView = {
         potentialTraits: 'Mögliche Merkmale',
         saveStrain: 'Sorte speichern',
         breedingSuccess: 'Neue Sorte "{{name}}" erfolgreich gezüchtet und zu "Meine Sorten" hinzugefügt!',
+        splicingGenes: 'Gene werden gespleißt...',
+        flowering: 'Blütezeit',
+        phenoTracking: 'Phäno-Tracking',
+        vigor: 'Vitalität',
+        resin: 'Harz',
+        aroma: 'Aroma',
+        diseaseResistance: 'Krankheitsresistenz',
+        automatedGenetics: 'Automatische Genetik-Schätzung',
+        stabilityScore: 'Stabilitätswert',
     },
     scenarios: {
         toppingVsLst: {
@@ -200,6 +209,8 @@ export const knowledgeView = {
         },
         savedExperiments: 'Gespeicherte Experimente',
         noExperiments: 'Noch keine Experimente gespeichert.',
+        basedOn: 'Basierend auf: {{name}}',
+        run: 'Durchlauf: {{date}}',
     },
     guide: {
         phases: 'Phasen',

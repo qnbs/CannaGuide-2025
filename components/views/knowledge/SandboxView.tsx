@@ -33,9 +33,9 @@ const SavedExperimentCard: React.FC<{
             <div className="flex justify-between items-start">
                 <div>
                     <h4 className="font-bold text-slate-100">{scenarioTitle}</h4>
-                    <p className="text-xs text-slate-400">Based on: {experiment.basePlantName}</p>
+                    <p className="text-xs text-slate-400">{t('knowledgeView.sandbox.basedOn', { name: experiment.basePlantName })}</p>
                     <p className="text-xs text-slate-500">
-                        Run: {new Date(experiment.createdAt).toLocaleDateString()}
+                        {t('knowledgeView.sandbox.run', { date: new Date(experiment.createdAt).toLocaleDateString() })}
                     </p>
                 </div>
                 <div className="flex gap-2">

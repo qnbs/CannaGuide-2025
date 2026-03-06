@@ -6,12 +6,14 @@ import { getVPDStatusAdvice, VPD_TARGET_BANDS } from '@/lib/vpd/recommendations'
 import type { SimulationPoint } from '@/types/simulation.types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { generatePlantVpdProfile } from '@/stores/slices/simulationSlice'
+import { useTranslation } from 'react-i18next'
 
 interface VPDChartProps {
   plant: Plant
 }
 
 export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const [data, setData] = useState<SimulationPoint[]>([])
   const profileFromStore = useAppSelector((state) => state.simulation.vpdProfiles?.[plant.id])
@@ -76,9 +78,9 @@ export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
 
       {latest && (
         <div className="rounded-lg bg-slate-800/60 p-3 text-sm text-slate-200">
-          <p className="font-semibold text-slate-100">Current VPD: {latest.vpd.toFixed(2)} kPa</p>
-          <p className="text-slate-300">Target Band ({band.label}): {band.min.toFixed(1)}-{band.max.toFixed(1)} kPa</p>
-          <p className="text-slate-300">Status: <span className="font-semibold uppercase">{latest.status}</span></p>
+          <p className="font-semibold text-slate-100">{t('plantsView.vpd.currentVpd')}: {latest.vpd.toFixed(2)} kPa</p>
+          <p className="text-slate-300">{t('plantsView.vpd.targetBand', { band: t(band.labelKey) })}: {band.min.toFixed(1)}-{band.max.toFixed(1)} kPa</p>
+          <p className="text-slate-300">{t('plantsView.vpd.status')}: <span className="font-semibold uppercase">{latest.status}</span></p>
           <p className="text-slate-400">{getVPDStatusAdvice(latest.status)}</p>
         </div>
       )}

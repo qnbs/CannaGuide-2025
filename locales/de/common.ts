@@ -185,6 +185,26 @@ export const common = {
     },
     noImageGenerated: 'Die API hat kein Bild generiert.',
     noJournalEntries: 'Keine Journal-Einträge verfügbar.',
+    startOver: 'Neu starten',
+    on: 'An',
+    exportPdf: 'PDF exportieren',
+    exporting: 'Exportiere...',
+    proTip: 'Profi-Tipp',
+    resetState: 'State zurücksetzen',
+    quality: 'Qualität',
+    pwa: {
+        updateAvailable: 'Eine neue Version ist verfügbar!',
+        update: 'Aktualisieren',
+    },
+    accessibility: {
+        close: 'Schließen',
+        creditCard: 'Kreditkarte',
+        bankTransfer: 'Banküberweisung',
+        showGrowthMetrics: 'Wachstumsdaten anzeigen',
+        showSubstrateMetrics: 'Substratdaten anzeigen',
+        plantHistoryChart: 'Pflanzenverlauf mit Wachstums- und Substratmesswerten über die Zeit',
+        openStrainDetails: 'Sortendetails öffnen',
+    },
 };
 
 export const nav = {

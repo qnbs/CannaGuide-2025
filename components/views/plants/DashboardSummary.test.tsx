@@ -5,6 +5,7 @@ import * as reduxHooks from '@/stores/store';
 import { RootState } from '@/stores/store';
 import { Plant } from '@/types';
 import { selectGardenHealthMetrics } from '@/stores/selectors';
+import { plantSimulationService } from '@/services/plantSimulationService';
 
 
 // Mock the hooks from the store
@@ -135,8 +136,18 @@ describe('DashboardSummary', () => {
 // New test suite for Redux selectors
 describe('Redux Selectors', () => {
     it('selectGardenHealthMetrics calculates correctly with multiple plants', () => {
-        const mockPlant1: Plant = { health: 80, environment: { internalTemperature: 25, internalHumidity: 50 } } as Plant;
-        const mockPlant2: Plant = { health: 100, environment: { internalTemperature: 23, internalHumidity: 60 } } as Plant;
+        const mockPlant1: Plant = {
+            health: 80,
+            mediumType: 'Soil',
+            equipment: { potType: 'Fabric' },
+            environment: { internalTemperature: 25, internalHumidity: 50 },
+        } as Plant;
+        const mockPlant2: Plant = {
+            health: 100,
+            mediumType: 'Hydro',
+            equipment: { potType: 'Plastic' },
+            environment: { internalTemperature: 23, internalHumidity: 60 },
+        } as Plant;
         
         const mockState: Partial<RootState> = {
             simulation: {
@@ -154,6 +165,12 @@ describe('Redux Selectors', () => {
         expect(result.activePlantsCount).toBe(2);
         expect(result.avgTemp).toBe(24);
         expect(result.avgHumidity).toBe(55);
+
+        const expectedAvgVpd = (
+            plantSimulationService.applyEnvironmentalCorrections(mockPlant1, { leafTemperatureOffset: -2, altitudeM: 0 } as any).environment.vpd +
+            plantSimulationService.applyEnvironmentalCorrections(mockPlant2, { leafTemperatureOffset: -2, altitudeM: 0 } as any).environment.vpd
+        ) / 2;
+        expect(result.avgVPD).toBeCloseTo(expectedAvgVpd, 6);
     });
 
     it('selectGardenHealthMetrics returns defaults for no plants', () => {

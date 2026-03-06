@@ -1,5 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit'
 import { calculateVPD as calculateScientificVPD } from '@/lib/vpd/calculator'
+import { plantSimulationService } from '@/services/plantSimulationService'
 import { RootState } from './store'
 import {
     ArchivedAdvisorResponse,
@@ -233,6 +234,10 @@ export const selectGardenHealthMetrics = createSelector(
     const totalHealth = activePlants.reduce((sum, p) => sum + p.health, 0);
     const totalTemp = activePlants.reduce((sum, p) => sum + p.environment.internalTemperature, 0);
     const totalHumidity = activePlants.reduce((sum, p) => sum + p.environment.internalHumidity, 0);
+    const totalVpd = activePlants.reduce((sum, plant) => {
+        const correctedPlant = plantSimulationService.applyEnvironmentalCorrections(plant, settings.simulation)
+        return sum + correctedPlant.environment.vpd
+    }, 0)
     
     const avgTemp = totalTemp / activePlantsCount;
     const avgHumidity = totalHumidity / activePlantsCount;
@@ -242,7 +247,7 @@ export const selectGardenHealthMetrics = createSelector(
         activePlantsCount,
         avgTemp,
         avgHumidity,
-        avgVPD: calculateScientificVPD(avgTemp, avgHumidity, leafTempOffset, altitudeM)
+        avgVPD: totalVpd / activePlantsCount,
     };
 });
 

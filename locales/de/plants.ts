@@ -168,7 +168,7 @@ export const plantsView = {
       simulationDebug: {
         title: 'Simulationsdiagnostik',
         profile: 'Profilkurve',
-        profileHint: 'Umwelt {{environment}}x, Nährstoffe {{nutrient}}x, Schädlinge {{pest}}x.',
+        profileHint: 'Umwelt {{environment}}x, Nährstoffe {{nutrient}}x, Schädlinge {{pest}}x, Nachernte {{postHarvest}}x.',
         vpd: 'Kronen-VPD',
         vpdHint: 'Aktuelles Zielband {{min}}-{{max}} kPa.',
         lightCapture: 'Lichtaufnahme',
@@ -188,11 +188,47 @@ export const plantsView = {
         pestPressureCurve: 'Schädlingsdruckkurve',
         dominantFactors: 'Dominierende Faktoren',
         postHarvest: 'Nachernte-Treiber',
+        postHarvestStage: 'Aktuelle Phase',
+        postHarvestStageHint: 'Diese Treiberwerte sind nur im Kontext der aktiven Nacherntephase sinnvoll interpretierbar.',
         postHarvestJarHint: 'Hohe Werte verlangsamen die Reifung und können Feuchtenester einschließen.',
         postHarvestChlHint: 'Sinkendes Chlorophyll verbessert meist Weichheit und Endqualität.',
         postHarvestTerpeneHint: 'Der Erhalt fällt unter Hitze, Trockenstress oder instabiler Führung am schnellsten.',
         postHarvestMoldHint: 'Dieser Wert steigt, wenn Feuchte ohne ausreichenden Austausch zu lange hoch bleibt.',
         postHarvestBurpHint: 'Aktueller Lüftungsrückstand: {{days}} Tag(e).',
+        dominantFactorLabels: {
+          vpd: 'VPD',
+          lightCapture: 'Kronen-Lichtaufnahme',
+          nutrientThroughput: 'Nährstoffdurchsatz',
+          pestPressure: 'Schädlingsdruckkurve',
+        },
+        dominantFactorReasons: {
+          vpd: 'Ziel {{min}}-{{max}} kPa.',
+          lightCapture: 'k={{k}} bei LAI {{lai}}.',
+          nutrientThroughput: 'Sensitivitätskurve {{sensitivity}}x.',
+          pestPressure: 'Profildruck {{profile}}x.',
+        },
+        assessments: {
+          environmentalInstability: {
+            stable: 'Sehr stabiles Umweltmodell mit nur wenig täglicher Drift.',
+            moderate: 'Spürbare Umweltdrift ist aktiv, aber noch gut beherrschbar.',
+            volatile: 'Hoher täglicher Driftdruck. Kleine Setup-Änderungen können das Modell stark verschieben.',
+          },
+          nutrientAvailability: {
+            constrained: 'Das Wachstum ist im aktuellen Modellzustand durch Nährstoffdurchsatz begrenzt.',
+            adequate: 'Der Nährstoffdurchsatz liegt in einem brauchbaren Bereich für stetiges Wachstum.',
+            abundant: 'Der Nährstoffdurchsatz ist hoch genug für eine aggressive Wachstumsantwort.',
+          },
+          nutrientConversion: {
+            lossy: 'Ein größerer Teil der verfügbaren Nährstoffe geht verloren, bevor Biomasse daraus wird.',
+            balanced: 'Die Umwandlung ist zwischen Realismus und stetiger Biomasseantwort ausgewogen.',
+            efficient: 'Das Modell wandelt Nährstoffe aktuell sehr effizient in Biomasse um.',
+          },
+          pestPressure: {
+            low: 'Der Hintergrund-Schädlingsdruck ist im aktuellen Profil niedrig.',
+            elevated: 'Der Schädlingsdruck ist erhöht und kann Stressketten verstärken.',
+            high: 'Der Schädlingsdruck ist hoch genug, um schwache Umweltläufe zu dominieren.',
+          },
+        },
       },
   vitals: {
       moisture: 'Feuchtigkeit',

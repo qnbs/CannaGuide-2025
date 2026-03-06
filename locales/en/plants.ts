@@ -168,7 +168,7 @@ export const plantsView = {
       simulationDebug: {
         title: 'Simulation Diagnostics',
         profile: 'Profile Curve',
-        profileHint: 'Environment {{environment}}x, nutrient {{nutrient}}x, pest {{pest}}x.',
+        profileHint: 'Environment {{environment}}x, nutrient {{nutrient}}x, pest {{pest}}x, post-harvest {{postHarvest}}x.',
         vpd: 'Canopy VPD',
         vpdHint: 'Current target band {{min}}-{{max}} kPa.',
         lightCapture: 'Light Capture',
@@ -188,11 +188,47 @@ export const plantsView = {
         pestPressureCurve: 'Pest Pressure Curve',
         dominantFactors: 'Dominant Factors',
         postHarvest: 'Post-Harvest Drivers',
+        postHarvestStage: 'Current Phase',
+        postHarvestStageHint: 'These driver values only make sense relative to the active post-harvest phase.',
         postHarvestJarHint: 'High values slow curing and can trap moisture pockets.',
         postHarvestChlHint: 'Falling chlorophyll usually improves smoothness and finish quality.',
         postHarvestTerpeneHint: 'Retention drops fastest under hot, dry or unstable handling.',
         postHarvestMoldHint: 'This rises when humidity stays elevated without enough exchange.',
         postHarvestBurpHint: 'Current burp debt: {{days}} day(s).',
+        dominantFactorLabels: {
+          vpd: 'VPD',
+          lightCapture: 'Canopy Light Capture',
+          nutrientThroughput: 'Nutrient Throughput',
+          pestPressure: 'Pest Pressure Curve',
+        },
+        dominantFactorReasons: {
+          vpd: 'Target {{min}}-{{max}} kPa.',
+          lightCapture: 'k={{k}} with LAI {{lai}}.',
+          nutrientThroughput: 'Sensitivity curve {{sensitivity}}x.',
+          pestPressure: 'Profile pressure {{profile}}x.',
+        },
+        assessments: {
+          environmentalInstability: {
+            stable: 'Very stable environment model with little daily drift.',
+            moderate: 'Noticeable environmental drift is active but still manageable.',
+            volatile: 'High daily drift pressure. Small setup changes can swing the model sharply.',
+          },
+          nutrientAvailability: {
+            constrained: 'Growth is nutrient-constrained in the current model state.',
+            adequate: 'Nutrient throughput is in a workable range for steady growth.',
+            abundant: 'Nutrient throughput is high enough to support aggressive growth response.',
+          },
+          nutrientConversion: {
+            lossy: 'A larger share of available nutrients is lost before becoming biomass.',
+            balanced: 'Conversion is balanced between realism and steady biomass response.',
+            efficient: 'The model is converting nutrients to biomass very efficiently.',
+          },
+          pestPressure: {
+            low: 'Background pest pressure is low in the current settings profile.',
+            elevated: 'Pest pressure is elevated and can amplify stress cascades.',
+            high: 'Pest pressure is high enough to dominate weak-environment runs.',
+          },
+        },
       },
   vitals: {
       moisture: 'Moisture',

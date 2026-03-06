@@ -88,10 +88,10 @@ export interface SimulationDiagnostics {
         accumulatedSubdayHours: number;
     };
     dominantFactors: Array<{
-        label: string;
+        id: 'vpd' | 'lightCapture' | 'nutrientThroughput' | 'pestPressure';
         value: string;
         tone: 'good' | 'warn' | 'critical';
-        reason: string;
+        context: Record<string, string | number>;
     }>;
     postHarvest?: {
         stage: PlantStage;
@@ -426,6 +426,14 @@ class PlantSimulationService {
             return { updatedPlant: p, newJournalEntries };
         }
 
+        const actionAllowed =
+            (action === 'dry' && (p.stage === PlantStage.Harvest || p.stage === PlantStage.Drying)) ||
+            ((action === 'burp' || action === 'cure') && p.stage === PlantStage.Curing);
+
+        if (!actionAllowed) {
+            return { updatedPlant: p, newJournalEntries };
+        }
+
         const profilePrecision = this._getProfileCurve(simulationSettings).postHarvestPrecision;
         const roomTemp = p.environment.internalTemperature;
         const roomHumidity = p.environment.internalHumidity;
@@ -463,7 +471,7 @@ class PlantSimulationService {
             });
         }
 
-        if (action === 'burp' && p.stage === PlantStage.Curing) {
+        if (action === 'burp') {
             harvestData.lastBurpDay = harvestData.currentCureDay;
             harvestData.jarHumidity = this._clamp(harvestData.jarHumidity - 2.6, 56, 68);
             harvestData.moldRiskPercent = this._clamp(harvestData.moldRiskPercent - 6.5 * profilePrecision, 0, 100);
@@ -477,7 +485,7 @@ class PlantSimulationService {
             });
         }
 
-        if (action === 'cure' && p.stage === PlantStage.Curing) {
+        if (action === 'cure') {
             harvestData.currentCureDay += 1;
             const burpDebt = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1);
             const humidityDrift = (roomHumidity - 60) * 0.08 + burpDebt * 0.45;
@@ -516,28 +524,38 @@ class PlantSimulationService {
         const profileCurve = this._getProfileCurve(simulationSettings);
         const dominantFactors: SimulationDiagnostics['dominantFactors'] = [
             {
-                label: 'VPD',
+                id: 'vpd',
                 value: `${p.environment.vpd.toFixed(2)} kPa`,
                 tone: p.environment.vpd < ideal.vpd.min || p.environment.vpd > ideal.vpd.max ? 'critical' : 'good',
-                reason: `Target ${ideal.vpd.min.toFixed(1)}-${ideal.vpd.max.toFixed(1)} kPa`,
+                context: {
+                    min: ideal.vpd.min.toFixed(1),
+                    max: ideal.vpd.max.toFixed(1),
+                },
             },
             {
-                label: 'Canopy light capture',
+                id: 'lightCapture',
                 value: `${(lightAbsorption * 100).toFixed(0)}%`,
                 tone: lightAbsorption < 0.55 ? 'warn' : 'good',
-                reason: `k=${this._getSimulationLightExtinctionCoefficient(simulationSettings).toFixed(2)} with LAI ${p.leafAreaIndex.toFixed(2)}`,
+                context: {
+                    k: this._getSimulationLightExtinctionCoefficient(simulationSettings).toFixed(2),
+                    lai: p.leafAreaIndex.toFixed(2),
+                },
             },
             {
-                label: 'Nutrient throughput',
+                id: 'nutrientThroughput',
                 value: nutrientAvailability.toFixed(2),
                 tone: nutrientAvailability < 5 ? 'warn' : 'good',
-                reason: `Sensitivity ${this._getNutrientSensitivityCurve(simulationSettings).toFixed(2)}x`,
+                context: {
+                    sensitivity: this._getNutrientSensitivityCurve(simulationSettings).toFixed(2),
+                },
             },
             {
-                label: 'Pest pressure curve',
+                id: 'pestPressure',
                 value: `${this._getPestPressureMultiplier(simulationSettings).toFixed(2)}x`,
                 tone: this._getPestPressureMultiplier(simulationSettings) > 1.8 ? 'critical' : 'warn',
-                reason: `Profile ${profileCurve.pestPressure.toFixed(2)}x`,
+                context: {
+                    profile: profileCurve.pestPressure.toFixed(2),
+                },
             },
         ];
 

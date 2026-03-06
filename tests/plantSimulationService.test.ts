@@ -82,6 +82,11 @@ describe('plantSimulationService', () => {
             expect(plant.phenotypeModifiers).toEqual(testStrain.geneticModifiers)
         })
 
+        it('initializes the persistent simulation clock', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            expect(plant.simulationClock.accumulatedDayMs).toBe(0)
+        })
+
         it('calculates initial vpd from temperature and humidity', () => {
             const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
             // VPD must be a positive number for default 24°C / 65% RH
@@ -263,6 +268,21 @@ describe('plantSimulationService', () => {
             plant.equipment.light.lightHours = 12 // flip to 12/12
             const after = simulate(plant, 2)
             expect(after.stage).toBe(PlantStage.Flowering)
+        })
+    })
+
+    describe('sub-day accumulation', () => {
+        it('preserves fractional elapsed time across realtime catch-up runs', () => {
+            const plant = plantSimulationService.createPlant(testStrain, testSetup, 'Testy')
+            const halfDayMs = daysMs(0.5)
+
+            const first = plantSimulationService.calculateStateForTimeDelta(plant, halfDayMs).updatedPlant
+            expect(first.age).toBe(0)
+            expect(first.simulationClock.accumulatedDayMs).toBe(halfDayMs)
+
+            const second = plantSimulationService.calculateStateForTimeDelta(first, halfDayMs).updatedPlant
+            expect(second.age).toBe(1)
+            expect(second.simulationClock.accumulatedDayMs).toBe(0)
         })
     })
 

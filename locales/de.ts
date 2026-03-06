@@ -8,6 +8,7 @@ import { plantsView } from './de/plants';
 import { settingsView } from './de/settings';
 import { strainsView } from './de/strains';
 import { strainsData } from './de/strainsData';
+import { legal } from './de/legal';
 
 
 export const de = {
@@ -28,4 +29,5 @@ export const de = {
   strainsView,
   strainsData,
   tipOfTheDay,
+  legal,
 };

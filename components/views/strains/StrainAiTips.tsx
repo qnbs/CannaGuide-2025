@@ -236,6 +236,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         <StructuredTipDisplay tips={tip} onSave={handleSaveTip} isSaved={isTipSaved} strainId={strain.id} />
                     )
                 )}
+                <p className="text-xs text-slate-500 italic mt-3">{t('ai.disclaimer')}</p>
             </div>
         </Card>
     );

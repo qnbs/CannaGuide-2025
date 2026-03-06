@@ -279,6 +279,12 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
         setConsentGiven(true)
     }, [])
 
+    const handleRevokeConsent = useCallback(() => {
+        localStorage.removeItem(IMAGE_CONSENT_KEY)
+        setConsentGiven(false)
+        dispatch(addNotification({ message: t('legal.imageConsent.revoked'), type: 'info' }))
+    }, [dispatch, t])
+
     const errorMessage =
         error && typeof error === 'object' && 'message' in error
             ? (error as { message: string }).message
@@ -308,18 +314,26 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     <div className="flex items-start gap-3">
                                         <PhosphorIcons.WarningCircle weight="fill" className="w-5 h-5 text-amber-400 mt-0.5 shrink-0" />
                                         <p className="text-sm text-amber-200">
-                                            {t('plantsView.aiDiagnostics.consent.banner')}
+                                            {t('legal.imageConsent.banner')}
                                         </p>
                                     </div>
                                     <Button onClick={handleAcceptConsent} variant="secondary" className="w-full min-h-11">
                                         <PhosphorIcons.CheckCircle className="w-5 h-5 mr-2" />
-                                        {t('plantsView.aiDiagnostics.consent.accept')}
+                                        {t('legal.imageConsent.accept')}
                                     </Button>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 text-xs text-slate-500">
-                                    <PhosphorIcons.CheckCircle className="w-4 h-4 text-primary-500 shrink-0" />
-                                    {t('plantsView.aiDiagnostics.consent.accepted')}
+                                <div className="flex items-center justify-between gap-2 text-xs text-slate-500">
+                                    <span className="flex items-center gap-1">
+                                        <PhosphorIcons.CheckCircle className="w-4 h-4 text-primary-500 shrink-0" />
+                                        {t('legal.imageConsent.accepted')}
+                                    </span>
+                                    <button
+                                        onClick={handleRevokeConsent}
+                                        className="text-xs text-red-400 hover:text-red-300 underline transition-colors focus:outline-none focus:ring-2 focus:ring-red-400 rounded"
+                                    >
+                                        {t('legal.imageConsent.revoke')}
+                                    </button>
                                 </div>
                             )}
                             <div
@@ -427,6 +441,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     image={image}
                                 />
                             )}
+                            <p className="text-xs text-slate-500 italic mt-4 text-center">{t('ai.disclaimer')}</p>
+                            <p className="text-xs text-red-400/80 italic mt-1 text-center">{t('legal.medicalDisclaimer')}</p>
                         </div>
                     )}
                 </div>

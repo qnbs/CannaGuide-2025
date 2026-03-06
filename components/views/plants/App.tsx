@@ -31,6 +31,10 @@ import { setSetting } from '@/stores/slices/settingsSlice'
 import { ToastContainer } from '@/components/common/Toast'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
+import { AgeGateModal, useAgeGate } from '@/components/common/AgeGateModal'
+import { ConsentBanner, useGdprConsent } from '@/components/common/ConsentBanner'
+import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
+import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
@@ -83,6 +87,12 @@ export const App: React.FC = () => {
     const { t } = useTranslation()
     const isOffline = useOnlineStatus()
     const { deferredPrompt, isInstalled, handleInstallClick } = usePwaInstall()
+
+    // Legal gates
+    const { isVerified: isAgeVerified, verify: verifyAge } = useAgeGate()
+    const { hasConsent: hasGdprConsent, accept: acceptGdprConsent } = useGdprConsent()
+    const { showBanner: showGeoLegal, dismiss: dismissGeoLegal } = useGeoLegalBanner()
+    const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false)
 
     const activeView = useAppSelector(selectActiveView)
     const isCommandPaletteOpen = useAppSelector(selectIsCommandPaletteOpen)
@@ -167,6 +177,24 @@ export const App: React.FC = () => {
         return <LoadingGate />
     }
 
+    // Legal gate: Age verification (KCanG §1 – 18+)
+    if (!isAgeVerified) {
+        return <AgeGateModal onVerified={verifyAge} />
+    }
+
+    // Legal gate: GDPR/DSGVO consent for local storage
+    if (!hasGdprConsent) {
+        return (
+            <>
+                <ConsentBanner
+                    onAccept={acceptGdprConsent}
+                    onShowPrivacyPolicy={() => setShowPrivacyPolicy(true)}
+                />
+                <PrivacyPolicyModal isOpen={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
+            </>
+        )
+    }
+
     if (!settings.onboardingCompleted && onboardingStep < 8) {
         return <OnboardingModal onClose={() => dispatch(setSetting({ path: 'onboardingCompleted', value: true }))} />
     }
@@ -233,6 +261,8 @@ export const App: React.FC = () => {
                 <AiDiagnosticsModalContainer />
                 <SaveSetupModalContainer />
             </Suspense>
+            {showGeoLegal && <GeoLegalBanner onDismiss={dismissGeoLegal} />}
+            <PrivacyPolicyModal isOpen={showPrivacyPolicy} onClose={() => setShowPrivacyPolicy(false)} />
         </div>
     )
 }

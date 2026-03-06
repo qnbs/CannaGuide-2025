@@ -8,6 +8,7 @@ import { plantsView } from './plants'
 import { settingsView } from './settings'
 import { strainsView } from './strains'
 import { strainsData } from './strainsData'
+import { legal } from './legal'
 
 export const de = {
     common,
@@ -27,4 +28,5 @@ export const de = {
     strainsView,
     strainsData,
     tipOfTheDay,
+    legal,
 }

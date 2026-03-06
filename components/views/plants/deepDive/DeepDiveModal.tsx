@@ -87,6 +87,7 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
                             <p className="text-xs text-slate-500 mt-2">{t(relevantScenario.descriptionKey)}</p>
                         </div>
                     )}
+                    <p className="text-xs text-slate-500 italic mt-4 text-center">{t('ai.disclaimer')}</p>
                 </div>
             )}
         </Modal>

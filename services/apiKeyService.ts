@@ -1,55 +1,10 @@
 import { GEMINI_API_KEY_STORAGE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
+import { encrypt, decrypt, isEncryptedPayload } from '@/services/cryptoService'
 
 const GEMINI_API_KEY_PATTERN = /^AIza[0-9A-Za-z_-]{20,}$/
-const GEMINI_API_KEY_CRYPTO_KEY_STORAGE = 'cg.gemini_api_key.crypto'
 
 const normalizeApiKey = (apiKey: string): string => apiKey.trim()
-
-const bytesToBase64 = (bytes: Uint8Array): string =>
-    btoa(String.fromCharCode(...bytes))
-
-const base64ToBytes = (value: string): Uint8Array => {
-    const binary = atob(value)
-    return Uint8Array.from(binary, (char) => char.charCodeAt(0))
-}
-
-const getOrCreateEncryptionKey = async (): Promise<CryptoKey> => {
-    const storedRaw = localStorage.getItem(GEMINI_API_KEY_CRYPTO_KEY_STORAGE)
-
-    if (storedRaw) {
-        const raw = base64ToBytes(storedRaw)
-        return crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
-    }
-
-    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt'])
-    const exported = await crypto.subtle.exportKey('raw', key)
-    localStorage.setItem(GEMINI_API_KEY_CRYPTO_KEY_STORAGE, bytesToBase64(new Uint8Array(exported)))
-    return key
-}
-
-const encryptApiKey = async (apiKey: string): Promise<string> => {
-    const iv = crypto.getRandomValues(new Uint8Array(12))
-    const key = await getOrCreateEncryptionKey()
-    const encoded = new TextEncoder().encode(apiKey)
-
-    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded)
-    return JSON.stringify({ v: 1, iv: bytesToBase64(iv), data: bytesToBase64(new Uint8Array(encrypted)) })
-}
-
-const decryptApiKey = async (payload: string): Promise<string> => {
-    const parsed = JSON.parse(payload) as { v: number; iv: string; data: string }
-    if (!parsed || parsed.v !== 1 || !parsed.iv || !parsed.data) {
-        return payload
-    }
-
-    const key = await getOrCreateEncryptionKey()
-    const iv = base64ToBytes(parsed.iv)
-    const encrypted = base64ToBytes(parsed.data)
-
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv.buffer as ArrayBuffer }, key, encrypted.buffer as ArrayBuffer)
-    return new TextDecoder().decode(decrypted)
-}
 
 export const apiKeyService = {
     isValidApiKeyFormat(apiKey: string): boolean {
@@ -64,9 +19,9 @@ export const apiKeyService = {
         }
 
         let resolved = key
-        if (key.trim().startsWith('{')) {
+        if (isEncryptedPayload(key)) {
             try {
-                resolved = await decryptApiKey(key)
+                resolved = await decrypt(key)
             } catch {
                 return null
             }
@@ -93,7 +48,7 @@ export const apiKeyService = {
             throw new Error('settingsView.security.invalid')
         }
 
-        const encryptedPayload = await encryptApiKey(normalized)
+        const encryptedPayload = await encrypt(normalized)
         await indexedDBStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, encryptedPayload)
     },
 

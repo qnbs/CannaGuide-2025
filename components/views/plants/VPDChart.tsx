@@ -12,10 +12,11 @@ interface VPDChartProps {
   plant: Plant
 }
 
-export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
+export const VPDChart: React.FC<VPDChartProps> = React.memo(({ plant }) => {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const [data, setData] = useState<SimulationPoint[]>([])
+  const [error, setError] = useState(false)
   const profileFromStore = useAppSelector((state) => state.simulation.vpdProfiles?.[plant.id])
 
   const input = useMemo(() => vpdService.createInputFromPlant(plant), [plant])
@@ -40,7 +41,10 @@ export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
           setData(points)
         }
       })
-      .catch(console.error)
+      .catch((err) => {
+        console.error('[VPDChart] runDailyVPD error:', err)
+        if (mounted) setError(true)
+      })
 
     return () => {
       mounted = false
@@ -49,6 +53,11 @@ export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
 
   const latest = data[data.length - 1]
 
+  if (error) {
+    return <div className="text-red-400 text-sm p-4 text-center">{t('common.error')}</div>
+  }
+
+  try {
   return (
     <div className="space-y-3">
       <div className="h-64 w-full rounded-lg bg-slate-900/60 p-2">
@@ -86,4 +95,8 @@ export const VPDChart: React.FC<VPDChartProps> = ({ plant }) => {
       )}
     </div>
   )
-}
+  } catch {
+    return <div className="text-red-400 text-sm p-4 text-center">{t('common.error')}</div>
+  }
+})
+VPDChart.displayName = 'VPDChart'

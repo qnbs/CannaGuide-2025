@@ -467,7 +467,42 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             setLocalError(t('strainsView.genealogyView.errorInitZoom'));
         }
 
+        // ── ResizeObserver: re-center bei Container-Resize (nur ohne gespeicherten Zoom)
+        let resizeObserver: ResizeObserver | undefined;
+        try {
+            let resizeRafId = 0;
+            resizeObserver = new ResizeObserver(() => {
+                cancelAnimationFrame(resizeRafId);
+                resizeRafId = requestAnimationFrame(() => {
+                    try {
+                        if (!svgEl || !zoomRef.current || zoomTransformRef.current !== null) return;
+                        const { width, height } = svgEl.getBoundingClientRect();
+                        if (width === 0 || height === 0) return;
+                        const [ix, iy] =
+                            layoutOrientation === 'horizontal'
+                                ? [width * 0.1, height / 2]
+                                : [width / 2, height * 0.1];
+                        d3.select(svgEl)
+                            .transition()
+                            .duration(300)
+                            .call(
+                                zoomRef.current!.transform,
+                                d3.zoomIdentity.translate(ix, iy),
+                            );
+                    } catch {
+                        // ResizeObserver-Callback-Fehler ignorieren
+                    }
+                });
+            });
+            resizeObserver.observe(svgEl);
+        } catch {
+            // ResizeObserver nicht verfügbar
+        }
+
         return () => {
+            try {
+                resizeObserver?.disconnect();
+            } catch { /* ResizeObserver cleanup */ }
             try {
                 if (svgEl) d3.select(svgEl).on('.zoom', null);
             } catch {
@@ -498,10 +533,20 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     }, [layoutOrientation]);
 
     // ── Sichere Render-Helfer ────────────────────────────────────────
+    const MAX_RENDERED_NODES = 500;
+    const isTruncated = layoutNodes.length > MAX_RENDERED_NODES;
+    const visibleNodes = isTruncated ? layoutNodes.slice(0, MAX_RENDERED_NODES) : layoutNodes;
+    const visibleNodeIds = isTruncated ? new Set(visibleNodes.map(n => n?.data?.id)) : null;
+
     const renderLinks = (): React.ReactNode => {
         try {
             if (!Array.isArray(layoutLinks) || layoutLinks.length === 0) return null;
-            return layoutLinks.map((link, i) => {
+            return layoutLinks
+                .filter((link) => {
+                    if (!visibleNodeIds) return true;
+                    return visibleNodeIds.has(link?.source?.data?.id) && visibleNodeIds.has(link?.target?.data?.id);
+                })
+                .map((link, i) => {
                 try {
                     return (
                         <GenealogyLink
@@ -522,8 +567,8 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
 
     const renderNodes = (): React.ReactNode => {
         try {
-            if (!Array.isArray(layoutNodes) || layoutNodes.length === 0) return null;
-            return layoutNodes.map((node, idx) => {
+            if (!Array.isArray(visibleNodes) || visibleNodes.length === 0) return null;
+            return visibleNodes.map((node, idx) => {
                 try {
                     if (!node?.data) return null;
                     const isHorizontal = layoutOrientation === 'horizontal';
@@ -765,7 +810,16 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     className="grid grid-cols-1 lg:grid-cols-4 gap-4"
                 >
                     <div className="lg:col-span-3">
-                        <Card className="!p-0 h-[60vh] overflow-hidden bg-slate-900/50">
+                        <Card className="!p-0 h-[60vh] overflow-hidden bg-slate-900/50 relative">
+                            {isTruncated && (
+                                <div className="absolute top-2 left-2 z-10 bg-amber-900/80 text-amber-200 text-xs px-2 py-1 rounded">
+                                    {t('strainsView.genealogyView.treeTruncated', {
+                                        shown: MAX_RENDERED_NODES,
+                                        total: layoutNodes.length,
+                                        defaultValue: `Showing {{shown}} of {{total}} nodes`,
+                                    })}
+                                </div>
+                            )}
                             <svg ref={svgRef} className="w-full h-full cursor-move">
                                 <g className="genealogy-content">
                                     {renderLinks()}

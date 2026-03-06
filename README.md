@@ -29,7 +29,6 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 ## Table of Contents
 
 - [⭐ Project Philosophy](#-project-philosophy)
-- [�️ Screenshots](#️-screenshots)
 - [�🚀 Key Features](#-key-features)
   - [1. The Grow Room (`Plants` View)](#1-the-grow-room-plants-view)
   - [2. The Strain Encyclopedia (`Strains` View)](#2-the-strain-encyclopedia-strains-view)
@@ -52,16 +51,6 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 - [🗺️ Roadmap](#️-roadmap)
 - [⚠️ Disclaimer](#️-disclaimer)
 - [Deutsche Version](#-cannaguide-2025-deutsch)
-
----
-
-## 🖼️ Screenshots
-
-| Plants Overview | AI Mentor Chat |
-|:---:|:---:|
-| ![Plants Overview](public/screenshots/plants-overview.svg) | ![Mentor Chat](public/screenshots/mentor-chat.svg) |
-
-> More screenshots coming soon — contributions welcome!
 
 ---
 
@@ -502,7 +491,6 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 ## Inhaltsverzeichnis
 
 - [⭐ Projektphilosophie](#-projektphilosophie-1)
-- [�️ Screenshots](#️-screenshots-1)
 - [🚀 Hauptfunktionen](#-hauptfunktionen)
   - [1. Der Grow Room (`Pflanzen`-Ansicht)](#1-der-grow-room-pflanzen-ansicht)
   - [2. Die Sorten-Enzyklopädie (`Sorten`-Ansicht)](#2-die-sorten-enzyklopädie-sorten-ansicht)
@@ -540,16 +528,6 @@ CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt
 > **KI als Co-Pilot**: Wir nutzen KI nicht als Gimmick, sondern als leistungsstarkes Werkzeug, um **umsetzbare, kontextbezogene Einblicke** zu liefern. Eine **RAG-gestützte Journal-Suche** stellt sicher, dass die KI Ratschläge mit Ihrer tatsächlichen Anbauhistorie kontextualisiert.
 
 > **Resilienz & Wiederherstellung**: Korruptionssichere Architektur mit **Safe-Recovery**-Mechanismen, die beschädigte Zustände automatisch erkennen und reparieren, plus **Archiv-Begrenzung** (100 Mentor- + 50 Berater-Antworten pro Pflanze), um unkontrolliertes IndexedDB-Wachstum zu verhindern.
-
----
-
-## �️ Screenshots
-
-| Pflanzen-Übersicht | KI-Mentor-Chat |
-|:---:|:---:|
-| ![Pflanzen-Übersicht](public/screenshots/plants-overview.svg) | ![Mentor-Chat](public/screenshots/mentor-chat.svg) |
-
-> Weitere Screenshots folgen — Beiträge willkommen!
 
 ---
 

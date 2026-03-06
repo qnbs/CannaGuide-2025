@@ -6,6 +6,7 @@ interface DrawerProps {
     onClose: () => void
     children: React.ReactNode
     title?: string
+    description?: string
     footer?: React.ReactNode
     size?: Exclude<DialogWrapperSize, '4xl'>
 }
@@ -15,6 +16,7 @@ export const Drawer: React.FC<DrawerProps> = ({
     onClose,
     children,
     title,
+    description,
     footer,
     size = 'md',
 }) => {
@@ -23,6 +25,7 @@ export const Drawer: React.FC<DrawerProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             title={title}
+            description={description}
             footer={footer}
             size={size}
             variant="drawer"

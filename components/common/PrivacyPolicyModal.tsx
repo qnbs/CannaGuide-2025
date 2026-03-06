@@ -23,11 +23,15 @@ export const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ isOpen, 
     const { t } = useTranslation()
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={t('legal.privacyPolicy.title')} size="2xl">
-            <div className="space-y-6 p-1 sm:p-2 max-h-[70dvh] overflow-y-auto">
-                <p className="text-xs text-slate-500">
-                    {t('legal.privacyPolicy.lastUpdated', { date: '2025-01-01' })}
-                </p>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={t('legal.privacyPolicy.title')}
+            description={t('legal.privacyPolicy.lastUpdated', { date: '2025-01-01' })}
+            size="2xl"
+            bodyClassName="pb-4"
+        >
+            <div className="space-y-6 p-1 sm:p-2">
                 {SECTIONS.map((sectionKey) => (
                     <section key={sectionKey} className="space-y-2">
                         <h3 className="text-base font-semibold text-slate-100 flex items-center gap-2">

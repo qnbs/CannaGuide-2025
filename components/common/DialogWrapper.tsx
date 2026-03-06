@@ -11,9 +11,11 @@ interface DialogWrapperProps {
   onClose: () => void
   children: React.ReactNode
   title?: string
+  description?: string
   footer?: React.ReactNode
   size?: DialogWrapperSize
   containerClassName?: string
+  bodyClassName?: string
   showCloseButton?: boolean
   variant?: 'modal' | 'drawer'
   enableSwipeToClose?: boolean
@@ -32,9 +34,11 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
   onClose,
   children,
   title,
+  description,
   footer,
   size = 'md',
   containerClassName = '',
+  bodyClassName = '',
   showCloseButton = true,
   variant = 'modal',
   enableSwipeToClose = false,
@@ -124,6 +128,11 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
                     {title}
                   </DialogPrimitive.Title>
                 )}
+                {description && (
+                  <DialogPrimitive.Description className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
+                    {description}
+                  </DialogPrimitive.Description>
+                )}
               </div>
 
               {showCloseButton && (
@@ -136,7 +145,7 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
               )}
             </header>
 
-            <div ref={scrollableContentRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-2">
+            <div ref={scrollableContentRef} className={cn('min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-2', bodyClassName)}>
               {children}
             </div>
 

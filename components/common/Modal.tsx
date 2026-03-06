@@ -6,9 +6,11 @@ interface ModalProps {
     onClose: () => void
     children: React.ReactNode
     title?: string
+    description?: string
     footer?: React.ReactNode
     size?: DialogWrapperSize
     containerClassName?: string
+    bodyClassName?: string
     showCloseButton?: boolean
 }
 
@@ -17,9 +19,11 @@ export const Modal: React.FC<ModalProps> = ({
     onClose,
     children,
     title,
+    description,
     footer,
     size = 'md',
     containerClassName = '',
+    bodyClassName = '',
     showCloseButton = true,
 }) => {
     return (
@@ -27,9 +31,11 @@ export const Modal: React.FC<ModalProps> = ({
             isOpen={isOpen}
             onClose={onClose}
             title={title}
+            description={description}
             footer={footer}
             size={size}
             containerClassName={containerClassName}
+            bodyClassName={bodyClassName}
             showCloseButton={showCloseButton}
             variant="modal"
         >

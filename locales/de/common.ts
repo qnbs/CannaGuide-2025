@@ -189,6 +189,10 @@ export const common = {
     on: 'An',
     exportPdf: 'PDF exportieren',
     exporting: 'Exportiere...',
+    exportFormats: {
+        pdfHint: 'Portabler Export zum Teilen und Archivieren.',
+        txtHint: 'Schlanke Klartextausgabe für Copy, Diff und Tooling.',
+    },
     proTip: 'Profi-Tipp',
     resetState: 'State zurücksetzen',
     quality: 'Qualität',

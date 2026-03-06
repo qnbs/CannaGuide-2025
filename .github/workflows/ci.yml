@@ -45,6 +45,14 @@ jobs:
       - name: Coverage
         run: npm run test:coverage
 
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
       - name: Build
         run: npm run build
 
@@ -54,7 +62,18 @@ jobs:
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
 
+      - name: E2E tests (local)
+        run: npm run test:e2e
+
       - name: Deploy smoke (Playwright)
         env:
           DEPLOY_BASE_URL: https://qnbs.github.io/CannaGuide-2025/
         run: npm run test:e2e:deploy
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: test-results/
+          retention-days: 7

@@ -29,6 +29,7 @@ const DashboardSummaryComponent: React.FC = () => {
     const lang = useAppSelector(selectLanguage);
     const settings = useAppSelector(selectSettings);
     const leafTempOffset = settings.simulation.leafTemperatureOffset;
+    const altitudeM = settings.simulation.altitudeM ?? 0;
     const hasActiveGrows = activePlantsCount > 0;
     
     const [getGardenStatus, { data: aiStatus, isLoading: isAiLoading, error: aiError, reset: resetAiStatus }] = useGetGardenStatusSummaryMutation();
@@ -74,7 +75,7 @@ const DashboardSummaryComponent: React.FC = () => {
                 <Stat icon={<PhosphorIcons.Drop className="text-blue-400" />} value={`${avgHumidity.toFixed(1)}%`} label={t('plantsView.gardenVitals.avgHumidity')} />
             </div>
             <div className="text-center min-w-0 bg-slate-800/50 p-2 rounded-lg ring-1 ring-inset ring-white/20 flex flex-col justify-center items-center mb-4">
-                <VPDGauge temperature={avgTemp} humidity={avgHumidity} leafTempOffset={leafTempOffset} />
+                <VPDGauge temperature={avgTemp} humidity={avgHumidity} leafTempOffset={leafTempOffset} altitudeM={altitudeM} />
             </div>
 
             <div className="mb-4">

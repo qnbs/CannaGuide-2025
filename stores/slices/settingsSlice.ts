@@ -69,6 +69,7 @@ export const defaultSettings: AppSettings = {
         lightExtinctionCoefficient: 0.7,
         nutrientConversionEfficiency: 0.5,
         stomataSensitivity: 1.0,
+        altitudeM: 0,
     },
 
     notifications: {

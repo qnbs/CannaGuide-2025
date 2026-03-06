@@ -42,6 +42,7 @@ const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ 
 const StrainTipsView = lazy(() => import('./StrainTipsView'));
 const GenealogyView = lazy(() => import('./GenealogyView').then(m => ({ default: m.GenealogyView })));
 const ExportsManagerView = lazy(() => import('./ExportsManagerView'));
+const BreedingLabView = lazy(() => import('./BreedingLab').then(m => ({ default: m.BreedingLab })));
 
 
 export const StrainsView: React.FC = () => {
@@ -83,6 +84,7 @@ export const StrainsView: React.FC = () => {
         [StrainViewTab.MyStrains]: <PhosphorIcons.Star className="w-16 h-16 mx-auto text-amber-400" />,
         [StrainViewTab.Favorites]: <PhosphorIcons.Heart weight="fill" className="w-16 h-16 mx-auto text-red-400" />,
         [StrainViewTab.Genealogy]: <PhosphorIcons.TreeStructure className="w-16 h-16 mx-auto text-purple-400" />,
+        [StrainViewTab.BreedingLab]: <PhosphorIcons.Flask className="w-16 h-16 mx-auto text-teal-400" />,
         [StrainViewTab.Exports]: <PhosphorIcons.FileText className="w-16 h-16 mx-auto text-blue-400" />,
         [StrainViewTab.Tips]: <PhosphorIcons.LightbulbFilament className="w-16 h-16 mx-auto text-yellow-400" />,
     }), []);
@@ -92,6 +94,7 @@ export const StrainsView: React.FC = () => {
         [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
         [StrainViewTab.Favorites]: t('strainsView.tabs.favorites'),
         [StrainViewTab.Genealogy]: t('strainsView.tabs.genealogy'),
+        [StrainViewTab.BreedingLab]: t('strainsView.tabs.breedingLab', { defaultValue: 'Breeding Lab' }),
         [StrainViewTab.Exports]: t('strainsView.tabs.exports', { count: savedExportsCount }),
         [StrainViewTab.Tips]: t('strainsView.tabs.tips', { count: savedTips.length }),
     }), [t, savedTips.length, savedExportsCount]);
@@ -344,6 +347,12 @@ export const StrainsView: React.FC = () => {
                 return (
                     <Suspense fallback={<SkeletonLoader count={3} />}>
                         <GenealogyView allStrains={allStrains} onNodeClick={handleSelect} />
+                    </Suspense>
+                );
+            case StrainViewTab.BreedingLab:
+                return (
+                    <Suspense fallback={<SkeletonLoader count={3} />}>
+                        <BreedingLabView allStrains={allStrains} />
                     </Suspense>
                 );
             case StrainViewTab.Exports:

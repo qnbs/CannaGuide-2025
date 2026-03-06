@@ -184,3 +184,39 @@ jobs:
           path: test-results/
           retention-days: 7
 
+  # ─────────────────────────────────────────────────────────────────────────
+  # LIGHTHOUSE – audit the live Pages deployment
+  # ─────────────────────────────────────────────────────────────────────────
+  lighthouse:
+    name: 🔆 Lighthouse
+    needs: deploy
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 📦 Install dependencies
+        run: npm ci --prefer-offline
+
+      - name: 🔆 Lighthouse CI (live URL)
+        run: |
+          npx @lhci/cli autorun \
+            --collect.url=https://qnbs.github.io/CannaGuide-2025/ \
+            --collect.numberOfRuns=3 \
+            --upload.target=temporary-public-storage
+
+      - name: 📊 Upload Lighthouse report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-report-${{ github.run_id }}
+          path: .lighthouseci/
+          retention-days: 14
+

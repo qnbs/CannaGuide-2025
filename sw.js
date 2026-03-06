@@ -80,6 +80,9 @@ const offlineFallback = new Response(`
 });
 
 self.addEventListener('install', (event) => {
+  // Auto-activate: skip waiting so updates apply immediately.
+  // The app's controllerchange listener will reload the page.
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Pre-caching App Shell');

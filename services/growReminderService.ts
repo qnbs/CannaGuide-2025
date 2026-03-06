@@ -128,7 +128,7 @@ class GrowReminderService {
                 })
             }
 
-            if (stageVitals && (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)) {
+            if (stageVitals?.ph && (plant.medium.ph < stageVitals.ph.min || plant.medium.ph > stageVitals.ph.max)) {
                 reminders.push({
                     id: `${plant.id}-ph`,
                     plantId: plant.id,

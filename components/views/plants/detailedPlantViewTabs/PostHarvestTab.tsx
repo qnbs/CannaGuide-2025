@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plant, PlantStage } from '@/types';
+import { JournalEntryType, Plant, PlantStage } from '@/types';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -13,6 +13,8 @@ interface PostHarvestTabProps {
     plant: Plant;
 }
 
+type WarningTone = 'good' | 'warn' | 'critical'
+
 const ProgressBar: React.FC<{ label: string; progress: number, color?: string }> = ({ label, progress, color = 'bg-primary-500' }) => (
     <div>
         <div className="flex justify-between mb-1">
@@ -24,6 +26,22 @@ const ProgressBar: React.FC<{ label: string; progress: number, color?: string }>
         </div>
     </div>
 );
+
+const toneClasses: Record<WarningTone, string> = {
+    good: 'border-emerald-400/30 bg-emerald-500/10 text-emerald-200',
+    warn: 'border-amber-400/30 bg-amber-500/10 text-amber-200',
+    critical: 'border-red-400/30 bg-red-500/10 text-red-200',
+}
+
+const WarningBadge: React.FC<{ title: string; value: string; description: string; tone: WarningTone }> = ({ title, value, description, tone }) => (
+    <div className={`rounded-lg border p-4 ${toneClasses[tone]}`}>
+        <div className="flex items-center justify-between gap-3">
+            <p className="text-sm font-semibold">{title}</p>
+            <span className="text-xs font-bold uppercase tracking-[0.2em]">{value}</span>
+        </div>
+        <p className="mt-2 text-xs opacity-90">{description}</p>
+    </div>
+)
 
 const BurpCalendar: React.FC<{ currentDay: number; lastBurpDay: number }> = ({ currentDay, lastBurpDay }) => {
     const { t } = useTranslation();
@@ -66,6 +84,12 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
     const dryingProgress = (harvestData.currentDryDay / PLANT_STAGE_DETAILS[PlantStage.Drying].duration) * 100;
     const curingProgress = (harvestData.currentCureDay / PLANT_STAGE_DETAILS[PlantStage.Curing].duration) * 100;
     const burpDebtDays = Math.max(0, harvestData.currentCureDay - harvestData.lastBurpDay - 1)
+    const postHarvestEvents = plant.journal
+        .filter((entry) => entry.type === JournalEntryType.PostHarvest)
+        .slice()
+        .sort((a, b) => b.createdAt - a.createdAt)
+        .slice(0, 8)
+
     const postHarvestRecommendations = [
         plant.stage === PlantStage.Drying && harvestData.jarHumidity > 64 ? t('plantsView.postHarvest.recommendations.lowerHumidity') : null,
         plant.stage === PlantStage.Drying && harvestData.moldRiskPercent > 28 ? t('plantsView.postHarvest.recommendations.increaseAirflow') : null,
@@ -73,6 +97,37 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
         plant.stage === PlantStage.Curing && Math.abs(harvestData.jarHumidity - 61) > 2 ? t('plantsView.postHarvest.recommendations.stabilizeJarRh') : null,
         harvestData.finalQuality > 85 ? t('plantsView.postHarvest.recommendations.holdSteady') : null,
     ].filter(Boolean) as string[]
+
+    const processWarnings: Array<{ title: string; value: string; description: string; tone: WarningTone }> = [
+        {
+            title: t('plantsView.postHarvest.thresholds.jarHumidity'),
+            value: `${harvestData.jarHumidity.toFixed(1)}%`,
+            description: plant.stage === PlantStage.Curing
+                ? t('plantsView.postHarvest.thresholds.jarHumidityCureHint')
+                : t('plantsView.postHarvest.thresholds.jarHumidityDryHint'),
+            tone: plant.stage === PlantStage.Curing
+                ? (Math.abs(harvestData.jarHumidity - 61) > 4 ? 'critical' : Math.abs(harvestData.jarHumidity - 61) > 2 ? 'warn' : 'good')
+                : (harvestData.jarHumidity > 66 ? 'critical' : harvestData.jarHumidity > 63 ? 'warn' : 'good'),
+        },
+        {
+            title: t('plantsView.postHarvest.thresholds.moldRisk'),
+            value: `${harvestData.moldRiskPercent.toFixed(0)}%`,
+            description: t('plantsView.postHarvest.thresholds.moldRiskHint'),
+            tone: harvestData.moldRiskPercent > 35 ? 'critical' : harvestData.moldRiskPercent > 20 ? 'warn' : 'good',
+        },
+        {
+            title: t('plantsView.postHarvest.thresholds.burpDebt'),
+            value: `${burpDebtDays}`,
+            description: t('plantsView.postHarvest.thresholds.burpDebtHint'),
+            tone: burpDebtDays > 1 ? 'critical' : burpDebtDays > 0 ? 'warn' : 'good',
+        },
+        {
+            title: t('plantsView.postHarvest.thresholds.terpeneRetention'),
+            value: `${harvestData.terpeneRetentionPercent.toFixed(0)}%`,
+            description: t('plantsView.postHarvest.thresholds.terpeneRetentionHint'),
+            tone: harvestData.terpeneRetentionPercent < 65 ? 'critical' : harvestData.terpeneRetentionPercent < 80 ? 'warn' : 'good',
+        },
+    ]
     
     const topTerpenes = Object.entries(harvestData.terpeneProfile || {}).sort(([,a],[,b]) => (b as number) - (a as number)).slice(0, 3);
 
@@ -123,6 +178,21 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
             </Card>
 
             <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.thresholds.title')}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                    {processWarnings.map((warning) => (
+                        <WarningBadge
+                            key={warning.title}
+                            title={warning.title}
+                            value={warning.value}
+                            description={warning.description}
+                            tone={warning.tone}
+                        />
+                    ))}
+                </div>
+            </Card>
+
+            <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.processNotes')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
@@ -150,6 +220,26 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
                         <p className="text-sm text-slate-400">{t('plantsView.postHarvest.recommendations.none')}</p>
                     )}
                 </div>
+            </Card>
+
+            <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.eventTimeline')}</h3>
+                {postHarvestEvents.length > 0 ? (
+                    <div className="space-y-3">
+                        {postHarvestEvents.map((entry) => (
+                            <div key={entry.id} className="rounded-lg bg-slate-800/60 p-4 ring-1 ring-white/10">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <p className="font-semibold text-slate-100">{entry.notes}</p>
+                                    <span className="text-xs uppercase tracking-[0.16em] text-slate-500">
+                                        {new Date(entry.createdAt).toLocaleString()}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-sm text-slate-400">{t('plantsView.postHarvest.noEventsYet')}</p>
+                )}
             </Card>
 
             <Card>

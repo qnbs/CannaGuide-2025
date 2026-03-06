@@ -12,6 +12,13 @@ import {
 } from '@/stores/selectors';
 import { PlantStage } from '@/types';
 
+const HIDDEN_ARCHIVED_STAGES = new Set<PlantStage>([
+    PlantStage.Harvest,
+    PlantStage.Drying,
+    PlantStage.Curing,
+    PlantStage.Finished,
+]);
+
 /**
  * Custom hook to get the list of currently active plants from the simulation state.
  * @returns An array of active Plant objects.
@@ -45,13 +52,6 @@ export const usePlantSlotsData = () => {
     const hasAvailable = useAppSelector(selectHasAvailableSlots);
     const settings = useAppSelector(selectSettings);
 
-    const hiddenArchivedStages = new Set<PlantStage>([
-        PlantStage.Harvest,
-        PlantStage.Drying,
-        PlantStage.Curing,
-        PlantStage.Finished,
-    ]);
-    
     const slotsWithData = useMemo(
         () => slots.map((id) => {
             const plant = id ? plantEntities[id] || null : null;
@@ -59,10 +59,10 @@ export const usePlantSlotsData = () => {
                 return { plant: null, isArchivedHidden: false };
             }
 
-            const isArchivedHidden = !settings.plantsView.showArchived && hiddenArchivedStages.has(plant.stage);
+            const isArchivedHidden = !settings.plantsView.showArchived && HIDDEN_ARCHIVED_STAGES.has(plant.stage);
             return { plant: isArchivedHidden ? null : plant, isArchivedHidden, archivedPlantId: isArchivedHidden ? plant.id : undefined };
         }),
-        [hiddenArchivedStages, plantEntities, settings.plantsView.showArchived, slots],
+        [plantEntities, settings.plantsView.showArchived, slots],
     );
     
     return { slotsWithData, hasAvailable };

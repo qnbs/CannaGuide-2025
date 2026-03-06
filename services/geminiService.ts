@@ -24,6 +24,8 @@ import { getT } from '@/i18n'
 import { apiKeyService } from '@/services/apiKeyService'
 import { growLogRagService } from '@/services/growLogRagService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
+import { aiRateLimiter } from '@/services/aiRateLimiter'
+import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 
 const formatPlantContextForPrompt = (
     plant: Plant,
@@ -87,20 +89,38 @@ const createLocalizedPrompt = (basePrompt: string, lang: Language): string => {
  * Applied to all user-supplied free-text before it is interpolated into prompts.
  */
 const INJECTION_PATTERNS: RegExp[] = [
+    // --- Instruction override ---
     /ignore\s+(previous|all\s+previous|prior)\s+(instructions?|prompts?|context)/gi,
     /disregard\s+(previous|all|the|your|prior)/gi,
     /forget\s+(everything|all|the\s+above|previous)/gi,
-    // LLM special-token sequences
+    /override\s+(all|your|the|previous)\s+(instructions?|rules?|guidelines?)/gi,
+    /new\s+instructions?\s*:/gi,
+    /you\s+are\s+now\s+(a|an|the)\s+/gi,
+    /act\s+as\s+(if|though)\s+you\s+(have\s+)?no\s+(rules|restrictions|guidelines)/gi,
+    /enter\s+(developer|debug|admin|god)\s+mode/gi,
+    // --- LLM special-token sequences ---
     /<\|.*?\|>/g,
     /\[\/?INST\]/gi,
     /<<\/?SYS>>/gi,
-    // Role-injection via raw labels
+    /<\/?(?:system|user|assistant|human|function|tool)>/gi,
+    // --- Role-injection via raw labels ---
     /^(system|assistant|human|user)\s*:/gim,
-    // Markdown-style role labels that some models parse
     /^(###?\s*(system|assistant|human|user))\s*$/gim,
-    // Prompt-leaking attempts
+    // --- Prompt-leaking attempts ---
     /repeat\s+(the|your|all|above|previous)\s+(prompt|instructions?|system)/gi,
     /print\s+(the|your)\s+(system\s+)?prompt/gi,
+    /show\s+(me\s+)?(the|your)\s+(system|hidden|internal)\s+(prompt|instructions?)/gi,
+    /what\s+(are|were)\s+(your|the)\s+(system\s+)?(instructions?|prompt|rules)/gi,
+    // --- Base64 / data-URI injection ---
+    /data:\s*[a-z]+\/[a-z0-9.+-]+\s*;?\s*base64\s*,/gi,
+    // --- Unicode escape / obfuscation ---
+    /\\u[0-9a-f]{4}/gi,
+    /\\x[0-9a-f]{2}/gi,
+    // --- CDATA / XML entity abuse ---
+    /<!\[CDATA\[/gi,
+    /&#x?[0-9a-f]+;/gi,
+    // --- Markdown code-fence prompt escape ---
+    /```\s*(system|prompt|instructions?|config)/gi,
 ]
 
 /**
@@ -196,6 +216,7 @@ const AI_ERROR_KEYS = new Set([
     'ai.error.tips',
     'ai.error.deepDive',
     'ai.error.unknown',
+    'ai.error.rateLimited',
 ])
 
 const GEMINI_SAFETY_SETTINGS = [
@@ -237,6 +258,32 @@ class GeminiService {
             error instanceof Error &&
             (error.message === 'ai.error.missingApiKey' || error.message.includes('NetworkError'))
         )
+    }
+
+    /** Resolve the active provider. Returns 'gemini' or an alternative. */
+    private getActiveProvider(): AiProvider {
+        return aiProviderService.getActiveProviderId()
+    }
+
+    /** Check if we should route through a non-Gemini provider for text/JSON calls. */
+    private isAlternateProvider(): boolean {
+        return this.getActiveProvider() !== 'gemini'
+    }
+
+    /**
+     * Generate text/JSON via the active non-Gemini provider.
+     * Handles rate limiting and cost tracking.
+     */
+    private async generateViaAlternateProvider(
+        endpoint: string,
+        systemPrompt: string,
+        userPrompt: string,
+        jsonMode: boolean,
+        maxTokens: number,
+    ): Promise<string> {
+        aiRateLimiter.acquireSlot(endpoint)
+        const provider = this.getActiveProvider()
+        return aiProviderService.generateTextWithProvider(provider, systemPrompt, userPrompt, jsonMode, maxTokens)
     }
 
     private withGeminiSafety<T extends Record<string, unknown>>(config?: T): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
@@ -323,8 +370,10 @@ class GeminiService {
     }
 
     private rethrowKnownError(error: unknown, fallbackErrorKey: string): never {
-        if (error instanceof Error && AI_ERROR_KEYS.has(error.message)) {
-            throw error
+        if (error instanceof Error) {
+            if (AI_ERROR_KEYS.has(error.message)) throw error
+            // Rate limit errors carry retry info: "ai.error.rateLimited:30"
+            if (error.message.startsWith('ai.error.rateLimited')) throw error
         }
 
         throw new Error(fallbackErrorKey)
@@ -340,9 +389,16 @@ class GeminiService {
 
     private parseJsonResponse<T>(response: { text?: string }, errorKey: string, schema?: z.ZodSchema<T>): T {
         const text = this.getResponseTextOrThrow(response, errorKey)
+        return this.parseJsonFromText(text, errorKey, schema)
+    }
+
+    /** Parse & validate JSON from raw text (used by alternate providers). */
+    private parseJsonFromText<T>(text: string, errorKey: string, schema?: z.ZodSchema<T>): T {
         let parsed: T
         try {
-            parsed = JSON.parse(text.trim()) as T
+            // Strip markdown code fences that some providers wrap JSON in
+            const cleaned = text.trim().replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+            parsed = JSON.parse(cleaned) as T
         } catch {
             throw new Error(errorKey)
         }
@@ -350,7 +406,7 @@ class GeminiService {
         if (schema) {
             const result = schema.safeParse(sanitized)
             if (!result.success) {
-                console.warn('[Gemini] Response schema validation failed:', result.error.format())
+                console.warn('[AI] Response schema validation failed:', result.error.format())
                 throw new Error(errorKey)
             }
             return result.data
@@ -367,8 +423,20 @@ class GeminiService {
         return new GoogleGenAI({ apiKey })
     }
 
-    private async generateText(prompt: string, lang: Language): Promise<string> {
+    private async generateText(prompt: string, lang: Language, endpoint = 'generateText'): Promise<string> {
+        // Route to alternate provider if configured
+        if (this.isAlternateProvider()) {
+            return this.generateViaAlternateProvider(
+                endpoint,
+                getEducationalUseOnlyInstruction(lang),
+                prompt,
+                false,
+                MAX_OUTPUT_TOKENS_TEXT,
+            )
+        }
+
         try {
+            aiRateLimiter.acquireSlot(endpoint)
             const ai = await this.getAi()
             const localizedPrompt = createLocalizedPrompt(
                 `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
@@ -392,7 +460,28 @@ class GeminiService {
 
     async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
         const t = getT()
+
+        // Alternate provider path: JSON mode text generation
+        if (this.isAlternateProvider()) {
+            try {
+                const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.equipmentSystemInstruction')}`
+                const jsonInstruction = 'Respond ONLY with valid JSON matching this exact structure: { "tent": {"name":"...","price":0,"rationale":"..."}, "light": {"name":"...","price":0,"rationale":"...","watts":0}, "ventilation": {"name":"...","price":0,"rationale":"..."}, "circulationFan": {"name":"...","price":0,"rationale":"..."}, "pots": {"name":"...","price":0,"rationale":"..."}, "soil": {"name":"...","price":0,"rationale":"..."}, "nutrients": {"name":"...","price":0,"rationale":"..."}, "extra": {"name":"...","price":0,"rationale":"..."}, "proTip": "..." }'
+                const text = await this.generateViaAlternateProvider(
+                    'getEquipmentRecommendation',
+                    systemPrompt,
+                    `${createLocalizedPrompt(prompt, lang)}\n\n${jsonInstruction}`,
+                    true,
+                    MAX_OUTPUT_TOKENS_JSON,
+                )
+                return this.parseJsonFromText<Recommendation>(text, 'ai.error.equipment', RecommendationSchema)
+            } catch (error) {
+                console.error('Alt-provider getEquipmentRecommendation Error:', error)
+                this.rethrowKnownError(error, 'ai.error.equipment')
+            }
+        }
+
         try {
+            aiRateLimiter.acquireSlot('getEquipmentRecommendation')
             const ai = await this.getAi()
             const systemInstruction = t('ai.prompts.equipmentSystemInstruction')
             const localizedSystemInstruction = createLocalizedPrompt(
@@ -553,6 +642,7 @@ PLANT CONTEXT:
         )
 
         try {
+            aiRateLimiter.acquireSlot('diagnosePlant')
             const ai = await this.getAi()
             const imagePart = { inlineData: { data: base64Image, mimeType } }
             const textPart = { text: localizedPrompt }
@@ -592,7 +682,7 @@ PLANT CONTEXT:
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.advisor', { plant: plantContext })
         try {
-            const responseText = await this.generateText(prompt, lang)
+            const responseText = await this.generateText(prompt, lang, 'getPlantAdvice')
             return { title: t('ai.advisor'), content: responseText }
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
@@ -607,7 +697,7 @@ PLANT CONTEXT:
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
         const prompt = t('ai.prompts.proactiveDiagnosis', { plant: plantContext })
         try {
-            const responseText = await this.generateText(prompt, lang)
+            const responseText = await this.generateText(prompt, lang, 'getProactiveDiagnosis')
             return { title: t('ai.proactiveDiagnosis'), content: responseText }
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
@@ -632,6 +722,21 @@ PLANT CONTEXT:
         })
 
         try {
+            // Alternate provider path for mentor
+            if (this.isAlternateProvider()) {
+                const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.mentor.systemInstruction')}`
+                const jsonInstruction = 'Respond ONLY with valid JSON matching: { "title": "...", "content": "...", "uiHighlights": [] }'
+                const text = await this.generateViaAlternateProvider(
+                    'getMentorResponse',
+                    systemPrompt,
+                    `${createLocalizedPrompt(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`, lang)}\n\n${jsonInstruction}`,
+                    true,
+                    MAX_OUTPUT_TOKENS_JSON,
+                )
+                return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(text, 'ai.error.generic', MentorMessageContentSchema)
+            }
+
+            aiRateLimiter.acquireSlot('getMentorResponse')
             const ai = await this.getAi()
             const systemInstruction = t('ai.prompts.mentor.systemInstruction')
             const localizedSystemInstruction = createLocalizedPrompt(
@@ -699,6 +804,20 @@ PLANT CONTEXT:
             lang,
         )
         try {
+            // Alternate provider path for strain tips
+            if (this.isAlternateProvider()) {
+                const jsonInstruction = 'Respond ONLY with valid JSON matching: { "nutrientTip": "...", "trainingTip": "...", "environmentalTip": "...", "proTip": "..." }'
+                const text = await this.generateViaAlternateProvider(
+                    'getStrainTips',
+                    getEducationalUseOnlyInstruction(lang),
+                    `${localizedPrompt}\n\n${jsonInstruction}`,
+                    true,
+                    MAX_OUTPUT_TOKENS_JSON,
+                )
+                return this.parseJsonFromText<StructuredGrowTips>(text, 'ai.error.tips', StructuredGrowTipsSchema)
+            }
+
+            aiRateLimiter.acquireSlot('getStrainTips')
             const ai = await this.getAi()
             const response = await this.generateWithFallback({
                 ai,
@@ -777,6 +896,7 @@ PLANT CONTEXT:
 
 
         try {
+            aiRateLimiter.acquireSlot('generateStrainImage')
             const ai = await this.getAi()
             const response = await this.generateWithFallback({
                 ai,
@@ -818,6 +938,20 @@ PLANT CONTEXT:
             lang,
         )
         try {
+            // Alternate provider path for deep dive
+            if (this.isAlternateProvider()) {
+                const jsonInstruction = 'Respond ONLY with valid JSON matching: { "introduction": "...", "stepByStep": ["..."], "prosAndCons": { "pros": ["..."], "cons": ["..."] }, "proTip": "..." }'
+                const text = await this.generateViaAlternateProvider(
+                    'generateDeepDive',
+                    getEducationalUseOnlyInstruction(lang),
+                    `${localizedPrompt}\n\n${jsonInstruction}`,
+                    true,
+                    MAX_OUTPUT_TOKENS_JSON,
+                )
+                return this.parseJsonFromText<DeepDiveGuide>(text, 'ai.error.deepDive', DeepDiveGuideSchema)
+            }
+
+            aiRateLimiter.acquireSlot('generateDeepDive')
             const ai = await this.getAi()
             const response = await this.generateWithFallback({
                 ai,
@@ -862,7 +996,7 @@ PLANT CONTEXT:
         
         const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries });
         try {
-            const responseText = await this.generateText(prompt, lang);
+            const responseText = await this.generateText(prompt, lang, 'getGardenStatusSummary');
             return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText };
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
@@ -879,7 +1013,7 @@ PLANT CONTEXT:
         const prompt = `Answer the question using only the provided grow-log context.\n\nQuestion:\n${safeQuery}\n\nGrow-log context:\n${ragContext}\n\nIf information is uncertain, explicitly say so.`
 
         try {
-            const responseText = await this.generateText(prompt, lang)
+            const responseText = await this.generateText(prompt, lang, 'getGrowLogRagAnswer')
             return {
                 title: lang === 'de' ? 'RAG Grow-Log Analyse' : 'RAG Grow Log Analysis',
                 content: responseText,

@@ -22,6 +22,8 @@ import { Card } from '@/components/common/Card'
 import { SettingsSubNav } from './SettingsSubNav'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { apiKeyService } from '@/services/apiKeyService'
+import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
+import { aiRateLimiter } from '@/services/aiRateLimiter'
 
 const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
@@ -68,6 +70,9 @@ const GeminiSecurityCard: React.FC = () => {
     const [maskedStoredKey, setMaskedStoredKey] = useState<string | null>(null)
     const [statusMessage, setStatusMessage] = useState<string | null>(null)
     const [isBusy, setIsBusy] = useState(false)
+    const [activeProvider, setActiveProvider] = useState<AiProvider>(aiProviderService.getActiveProviderId())
+    const providers = useMemo(() => aiProviderService.getAllProviders(), [])
+    const todayUsage = aiRateLimiter.getTodayUsage()
 
     const getErrorMessage = (error: unknown, fallbackKey: string): string => {
         if (error instanceof Error && typeof error.message === 'string' && error.message.length > 0) {
@@ -80,15 +85,40 @@ const GeminiSecurityCard: React.FC = () => {
         return t(fallbackKey)
     }
 
+    const loadKeyStatus = async (provider: AiProvider) => {
+        try {
+            // For Gemini use the original apiKeyService, for others use aiProviderService
+            if (provider === 'gemini') {
+                const key = await apiKeyService.getApiKey()
+                setHasStoredKey(Boolean(key))
+                setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
+            } else {
+                const key = await aiProviderService.getProviderApiKey(provider)
+                setHasStoredKey(Boolean(key))
+                setMaskedStoredKey(await aiProviderService.getMaskedProviderApiKey(provider))
+            }
+        } catch {
+            setStatusMessage(t('settingsView.security.loadError'))
+        }
+    }
+
     useEffect(() => {
         let isMounted = true
 
-        const loadKeyStatus = async () => {
+        const load = async () => {
             try {
-                const key = await apiKeyService.getApiKey()
-                if (isMounted) {
-                    setHasStoredKey(Boolean(key))
-                    setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
+                if (activeProvider === 'gemini') {
+                    const key = await apiKeyService.getApiKey()
+                    if (isMounted) {
+                        setHasStoredKey(Boolean(key))
+                        setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
+                    }
+                } else {
+                    const key = await aiProviderService.getProviderApiKey(activeProvider)
+                    if (isMounted) {
+                        setHasStoredKey(Boolean(key))
+                        setMaskedStoredKey(await aiProviderService.getMaskedProviderApiKey(activeProvider))
+                    }
                 }
             } catch {
                 if (isMounted) {
@@ -97,25 +127,46 @@ const GeminiSecurityCard: React.FC = () => {
             }
         }
 
-        loadKeyStatus()
-        return () => {
-            isMounted = false
-        }
-    }, [t])
+        load()
+        return () => { isMounted = false }
+    }, [t, activeProvider])
+
+    const handleProviderChange = (providerId: string) => {
+        const newProvider = providerId as AiProvider
+        setActiveProvider(newProvider)
+        aiProviderService.setActiveProviderId(newProvider)
+        setApiKeyInput('')
+        setStatusMessage(null)
+        loadKeyStatus(newProvider)
+    }
+
+    const activeConfig = useMemo(() => aiProviderService.getProviderConfig(activeProvider), [activeProvider])
 
     const handleSaveApiKey = async () => {
         const trimmed = apiKeyInput.trim()
-        if (!apiKeyService.isValidApiKeyFormat(trimmed)) {
-            setStatusMessage(t('settingsView.security.invalid'))
-            return
+        if (activeProvider === 'gemini') {
+            if (!apiKeyService.isValidApiKeyFormat(trimmed)) {
+                setStatusMessage(t('settingsView.security.invalid'))
+                return
+            }
+        } else {
+            if (!aiProviderService.isValidProviderKeyFormat(activeProvider, trimmed)) {
+                setStatusMessage(t('settingsView.security.invalid'))
+                return
+            }
         }
 
         setIsBusy(true)
         try {
-            await apiKeyService.setApiKey(trimmed)
+            if (activeProvider === 'gemini') {
+                await apiKeyService.setApiKey(trimmed)
+                setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
+            } else {
+                await aiProviderService.setProviderApiKey(activeProvider, trimmed)
+                setMaskedStoredKey(await aiProviderService.getMaskedProviderApiKey(activeProvider))
+            }
             setApiKeyInput('')
             setHasStoredKey(true)
-            setMaskedStoredKey(await apiKeyService.getMaskedApiKey())
             setStatusMessage(t('settingsView.security.saved'))
         } catch (error) {
             setStatusMessage(getErrorMessage(error, 'settingsView.security.saveError'))
@@ -128,12 +179,24 @@ const GeminiSecurityCard: React.FC = () => {
         setIsBusy(true)
         try {
             const candidate = apiKeyInput.trim()
-            if (candidate.length > 0) {
-                await apiKeyService.validateApiKey(candidate)
-                setStatusMessage(t('settingsView.security.testSuccessUnsaved'))
+            if (activeProvider === 'gemini') {
+                if (candidate.length > 0) {
+                    await apiKeyService.validateApiKey(candidate)
+                    setStatusMessage(t('settingsView.security.testSuccessUnsaved'))
+                } else {
+                    await apiKeyService.validateStoredApiKey()
+                    setStatusMessage(t('settingsView.security.testSuccessStored'))
+                }
             } else {
-                await apiKeyService.validateStoredApiKey()
-                setStatusMessage(t('settingsView.security.testSuccessStored'))
+                // For non-Gemini providers, just validate format
+                const keyToTest = candidate.length > 0 ? candidate : await aiProviderService.getProviderApiKey(activeProvider)
+                if (!keyToTest) {
+                    setStatusMessage(t('ai.error.missingApiKey'))
+                } else if (aiProviderService.isValidProviderKeyFormat(activeProvider, keyToTest)) {
+                    setStatusMessage(candidate.length > 0 ? t('settingsView.security.testSuccessUnsaved') : t('settingsView.security.testSuccessStored'))
+                } else {
+                    setStatusMessage(t('settingsView.security.invalid'))
+                }
             }
         } catch (error) {
             setStatusMessage(getErrorMessage(error, 'settingsView.security.testError'))
@@ -145,7 +208,11 @@ const GeminiSecurityCard: React.FC = () => {
     const handleClearApiKey = async () => {
         setIsBusy(true)
         try {
-            await apiKeyService.clearApiKey()
+            if (activeProvider === 'gemini') {
+                await apiKeyService.clearApiKey()
+            } else {
+                await aiProviderService.clearProviderApiKey(activeProvider)
+            }
             setApiKeyInput('')
             setHasStoredKey(false)
             setMaskedStoredKey(null)
@@ -164,12 +231,19 @@ const GeminiSecurityCard: React.FC = () => {
                     <p className="text-sm text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-md p-3">
                         {t('settingsView.security.warning')}
                     </p>
+                    <SettingsRow label={t('settingsView.security.provider')} description={t('settingsView.security.providerDesc')}>
+                        <SettingsSelect
+                            value={activeProvider}
+                            options={providers.map(p => ({ value: p.id, label: p.label }))}
+                            onChange={handleProviderChange}
+                        />
+                    </SettingsRow>
                     <SettingsRow label={t('settingsView.security.apiKey')} description={t('settingsView.security.apiKeyDesc')}>
                         <Input
                             type="password"
                             value={apiKeyInput}
                             onChange={(e) => setApiKeyInput(e.target.value)}
-                            placeholder="AIza..."
+                            placeholder={activeConfig.placeholder}
                             autoComplete="off"
                             spellCheck={false}
                         />
@@ -194,7 +268,7 @@ const GeminiSecurityCard: React.FC = () => {
                             {t('settingsView.security.clear')}
                         </Button>
                         <a
-                            href="https://ai.studio.google.com/app/apikey"
+                            href={activeConfig.getKeyUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center rounded-lg border border-transparent px-4 py-2 font-semibold text-slate-300 transition-colors hover:bg-primary-500/10 hover:text-primary-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
@@ -209,6 +283,15 @@ const GeminiSecurityCard: React.FC = () => {
                             : t('settingsView.security.notStored')}
                     </p>
                     {statusMessage && <p className="text-sm text-slate-300">{statusMessage}</p>}
+                    <div className="border-t border-slate-700/50 pt-3 mt-3">
+                        <p className="text-xs text-slate-500">
+                            {t('settingsView.security.usageToday', {
+                                requests: todayUsage.requestCount,
+                                tokens: todayUsage.totalTokens.toLocaleString(),
+                                remaining: aiRateLimiter.getRemainingRequests(),
+                            })}
+                        </p>
+                    </div>
                 </div>
             </FormSection>
         </Card>

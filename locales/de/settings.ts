@@ -16,16 +16,18 @@ export const settingsView = {
     interactivity: 'Interaktivität',
   },
   security: {
-    title: 'KI-Sicherheit (Gemini BYOK)',
-    warning: 'Dein Gemini-API-Key wird nur auf diesem Gerät in IndexedDB gespeichert. Teile den Key niemals und entferne ihn auf gemeinsam genutzten Geräten.',
-    apiKey: 'Gemini-API-Key',
+    title: 'KI-Sicherheit (Multi-Model BYOK)',
+    warning: 'Dein API-Key wird nur auf diesem Gerät in IndexedDB gespeichert. Teile den Key niemals und entferne ihn auf gemeinsam genutzten Geräten.',
+    provider: 'KI-Anbieter',
+    providerDesc: 'Wähle den KI-Modellanbieter. Jeder Anbieter benötigt einen eigenen API-Key.',
+    apiKey: 'API-Key',
     apiKeyDesc: 'Für alle KI-Funktionen in dieser statisch gehosteten App erforderlich.',
     save: 'Key speichern',
     test: 'Key prüfen',
     clear: 'Key entfernen',
     openAiStudio: 'API-Key holen',
-    stored: 'Ein Gemini-API-Key ist aktuell auf diesem Gerät gespeichert.',
-    notStored: 'Noch kein Gemini-API-Key gespeichert.',
+    stored: 'Ein API-Key ist aktuell auf diesem Gerät gespeichert.',
+    notStored: 'Noch kein API-Key gespeichert.',
     maskedPrefix: 'Gespeicherter Key:',
     invalid: 'Bitte gib einen gültigen API-Key ein.',
     saved: 'API-Key erfolgreich gespeichert.',
@@ -36,6 +38,7 @@ export const settingsView = {
     saveError: 'API-Key konnte nicht gespeichert werden.',
     testError: 'API-Key-Prüfung fehlgeschlagen. Bitte prüfe Gültigkeit und Berechtigungen des Keys.',
     clearError: 'API-Key konnte nicht entfernt werden.',
+    usageToday: 'Heute: {{requests}} Anfragen, ~{{tokens}} Token geschätzt, {{remaining}} Anfragen verbleibend (pro Minute).',
   },
   general: {
     title: 'Allgemeine Einstellungen',
@@ -437,13 +440,13 @@ export const settingsView = {
                 <li>Repository klonen: <code>git clone https://github.com/qnbs/CannaGuide-2025.git</code></li>
                 <li>Abhängigkeiten installieren: <code>npm install</code></li>
             <li>Entwicklungsserver starten: <code>npm run dev</code></li>
-            <li>Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK) und speichern Sie den API-Key direkt in der App.</li>
+            <li>Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Multi-Model BYOK) und speichern Sie den API-Key direkt in der App.</li>
             </ol>
         `,
         troubleshootingTitle: "Fehlerbehebung",
         troubleshootingContent: `
             <ul>
-            <li><strong>KI-Funktionen funktionieren nicht</strong>: Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Gemini BYOK), prüfen Sie den Key und stellen Sie sicher, dass ein Key auf diesem Gerät gespeichert ist.</li>
+            <li><strong>KI-Funktionen funktionieren nicht</strong>: Öffnen Sie Einstellungen → Allgemein & UI → KI-Sicherheit (Multi-Model BYOK), prüfen Sie den Key und stellen Sie sicher, dass ein Key auf diesem Gerät gespeichert ist.</li>
                 <li><strong>App aktualisiert sich nicht</strong>: Dies kann am PWA-Caching liegen. Leeren Sie Ihre Browserdaten oder deregistrieren Sie den Service Worker in den Entwicklertools.</li>
             </ul>
         `,

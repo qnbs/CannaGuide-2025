@@ -145,7 +145,8 @@ describe('Redux Selectors', () => {
                     ids: ['p1', 'p2'],
                     entities: { 'p1': mockPlant1, 'p2': mockPlant2 }
                 }
-            } as any
+            } as any,
+            settings: { settings: { simulation: { leafTemperatureOffset: -2, altitudeM: 0 } } } as any
         };
 
         const result = selectGardenHealthMetrics(mockState as RootState);
@@ -160,7 +161,8 @@ describe('Redux Selectors', () => {
             simulation: {
                 plantSlots: [null, null, null],
                 plants: { ids: [], entities: {} }
-            } as any
+            } as any,
+            settings: { settings: { simulation: { leafTemperatureOffset: -2, altitudeM: 0 } } } as any
         };
         const result = selectGardenHealthMetrics(mockState as RootState);
         expect(result.gardenHealth).toBe(100);

@@ -168,6 +168,23 @@ export const common = {
         safeRecovery: 'Sichere Wiederherstellung versuchen',
     },
     appShortDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
+    imageResizeFailed: 'Bildverkleinerung fehlgeschlagen, verwende Original.',
+    offlineQueued: 'Offline. Aktion für Synchronisation vorgemerkt.',
+    failedToSave: 'Speichern fehlgeschlagen.',
+    noDescription: 'Keine Beschreibung verfügbar.',
+    bluetooth: {
+        notSupported: 'WebBluetooth wird in diesem Browser nicht unterstützt.',
+        connectionFailed: 'Verbindung zum ESP32-Gerät konnte nicht hergestellt werden.',
+    },
+    communityShare: {
+        invalidGistUrl: 'Ungültige Gist-URL oder ID.',
+        exportFailed: 'Gist-Export fehlgeschlagen ({{status}}).',
+        fetchFailed: 'Gist konnte nicht abgerufen werden ({{status}}).',
+        noPayload: 'Gist enthält keine importierbaren Sortendaten.',
+        invalidPayload: 'Ungültiges Sortenformat im Gist: {{details}}',
+    },
+    noImageGenerated: 'Die API hat kein Bild generiert.',
+    noJournalEntries: 'Keine Journal-Einträge verfügbar.',
 };
 
 export const nav = {

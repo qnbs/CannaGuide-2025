@@ -151,7 +151,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         } catch (err) {
                             console.error("Image resizing failed:", err);
                             setImage(dataUrl); // fallback to original
-                            dispatch(addNotification({ message: 'Image resizing failed, using original.', type: 'error' }));
+                            dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }));
                         }
                         setIsCameraOpen(false)
                     }}
@@ -237,7 +237,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                                     } catch (err) {
                                                         console.error("Image resizing failed:", err);
                                                         setImage(reader.result as string); // fallback to original
-                                                        dispatch(addNotification({ message: 'Image resizing failed, using original.', type: 'error' }));
+                                                        dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }));
                                                     }
                                                 }
                                                 reader.readAsDataURL(e.target.files[0])

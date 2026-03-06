@@ -195,11 +195,13 @@ startAppListening({
 
 
 // --- Centralized Notification Listeners ---
-const t = getT();
+// NOTE: getT() is called lazily inside each listener to ensure the current language
+// is used, not the language frozen at module-load time.
 
 startAppListening({
   matcher: isAnyOf(addUserStrain, updateUserStrain),
   effect: (action, { dispatch }) => {
+    const t = getT();
     const type = action.type.includes('addUser') ? 'add' : 'update';
     // The payload for userStrainsAdapter actions is the strain object itself.
     const strain = action.payload as Strain;
@@ -210,6 +212,7 @@ startAppListening({
 startAppListening({
   actionCreator: addSetup.fulfilled,
   effect: (action, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('equipmentView.configurator.setupSaveSuccess', { name: action.payload.name }), type: 'success' }));
   }
 });
@@ -217,6 +220,7 @@ startAppListening({
 startAppListening({
     matcher: isAnyOf(deleteSetup, deleteStrainTip, deleteUserStrain),
     effect: (action, { dispatch }) => {
+        const t = getT();
         let message = 'Item removed.';
         if (action.type.includes('Export')) message = t('strainsView.exportsManager.exportRemoved');
         // Add more specific messages if needed for other types
@@ -227,6 +231,7 @@ startAppListening({
 startAppListening({
     matcher: isAnyOf(updateSetup, updateStrainTip),
     effect: (action, { dispatch }) => {
+        const t = getT();
         const p = action.payload as { id?: string; changes?: { name?: string; title?: string }; name?: string; title?: string };
         const payload = p.changes ?? p;
         const name = payload.name || payload.title;
@@ -239,6 +244,7 @@ startAppListening({
 startAppListening({
   actionCreator: addStrainTip,
   effect: (action, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('strainsView.tips.saveSuccess', { name: action.payload.strain.name }), type: 'success' }));
   }
 });
@@ -246,6 +252,7 @@ startAppListening({
 startAppListening({
   actionCreator: addMultipleToFavorites,
   effect: (action, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('strainsView.bulkActions.addedToFavorites_other', { count: action.payload.length }), type: 'success' }));
   }
 });
@@ -253,6 +260,7 @@ startAppListening({
 startAppListening({
   actionCreator: removeMultipleFromFavorites,
   effect: (action, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('strainsView.bulkActions.removedFromFavorites_other', { count: action.payload.length }), type: 'info' }));
   }
 });
@@ -260,6 +268,7 @@ startAppListening({
 startAppListening({
   actionCreator: addArchivedMentorResponse,
   effect: (_, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('knowledgeView.archive.saveSuccess'), type: 'success' }));
   }
 });
@@ -267,6 +276,7 @@ startAppListening({
 startAppListening({
   actionCreator: addExport,
   effect: (action, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('common.successfullyExported_other', { count: action.payload.strainIds.length, format: action.payload.format.toUpperCase() }), type: 'success' }));
   }
 });
@@ -274,6 +284,7 @@ startAppListening({
 startAppListening({
   actionCreator: addJournalEntry,
   effect: async (action, { dispatch }) => {
+    const t = getT();
     if(action.payload.entry.details && 'diagnosis' in action.payload.entry.details) {
         dispatch(addNotification({ message: t('plantsView.aiDiagnostics.savedToJournal'), type: 'success' }));
     }
@@ -284,7 +295,7 @@ startAppListening({
             const registration = await navigator.serviceWorker.ready;
             if ('sync' in registration) {
                 await (registration.sync as { register: (tag: string) => Promise<void> }).register('data-sync');
-                dispatch(addNotification({ message: 'Offline. Action queued for sync.', type: 'info' }));
+                dispatch(addNotification({ message: getT()('common.offlineQueued'), type: 'info' }));
             }
         } catch (err) {
             console.error('Background sync registration failed:', err);
@@ -296,6 +307,7 @@ startAppListening({
 startAppListening({
   actionCreator: clearArchives,
   effect: (_, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('settingsView.data.clearArchivesSuccess'), type: 'success' }));
   }
 });
@@ -303,6 +315,7 @@ startAppListening({
 startAppListening({
   actionCreator: resetPlants,
   effect: (_, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('settingsView.data.resetPlantsSuccess'), type: 'success' }));
   }
 });
@@ -310,6 +323,7 @@ startAppListening({
 startAppListening({
   actionCreator: exportAllData.fulfilled,
   effect: (_, { dispatch }) => {
+    const t = getT();
     dispatch(addNotification({ message: t('settingsView.data.exportSuccess'), type: 'success' }));
   }
 });
@@ -317,6 +331,7 @@ startAppListening({
 startAppListening({
   actionCreator: resetAllData.fulfilled,
   effect: (_, { dispatch }) => {
+      const t = getT();
       dispatch(addNotification({ message: t('settingsView.data.resetAllSuccess'), type: 'success' }));
   }
 });
@@ -325,6 +340,7 @@ startAppListening({
   matcher: isAnyOf(setOnboardingStep),
   effect: (action, listenerApi) => {
     if (action.payload === 0 && (listenerApi.getOriginalState() as RootState).settings.settings.onboardingCompleted) {
+        const t = getT();
         listenerApi.dispatch(addNotification({ message: t('settingsView.data.replayOnboardingSuccess'), type: 'success' }));
     }
   }

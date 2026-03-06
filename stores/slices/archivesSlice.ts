@@ -6,6 +6,9 @@ export interface ArchivesState {
     archivedAdvisorResponses: Record<string, ArchivedAdvisorResponse[]>;
 }
 
+const MAX_MENTOR_ARCHIVES = 100;
+const MAX_ADVISOR_ARCHIVES_PER_PLANT = 50;
+
 const initialState: ArchivesState = {
     archivedMentorResponses: [],
     archivedAdvisorResponses: {},
@@ -27,6 +30,9 @@ const archivesSlice = createSlice({
                 createdAt: Date.now(),
             };
             state.archivedMentorResponses.push(newResponse);
+            if (state.archivedMentorResponses.length > MAX_MENTOR_ARCHIVES) {
+                state.archivedMentorResponses = state.archivedMentorResponses.slice(-MAX_MENTOR_ARCHIVES);
+            }
         },
         updateArchivedMentorResponse: (state, action: PayloadAction<ArchivedMentorResponse>) => {
             const index = state.archivedMentorResponses.findIndex(r => r.id === action.payload.id);
@@ -55,6 +61,9 @@ const archivesSlice = createSlice({
                 state.archivedAdvisorResponses[plant.id] = [];
             }
             state.archivedAdvisorResponses[plant.id].push(newResponse);
+            if (state.archivedAdvisorResponses[plant.id].length > MAX_ADVISOR_ARCHIVES_PER_PLANT) {
+                state.archivedAdvisorResponses[plant.id] = state.archivedAdvisorResponses[plant.id].slice(-MAX_ADVISOR_ARCHIVES_PER_PLANT);
+            }
         },
         updateArchivedAdvisorResponse: (state, action: PayloadAction<ArchivedAdvisorResponse>) => {
             const updatedResponse = action.payload;

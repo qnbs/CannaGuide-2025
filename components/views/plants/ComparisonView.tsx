@@ -65,14 +65,15 @@ const ComparisonChart: React.FC<{ historyA: PlantHistoryEntry[], historyB: Plant
 });
 
 const PlantSummaryCard: React.FC<{ title: string, plant: Plant }> = memo(({ title, plant }) => {
+    const { t } = useTranslation();
     return (
         <Card className="bg-slate-800/50">
             <h3 className="font-bold text-lg text-primary-300">{title}</h3>
             <div className="mt-2 space-y-1 text-sm">
-                <div className="flex justify-between"><span>Height:</span> <span className="font-mono">{plant.height.toFixed(1)} cm</span></div>
-                <div className="flex justify-between"><span>Biomass:</span> <span className="font-mono">{plant.biomass.total.toFixed(1)} g</span></div>
-                <div className="flex justify-between"><span>Health:</span> <span className="font-mono">{plant.health.toFixed(1)}%</span></div>
-                <div className="flex justify-between"><span>Nodes:</span> <span className="font-mono">{plant.structuralModel.nodes}</span></div>
+                <div className="flex justify-between"><span>{t('plantsView.comparison.height')}:</span> <span className="font-mono">{plant.height.toFixed(1)} cm</span></div>
+                <div className="flex justify-between"><span>{t('plantsView.comparison.biomass')}:</span> <span className="font-mono">{plant.biomass.total.toFixed(1)} g</span></div>
+                <div className="flex justify-between"><span>{t('plantsView.comparison.health')}:</span> <span className="font-mono">{plant.health.toFixed(1)}%</span></div>
+                <div className="flex justify-between"><span>{t('plantsView.comparison.nodes')}:</span> <span className="font-mono">{plant.structuralModel.nodes}</span></div>
             </div>
         </Card>
     );
@@ -83,7 +84,7 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
     const { t } = useTranslation();
     const scenario = useMemo(() => scenarioService.getScenarioById(experiment.scenarioId), [experiment.scenarioId]);
 
-    if (!scenario) return <p>Error: Scenario not found.</p>;
+    if (!scenario) return <p>{t('plantsView.comparison.errorNotFound')}</p>;
 
     const resolveActionLabel = (action: string) => {
         if (action === 'TEMP_PLUS_2') return '+2 C'
@@ -105,17 +106,17 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
                 <div>
                     <h2 className="text-2xl font-bold font-display text-primary-400">{scenarioTitle}</h2>
                     <p className="text-slate-400">{scenarioDescription}</p>
-                    <p className="text-slate-400">Results based on: {experiment.basePlantName}</p>
+                    <p className="text-slate-400">{t('plantsView.comparison.basedOn', { name: experiment.basePlantName })}</p>
                 </div>
                 <Button onClick={onFinish} variant="secondary">
                     <PhosphorIcons.X className="w-5 h-5 mr-1" />
-                    Finish Experiment
+                    {t('plantsView.comparison.finishExperiment')}
                 </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <PlantSummaryCard title={`Result A: ${labelA}`} plant={experiment.originalFinalState} />
-                <PlantSummaryCard title={`Result B: ${labelB}`} plant={experiment.modifiedFinalState} />
+                <PlantSummaryCard title={t('plantsView.comparison.resultA', { label: labelA })} plant={experiment.originalFinalState} />
+                <PlantSummaryCard title={t('plantsView.comparison.resultB', { label: labelB })} plant={experiment.modifiedFinalState} />
             </div>
 
             <Card>
@@ -123,16 +124,16 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
             </Card>
 
             <Card>
-                 <h3 className="text-xl font-bold font-display text-primary-400 mb-2">Summary of Differences</h3>
+                 <h3 className="text-xl font-bold font-display text-primary-400 mb-2">{t('plantsView.comparison.summaryOfDifferences')}</h3>
                  <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
-                        <p className="text-sm text-slate-400">Height Difference</p>
+                        <p className="text-sm text-slate-400">{t('plantsView.comparison.heightDifference')}</p>
                         <p className={`text-2xl font-bold ${diffHeight >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {diffHeight >= 0 ? '+' : ''}{diffHeight.toFixed(1)} cm
                         </p>
                     </div>
                      <div>
-                        <p className="text-sm text-slate-400">Biomass Difference</p>
+                        <p className="text-sm text-slate-400">{t('plantsView.comparison.biomassDifference')}</p>
                         <p className={`text-2xl font-bold ${diffBiomass >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {diffBiomass >= 0 ? '+' : ''}{diffBiomass.toFixed(1)} g
                         </p>

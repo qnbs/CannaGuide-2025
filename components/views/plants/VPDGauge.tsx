@@ -25,7 +25,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
         late_flower: { min: 1.4, max: 1.8, color: 'text-orange-400' }
     };
 
-    let status = t('common.outsideIdealRange', { defaultValue: 'Outside ideal range' });
+    let status = t('plantsView.vpd.outsideIdealRange');
     let statusColor = 'text-slate-400';
 
     if (vpd >= idealRanges.seedling.min && vpd < idealRanges.seedling.max) {
@@ -89,7 +89,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
         </div>
     );
     } catch {
-        return <div className="text-red-400 text-sm p-4 text-center">VPD Gauge Error</div>;
+        return <div className="text-red-400 text-sm p-4 text-center">{t('plantsView.vpd.gaugeError')}</div>;
     }
 });
 VPDGauge.displayName = 'VPDGauge';

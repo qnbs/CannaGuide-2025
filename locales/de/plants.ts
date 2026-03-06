@@ -8,6 +8,13 @@ export const plantsView = {
     title: 'Starte einen neuen Anbau!',
     subtitle: 'Wähle einen leeren Platz unten, um deine ausgewählte Sorte zu pflanzen:',
   },
+  hero: {
+    badge: 'Garten-Kommandozentrale',
+    description: 'Live-Gartenwerte, Pflanzengesundheit und konkrete Arbeitsabläufe gebündelt in einer fokussierten Oberfläche.',
+    slots: 'Plätze',
+    tasks: 'Aufgaben',
+    alerts: 'Warnungen',
+  },
   gardenVitals: {
     title: 'Garten-Vitalwerte',
     avgTemp: 'Ø Temp.',
@@ -15,6 +22,8 @@ export const plantsView = {
     aiStatusTitle: 'KI-Gartenstatus',
     getAiStatus: 'KI-Status abrufen',
     advancedControls: 'Erweiterte Steuerung',
+    liveEnvironment: 'Live-Umgebung',
+    vpdSummary: 'VPD-Snapshot',
   },
   summary: {
     gardenHealth: 'Gartengesundheit',
@@ -396,6 +405,7 @@ export const plantsView = {
   },
   comparison: {
     errorNotFound: 'Fehler: Szenario nicht gefunden.',
+    chartLabel: 'Vergleichsdiagramm',
     basedOn: 'Ergebnisse basierend auf: {{name}}',
     finishExperiment: 'Experiment beenden',
     summaryOfDifferences: 'Zusammenfassung der Unterschiede',
@@ -412,9 +422,11 @@ export const plantsView = {
     currentVpd: 'Aktueller VPD',
     targetBand: 'Zielbereich ({{band}})',
     status: 'Status',
+    outsideIdealRange: 'Außerhalb des Idealbereichs',
     simulation24h: 'VPD 24h-Simulation',
     leafTemp: 'Blatttemperatur',
     altitudeCorrection: 'Höhenkorrektur',
+    gaugeError: 'VPD-Anzeige-Fehler',
     gaugeLabel: 'VPD {{vpd}} kPa. {{status}}. Blatttemperatur: {{leafTemp}}\u00b0C.',
     bands: {
       seedling: 'Sämlinge/Klone',

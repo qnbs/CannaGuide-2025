@@ -816,7 +816,6 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     {t('strainsView.genealogyView.treeTruncated', {
                                         shown: MAX_RENDERED_NODES,
                                         total: layoutNodes.length,
-                                        defaultValue: `Showing {{shown}} of {{total}} nodes`,
                                     })}
                                 </div>
                             )}

@@ -50,7 +50,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     checked={isSelected}
                     onChange={() => onToggleSelection(strain.id)}
                     className="custom-checkbox"
-                    aria-label={`Select ${strain.name}`}
+                          aria-label={t('strainsView.accessibility.selectStrain', { name: strain.name })}
                 />
             </div>
             
@@ -74,7 +74,9 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     size="sm" 
                     className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
                     onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
-                    aria-label={isFavorite ? `Remove ${strain.name} from favorites` : `Add ${strain.name} to favorites`}
+                    aria-label={isFavorite
+                        ? t('strainsView.accessibility.removeFromFavorites', { name: strain.name })
+                        : t('strainsView.accessibility.addToFavorites', { name: strain.name })}
                  >
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
                 </Button>

@@ -8,6 +8,13 @@ export const plantsView = {
     title: 'Starting a new grow!',
     subtitle: 'Choose an empty slot below to plant your selected strain:',
   },
+  hero: {
+    badge: 'Garden Command Center',
+    description: 'Live garden telemetry, plant health and actionable grow workflows in one focused workspace.',
+    slots: 'Slots',
+    tasks: 'Tasks',
+    alerts: 'Alerts',
+  },
   gardenVitals: {
     title: 'Garden Vitals',
     avgTemp: 'Avg. Temp',
@@ -15,6 +22,8 @@ export const plantsView = {
     aiStatusTitle: 'AI Garden Status',
     getAiStatus: 'Get AI Status',
     advancedControls: 'Advanced Controls',
+    liveEnvironment: 'Live Environment',
+    vpdSummary: 'VPD Snapshot',
   },
   summary: {
     gardenHealth: 'Garden Health',
@@ -396,6 +405,7 @@ export const plantsView = {
   },
   comparison: {
     errorNotFound: 'Error: Scenario not found.',
+    chartLabel: 'Comparison chart',
     basedOn: 'Results based on: {{name}}',
     finishExperiment: 'Finish Experiment',
     summaryOfDifferences: 'Summary of Differences',
@@ -412,9 +422,11 @@ export const plantsView = {
     currentVpd: 'Current VPD',
     targetBand: 'Target Band ({{band}})',
     status: 'Status',
+    outsideIdealRange: 'Outside ideal range',
     simulation24h: 'VPD 24h Simulation',
     leafTemp: 'Leaf temp',
     altitudeCorrection: 'Altitude correction',
+    gaugeError: 'VPD gauge error',
     gaugeLabel: 'VPD {{vpd}} kPa. {{status}}. Leaf temp: {{leafTemp}}\u00b0C.',
     bands: {
       seedling: 'Seedling/Clones',

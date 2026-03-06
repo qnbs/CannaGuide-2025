@@ -32,29 +32,7 @@ interface Trait {
     recessiveSymbol: string;
 }
 
-const TRAITS: Record<string, Trait> = {
-    thc: {
-        label: 'THC Level',
-        dominant: 'High THC (≥18 %)',
-        recessive: 'Low THC (<18 %)',
-        dominantSymbol: 'H',
-        recessiveSymbol: 'h',
-    },
-    phenotype: {
-        label: 'Phenotype',
-        dominant: 'Indica',
-        recessive: 'Sativa',
-        dominantSymbol: 'I',
-        recessiveSymbol: 'i',
-    },
-    autoflowering: {
-        label: 'Autoflowering',
-        dominant: 'Photoperiod',
-        recessive: 'Autoflowering',
-        dominantSymbol: 'A',
-        recessiveSymbol: 'a',
-    },
-};
+type TraitKey = 'thc' | 'phenotype' | 'autoflowering';
 
 /** Infer a simplified genotype from strain properties (homozygous assumption for known traits). */
 function inferGenotype(strain: Strain, traitKey: string): Genotype {
@@ -121,13 +99,6 @@ function summarisePunnett(grid: Genotype[][], traitDef: Trait): PunnettResult[] 
 
 type Generation = 'P' | 'F1' | 'F2' | 'F3' | 'IBL';
 const GENERATIONS: Generation[] = ['P', 'F1', 'F2', 'F3', 'IBL'];
-const GEN_DESCRIPTIONS: Record<Generation, string> = {
-    P:   'Parental generation – original parent strains',
-    F1:  'First filial – all offspring identical (max. heterozygosity)',
-    F2:  'Second filial – significant phenotype variation (25% recessive appear)',
-    F3:  'Third filial – beginning to stabilise, select desired phenotypes',
-    IBL: 'Inbred line – near-fully homozygous, stable true-breeding cultivar',
-};
 
 // ---------------------------------------------------------------------------
 // Subcomponents
@@ -217,6 +188,38 @@ interface BreedingLabProps {
 export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
     const { t } = useTranslation();
 
+    const traitDefinitions = useMemo<Record<TraitKey, Trait>>(() => ({
+        thc: {
+            label: t('strainsView.breedingLab.traits.thc.label'),
+            dominant: t('strainsView.breedingLab.traits.thc.dominant'),
+            recessive: t('strainsView.breedingLab.traits.thc.recessive'),
+            dominantSymbol: 'H',
+            recessiveSymbol: 'h',
+        },
+        phenotype: {
+            label: t('strainsView.breedingLab.traits.phenotype.label'),
+            dominant: t('strainsView.breedingLab.traits.phenotype.dominant'),
+            recessive: t('strainsView.breedingLab.traits.phenotype.recessive'),
+            dominantSymbol: 'I',
+            recessiveSymbol: 'i',
+        },
+        autoflowering: {
+            label: t('strainsView.breedingLab.traits.autoflowering.label'),
+            dominant: t('strainsView.breedingLab.traits.autoflowering.dominant'),
+            recessive: t('strainsView.breedingLab.traits.autoflowering.recessive'),
+            dominantSymbol: 'A',
+            recessiveSymbol: 'a',
+        },
+    }), [t]);
+
+    const generationDescriptions = useMemo<Record<Generation, string>>(() => ({
+        P: t('strainsView.breedingLab.generations.P'),
+        F1: t('strainsView.breedingLab.generations.F1'),
+        F2: t('strainsView.breedingLab.generations.F2'),
+        F3: t('strainsView.breedingLab.generations.F3'),
+        IBL: t('strainsView.breedingLab.generations.IBL'),
+    }), [t]);
+
     const [parentAId, setParentAId] = useState<string>('');
     const [parentBId, setParentBId] = useState<string>('');
     const [generation, setGeneration] = useState<Generation>('F1');
@@ -227,12 +230,32 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
         [...allStrains].sort((a, b) => a.name.localeCompare(b.name)), [allStrains]);
 
     const strainOptions = useMemo(() => [
-        { value: '', label: '— Select strain —' },
+        { value: '', label: `— ${t('strainsView.breedingLab.selectStrainPlaceholder')} —` },
         ...sortedStrains.map(s => ({ value: s.id, label: s.name })),
-    ], [sortedStrains]);
+    ], [sortedStrains, t]);
 
     const parentA = useMemo(() => allStrains.find(s => s.id === parentAId) ?? null, [allStrains, parentAId]);
     const parentB = useMemo(() => allStrains.find(s => s.id === parentBId) ?? null, [allStrains, parentBId]);
+
+    const localizeType = useCallback((value: string | undefined) => {
+        if (!value) return '–';
+        return t(`strainsView.${value.toLowerCase()}`, { defaultValue: value });
+    }, [t]);
+
+    const localizeDifficulty = useCallback((value: string | undefined) => {
+        if (!value) return '–';
+        return t(`strainsView.difficulty.${value.toLowerCase()}`, { defaultValue: value });
+    }, [t]);
+
+    const localizeYield = useCallback((value: string | undefined) => {
+        if (!value) return '–';
+        return t(`strainsView.addStrainModal.yields.${value.toLowerCase()}`, { defaultValue: value });
+    }, [t]);
+
+    const localizeHeight = useCallback((value: string | undefined) => {
+        if (!value) return '–';
+        return t(`strainsView.addStrainModal.heights.${value.toLowerCase()}`, { defaultValue: value });
+    }, [t]);
 
     const handleCross = useCallback(() => {
         if (!parentA || !parentB) return;
@@ -257,14 +280,11 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                 <div className="flex items-center gap-3 mb-2">
                     <PhosphorIcons.Flask className="w-7 h-7 text-primary-400" />
                     <h3 className="text-xl font-bold font-display text-primary-400">
-                        {t('strainsView.breedingLab.title', { defaultValue: 'Breeding Lab' })}
+                        {t('strainsView.breedingLab.title')}
                     </h3>
                 </div>
                 <p className="text-sm text-slate-400">
-                    {t('strainsView.breedingLab.description', {
-                        defaultValue:
-                            'Select two parent strains to simulate Punnett Square genetics and predict F1 offspring traits.',
-                    })}
+                    {t('strainsView.breedingLab.description')}
                 </p>
             </Card>
 
@@ -272,7 +292,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Card>
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">
-                        {t('strainsView.breedingLab.parentA', { defaultValue: 'Parent A (♀)' })}
+                        {t('strainsView.breedingLab.parentA')}
                     </p>
                     <Select
                         value={parentAId}
@@ -290,7 +310,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                 </Card>
                 <Card>
                     <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">
-                        {t('strainsView.breedingLab.parentB', { defaultValue: 'Parent B (♂)' })}
+                        {t('strainsView.breedingLab.parentB')}
                     </p>
                     <Select
                         value={parentBId}
@@ -317,7 +337,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                     className="px-8"
                 >
                     <PhosphorIcons.ArrowRight className="w-5 h-5 mr-2" />
-                    {t('strainsView.breedingLab.cross', { defaultValue: 'Cross Strains' })}
+                    {t('strainsView.breedingLab.cross')}
                 </Button>
             </div>
 
@@ -325,10 +345,10 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
             {parentA && parentB && parentA.id !== parentB.id && (
                 <Card>
                     <h3 className="font-bold text-slate-200 mb-4">
-                        {t('strainsView.breedingLab.punnettSquares', { defaultValue: 'Punnett Squares' })}
+                        {t('strainsView.breedingLab.punnettSquares')}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                        {Object.entries(TRAITS).map(([key, traitDef]) => (
+                        {Object.entries(traitDefinitions).map(([key, traitDef]) => (
                             <PunnettGrid
                                 key={key}
                                 parentA={inferGenotype(parentA, key)}
@@ -347,7 +367,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                     {/* Generation tracker */}
                     <Card>
                         <h3 className="font-bold text-slate-200 mb-3">
-                            {t('strainsView.breedingLab.generationTracker', { defaultValue: 'Generation Tracker' })}
+                            {t('strainsView.breedingLab.generationTracker')}
                         </h3>
                         <div className="flex items-center gap-1 flex-wrap mb-3">
                             {GENERATIONS.map((gen, i) => {
@@ -376,16 +396,16 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                                 );
                             })}
                         </div>
-                        <p className="text-xs text-slate-400 italic">{GEN_DESCRIPTIONS[generation]}</p>
+                        <p className="text-xs text-slate-400 italic">{generationDescriptions[generation]}</p>
                         {generation !== 'IBL' && (
                             <Button variant="secondary" size="sm" className="mt-3" onClick={handleNextGen}>
                                 <PhosphorIcons.ArrowRight className="w-4 h-4 mr-1" />
-                                {t('strainsView.breedingLab.advanceGeneration', { defaultValue: 'Advance to next generation' })}
+                                {t('strainsView.breedingLab.advanceGeneration')}
                             </Button>
                         )}
                         {generation === 'IBL' && (
                             <p className="mt-3 text-xs font-semibold text-green-400">
-                                ✓ {t('strainsView.breedingLab.iblReached', { defaultValue: 'Inbred line stabilised. True-breeding cultivar.' })}
+                                ✓ {t('strainsView.breedingLab.iblReached')}
                             </p>
                         )}
                     </Card>
@@ -393,20 +413,18 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                     {/* Predicted offspring card */}
                     <Card>
                         <h3 className="font-bold text-slate-200 mb-4">
-                            {t('strainsView.breedingLab.predictedOffspring', {
-                                defaultValue: 'Predicted F1 Offspring',
-                            })}
+                            {t('strainsView.breedingLab.predictedOffspring')}
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-sm">
                             {[
-                                { label: 'Name', value: offspring.name },
-                                { label: 'Type', value: offspring.type },
-                                { label: 'THC', value: `${offspring.thc?.toFixed(1)}%` },
-                                { label: 'CBD', value: `${offspring.cbd?.toFixed(1)}%` },
-                                { label: 'Flowering', value: `${Math.round(offspring.floweringTime ?? 63)} days` },
-                                { label: 'Height', value: offspring.agronomic?.height ?? '–' },
-                                { label: 'Yield', value: offspring.agronomic?.yield ?? '–' },
-                                { label: 'Difficulty', value: offspring.agronomic?.difficulty ?? '–' },
+                                { label: t('strainsView.breedingLab.summary.name'), value: offspring.name },
+                                { label: t('strainsView.breedingLab.summary.type'), value: localizeType(offspring.type) },
+                                { label: t('strainsView.breedingLab.summary.thc'), value: `${offspring.thc?.toFixed(1)}%` },
+                                { label: t('strainsView.breedingLab.summary.cbd'), value: `${offspring.cbd?.toFixed(1)}%` },
+                                { label: t('strainsView.breedingLab.summary.flowering'), value: `${Math.round(offspring.floweringTime ?? 63)} ${t('common.days')}` },
+                                { label: t('strainsView.breedingLab.summary.height'), value: localizeHeight(offspring.agronomic?.height) },
+                                { label: t('strainsView.breedingLab.summary.yield'), value: localizeYield(offspring.agronomic?.yield) },
+                                { label: t('strainsView.breedingLab.summary.difficulty'), value: localizeDifficulty(offspring.agronomic?.difficulty) },
                             ].map(item => (
                                 <div key={item.label} className="bg-slate-800/60 rounded-lg p-2 ring-1 ring-white/10">
                                     <p className="text-[10px] text-slate-500 uppercase tracking-wider">{item.label}</p>
@@ -418,9 +436,9 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                         </div>
                         {offspring.dominantTerpenes && offspring.dominantTerpenes.length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-1">
-                                {offspring.dominantTerpenes.map(t => (
-                                    <span key={t} className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
-                                        {t}
+                                {offspring.dominantTerpenes.map((terpene) => (
+                                    <span key={terpene} className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
+                                        {t(`common.terpenes.${terpene}`, { defaultValue: terpene })}
                                     </span>
                                 ))}
                             </div>

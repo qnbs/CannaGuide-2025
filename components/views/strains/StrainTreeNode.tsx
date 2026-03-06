@@ -113,7 +113,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
         </div>
     );
     } catch {
-        return <div className="text-red-400 text-xs p-1">Node Error</div>;
+        return <div className="text-red-400 text-xs p-1">{t('strainsView.genealogyView.nodeError')}</div>;
     }
 });
 StrainTreeNode.displayName = 'StrainTreeNode';

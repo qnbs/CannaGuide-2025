@@ -43,7 +43,7 @@ const ComparisonChart: React.FC<{ historyA: PlantHistoryEntry[], historyB: Plant
         return (
             <div className="w-full">
                 <h4 className="font-bold text-center mb-2">{t('plantsView.detailedView.height')} (cm) vs. {t('plantsView.plantCard.day')}</h4>
-                <svg viewBox={`0 0 ${COMP_WIDTH} ${COMP_HEIGHT}`} className="w-full" role="img" aria-label={t('plantsView.comparison.chartLabel', { defaultValue: 'Comparison chart' })}>
+                <svg viewBox={`0 0 ${COMP_WIDTH} ${COMP_HEIGHT}`} className="w-full" role="img" aria-label={t('plantsView.comparison.chartLabel')}>
                     <g className="history-chart-grid" transform={`translate(0, ${COMP_HEIGHT - COMP_PADDING.bottom})`}>
                         {xScale.ticks(5).map(tick => (
                             <g key={`x-${tick}`} transform={`translate(${xScale(tick)}, 0)`}>

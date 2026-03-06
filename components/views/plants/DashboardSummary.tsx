@@ -70,7 +70,7 @@ const DashboardSummaryComponent: React.FC = () => {
                 <div>
                     <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
                         <PhosphorIcons.Heart className="h-3.5 w-3.5" />
-                        Live Environment
+                        {t('plantsView.gardenVitals.liveEnvironment')}
                     </div>
                     <h3 className="text-xl font-bold font-display text-slate-50">{t('plantsView.gardenVitals.title')}</h3>
                 </div>
@@ -79,7 +79,7 @@ const DashboardSummaryComponent: React.FC = () => {
                         <PhosphorIcons.ChartLineUp className="h-5 w-5" />
                     </div>
                     <div>
-                        <p className="text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">VPD</p>
+                        <p className="text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">{t('plantsView.gardenVitals.vpdSummary')}</p>
                         <p className="text-lg font-bold font-display text-slate-50">{avgTemp.toFixed(1)}° / {avgHumidity.toFixed(0)}%</p>
                     </div>
                 </div>

@@ -37,6 +37,7 @@
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:e2e:deploy": "playwright test -c playwright.deploy.config.ts",
+    "test:e2e": "playwright test -c playwright.config.ts",
     "lighthouse:ci": "lhci autorun --collect.staticDistDir=dist --upload.target=temporary-public-storage",
     "docker:build": "docker build -t cannaguide-2025:local .",
     "docker:run": "docker run --rm -p 8080:8080 cannaguide-2025:local",

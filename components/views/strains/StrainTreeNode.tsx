@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { GenealogyNode, StrainType } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -36,11 +36,30 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
         if (!isPlaceholder) onNodeClick(data);
     };
 
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                if (!isPlaceholder) onNodeFocus(data);
+            }
+        },
+        [data, isPlaceholder, onNodeFocus],
+    );
+
     try {
     return (
         <div
             className={`genealogy-node-container ${isPlaceholder ? 'placeholder' : ''}`}
             onClick={handleFocusClick}
+            onKeyDown={handleKeyDown}
+            role="treeitem"
+            tabIndex={0}
+            aria-label={t('common.accessibility.genealogyTreeNode', {
+                name: data.name,
+                type: data.type,
+                thc: data.thc?.toFixed(1),
+            })}
+            aria-expanded={isExpandable || isCollapsible ? isCollapsible : undefined}
         >
             <div className="flex items-center gap-2">
                 <div className={`w-5 h-5 flex-shrink-0 ${color}`}>{icon}</div>
@@ -59,9 +78,9 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                 </div>
                 {!isPlaceholder && (
                     <button
-                        className="flex-shrink-0 p-0.5 rounded text-slate-400 hover:text-primary-300 hover:bg-slate-700 transition-colors"
+                        className="flex-shrink-0 p-0.5 rounded text-slate-400 hover:text-primary-300 hover:bg-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                         onClick={handleDetailClick}
-                        aria-label={`Open details for ${data.name}`}
+                        aria-label={t('common.accessibility.openStrainDetails') + ': ' + data.name}
                         title={t('common.accessibility.openStrainDetails')}
                     >
                         <PhosphorIcons.Info className="w-4 h-4" />
@@ -78,12 +97,15 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
             )}
             {(isExpandable || isCollapsible) && (
                 <button
-                    className="genealogy-node-expand-btn"
+                    className="genealogy-node-expand-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                     onClick={(e) => {
                         e.stopPropagation();
                         onToggle(data.id);
                     }}
-                    aria-label={isCollapsible ? "Collapse Ancestors" : "Expand Ancestors"}
+                    aria-label={isCollapsible
+                        ? t('common.accessibility.collapseAncestors', { name: data.name })
+                        : t('common.accessibility.expandAncestors', { name: data.name })
+                    }
                 >
                     {isCollapsible ? <PhosphorIcons.Minus className="w-4 h-4" /> : <PhosphorIcons.Plus className="w-4 h-4" />}
                 </button>

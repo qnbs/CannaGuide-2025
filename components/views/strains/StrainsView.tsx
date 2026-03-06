@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Strain, StrainViewTab, AppSettings, SavedStrainTip, SavedExport } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
@@ -146,6 +146,21 @@ export const StrainsView: React.FC = () => {
     useEffect(() => {
         setCurrentPage(1);
     }, [filteredStrains, strainsViewTab]);
+
+    // --- Screen-reader live-region for filter/search result announcements ---
+    const liveRegionRef = useRef<HTMLDivElement>(null);
+    const isInitialMount = useRef(true);
+    useEffect(() => {
+        if (isInitialMount.current) { isInitialMount.current = false; return; }
+        const timer = setTimeout(() => {
+            if (liveRegionRef.current) {
+                liveRegionRef.current.textContent = searchTerm
+                    ? t('common.accessibility.searchResultsCount', { count: filteredStrains.length })
+                    : t('common.accessibility.filterResultsCount', { count: filteredStrains.length });
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [filteredStrains.length, searchTerm, t]);
     
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
@@ -382,6 +397,7 @@ export const StrainsView: React.FC = () => {
 
     return (
         <div className="space-y-6 animate-fade-in">
+            <div ref={liveRegionRef} role="status" aria-live="polite" aria-atomic="true" className="sr-only" />
              <div className="text-center mb-6">
                 {viewIcons[strainsViewTab]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{viewTitles[strainsViewTab]}</h2>

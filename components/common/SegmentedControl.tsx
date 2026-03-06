@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useRef } from 'react'
 
 interface SegmentedControlProps<T extends string> {
     options: { value: T; label: string; icon?: React.ReactNode }[]
@@ -6,6 +6,7 @@ interface SegmentedControlProps<T extends string> {
     onToggle: (value: T) => void
     className?: string
     buttonClassName?: string
+    'aria-label'?: string
 }
 
 export function SegmentedControl<T extends string>({
@@ -14,11 +15,39 @@ export function SegmentedControl<T extends string>({
     onToggle,
     className = '',
     buttonClassName = '',
+    'aria-label': ariaLabel,
 }: SegmentedControlProps<T>) {
+    const groupRef = useRef<HTMLDivElement>(null)
+
+    const handleKeyDown = useCallback(
+        (e: React.KeyboardEvent) => {
+            const buttons = Array.from(
+                groupRef.current?.querySelectorAll<HTMLButtonElement>('button') ?? [],
+            )
+            const currentIndex = buttons.indexOf(e.target as HTMLButtonElement)
+            if (currentIndex < 0) return
+
+            let nextIndex = -1
+            if (e.key === 'ArrowRight') nextIndex = (currentIndex + 1) % buttons.length
+            else if (e.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + buttons.length) % buttons.length
+            else if (e.key === 'Home') nextIndex = 0
+            else if (e.key === 'End') nextIndex = buttons.length - 1
+
+            if (nextIndex >= 0) {
+                e.preventDefault()
+                buttons[nextIndex].focus()
+            }
+        },
+        [],
+    )
+
     return (
         <div
+            ref={groupRef}
             className={`flex flex-wrap items-center gap-2 ${className}`}
             role="group"
+            aria-label={ariaLabel}
+            onKeyDown={handleKeyDown}
         >
             {options.map((option) => {
                 const isActive = value.includes(option.value)

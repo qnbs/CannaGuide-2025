@@ -57,7 +57,7 @@ export const SideNav: React.FC = () => {
     }, [activeView]);
 
     return (
-        <nav className="hidden md:flex flex-col w-20 bg-slate-900/80 backdrop-blur-sm border-r border-slate-800 flex-shrink-0 pt-4 items-center">
+        <nav aria-label={t('common.accessibility.mainNavigation')} className="hidden md:flex flex-col w-20 bg-slate-900/80 backdrop-blur-sm border-r border-slate-800 flex-shrink-0 pt-4 items-center">
             <div className="mb-8">
                 <CannabisLeafIcon className="w-10 h-10 text-primary-400" />
             </div>

@@ -820,7 +820,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     })}
                                 </div>
                             )}
-                            <svg ref={svgRef} className="w-full h-full cursor-move">
+                            <svg ref={svgRef} className="w-full h-full cursor-move" role="img" aria-label={t('common.accessibility.genealogyTree')}>
                                 <g className="genealogy-content">
                                     {renderLinks()}
                                     {renderNodes()}

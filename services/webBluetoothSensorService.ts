@@ -24,6 +24,7 @@ export interface SensorReading {
     humidityPercent: number
     receivedAt: number
 }
+import { getT } from '@/i18n'
 
 const ENVIRONMENTAL_SENSING_SERVICE = 0x181a
 const TEMPERATURE_CHARACTERISTIC = 0x2a6e
@@ -36,7 +37,7 @@ class WebBluetoothSensorService {
 
     public async readEsp32EnvironmentalSensor(): Promise<SensorReading> {
         if (!this.isSupported()) {
-            throw new Error('WebBluetooth is not supported in this browser.')
+            throw new Error(getT()('common.bluetooth.notSupported'))
         }
 
         const device = await navigator.bluetooth.requestDevice({
@@ -46,7 +47,7 @@ class WebBluetoothSensorService {
 
         const server = await device.gatt?.connect()
         if (!server) {
-            throw new Error('Could not connect to ESP32 device.')
+            throw new Error(getT()('common.bluetooth.connectionFailed'))
         }
 
         const service = await server.getPrimaryService(ENVIRONMENTAL_SENSING_SERVICE)

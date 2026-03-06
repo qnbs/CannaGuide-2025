@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { Strain, StrainType } from '@/types'
+import { getT } from '@/i18n'
 
 const GIST_FILE_NAME = 'cannaguide-strains.json'
 
@@ -38,7 +39,7 @@ const extractGistId = (value: string): string => {
     const trimmed = value.trim()
     const match = trimmed.match(/(?:gist\.github\.com\/(?:[^/]+\/)?|^)([a-f0-9]{20,})/i)
     if (!match?.[1]) {
-        throw new Error('Invalid gist URL or ID.')
+        throw new Error(getT()('common.communityShare.invalidGistUrl'))
     }
     return match[1]
 }
@@ -70,7 +71,7 @@ class CommunityShareService {
         })
 
         if (!response.ok) {
-            throw new Error(`Gist export failed (${response.status}).`)
+            throw new Error(getT()('common.communityShare.exportFailed', { status: response.status }))
         }
 
         const gist = (await response.json()) as { id: string; html_url: string }
@@ -82,7 +83,7 @@ class CommunityShareService {
         const response = await fetch(`https://api.github.com/gists/${gistId}`)
 
         if (!response.ok) {
-            throw new Error(`Could not fetch gist (${response.status}).`)
+            throw new Error(getT()('common.communityShare.fetchFailed', { status: response.status }))
         }
 
         const gist = (await response.json()) as {
@@ -91,13 +92,13 @@ class CommunityShareService {
 
         const file = gist.files[GIST_FILE_NAME] || Object.values(gist.files)[0]
         if (!file?.content) {
-            throw new Error('Gist contains no importable strain payload.')
+            throw new Error(getT()('common.communityShare.noPayload'))
         }
 
         const parsed = JSON.parse(file.content)
         const result = GistPayloadSchema.safeParse(parsed)
         if (!result.success) {
-            throw new Error(`Invalid strain payload in gist: ${result.error.issues.map((i) => i.message).join(', ')}`)
+            throw new Error(getT()('common.communityShare.invalidPayload', { details: result.error.issues.map((i) => i.message).join(', ') }))
         }
 
         return result.data.strains as Strain[]

@@ -148,15 +148,7 @@ export const selectArchivedAdvisorResponsesForPlant = createSelector(
 export const selectArchivedAdvisorResponses = selectAllArchivedAdvisorResponses
 
 // --- TTS Selectors ---
-export const selectTtsState = createSelector(
-    [selectTts],
-    (tts: TtsState): TtsState => ({
-        isTtsSpeaking: tts.isTtsSpeaking,
-        isTtsPaused: tts.isTtsPaused,
-        ttsQueue: tts.ttsQueue,
-        currentlySpeakingId: tts.currentlySpeakingId,
-    }),
-)
+export const selectTtsState = selectTts
 export const selectCurrentlySpeakingId = createSelector(
     [selectTts],
     (tts: TtsState): string | null => tts.currentlySpeakingId,
@@ -189,11 +181,18 @@ export const selectSelectedPlantId = createSelector(
     (sim: SimulationState): string | null => sim.selectedPlantId,
 )
 
-export const selectPlantById = (id: string | null) =>
-    createSelector(
-        [selectSimulation],
-        (sim: SimulationState): Plant | null => (id ? sim.plants.entities[id] : null) || null,
-    )
+const plantByIdCache = new Map<string | null, (state: RootState) => Plant | null>();
+export const selectPlantById = (id: string | null): (state: RootState) => Plant | null => {
+    let selector = plantByIdCache.get(id);
+    if (!selector) {
+        selector = createSelector(
+            [selectSimulation],
+            (sim: SimulationState): Plant | null => (id ? sim.plants.entities[id] : null) ?? null,
+        );
+        plantByIdCache.set(id, selector);
+    }
+    return selector;
+}
 
 export const selectOpenTasksSummary = createSelector(
     [selectActivePlants],
@@ -222,7 +221,10 @@ const calculateVPD = (tempC: number, rh: number, leafTempOffset: number): number
     return svpLeaf - avp;
 };
 
-export const selectGardenHealthMetrics = createSelector([selectActivePlants], (activePlants) => {
+export const selectGardenHealthMetrics = createSelector(
+    [selectActivePlants, selectSettings],
+    (activePlants, settings) => {
+    const leafTempOffset = settings.simulation?.leafTemperatureOffset ?? -2;
     const activePlantsCount = activePlants.length;
     if (activePlantsCount === 0) {
         const defaultTemp = 22;
@@ -232,7 +234,7 @@ export const selectGardenHealthMetrics = createSelector([selectActivePlants], (a
             activePlantsCount: 0, 
             avgTemp: defaultTemp, 
             avgHumidity: defaultHumidity,
-            avgVPD: calculateVPD(defaultTemp, defaultHumidity, -2)
+            avgVPD: calculateVPD(defaultTemp, defaultHumidity, leafTempOffset)
         };
     }
     const totalHealth = activePlants.reduce((sum, p) => sum + p.health, 0);
@@ -247,16 +249,13 @@ export const selectGardenHealthMetrics = createSelector([selectActivePlants], (a
         activePlantsCount,
         avgTemp,
         avgHumidity,
-        avgVPD: calculateVPD(avgTemp, avgHumidity, -2)
+        avgVPD: calculateVPD(avgTemp, avgHumidity, leafTempOffset)
     };
 });
 
 
 // --- Strains View Selectors ---
-export const selectStrainsViewState = createSelector(
-    [selectStrainsView],
-    (view: StrainsViewState): StrainsViewState => view,
-)
+export const selectStrainsViewState = selectStrainsView
 export const selectActiveStrainViewTab = createSelector(
     [selectStrainsView],
     (view: StrainsViewState): StrainViewTab => view.strainsViewTab,
@@ -280,4 +279,4 @@ export const selectSandboxState = createSelector([selectSandbox], (s: SandboxSta
 export const selectSavedExperiments = createSelector([selectSandboxState], (s): SavedExperiment[] => s.savedExperiments)
 
 // --- Genealogy Selector ---
-export const selectGenealogyState = createSelector([selectGenealogy], (g) => g)
+export const selectGenealogyState = selectGenealogy

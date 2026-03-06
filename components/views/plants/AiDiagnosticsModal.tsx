@@ -219,7 +219,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                     console.error('Image resizing failed:', err)
                     setImage(reader.result as string) // fallback to original
                     dispatch(
-                        addNotification({ message: 'Image resizing failed, using original.', type: 'error' }),
+                        addNotification({ message: t('common.imageResizeFailed'), type: 'error' }),
                     )
                 }
             }
@@ -262,7 +262,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
         } catch (err) {
             console.error('Image resizing failed:', err)
             setImage(dataUrl) // fallback to original
-            dispatch(addNotification({ message: 'Image resizing failed, using original.', type: 'error' }))
+            dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }))
         }
         setIsCameraOpen(false)
     }

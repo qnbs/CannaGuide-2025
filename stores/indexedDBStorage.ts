@@ -51,39 +51,24 @@ const getStore = async (mode: IDBTransactionMode): Promise<IDBObjectStore> => {
   return transaction.objectStore(STORE_NAME);
 };
 
+const requestToPromise = <T>(request: IDBRequest<T>): Promise<T> =>
+  new Promise((resolve, reject) => {
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
 export const indexedDBStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const store = await getStore('readonly');
-        const request = store.get(name);
-        request.onsuccess = () => {
-          resolve((request.result as string) || null);
-        };
-        request.onerror = () => {
-          reject(request.error);
-        };
-      } catch (e) { reject(e); }
-    });
+    const store = await getStore('readonly');
+    const result = await requestToPromise(store.get(name));
+    return (result as string) || null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const store = await getStore('readwrite');
-        const request = store.put(value, name);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-      } catch (e) { reject(e); }
-    });
+    const store = await getStore('readwrite');
+    await requestToPromise(store.put(value, name));
   },
   removeItem: async (name: string): Promise<void> => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const store = await getStore('readwrite');
-        const request = store.delete(name);
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-      } catch (e) { reject(e); }
-    });
+    const store = await getStore('readwrite');
+    await requestToPromise(store.delete(name));
   },
 };

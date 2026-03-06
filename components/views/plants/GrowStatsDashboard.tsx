@@ -1,4 +1,5 @@
 import React, { memo, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppSelector } from '@/stores/store'
@@ -23,6 +24,7 @@ const totalDaysToHarvest = growthOrder.reduce((sum, stage) => {
 }, 0)
 
 const GrowStatsDashboardComponent: React.FC = () => {
+    const { t } = useTranslation()
     const activePlants = useAppSelector(selectActivePlants)
     const openTasks = useAppSelector(selectOpenTasksSummary)
 
@@ -57,13 +59,13 @@ const GrowStatsDashboardComponent: React.FC = () => {
         const timelineItems: string[] = []
 
         openTasks.slice(0, 3).forEach((task) => {
-            timelineItems.push(`Task: ${task.title} (${task.plantName})`)
+            timelineItems.push(t('plantsView.growStats.taskPrefix', { title: task.title, plantName: task.plantName }))
         })
 
         activePlants.forEach((plant) => {
             const remainingDays = Math.max(0, Math.round(totalDaysToHarvest - plant.age))
             if (remainingDays <= 14) {
-                timelineItems.push(`${plant.name}: harvest ETA ~${remainingDays} day(s)`)
+                timelineItems.push(t('plantsView.growStats.harvestEta', { name: plant.name, days: remainingDays }))
             }
         })
 
@@ -73,32 +75,32 @@ const GrowStatsDashboardComponent: React.FC = () => {
             totalTrackedCost: estimatedRunningCost,
             timeline: timelineItems.slice(0, 4),
         }
-    }, [activePlants, openTasks])
+    }, [activePlants, openTasks, t])
 
     return (
         <Card>
             <div className="flex items-center justify-between gap-4 mb-4">
-                <h3 className="text-xl font-bold font-display text-primary-300">Grow Stats Dashboard</h3>
+                <h3 className="text-xl font-bold font-display text-primary-300">{t('plantsView.growStats.title')}</h3>
                 <PhosphorIcons.ChartLineUp className="w-6 h-6 text-primary-300" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Yield forecast</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.yieldForecast')}</p>
                     <p className="text-2xl font-bold text-slate-100 mt-1">{yieldForecast.toFixed(1)} g</p>
                 </div>
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Cost tracker / day</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.costTracker')}</p>
                     <p className="text-2xl font-bold text-slate-100 mt-1">{energyCostPerDay.toFixed(2)} EUR</p>
                 </div>
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Tracked total</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.trackedTotal')}</p>
                     <p className="text-2xl font-bold text-slate-100 mt-1">{totalTrackedCost.toFixed(0)} EUR</p>
                 </div>
             </div>
 
             <div className="mt-4 rounded-lg bg-slate-900/60 p-3 ring-1 ring-inset ring-white/20">
-                <p className="text-sm font-semibold text-slate-200 mb-2">Timeline</p>
+                <p className="text-sm font-semibold text-slate-200 mb-2">{t('plantsView.growStats.timeline')}</p>
                 {timeline.length > 0 ? (
                     <ul className="space-y-1.5 text-sm text-slate-300">
                         {timeline.map((item, index) => (
@@ -109,7 +111,7 @@ const GrowStatsDashboardComponent: React.FC = () => {
                         ))}
                     </ul>
                 ) : (
-                    <p className="text-sm text-slate-400">No upcoming events yet.</p>
+                    <p className="text-sm text-slate-400">{t('plantsView.growStats.noEvents')}</p>
                 )}
             </div>
         </Card>

@@ -138,7 +138,7 @@ const DashboardSummaryComponent: React.FC = () => {
                                 />
                             </>
                         ) : (
-                             <p className="text-xs text-slate-500 text-center">Start a grow to enable advanced controls.</p>
+                             <p className="text-xs text-slate-500 text-center">{t('plantsView.summary.advancedControlsHint')}</p>
                         )}
                     </div>
                 </details>

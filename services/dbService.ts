@@ -378,7 +378,13 @@ export const dbService = {
     async pruneOldImages(maxToDelete = IMAGE_PRUNE_BATCH_SIZE): Promise<number> {
         const conn = await openDB();
 
-        const allImages = await performTx<StoredImageData[]>(IMAGES_STORE, 'readonly', store => store.getAll());
+        const allImages = await new Promise<StoredImageData[]>((resolve, reject) => {
+            const tx = conn.transaction(IMAGES_STORE, 'readonly');
+            const req = tx.objectStore(IMAGES_STORE).getAll();
+            req.onsuccess = () => resolve(req.result);
+            tx.onerror = () => reject(tx.error);
+        });
+
         if (allImages.length === 0) {
             return 0;
         }

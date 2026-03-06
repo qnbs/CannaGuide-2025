@@ -86,9 +86,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache).catch(err => {
         console.error('[SW] App shell caching failed:', err);
       });
-    }).then(() => {
-      console.log('[SW] New service worker installed, calling skipWaiting().');
-      return self.skipWaiting();
     })
   );
 });
@@ -127,7 +124,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          if (networkResponse && networkResponse.status === 200 && url.origin === self.location.origin) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then((cache) => {
               cache.put(request, responseToCache);
@@ -159,9 +156,7 @@ self.addEventListener('fetch', (event) => {
         return networkResponse;
       }).catch(error => {
         console.error('[SW] Fetch failed:', error);
-        if (request.mode === 'navigate') {
-          return offlineFallback;
-        }
+        return new Response('Network error', { status: 408 });
       });
     })
   );
@@ -170,6 +165,14 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+
+  if (event.data?.type === 'UPDATE_REMINDERS' && Array.isArray(event.data.payload)) {
+    event.waitUntil(replaceReminders(event.data.payload));
+  }
+
+  if (event.data?.type === 'REQUEST_REMINDER_CHECK') {
+    event.waitUntil(notifyDueReminders());
   }
 });
 
@@ -374,16 +377,6 @@ self.addEventListener('sync', (event) => {
 self.addEventListener('periodicsync', (event) => {
   if (event.tag === 'grow-reminders') {
     console.log('[SW] Periodic sync event for grow reminders');
-    event.waitUntil(notifyDueReminders());
-  }
-});
-
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'UPDATE_REMINDERS' && Array.isArray(event.data.payload)) {
-    event.waitUntil(replaceReminders(event.data.payload));
-  }
-
-  if (event.data?.type === 'REQUEST_REMINDER_CHECK') {
     event.waitUntil(notifyDueReminders());
   }
 });

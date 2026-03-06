@@ -1,20 +1,22 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import React, { memo, useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Plant } from '@/types';
 import { PlantSlot } from './plants/PlantSlot';
-import { DetailedPlantView } from './plants/DetailedPlantView';
 import { TipOfTheDay } from './plants/TipOfTheDay';
 import { DashboardSummary } from './plants/DashboardSummary';
 import { GrowStatsDashboard } from './plants/GrowStatsDashboard';
 import { TasksAndWarnings } from './plants/TasksAndWarnings';
-import { GlobalAdvisorArchiveView } from './plants/GlobalAdvisorArchiveView';
 import { InlineStrainSelector } from './plants/InlineStrainSelector';
-import { GrowReminderPanel } from './plants/GrowReminderPanel';
-import { SensorIntegrationPanel } from './plants/SensorIntegrationPanel';
 import { usePlantSlotsData, useGardenSummary, useSelectedPlant } from '@/hooks/useSimulationBridge';
+
+// Lazy-loaded heavy sub-views (only rendered when needed)
+const DetailedPlantView = lazy(() => import('./plants/DetailedPlantView').then(m => ({ default: m.DetailedPlantView })))
+const GlobalAdvisorArchiveView = lazy(() => import('./plants/GlobalAdvisorArchiveView').then(m => ({ default: m.GlobalAdvisorArchiveView })))
+const GrowReminderPanel = lazy(() => import('./plants/GrowReminderPanel').then(m => ({ default: m.GrowReminderPanel })))
+const SensorIntegrationPanel = lazy(() => import('./plants/SensorIntegrationPanel').then(m => ({ default: m.SensorIntegrationPanel })))
 
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 // FIX: Removed unused `selectIsExpertMode` which was causing an import error.
@@ -107,7 +109,11 @@ export const PlantsView: React.FC = () => {
     return (
         <>
             {/* Detail View - Rendered on top when active */}
-            {selectedPlant && <DetailedPlantView plant={selectedPlant} onClose={() => dispatch(setSelectedPlantId(null))} />}
+            {selectedPlant && (
+                <Suspense fallback={null}>
+                    <DetailedPlantView plant={selectedPlant} onClose={() => dispatch(setSelectedPlantId(null))} />
+                </Suspense>
+            )}
 
             {/* Main Dashboard View - Hidden when a plant is selected to preserve state */}
             <div style={{ display: selectedPlant ? 'none' : 'block' }}>
@@ -156,10 +162,14 @@ export const PlantsView: React.FC = () => {
                             )}
                         </div>
                         <div className="lg:col-span-1 space-y-6">
-                            <GrowReminderPanel />
-                            <SensorIntegrationPanel />
+                            <Suspense fallback={null}>
+                                <GrowReminderPanel />
+                                <SensorIntegrationPanel />
+                            </Suspense>
                             <TasksAndWarnings tasks={tasks} problems={problems} />
-                            <GlobalAdvisorArchiveView />
+                            <Suspense fallback={null}>
+                                <GlobalAdvisorArchiveView />
+                            </Suspense>
                         </div>
                     </div>
                 </div>

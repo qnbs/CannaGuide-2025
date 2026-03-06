@@ -11,8 +11,6 @@ import { usePwaInstall } from '@/hooks/usePwaInstall'
 import { TTSControls } from '@/components/common/TTSControls'
 import { useDocumentEffects } from '@/hooks/useDocumentEffects'
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon'
-import { LogActionModalContainer } from '@/components/views/plants/LogActionModalContainer'
-import { DeepDiveModalContainer } from '@/hooks/DeepDiveModalContainer'
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import {
@@ -31,12 +29,8 @@ import {
 } from '@/stores/slices/uiSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
 import { ToastContainer } from '@/components/common/Toast'
-import { AiDiagnosticsModalContainer } from '@/components/views/plants/AiDiagnosticsModalContainer'
-import { SaveSetupModalContainer } from '@/components/views/equipment/SaveSetupModalContainer'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
-import { GrowSetupModal } from '@/components/views/plants/GrowSetupModal'
-import { GrowConfirmationModal } from '@/components/views/plants/GrowConfirmationModal'
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
@@ -57,6 +51,14 @@ const EquipmentView = lazy(() =>
 const KnowledgeView = lazy(() => import('@/components/views/KnowledgeView'))
 const SettingsView = lazy(() => import('@/components/views/settings/SettingsView'))
 const HelpView = lazy(() => import('@/components/views/HelpView'))
+
+// --- Lazy Loaded Modals (not needed on initial render) ---
+const GrowSetupModal = lazy(() => import('@/components/views/plants/GrowSetupModal').then(m => ({ default: m.GrowSetupModal })))
+const GrowConfirmationModal = lazy(() => import('@/components/views/plants/GrowConfirmationModal').then(m => ({ default: m.GrowConfirmationModal })))
+const LogActionModalContainer = lazy(() => import('@/components/views/plants/LogActionModalContainer').then(m => ({ default: m.LogActionModalContainer })))
+const DeepDiveModalContainer = lazy(() => import('@/hooks/DeepDiveModalContainer').then(m => ({ default: m.DeepDiveModalContainer })))
+const AiDiagnosticsModalContainer = lazy(() => import('@/components/views/plants/AiDiagnosticsModalContainer').then(m => ({ default: m.AiDiagnosticsModalContainer })))
+const SaveSetupModalContainer = lazy(() => import('@/components/views/equipment/SaveSetupModalContainer').then(m => ({ default: m.SaveSetupModalContainer })))
 
 const LoadingGate: React.FC = () => {
     const { t } = useTranslation()
@@ -206,19 +208,23 @@ export const App: React.FC = () => {
                 onClose={() => dispatch(setIsCommandPaletteOpen(false))}
             />
             {newGrowFlow.status === 'configuringSetup' && newGrowFlow.strain && (
+                <Suspense fallback={null}>
                 <GrowSetupModal
                     strain={newGrowFlow.strain}
                     onClose={() => dispatch(cancelNewGrow())}
                     onConfirm={(setup) => dispatch(confirmSetupAndShowConfirmation(setup))}
                 />
+                </Suspense>
             )}
             {newGrowFlow.status === 'confirming' && (
-                <GrowConfirmationModal />
+                <Suspense fallback={null}><GrowConfirmationModal /></Suspense>
             )}
-            <LogActionModalContainer />
-            <DeepDiveModalContainer />
-            <AiDiagnosticsModalContainer />
-            <SaveSetupModalContainer />
+            <Suspense fallback={null}>
+                <LogActionModalContainer />
+                <DeepDiveModalContainer />
+                <AiDiagnosticsModalContainer />
+                <SaveSetupModalContainer />
+            </Suspense>
         </div>
     )
 }

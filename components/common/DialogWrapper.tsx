@@ -88,7 +88,7 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
       }}
     >
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-[120] bg-slate-950/85 backdrop-blur-md data-[state=open]:animate-fade-in" />
+        <DialogPrimitive.Overlay className="fixed inset-0 z-[120] bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.14),transparent_34%),rgba(2,6,23,0.84)] backdrop-blur-xl data-[state=open]:animate-fade-in" />
 
         <div
           className={cn(
@@ -98,10 +98,10 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
         >
           <DialogPrimitive.Content
             className={cn(
-              'pointer-events-auto flex w-full flex-col gap-3 overflow-hidden border border-white/20 bg-[rgba(var(--color-bg-component),0.94)] shadow-2xl backdrop-blur-xl focus:outline-none',
+              'pointer-events-auto flex w-full flex-col gap-3 overflow-hidden border border-white/14 bg-[linear-gradient(180deg,rgba(15,23,42,0.98),rgba(15,23,42,0.92))] shadow-[0_36px_100px_rgba(2,6,23,0.58)] backdrop-blur-2xl focus:outline-none',
               isDrawer
-                ? `${sizeClasses[size]} max-h-[90dvh] rounded-2xl rounded-b-none`
-                : `${sizeClasses[size]} max-h-[90dvh] rounded-2xl`,
+                ? `${sizeClasses[size]} max-h-[90dvh] rounded-[1.75rem] rounded-b-none`
+                : `${sizeClasses[size]} max-h-[90dvh] rounded-[1.75rem]`,
               containerClassName
             )}
             style={{
@@ -113,13 +113,14 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
           >
-            <header className="flex items-start justify-between gap-3 border-b border-white/10 p-4 pb-3">
+            <header className="relative flex items-start justify-between gap-3 border-b border-white/10 bg-[linear-gradient(180deg,rgba(30,41,59,0.7),rgba(15,23,42,0.16))] p-5 pb-4">
+              <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/60 to-transparent" aria-hidden="true" />
               <div className="min-w-0">
                 {isDrawer && (
                   <div className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-slate-500/70" aria-hidden="true" />
                 )}
                 {title && (
-                  <DialogPrimitive.Title className="text-xl font-bold font-display text-primary-300 sm:text-2xl">
+                  <DialogPrimitive.Title className="text-xl font-bold font-display tracking-tight text-slate-50 sm:text-2xl">
                     {title}
                   </DialogPrimitive.Title>
                 )}
@@ -127,7 +128,7 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
 
               {showCloseButton && (
                 <DialogPrimitive.Close
-                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-slate-800/80 text-slate-200 transition-colors hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                  className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-white/6 text-slate-200 transition-all hover:border-white/25 hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                   aria-label={t('common.close')}
                 >
                   <PhosphorIcons.X className="h-5 w-5" />
@@ -135,12 +136,12 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
               )}
             </header>
 
-            <div ref={scrollableContentRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-1">
+            <div ref={scrollableContentRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-2">
               {children}
             </div>
 
             {footer && (
-              <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-3 border-t border-white/10 bg-[rgba(var(--color-bg-component),0.96)] px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur">
+              <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-end gap-3 border-t border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(15,23,42,0.96))] px-5 pt-4 pb-[max(0.9rem,env(safe-area-inset-bottom))] backdrop-blur-xl">
                 {footer}
               </footer>
             )}

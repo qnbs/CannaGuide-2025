@@ -37,10 +37,19 @@ export const useForm = <T extends Record<string, unknown>>({
         [values, validate, onSubmit]
     )
 
+    const resetForm = useCallback(
+        (nextValues?: T) => {
+            setValues(nextValues ?? initialValues)
+            setErrors({})
+        },
+        [initialValues]
+    )
+
     return {
         values,
         errors,
         handleChange,
         handleSubmit,
+        resetForm,
     }
 }

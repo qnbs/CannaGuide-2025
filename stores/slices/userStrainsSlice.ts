@@ -19,6 +19,7 @@ const initialState: UserStrainsState = userStrainsAdapter.getInitialState()
 export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { state: RootState }>(
     'userStrains/addUserStrainWithValidation',
     (strain, { dispatch, getState }) => {
+        const t = getT();
         const { userStrains } = getState()
         const existingStrains = userStrainsAdapter.getSelectors().selectAll(userStrains)
         const isDuplicate = existingStrains.some(
@@ -26,7 +27,6 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
         )
 
         if (isDuplicate) {
-            const t = getT();
             dispatch(
                 addNotification({
                     message: t('strainsView.addStrainModal.validation.duplicate', {
@@ -39,6 +39,12 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
         }
 
         dispatch(userStrainsSlice.actions.addUserStrain(strain))
+        dispatch(
+            addNotification({
+                message: t('strainsView.addStrainModal.validation.addSuccess', { name: strain.name }),
+                type: 'success',
+            }),
+        )
         dispatch(closeAddModal())
     },
 )
@@ -46,7 +52,14 @@ export const addUserStrainWithValidation = createAsyncThunk<void, Strain, { stat
 export const updateUserStrainAndCloseModal = createAsyncThunk<void, Strain, { state: RootState }>(
     'userStrains/updateUserStrainAndCloseModal',
     (strain, { dispatch }) => {
+        const t = getT();
         dispatch(userStrainsSlice.actions.updateUserStrain(strain))
+        dispatch(
+            addNotification({
+                message: t('strainsView.addStrainModal.validation.updateSuccess', { name: strain.name }),
+                type: 'success',
+            }),
+        )
         dispatch(closeAddModal())
     },
 )

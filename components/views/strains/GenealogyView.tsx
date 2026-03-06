@@ -12,6 +12,8 @@ import {
     setGenealogyLayout,
     toggleGenealogyNode,
     resetGenealogyCache,
+    resetGenealogy,
+    isGenealogyStateCorrupt,
 } from '@/stores/slices/genealogySlice';
 import { Strain, GenealogyNode } from '@/types';
 import { StrainTreeNode } from './StrainTreeNode';
@@ -108,8 +110,20 @@ AnalysisPanel.displayName = 'GenealogyAnalysisPanel';
 export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNodeClick }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const { computedTrees, status, selectedStrainId, zoomTransform, layoutOrientation } = useAppSelector(selectGenealogyState);
+    const genealogyState = useAppSelector(selectGenealogyState);
+
+    // ── Defensive Destructuring ──────────────────────────────────────────
+    // Falls der persisted State korrupt war und der Selector undefined/null
+    // liefert, greifen die ??-Fallbacks → kein throw im Render-Zyklus.
+    const computedTrees = genealogyState?.computedTrees ?? {};
+    const status = genealogyState?.status ?? 'idle';
+    const selectedStrainId = genealogyState?.selectedStrainId ?? null;
+    const zoomTransform = genealogyState?.zoomTransform ?? null;
+    const layoutOrientation = genealogyState?.layoutOrientation ?? 'horizontal';
+
     const [descendants, setDescendants] = useState<{ children: Strain[]; grandchildren: Strain[] } | null>(null);
+    // Zeigt eine einmalige Info-Leiste, wenn der State beim Mount zurückgesetzt wurde
+    const [wasReset, setWasReset] = useState(false);
 
     // SVG-Ref: d3 liest den DOM-Knoten direkt – niemals als State speichern
     const svgRef = useRef<SVGSVGElement>(null);
@@ -118,6 +132,23 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     // Letzten zoomTransform via Ref lesen, um den Zoom-Effect nicht neu auszulösen
     const zoomTransformRef = useRef(zoomTransform);
     zoomTransformRef.current = zoomTransform;
+
+    // ── Mount-Check: korrupten persisted State sofort zurücksetzen ────────
+    // Läuft einmal beim ersten Render. isGenealogyStateCorrupt prüft:
+    //   - _version !== GENEALOGY_STATE_VERSION (alter SW-Bundle)
+    //   - status === 'loading' (App während Fetch gecrasht)
+    //   - computedTrees ist kein Objekt oder enthält kaputte Knoten
+    // Bei Korruption: dispatch(resetGenealogy()) setzt auf initialState zurück
+    // und wasReset zeigt dem User eine Info-Leiste statt ErrorBoundary-Crash.
+    useEffect(() => {
+        if (isGenealogyStateCorrupt(genealogyState)) {
+            console.warn('[GenealogyView] Corrupt persisted state detected on mount – resetting.');
+            dispatch(resetGenealogy());
+            setWasReset(true);
+        }
+        // Nur einmal beim Mount prüfen – genealogyState bewusst NICHT in deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dispatch]);
 
     const tree = useMemo(
         () => (selectedStrainId ? (computedTrees[selectedStrainId] ?? null) : null),
@@ -340,6 +371,31 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
     // ------------------------------------------------------------------
     return (
         <div className="space-y-4">
+            {/* ── Fallback-Banner: Korrupter State wurde automatisch zurückgesetzt ── */}
+            {wasReset && (
+                <Card className="!bg-amber-900/30 border border-amber-600/40">
+                    <div className="flex items-center gap-3">
+                        <PhosphorIcons.WarningCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
+                        <div className="flex-grow">
+                            <p className="text-amber-200 text-sm font-semibold">
+                                Stammbaum-State wurde automatisch zurückgesetzt
+                            </p>
+                            <p className="text-amber-300/70 text-xs mt-0.5">
+                                Der gespeicherte Zustand war beschädigt (alte Version oder unterbrochener Ladevorgang).
+                                Der Stammbaum wird beim nächsten Öffnen neu berechnet.
+                            </p>
+                        </div>
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setWasReset(false)}
+                        >
+                            OK
+                        </Button>
+                    </div>
+                </Card>
+            )}
+
             {descendants && selectedStrainId && (
                 <Modal
                     isOpen={!!descendants}
@@ -418,6 +474,18 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     <PhosphorIcons.TreeStructure className="w-12 h-12 mx-auto mb-4 opacity-50" />
                     <p className="font-semibold">{t('common.error')}</p>
                     <p className="text-sm text-slate-400 mt-1">{t('strainsView.genealogyView.noStrainSelected')}</p>
+                    {/* Manueller Reset-Button als Ausweg bei persistentem Fehler */}
+                    <Button
+                        variant="danger"
+                        size="sm"
+                        className="mt-4"
+                        onClick={() => {
+                            dispatch(resetGenealogy());
+                            setWasReset(true);
+                        }}
+                    >
+                        <PhosphorIcons.ArrowClockwise className="mr-1" /> State zurücksetzen
+                    </Button>
                 </Card>
             )}
 

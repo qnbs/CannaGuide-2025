@@ -1,14 +1,11 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { GenealogyNode, Strain, StrainType } from '@/types'
 import { geneticsService } from '@/services/geneticsService'
+import { GENEALOGY_STATE_VERSION } from '@/constants'
 import type { RootState } from '../store'
 
-// ---------------------------------------------------------------------------
-// Schema version – bump this whenever GenealogyState shape changes.
-// sanitizeGenealogyState detects mismatches at rehydration and wipes the
-// computedTrees cache (pure derived data) while preserving user preferences.
-// ---------------------------------------------------------------------------
-export const GENEALOGY_STATE_VERSION = 2
+// Re-export so existing consumers (GenealogyView etc.) keep working
+export { GENEALOGY_STATE_VERSION }
 
 interface SerializableZoomTransform {
     k: number
@@ -157,6 +154,39 @@ export const sanitizeGenealogyState = (raw: unknown): GenealogyState => {
         zoomTransform,
         layoutOrientation,
     }
+}
+
+// ---------------------------------------------------------------------------
+// Runtime corruption check – used by GenealogyView on mount to detect
+// persisted state that slipped past sanitize (e.g. Service Worker serving
+// an old bundle with a different schema, or IndexedDB write race).
+// Returns true if the state is structurally corrupt and must be reset.
+// ---------------------------------------------------------------------------
+export const isGenealogyStateCorrupt = (state: unknown): boolean => {
+    if (!state || typeof state !== 'object') return true
+    const s = state as Record<string, unknown>
+
+    // Version mismatch → stale cache from old bundle
+    if (s._version !== GENEALOGY_STATE_VERSION) return true
+
+    // status stuck on 'loading' → interrupted fetch, will never resolve
+    if (s.status === 'loading') return true
+
+    // computedTrees must be a plain object (not null, not array)
+    if (s.computedTrees == null || typeof s.computedTrees !== 'object' || Array.isArray(s.computedTrees)) return true
+
+    // Spot-check: any cached tree root must have id+name+type
+    const trees = s.computedTrees as Record<string, unknown>
+    for (const key of Object.keys(trees)) {
+        const tree = trees[key]
+        if (tree === null) continue // null = "strain not found" sentinel
+        if (!tree || typeof tree !== 'object') return true
+        const t = tree as Record<string, unknown>
+        if (typeof t.id !== 'string' || typeof t.name !== 'string') return true
+        if (!VALID_STRAIN_TYPES.has(t.type as string)) return true
+    }
+
+    return false
 }
 
 // ---------------------------------------------------------------------------

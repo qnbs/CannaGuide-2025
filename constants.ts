@@ -42,6 +42,8 @@ export const STRAIN_INDEX_FLOWERING = 'by_floweringTime';
 export const ITEMS_PER_PAGE = 25;
 
 // --- GENEALOGY ---
+/** Bump whenever GenealogyState shape changes. Shared by slice + migrationLogic. */
+export const GENEALOGY_STATE_VERSION = 3;
 export const GENEALOGY_NODE_SIZE = { width: 220, height: 80 };
 export const GENEALOGY_NODE_SEPARATION = { x: 40, y: 40 };
 

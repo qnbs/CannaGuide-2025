@@ -6,6 +6,7 @@ export interface VPDInput {
   airTemp: number
   rh: number
   leafTempOffset?: number
+  altitudeM?: number
   medium: MediumType
   airflow: AirflowLevel
   lightOn: boolean

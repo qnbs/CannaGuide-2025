@@ -3,14 +3,16 @@ import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { webBluetoothSensorService, SensorReading } from '@/services/webBluetoothSensorService'
-import { useAppDispatch } from '@/stores/store'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { setGlobalEnvironment } from '@/stores/slices/simulationSlice'
 import { addNotification } from '@/stores/slices/uiSlice'
+import { selectSettings } from '@/stores/selectors'
 import { useTranslation } from 'react-i18next'
 
 const SensorIntegrationPanelComponent: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
+    const settings = useAppSelector(selectSettings)
     const [reading, setReading] = useState<SensorReading | null>(null)
     const [isConnecting, setIsConnecting] = useState(false)
 
@@ -23,6 +25,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                 setGlobalEnvironment({
                     temperature: nextReading.temperatureC,
                     humidity: nextReading.humidityPercent,
+                    simulationSettings: settings.simulation,
                 }),
             )
             dispatch(addNotification({ message: t('plantsView.sensor.success'), type: 'success' }))

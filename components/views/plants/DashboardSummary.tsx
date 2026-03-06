@@ -123,7 +123,7 @@ const DashboardSummaryComponent: React.FC = () => {
                                     min={15} max={35} step={0.5}
                                     singleValue={true}
                                     value={avgTemp}
-                                    onChange={val => dispatch(setGlobalEnvironment({ temperature: val }))}
+                                    onChange={val => dispatch(setGlobalEnvironment({ temperature: val, simulationSettings: settings.simulation }))}
                                     unit="°C"
                                     color="green"
                                 />
@@ -132,7 +132,7 @@ const DashboardSummaryComponent: React.FC = () => {
                                     min={20} max={90} step={1}
                                     singleValue={true}
                                     value={avgHumidity}
-                                    onChange={val => dispatch(setGlobalEnvironment({ humidity: val }))}
+                                    onChange={val => dispatch(setGlobalEnvironment({ humidity: val, simulationSettings: settings.simulation }))}
                                     unit="%"
                                     color="blue"
                                 />

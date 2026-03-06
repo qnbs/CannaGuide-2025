@@ -36,6 +36,7 @@ import { StrainSubNav } from './StrainSubNav';
 import { StrainsViewState } from '@/stores/slices/strainsViewSlice';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import type { SimpleExportFormat } from '@/components/common/DataExportModal';
+import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 
 // --- Lazy Loaded Views for Performance ---
 const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
@@ -345,9 +346,14 @@ export const StrainsView: React.FC = () => {
                 );
             case StrainViewTab.Genealogy:
                 return (
-                    <Suspense fallback={<SkeletonLoader count={3} />}>
-                        <GenealogyView allStrains={allStrains} onNodeClick={handleSelect} />
-                    </Suspense>
+                    // Lokale ErrorBoundary isoliert Genealogy-Fehler vom Rest der App
+                    <ErrorBoundary>
+                        <Suspense fallback={<SkeletonLoader count={3} />}>
+                            {/* key erzwingt vollständiges Remount bei Strain-Wechsel –
+                                verhindert stale d3-State nach 50+ Wechseln */}
+                            <GenealogyView allStrains={allStrains} onNodeClick={handleSelect} />
+                        </Suspense>
+                    </ErrorBoundary>
                 );
             case StrainViewTab.BreedingLab:
                 return (

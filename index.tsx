@@ -55,17 +55,22 @@ const registerServiceWorker = () => {
                     console.warn('[SW] Could not register periodic reminder sync:', error)
                 })
 
-                navigator.serviceWorker.addEventListener(
-                    'controllerchange',
-                    () => {
-                        window.location.reload()
-                    },
-                    { once: true },
-                )
+                // Only reload on SW update (not first install where controller is null)
+                if (navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.addEventListener(
+                        'controllerchange',
+                        () => {
+                            window.location.reload()
+                        },
+                        { once: true },
+                    )
+                }
 
                 const dispatchSwUpdate = () => {
                     const event = new CustomEvent('swUpdate', { detail: registration })
                     window.dispatchEvent(event)
+                    // Fallback: also tell the waiting SW to skip waiting
+                    registration.waiting?.postMessage({ type: 'SKIP_WAITING' })
                 }
 
                 if (registration.waiting && navigator.serviceWorker.controller) {

@@ -8,9 +8,14 @@ import type { PluginOption } from 'vite'
 const CSP = "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self';"
 const PERMISSIONS = 'accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()'
 
+// Tauri v2 sets TAURI_ENV_PLATFORM during builds; Docker sets BUILD_BASE_PATH=/
+const base = process.env.TAURI_ENV_PLATFORM
+  ? '/'
+  : (process.env.BUILD_BASE_PATH ?? '/CannaGuide-2025/')
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/CannaGuide-2025/',
+  base,
   plugins: [
     react({
       // React 19 Compiler – automatically memoises components and hooks
@@ -23,7 +28,7 @@ export default defineConfig({
       srcDir: 'public',
       filename: 'sw.js',
       manifest: false,
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,

@@ -74,7 +74,7 @@ export const createAppStore = async (): Promise<AppStore> => {
     try {
         const persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY);
         if (persistedString) {
-            console.log('[Store] Hydrating state from IndexedDB.');
+            console.debug('[Store] Hydrating state from IndexedDB.');
             // Save a backup snapshot before migration so data can be recovered if migration fails.
             try {
                 await indexedDBStorage.setItem(REDUX_STATE_KEY + '-backup', persistedString);

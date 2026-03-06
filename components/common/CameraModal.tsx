@@ -95,7 +95,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
                 if (videoRef.current) {
                     videoRef.current.srcObject = mediaStream
                 }
-            } catch (err) {
+            } catch {
                 setError(t('plantsView.aiDiagnostics.cameraError'))
             }
         }

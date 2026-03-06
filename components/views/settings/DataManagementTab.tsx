@@ -127,7 +127,7 @@ const DataManagementTab: React.FC = () => {
                         } else {
                             throw new Error('Invalid file structure');
                         }
-                    } catch (err) {
+                    } catch {
                         dispatch(addNotification({ type: 'error', message: String(t('settingsView.data.importError')) }));
                     }
                 }

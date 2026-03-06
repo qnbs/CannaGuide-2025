@@ -50,7 +50,7 @@ const registerServiceWorker = () => {
         navigator.serviceWorker
             .register(swUrl.pathname, { scope: scopeUrl.pathname, updateViaCache: 'none' })
             .then((registration) => {
-                console.log('ServiceWorker registration successful:', registration)
+                console.debug('ServiceWorker registration successful:', registration)
                 void growReminderService.registerPeriodicSync(registration).catch((error) => {
                     console.warn('[SW] Could not register periodic reminder sync:', error)
                 })
@@ -78,7 +78,7 @@ const registerServiceWorker = () => {
                         newWorker.addEventListener('statechange', () => {
                             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                                 dispatchSwUpdate()
-                                console.log(
+                                console.debug(
                                     '[SW] New content is available and will be used when all tabs for this page are closed. Firing swUpdate event.',
                                 )
                             }

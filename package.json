@@ -1,9 +1,24 @@
 {
   "name": "cannaguide-2025",
-  "description": "AI-powered cannabis cultivation guide – plant tracker, 700+ strain encyclopedia, VPD calculator, Gemini AI mentor & offline-first PWA.",
+  "description": "AI-powered cannabis cultivation guide – plant tracker, 700+ strain encyclopedia, VPD calculator, breeding simulator, Gemini AI mentor & offline-first PWA.",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
+  "keywords": [
+    "cannabis",
+    "cultivation",
+    "grow-guide",
+    "plant-tracker",
+    "strain-encyclopedia",
+    "vpd-calculator",
+    "breeding-simulator",
+    "gemini-ai",
+    "pwa",
+    "offline-first",
+    "react",
+    "typescript",
+    "i18n"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "vite build",

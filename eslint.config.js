@@ -18,6 +18,7 @@ export default [
             'src-tauri/**',
             '**/*.cjs',
             'scripts/**',
+            'sw.js',
         ],
     },
 
@@ -39,6 +40,9 @@ export default [
                 ...globals.es2021,
                 ...globals.node,
                 ...globals.worker,
+                IDBTransactionMode: 'readonly',
+                IDBValidKey: 'readonly',
+                NotificationPermission: 'readonly',
             },
         },
         plugins: {

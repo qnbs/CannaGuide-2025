@@ -47,17 +47,17 @@ class StrainService {
             const dbCount = await dbService.getStrainsCount();
             
             if (dbCount > 0 && storedVersion === CURRENT_STRAIN_DATA_VERSION && dbCount === allStrainsData.length) {
-                console.log('[StrainService] Loading strains from IndexedDB.');
+                console.debug('[StrainService] Loading strains from IndexedDB.');
                 this.allStrains = await dbService.getAllStrains();
             } else {
-                console.log('[StrainService] Merging and migrating strain catalog into IndexedDB.');
+                console.debug('[StrainService] Merging and migrating strain catalog into IndexedDB.');
                 const existingDbStrains = dbCount > 0 ? await dbService.getAllStrains() : [];
                 const mergedStrains = mergeStrainCatalogForUpdate(existingDbStrains, allStrainsData);
 
                 await dbService.addStrains(mergedStrains);
                 await dbService.setMetadata(STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION);
                 this.allStrains = mergedStrains;
-                console.log(`[StrainService] Initialized with ${mergedStrains.length} strains after migration merge.`);
+                console.debug(`[StrainService] Initialized with ${mergedStrains.length} strains after migration merge.`);
             }
             this.isInitialized = true;
         } catch (error) {

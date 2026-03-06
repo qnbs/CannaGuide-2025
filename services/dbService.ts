@@ -266,7 +266,7 @@ export const dbService = {
             const store = transaction.objectStore(STRAINS_STORE);
     
             transaction.oncomplete = () => {
-                console.log('[dbService] Atomically replaced all strains in IndexedDB.');
+                console.debug('[dbService] Atomically replaced all strains in IndexedDB.');
                 resolve();
             };
     

@@ -21,8 +21,16 @@ import { REDUX_STATE_KEY } from '@/constants';
 import type { VersionedSliceName } from '@/constants';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { dbService } from '@/services/dbService';
-import { selectSimulation } from '@/stores/selectors';
+import { selectSettings, selectSimulation } from '@/stores/selectors';
+import { setSetting } from '@/stores/slices/settingsSlice';
 import { CommunitySharePanel } from './CommunitySharePanel';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -100,6 +108,7 @@ const DataManagementTab: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const simulationState = useAppSelector(selectSimulation);
+    const settings = useAppSelector(selectSettings);
     const [isImportConfirmOpen, setIsImportConfirmOpen] = useState(false);
     const [fileToImport, setFileToImport] = useState<string | null>(null);
     const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -214,6 +223,44 @@ const DataManagementTab: React.FC = () => {
                 </DialogContent>
             </Dialog>
             <input type="file" id="import-file-input" accept=".json" className="hidden" onChange={handleFileChange} />
+
+            <Card>
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2"><PhosphorIcons.Database /> {t('settingsView.data.persistenceTitle')}</h3>
+                <div className="space-y-4">
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold text-slate-100">{t('settingsView.data.autoBackup')}</label>
+                        <Select
+                            value={settings.data.autoBackup}
+                            onValueChange={(value) => dispatch(setSetting({ path: 'data.autoBackup', value }))}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="off">{t('settingsView.data.backupOptions.off')}</SelectItem>
+                                <SelectItem value="daily">{t('settingsView.data.backupOptions.daily')}</SelectItem>
+                                <SelectItem value="weekly">{t('settingsView.data.backupOptions.weekly')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                        <label className="text-sm font-semibold text-slate-100">{t('settingsView.data.persistenceInterval')}</label>
+                        <Select
+                            value={String(settings.data.persistenceIntervalMs)}
+                            onValueChange={(value) => dispatch(setSetting({ path: 'data.persistenceIntervalMs', value: Number(value) }))}
+                        >
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="500">{t('settingsView.data.persistenceOptions.fast')}</SelectItem>
+                                <SelectItem value="1500">{t('settingsView.data.persistenceOptions.balanced')}</SelectItem>
+                                <SelectItem value="5000">{t('settingsView.data.persistenceOptions.batterySaver')}</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </div>
+            </Card>
             
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2"><PhosphorIcons.ArchiveBox /> {t('settingsView.data.backupAndRestore')}</h3>

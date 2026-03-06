@@ -28,12 +28,69 @@ import {
     confirmSetupAndShowConfirmation,
 } from '@/stores/slices/uiSlice'
 import { setSetting } from '@/stores/slices/settingsSlice'
+import { clearArchives } from '@/stores/slices/archivesSlice'
 import { ToastContainer } from '@/components/common/Toast'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Button } from '@/components/common/Button'
+import { Input } from '@/components/ui/input'
 import { AgeGateModal, useAgeGate } from '@/components/common/AgeGateModal'
 import { GeoLegalBanner, useGeoLegalBanner } from '@/components/common/GeoLegalBanner'
 import { PrivacyPolicyModal } from '@/components/common/PrivacyPolicyModal'
+
+const CLEAR_AI_HISTORY_ON_EXIT_KEY = 'cg.ai.clear-on-exit.pending'
+
+const PinLockScreen: React.FC<{
+    onUnlock: (pin: string) => boolean
+}> = ({ onUnlock }) => {
+    const { t } = useTranslation()
+    const [pin, setPin] = useState('')
+    const [hasError, setHasError] = useState(false)
+
+    const handleUnlock = () => {
+        const wasUnlocked = onUnlock(pin)
+        setHasError(!wasUnlocked)
+        if (!wasUnlocked) {
+            setPin('')
+        }
+    }
+
+    return (
+        <div className="flex h-screen items-center justify-center bg-[rgb(var(--color-bg-primary))] p-6 text-slate-200">
+            <div className="glass-pane w-full max-w-md rounded-2xl p-6 space-y-5">
+                <div className="text-center space-y-2">
+                    <PhosphorIcons.LockKey className="mx-auto h-14 w-14 text-primary-400" />
+                    <h2 className="text-2xl font-bold font-display text-slate-100">{t('settingsView.privacy.unlockTitle')}</h2>
+                    <p className="text-sm text-slate-400">{t('settingsView.privacy.unlockDesc')}</p>
+                </div>
+                <Input
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="current-password"
+                    maxLength={4}
+                    value={pin}
+                    onChange={(event) => {
+                        setPin(event.target.value.replace(/\D/g, '').slice(0, 4))
+                        if (hasError) {
+                            setHasError(false)
+                        }
+                    }}
+                    onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                            handleUnlock()
+                        }
+                    }}
+                    placeholder="••••"
+                    className="text-center text-xl tracking-[0.4em]"
+                    aria-label={t('settingsView.privacy.requirePin')}
+                />
+                {hasError && <p className="text-sm text-red-300">{t('settingsView.privacy.unlockFailed')}</p>}
+                <Button onClick={handleUnlock} className="w-full justify-center" glow>
+                    {t('settingsView.privacy.unlockButton')}
+                </Button>
+            </div>
+        </div>
+    )
+}
 
 // --- Lazy Loaded Views ---
 const StrainsView = lazy(() =>
@@ -98,12 +155,58 @@ export const App: React.FC = () => {
     const isAppReady = useAppSelector(selectIsAppReady)
     const onboardingStep = useAppSelector(selectOnboardingStep)
     const newGrowFlow = useAppSelector(selectNewGrowFlow);
+    const [isPinUnlocked, setIsPinUnlocked] = useState(
+        () => !settings.privacy.requirePinOnLaunch || !settings.privacy.pin,
+    )
 
     const [showUpdateBanner, setShowUpdateBanner] = useState(false)
     const waitingWorkerRef = useRef<ServiceWorker | null>(null)
     const isApplyingUpdateRef = useRef(false)
 
     useDocumentEffects(settings, activeView)
+
+    useEffect(() => {
+        if (!settings.privacy.requirePinOnLaunch || !settings.privacy.pin) {
+            setIsPinUnlocked(true)
+        }
+    }, [settings.privacy.pin, settings.privacy.requirePinOnLaunch])
+
+    useEffect(() => {
+        if (localStorage.getItem(CLEAR_AI_HISTORY_ON_EXIT_KEY) === '1') {
+            localStorage.removeItem(CLEAR_AI_HISTORY_ON_EXIT_KEY)
+            dispatch(clearArchives())
+        }
+    }, [dispatch])
+
+    useEffect(() => {
+        const handleExitPrivacy = () => {
+            if (settings.privacy.clearAiHistoryOnExit) {
+                localStorage.setItem(CLEAR_AI_HISTORY_ON_EXIT_KEY, '1')
+            } else {
+                localStorage.removeItem(CLEAR_AI_HISTORY_ON_EXIT_KEY)
+            }
+        }
+
+        window.addEventListener('pagehide', handleExitPrivacy)
+        document.addEventListener('visibilitychange', handleExitPrivacy)
+
+        return () => {
+            window.removeEventListener('pagehide', handleExitPrivacy)
+            document.removeEventListener('visibilitychange', handleExitPrivacy)
+        }
+    }, [settings.privacy.clearAiHistoryOnExit])
+
+    const handleUnlockWithPin = useCallback(
+        (pin: string) => {
+            if (pin === settings.privacy.pin) {
+                setIsPinUnlocked(true)
+                return true
+            }
+
+            return false
+        },
+        [settings.privacy.pin],
+    )
 
     const handleUpdate = useCallback(() => {
         if (!waitingWorkerRef.current || isApplyingUpdateRef.current) {
@@ -178,6 +281,10 @@ export const App: React.FC = () => {
     // Legal gate: Age verification (KCanG §1 – 18+)
     if (!isAgeVerified) {
         return <AgeGateModal onVerified={verifyAge} />
+    }
+
+    if (settings.privacy.requirePinOnLaunch && settings.privacy.pin && !isPinUnlocked) {
+        return <PinLockScreen onUnlock={handleUnlockWithPin} />
     }
 
     if (!settings.onboardingCompleted && onboardingStep < 8) {

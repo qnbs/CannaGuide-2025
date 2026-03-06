@@ -210,9 +210,10 @@ const mountHydratedApp = async () => {
         store.subscribe(() => {
             // Debounced save for frequent actions
             clearTimeout(saveTimeout);
+            const persistenceDelay = store.getState().settings.settings.data.persistenceIntervalMs ?? 1500
             saveTimeout = window.setTimeout(() => {
                 void saveState();
-            }, 1000);
+            }, persistenceDelay);
         });
 
         // Save immediately when the page is being closed or hidden

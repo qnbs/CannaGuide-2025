@@ -7,8 +7,10 @@ import {
     selectActiveProblemsSummary,
     selectSelectedPlantId,
     selectHasAvailableSlots,
-    selectPlantSlots
+    selectPlantSlots,
+    selectSettings,
 } from '@/stores/selectors';
+import { PlantStage } from '@/types';
 
 /**
  * Custom hook to get the list of currently active plants from the simulation state.
@@ -41,8 +43,27 @@ export const usePlantSlotsData = () => {
     const slots = useAppSelector(selectPlantSlots);
     const plantEntities = useAppSelector(state => state.simulation.plants.entities);
     const hasAvailable = useAppSelector(selectHasAvailableSlots);
+    const settings = useAppSelector(selectSettings);
+
+    const hiddenArchivedStages = new Set<PlantStage>([
+        PlantStage.Harvest,
+        PlantStage.Drying,
+        PlantStage.Curing,
+        PlantStage.Finished,
+    ]);
     
-    const slotsWithData = useMemo(() => slots.map(id => id ? plantEntities[id] || null : null), [slots, plantEntities]);
+    const slotsWithData = useMemo(
+        () => slots.map((id) => {
+            const plant = id ? plantEntities[id] || null : null;
+            if (!plant) {
+                return { plant: null, isArchivedHidden: false };
+            }
+
+            const isArchivedHidden = !settings.plantsView.showArchived && hiddenArchivedStages.has(plant.stage);
+            return { plant: isArchivedHidden ? null : plant, isArchivedHidden, archivedPlantId: isArchivedHidden ? plant.id : undefined };
+        }),
+        [hiddenArchivedStages, plantEntities, settings.plantsView.showArchived, slots],
+    );
     
     return { slotsWithData, hasAvailable };
 };

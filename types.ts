@@ -311,7 +311,6 @@ export interface SimulationState {
     plants: EntityState<Plant, string>;
     plantSlots: (string | null)[];
     selectedPlantId: string | null;
-    devSpeedMultiplier: number;
     vpdProfiles: Record<string, SimulationPoint[]>;
     /** Set to true while the background worker is processing a catch-up delta. */
     isCatchingUp?: boolean;
@@ -376,6 +375,7 @@ export interface AppSettings {
         uiDensity: 'comfortable' | 'compact';
         dyslexiaFont: boolean;
         reducedMotion: boolean;
+        highContrastMode: boolean;
         colorblindMode: 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia';
     };
     voiceControl: {
@@ -401,7 +401,6 @@ export interface AppSettings {
         autoGenerateTasks: boolean;
     };
     simulation: {
-        speedMultiplier: number;
         autoJournaling: {
             logStageChanges: boolean;
             logProblems: boolean;
@@ -441,6 +440,7 @@ export interface AppSettings {
     };
     data: {
         autoBackup: 'off' | 'daily' | 'weekly';
+        persistenceIntervalMs: 500 | 1500 | 5000;
         cloudSync: {
             enabled: boolean;
             provider: 'none' | 'gdrive';

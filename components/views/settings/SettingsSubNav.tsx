@@ -15,12 +15,15 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
         { id: 'tts', icon: <PhosphorIcons.SpeakerHigh />, label: t('settingsView.categories.tts') },
         { id: 'strains', icon: <PhosphorIcons.Leafy />, label: t('settingsView.categories.strains') },
         { id: 'plants', icon: <PhosphorIcons.Plant />, label: t('settingsView.categories.plants') },
+        { id: 'notifications', icon: <PhosphorIcons.Bell />, label: t('settingsView.categories.notifications') },
+        { id: 'defaults', icon: <PhosphorIcons.ListChecks />, label: t('settingsView.categories.defaults') },
+        { id: 'privacy', icon: <PhosphorIcons.ShieldCheck />, label: t('settingsView.categories.privacy') },
         { id: 'data', icon: <PhosphorIcons.Archive />, label: t('settingsView.categories.data') },
         { id: 'about', icon: <PhosphorIcons.Info />, label: t('settingsView.categories.about') },
     ];
     
     return (
-        <nav className="grid grid-cols-3 gap-2 sm:gap-4">
+        <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 xl:grid-cols-5">
             {navItems.map(item => (
                 <button
                     key={item.id}

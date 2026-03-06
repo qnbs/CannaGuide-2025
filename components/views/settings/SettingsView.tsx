@@ -1,7 +1,7 @@
-import React, { memo, useState, useMemo, lazy, Suspense, useEffect } from 'react'
+import React, { memo, useEffect, useMemo, useState, lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-import { Language, Theme, View } from '@/types'
+import { Language, LightType, PotType, Theme, VentilationPower, View } from '@/types'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
 import { selectSettings } from '@/stores/selectors'
 import { setSetting } from '@/stores/slices/settingsSlice'
@@ -29,6 +29,12 @@ const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
 const VoiceSettingsTab = lazy(() => import('./VoiceSettingsTab'))
 const DataManagementTab = lazy(() => import('./DataManagementTab'))
+
+const timeOptions = [
+    { value: '12', label: '12/12' },
+    { value: '18', label: '18/6' },
+    { value: '24', label: '24/0' },
+]
 
 const SettingsRow: React.FC<{
     label: string
@@ -299,19 +305,33 @@ const GeminiSecurityCard: React.FC = () => {
 }
 
 const GeneralSettingsTab: React.FC = () => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
-    const general = settings.general;
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const settings = useAppSelector(selectSettings)
+    const general = settings.general
 
     const handleSetSetting = (path: string, value: unknown) => {
-        dispatch(setSetting({ path: `general.${path}`, value }));
-    };
+        dispatch(setSetting({ path: `general.${path}`, value }))
+    }
 
-    const colorblindModeOptions = Object.keys(t('settingsView.general.colorblindModes', { returnObjects: true })).map(key => ({
-        value: key,
-        label: t(`settingsView.general.colorblindModes.${key}`)
-    }));
+    const colorblindModeOptions = [
+        { value: 'none', label: t('settingsView.general.colorblindModes.none') },
+        { value: 'protanopia', label: t('settingsView.general.colorblindModes.protanopia') },
+        { value: 'deuteranopia', label: t('settingsView.general.colorblindModes.deuteranopia') },
+        { value: 'tritanopia', label: t('settingsView.general.colorblindModes.tritanopia') },
+    ]
+
+    const themeOptions = [
+        'midnight',
+        'forest',
+        'purpleHaze',
+        'desertSky',
+        'roseQuartz',
+        'rainbowKush',
+        'ogKushGreen',
+        'runtzRainbow',
+        'lemonSkunk',
+    ].map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))
 
     return (
         <div className="space-y-6">
@@ -330,10 +350,20 @@ const GeneralSettingsTab: React.FC = () => {
                             <SettingsSelect
                                 value={general.theme}
                                 onChange={(value) => handleSetSetting('theme', value as Theme)}
-                                options={Object.keys(t('settingsView.general.themes', { returnObjects: true })).map((key) => ({ value: key, label: t(`settingsView.general.themes.${key}`) }))}
+                                options={themeOptions}
                             />
                         </SettingsRow>
-                        <SettingsRow label={t('settingsView.general.fontSize')}><SegmentedControl value={[general.fontSize]} onToggle={(val) => handleSetSetting('fontSize', val)} options={Object.keys(t('settingsView.general.fontSizes', { returnObjects: true })).map(k => ({ value: k, label: t(`settingsView.general.fontSizes.${k}`) }))} /></SettingsRow>
+                        <SettingsRow label={t('settingsView.general.fontSize')}>
+                            <SegmentedControl
+                                value={[general.fontSize]}
+                                onToggle={(val) => handleSetSetting('fontSize', val)}
+                                options={[
+                                    { value: 'sm', label: t('settingsView.general.fontSizes.sm') },
+                                    { value: 'base', label: t('settingsView.general.fontSizes.base') },
+                                    { value: 'lg', label: t('settingsView.general.fontSizes.lg') },
+                                ]}
+                            />
+                        </SettingsRow>
                     </div>
                 </FormSection>
             </Card>
@@ -360,6 +390,9 @@ const GeneralSettingsTab: React.FC = () => {
                         <SettingsRow label={t('settingsView.general.reducedMotion')} description={t('settingsView.general.reducedMotionDesc')}>
                             <Switch checked={general.reducedMotion} onChange={val => handleSetSetting('reducedMotion', val)} />
                         </SettingsRow>
+                        <SettingsRow label={t('settingsView.general.highContrastMode')} description={t('settingsView.general.highContrastModeDesc')}>
+                            <Switch checked={general.highContrastMode} onChange={val => handleSetSetting('highContrastMode', val)} />
+                        </SettingsRow>
                         <SettingsRow label={t('settingsView.general.colorblindMode')} description={t('settingsView.general.colorblindModeDesc')}>
                             <SettingsSelect
                                 value={general.colorblindMode}
@@ -376,24 +409,63 @@ const GeneralSettingsTab: React.FC = () => {
 
 
 const PlantsSettingsTab: React.FC = () => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const settings = useAppSelector(selectSettings);
-    const simSettings = settings.simulation;
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const settings = useAppSelector(selectSettings)
+    const simSettings = settings.simulation
+    const plantViewSettings = settings.plantsView
 
     const handleSetSetting = (path: string, value: unknown) => {
-        dispatch(setSetting({ path, value }));
-    };
+        dispatch(setSetting({ path, value }))
+    }
 
     return (
         <div className="space-y-6">
             <Card>
+                <FormSection title={t('settingsView.plants.realtimeEngine')} icon={<PhosphorIcons.ArrowClockwise />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-4">
+                        <div className="rounded-xl border border-primary-500/20 bg-primary-500/10 p-4 text-sm text-slate-300">
+                            <p className="font-semibold text-primary-300">{t('settingsView.plants.realtimeSimulation')}</p>
+                            <p className="mt-1 text-slate-300">{t('settingsView.plants.realtimeSimulationDesc')}</p>
+                        </div>
+                        <SettingsRow label={t('settingsView.plants.simulationProfile')} description={t('settingsView.plants.simulationProfileDesc')}>
+                            <SegmentedControl
+                                value={[simSettings.simulationProfile]}
+                                onToggle={(val) => handleSetSetting('simulation.simulationProfile', val)}
+                                options={[
+                                    { value: 'beginner', label: t('settingsView.plants.simulationProfiles.beginner') },
+                                    { value: 'intermediate', label: t('settingsView.plants.simulationProfiles.intermediate') },
+                                    { value: 'expert', label: t('settingsView.plants.simulationProfiles.expert') },
+                                ]}
+                            />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.plants.showArchived')} description={t('settingsView.plants.showArchivedDesc')}>
+                            <Switch checked={plantViewSettings.showArchived} onChange={(val) => handleSetSetting('plantsView.showArchived', val)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.plants.autoGenerateTasks')} description={t('settingsView.plants.autoGenerateTasksDesc')}>
+                            <Switch checked={plantViewSettings.autoGenerateTasks} onChange={(val) => handleSetSetting('plantsView.autoGenerateTasks', val)} />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
                 <FormSection title={t('settingsView.plants.behavior')} icon={<PhosphorIcons.GameController />} defaultOpen>
                     <div className="sm:col-span-2 space-y-6">
-                        <SettingsRow label={t('settingsView.plants.simulationProfile')}><SegmentedControl value={[simSettings.simulationProfile]} onToggle={(val) => handleSetSetting('simulation.simulationProfile', val)} options={Object.keys(t('settingsView.plants.simulationProfiles', { returnObjects: true })).map(k => ({ value: k, label: t(`settingsView.plants.simulationProfiles.${k}`) }))} /></SettingsRow>
                         <SettingsRow label={t('settingsView.plants.pestPressure')} description={t('settingsView.plants.pestPressureDesc')}><RangeSlider singleValue value={simSettings.pestPressure} onChange={v => handleSetSetting('simulation.pestPressure', v)} min={0} max={1} step={0.05} label="" unit="" /></SettingsRow>
                         <SettingsRow label={t('settingsView.plants.nutrientSensitivity')} description={t('settingsView.plants.nutrientSensitivityDesc')}><RangeSlider singleValue value={simSettings.nutrientSensitivity} onChange={v => handleSetSetting('simulation.nutrientSensitivity', v)} min={0.5} max={1.5} step={0.05} label="" unit="x" /></SettingsRow>
                         <SettingsRow label={t('settingsView.plants.environmentalStability')} description={t('settingsView.plants.environmentalStabilityDesc')}><RangeSlider singleValue value={simSettings.environmentalStability} onChange={v => handleSetSetting('simulation.environmentalStability', v)} min={0.5} max={1} step={0.05} label="" unit="" /></SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
+                <FormSection title={t('settingsView.plants.calibration')} icon={<PhosphorIcons.Globe />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.plants.altitudeM')} description={t('settingsView.plants.altitudeMDesc')}>
+                            <RangeSlider singleValue value={simSettings.altitudeM} onChange={v => handleSetSetting('simulation.altitudeM', v)} min={0} max={3000} step={50} label="" unit="m" />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.plants.leafTemperatureOffset')} description={t('settingsView.plants.leafTemperatureOffsetDesc')}><RangeSlider singleValue value={simSettings.leafTemperatureOffset} onChange={v => handleSetSetting('simulation.leafTemperatureOffset', v)} min={-5} max={5} step={0.5} label="" unit="°C" /></SettingsRow>
                     </div>
                 </FormSection>
             </Card>
@@ -402,7 +474,6 @@ const PlantsSettingsTab: React.FC = () => {
                 <Card>
                     <FormSection title={t('settingsView.plants.physics')} icon={<PhosphorIcons.Flask />} defaultOpen>
                         <div className="sm:col-span-2 space-y-6">
-                            <SettingsRow label={t('settingsView.plants.leafTemperatureOffset')} description={t('settingsView.plants.leafTemperatureOffsetDesc')}><RangeSlider singleValue value={simSettings.leafTemperatureOffset} onChange={v => handleSetSetting('simulation.leafTemperatureOffset', v)} min={-5} max={5} step={0.5} label="" unit="°C" /></SettingsRow>
                             <SettingsRow label={t('settingsView.plants.lightExtinctionCoefficient')} description={t('settingsView.plants.lightExtinctionCoefficientDesc')}><RangeSlider singleValue value={simSettings.lightExtinctionCoefficient} onChange={v => handleSetSetting('simulation.lightExtinctionCoefficient', v)} min={0.4} max={1.0} step={0.05} label="" unit="k" /></SettingsRow>
                             <SettingsRow label={t('settingsView.plants.nutrientConversionEfficiency')} description={t('settingsView.plants.nutrientConversionEfficiencyDesc')}><RangeSlider singleValue value={simSettings.nutrientConversionEfficiency} onChange={v => handleSetSetting('simulation.nutrientConversionEfficiency', v)} min={0.2} max={0.8} step={0.05} label="" unit="" /></SettingsRow>
                             <SettingsRow label={t('settingsView.plants.stomataSensitivity')} description={t('settingsView.plants.stomataSensitivityDesc')}><RangeSlider singleValue value={simSettings.stomataSensitivity} onChange={v => handleSetSetting('simulation.stomataSensitivity', v)} min={0.5} max={1.5} step={0.05} label="" unit="x" /></SettingsRow>
@@ -416,64 +487,270 @@ const PlantsSettingsTab: React.FC = () => {
                     <div className="sm:col-span-2 space-y-4">
                         <SettingsRow label={t('settingsView.plants.logStageChanges')}><Switch checked={simSettings.autoJournaling.logStageChanges} onChange={(val) => handleSetSetting('simulation.autoJournaling.logStageChanges', val)}/></SettingsRow>
                         <SettingsRow label={t('settingsView.plants.logProblems')}><Switch checked={simSettings.autoJournaling.logProblems} onChange={(val) => handleSetSetting('simulation.autoJournaling.logProblems', val)}/></SettingsRow>
+                        <SettingsRow label={t('settingsView.plants.logTasks')}><Switch checked={simSettings.autoJournaling.logTasks} onChange={(val) => handleSetSetting('simulation.autoJournaling.logTasks', val)}/></SettingsRow>
                     </div>
                 </FormSection>
             </Card>
         </div>
-    );
-};
+    )
+}
+
+const NotificationsSettingsTab: React.FC = () => {
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const notifications = useAppSelector(selectSettings).notifications
+
+    const handleSetSetting = (path: string, value: unknown) => {
+        dispatch(setSetting({ path: `notifications.${path}`, value }))
+    }
+
+    return (
+        <div className="space-y-6">
+            <Card>
+                <FormSection title={t('settingsView.notifications.title')} icon={<PhosphorIcons.Bell />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.notifications.enableAll')} description={t('settingsView.notifications.enableAllDesc')}>
+                            <Switch checked={notifications.enabled} onChange={(value) => handleSetSetting('enabled', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.problemDetected')}>
+                            <Switch checked={notifications.problemDetected} onChange={(value) => handleSetSetting('problemDetected', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.lowWaterWarning')}>
+                            <Switch checked={notifications.lowWaterWarning} onChange={(value) => handleSetSetting('lowWaterWarning', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.phDriftWarning')}>
+                            <Switch checked={notifications.phDriftWarning} onChange={(value) => handleSetSetting('phDriftWarning', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.harvestReady')}>
+                            <Switch checked={notifications.harvestReady} onChange={(value) => handleSetSetting('harvestReady', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.newTask')}>
+                            <Switch checked={notifications.newTask} onChange={(value) => handleSetSetting('newTask', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.stageChange')}>
+                            <Switch checked={notifications.stageChange} onChange={(value) => handleSetSetting('stageChange', value)} />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
+                <FormSection title={t('settingsView.notifications.quietHours')} icon={<PhosphorIcons.BellSimple />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.notifications.enableQuietHours')} description={t('settingsView.notifications.quietHoursDesc')}>
+                            <Switch checked={notifications.quietHours.enabled} onChange={(value) => handleSetSetting('quietHours.enabled', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.quietHoursStart')}>
+                            <Input type="time" value={notifications.quietHours.start} onChange={(event) => handleSetSetting('quietHours.start', event.target.value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.notifications.quietHoursEnd')}>
+                            <Input type="time" value={notifications.quietHours.end} onChange={(event) => handleSetSetting('quietHours.end', event.target.value)} />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+        </div>
+    )
+}
+
+const DefaultsSettingsTab: React.FC = () => {
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const defaults = useAppSelector(selectSettings).defaults
+
+    const handleSetSetting = (path: string, value: unknown) => {
+        dispatch(setSetting({ path: `defaults.${path}`, value }))
+    }
+
+    return (
+        <div className="space-y-6">
+            <Card>
+                <FormSection title={t('settingsView.defaults.growSetup')} icon={<PhosphorIcons.Plant />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('plantsView.setupModal.lightingTitle')}>
+                            <SegmentedControl
+                                value={[defaults.growSetup.lightType]}
+                                onToggle={(value) => handleSetSetting('growSetup.lightType', value as LightType)}
+                                options={[
+                                    { value: 'LED', label: t('plantsView.setupModal.lightTypes.led') },
+                                    { value: 'HPS', label: t('plantsView.setupModal.lightTypes.hps') },
+                                ]}
+                            />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.wattage')}>
+                            <RangeSlider singleValue value={defaults.growSetup.lightWattage} onChange={(value) => handleSetSetting('growSetup.lightWattage', value)} min={50} max={1000} step={10} label="" unit="W" />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.lightCycle')}>
+                            <SegmentedControl value={[String(defaults.growSetup.lightHours)]} onToggle={(value) => handleSetSetting('growSetup.lightHours', Number(value))} options={timeOptions} />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.exhaustFanPower')}>
+                            <SegmentedControl
+                                value={[defaults.growSetup.ventilation]}
+                                onToggle={(value) => handleSetSetting('growSetup.ventilation', value as VentilationPower)}
+                                options={[
+                                    { value: 'low', label: t('plantsView.setupModal.ventilationLevels.low') },
+                                    { value: 'medium', label: t('plantsView.setupModal.ventilationLevels.medium') },
+                                    { value: 'high', label: t('plantsView.setupModal.ventilationLevels.high') },
+                                ]}
+                            />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.circulationFan')}>
+                            <Switch checked={defaults.growSetup.hasCirculationFan} onChange={(value) => handleSetSetting('growSetup.hasCirculationFan', value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.potSize')}>
+                            <RangeSlider singleValue value={defaults.growSetup.potSize} onChange={(value) => handleSetSetting('growSetup.potSize', value)} min={3} max={50} step={1} label="" unit="L" />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.potType')}>
+                            <SegmentedControl
+                                value={[defaults.growSetup.potType]}
+                                onToggle={(value) => handleSetSetting('growSetup.potType', value as PotType)}
+                                options={[
+                                    { value: 'Plastic', label: t('plantsView.setupModal.potTypes.plastic') },
+                                    { value: 'Fabric', label: t('plantsView.setupModal.potTypes.fabric') },
+                                ]}
+                            />
+                        </SettingsRow>
+                        <SettingsRow label={t('plantsView.setupModal.medium')}>
+                            <SegmentedControl
+                                value={[defaults.growSetup.medium]}
+                                onToggle={(value) => handleSetSetting('growSetup.medium', value)}
+                                options={[
+                                    { value: 'Soil', label: t('plantsView.mediums.Soil') },
+                                    { value: 'Coco', label: t('plantsView.mediums.Coco') },
+                                    { value: 'Hydro', label: t('plantsView.mediums.Hydro') },
+                                ]}
+                            />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+
+            <Card>
+                <FormSection title={t('settingsView.defaults.journalNotesTitle')} icon={<PhosphorIcons.PencilSimple />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.defaults.wateringNoteLabel')}>
+                            <Input value={defaults.journalNotes.watering} onChange={(event) => handleSetSetting('journalNotes.watering', event.target.value)} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.defaults.feedingNoteLabel')}>
+                            <Input value={defaults.journalNotes.feeding} onChange={(event) => handleSetSetting('journalNotes.feeding', event.target.value)} />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+        </div>
+    )
+}
+
+const PrivacySettingsTab: React.FC = () => {
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const privacy = useAppSelector(selectSettings).privacy
+    const [pinDraft, setPinDraft] = useState(privacy.pin ?? '')
+
+    useEffect(() => {
+        setPinDraft(privacy.pin ?? '')
+    }, [privacy.pin])
+
+    const normalizedPin = pinDraft.replace(/\D/g, '').slice(0, 4)
+    const canSavePin = normalizedPin.length === 4 && normalizedPin !== (privacy.pin ?? '')
+
+    return (
+        <div className="space-y-6">
+            <Card>
+                <FormSection title={t('settingsView.privacy.title')} icon={<PhosphorIcons.ShieldCheck />} defaultOpen>
+                    <div className="sm:col-span-2 space-y-6">
+                        <SettingsRow label={t('settingsView.privacy.requirePin')} description={t('settingsView.privacy.requirePinDesc')}>
+                            <Switch checked={privacy.requirePinOnLaunch} onChange={(value) => dispatch(setSetting({ path: 'privacy.requirePinOnLaunch', value }))} />
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.privacy.setPin')} description={t('settingsView.privacy.setPinDesc')}>
+                            <div className="space-y-2">
+                                <Input
+                                    type="password"
+                                    inputMode="numeric"
+                                    autoComplete="new-password"
+                                    maxLength={4}
+                                    value={pinDraft}
+                                    onChange={(event) => setPinDraft(event.target.value.replace(/\D/g, '').slice(0, 4))}
+                                    placeholder={t('settingsView.privacy.pinPlaceholder')}
+                                />
+                                <div className="flex gap-2">
+                                    <Button size="sm" onClick={() => dispatch(setSetting({ path: 'privacy.pin', value: normalizedPin }))} disabled={!canSavePin}>
+                                        {t('settingsView.privacy.savePin')}
+                                    </Button>
+                                    <Button size="sm" variant="secondary" onClick={() => { setPinDraft(''); dispatch(setSetting({ path: 'privacy.pin', value: null })) }} disabled={!privacy.pin}>
+                                        {t('settingsView.privacy.clearPin')}
+                                    </Button>
+                                </div>
+                            </div>
+                        </SettingsRow>
+                        <SettingsRow label={t('settingsView.privacy.clearAiHistory')} description={t('settingsView.privacy.clearAiHistoryDesc')}>
+                            <Switch checked={privacy.clearAiHistoryOnExit} onChange={(value) => dispatch(setSetting({ path: 'privacy.clearAiHistoryOnExit', value }))} />
+                        </SettingsRow>
+                    </div>
+                </FormSection>
+            </Card>
+        </div>
+    )
+}
 
 
 const SettingsViewComponent: React.FC = () => {
     const { t } = useTranslation()
-    const [activeTab, setActiveTab] = useState('general');
+    const [activeTab, setActiveTab] = useState('plants')
     
     const viewIcons = useMemo(() => ({
         general: <PhosphorIcons.GearSix className="w-16 h-16 mx-auto text-primary-400" />,
         tts: <PhosphorIcons.SpeakerHigh className="w-16 h-16 mx-auto text-accent-400" />,
         strains: <PhosphorIcons.Leafy className="w-16 h-16 mx-auto text-green-400" />,
         plants: <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-green-400" />,
+        notifications: <PhosphorIcons.Bell className="w-16 h-16 mx-auto text-amber-400" />,
+        defaults: <PhosphorIcons.ListChecks className="w-16 h-16 mx-auto text-cyan-400" />,
+        privacy: <PhosphorIcons.ShieldCheck className="w-16 h-16 mx-auto text-emerald-400" />,
         data: <PhosphorIcons.Archive className="w-16 h-16 mx-auto text-orange-400" />,
         about: <PhosphorIcons.Info className="w-16 h-16 mx-auto text-cyan-400" />,
-    }), []);
+    }), [])
 
     const viewTitles = useMemo(() => ({
         general: t('settingsView.categories.general'),
         tts: t('settingsView.categories.tts'),
         strains: t('settingsView.categories.strains'),
         plants: t('settingsView.categories.plants'),
+        notifications: t('settingsView.categories.notifications'),
+        defaults: t('settingsView.categories.defaults'),
+        privacy: t('settingsView.categories.privacy'),
         data: t('settingsView.categories.data'),
         about: t('settingsView.categories.about'),
-    }), [t]);
+    }), [t])
 
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'general': return <GeneralSettingsTab />;
+            case 'general': return <GeneralSettingsTab />
             case 'tts': return (
                 <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
                     <VoiceSettingsTab />
                 </Suspense>
-            );
+            )
             case 'strains': return (
                 <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
                     <StrainsSettingsTab />
                 </Suspense>
-            );
-            case 'plants': return (
-                <PlantsSettingsTab />
-            );
+            )
+            case 'plants': return <PlantsSettingsTab />
+            case 'notifications': return <NotificationsSettingsTab />
+            case 'defaults': return <DefaultsSettingsTab />
+            case 'privacy': return <PrivacySettingsTab />
             case 'data': return (
                 <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
                     <DataManagementTab />
                 </Suspense>
-            );
+            )
             case 'about': return (
                  <Suspense fallback={<Card><SkeletonLoader count={3} /></Card>}>
                     <AboutTab />
                 </Suspense>
-            );
-            default: return null;
+            )
+            default: return null
         }
     }
 

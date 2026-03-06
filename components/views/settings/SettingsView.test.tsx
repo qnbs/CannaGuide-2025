@@ -29,7 +29,10 @@ vi.mock('react-i18next', async (importOriginal) => {
 vi.mock('@/services/apiKeyService', () => ({
   apiKeyService: {
     getApiKey: vi.fn().mockResolvedValue(null),
+    getMaskedApiKey: vi.fn().mockResolvedValue(null),
     setApiKey: vi.fn().mockResolvedValue(undefined),
+    validateApiKey: vi.fn().mockResolvedValue(undefined),
+    validateStoredApiKey: vi.fn().mockResolvedValue(undefined),
     clearApiKey: vi.fn().mockResolvedValue(undefined),
   },
 }));
@@ -59,7 +62,10 @@ describe('SettingsView navigation smoke', () => {
     { label: 'settingsView.categories.general', expectedHeading: /settingsView.categories.general/i },
     { label: 'settingsView.categories.tts', expected: /VoiceSettingsTabMock/i },
     { label: 'settingsView.categories.strains', expected: /StrainsSettingsTabMock/i },
-    { label: 'settingsView.categories.plants', expected: /settingsView.plants.behavior/i },
+    { label: 'settingsView.categories.plants', expected: /settingsView.plants.realtimeEngine/i },
+    { label: 'settingsView.categories.notifications', expected: /^settingsView.notifications.enableAll$/i },
+    { label: 'settingsView.categories.defaults', expected: /settingsView.defaults.growSetup/i },
+    { label: 'settingsView.categories.privacy', expected: /^settingsView.privacy.requirePin$/i },
     { label: 'settingsView.categories.data', expected: /DataManagementTabMock/i },
     { label: 'settingsView.categories.about', expected: /AboutTabMock/i },
   ];

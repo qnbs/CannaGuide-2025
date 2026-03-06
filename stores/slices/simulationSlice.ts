@@ -15,7 +15,6 @@ const initialState: SimulationState = {
     plants: plantsAdapter.getInitialState(),
     plantSlots: [null, null, null],
     selectedPlantId: null,
-    devSpeedMultiplier: 1,
     vpdProfiles: {},
 };
 
@@ -40,6 +39,48 @@ const getCorrectedRhByMedium = (plant: Plant): number => {
     const potAdjustment = plant.equipment.potType === 'Fabric' ? -1 : 0;
     return Math.min(95, Math.max(25, plant.environment.internalHumidity + mediumCorrection + potAdjustment));
 };
+
+const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
+    const [startHour, startMinute] = start.split(':').map(Number)
+    const [endHour, endMinute] = end.split(':').map(Number)
+    if (![startHour, startMinute, endHour, endMinute].every(Number.isFinite)) {
+        return false
+    }
+
+    const startMinutes = startHour * 60 + startMinute
+    const endMinutes = endHour * 60 + endMinute
+    const currentMinutes = now.getHours() * 60 + now.getMinutes()
+
+    if (startMinutes === endMinutes) {
+        return true
+    }
+
+    if (startMinutes < endMinutes) {
+        return currentMinutes >= startMinutes && currentMinutes < endMinutes
+    }
+
+    return currentMinutes >= startMinutes || currentMinutes < endMinutes
+}
+
+const showBrowserNotification = async (title: string, body: string, tag: string, plantId: string) => {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') {
+        return
+    }
+
+    const registration = await navigator.serviceWorker.getRegistration().catch(() => undefined)
+    if (registration) {
+        await registration.showNotification(title, {
+            body,
+            icon: registration.scope + 'icon.svg',
+            badge: registration.scope + 'icon.svg',
+            tag,
+            data: { plantId },
+        })
+        return
+    }
+
+    new Notification(title, { body, tag })
+}
 
 const simulationSlice = createSlice({
     name: 'simulation',
@@ -179,7 +220,6 @@ const simulationSlice = createSlice({
             plantsAdapter.removeAll(state.plants);
             state.plantSlots = [null, null, null];
             state.selectedPlantId = null;
-            state.devSpeedMultiplier = 1;
             state.vpdProfiles = {};
         },
         setPlantVpdProfile: (state, action: PayloadAction<{ plantId: string; points: SimulationPoint[] }>) => {
@@ -267,12 +307,70 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
         const plant = state.simulation.plants.entities[plantId];
         if (plant) {
             const actualElapsed = Date.now() - plant.lastUpdated;
-            // Apply devSpeedMultiplier so sped-up dev sessions simulate more days per real second
-            const deltaTime = actualElapsed * (state.simulation.devSpeedMultiplier ?? 1);
+            const settings = state.settings.settings
+            const deltaTime = actualElapsed;
             if (actualElapsed > 1000 * 60) { // Only update if more than a minute has passed
                 const worker = new Worker(new URL('../../simulation.worker.ts', import.meta.url), { type: 'module' });
                 worker.onmessage = (e) => {
-                    dispatch(simulationSlice.actions.plantStateUpdated(e.data));
+                    const result = e.data as { updatedPlant: Plant; newJournalEntries: JournalEntry[]; newTasks: Task[] }
+                    const filteredJournalEntries = result.newJournalEntries.filter((entry) => {
+                        if (entry.type !== JournalEntryType.System) {
+                            return true
+                        }
+
+                        if (entry.notes.startsWith('Stage changed')) {
+                            return settings.simulation.autoJournaling.logStageChanges
+                        }
+
+                        return true
+                    })
+
+                    const newProblemEntries = settings.simulation.autoJournaling.logProblems
+                        ? result.updatedPlant.problems
+                            .filter((problem) => problem.status === 'active' && !plant.problems.some((existing) => existing.type === problem.type && existing.status === 'active'))
+                            .map((problem, index) => ({
+                                id: `journal-problem-${result.updatedPlant.id}-${problem.type}-${Date.now()}-${index}`,
+                                createdAt: Date.now(),
+                                type: JournalEntryType.System,
+                                notes: `Problem detected: ${problem.type}`,
+                                details: { type: problem.type, severity: problem.severity },
+                            }))
+                        : []
+
+                    const filteredTasks = settings.plantsView.autoGenerateTasks ? result.newTasks : []
+                    const taskJournalEntries = settings.simulation.autoJournaling.logTasks
+                        ? filteredTasks.map((task, index) => ({
+                            id: `journal-task-${result.updatedPlant.id}-${Date.now()}-${index}`,
+                            createdAt: Date.now(),
+                            type: JournalEntryType.System,
+                            notes: `Task generated: ${task.title}`,
+                            details: { title: task.title, priority: task.priority },
+                        }))
+                        : []
+
+                    const quietHoursEnabled = settings.notifications.quietHours.enabled
+                    const notificationsMuted = quietHoursEnabled && isWithinQuietHours(settings.notifications.quietHours.start, settings.notifications.quietHours.end)
+                    const stageChangeEntry = filteredJournalEntries.find((entry) => entry.type === JournalEntryType.System && entry.notes.startsWith('Stage changed'))
+
+                    if (settings.notifications.enabled && !notificationsMuted) {
+                        if (settings.notifications.stageChange && stageChangeEntry) {
+                            void showBrowserNotification(result.updatedPlant.name, stageChangeEntry.notes, `stage-change-${result.updatedPlant.id}`, result.updatedPlant.id)
+                        }
+
+                        if (settings.notifications.problemDetected && newProblemEntries.length > 0) {
+                            void showBrowserNotification(result.updatedPlant.name, newProblemEntries[0].notes, `problem-${result.updatedPlant.id}`, result.updatedPlant.id)
+                        }
+
+                        if (settings.notifications.newTask && filteredTasks.length > 0) {
+                            void showBrowserNotification(result.updatedPlant.name, filteredTasks[0].title, `task-${result.updatedPlant.id}`, result.updatedPlant.id)
+                        }
+                    }
+
+                    dispatch(simulationSlice.actions.plantStateUpdated({
+                        updatedPlant: result.updatedPlant,
+                        newJournalEntries: [...filteredJournalEntries, ...newProblemEntries, ...taskJournalEntries],
+                        newTasks: filteredTasks,
+                    }));
                     worker.terminate();
                 };
                 worker.onerror = (e) => {

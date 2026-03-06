@@ -15,6 +15,8 @@ import { indexedDBStorage } from './stores/indexedDBStorage'
 import { REDUX_STATE_KEY, SLICE_SCHEMA_VERSIONS } from './constants'
 import { dbService } from './services/dbService'
 import { growReminderService } from './services/growReminderService'
+import { BootstrapConsentGate } from './components/common/BootstrapConsentGate'
+import { consentService } from './services/consentService'
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 const SAFE_RECOVERY_ATTEMPT_KEY = 'cannaguide.safeRecoveryAttempted'
@@ -125,7 +127,17 @@ const renderError = (error: Error) => {
 };
 
 
-const startApp = async () => {
+const renderBootstrapConsentGate = (onAccept: () => Promise<void>) => {
+    root.render(
+        <React.StrictMode>
+            <I18nextProvider i18n={i18nInstance}>
+                <BootstrapConsentGate onAccept={onAccept} />
+            </I18nextProvider>
+        </React.StrictMode>,
+    )
+}
+
+const mountHydratedApp = async () => {
     try {
         window.addEventListener('cannaguide-runtime-error', () => {
             void triggerSafeRecovery('runtime-error-event')
@@ -236,7 +248,22 @@ const startApp = async () => {
             renderError(new Error('An unknown error occurred during startup.'));
         }
     }
-};
+}
 
-registerServiceWorker()
+const startApp = async () => {
+    await i18nPromise
+
+    if (!consentService.hasConsent()) {
+        renderBootstrapConsentGate(async () => {
+            consentService.grantConsent()
+            registerServiceWorker()
+            await mountHydratedApp()
+        })
+        return
+    }
+
+    registerServiceWorker()
+    await mountHydratedApp()
+}
+
 startApp();

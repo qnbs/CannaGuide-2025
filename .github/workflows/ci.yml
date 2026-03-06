@@ -82,7 +82,7 @@ jobs:
 
       - name: Install Playwright browser
         if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: npm run test:e2e:install:ci
 
       - name: E2E tests (local)
         run: npm run test:e2e

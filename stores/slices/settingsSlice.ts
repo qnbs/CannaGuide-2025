@@ -3,6 +3,7 @@ import { AppSettings, View } from '@/types'
 import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
 import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY, VersionedSliceName } from '@/constants'
+import { aiProviderService } from '@/services/aiProviderService'
 
 export const defaultSettings: AppSettings = {
     version: 2,
@@ -154,6 +155,7 @@ export const exportAllData = createAsyncThunk<void, void, { state: RootState }>(
 export const resetAllData = createAsyncThunk<void, void>('settings/resetAllData', async () => {
     await indexedDBStorage.removeItem(REDUX_STATE_KEY)
     await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
+    await aiProviderService.clearAllProviderApiKeys()
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })

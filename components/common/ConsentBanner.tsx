@@ -1,16 +1,15 @@
 import React, { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
-
-const CONSENT_KEY = 'cg.gdpr.consent.v1'
+import { consentService } from '@/services/consentService'
 
 export const useGdprConsent = () => {
     const [hasConsent, setHasConsent] = useState(
-        () => localStorage.getItem(CONSENT_KEY) === '1',
+        () => consentService.hasConsent(),
     )
 
     const accept = useCallback(() => {
-        localStorage.setItem(CONSENT_KEY, '1')
+        consentService.grantConsent()
         setHasConsent(true)
     }, [])
 

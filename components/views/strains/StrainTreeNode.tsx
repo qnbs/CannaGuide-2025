@@ -36,6 +36,7 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
         if (!isPlaceholder) onNodeClick(data);
     };
 
+    try {
     return (
         <div
             className={`genealogy-node-container ${isPlaceholder ? 'placeholder' : ''}`}
@@ -89,4 +90,8 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
             )}
         </div>
     );
+    } catch {
+        return <div className="text-red-400 text-xs p-1">Node Error</div>;
+    }
 });
+StrainTreeNode.displayName = 'StrainTreeNode';

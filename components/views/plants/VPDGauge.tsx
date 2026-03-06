@@ -44,6 +44,7 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
     // Map VPD from 0-2 kPa to the circle circumference
     const strokeDashoffset = circumference - (Math.min(vpd, 2) / 2) * circumference;
 
+    try {
     return (
         <div
             className="flex flex-col items-center justify-center"
@@ -87,4 +88,8 @@ export const VPDGauge: React.FC<VPDGaugeProps> = memo(({ temperature, humidity, 
             <p className={`text-xs sm:text-sm font-semibold mt-2 ${statusColor}`}>{status}</p>
         </div>
     );
+    } catch {
+        return <div className="text-red-400 text-sm p-4 text-center">VPD Gauge Error</div>;
+    }
 });
+VPDGauge.displayName = 'VPDGauge';

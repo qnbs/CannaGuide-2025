@@ -132,6 +132,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         setHoveredData(null);
     };
 
+    try {
     return (
         <div className="w-full h-full">
             <div className="flex justify-center gap-1 mb-2">
@@ -241,7 +242,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                                       } else {
                                           value = hoveredData.point[pathInfo.key as NonMediumMetric];
                                       }
-                                      return <p key={`tooltip-${pathInfo.key}`} style={{color: pathInfo.color}} className="font-semibold">{t(pathInfo.labelKey)}: {value.toFixed(1)}{pathInfo.unit}</p>
+                                      return <p key={`tooltip-${pathInfo.key}`} style={{color: pathInfo.color}} className="font-semibold">{t(pathInfo.labelKey)}: {typeof value === 'number' ? value.toFixed(1) : '–'}{pathInfo.unit}</p>
                                 })}
                            </div>
                         </foreignObject>
@@ -261,6 +262,10 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
             </div>
         </div>
     );
+    } catch {
+        return <div className="flex items-center justify-center h-full text-red-400 text-sm">{t('common.error')}</div>;
+    }
 });
+HistoryChart.displayName = 'HistoryChart';
 
 HistoryChart.displayName = 'HistoryChart';

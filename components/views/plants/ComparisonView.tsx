@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useMemo, memo } from 'react';
+import React, { useMemo, memo } from 'react';
 import { SavedExperiment, Plant, PlantHistoryEntry } from '@/types';
 import { useTranslation } from 'react-i18next';
 import * as d3 from 'd3';
@@ -7,62 +7,73 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
 
-// Small component for the chart
+const COMP_WIDTH = 300;
+const COMP_HEIGHT = 150;
+const COMP_PADDING = { top: 10, right: 10, bottom: 30, left: 30 } as const;
+
+// ---------------------------------------------------------------------------
+// ComparisonChart – deklaratives React-SVG (kein imperativer d3-DOM-Zugriff)
+// ---------------------------------------------------------------------------
 const ComparisonChart: React.FC<{ historyA: PlantHistoryEntry[], historyB: PlantHistoryEntry[], labelA: string, labelB: string }> = memo(({ historyA, historyB, labelA, labelB }) => {
-    const svgRef = useRef<SVGSVGElement>(null);
     const { t } = useTranslation();
 
-    useEffect(() => {
-        if (!svgRef.current) return;
+    const allHistory = useMemo(() => [...historyA, ...historyB], [historyA, historyB]);
 
-        const allHistory = [...historyA, ...historyB];
-        const width = 300;
-        const height = 150;
-        const padding = { top: 10, right: 10, bottom: 30, left: 30 };
+    const xScale = useMemo(() => {
+        const [min, max] = d3.extent(allHistory, h => h.day);
+        return d3.scaleLinear()
+            .domain([min ?? 0, max ?? 1])
+            .range([COMP_PADDING.left, COMP_WIDTH - COMP_PADDING.right]);
+    }, [allHistory]);
 
-        const xScale = d3.scaleLinear()
-            .domain(d3.extent(allHistory, h => h.day) as [number, number])
-            .range([padding.left, width - padding.right]);
+    const yScale = useMemo(() => {
+        const maxH = d3.max(allHistory, h => h.height) ?? 10;
+        return d3.scaleLinear()
+            .domain([0, Math.max(1, maxH)])
+            .range([COMP_HEIGHT - COMP_PADDING.bottom, COMP_PADDING.top]);
+    }, [allHistory]);
 
-        const yScale = d3.scaleLinear()
-            .domain([0, d3.max(allHistory, h => h.height) as number])
-            .range([height - padding.bottom, padding.top]);
-            
-        const svg = d3.select(svgRef.current);
-        svg.selectAll("*").remove(); // Clear previous render
-
-        // Axes
-        svg.append("g")
-            .attr("transform", `translate(0, ${height - padding.bottom})`)
-            .call(d3.axisBottom(xScale).ticks(5))
-            .attr("class", "history-chart-grid");
-            
-        svg.append("g")
-            .attr("transform", `translate(${padding.left}, 0)`)
-            .call(d3.axisLeft(yScale).ticks(5))
-            .attr("class", "history-chart-grid");
-
-        // Lines
-        const lineGen = d3.line<PlantHistoryEntry>()
+    const lineGen = useMemo(() =>
+        d3.line<PlantHistoryEntry>()
             .x(d => xScale(d.day))
-            .y(d => yScale(d.height));
+            .y(d => yScale(d.height)),
+    [xScale, yScale]);
 
-        svg.append("path").datum(historyA).attr("fill", "none").attr("stroke", "rgb(var(--color-primary-500))").attr("stroke-width", 2).attr("d", lineGen);
-        svg.append("path").datum(historyB).attr("fill", "none").attr("stroke", "rgb(var(--color-accent-500))").attr("stroke-width", 2).attr("d", lineGen);
-
-    }, [historyA, historyB]);
-
-    return (
-        <div className="w-full">
-            <h4 className="font-bold text-center mb-2">{t('plantsView.detailedView.height')} (cm) vs. {t('plantsView.plantCard.day')}</h4>
-            <svg ref={svgRef} viewBox={`0 0 300 150`} className="w-full" />
-            <div className="flex justify-center gap-4 text-xs mt-2">
-                <span className="flex items-center gap-1.5"><div className="w-3 h-1.5 bg-primary-500"></div>{labelA}</span>
-                <span className="flex items-center gap-1.5"><div className="w-3 h-1.5 bg-accent-500"></div>{labelB}</span>
+    try {
+        return (
+            <div className="w-full">
+                <h4 className="font-bold text-center mb-2">{t('plantsView.detailedView.height')} (cm) vs. {t('plantsView.plantCard.day')}</h4>
+                <svg viewBox={`0 0 ${COMP_WIDTH} ${COMP_HEIGHT}`} className="w-full" role="img" aria-label={t('plantsView.comparison.chartLabel', { defaultValue: 'Comparison chart' })}>
+                    <g className="history-chart-grid" transform={`translate(0, ${COMP_HEIGHT - COMP_PADDING.bottom})`}>
+                        {xScale.ticks(5).map(tick => (
+                            <g key={`x-${tick}`} transform={`translate(${xScale(tick)}, 0)`}>
+                                <line y2="6" stroke="currentColor" />
+                                <text fill="currentColor" y="9" dy="0.71em" textAnchor="middle" className="history-chart-labels">{tick}</text>
+                            </g>
+                        ))}
+                    </g>
+                    <g className="history-chart-grid" transform={`translate(${COMP_PADDING.left}, 0)`}>
+                        {yScale.ticks(5).map(tick => (
+                            <g key={`y-${tick}`} transform={`translate(0, ${yScale(tick)})`}>
+                                <line x2="-6" stroke="currentColor" />
+                                <text fill="currentColor" x="-9" dy="0.32em" textAnchor="end" className="history-chart-labels">{tick}</text>
+                            </g>
+                        ))}
+                    </g>
+                    <path d={lineGen(historyA) || ''} fill="none" stroke="rgb(var(--color-primary-500))" strokeWidth={2} />
+                    <path d={lineGen(historyB) || ''} fill="none" stroke="rgb(var(--color-accent-500))" strokeWidth={2} />
+                </svg>
+                <div className="flex justify-center gap-4 text-xs mt-2">
+                    <span className="flex items-center gap-1.5"><div className="w-3 h-1.5 bg-primary-500"></div>{labelA}</span>
+                    <span className="flex items-center gap-1.5"><div className="w-3 h-1.5 bg-accent-500"></div>{labelB}</span>
+                </div>
             </div>
-        </div>
-    );
+        );
+    } catch {
+        return <div className="text-red-400 text-sm p-4 text-center">{t('common.error')}</div>;
+    }
 });
+ComparisonChart.displayName = 'ComparisonChart';
 
 const PlantSummaryCard: React.FC<{ title: string, plant: Plant }> = memo(({ title, plant }) => {
     const { t } = useTranslation();
@@ -78,6 +89,7 @@ const PlantSummaryCard: React.FC<{ title: string, plant: Plant }> = memo(({ titl
         </Card>
     );
 });
+PlantSummaryCard.displayName = 'PlantSummaryCard';
 
 
 export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: () => void }> = ({ experiment, onFinish }) => {
@@ -100,6 +112,7 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
     const diffHeight = experiment.modifiedFinalState.height - experiment.originalFinalState.height;
     const diffBiomass = experiment.modifiedFinalState.biomass.total - experiment.originalFinalState.biomass.total;
 
+    try {
     return (
         <div className="space-y-6 animate-fade-in">
             <div className="flex justify-between items-center">
@@ -142,4 +155,7 @@ export const ComparisonView: React.FC<{ experiment: SavedExperiment; onFinish: (
             </Card>
         </div>
     );
+    } catch {
+        return <div className="text-red-400 text-sm p-4 text-center">{t('common.error')}</div>;
+    }
 };

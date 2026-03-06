@@ -1,22 +1,5 @@
 import { expect, test } from '@playwright/test'
-
-const closeOnboardingIfVisible = async (page: import('@playwright/test').Page) => {
-  const onboardingDialog = page.getByRole('dialog')
-  if (!(await onboardingDialog.isVisible().catch(() => false))) {
-    return
-  }
-
-  for (let step = 0; step < 6; step += 1) {
-    const isVisible = await onboardingDialog.isVisible().catch(() => false)
-    if (!isVisible) {
-      break
-    }
-
-    const actionButton = onboardingDialog.locator('button').last()
-    await actionButton.click()
-    await page.waitForTimeout(150)
-  }
-}
+import { closeOnboardingIfVisible, seedLegalGateState } from './helpers'
 
 const expectNoCrashPatterns = async (page: import('@playwright/test').Page) => {
   await expect(page.getByRole('heading', { name: /Something went wrong\./i })).toHaveCount(0)
@@ -33,6 +16,7 @@ const waitForVisibleNavigation = async (page: import('@playwright/test').Page) =
 }
 
 test('deploy smoke: shell, assets and main navigation render without crash', async ({ page, request, baseURL }) => {
+  await seedLegalGateState(page)
   await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
   await closeOnboardingIfVisible(page)
 
@@ -79,6 +63,7 @@ test('deploy smoke: app starts without Web Speech API support', async ({ page, b
     }
   })
 
+  await seedLegalGateState(page)
   await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
   await closeOnboardingIfVisible(page)
 
@@ -110,6 +95,7 @@ test('deploy smoke: app starts without SpeechRecognition support', async ({ page
     }
   })
 
+  await seedLegalGateState(page)
   await page.goto(baseURL || 'https://qnbs.github.io/CannaGuide-2025/', { waitUntil: 'networkidle' })
   await closeOnboardingIfVisible(page)
 

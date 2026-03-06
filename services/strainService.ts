@@ -21,7 +21,10 @@ const loadAllStrainsData = async (): Promise<Strain[]> => {
         Object.values(module).filter(
             (value): value is Strain[] =>
                 Array.isArray(value) &&
-                (value.length === 0 || (typeof value[0] === 'object' && value[0] !== null && 'id' in value[0])),
+                (value.length === 0 || (
+                    typeof value[0] === 'object' && value[0] !== null &&
+                    'id' in value[0] && 'name' in value[0] && 'type' in value[0]
+                )),
         ),
     )
 

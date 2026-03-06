@@ -14,6 +14,8 @@ const initialState: NotesState = {
     strainNotes: {},
 }
 
+const MAX_UNDO_HISTORY = 50
+
 const notesSlice = createSlice({
     name: 'notes',
     initialState,
@@ -25,7 +27,11 @@ const notesSlice = createSlice({
             if (!state.strainNotes[strainId]) {
                 state.strainNotes[strainId] = { past: [], present: note, future: [] }
             } else if (previous !== note) {
-                state.strainNotes[strainId].past.push(previous)
+                const past = state.strainNotes[strainId].past
+                past.push(previous)
+                if (past.length > MAX_UNDO_HISTORY) {
+                    past.splice(0, past.length - MAX_UNDO_HISTORY)
+                }
                 state.strainNotes[strainId].present = note
                 state.strainNotes[strainId].future = [] // Clear future on new edit
             }

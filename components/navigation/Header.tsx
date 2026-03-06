@@ -63,28 +63,33 @@ export const Header: React.FC<HeaderProps> = ({
     }, [activeView]);
 
     return (
-        <header className="bg-slate-900/80 backdrop-blur-sm sticky top-0 z-30 flex-shrink-0 border-b border-slate-800 shadow-md relative">
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/50 to-transparent"></div>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16">
+        <header className="sticky top-0 z-30 flex-shrink-0 px-3 pt-3 sm:px-6 sm:pt-4 lg:px-8">
+            <div className="mx-auto max-w-7xl rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.02)),rgba(15,23,42,0.72)] shadow-[0_24px_80px_rgba(2,6,23,0.36)] backdrop-blur-xl">
+                <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                <div className="flex h-[4.5rem] items-center justify-between gap-3 px-3 sm:px-5">
                     <button
                         type="button"
                         onClick={handleHeaderClick}
-                        className="flex items-center gap-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 rounded-md p-1 -m-1 min-w-0"
+                        className="group flex min-w-0 items-center gap-3 rounded-2xl px-1 py-1 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
                         aria-label={t('nav.plants')}
                     >
-                        {headerIcon}
-                        <div className="flex items-baseline gap-2 min-w-0">
-                            <h1 className="text-xl font-bold font-display text-primary-300 truncate">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] transition-transform duration-200 group-hover:scale-[1.03]">
+                            {headerIcon}
+                        </div>
+                        <div className="min-w-0">
+                            <p className="truncate text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">
+                                CannaGuide
+                            </p>
+                            <h1 className="truncate text-xl font-bold font-display text-slate-50">
                                 {currentTitle}
                             </h1>
                         </div>
                     </button>
-                    <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-1 rounded-2xl border border-white/10 bg-black/10 p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] sm:gap-2">
                         {!isInstalled && deferredPrompt && (
                             <Button
                                 variant="ghost"
-                                className="!p-2 rounded-full hidden sm:flex"
+                                className="hidden rounded-xl !p-2 sm:flex"
                                 onClick={onInstallClick}
                                 aria-label={t('common.installPwa')}
                             >
@@ -96,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
                         
                         <Button
                             variant="ghost"
-                            className="!p-2 rounded-full"
+                            className="rounded-xl !p-2"
                             onClick={onCommandPaletteOpen}
                             aria-label={t('commandPalette.open')}
                         >
@@ -104,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
                         </Button>
                         <Button
                             variant="ghost"
-                            className="!p-2 rounded-full"
+                            className="rounded-xl !p-2"
                             onClick={() => dispatch(setActiveView(View.Help))}
                             aria-label={t('nav.help')}
                         >
@@ -112,7 +117,7 @@ export const Header: React.FC<HeaderProps> = ({
                         </Button>
                         <Button
                             variant="ghost"
-                            className="!p-2 rounded-full"
+                            className="rounded-xl !p-2"
                             onClick={() => dispatch(setActiveView(View.Settings))}
                             aria-label={t('nav.settings')}
                         >

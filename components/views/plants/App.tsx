@@ -293,7 +293,10 @@ export const App: React.FC = () => {
     }
 
     return (
-        <div className="flex flex-col md:flex-row h-screen bg-[rgb(var(--color-bg-primary))] text-slate-300 font-sans">
+        <div className="app-shell flex h-screen flex-col font-sans text-slate-300 md:flex-row">
+            <div className="app-shell__orb app-shell__orb--primary" aria-hidden="true" />
+            <div className="app-shell__orb app-shell__orb--accent" aria-hidden="true" />
+            <div className="app-shell__orb app-shell__orb--secondary" aria-hidden="true" />
             <a
                 href="#main-content"
                 className="skip-link"
@@ -301,7 +304,7 @@ export const App: React.FC = () => {
                 {t('common.accessibility.skipToMain')}
             </a>
             <SideNav />
-            <div className="flex flex-col flex-grow overflow-hidden min-h-0">
+            <div className="relative flex min-h-0 flex-grow flex-col overflow-hidden">
                 <Header
                     onCommandPaletteOpen={() => dispatch(setIsCommandPaletteOpen(true))}
                     deferredPrompt={deferredPrompt}
@@ -311,11 +314,13 @@ export const App: React.FC = () => {
                 <main
                     id="main-content"
                     aria-label={t('common.accessibility.mainContent')}
-                    className="flex-grow min-h-0 overflow-y-auto p-4 sm:p-6 pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pb-6 scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:scroll-pb-8"
+                    className="relative flex-grow min-h-0 overflow-y-auto px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-2 scroll-pb-[calc(7rem+env(safe-area-inset-bottom))] sm:px-6 sm:pb-8 sm:pt-3 sm:scroll-pb-8 lg:px-8"
                 >
                     {/* FIX: Wrap the Suspense component in an ErrorBoundary to catch errors in lazy-loaded components. */}
                     <ErrorBoundary>
-                        <Suspense fallback={<SkeletonLoader count={5} />}>{renderContent()}</Suspense>
+                        <div className="mx-auto w-full max-w-7xl">
+                            <Suspense fallback={<SkeletonLoader count={5} />}>{renderContent()}</Suspense>
+                        </div>
                     </ErrorBoundary>
                 </main>
                 <BottomNav />

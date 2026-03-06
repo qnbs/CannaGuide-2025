@@ -62,7 +62,7 @@ export const Card = memo(
                         ref.current = node
                     }
                 }}
-                className={`glass-pane rounded-xl p-4 ${
+                className={`glass-pane rounded-[1.35rem] p-4 sm:p-5 ${
                     isInteractive ? 'card-interactive card-interactive-glow' : ''
                 } ${className}`}
                 onMouseMove={isInteractive ? handleMouseMove : undefined}

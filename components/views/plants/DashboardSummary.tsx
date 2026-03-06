@@ -14,10 +14,10 @@ import { SafeHtml } from '@/components/common/SafeHtml';
 import { Speakable } from '@/components/common/Speakable';
 
 const Stat: React.FC<{ icon: React.ReactNode; value: string; label: string; }> = ({ icon, value, label }) => (
-    <div className="text-center min-w-0 bg-slate-800/50 p-2 rounded-lg ring-1 ring-inset ring-white/20 flex flex-col justify-between">
-        <div className="mx-auto w-8 h-8 flex items-center justify-center">{icon}</div>
-        <p className="text-xl sm:text-2xl font-bold font-display text-slate-100 mt-1">{value}</p>
-        <p className="text-[10px] sm:text-xs text-slate-400 break-words">{label}</p>
+    <div className="stat-tile min-w-0 p-3 text-center sm:p-4">
+        <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5">{icon}</div>
+        <p className="mt-3 text-xl font-bold font-display text-slate-50 sm:text-2xl">{value}</p>
+        <p className="mt-1 break-words text-[10px] text-slate-400 sm:text-xs">{label}</p>
     </div>
 );
 
@@ -65,8 +65,25 @@ const DashboardSummaryComponent: React.FC = () => {
     };
 
     return (
-        <Card>
-            <h3 className="text-xl font-bold font-display text-primary-300 mb-4">{t('plantsView.gardenVitals.title')}</h3>
+        <Card className="overflow-hidden">
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                        <PhosphorIcons.Heart className="h-3.5 w-3.5" />
+                        Live Environment
+                    </div>
+                    <h3 className="text-xl font-bold font-display text-slate-50">{t('plantsView.gardenVitals.title')}</h3>
+                </div>
+                <div className="stat-tile flex items-center gap-3 self-start px-4 py-3 text-left">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-primary-300">
+                        <PhosphorIcons.ChartLineUp className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-[0.68rem] uppercase tracking-[0.22em] text-slate-500">VPD</p>
+                        <p className="text-lg font-bold font-display text-slate-50">{avgTemp.toFixed(1)}° / {avgHumidity.toFixed(0)}%</p>
+                    </div>
+                </div>
+            </div>
             {/* FIX: Add avgTemp and avgHumidity stats and adjust grid layout to display all vital metrics. */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
                 <Stat icon={<PhosphorIcons.Heart weight="fill" className="text-rose-400" />} value={`${Math.round(gardenHealth)}%`} label={t('plantsView.summary.gardenHealth')} />
@@ -74,7 +91,7 @@ const DashboardSummaryComponent: React.FC = () => {
                 <Stat icon={<PhosphorIcons.Thermometer className="text-orange-400" />} value={`${avgTemp.toFixed(1)}°`} label={t('plantsView.gardenVitals.avgTemp')} />
                 <Stat icon={<PhosphorIcons.Drop className="text-blue-400" />} value={`${avgHumidity.toFixed(1)}%`} label={t('plantsView.gardenVitals.avgHumidity')} />
             </div>
-            <div className="text-center min-w-0 bg-slate-800/50 p-2 rounded-lg ring-1 ring-inset ring-white/20 flex flex-col justify-center items-center mb-4">
+            <div className="stat-tile mb-4 flex min-w-0 flex-col items-center justify-center p-3 text-center">
                 <VPDGauge temperature={avgTemp} humidity={avgHumidity} leafTempOffset={leafTempOffset} altitudeM={altitudeM} />
             </div>
 
@@ -85,7 +102,7 @@ const DashboardSummaryComponent: React.FC = () => {
             </div>
 
             {/* AI Status Section */}
-            <div className="p-3 bg-slate-800/50 rounded-lg space-y-3">
+            <div className="stat-tile space-y-3 p-3">
                 {isAiLoading ? (
                     <AiLoadingIndicator loadingMessage={t('ai.generating')} />
                 ) : aiError ? (
@@ -109,7 +126,7 @@ const DashboardSummaryComponent: React.FC = () => {
                 )}
             </div>
 
-            <div className="mt-4 pt-4 border-t border-slate-700/50">
+            <div className="mt-4 border-t border-white/8 pt-4">
                 <details className="group mt-4">
                     <summary className="list-none text-sm font-semibold text-slate-300 cursor-pointer flex items-center justify-between">
                         <span>{t('plantsView.gardenVitals.advancedControls')}</span>

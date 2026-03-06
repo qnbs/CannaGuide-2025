@@ -40,11 +40,13 @@ const EmptyPlantSlot: React.FC<EmptyPlantSlotProps> = memo(({ index, onSlotClick
         <Card
             onClick={handleStart}
             aria-label={t('plantsView.emptySlot.title')}
-            className="flex flex-col items-center justify-center h-full text-center border-2 border-dashed border-white/30 hover:border-primary-500 hover:bg-primary-900/20 cursor-pointer transition-all card-interactive-glow empty-slot-pulse"
+            className="empty-slot-pulse flex h-full cursor-pointer flex-col items-center justify-center border-2 border-dashed border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] text-center transition-all hover:border-primary-400/60 hover:bg-primary-900/20"
         >
-            <PhosphorIcons.PlusCircle className="w-12 h-12 text-slate-600 mb-2" />
-            <h3 className="font-semibold text-slate-300">{t('plantsView.emptySlot.title')}</h3>
-            <p className="text-sm text-slate-500">{t('plantsView.emptySlot.subtitle')} <span className="hidden md:inline">{t('plantsView.emptySlot.subtitleInline')}</span></p>
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/10 bg-white/5 shadow-[0_14px_32px_rgba(2,6,23,0.2)]">
+                <PhosphorIcons.PlusCircle className="h-10 w-10 text-primary-300" />
+            </div>
+            <h3 className="font-semibold text-slate-100">{t('plantsView.emptySlot.title')}</h3>
+            <p className="mt-2 max-w-xs text-sm leading-6 text-slate-400">{t('plantsView.emptySlot.subtitle')} <span className="hidden md:inline">{t('plantsView.emptySlot.subtitleInline')}</span></p>
         </Card>
     );
 });
@@ -56,7 +58,7 @@ const HiddenArchivedSlot: React.FC<HiddenArchivedSlotProps> = memo(({ plantId })
     const dispatch = useAppDispatch();
 
     return (
-        <Card className="flex h-full flex-col items-center justify-center border border-slate-700/60 bg-slate-900/60 text-center">
+        <Card className="flex h-full flex-col items-center justify-center border border-slate-700/60 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] text-center">
             <PhosphorIcons.ArchiveBox className="mb-3 h-10 w-10 text-slate-500" />
             <h3 className="font-semibold text-slate-200">{t('settingsView.plants.archivedHiddenTitle')}</h3>
             <p className="mt-1 text-sm text-slate-400">{t('settingsView.plants.archivedHiddenDesc')}</p>
@@ -140,9 +142,40 @@ export const PlantsView: React.FC = () => {
             {/* Main Dashboard View - Hidden when a plant is selected to preserve state */}
             <div style={{ display: selectedPlant ? 'none' : 'block' }}>
                 <div className="space-y-6">
-                     <div className="text-center mb-6 animate-fade-in">
-                        <PhosphorIcons.Plant className="w-16 h-16 mx-auto text-green-400" />
-                        <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{t('nav.plants')}</h2>
+                     <div className="section-hero animate-fade-in">
+                        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+                            <div className="min-w-0">
+                                <div className="surface-badge mb-4 text-[0.7rem] font-semibold uppercase tracking-[0.24em] text-primary-200">
+                                    <PhosphorIcons.Sparkle className="h-3.5 w-3.5" />
+                                    Garden Command Center
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] border border-white/10 bg-white/5 shadow-[0_16px_32px_rgba(2,6,23,0.22)]">
+                                        <PhosphorIcons.Plant className="h-8 w-8 text-green-300" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <h2 className="mt-1 text-3xl font-bold font-display text-slate-50 sm:text-4xl">{t('nav.plants')}</h2>
+                                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
+                                            Live garden telemetry, plant health and actionable grow workflows in one focused workspace.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 sm:max-w-sm sm:grid-cols-3 lg:min-w-[20rem]">
+                                <div className="stat-tile flex flex-col justify-between p-4">
+                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">Slots</span>
+                                    <span className="mt-3 text-3xl font-bold font-display text-slate-50">{slotsWithData.length}</span>
+                                </div>
+                                <div className="stat-tile flex flex-col justify-between p-4">
+                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">Tasks</span>
+                                    <span className="mt-3 text-3xl font-bold font-display text-slate-50">{tasks.length}</span>
+                                </div>
+                                <div className="stat-tile col-span-2 flex flex-col justify-between p-4 sm:col-span-1">
+                                    <span className="text-[0.68rem] uppercase tracking-[0.2em] text-slate-500">Alerts</span>
+                                    <span className="mt-3 text-3xl font-bold font-display text-slate-50">{problems.length}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">

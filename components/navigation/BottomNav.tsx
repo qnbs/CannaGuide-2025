@@ -56,14 +56,13 @@ export const BottomNav: React.FC = () => {
     }, [activeView]);
 
     return (
-        <nav aria-label={t('common.accessibility.mainNavigation')} className="sm:hidden fixed inset-x-0 bottom-0 mt-auto bg-[rgba(var(--color-bg-primary),0.88)] border-t border-[rgb(var(--color-border))] backdrop-blur-lg flex-shrink-0 z-[90] pb-[env(safe-area-inset-bottom)] shadow-[0_-10px_30px_rgba(0,0,0,0.3)]">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary-500/30 to-transparent"></div>
-            <div ref={navRef} className="relative flex justify-around max-w-5xl mx-auto">
+        <nav aria-label={t('common.accessibility.mainNavigation')} className="fixed inset-x-0 bottom-0 z-[90] mt-auto px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] pt-2 sm:hidden">
+            <div ref={navRef} className="glass-pane relative mx-auto flex max-w-md justify-around rounded-[1.75rem] border-white/10 px-2 py-2 shadow-[0_-12px_48px_rgba(2,6,23,0.34)]">
                 <div
-                    className="absolute top-0 h-full rounded-md bg-primary-500/10 transition-all duration-300 ease-out"
+                    className="absolute inset-y-2 h-auto rounded-2xl border border-white/10 bg-white/8 transition-all duration-300 ease-out"
                     style={indicatorStyle}
                 >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-1 bg-primary-400 rounded-b-full shadow-glow-primary"></div>
+                    <div className="absolute inset-x-3 top-0 h-px bg-gradient-to-r from-transparent via-primary-300/70 to-transparent"></div>
                 </div>
                 {mainNavViews.map((view) => (
                     <button
@@ -71,15 +70,15 @@ export const BottomNav: React.FC = () => {
                         key={view}
                         data-view-id={view}
                         onClick={() => dispatch(setActiveView(view))}
-                        className={`touch-manipulation flex-1 flex flex-col items-center justify-center py-2 px-1 text-center transition-colors duration-200 relative z-10 active:scale-[0.98] min-h-11 ${
+                        className={`touch-manipulation relative z-10 flex min-h-12 flex-1 flex-col items-center justify-center rounded-2xl px-1 py-2 text-center transition-all duration-200 active:scale-[0.98] ${
                             activeView === view
-                                ? 'text-primary-300'
-                                : 'text-slate-400 hover:text-primary-300'
+                                ? 'text-primary-200'
+                                : 'text-slate-400 hover:text-slate-100'
                         }`}
                         aria-label={navLabels[view]}
                         aria-current={activeView === view ? 'page' : undefined}
                     >
-                        <div className="w-6 h-6 mb-0.5">{navIcons[view]}</div>
+                        <div className="mb-0.5 h-6 w-6">{navIcons[view]}</div>
                         <span className="text-[11px] font-semibold tracking-tight leading-tight">{navLabels[view]}</span>
                     </button>
                 ))}

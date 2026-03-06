@@ -57,7 +57,7 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
     return (
         <nav
             ref={navRef}
-            className={`relative flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar ${className}`}
+            className={`glass-pane relative flex items-center gap-1 overflow-x-auto rounded-[1.25rem] p-1.5 no-scrollbar ${className}`}
             role="tablist"
             onKeyDown={handleKeyDown}
         >
@@ -66,9 +66,9 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
                     key={tab.id}
                     data-tab-id={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex-shrink-0 flex items-center justify-center min-h-11 gap-2 px-3 sm:px-4 py-3 text-sm font-semibold transition-colors whitespace-nowrap focus:outline-none focus-visible:bg-slate-700/50 rounded-t-md ${
+                        className={`relative z-10 flex min-h-11 flex-shrink-0 items-center justify-center gap-2 rounded-2xl px-3 py-2.5 text-sm font-semibold whitespace-nowrap transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 ${
                         activeTab === tab.id
-                            ? 'text-primary-300 text-glow'
+                            ? 'text-slate-50'
                             : 'text-slate-400 hover:text-slate-100'
                     }`}
                     role="tab"
@@ -82,15 +82,13 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
             ))}
             {/* Sliding indicator */}
             <div
-                className="absolute bottom-0 h-1 bg-primary-400 rounded-full shadow-[0_0_10px_rgb(var(--color-primary-400))]"
+                className="absolute inset-y-1.5 h-auto rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(var(--color-primary-500),0.24),rgba(var(--color-primary-300),0.12))] shadow-[0_10px_30px_rgba(8,145,178,0.22)]"
                 style={{
                     ...indicatorStyle,
                     transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                 }}
                 aria-hidden="true"
             />
-            {/* Full-width bottom border */}
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-slate-700 -z-10" aria-hidden="true"></div>
         </nav>
     )
 }

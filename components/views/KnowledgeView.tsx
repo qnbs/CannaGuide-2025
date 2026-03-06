@@ -7,11 +7,11 @@ import { setKnowledgeViewTab, setActiveMentorPlantId } from '@/stores/slices/uiS
 import { selectKnowledgeViewTab, selectActiveMentorPlantId } from '@/stores/selectors';
 import { Card } from '@/components/common/Card';
 import { usePlantById } from '@/hooks/useSimulationBridge';
-import { MentorChatView } from './knowledge/MentorChatView';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import { KnowledgeSubNav } from './knowledge/KnowledgeSubNav';
 
 // Lazy load the sub-views for better initial load performance
+const MentorChatView = lazy(() => import('./knowledge/MentorChatView').then(m => ({ default: m.MentorChatView })))
 const MentorView = lazy(() => import('./knowledge/MentorView'));
 const GuideView = lazy(() => import('./knowledge/GuideView'));
 const ArchiveView = lazy(() => import('./knowledge/ArchiveView'));
@@ -49,7 +49,7 @@ export const KnowledgeView: React.FC = () => {
     
     // If a chat is active, render the chat view exclusively
     if (activeMentorPlant) {
-        return <MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} />;
+        return <Suspense fallback={<SkeletonLoader count={3} />}><MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} /></Suspense>;
     }
 
     const handleSetTab = (id: KnowledgeViewTab) => {

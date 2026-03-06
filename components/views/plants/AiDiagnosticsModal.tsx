@@ -303,7 +303,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
             <Modal
                 isOpen={true}
                 onClose={onClose}
-                title={`${t('plantsView.aiDiagnostics.title')} for ${plant.name}`}
+                title={t('plantsView.aiDiagnostics.titleForPlant', { plantName: plant.name })}
+                description={t('plantsView.aiDiagnostics.description')}
                 size="2xl"
             >
                 <div className="min-h-[50dvh] sm:min-h-[420px]">

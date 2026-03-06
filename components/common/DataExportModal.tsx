@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Modal } from './Modal';
-import { Button } from './Button';
 import { PhosphorIcons } from '../icons/PhosphorIcons';
+import { Card } from './Card';
 
 export type SimpleExportFormat = 'pdf' | 'txt';
 
@@ -25,25 +25,53 @@ export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClos
         : t(`${translationBasePath}.sources.all_other`, { count: totalCount });
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose} title={title} size="lg">
-            <div className="space-y-4">
-                <div>
-                    <h3 className="font-semibold text-slate-300">{t(`${translationBasePath}.source`)}</h3>
-                    <p className="text-sm text-slate-400">{sourceText}</p>
-                </div>
-                <div>
-                    <h3 className="font-semibold text-slate-300">{t(`${translationBasePath}.format`)}</h3>
-                    <p className="text-sm text-slate-400 mb-2">{t(`${translationBasePath}.chooseFormat`)}</p>
-                    <div className="flex gap-4">
-                        <Button onClick={() => onExport('pdf')} className="flex-1" variant="secondary">
-                            <PhosphorIcons.FilePdf className="w-5 h-5 mr-2" />
-                            {t(`${translationBasePath}.formats.pdf`)}
-                        </Button>
-                        <Button onClick={() => onExport('txt')} className="flex-1" variant="secondary">
-                            <PhosphorIcons.FileText className="w-5 h-5 mr-2" />
-                            {t(`${translationBasePath}.formats.txt`)}
-                        </Button>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={title}
+            description={t(`${translationBasePath}.chooseFormat`)}
+            size="lg"
+        >
+            <div className="space-y-4 pb-3">
+                <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.12),rgba(15,23,42,0.9))]">
+                    <div className="surface-badge mb-3 text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                        <PhosphorIcons.ArchiveBox className="h-3.5 w-3.5" />
+                        {t(`${translationBasePath}.source`)}
                     </div>
+                    <p className="text-sm leading-6 text-slate-300">{sourceText}</p>
+                </Card>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <button
+                        type="button"
+                        onClick={() => onExport('pdf')}
+                        className="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(124,58,237,0.18),rgba(15,23,42,0.94))] p-4 text-left transition-all hover:border-white/20 hover:bg-[linear-gradient(135deg,rgba(124,58,237,0.24),rgba(15,23,42,0.98))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    >
+                        <div className="flex items-center gap-3 text-slate-50">
+                            <div className="rounded-xl border border-white/10 bg-white/8 p-2">
+                                <PhosphorIcons.FilePdf className="h-5 w-5 text-primary-200" />
+                            </div>
+                            <div>
+                                <p className="font-semibold">{t(`${translationBasePath}.formats.pdf`)}</p>
+                                <p className="text-xs text-slate-400">{t('common.exportFormats.pdfHint')}</p>
+                            </div>
+                        </div>
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => onExport('txt')}
+                        className="rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(14,165,233,0.16),rgba(15,23,42,0.94))] p-4 text-left transition-all hover:border-white/20 hover:bg-[linear-gradient(135deg,rgba(14,165,233,0.24),rgba(15,23,42,0.98))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    >
+                        <div className="flex items-center gap-3 text-slate-50">
+                            <div className="rounded-xl border border-white/10 bg-white/8 p-2">
+                                <PhosphorIcons.FileText className="h-5 w-5 text-primary-200" />
+                            </div>
+                            <div>
+                                <p className="font-semibold">{t(`${translationBasePath}.formats.txt`)}</p>
+                                <p className="text-xs text-slate-400">{t('common.exportFormats.txtHint')}</p>
+                            </div>
+                        </div>
+                    </button>
                 </div>
             </div>
         </Modal>

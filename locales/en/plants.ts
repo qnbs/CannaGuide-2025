@@ -50,6 +50,7 @@ export const plantsView = {
   },
   aiDiagnostics: {
     title: 'AI Plant Doctor',
+    titleForPlant: 'AI Plant Doctor for {{plantName}}',
     diagnoseProblem: 'Diagnose Problem',
     description: 'Upload or capture an image of a leaf or problem area to get an AI-powered diagnosis.',
     dragDrop: 'Drag & drop your image here, or click to browse.',
@@ -442,6 +443,7 @@ export const plantsView = {
     },
   },
   deepDive: {
+    description: 'Get an AI-guided tactical breakdown for {{topic}} on {{plantName}}, including tradeoffs, steps and scenario follow-ups.',
     stepByStep: 'Step-by-Step',
     pros: 'Pros',
     cons: 'Cons',

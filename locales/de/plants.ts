@@ -50,6 +50,7 @@ export const plantsView = {
   },
   aiDiagnostics: {
     title: 'KI-Pflanzendoktor',
+    titleForPlant: 'KI-Pflanzendoktor für {{plantName}}',
     diagnoseProblem: 'Problem diagnostizieren',
     description: 'Lade ein Bild von einem Blatt oder einer Problemzone hoch oder nimm eines auf, um eine KI-gestützte Diagnose zu erhalten.',
     dragDrop: 'Bild hierher ziehen oder klicken, um zu suchen.',
@@ -442,6 +443,7 @@ export const plantsView = {
     },
   },
   deepDive: {
+    description: 'Erhalte eine KI-gestützte Taktik-Analyse für {{topic}} bei {{plantName}} mit Schritten, Abwägungen und passenden Szenarien.',
     stepByStep: 'Schritt für Schritt',
     pros: 'Vorteile',
     cons: 'Nachteile',

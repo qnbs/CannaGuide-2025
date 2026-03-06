@@ -7,6 +7,7 @@ import { getDynamicLoadingMessages } from '@/services/aiLoadingMessages';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { scenarioService } from '@/services/scenarioService';
 import { Button } from '@/components/common/Button';
+import { Card } from '@/components/common/Card';
 
 interface DeepDiveModalProps {
   plant: Plant;
@@ -39,15 +40,21 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
     }, [topic]);
 
     return (
-        <Modal isOpen={true} onClose={onClose} title={`${t('common.deepDive')}: ${topic}`} size="2xl">
+        <Modal
+            isOpen={true}
+            onClose={onClose}
+            title={`${t('common.deepDive')}: ${topic}`}
+            description={t('plantsView.deepDive.description', { topic, plantName: plant.name })}
+            size="2xl"
+        >
             {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
             {!!error && <div className="text-red-400">{error instanceof Error ? error.message : t('ai.error.unknown')}</div>}
             {response && (
                 <div className="space-y-4 pb-1">
-                    <div className="flex items-start gap-3 bg-slate-800/50 p-3 rounded-lg">
+                    <Card className="flex items-start gap-3 border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.12),rgba(15,23,42,0.9))]">
                         <PhosphorIcons.Info className="w-6 h-6 text-primary-400 mt-1 flex-shrink-0" />
                         <p className="text-sm text-slate-300">{response.introduction}</p>
-                    </div>
+                    </Card>
 
                     <div>
                         <h3 className="font-bold text-base sm:text-lg text-primary-300 mb-2">{t('plantsView.deepDive.stepByStep')}</h3>
@@ -71,12 +78,12 @@ export const DeepDiveModal: React.FC<DeepDiveModalProps> = ({ plant, topic, onCl
                         </div>
                     </div>
 
-                    <div className="bg-primary-900/30 p-3 rounded-lg">
+                    <Card className="border-primary-400/15 bg-primary-900/20">
                         <h3 className="font-bold text-primary-300 flex items-center gap-2 mb-1">
                             <PhosphorIcons.Sparkle /> {t('common.proTip')}
                         </h3>
                         <p className="text-sm text-slate-300">{response.proTip}</p>
-                    </div>
+                    </Card>
 
                     {relevantScenario && (
                         <div className="text-center pt-4 border-t border-slate-700">

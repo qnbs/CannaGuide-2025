@@ -20,7 +20,7 @@ const formatBytes = (bytes: number, decimals = 2) => {
 const getObjectSize = (obj: unknown) => {
     try {
         return new TextEncoder().encode(JSON.stringify(obj)).length
-    } catch (e) {
+    } catch {
         return 0
     }
 }

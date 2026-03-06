@@ -11,6 +11,7 @@ import {
     setGenealogyZoom,
     setGenealogyLayout,
     toggleGenealogyNode,
+    resetGenealogyCache,
 } from '@/stores/slices/genealogySlice';
 import { Strain, GenealogyNode } from '@/types';
 import { StrainTreeNode } from './StrainTreeNode';
@@ -396,6 +397,15 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             onClick={() => dispatch(setGenealogyLayout(layoutOrientation === 'horizontal' ? 'vertical' : 'horizontal'))}
                         >
                             <PhosphorIcons.TreeStructure /> {t('strainsView.genealogyView.toggleLayout')}
+                        </Button>
+                        {/* Cache-Reset: löscht korrupte persisted Trees und baut neu */}
+                        <Button
+                            variant="danger"
+                            size="sm"
+                            title="Reset genealogy cache (clears corrupted persisted trees)"
+                            onClick={() => dispatch(resetGenealogyCache())}
+                        >
+                            <PhosphorIcons.TrashSimple />
                         </Button>
                     </div>
                 </div>

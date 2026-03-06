@@ -1,4 +1,4 @@
-import { AppSettings, Strain } from '@/types'
+import { AppSettings, Strain, StrainType } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 import { RootState } from '@/stores/store'
 import { APP_VERSION } from '@/constants'
@@ -72,9 +72,121 @@ const ensureSimulationShape = (state: PersistedState): void => {
 }
 
 /**
- * Merges persisted settings with default settings to ensure new properties are added.
- * This is a recursive deep merge.
+ * Sanitizes the persisted genealogy slice before it hits Redux.
+ * This runs on EVERY boot (both migrating and up-to-date paths) so corrupt
+ * data from interrupted fetches or schema changes never reaches the renderer.
+ *
+ * Key invariants enforced:
+ *  - status: 'loading'  → reset to 'idle'          (app crashed mid-fetch)
+ *  - _version mismatch  → wipe computedTrees cache  (schema changed)
+ *  - corrupt node       → silently dropped           (re-fetched on demand)
+ *  - invalid zoomTransform → zeroed out
  */
+const GENEALOGY_STATE_VERSION = 2
+const VALID_STRAIN_TYPES = new Set<string>(Object.values(StrainType))
+
+const sanitizeGenealogyNodeMigration = (raw: unknown, depth = 0): boolean => {
+    // Returns false when a node is unrecoverable corrupt so the caller can drop it.
+    if (depth > 25 || !raw || typeof raw !== 'object') return false
+    const n = raw as Record<string, unknown>
+    if (typeof n.id !== 'string' || !n.id) return false
+    if (typeof n.name !== 'string' || !n.name) return false
+    // Coerce type to a valid StrainType in-place
+    if (!VALID_STRAIN_TYPES.has(n.type as string)) n.type = StrainType.Hybrid
+    if (typeof n.thc !== 'number' || !isFinite(n.thc as number)) n.thc = 0
+    if (typeof n.isLandrace !== 'boolean') n.isLandrace = false
+    // Recurse into children / _children
+    for (const key of ['children', '_children'] as const) {
+        if (Array.isArray(n[key])) {
+            n[key] = (n[key] as unknown[]).filter((c) => sanitizeGenealogyNodeMigration(c, depth + 1))
+        }
+    }
+    return true
+}
+
+const ensureGenealogyShape = (state: PersistedState): void => {
+    if (!state.genealogy || typeof state.genealogy !== 'object') {
+        // No genealogy key → supply clean initial state
+        ;(state as Record<string, unknown>).genealogy = {
+            _version: GENEALOGY_STATE_VERSION,
+            computedTrees: {},
+            status: 'idle',
+            selectedStrainId: null,
+            zoomTransform: null,
+            layoutOrientation: 'horizontal',
+        }
+        return
+    }
+
+    const g = (state.genealogy as unknown) as Record<string, unknown>
+
+    // Version mismatch → wipe cache, preserve user preferences
+    if (g._version !== GENEALOGY_STATE_VERSION) {
+        console.warn(
+            `[MigrationLogic] Genealogy state version mismatch (stored: ${g._version}, expected: ${GENEALOGY_STATE_VERSION}) – wiping computedTrees.`,
+        )
+        const layout = g.layoutOrientation === 'vertical' ? 'vertical' : 'horizontal'
+        const selectedId = typeof g.selectedStrainId === 'string' ? g.selectedStrainId : null
+        ;(state as Record<string, unknown>).genealogy = {
+            _version: GENEALOGY_STATE_VERSION,
+            computedTrees: {},
+            status: 'idle',
+            selectedStrainId: selectedId,
+            zoomTransform: null,
+            layoutOrientation: layout,
+        }
+        return
+    }
+
+    // status: never keep 'loading' across a restart
+    const rawStatus = g.status as string
+    if (rawStatus !== 'succeeded' && rawStatus !== 'failed') {
+        g.status = 'idle'
+    }
+
+    // computedTrees: validate + repair each cached node tree in-place
+    if (!g.computedTrees || typeof g.computedTrees !== 'object' || Array.isArray(g.computedTrees)) {
+        g.computedTrees = {}
+    } else {
+        const trees = g.computedTrees as Record<string, unknown>
+        for (const id of Object.keys(trees)) {
+            if (trees[id] !== null && !sanitizeGenealogyNodeMigration(trees[id], 0)) {
+                // Un-salvageable node – drop so it's re-fetched on demand
+                delete trees[id]
+                console.warn(`[MigrationLogic] Dropped corrupt genealogy cache entry: ${id}`)
+            }
+        }
+    }
+
+    // zoomTransform: validate or null-out
+    if (g.zoomTransform && typeof g.zoomTransform === 'object') {
+        const zt = g.zoomTransform as Record<string, unknown>
+        if (
+            typeof zt.k !== 'number' || !isFinite(zt.k) || (zt.k as number) <= 0 ||
+            typeof zt.x !== 'number' || !isFinite(zt.x) ||
+            typeof zt.y !== 'number' || !isFinite(zt.y)
+        ) {
+            g.zoomTransform = null
+        }
+    } else {
+        g.zoomTransform = null
+    }
+
+    // layoutOrientation
+    if (g.layoutOrientation !== 'horizontal' && g.layoutOrientation !== 'vertical') {
+        g.layoutOrientation = 'horizontal'
+    }
+
+    // selectedStrainId
+    if (typeof g.selectedStrainId !== 'string' && g.selectedStrainId !== null) {
+        g.selectedStrainId = null
+    }
+
+    // Stamp current version
+    g._version = GENEALOGY_STATE_VERSION
+}
+
+
 const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
     const isObject = (item: unknown): item is Record<string, unknown> => {
         return !!item && typeof item === 'object' && !Array.isArray(item)
@@ -189,6 +301,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
             persistedState.settings.settings = deepMergeSettings(persistedState.settings.settings)
         }
         ensureSimulationShape(persistedState)
+        ensureGenealogyShape(persistedState)
         return persistedState
     }
 
@@ -210,6 +323,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     }
 
     ensureSimulationShape(migratedState)
+    ensureGenealogyShape(migratedState)
 
     return migratedState
 }

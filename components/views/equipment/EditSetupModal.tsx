@@ -1,9 +1,11 @@
-import React, { useState, useId } from 'react';
+import React, { useEffect, useId, useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
 import { SavedSetup, RecommendationCategory, RecommendationItem } from '@/types';
 import { Input, FormSection } from '@/components/ui/form';
+import { Card } from '@/components/common/Card';
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 
 interface EditSetupModalProps {
     setup: SavedSetup;
@@ -25,6 +27,10 @@ const FormTextarea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement> &
 export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, onSave }) => {
     const { t } = useTranslation();
     const [formData, setFormData] = useState<SavedSetup>(setup);
+
+    useEffect(() => {
+        setFormData(setup);
+    }, [setup]);
     
     const handleRecommendationChange = (category: RecommendationCategory | 'proTip', field: keyof RecommendationItem | 'proTip', value: string | number) => {
         setFormData(prev => {
@@ -61,6 +67,13 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
     return (
         <Modal isOpen={true} onClose={onClose} title={t('equipmentView.savedSetups.editTitle')} footer={footer} size="2xl">
             <div className="space-y-4">
+                <Card className="overflow-hidden border-white/10 bg-[linear-gradient(135deg,rgba(14,116,144,0.14),rgba(15,23,42,0.9))]">
+                    <div className="surface-badge text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-primary-200">
+                        <PhosphorIcons.PencilSimple className="h-3.5 w-3.5" />
+                        {t('equipmentView.savedSetups.editTitle')}
+                    </div>
+                    <p className="mt-3 text-sm text-slate-300">{t('equipmentView.configurator.setupNamePrompt')}</p>
+                </Card>
                 <Input 
                     label={t('common.name')}
                     value={formData.name}

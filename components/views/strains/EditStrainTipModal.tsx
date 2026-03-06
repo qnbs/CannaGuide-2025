@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +29,10 @@ const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { label:
 export const EditStrainTipModal: React.FC<EditStrainTipModalProps> = ({ tip, onClose, onSave }) => {
     const { t } = useTranslation();
     const [editedTip, setEditedTip] = useState(tip);
+
+    useEffect(() => {
+        setEditedTip(tip);
+    }, [tip]);
 
     const handleChange = (field: keyof SavedStrainTip, value: string) => {
         setEditedTip(prev => ({ ...prev, [field]: value }));

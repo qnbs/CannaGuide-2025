@@ -293,7 +293,26 @@ export const settingsView = {
         archives: 'AI Archives',
         customStrains: 'Custom Strains',
         savedItems: 'Saved Items',
-    }
+    },
+    sliceReset: {
+        title: 'Reset Individual Sections',
+        desc: 'Reset a single data section to its factory defaults without affecting other data.',
+        confirmTitle: 'Reset "{{slice}}"?',
+        confirmText: 'This will permanently delete all data in the "{{slice}}" section and reload the app. This cannot be undone.',
+        confirmButton: 'Reset & Reload',
+        slices: {
+            simulation: 'Plants & Simulation',
+            genealogy: 'Genealogy Cache',
+            sandbox: 'Sandbox Experiments',
+            favorites: 'Favorites',
+            notes: 'Strain Notes',
+            archives: 'AI Archives',
+            savedItems: 'Saved Items',
+            knowledge: 'Knowledge Progress',
+            breeding: 'Breeding Data',
+            userStrains: 'Custom Strains',
+        },
+    },
   },
   privacy: {
     title: 'Privacy & Security',

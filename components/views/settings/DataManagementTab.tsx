@@ -1,7 +1,7 @@
 import React, { memo, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
-import { exportAllData, resetAllData } from '@/stores/slices/settingsSlice';
+import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice';
 import { clearArchives } from '@/stores/slices/archivesSlice';
 import { setSimulationState } from '@/stores/slices/simulationSlice';
 import { Card } from '@/components/common/Card';
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { indexedDBStorage } from '@/stores/indexedDBStorage';
 import { REDUX_STATE_KEY } from '@/constants';
+import type { VersionedSliceName } from '@/constants';
 import { addNotification } from '@/stores/slices/uiSlice';
 import { dbService } from '@/services/dbService';
 import { selectSimulation } from '@/stores/selectors';
@@ -105,6 +106,7 @@ const DataManagementTab: React.FC = () => {
     const [isCleanupRunning, setIsCleanupRunning] = useState(false);
     const [storageRefreshTick, setStorageRefreshTick] = useState(0);
     const [resetConfirmText, setResetConfirmText] = useState('');
+    const [sliceToReset, setSliceToReset] = useState<VersionedSliceName | null>(null);
     const resetPhrase = String(t('settingsView.data.resetAllConfirmPhrase'));
     const isResetDisabled = resetConfirmText.toLowerCase() !== resetPhrase;
 
@@ -237,6 +239,37 @@ const DataManagementTab: React.FC = () => {
             </Card>
 
             <CommunitySharePanel />
+
+            <Dialog open={!!sliceToReset} onOpenChange={(open) => { if (!open) setSliceToReset(null); }}>
+                <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                        <DialogTitle>{t('settingsView.data.sliceReset.confirmTitle', { slice: sliceToReset ? t(`settingsView.data.sliceReset.slices.${sliceToReset}`) : '' })}</DialogTitle>
+                        <DialogDescription>{t('settingsView.data.sliceReset.confirmText', { slice: sliceToReset ? t(`settingsView.data.sliceReset.slices.${sliceToReset}`) : '' })}</DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="mt-2">
+                        <Button variant="secondary" onClick={() => setSliceToReset(null)}>{t('common.cancel')}</Button>
+                        <Button variant="destructive" onClick={() => { if (sliceToReset) dispatch(resetSliceData(sliceToReset)); }}>{t('settingsView.data.sliceReset.confirmButton')}</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Card>
+                <h3 className="text-xl font-bold font-display text-amber-400 mb-1 flex items-center gap-2"><PhosphorIcons.ArrowClockwise /> {t('settingsView.data.sliceReset.title')}</h3>
+                <p className="text-sm text-slate-400 mb-4">{t('settingsView.data.sliceReset.desc')}</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {(['simulation', 'genealogy', 'sandbox', 'favorites', 'notes', 'archives', 'savedItems', 'knowledge', 'breeding', 'userStrains'] as const).map((slice) => (
+                        <Button
+                            key={slice}
+                            variant="secondary"
+                            size="sm"
+                            className="justify-center text-xs"
+                            onClick={() => setSliceToReset(slice)}
+                        >
+                            {t(`settingsView.data.sliceReset.slices.${slice}`)}
+                        </Button>
+                    ))}
+                </div>
+            </Card>
 
              <Card className="border border-red-500/30 bg-red-900/10">
                 <h3 className="text-xl font-bold font-display text-red-400 mb-3 flex items-center gap-2"><PhosphorIcons.WarningCircle /> {t('settingsView.data.dangerZone')}</h3>

@@ -2,7 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { AppSettings, View } from '@/types'
 import { indexedDBStorage } from '../indexedDBStorage'
 import { RootState } from '../store'
-import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY } from '@/constants'
+import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY, VersionedSliceName } from '@/constants'
 
 export const defaultSettings: AppSettings = {
     version: 2,
@@ -157,6 +157,24 @@ export const resetAllData = createAsyncThunk<void, void>('settings/resetAllData'
     // The page reload will effectively reset the store to its initial state
     window.location.reload()
 })
+
+/**
+ * Resets a single slice to its initial state by removing the persisted key
+ * from the IndexedDB snapshot and reloading. This allows users to recover
+ * from corrupt slice data without losing everything.
+ */
+export const resetSliceData = createAsyncThunk<void, VersionedSliceName>(
+    'settings/resetSliceData',
+    async (sliceName) => {
+        const raw = await indexedDBStorage.getItem(REDUX_STATE_KEY)
+        if (raw) {
+            const state = JSON.parse(raw)
+            delete state[sliceName]
+            await indexedDBStorage.setItem(REDUX_STATE_KEY, JSON.stringify(state))
+        }
+        window.location.reload()
+    },
+)
 
 const settingsSlice = createSlice({
     name: 'settings',

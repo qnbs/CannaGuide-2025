@@ -1,7 +1,7 @@
 import { AppSettings, Strain, StrainType } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
 import { RootState } from '@/stores/store'
-import { APP_VERSION } from '@/constants'
+import { APP_VERSION, GENEALOGY_STATE_VERSION } from '@/constants'
 
 // This represents the shape of the persisted state object.
 export type PersistedState = Partial<RootState> & { version?: number }
@@ -82,7 +82,7 @@ const ensureSimulationShape = (state: PersistedState): void => {
  *  - corrupt node       → silently dropped           (re-fetched on demand)
  *  - invalid zoomTransform → zeroed out
  */
-const GENEALOGY_STATE_VERSION = 2
+// GENEALOGY_STATE_VERSION is now imported from @/constants (single source of truth)
 const VALID_STRAIN_TYPES = new Set<string>(Object.values(StrainType))
 
 const sanitizeGenealogyNodeMigration = (raw: unknown, depth = 0): boolean => {

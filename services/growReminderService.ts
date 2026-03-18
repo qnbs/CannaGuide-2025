@@ -18,6 +18,17 @@ export interface GrowReminder {
     dueAt: number
 }
 
+export interface GrowReminderBatch {
+    id: string
+    plantId: string
+    plantName: string
+    reminders: GrowReminder[]
+    title: string
+    body: string
+    severity: 'info' | 'warning' | 'critical'
+    dueAt: number
+}
+
 const readSnoozedMap = (): Record<string, number> => {
     try {
         const raw = localStorage.getItem(REMINDER_SNOOZE_KEY)
@@ -162,6 +173,45 @@ class GrowReminderService {
         })
     }
 
+    public buildReminderBatches(reminders: GrowReminder[]): GrowReminderBatch[] {
+        const batches = new Map<string, GrowReminder[]>()
+
+        for (const reminder of reminders) {
+            const existing = batches.get(reminder.plantId) || []
+            existing.push(reminder)
+            batches.set(reminder.plantId, existing)
+        }
+
+        return Array.from(batches.entries()).map(([plantId, plantReminders]) => {
+            const sortedReminders = [...plantReminders].sort((left, right) => {
+                const severityRank = { critical: 0, warning: 1, info: 2 }
+                const severityDelta = severityRank[left.severity] - severityRank[right.severity]
+                if (severityDelta !== 0) return severityDelta
+                return left.dueAt - right.dueAt
+            })
+
+            const plantName = sortedReminders[0]?.plantName || 'Plant'
+            const topSeverity = sortedReminders.reduce<'info' | 'warning' | 'critical'>((highest, reminder) => {
+                const severityRank = { critical: 0, warning: 1, info: 2 }
+                return severityRank[reminder.severity] < severityRank[highest] ? reminder.severity : highest
+            }, 'info')
+
+            return {
+                id: plantId,
+                plantId,
+                plantName,
+                reminders: sortedReminders,
+                title:
+                    sortedReminders.length === 1
+                        ? sortedReminders[0].title
+                        : `${sortedReminders.length} reminders for ${plantName}`,
+                body: sortedReminders.map((reminder) => reminder.title).join(' · '),
+                severity: topSeverity,
+                dueAt: Math.min(...sortedReminders.map((reminder) => reminder.dueAt)),
+            }
+        }).sort((left, right) => left.dueAt - right.dueAt)
+    }
+
     public async requestPermission(): Promise<NotificationPermission> {
         if (!('Notification' in window)) {
             return 'denied'
@@ -218,7 +268,13 @@ class GrowReminderService {
         }
     }
 
-    public async notifyDueReminders(reminders: GrowReminder[], settings?: AppSettings): Promise<void> {
+    public getBatchTriggerUrl(plantId: string): string {
+        const url = new URL(window.location.href)
+        url.searchParams.set('reminderBatch', plantId)
+        return url.toString()
+    }
+
+    public async notifyDueReminders(reminders: GrowReminder[], settings?: AppSettings, targetPlantId?: string): Promise<void> {
         if (Notification.permission !== 'granted') return
         if (settings?.notifications.quietHours.enabled && isWithinQuietHours(settings.notifications.quietHours.start, settings.notifications.quietHours.end)) {
             return
@@ -226,31 +282,37 @@ class GrowReminderService {
 
         const now = Date.now()
         const snoozedMap = readSnoozedMap()
+        const batches = this.buildReminderBatches(targetPlantId ? reminders.filter((reminder) => reminder.plantId === targetPlantId) : reminders)
 
-        for (const reminder of reminders) {
-            if (!isReminderEnabled(reminder, settings)) {
+        for (const batch of batches) {
+            const batchReminders = batch.reminders.filter((reminder) => isReminderEnabled(reminder, settings))
+            if (batchReminders.length === 0) {
                 continue
             }
 
-            const lastNotified = snoozedMap[reminder.id] || 0
+            const lastNotified = snoozedMap[batch.id] || 0
             if (now - lastNotified < REMINDER_COOLDOWN_MS) {
                 continue
             }
 
+            const primaryReminder = batchReminders[0]
+            const title = batchReminders.length === 1 ? primaryReminder.title : `${batchReminders.length} reminders for ${batch.plantName}`
+            const body = batchReminders.length === 1 ? primaryReminder.body : batchReminders.map((reminder) => reminder.title).join(' · ')
+
             const registration = await navigator.serviceWorker.getRegistration().catch(() => undefined)
             if (registration) {
-                await registration.showNotification(reminder.title, {
-                    body: reminder.body,
+                await registration.showNotification(title, {
+                    body,
                     icon: registration.scope + 'icon.svg',
                     badge: registration.scope + 'icon.svg',
-                    tag: `grow-reminder-${reminder.id}`,
-                    data: { reminderId: reminder.id, plantId: reminder.plantId },
+                    tag: `grow-reminder-batch-${batch.id}`,
+                    data: { reminderIds: batchReminders.map((reminder) => reminder.id), plantId: batch.plantId },
                 })
             } else {
-                new Notification(reminder.title, { body: reminder.body })
+                new Notification(title, { body })
             }
 
-            snoozedMap[reminder.id] = now
+            snoozedMap[batch.id] = now
         }
 
         writeSnoozedMap(snoozedMap)

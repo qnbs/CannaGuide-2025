@@ -296,7 +296,7 @@ export interface FeedingDetails extends WateringDetails { npk?: { n: number; p: 
 export interface TrainingDetails { type: TrainingType; }
 export interface ObservationDetails { diagnosis?: string; }
 export interface SystemDetails { from: PlantStage, to: PlantStage }
-export interface PhotoDetails { imageId?: string; imageUrl?: string; photoCategory: PhotoCategory }
+export interface PhotoDetails { imageId?: string; imageUrl?: string; photoCategory: PhotoCategory; timelineLabel?: string; capturedAt?: number; exifCapturedAt?: number }
 export interface PestControlDetails { method: string; product?: string; }
 export interface EnvironmentDetails { temp?: number; humidity?: number; }
 export interface AmendmentDetails { type: AmendmentType; }

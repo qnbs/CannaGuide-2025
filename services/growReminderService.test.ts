@@ -99,4 +99,39 @@ describe('GrowReminderService', () => {
             expect(reminders.length).toBeGreaterThanOrEqual(2)
         })
     })
+
+    describe('buildReminderBatches', () => {
+        it('groups reminders by plant for one batch notification', () => {
+            const reminders = [
+                {
+                    id: 'p1-watering',
+                    plantId: 'p1',
+                    plantName: 'Plant One',
+                    type: 'watering' as const,
+                    title: 'Watering reminder: Plant One',
+                    body: 'Moisture is low.',
+                    severity: 'warning' as const,
+                    dueAt: 10,
+                },
+                {
+                    id: 'p1-ph',
+                    plantId: 'p1',
+                    plantName: 'Plant One',
+                    type: 'ph' as const,
+                    title: 'pH drift detected: Plant One',
+                    body: 'pH is outside range.',
+                    severity: 'critical' as const,
+                    dueAt: 5,
+                },
+            ]
+
+            const batches = growReminderService.buildReminderBatches(reminders)
+
+            expect(batches).toHaveLength(1)
+            expect(batches[0].plantId).toBe('p1')
+            expect(batches[0].reminders).toHaveLength(2)
+            expect(batches[0].severity).toBe('critical')
+            expect(batches[0].title).toBe('2 reminders for Plant One')
+        })
+    })
 })

@@ -25,6 +25,7 @@ import { apiKeyService } from '@/services/apiKeyService'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { localAiPreloadService } from '../../../services/localAiPreloadService'
+import { detectOnnxBackend } from '../../../services/localAIModelLoader'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 
 const AboutTab = lazy(() => import('./AboutTab'))
@@ -366,6 +367,7 @@ const LocalAiOfflineCard: React.FC = () => {
     const [isBusy, setIsBusy] = useState(false)
     const [status, setStatus] = useState(() => localAiPreloadService.getStatus())
     const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
+    const onnxBackend = detectOnnxBackend()
 
     const handlePreload = async () => {
         setIsBusy(true)
@@ -407,6 +409,9 @@ const LocalAiOfflineCard: React.FC = () => {
                             {supportsWebGpu
                                 ? t('settingsView.offlineAi.webGpuSupported')
                                 : t('settingsView.offlineAi.webGpuUnavailable')}
+                        </p>
+                        <p>
+                            {t('settingsView.offlineAi.onnxBackend', { value: onnxBackend })}
                         </p>
                         <p>
                             {status.webLlmReady

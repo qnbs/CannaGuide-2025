@@ -154,7 +154,7 @@ export default defineConfig({
   // ── Dependency pre-bundling hints ────────────────────────────────────
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit', 'i18next', 'react-i18next'],
-    exclude: ['@google/genai', '@xenova/transformers', '@mlc-ai/web-llm'],
+    exclude: ['@google/genai', '@xenova/transformers', '@mlc-ai/web-llm', 'onnxruntime-web'],
   },
 
   resolve: {

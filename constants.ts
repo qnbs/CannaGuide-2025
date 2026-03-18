@@ -1,7 +1,7 @@
 import { PlantStage, AdvancedFilterState } from '@/types';
 
 // --- APP ---
-export const APP_VERSION = 4;
+export const APP_VERSION = 5;
 export const CURRENT_STRAIN_DATA_VERSION = 3;
 
 /**

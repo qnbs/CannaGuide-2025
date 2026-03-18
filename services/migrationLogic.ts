@@ -10,6 +10,33 @@ export type PersistedState = Partial<RootState> & {
     _sliceVersions?: Partial<Record<VersionedSliceName, number>>
 }
 
+export type SnapshotDiff = {
+    added: string[]
+    removed: string[]
+    changed: string[]
+}
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+    return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+export const createSnapshotDiff = (before: unknown, after: unknown): SnapshotDiff => {
+    if (!isPlainObject(before) || !isPlainObject(after)) {
+        return { added: [], removed: [], changed: [] }
+    }
+
+    const beforeKeys = new Set(Object.keys(before))
+    const afterKeys = new Set(Object.keys(after))
+
+    return {
+        added: [...afterKeys].filter((key) => !beforeKeys.has(key)).sort(),
+        removed: [...beforeKeys].filter((key) => !afterKeys.has(key)).sort(),
+        changed: [...beforeKeys]
+            .filter((key) => afterKeys.has(key) && JSON.stringify(before[key]) !== JSON.stringify(after[key]))
+            .sort(),
+    }
+}
+
 const ensureSimulationShape = (state: PersistedState): void => {
     if (!state.simulation) {
         return
@@ -412,6 +439,21 @@ const migrateV3ToV4 = (state: PersistedState): PersistedState => {
 }
 
 /**
+ * V4→V5 migration.
+ * Keeps the persisted shape intact but stamps the new version so recovery can
+ * distinguish V5 snapshots and snapshot diffs can be logged deterministically.
+ */
+const migrateV4ToV5 = (state: PersistedState): PersistedState => {
+    console.debug('[MigrationLogic] Migrating state from v4 to v5...')
+
+    if (state.settings?.settings) {
+        state.settings.settings = deepMergeSettings(state.settings.settings)
+    }
+
+    return state
+}
+
+/**
  * Strips transient / runtime-only state that must never survive a restart.
  * Called on EVERY boot, regardless of version.
  */
@@ -506,6 +548,7 @@ const validateSliceVersions = (state: PersistedState): VersionedSliceName[] => {
  */
 export const migrateState = (persistedState: PersistedState): PersistedState => {
     const stateVersion = persistedState.version || 1
+    const snapshotBeforeMigration = JSON.parse(JSON.stringify(persistedState)) as PersistedState
 
     let migratedState: PersistedState = persistedState
 
@@ -520,6 +563,9 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
         }
         if (stateVersion < 4) {
             migratedState = migrateV3ToV4(migratedState)
+        }
+        if (stateVersion < 5) {
+            migratedState = migrateV4ToV5(migratedState)
         }
     } else {
         console.debug('[MigrationLogic] Persisted state is up to date.')
@@ -546,6 +592,11 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
 
     // Strip all transient / runtime-only state (runs every boot)
     stripTransientState(migratedState)
+
+    const snapshotDiff = createSnapshotDiff(snapshotBeforeMigration, migratedState)
+    if (snapshotDiff.added.length > 0 || snapshotDiff.removed.length > 0 || snapshotDiff.changed.length > 0) {
+        console.debug('[MigrationLogic] Snapshot diff summary:', snapshotDiff)
+    }
 
     return migratedState
 }

@@ -36,7 +36,7 @@ export const simulationProfilePresets: Record<AppSettings['simulation']['simulat
 }
 
 export const defaultSettings: AppSettings = {
-    version: 4,
+    version: 5,
     onboardingCompleted: false,
 
     general: {
@@ -158,7 +158,7 @@ export interface SettingsState {
 
 const initialState: SettingsState = {
     settings: defaultSettings,
-    version: 4,
+    version: 5,
 }
 
 // Async thunks for data management

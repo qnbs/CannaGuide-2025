@@ -71,6 +71,35 @@ export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 export const createAppStore = async (): Promise<AppStore> => {
     let preloadedState: Partial<RootState> | undefined;
 
+    const hydratePersistedState = (persistedString: string): Partial<RootState> => {
+        const persistedState = JSON.parse(persistedString);
+        const migrated = migrateState(persistedState) as Partial<RootState>;
+
+        if (migrated.ui) {
+            migrated.ui = { ...initialUiState, ...migrated.ui };
+        }
+
+        return migrated;
+    };
+
+    const tryLoadBackupState = async (): Promise<Partial<RootState> | undefined> => {
+        const backupString = await indexedDBStorage.getItem(REDUX_STATE_KEY + '-backup');
+        if (!backupString) {
+            return undefined;
+        }
+
+        console.warn('[Store] Attempting recovery from pre-migration backup snapshot.');
+        const recoveredState = hydratePersistedState(backupString);
+
+        try {
+            await indexedDBStorage.setItem(REDUX_STATE_KEY, backupString);
+        } catch (repairErr) {
+            console.warn('[Store] Could not repair primary snapshot from backup:', repairErr);
+        }
+
+        return recoveredState;
+    };
+
     try {
         const persistedString = await indexedDBStorage.getItem(REDUX_STATE_KEY);
         if (persistedString) {
@@ -81,19 +110,14 @@ export const createAppStore = async (): Promise<AppStore> => {
             } catch (backupErr) {
                 console.warn('[Store] Could not save pre-migration backup:', backupErr);
             }
-            const persistedState = JSON.parse(persistedString);
-            const migrated = migrateState(persistedState) as Partial<RootState>;
-            
-            // Merge partial UI state from storage with the full initial state
-            if (migrated.ui) {
-                migrated.ui = { ...initialUiState, ...migrated.ui };
-            }
-            
-            preloadedState = migrated;
+            preloadedState = hydratePersistedState(persistedString);
         }
     } catch (e) {
         console.error("Could not load or migrate state from IndexedDB, starting fresh. A backup may be available at key '" + REDUX_STATE_KEY + "-backup'.", e);
-        await indexedDBStorage.removeItem(REDUX_STATE_KEY);
+        preloadedState = await tryLoadBackupState();
+        if (!preloadedState) {
+            await indexedDBStorage.removeItem(REDUX_STATE_KEY);
+        }
     }
     
     const store = makeStore(preloadedState);

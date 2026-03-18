@@ -46,7 +46,7 @@ export const storageService = {
             console.error(`Error removing from localStorage key “${key}”:`, error);
         }
     },
-    
+
     /**
      * Clears all application data from localStorage.
      * A more robust implementation might iterate over keys with the prefix,

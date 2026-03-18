@@ -121,7 +121,7 @@ export const knowledgeView = {
             title: 'Troubleshooting: Overwatering',
             content: `<h3>Help, My Plant is Drowning!</h3><p>Overwatering is the #1 mistake for new growers. It suffocates the roots, preventing them from absorbing oxygen and nutrients.</p>
                       <strong>Symptoms:</strong> The entire plant looks droopy and sad. The leaves feel firm and heavy, and curl downwards (clawing). The soil remains dark and wet for days.<br>
-                      <strong>Immediate Actions:</strong> 
+                      <strong>Immediate Actions:</strong>
                       <ul>
                         <li><strong>Stop Watering:</strong> Do not water again until the pot is significantly lighter.</li>
                         <li><strong>Improve Airflow:</strong> Point a fan at the soil surface to help it dry out.</li>

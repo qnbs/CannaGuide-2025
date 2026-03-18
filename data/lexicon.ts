@@ -11,7 +11,7 @@ export const lexiconData: LexiconEntry[] = [
   { key: 'cbda', category: 'Cannabinoid' },
   { key: 'thcv', category: 'Cannabinoid' },
   { key: 'cbdv', category: 'Cannabinoid' },
-  
+
   // Terpene
   { key: 'myrcene', category: 'Terpene' },
   { key: 'limonene', category: 'Terpene' },
@@ -23,7 +23,7 @@ export const lexiconData: LexiconEntry[] = [
   { key: 'ocimene', category: 'Terpene' },
   { key: 'bisabolol', category: 'Terpene' },
   { key: 'nerolidol', category: 'Terpene' },
-  
+
   // Flavonoide
   { key: 'cannaflavin', category: 'Flavonoid' },
   { key: 'quercetin', category: 'Flavonoid' },
@@ -32,7 +32,7 @@ export const lexiconData: LexiconEntry[] = [
   { key: 'luteolin', category: 'Flavonoid' },
   { key: 'orientin', category: 'Flavonoid' },
   { key: 'vitexin', category: 'Flavonoid' },
-  
+
   // Allgemeines Glossar
   { key: 'phValue', category: 'General' },
   { key: 'ecValue', category: 'General' },

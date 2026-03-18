@@ -38,7 +38,7 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { light, exhaustFan, circulationFan } = plant.equipment;
-    
+
     const dli = useMemo(() => {
         const PAR_PER_WATT = 2.5; // µmol/s/W for LEDs (a reasonable estimate)
         const AREA_M2 = 1; // Assume 1 m^2 for DLI calculation simplicity
@@ -95,7 +95,7 @@ export const EquipmentControls: React.FC<EquipmentControlsProps> = memo(({ plant
                                 { value: '24', label: t('plantsView.setupModal.cycles.auto') },
                             ]}
                         />
-                        <InfoDisplay 
+                        <InfoDisplay
                             label={t('plantsView.detailedView.controls.dailyLightIntegral')}
                             value={`${dli.toFixed(2)}`}
                             tooltip={t('plantsView.detailedView.controls.dliTooltip')}

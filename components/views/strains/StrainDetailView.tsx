@@ -162,11 +162,11 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
     const isFavorite = favoriteIds.has(strain.id);
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
     const [activeTab, setActiveTab] = useState('overview');
-    
+
     useEffect(() => {
         setActiveTab('overview');
     }, [strain]);
-    
+
     const tabs: { id: string; label: string; icon: React.ReactNode; }[] = [
         { id: 'overview', label: t('strainsView.strainDetail.tabs.overview'), icon: <PhosphorIcons.Book /> },
         { id: 'agronomics', label: t('strainsView.strainDetail.tabs.agronomics'), icon: <PhosphorIcons.Ruler /> },
@@ -175,16 +175,16 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
         { id: 'aiTips', label: t('strainsView.strainDetail.tabs.aiTips'), icon: <PhosphorIcons.Brain /> },
         { id: 'images', label: t('strainsView.strainDetail.tabs.images'), icon: <PhosphorIcons.Camera /> },
     ];
-    
-    const typeClasses: Record<StrainType, string> = { 
-        [StrainType.Sativa]: 'text-accent-400', 
-        [StrainType.Indica]: 'text-secondary-400', 
-        [StrainType.Hybrid]: 'text-primary-400' 
+
+    const typeClasses: Record<StrainType, string> = {
+        [StrainType.Sativa]: 'text-accent-400',
+        [StrainType.Indica]: 'text-secondary-400',
+        [StrainType.Hybrid]: 'text-primary-400'
     };
-    const TypeIcon = { 
-        [StrainType.Sativa]: SativaIcon, 
-        [StrainType.Indica]: IndicaIcon, 
-        [StrainType.Hybrid]: HybridIcon 
+    const TypeIcon = {
+        [StrainType.Sativa]: SativaIcon,
+        [StrainType.Indica]: IndicaIcon,
+        [StrainType.Hybrid]: HybridIcon
     }[strain.type];
 
     const typeDetails = t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails });
@@ -216,7 +216,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
             </header>
 
             <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
-            
+
             <div className="mt-6">
                 {activeTab === 'overview' && <OverviewTab strain={strain} />}
                 {activeTab === 'agronomics' && <AgronomicsTab strain={strain} />}

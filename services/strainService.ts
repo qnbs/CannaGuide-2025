@@ -45,7 +45,7 @@ class StrainService {
             const allStrainsData = await loadAllStrainsData()
             const storedVersion = await dbService.getMetadata(STRAIN_DATA_VERSION_KEY);
             const dbCount = await dbService.getStrainsCount();
-            
+
             if (dbCount > 0 && storedVersion === CURRENT_STRAIN_DATA_VERSION && dbCount === allStrainsData.length) {
                 console.debug('[StrainService] Loading strains from IndexedDB.');
                 this.allStrains = await dbService.getAllStrains();
@@ -74,7 +74,7 @@ class StrainService {
         }
         return this.allStrains;
     }
-    
+
     async getSimilarStrains(currentStrain: Strain, count: number): Promise<Strain[]> {
         if (!this.isInitialized) {
             await this.init();
@@ -94,10 +94,10 @@ class StrainService {
             // Aroma/Terpene overlap
             const aromaIntersection = (s1.aromas || []).filter(a => (s2.aromas || []).includes(a));
             score += aromaIntersection.length * 5;
-            
+
             const terpeneIntersection = (s1.dominantTerpenes || []).filter(t => (s2.dominantTerpenes || []).includes(t));
             score += terpeneIntersection.length * 10;
-            
+
             // Agronomics
             if (s1.agronomic.difficulty === s2.agronomic.difficulty) score += 5;
             if (s1.agronomic.yield === s2.agronomic.yield) score += 3;

@@ -21,7 +21,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
         { id: 'data', icon: <PhosphorIcons.Archive />, label: t('settingsView.categories.data') },
         { id: 'about', icon: <PhosphorIcons.Info />, label: t('settingsView.categories.about') },
     ];
-    
+
     return (
         <nav className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 xl:grid-cols-5">
             {navItems.map(item => (
@@ -29,8 +29,8 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
                     key={item.id}
                     onClick={() => onTabChange(item.id)}
                     className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                        ${activeTab === item.id 
-                            ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400' 
+                        ${activeTab === item.id
+                            ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
                             : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                         }`}
                 >

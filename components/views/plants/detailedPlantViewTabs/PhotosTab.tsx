@@ -54,9 +54,9 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
 
 export const PhotosTab: React.FC<PhotoTabProps> = memo(({ journal }) => {
     const { t } = useTranslation();
-    
-    const photoJournalEntries = useMemo(() => 
-        journal.filter(entry => entry.type === JournalEntryType.Photo && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)), 
+
+    const photoJournalEntries = useMemo(() =>
+        journal.filter(entry => entry.type === JournalEntryType.Photo && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)),
     [journal]);
 
     return (

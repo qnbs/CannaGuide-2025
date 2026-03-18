@@ -102,14 +102,14 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const lang = useAppSelector(selectLanguage);
-    
+
     const [getStrainTips, { data: tip, isLoading: isTextLoading, error: textError }] = useGetStrainTipsMutation({
         fixedCacheKey: `strain-tip-text-${strain.id}`,
     });
     const [generateStrainImage, { data: imageBase64, isLoading: isImageLoading, error: imageError }] = useGenerateStrainImageMutation({
         fixedCacheKey: `strain-tip-image-${strain.id}`,
     });
-    
+
     const isLoading = isTextLoading || isImageLoading;
     const error = textError || imageError;
 
@@ -132,11 +132,11 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
     useEffect(() => {
         setIsTipSaved(false);
     }, [strain]);
-    
+
     useEffect(() => {
         if (isLoading) {
             const experienceText = t(`strainsView.tips.form.experienceOptions.${tipRequest.experienceLevel}`);
-            const messages = getDynamicLoadingMessages({ 
+            const messages = getDynamicLoadingMessages({
                 useCase: 'growTips',
                 data: {
                     strainName: strain.name,
@@ -150,7 +150,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                 setLoadingMessage(messages[messageIndex % messages.length]);
                 messageIndex++;
             };
-            
+
             updateLoadingMessage();
             const intervalId = setInterval(updateLoadingMessage, 2500);
             return () => clearInterval(intervalId);
@@ -209,7 +209,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                     criteria={imageCriteria}
                     setCriteria={setImageCriteria}
                 />
-                
+
                 {isLoading && <AiLoadingIndicator loadingMessage={loadingMessage} />}
                 {Boolean(error) && !isLoading && (
                     <div className="text-center text-sm text-red-400">
@@ -228,7 +228,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                         </div>
                     )
                 )}
-                
+
                 {isTextLoading && !tip ? (
                      <div className="mt-4"><SkeletonLoader count={4} /></div>
                 ) : (

@@ -12,7 +12,7 @@ export const onboarding = {
     text: 'Verwalte bis zu drei Pflanzen in einer ultrarealistischen Echtzeit-Simulation. Greife ein, protokolliere alles und beobachte sie wachsen.'
   },
   step3: {
-    title: '🛠️ Die Werkstatt',
+    title: '🛠 Die Werkstatt',
     text: 'Plane dein perfektes Setup mit dem KI-Konfigurator, nutze präzise Rechner und speichere deine Ausrüstung für zukünftige Projekte.'
   },
   step4: {

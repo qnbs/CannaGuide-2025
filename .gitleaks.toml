@@ -1,0 +1,18 @@
+title = "CannaGuide Gitleaks config"
+
+[allowlist]
+description = "Allow known non-secret privacy and consent key constants"
+regexTarget = "match"
+regexes = [
+    "CONSENT_COOKIE_KEY =",
+    "LEGACY_CONSENT_STORAGE_KEY =",
+    "GEO_LEGAL_DISMISSED_KEY =",
+    "CONSENT_KEY =",
+]
+paths = [
+    '^dist/',
+    '^node_modules/',
+    '^coverage/',
+    '^artifacts/',
+    '^test-results/',
+]

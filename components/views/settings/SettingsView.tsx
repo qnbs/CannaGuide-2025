@@ -821,7 +821,7 @@ const PrivacySettingsTab: React.FC = () => {
 const SettingsViewComponent: React.FC = () => {
     const { t } = useTranslation()
     const [activeTab, setActiveTab] = useState('plants')
-    
+
     const viewIcons = useMemo(() => ({
         general: <PhosphorIcons.GearSix className="w-16 h-16 mx-auto text-primary-400" />,
         tts: <PhosphorIcons.SpeakerHigh className="w-16 h-16 mx-auto text-accent-400" />,
@@ -884,9 +884,9 @@ const SettingsViewComponent: React.FC = () => {
                 {viewIcons[activeTab as keyof typeof viewIcons]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{viewTitles[activeTab as keyof typeof viewTitles]}</h2>
             </div>
-            
+
             <SettingsSubNav activeTab={activeTab} onTabChange={setActiveTab} />
-            
+
             <section className="animate-fade-in">
                 {renderContent()}
             </section>

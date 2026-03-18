@@ -66,12 +66,12 @@ const StrainsSettingsTab: React.FC = () => {
         value: key as SortKey,
         label: t(`settingsView.strains.sortKeys.${key}`)
     }));
-    
+
     const sortDirectionOptions = Object.keys(t('settingsView.strains.sortDirections', { returnObjects: true })).map(key => ({
         value: key as SortDirection,
         label: t(`settingsView.strains.sortDirections.${key}`)
     }));
-    
+
     const visibleColumns = strainsViewSettings.visibleColumns || [];
 
     const handleColumnToggle = (column: string) => {
@@ -126,7 +126,7 @@ const StrainsSettingsTab: React.FC = () => {
                      </div>
                 </FormSection>
             </Card>
-            
+
             <Card>
                 <FormSection title={t('settingsView.strains.advanced.title')} icon={<PhosphorIcons.Brain/>}>
                     <div className="sm:col-span-2 space-y-6">

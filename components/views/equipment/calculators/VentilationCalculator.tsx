@@ -13,13 +13,13 @@ export const VentilationCalculator: React.FC = memo(() => {
     const result = useMemo(() => {
         const volume = (dimensions.width / 100) * (dimensions.depth / 100) * (dimensions.height / 100);
         if (volume <= 0) return 0;
-        
+
         const airChangesPerHour = 60;
         let baseM3h = volume * airChangesPerHour;
 
         const heatFactor = 1 + (wattage / 1000);
         baseM3h *= heatFactor;
-        
+
         if (hasFilter) {
             baseM3h *= 1.35;
         }

@@ -38,7 +38,7 @@ class GeneticsService {
                 thc: 0,
             };
         }
-        
+
         // Circular dependency check
         if (visited.has(strain.id)) {
             return {
@@ -60,7 +60,7 @@ class GeneticsService {
             thc: strain.thc,
             isLandrace: isLandrace,
         };
-        
+
         const newVisited = new Set(visited);
         newVisited.add(strain.id);
 
@@ -80,22 +80,22 @@ class GeneticsService {
                 }
             }
         }
-        
+
         return node;
     }
 
     public buildGenealogyTree(strainId: string, allStrains: Strain[]): GenealogyNode | null {
         const rootStrain = allStrains.find(s => s.id === strainId);
         if (!rootStrain) return null;
-        
+
         const tree = this.findAndBuildNode(rootStrain.name, allStrains, new Set<string>());
-        
+
         // Collapse nodes beyond depth 2 for initial view
         collapseNodes(tree, 0, 2);
-    
+
         return tree;
     }
-    
+
     public calculateGeneticContribution(tree: GenealogyNode | null): GeneticContribution[] {
         if (!tree) return [];
         const contributions: { [name: string]: number } = {};

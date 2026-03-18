@@ -1,0 +1,40 @@
+name: Scorecard
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    schedule:
+        - cron: '17 3 * * 1'
+    workflow_dispatch:
+
+permissions:
+    actions: read
+    contents: read
+    security-events: write
+    id-token: write
+
+jobs:
+    analyze:
+        name: OpenSSF Scorecard
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Run Scorecard
+              uses: ossf/scorecard-action@v2.4.0
+              with:
+                  results_file: scorecard-results.sarif
+                  results_format: sarif
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_results: true
+
+            - name: Upload Scorecard results
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: scorecard-results.sarif

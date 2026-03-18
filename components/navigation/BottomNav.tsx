@@ -49,7 +49,7 @@ export const BottomNav: React.FC = () => {
                 }
             }
         };
-        
+
         calculateStyle();
 
         const navElement = navRef.current;

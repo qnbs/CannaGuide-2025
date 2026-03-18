@@ -108,18 +108,18 @@ export const PlantsView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [isLoading, setIsLoading] = useState(true);
-    
+
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 300);
         return () => clearTimeout(timer);
     }, []);
 
     const newGrowFlow = useAppSelector(selectNewGrowFlow);
-    
+
     const { slotsWithData } = usePlantSlotsData();
     const { tasks, problems } = useGardenSummary();
     const selectedPlant = useSelectedPlant();
-    
+
     const showGrowFromStrainBanner = newGrowFlow.strain && newGrowFlow.status === 'selectingSlot';
 
     const handleEmptySlotClick = useCallback((index: number) => {
@@ -200,7 +200,7 @@ export const PlantsView: React.FC = () => {
                                     {slotsWithData.map((slot, index) => {
                                         if (newGrowFlow.status === 'selectingStrain' && newGrowFlow.slotIndex === index) {
                                             return (
-                                                <InlineStrainSelector 
+                                                <InlineStrainSelector
                                                     key={`selector-${index}`}
                                                     onClose={() => dispatch(cancelNewGrow())}
                                                     onSelectStrain={(strain) => dispatch(selectStrainForGrow(strain))}

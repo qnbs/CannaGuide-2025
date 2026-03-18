@@ -678,7 +678,7 @@ PLANT CONTEXT:
                     }
                 },
             })
-            
+
             return this.parseJsonResponse<PlantDiagnosisResponse>(response, 'ai.error.diagnostics', PlantDiagnosisResponseSchema)
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
@@ -868,12 +868,12 @@ PLANT CONTEXT:
 
     async generateStrainImage(strain: Strain, style: ImageStyle, criteria: ImageCriteria): Promise<string> {
         const systemPrompt = `You are an advanced image generation AI. Your task is to produce a single, high-fidelity, visually stunning, and contextually accurate image based on the user's detailed prompt. Adhere strictly to all instructions, especially regarding style, subject, and mood. Interpret prompts artistically but precisely.`;
-        
+
         let selectedStyle = style;
         if (selectedStyle === 'random') {
             selectedStyle = availableStyles[Math.floor(Math.random() * availableStyles.length)];
         }
-        
+
         const stylePrompts: Record<Exclude<ImageStyle, 'random'>, string> = {
             fantasy: `A stunning, artistic, and imaginative fantasy illustration representing the cannabis strain '${strain.name}'. The style should be vibrant and impressive, with ethereal, magical lighting.`,
             botanical: `A detailed vintage botanical illustration of the cannabis strain '${strain.name}'. The style should mimic a 19th-century scientific drawing with fine ink lines, delicate watercolor washes, and annotations on aged, parchment-like paper. Focus on realism and anatomical accuracy.`,
@@ -930,12 +930,12 @@ PLANT CONTEXT:
                     responseModalities: [Modality.IMAGE],
                 },
             });
-            
+
             const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
             if (imagePart && imagePart.inlineData && typeof imagePart.inlineData.data === 'string') {
                 return imagePart.inlineData.data;
             }
-            
+
             throw new Error(getT()('common.noImageGenerated'))
         } catch (error) {
             console.error('Gemini generateStrainImage Error:', error)
@@ -1011,10 +1011,10 @@ PLANT CONTEXT:
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
         const t = getT();
-        const plantSummaries = plants.map(p => 
+        const plantSummaries = plants.map(p =>
             `- ${p.name} (${t('plantsView.plantCard.day')} ${p.age}, ${t(`plantStages.${p.stage}`)}): Health ${p.health.toFixed(0)}%, Stress ${p.stressLevel.toFixed(0)}%. Problems: ${p.problems.length > 0 ? p.problems.map(prob => prob.type).join(', ') : 'None'}`
         ).join('\n');
-        
+
         const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries });
         try {
             const responseText = await this.generateText(prompt, lang, 'getGardenStatusSummary');

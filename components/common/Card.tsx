@@ -28,10 +28,10 @@ export const Card = memo(
         const handleKeyDown = useCallback(
             (e: React.KeyboardEvent<HTMLDivElement>) => {
                 const target = e.target as HTMLElement;
-                const isFormElement = 
-                    target.tagName === 'INPUT' || 
-                    target.tagName === 'TEXTAREA' || 
-                    target.tagName === 'SELECT' || 
+                const isFormElement =
+                    target.tagName === 'INPUT' ||
+                    target.tagName === 'TEXTAREA' ||
+                    target.tagName === 'SELECT' ||
                     target.isContentEditable;
 
                 if (isInteractive && !isFormElement && (e.key === 'Enter' || e.key === ' ')) {

@@ -26,13 +26,13 @@ const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups,
         updateSetup(updatedSetup);
         setEditingSetup(null);
     };
-    
+
     const onExport = (format: SimpleExportFormat) => {
         const fileName = `CannaGuide_Setups_${new Date().toISOString().slice(0, 10)}`;
         dispatch(exportSetups({ setups: savedSetups, format, fileName }));
         setIsExportModalOpen(false);
     };
-    
+
     const sortedSetups = [...savedSetups].sort((a, b) => b.createdAt - a.createdAt);
 
     if (sortedSetups.length === 0) {
@@ -44,17 +44,17 @@ const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups,
             </Card>
         );
     }
-    
+
     return (
         <div className="space-y-4">
             {editingSetup && (
-                <EditSetupModal 
-                    setup={editingSetup} 
+                <EditSetupModal
+                    setup={editingSetup}
                     onClose={() => setEditingSetup(null)}
                     onSave={handleSave}
                 />
             )}
-            <DataExportModal 
+            <DataExportModal
                 isOpen={isExportModalOpen}
                 onClose={() => setIsExportModalOpen(false)}
                 onExport={onExport}
@@ -70,10 +70,10 @@ const SavedSetupsViewComponent: React.FC<SavedSetupsViewProps> = ({ savedSetups,
                 </Button>
             </div>
             {sortedSetups.map(setup => (
-                <SetupCard 
-                    key={setup.id} 
-                    setup={setup} 
-                    onEdit={() => setEditingSetup(setup)} 
+                <SetupCard
+                    key={setup.id}
+                    setup={setup}
+                    onEdit={() => setEditingSetup(setup)}
                     onDelete={deleteSetup}
                 />
             ))}

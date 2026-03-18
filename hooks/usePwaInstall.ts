@@ -35,13 +35,13 @@ export const usePwaInstall = () => {
             if (Date.now() - lastDismissedAt > INSTALL_HINT_COOLDOWN_MS) {
                 dispatch(addNotification({ message: t('common.installPwaHint'), type: 'info' }))
             }
-            
+
             // If this event fires, it means the app is not installed,
             // so we ensure our state and flag reflect that. This handles uninstallation cases.
             setIsInstalled(false);
             localStorage.removeItem(PWA_INSTALLED_KEY);
         };
-        
+
         // This event fires after the user has accepted the installation prompt.
         const appInstalledHandler = () => {
             // Clear the prompt and update the state/flag to reflect installation.
@@ -76,11 +76,11 @@ export const usePwaInstall = () => {
         if (!deferredPrompt) {
             return;
         }
-        
+
         // Show the native installation prompt.
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        
+
         if (outcome === 'accepted') {
             // The 'appinstalled' event will handle the final state change.
             console.debug('PWA installation accepted by user.');
@@ -89,7 +89,7 @@ export const usePwaInstall = () => {
             dispatch(addNotification({ message: t('common.installPwaDismissed'), type: 'info' }));
             localStorage.setItem(PWA_INSTALL_HINT_KEY, String(Date.now()))
         }
-        
+
         // The prompt can only be used once.
         setDeferredPrompt(null);
 

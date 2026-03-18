@@ -33,9 +33,9 @@ const StrainListComponent: React.FC<StrainListProps> = ({
         estimateSize: 68, // Approximate height of a StrainListItem in px (p-3 = 12px*2, content ~44px)
         overscan: 10,
     });
-    
+
     return (
-        <div 
+        <div
             className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
             style={{
                 height: `${rowVirtualizer.totalSize + mobileBottomSafeOffset}px`,

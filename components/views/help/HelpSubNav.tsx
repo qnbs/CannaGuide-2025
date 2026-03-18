@@ -16,7 +16,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
         { id: 'guides', label: t('helpView.tabs.guides'), icon: <PhosphorIcons.GraduationCap /> },
         { id: 'faq', label: t('helpView.tabs.faq'), icon: <PhosphorIcons.Question /> },
     ];
-    
+
      return (
         <nav className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
             {navItems.map(item => (
@@ -25,8 +25,8 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
                     key={item.id}
                     onClick={() => onTabChange(item.id)}
                     className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                        ${activeTab === item.id 
-                            ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400' 
+                        ${activeTab === item.id
+                            ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
                             : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                         }`}
                     aria-label={item.label}

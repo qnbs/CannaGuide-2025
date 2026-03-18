@@ -12,7 +12,7 @@ interface TasksTabProps {
 
 export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }) => {
     const { t } = useTranslation();
-    
+
     const openTasks = tasks.filter(t => !t.isCompleted).sort((a, b) => a.createdAt - b.createdAt);
     const completedTasks = tasks.filter(t => t.isCompleted).sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
 

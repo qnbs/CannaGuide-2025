@@ -16,7 +16,7 @@ const ListSkeleton: React.FC = () => (
             <div className="w-8 h-8 bg-slate-700 rounded-full flex-shrink-0 sm:hidden"></div>
             <div className="h-4 w-3/4 bg-slate-700 rounded"></div>
         </div>
-        
+
         {/* Mobile Actions Placeholder */}
         <div className="flex items-center gap-2 ml-auto sm:hidden">
             <div className="h-8 w-8 bg-slate-700 rounded-full"></div>

@@ -48,7 +48,7 @@ export const urlService = {
         if (filters.sortKey !== 'name' || filters.sortDirection !== 'asc') {
              params.set('s', `${filters.sortKey}-${filters.sortDirection}`);
         }
-        
+
         return params.toString();
     },
 
@@ -64,23 +64,23 @@ export const urlService = {
         const advFilters: Partial<AdvancedFilterState> = {};
         const thcRange = parseRange(params.get('thc'));
         if (thcRange) advFilters.thcRange = thcRange;
-        
+
         const cbdRange = parseRange(params.get('cbd'));
         if (cbdRange) advFilters.cbdRange = cbdRange;
 
         const frRange = parseRange(params.get('fr'));
         if (frRange) advFilters.floweringRange = frRange;
-        
+
         if (params.has('d')) advFilters.selectedDifficulties = parseArray(params.get('d')).filter(v => VALID_DIFFICULTIES.has(v)) as DifficultyLevel[];
           if (params.has('y')) advFilters.selectedYields = parseArray(params.get('y')).filter(v => VALID_YIELDS.has(v)) as YieldLevel[];
           if (params.has('h')) advFilters.selectedHeights = parseArray(params.get('h')).filter(v => VALID_HEIGHTS.has(v)) as HeightLevel[];
         if (params.has('a')) advFilters.selectedAromas = parseArray(params.get('a'));
         if (params.has('tp')) advFilters.selectedTerpenes = parseArray(params.get('tp'));
-        
+
         if (Object.keys(advFilters).length > 0) {
             parsedState.advancedFilters = advFilters as AdvancedFilterState;
         }
-        
+
         if (params.has('s')) {
             const [key, dir] = params.get('s')!.split('-');
               if (VALID_SORT_KEYS.has(key) && VALID_SORT_DIRS.has(dir)) {

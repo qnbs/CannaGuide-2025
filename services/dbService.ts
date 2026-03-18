@@ -11,8 +11,8 @@
  */
 
 import { StoredImageData, Strain, SimulationState, Plant, JournalEntry } from '@/types';
-import { 
-    DB_NAME, 
+import {
+    DB_NAME,
     DB_VERSION,
     STRAINS_STORE,
     IMAGES_STORE,
@@ -89,7 +89,7 @@ const openDB = (): Promise<IDBDatabase> => {
                     dbInstance.createObjectStore(METADATA_STORE, { keyPath: 'key' });
                 }
             }
-            
+
             if (event.oldVersion < 2) {
                 if (!dbInstance.objectStoreNames.contains(STRAIN_SEARCH_INDEX_STORE)) {
                     dbInstance.createObjectStore(STRAIN_SEARCH_INDEX_STORE, { keyPath: 'word' });
@@ -113,7 +113,7 @@ const openDB = (): Promise<IDBDatabase> => {
                     }
                 }
             }
-            
+
             if (event.oldVersion < 4) {
                  if (!dbInstance.objectStoreNames.contains(OFFLINE_ACTIONS_STORE)) {
                     // This store will hold actions performed while offline.
@@ -170,7 +170,7 @@ const performTx = async <T>(storeName: string, mode: IDBTransactionMode, action:
 
         const store = transaction.objectStore(storeName);
         const request = action(store);
-        
+
         request.onsuccess = () => {
             requestResult = request.result;
         };
@@ -264,19 +264,19 @@ export const dbService = {
         return new Promise<void>((resolve, reject) => {
             const transaction = conn.transaction(STRAINS_STORE, 'readwrite');
             const store = transaction.objectStore(STRAINS_STORE);
-    
+
             transaction.oncomplete = () => {
                 console.debug('[dbService] Atomically replaced all strains in IndexedDB.');
                 resolve();
             };
-    
+
             transaction.onerror = () => {
                 console.error('[dbService] Failed to replace strains in atomic transaction:', transaction.error);
                 reject(transaction.error);
             };
 
             const clearRequest = store.clear();
-            
+
             clearRequest.onsuccess = () => {
                 strains.forEach(strain => {
                     const putRequest = store.put(strain);
@@ -286,14 +286,14 @@ export const dbService = {
                     };
                 });
             }
-            
+
             clearRequest.onerror = () => {
                  console.error('[dbService] Failed to clear store during atomic transaction:', clearRequest.error);
                  transaction.abort();
             }
         });
     },
-    
+
     /**
      * Retrieves all strains from the database in a memory-efficient way using a cursor.
      * This is superior to `getAll()` for large datasets.
@@ -324,7 +324,7 @@ export const dbService = {
     async getStrainsCount(): Promise<number> {
         return performTx<number>(STRAINS_STORE, 'readonly', store => store.count());
     },
-    
+
     /**
      * Performs a high-performance query on the strains store using a specified index.
      * @param {string} indexName The name of the index to query (e.g., 'by_thc').
@@ -338,7 +338,7 @@ export const dbService = {
             const store = transaction.objectStore(STRAINS_STORE);
             const index = store.index(indexName);
             const request = index.getAll(query);
-            
+
             transaction.oncomplete = () => resolve(request.result || []);
             transaction.onerror = () => reject(transaction.error);
         });
@@ -414,7 +414,7 @@ export const dbService = {
     async getAllImages(): Promise<StoredImageData[]> {
         return performTx<StoredImageData[]>(IMAGES_STORE, 'readonly', store => store.getAll());
     },
-    
+
     // --- Search Index Store ---
 
     /**
@@ -437,7 +437,7 @@ export const dbService = {
                 console.error('[dbService] Failed to clear search index:', clearRequest.error);
                 transaction.abort();
             };
-            
+
             clearRequest.onsuccess = () => {
                 Object.entries(index).forEach(([word, ids]) => {
                     const putRequest = store.put({ word, ids });
@@ -467,7 +467,7 @@ export const dbService = {
             const resultSets: Set<string>[] = [];
 
             transaction.onerror = () => reject(transaction.error);
-            
+
             transaction.oncomplete = () => {
                 if (resultSets.length === 0 || resultSets.length < tokens.length) {
                     return resolve(new Set());

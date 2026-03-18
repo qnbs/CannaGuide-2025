@@ -9,15 +9,15 @@ type RangeSliderProps = {
     unit: string
     color?: 'primary' | 'green' | 'blue'
 } & (
-    | { 
-        singleValue?: false | undefined; 
-        value: [number, number]; 
-        onChange: (newValue: [number, number]) => void 
+    | {
+        singleValue?: false | undefined;
+        value: [number, number];
+        onChange: (newValue: [number, number]) => void
       }
-    | { 
-        singleValue: true; 
-        value: number; 
-        onChange: (newValue: number) => void 
+    | {
+        singleValue: true;
+        value: number;
+        onChange: (newValue: number) => void
       }
 )
 
@@ -70,7 +70,7 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
         const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             onChange(Number(e.target.value));
         }
-        
+
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const numValue = e.target.value === '' ? min : Number(e.target.value);
             if (!isNaN(numValue)) {
@@ -130,11 +130,11 @@ export const RangeSlider: React.FC<RangeSliderProps> = (props) => {
                 </div>
             </div>
         )
-    } 
+    }
     // --- RANGE MODE ---
     else {
         const value = props.value as [number, number]
-        
+
         const handleMinInteraction = () => {
             setMinZIndex(2)
             setMaxZIndex(1)

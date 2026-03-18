@@ -1,0 +1,163 @@
+name: Security Full
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    schedule:
+        - cron: '23 3 * * 1'
+    workflow_dispatch:
+
+permissions:
+    actions: read
+    contents: read
+    security-events: write
+
+jobs:
+    codeql:
+        name: CodeQL
+        runs-on: ubuntu-latest
+        timeout-minutes: 30
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Initialize CodeQL
+              uses: github/codeql-action/init@v3
+              with:
+                  languages: javascript-typescript
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Build for CodeQL analysis
+              run: npm run build
+
+            - name: Perform CodeQL analysis
+              uses: github/codeql-action/analyze@v3
+
+    dependabot-check:
+        name: Dependabot Check
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Audit npm dependencies
+              run: npm audit --audit-level=high
+
+    gitleaks:
+        name: Gitleaks
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Run Gitleaks
+              uses: gitleaks/gitleaks-action@v2
+              with:
+                  args: detect --source . --no-banner --redact --config .gitleaks.toml
+
+    trivy:
+        name: Trivy
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Run Trivy filesystem scan
+              uses: aquasecurity/trivy-action@0.29.0
+              with:
+                  scan-type: fs
+                  scan-ref: .
+                  scanners: secret,misconfig,vuln
+                  severity: HIGH,CRITICAL
+                  format: sarif
+                  output: trivy-results.sarif
+
+            - name: Upload Trivy results
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: trivy-results.sarif
+
+    semgrep:
+        name: Semgrep
+        runs-on: ubuntu-latest
+        timeout-minutes: 25
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Run Semgrep
+              uses: semgrep/semgrep-action@v1
+              with:
+                  config: auto
+
+    trojan-source:
+        name: Anti Trojan Source
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Scan for bidi controls
+              run: npm run security:trojan-source
+
+    scorecard:
+        name: Scorecard
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        permissions:
+            security-events: write
+            id-token: write
+            contents: read
+            actions: read
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Run Scorecard
+              uses: ossf/scorecard-action@v2.4.0
+              with:
+                  results_file: scorecard-results.sarif
+                  results_format: sarif
+                  repo_token: ${{ secrets.GITHUB_TOKEN }}
+                  publish_results: true
+
+            - name: Upload Scorecard results
+              uses: github/codeql-action/upload-sarif@v3
+              with:
+                  sarif_file: scorecard-results.sarif

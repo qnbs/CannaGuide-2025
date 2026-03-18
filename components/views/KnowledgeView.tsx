@@ -46,7 +46,7 @@ export const KnowledgeView: React.FC = () => {
         [KnowledgeViewTab.Breeding]: t('knowledgeView.tabs.breeding'),
         [KnowledgeViewTab.Sandbox]: t('knowledgeView.tabs.sandbox'),
     }), [t]);
-    
+
     // If a chat is active, render the chat view exclusively
     if (activeMentorPlant) {
         return <Suspense fallback={<SkeletonLoader count={3} />}><MentorChatView plant={activeMentorPlant} onClose={() => dispatch(setActiveMentorPlantId(null))} /></Suspense>;

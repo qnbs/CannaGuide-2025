@@ -30,13 +30,13 @@ const GuideViewComponent: React.FC = () => {
             'Core Concepts': { order: 2, name: t('knowledgeView.guide.coreConcepts'), articles: [] },
             'Troubleshooting': { order: 3, name: t('knowledgeView.guide.troubleshooting'), articles: [] },
         };
-    
+
         const groupNameMapping: Record<string, keyof typeof groups> = {
             'phase': 'Phases',
             'fix': 'Troubleshooting',
             'concept': 'Core Concepts',
         };
-        
+
         knowledgeBase.forEach(article => {
             const match = article.id.match(/^(phase|fix|concept)/);
             if (match && match[1]) {
@@ -46,7 +46,7 @@ const GuideViewComponent: React.FC = () => {
                 }
             }
         });
-        
+
         // Sort articles within the 'Phases' group numerically by their title for correct order
         groups['Phases'].articles.sort((a, b) => {
             const aTitle = t(a.titleKey);

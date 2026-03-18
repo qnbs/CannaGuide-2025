@@ -1,5 +1,6 @@
 // ESLint 9 flat config – replaces .eslintrc.json
 import js from '@eslint/js'
+import antiTrojanSourcePlugin from 'eslint-plugin-anti-trojan-source'
 import tsPlugin from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
 import reactPlugin from 'eslint-plugin-react'
@@ -24,6 +25,17 @@ export default [
 
     // ── Base JS recommended ─────────────────────────────────────────────────
     js.configs.recommended,
+
+    // ── Unicode / Trojan Source protection ──────────────────────────────────
+    {
+        files: ['**/*.{js,jsx,ts,tsx,mjs,cjs}'],
+        plugins: {
+            'anti-trojan-source': antiTrojanSourcePlugin,
+        },
+        rules: {
+            'anti-trojan-source/no-bidi': 'error',
+        },
+    },
 
     // ── TypeScript + React source files ────────────────────────────────────
     {

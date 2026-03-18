@@ -1,6 +1,6 @@
 // This API slice uses a custom `queryFn` for all endpoints to interact with the Gemini service.
 // `fakeBaseQuery` is used as a placeholder to satisfy RTK Query's `baseQuery` requirement.
-// All RTK Query imports are from '@reduxjs/toolkit/query/react' to ensure the endpoint 
+// All RTK Query imports are from '@reduxjs/toolkit/query/react' to ensure the endpoint
 // builder is correctly typed and React hooks are auto-generated.
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import {

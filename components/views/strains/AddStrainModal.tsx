@@ -80,22 +80,22 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
     const validate = (values: ReturnType<typeof strainToFormValues>) => {
         const errors: Partial<Record<keyof typeof values, string>> = {};
         if (!values.name?.trim()) errors.name = t('strainsView.addStrainModal.validation.name');
-        
+
         const thc = Number(values.thc);
         if (isNaN(thc) || thc < 0 || thc > 50) errors.thc = t('strainsView.addStrainModal.validation.thc');
-        
+
         const floweringTime = Number(values.floweringTime);
         if (isNaN(floweringTime) || floweringTime < 4 || floweringTime > 20) errors.floweringTime = t('strainsView.addStrainModal.validation.floweringTime');
-        
+
         const rangeRegex = /^(?:[<~>]?\s*\d{1,2}(?:\.\d+)?\s*%?)$|^(?:\d{1,2}(?:\.\d+)?\s*-\s*\d{1,2}(?:\.\d+)?\s*%?)$/;
         if (values.thcRange && !rangeRegex.test(values.thcRange)) errors.thcRange = t('strainsView.addStrainModal.validation.thcRange');
         if (values.cbdRange && !rangeRegex.test(values.cbdRange)) errors.cbdRange = t('strainsView.addStrainModal.validation.cbdRange');
         return errors;
     };
-    
+
     const onSubmit = (values: ReturnType<typeof strainToFormValues>) => {
         const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
-        
+
         const partialStrainData: Partial<Strain> = {
             id: isEditMode ? strainToEdit.id : `${values.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
             name: values.name,
@@ -129,7 +129,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
             onAddStrain(finalStrain);
         }
     };
-    
+
     const { values, errors, handleChange, handleSubmit, resetForm } = useForm({
         initialValues: formInitialValues,
         validate,

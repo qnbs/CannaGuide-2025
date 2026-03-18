@@ -16,7 +16,7 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
 
     const pageNumbers: (string | number)[] = [];
     const maxPagesToShow = 5;
-    
+
     // Logic to determine which page numbers to show
     if (totalPages <= maxPagesToShow + 2) {
         for (let i = 1; i <= totalPages; i++) {

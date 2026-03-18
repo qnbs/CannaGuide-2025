@@ -55,7 +55,7 @@ const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bank
             </summary>
             <div className="p-4 border-t border-slate-700/50 space-y-4">
                 {bank.profile && <Section title={bank.profile.title}><p>{bank.profile.content}</p></Section>}
-                
+
                 {bank.availability && (
                     <Section title={bank.availability.title}>
                         <ul className="grid grid-cols-2 sm:grid-cols-3 gap-1 list-none p-0 m-0">

@@ -19,9 +19,9 @@ export const LogActionModalContainer: React.FC = () => {
     if (!isOpen || !plant || !type) return null;
 
     return (
-        <LogActionModal 
-            plant={plant} 
-            type={type} 
+        <LogActionModal
+            plant={plant}
+            type={type}
             onClose={() => dispatch(closeActionModal())}
             onLearnMore={handleLearnMore}
         />

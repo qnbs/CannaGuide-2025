@@ -88,9 +88,9 @@ export const strainsX: Strain[] = [
         "floweringTime": 8.5,
         "floweringTimeRange": "8-9",
         "description": "A potent indica-dominant strain that is a three-time Cannabis Cup winner. It provides a heavy, relaxing body high that is great for pain and insomnia. The aroma is classic OG: earthy, piney, and pungent. It is a parent of Godfather OG.",
-        "agronomic": { 
-            "difficulty": "Medium", 
-            "yield": "High", 
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
             "height": "Medium",
             "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
             "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }

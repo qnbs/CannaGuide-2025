@@ -19,14 +19,14 @@ export const YieldCalculator: React.FC = memo(() => {
     return (
         <CalculatorSection title={t('equipmentView.calculators.yield.title')} description={t('equipmentView.calculators.yield.description')}>
             <Input label={t('equipmentView.calculators.yield.lightWattage')} type="number" unit="W" value={wattage} onChange={e => setWattage(Number(e.target.value))} />
-            <Input 
-                label={t('equipmentView.calculators.yield.efficiency')} 
-                type="number" 
-                step="0.1" 
-                unit={t('common.units.g_w')} 
-                value={efficiency} 
-                onChange={e => setEfficiency(Number(e.target.value))} 
-                tooltip={t('equipmentView.calculators.yield.efficiencyTooltip')} 
+            <Input
+                label={t('equipmentView.calculators.yield.efficiency')}
+                type="number"
+                step="0.1"
+                unit={t('common.units.g_w')}
+                value={efficiency}
+                onChange={e => setEfficiency(Number(e.target.value))}
+                tooltip={t('equipmentView.calculators.yield.efficiencyTooltip')}
                 className="no-spinner"
             />
             <ResultDisplay label={t('equipmentView.calculators.yield.result')} value={result.medium} unit="g">

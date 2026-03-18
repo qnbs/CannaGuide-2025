@@ -151,7 +151,7 @@ export const useStrainFilters = (
         const selectedAromasSet = new Set(advancedFilters.selectedAromas);
         const selectedTerpenesSet = new Set(advancedFilters.selectedTerpenes);
 
-        strains = strains.filter(s => 
+        strains = strains.filter(s =>
             (s.thc >= advancedFilters.thcRange[0] && s.thc <= advancedFilters.thcRange[1]) &&
             (s.cbd >= advancedFilters.cbdRange[0] && s.cbd <= advancedFilters.cbdRange[1]) &&
             (s.floweringTime >= advancedFilters.floweringRange[0] && s.floweringTime <= advancedFilters.floweringRange[1]) &&

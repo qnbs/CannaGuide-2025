@@ -119,7 +119,7 @@ export const createAppStore = async (): Promise<AppStore> => {
             await indexedDBStorage.removeItem(REDUX_STATE_KEY);
         }
     }
-    
+
     const store = makeStore(preloadedState);
 
     // After store creation, set the initial view. Prioritize user's default setting over last active view.

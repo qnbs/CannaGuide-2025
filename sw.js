@@ -40,11 +40,11 @@ const offlineFallback = new Response(`
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline - CannaGuide 2025</title>
   <style>
-    body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
-      background-color: #0F172A; 
-      color: #CBD5E1; 
-      text-align: center; 
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0F172A;
+      color: #CBD5E1;
+      text-align: center;
       padding: 50px;
       margin: 0;
       display: flex;
@@ -169,13 +169,13 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
-  
+
   event.respondWith(
     caches.match(request).then(cachedResponse => {
       if (cachedResponse) {
         return cachedResponse;
       }
-      
+
       return fetch(request).then(networkResponse => {
         if (networkResponse && networkResponse.status === 200) {
             const responseToCache = networkResponse.clone();
@@ -243,7 +243,7 @@ function getQueuedActions() {
                 resolve(result);
             };
             transaction.onerror = () => reject(transaction.error);
-            
+
             request.onsuccess = () => { items = request.result; };
             keysRequest.onsuccess = () => { keys = keysRequest.result; };
         });

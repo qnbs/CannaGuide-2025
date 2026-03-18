@@ -16,7 +16,7 @@ class TTSService {
     public isSupported(): boolean {
         return this.synth !== null;
     }
-    
+
     public init() {
         if (this.isInitialized || !this.synth) return;
         this.synth.onvoiceschanged = this.loadVoices.bind(this);
@@ -57,7 +57,7 @@ class TTSService {
                 this.onEndCallback();
             }
         };
-        
+
         utterance.onerror = (event) => {
             console.error('SpeechSynthesisUtterance.onerror', event);
             if (this.onEndCallback) {
@@ -88,7 +88,7 @@ class TTSService {
             onEnd();
         }
     }
-    
+
     cancel() {
         this.onEndCallback = null;
         if (!this.synth) {

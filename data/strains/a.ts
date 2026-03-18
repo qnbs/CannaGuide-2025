@@ -395,7 +395,7 @@ export const strainsA: Strain[] = [
         "floweringType": "Photoperiod",
         "thc": 22, "cbd": 1, "thcRange": "19-25%", "cbdRange": "<1%", "floweringTime": 9,
         "description": "A clone-only indica-dominant hybrid with mysterious origins, though it's believed to be a phenotype of Afghan Skunk. It is known for its potent, long-lasting effects that are both euphoric and deeply relaxing. The aroma is a pungent mix of skunk, lemon, and diesel.",
-        "agronomic": { 
+        "agronomic": {
             "difficulty": "Hard", "yield": "Low", "height": "Short",
             "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/plant" },
             "heightDetails": { "indoor": "70-110 cm", "outdoor": "90-140 cm" }

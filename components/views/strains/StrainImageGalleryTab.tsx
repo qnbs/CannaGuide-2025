@@ -18,7 +18,7 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
     const images = useMemo(() => savedTips
         .filter(tip => tip.strainId === strain.id && tip.imageUrl)
         .map(tip => ({ url: tip.imageUrl!, createdAt: tip.createdAt, title: tip.title }))
-        .sort((a, b) => b.createdAt - a.createdAt), 
+        .sort((a, b) => b.createdAt - a.createdAt),
     [savedTips, strain.id]);
 
     if (images.length === 0) {
@@ -34,7 +34,7 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
     return (
         <>
             {selectedImage && (
-                <div 
+                <div
                     className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-fade-in"
                     onClick={() => setSelectedImage(null)}
                 >

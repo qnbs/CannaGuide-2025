@@ -10,7 +10,7 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
       nutrientUptakeRate: 0.8 + (((nameHash * 3) % 40) / 100), // Range 0.8 to 1.2
       stressTolerance: 0.8 + (((nameHash * 7) % 40) / 100), // Range 0.8 to 1.2
       rue: 1.4 + (((nameHash * 5) % 20) / 100), // Radiation Use Efficiency (g biomass per MJ of PAR), typical range 1.4-1.6
-      vpdTolerance: { 
+      vpdTolerance: {
           min: 0.7 + (((nameHash * 2) % 30) / 100), // e.g., 0.7-1.0 kPa
           max: 1.3 + (((nameHash * 11) % 30) / 100)  // e.g., 1.3-1.6 kPa
       },

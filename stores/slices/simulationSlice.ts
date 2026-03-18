@@ -102,7 +102,7 @@ const simulationSlice = createSlice({
                 journal: [...existingPlant.journal, ...newJournalWithIds],
                 tasks: [...existingPlant.tasks, ...tasksToAdd],
             };
-            
+
             plantsAdapter.updateOne(state.plants, { id: updatedPlant.id, changes });
         },
         setSelectedPlantId: (state, action: PayloadAction<string | null>) => {
@@ -258,7 +258,7 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
                 dispatch(cancelNewGrow());
                 return;
             }
-            
+
             const normalizedSetup: GrowSetup = {
                 lightType: validation.data.lightType ?? 'LED',
                 lightWattage: validation.data.lightWattage ?? 300,
@@ -272,13 +272,13 @@ export const startNewPlant = createAsyncThunk<void, void, { state: RootState }>(
 
             const newPlant = plantSimulationService.createPlant(strain, normalizedSetup, `${strain.name} #${finalSlotIndex + 1}`);
             dispatch(simulationSlice.actions.addPlant({ plant: newPlant, slotIndex: finalSlotIndex }));
-            
+
             const t = getT();
             dispatch(addNotification({ message: t('plantsView.notifications.growStarted', { name: newPlant.name }), type: 'success' }));
-            
+
             // Navigate to plants view to show the new plant, regardless of where the flow started.
-            dispatch(setActiveView(View.Plants)); 
-            
+            dispatch(setActiveView(View.Plants));
+
             // Clean up the flow state.
             dispatch(cancelNewGrow());
         } else {
@@ -417,7 +417,7 @@ export const applyWateringAction = createAsyncThunk<void, { plantId: string, dat
             dispatch(addNotification({ message: getT()('common.simulationErrors.invalidActionData', { action: 'Watering' }), type: 'error' }));
             return;
         }
-        
+
         const plant = getState().simulation.plants.entities[plantId];
         if (plant) {
             const updatedPlant = plantSimulationService.clonePlant(plant);
@@ -483,7 +483,7 @@ export const applyAmendmentAction = createAsyncThunk<void, { plantId: string, da
     }
 );
 
-export const { 
+export const {
     setSimulationState,
     addPlant,
     updatePlant,

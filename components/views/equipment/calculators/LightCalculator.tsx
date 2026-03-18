@@ -26,7 +26,7 @@ export const LightCalculator: React.FC = memo(() => {
         const targetPpfd = ppfdTargets[stage] || 0;
         const hours = lightHours[stage] || 0;
         const targetDli = (targetPpfd * hours * 3600) / 1000000;
-        
+
         const ledEfficiency = 2.5; // µmol/J
         const requiredPpfd = targetPpfd * area;
         const requiredWatts = requiredPpfd / ledEfficiency;

@@ -36,12 +36,12 @@ export const useVirtualizer = ({
     const scrollElement = getScrollElement();
     if (scrollElement) {
       const updateContainerHeight = () => setContainerHeight(scrollElement.clientHeight);
-      
+
       updateContainerHeight();
       handleScroll(); // initial measurement
-      
+
       scrollElement.addEventListener('scroll', handleScroll, { passive: true });
-      
+
       // Also update on resize
       const resizeObserver = new ResizeObserver(updateContainerHeight);
       resizeObserver.observe(scrollElement);

@@ -133,7 +133,7 @@ const LexiconSection: React.FC = memo(() => {
     return (
         <Card>
             <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('helpView.lexicon.title')}</h3>
-            
+
             <div className="flex flex-wrap gap-2 mb-4">
                 {categories.map(cat => (
                     <Button
@@ -225,7 +225,7 @@ const ManualSection: React.FC = memo(() => {
             </details>
         );
     };
-    
+
     const sectionOrder = ['introduction', 'general', 'strains', 'plants', 'equipment', 'knowledge'];
 
     return (

@@ -12,7 +12,7 @@ export const onboarding = {
     text: 'Manage up to three plants in an ultra-realistic real-time simulation. Intervene, log everything, and watch them grow.'
   },
   step3: {
-    title: '🛠️ The Workshop',
+    title: '🛠 The Workshop',
     text: 'Plan your perfect setup with the AI configurator, use precise calculators, and save your equipment for future projects.',
   },
   step4: {

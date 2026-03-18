@@ -86,11 +86,11 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
         updateTip(updatedTip);
         setEditingTip(null);
     };
-    
+
     const filteredTips = useMemo(() => {
         const lowerCaseSearch = searchTerm.toLowerCase();
         if (!lowerCaseSearch) return savedTips;
-        return savedTips.filter(tip => 
+        return savedTips.filter(tip =>
             tip.strainName.toLowerCase().includes(lowerCaseSearch) ||
             tip.title.toLowerCase().includes(lowerCaseSearch) ||
             tip.nutrientTip.toLowerCase().includes(lowerCaseSearch) ||
@@ -104,14 +104,14 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
         if (sortMode === 'date') {
             return [...filteredTips].sort((a,b) => b.createdAt - a.createdAt);
         }
-        
+
         const grouped: Record<string, SavedStrainTip[]> = filteredTips.reduce((acc, tip) => {
             (acc[tip.strainName] = acc[tip.strainName] || []).push(tip);
             return acc;
         }, {} as Record<string, SavedStrainTip[]>);
-        
+
         Object.values(grouped).forEach(tips => tips.sort((a, b) => b.createdAt - a.createdAt));
-        
+
         return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
     }, [filteredTips, sortMode]);
 
@@ -141,7 +141,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
     const handleBulkDelete = useCallback(() => {
         setIsDeleteConfirmOpen(true);
     }, [selectedIds, deleteTip, t]);
-    
+
     const onExport = (format: SimpleExportFormat) => {
         const dataToExport = selectedIds.size > 0 ? savedTips.filter(tip => selectedIds.has(tip.id)) : filteredTips;
 
@@ -150,9 +150,9 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
             setIsExportModalOpen(false);
             return;
         }
-        
+
         const fileName = `CannaGuide_Strain_Tips_${new Date().toISOString().slice(0, 10)}`;
-        
+
         dispatch(exportStrainTips({
             tips: dataToExport,
             format,
@@ -190,7 +190,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
 
             <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                  <div className="flex-grow w-full sm:w-auto">
-                    <SearchBar 
+                    <SearchBar
                         placeholder={t('strainsView.tips.searchPlaceholder')}
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}

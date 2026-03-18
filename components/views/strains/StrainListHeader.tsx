@@ -43,11 +43,11 @@ export const StrainListHeader: React.FC<StrainListHeaderProps> = memo(({ sort, h
             {/* Spacer for icon column */}
             <div></div>
             <SortButton sortKey="name" label={t('strainsView.table.strain')} currentSort={sort} onSort={handleSort} className="!justify-start" />
-            
+
             <SortButton sortKey="thc" label={t('strainsView.table.thc')} currentSort={sort} onSort={handleSort} />
             <SortButton sortKey="cbd" label={t('strainsView.table.cbd')} currentSort={sort} onSort={handleSort} />
             <SortButton sortKey="floweringTime" label={t('common.units.weeks')} currentSort={sort} onSort={handleSort} title={t('strainsView.table.flowering')} />
-            
+
             <div className="text-center">{t('common.actions')}</div>
         </div>
     );

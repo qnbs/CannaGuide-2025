@@ -91,7 +91,7 @@ export const GrowShopsView: React.FC = () => {
     const selectedShop = selectedShopKey ? allShops[selectedShopKey] : null;
 
     return (
-        <div className="pb-[calc(4.5rem+env(safe-area-inset-bottom))] sm:pb-0">
+        <div className="pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:pb-0">
             {selectedShop && <ShopDetailModal shop={selectedShop} t={t} onClose={() => setSelectedShopKey(null)} />}
             
             <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 mb-3">

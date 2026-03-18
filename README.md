@@ -296,7 +296,7 @@ This project is designed to run within Google's AI Studio, which handles the dev
 ### Prerequisites
 *   [Node.js](https://nodejs.org/) (v18.x or later recommended)
 *   [npm](https://www.npmjs.com/) (usually included with Node.js)
-*   A **Google Gemini API Key**. You can obtain one from [Google AI Studio](https://ai.studio.google.com/app/apikey).
+*   A **Google Gemini API Key**. You can obtain one from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ### Installation & Setup
 1.  **Clone the repository:**
@@ -351,7 +351,7 @@ See full setup notes in `docs/distribution.md`.
 This app follows a strict **Bring Your Own Key (BYOK)** model for Gemini:
 
 1. **Get a Gemini API key in Google AI Studio**
-    - Open: https://ai.studio.google.com/app/apikey
+    - Open: https://aistudio.google.com/app/apikey
     - Sign in with your Google account.
     - Click **Create API key** (or **Create API key in new project**).
     - Copy the generated key (starts with `AIza...`).
@@ -739,7 +739,7 @@ Dieses Projekt ist für die Ausführung im Google AI Studio konzipiert, das den 
 ### Voraussetzungen
 *   [Node.js](https://nodejs.org/) (v18.x oder neuer empfohlen)
 *   [npm](https://www.npmjs.com/) (normalerweise bei Node.js enthalten)
-*   Ein **Google Gemini API Key**. Diesen erhalten Sie im [Google AI Studio](https://ai.studio.google.com/app/apikey).
+*   Ein **Google Gemini API Key**. Diesen erhalten Sie im [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 ### Installation & Einrichtung
 1.  **Repository klonen:**
@@ -794,7 +794,7 @@ Siehe vollständige Setup-Hinweise in `docs/distribution.md`.
 Die App arbeitet mit einem klaren **Bring Your Own Key (BYOK)**-Modell für Gemini:
 
 1. **Gemini API-Key in Google AI Studio erstellen**
-    - Öffnen Sie: https://ai.studio.google.com/app/apikey
+    - Öffnen Sie: https://aistudio.google.com/app/apikey
     - Melden Sie sich mit Ihrem Google-Konto an.
     - Klicken Sie auf **Create API key** (oder **Create API key in new project**).
     - Kopieren Sie den erzeugten Key (beginnt mit `AIza...`).

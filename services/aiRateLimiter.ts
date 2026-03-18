@@ -9,6 +9,8 @@ const RATE_LIMIT_WINDOW_MS = 60_000 // 1 minute
 const RATE_LIMIT_MAX_REQUESTS = 15
 
 const COST_TRACKER_STORAGE_KEY = 'cg.ai.costTracker'
+const AUDIT_LOG_STORAGE_KEY = 'cg.ai.auditLog'
+const AUDIT_LOG_LIMIT = 50
 
 // Rough token estimates per endpoint (prompt + completion combined)
 const TOKEN_ESTIMATES: Record<string, number> = {
@@ -74,6 +76,11 @@ interface CostTrackerState {
     days: DayCost[]
 }
 
+interface AuditLogEntry {
+    timestamp: number
+    endpoint: string
+}
+
 function todayKey(): string {
     return new Date().toISOString().slice(0, 10)
 }
@@ -134,6 +141,46 @@ function clearCostHistory(): void {
     localStorage.removeItem(COST_TRACKER_STORAGE_KEY)
 }
 
+function loadAuditLog(): AuditLogEntry[] {
+    try {
+        const raw = localStorage.getItem(AUDIT_LOG_STORAGE_KEY)
+        if (!raw) return []
+        const parsed = JSON.parse(raw) as AuditLogEntry[]
+        if (!Array.isArray(parsed)) return []
+        return parsed
+            .filter((entry) => typeof entry.timestamp === 'number' && typeof entry.endpoint === 'string')
+            .slice(0, AUDIT_LOG_LIMIT)
+    } catch {
+        return []
+    }
+}
+
+function saveAuditLog(entries: AuditLogEntry[]): void {
+    try {
+        localStorage.setItem(AUDIT_LOG_STORAGE_KEY, JSON.stringify(entries.slice(0, AUDIT_LOG_LIMIT)))
+    } catch {
+        // Ignore quota failures for best-effort audit logging.
+    }
+}
+
+function recordAuditEntry(endpoint: string): void {
+    const entries = loadAuditLog()
+    entries.unshift({ timestamp: Date.now(), endpoint })
+    saveAuditLog(entries)
+}
+
+function getAuditLog(): AuditLogEntry[] {
+    return loadAuditLog()
+}
+
+function clearAuditLog(): void {
+    localStorage.removeItem(AUDIT_LOG_STORAGE_KEY)
+}
+
+function resetForTests(): void {
+    requestTimestamps.length = 0
+}
+
 // ---------------------------------------------------------------------------
 // Combined guard: check rate limit, record request, track cost
 // ---------------------------------------------------------------------------
@@ -143,6 +190,7 @@ function acquireSlot(endpoint: string): void {
     checkRateLimit()
     recordRequest()
     trackTokenUsage(endpoint)
+    recordAuditEntry(endpoint)
 }
 
 export const aiRateLimiter = {
@@ -154,4 +202,7 @@ export const aiRateLimiter = {
     getTodayUsage,
     getUsageHistory,
     clearCostHistory,
+    getAuditLog,
+    clearAuditLog,
+    resetForTests,
 }

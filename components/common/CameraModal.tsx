@@ -22,9 +22,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
 
     const handleClose = useCallback(() => {
         onClose()
-        // Restore focus to the element that opened this modal
-        requestAnimationFrame(() => triggerRef?.current?.focus())
-    }, [onClose, triggerRef])
+    }, [onClose])
 
     const cleanupStream = useCallback(() => {
         if (stream) {
@@ -32,6 +30,15 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
             setStream(null)
         }
     }, [stream])
+
+    const handleOpenAutoFocus = useCallback((event: Event) => {
+        event.preventDefault()
+    }, [])
+
+    const handleCloseAutoFocus = useCallback((event: Event) => {
+        event.preventDefault()
+        requestAnimationFrame(() => triggerRef?.current?.focus())
+    }, [triggerRef])
 
     useEffect(() => {
         if (isOpen) {
@@ -131,6 +138,8 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
             size="lg"
             footer={footerContent}
             containerClassName="!bg-slate-900"
+            onOpenAutoFocus={handleOpenAutoFocus}
+            onCloseAutoFocus={handleCloseAutoFocus}
         >
             {error ? (
                 <div className="text-center text-red-400 p-8">{error}</div>

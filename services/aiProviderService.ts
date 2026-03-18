@@ -24,6 +24,10 @@ export interface AiProviderConfig {
     models: { text: string; json: string; image?: string; deepDive?: string }
 }
 
+export interface AiProviderKeyMetadata {
+    updatedAt: number
+}
+
 // ---------------------------------------------------------------------------
 // Provider Configurations
 // ---------------------------------------------------------------------------
@@ -90,6 +94,28 @@ const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
 
 const ACTIVE_PROVIDER_KEY = 'cg.ai.activeProvider'
 
+const getProviderMetadataKey = (provider: AiProvider): string => `cg.ai.provider.${provider}.meta.v1`
+
+const loadProviderMetadata = (provider: AiProvider): AiProviderKeyMetadata | null => {
+    try {
+        const raw = localStorage.getItem(getProviderMetadataKey(provider))
+        if (!raw) return null
+        const parsed = JSON.parse(raw) as AiProviderKeyMetadata
+        if (!parsed || typeof parsed.updatedAt !== 'number') return null
+        return parsed
+    } catch {
+        return null
+    }
+}
+
+const saveProviderMetadata = (provider: AiProvider, metadata: AiProviderKeyMetadata): void => {
+    try {
+        localStorage.setItem(getProviderMetadataKey(provider), JSON.stringify(metadata))
+    } catch {
+        // Best-effort only.
+    }
+}
+
 function getActiveProviderId(): AiProvider {
     const stored = localStorage.getItem(ACTIVE_PROVIDER_KEY)
     if (stored && stored in PROVIDER_CONFIGS) {
@@ -134,11 +160,17 @@ async function setProviderApiKey(provider: AiProvider, apiKey: string): Promise<
     }
     const encrypted = await encrypt(trimmed)
     await indexedDBStorage.setItem(config.keyStorageKey, encrypted)
+    saveProviderMetadata(provider, { updatedAt: Date.now() })
 }
 
 async function clearProviderApiKey(provider: AiProvider): Promise<void> {
     const config = PROVIDER_CONFIGS[provider]
     await indexedDBStorage.removeItem(config.keyStorageKey)
+    try {
+        localStorage.removeItem(getProviderMetadataKey(provider))
+    } catch {
+        // Ignore cleanup failures.
+    }
 }
 
 async function clearAllProviderApiKeys(): Promise<void> {
@@ -155,6 +187,10 @@ async function getMaskedProviderApiKey(provider: AiProvider): Promise<string | n
 
 function isValidProviderKeyFormat(provider: AiProvider, apiKey: string): boolean {
     return PROVIDER_CONFIGS[provider].keyPattern.test(apiKey.trim())
+}
+
+function getProviderKeyMetadata(provider: AiProvider): AiProviderKeyMetadata | null {
+    return loadProviderMetadata(provider)
 }
 
 // ---------------------------------------------------------------------------
@@ -308,6 +344,7 @@ export const aiProviderService = {
     clearAllProviderApiKeys,
     getMaskedProviderApiKey,
     isValidProviderKeyFormat,
+    getProviderKeyMetadata,
 
     // Text generation for non-Gemini providers
     generateTextWithProvider,

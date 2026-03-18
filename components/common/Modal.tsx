@@ -12,6 +12,8 @@ interface ModalProps {
     containerClassName?: string
     bodyClassName?: string
     showCloseButton?: boolean
+    onOpenAutoFocus?: (event: Event) => void
+    onCloseAutoFocus?: (event: Event) => void
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -25,6 +27,8 @@ export const Modal: React.FC<ModalProps> = ({
     containerClassName = '',
     bodyClassName = '',
     showCloseButton = true,
+    onOpenAutoFocus,
+    onCloseAutoFocus,
 }) => {
     return (
         <DialogWrapper
@@ -38,6 +42,8 @@ export const Modal: React.FC<ModalProps> = ({
             bodyClassName={bodyClassName}
             showCloseButton={showCloseButton}
             variant="modal"
+            onOpenAutoFocus={onOpenAutoFocus}
+            onCloseAutoFocus={onCloseAutoFocus}
         >
             {children}
         </DialogWrapper>

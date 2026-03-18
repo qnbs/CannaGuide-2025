@@ -22,6 +22,12 @@ export const BottomNav: React.FC = () => {
     const navRef = useRef<HTMLDivElement>(null);
     const [indicatorStyle, setIndicatorStyle] = useState({});
 
+    const triggerHaptics = () => {
+        if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+            navigator.vibrate?.(10)
+        }
+    }
+
     const navLabels: Record<View, string> = {
         [View.Strains]: t('nav.strains'),
         [View.Plants]: t('nav.plants'),
@@ -69,7 +75,10 @@ export const BottomNav: React.FC = () => {
                         type="button"
                         key={view}
                         data-view-id={view}
-                        onClick={() => dispatch(setActiveView(view))}
+                        onClick={() => {
+                            triggerHaptics()
+                            dispatch(setActiveView(view))
+                        }}
                         className={`touch-manipulation relative z-10 flex min-h-12 flex-1 flex-col items-center justify-center rounded-2xl px-1 py-2 text-center transition-all duration-200 active:scale-[0.98] ${
                             activeView === view
                                 ? 'text-primary-200'

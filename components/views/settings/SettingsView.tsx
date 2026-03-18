@@ -78,9 +78,14 @@ const GeminiSecurityCard: React.FC = () => {
     const [maskedStoredKey, setMaskedStoredKey] = useState<string | null>(null)
     const [statusMessage, setStatusMessage] = useState<string | null>(null)
     const [isBusy, setIsBusy] = useState(false)
+    const [auditLogRevision, setAuditLogRevision] = useState(0)
     const [activeProvider, setActiveProvider] = useState<AiProvider>(aiProviderService.getActiveProviderId())
     const providers = useMemo(() => aiProviderService.getAllProviders(), [])
     const todayUsage = aiRateLimiter.getTodayUsage()
+    const recentAuditEntries = useMemo(() => aiRateLimiter.getAuditLog().slice(0, 5), [auditLogRevision])
+    const keyMetadata = activeProvider === 'gemini'
+        ? apiKeyService.getApiKeyMetadata()
+        : aiProviderService.getProviderKeyMetadata(activeProvider)
 
     const getErrorMessage = (error: unknown, fallbackKey: string): string => {
         if (error instanceof Error && typeof error.message === 'string' && error.message.length > 0) {
@@ -149,6 +154,19 @@ const GeminiSecurityCard: React.FC = () => {
     }
 
     const activeConfig = useMemo(() => aiProviderService.getProviderConfig(activeProvider), [activeProvider])
+
+    const getKeyAgeLabel = (updatedAt?: number | null) => {
+        if (!updatedAt) {
+            return t('settingsView.security.rotationUnknown')
+        }
+
+        const ageDays = Math.max(0, Math.floor((Date.now() - updatedAt) / (1000 * 60 * 60 * 24)))
+        if (ageDays === 0) {
+            return t('settingsView.security.rotationToday')
+        }
+
+        return t('settingsView.security.rotationAge', { days: ageDays })
+    }
 
     const handleSaveApiKey = async () => {
         const trimmed = apiKeyInput.trim()
@@ -261,6 +279,10 @@ const GeminiSecurityCard: React.FC = () => {
                             {t('settingsView.security.maskedPrefix')} <span className="font-mono">{maskedStoredKey}</span>
                         </p>
                     )}
+                    <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3 text-xs text-slate-300 space-y-1">
+                        <p>{t('settingsView.security.rotationLabel')}: {getKeyAgeLabel(keyMetadata?.updatedAt)}</p>
+                        <p>{t('settingsView.security.rotationAdvice')}</p>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handleSaveApiKey} disabled={isBusy || apiKeyInput.trim().length === 0}>
                             {t('settingsView.security.save')}
@@ -299,6 +321,30 @@ const GeminiSecurityCard: React.FC = () => {
                                 remaining: aiRateLimiter.getRemainingRequests(),
                             })}
                         </p>
+                        <div className="mt-3 space-y-2">
+                            <p className="text-xs font-semibold text-slate-400">{t('settingsView.security.auditLog')}</p>
+                            {recentAuditEntries.length > 0 ? (
+                                <ul className="space-y-1 text-xs text-slate-500">
+                                    {recentAuditEntries.map((entry) => (
+                                        <li key={`${entry.timestamp}-${entry.endpoint}`}>
+                                            {new Date(entry.timestamp).toLocaleTimeString()} · {entry.endpoint}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-xs text-slate-500">{t('settingsView.security.auditLogEmpty')}</p>
+                            )}
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => {
+                                    aiRateLimiter.clearAuditLog()
+                                    setAuditLogRevision((value) => value + 1)
+                                }}
+                            >
+                                {t('settingsView.security.clearAuditLog')}
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </FormSection>

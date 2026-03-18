@@ -3,8 +3,33 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { encrypt, decrypt, isEncryptedPayload } from '@/services/cryptoService'
 
 const GEMINI_API_KEY_PATTERN = /^AIza[0-9A-Za-z_-]{20,}$/
+const GEMINI_API_KEY_METADATA_KEY = 'cg.gemini.apiKey.meta.v1'
+
+interface ApiKeyMetadata {
+    updatedAt: number
+}
 
 const normalizeApiKey = (apiKey: string): string => apiKey.trim()
+
+const loadMetadata = (): ApiKeyMetadata | null => {
+    try {
+        const raw = localStorage.getItem(GEMINI_API_KEY_METADATA_KEY)
+        if (!raw) return null
+        const parsed = JSON.parse(raw) as ApiKeyMetadata
+        if (!parsed || typeof parsed.updatedAt !== 'number') return null
+        return parsed
+    } catch {
+        return null
+    }
+}
+
+const saveMetadata = (metadata: ApiKeyMetadata): void => {
+    try {
+        localStorage.setItem(GEMINI_API_KEY_METADATA_KEY, JSON.stringify(metadata))
+    } catch {
+        // Best-effort only.
+    }
+}
 
 export const apiKeyService = {
     isValidApiKeyFormat(apiKey: string): boolean {
@@ -50,6 +75,7 @@ export const apiKeyService = {
 
         const encryptedPayload = await encrypt(normalized)
         await indexedDBStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, encryptedPayload)
+        saveMetadata({ updatedAt: Date.now() })
     },
 
     async validateApiKey(apiKey: string): Promise<void> {
@@ -81,5 +107,14 @@ export const apiKeyService = {
 
     async clearApiKey(): Promise<void> {
         await indexedDBStorage.removeItem(GEMINI_API_KEY_STORAGE_KEY)
+        try {
+            localStorage.removeItem(GEMINI_API_KEY_METADATA_KEY)
+        } catch {
+            // Ignore cleanup failures.
+        }
+    },
+
+    getApiKeyMetadata(): ApiKeyMetadata | null {
+        return loadMetadata()
     },
 }

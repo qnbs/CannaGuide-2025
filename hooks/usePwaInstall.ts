@@ -6,7 +6,9 @@ import { BeforeInstallPromptEvent } from '@/types'
 import { PWA_INSTALLED_KEY } from '@/constants';
 
 const PWA_INSTALL_HINT_KEY = 'cg.pwa.install_hint.dismissed_at'
+const PWA_UPDATE_DISMISSED_KEY = 'cg.pwa.update.dismissed_at'
 const INSTALL_HINT_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000
+const UPDATE_DISMISSAL_COOLDOWN_MS = 60 * 60 * 1000 // 1 hour
 
 /**
  * A custom hook to manage the PWA installation prompt and status.
@@ -23,6 +25,7 @@ export const usePwaInstall = () => {
         localStorage.getItem(PWA_INSTALLED_KEY) === 'true' ||
         window.matchMedia('(display-mode: standalone)').matches
     );
+    const [updateAvailable, setUpdateAvailable] = useState(false);
 
     useEffect(() => {
         // This event fires if the app is installable but not yet installed.
@@ -58,8 +61,16 @@ export const usePwaInstall = () => {
         // The existing controllerchange listener in register-sw.js auto-reloads the page;
         // this handler shows a brief info toast so the user understands the imminent reload.
         const swUpdateHandler = () => {
+            setUpdateAvailable(true);
+
+            // Avoid spamming notifications if user dismissed recently
+            const lastDismissed = Number(localStorage.getItem(PWA_UPDATE_DISMISSED_KEY) || 0);
+            if (Date.now() - lastDismissed < UPDATE_DISMISSAL_COOLDOWN_MS) {
+                return;
+            }
+
             dispatch(addNotification({
-                message: t('common.swUpdateAvailable'),
+                message: `${t('common.swUpdateAvailable')} (v${__APP_VERSION__})`,
                 type: 'info',
             }));
         };
@@ -95,5 +106,5 @@ export const usePwaInstall = () => {
 
     }, [deferredPrompt, dispatch, t]);
 
-    return { deferredPrompt, handleInstallClick, isInstalled };
+    return { deferredPrompt, handleInstallClick, isInstalled, updateAvailable };
 };

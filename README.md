@@ -9,17 +9,20 @@ This README file supports two languages.
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/release-v1.0.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
+[![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Security Scan](https://img.shields.io/badge/security-scanned-2e8b57)](.github/workflows/security-full.yml)
 [![OpenSSF Scorecard](https://img.shields.io/badge/OpenSSF-Scorecard-blue)](.github/workflows/scorecard.yml)
 [![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
+[![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 [![Tech Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
 [![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
 [![Accessibility](https://img.shields.io/badge/accessibility-95%25-brightgreen)]()
 [![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
 [![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
+[![Netlify Status](https://img.shields.io/badge/Netlify-deployed-00C7B7?logo=netlify&logoColor=white)](https://app.netlify.com)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-compliant-blue)]()
@@ -63,6 +66,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 - [🤖 Development with AI Studio & Open Source](#-development-with-ai-studio--open-source)
 - [🤝 Contributing](#-contributing)
 - [🗺 Roadmap](#-roadmap)
+- [📊 Tools & Stack](#-tools--stack)
 - [⚠ Disclaimer](#-disclaimer)
 - [Deutsche Version](#-cannaguide-2025-deutsch)
 
@@ -472,33 +476,34 @@ Please follow the existing code style and ensure your changes are well-documente
 
 ## 🗺 Roadmap
 
-### v1.0 ✅ (Current Release)
+> Full details with milestones, epics, and linked issues: [ROADMAP.md](ROADMAP.md)
 
-- 700+ strain encyclopedia with genealogy tracking
-- VPD-based plant simulation engine (Web Worker)
-- Multi-provider AI integration (Gemini, OpenAI, xAI, Anthropic)
-- Full DSGVO/GDPR compliance (Age Gate, Consent, Privacy Policy)
-- WCAG 2.2 AA accessibility
-- 258 tests, 0 TS errors, 0 lint errors
-- PWA with 100% offline capability
-- ESP32 sensor integration via WebBluetooth
-- Breeding Lab with Punnett Square genetics
-- EN/DE internationalization
+| Version | Status | Highlights |
+|---------|--------|------------|
+| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 258 tests, ESP32, Breeding Lab, EN/DE i18n |
+| **v1.1** | ✅ Released | Sentry error tracking, Playwright component tests, Netlify deployment with PR previews, PWA auto-update with changelog, Docker ESP32-Mock sensor simulation, CI/CD for Tauri + Capacitor builds |
+| **v1.2** | 🔄 Planned | Additional languages (ES, FR, NL), Advanced nutrient scheduling with EC/pH automation, Community strain marketplace, Auto-generated grow reports (PDF) |
+| **v1.3** | 📋 Planned | Integration with additional IoT sensors, Time-lapse photo journal, Strain comparison tool, Advanced analytics dashboard, Three.js 3D visualizations |
 
-### v1.1 (Planned)
+---
 
-- Additional language support (ES, FR, NL)
-- Advanced nutrient scheduling with EC/pH automation
-- Community strain marketplace
-- Mobile-native builds via Capacitor
-- Auto-generated grow reports (PDF)
+## 📊 Tools & Stack
 
-### v1.2 (Planned)
-
-- Integration with additional IoT sensors
-- Time-lapse photo journal
-- Strain comparison tool
-- Advanced analytics dashboard
+| Category | Tool | Purpose |
+|----------|------|---------|
+| **Error Tracking** | [Sentry](https://sentry.io) | Runtime error monitoring, performance traces, session replay |
+| **Testing** | [Vitest](https://vitest.dev/) | Unit & integration tests (258+) |
+| **Testing** | [Playwright](https://playwright.dev/) | E2E tests + Component tests |
+| **Testing** | [Stryker](https://stryker-mutator.io/) | Mutation testing |
+| **Performance** | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | Automated performance & a11y audits |
+| **Security** | OpenSSF Scorecard, CodeQL, Snyk, Trivy, Semgrep, Gitleaks | Multi-layer security scanning |
+| **Build** | [Vite 7](https://vitejs.dev/) | Lightning-fast HMR & optimized builds |
+| **CI/CD** | GitHub Actions (15 workflows) | CI, deploy, security, Tauri, Docker |
+| **Hosting** | GitHub Pages + Netlify | Production + PR preview deployments |
+| **Desktop** | [Tauri](https://tauri.app/) | Native Windows/macOS/Linux apps |
+| **Mobile** | [Capacitor](https://capacitorjs.com/) | iOS & Android builds |
+| **Container** | Docker + Chainguard nginx | Hardened self-hosting |
+| **Code Quality** | ESLint 9 + Biome + Prettier | Linting, formatting, static analysis |
 
 ---
 
@@ -517,9 +522,11 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![Lizenz: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![Release](https://img.shields.io/badge/release-v1.0.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
-[![Build-Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
+[![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
+[![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
+[![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
 [![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
+[![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 [![Tech-Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
 [![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
 [![Accessibility](https://img.shields.io/badge/accessibility-95%25-brightgreen)]()
@@ -948,33 +955,14 @@ Bitte halten Sie sich an den bestehenden Codestil und stellen Sie sicher, dass I
 
 ## 🗺 Roadmap
 
-### v1.0 ✅ (Aktuelles Release)
+> Vollständige Details mit Meilensteinen, Epics und verlinkten Issues: [ROADMAP.md](ROADMAP.md)
 
-- 700+ Sorten-Enzyklopädie mit Genealogie-Tracking
-- VPD-basierte Pflanzensimulations-Engine (Web Worker)
-- Multi-Provider KI-Integration (Gemini, OpenAI, xAI, Anthropic)
-- Volle DSGVO-Konformität (Altersverifikation, Einwilligung, Datenschutzerklärung)
-- WCAG 2.2 AA Barrierefreiheit
-- 258 Tests, 0 TS-Fehler, 0 Lint-Fehler
-- PWA mit 100% Offline-Funktionalität
-- ESP32-Sensor-Integration via WebBluetooth
-- Züchtungslabor mit Punnett-Quadrat-Genetik
-- EN/DE Internationalisierung
-
-### v1.1 (Geplant)
-
-- Zusätzliche Sprachunterstützung (ES, FR, NL)
-- Erweiterte Nährstoffplanung mit EC/pH-Automatisierung
-- Community-Sorten-Marktplatz
-- Mobile-native Builds via Capacitor
-- Automatisch generierte Grow-Berichte (PDF)
-
-### v1.2 (Geplant)
-
-- Integration zusätzlicher IoT-Sensoren
-- Zeitraffer-Foto-Journal
-- Sorten-Vergleichstool
-- Erweitertes Analyse-Dashboard
+| Version | Status | Highlights |
+|---------|--------|------------|
+| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 258 Tests, ESP32, Zuchtlabor, EN/DE i18n |
+| **v1.1** | ✅ Veröffentlicht | Sentry Error-Tracking, Playwright Component-Tests, Netlify Deployment mit PR-Previews, PWA Auto-Update mit Changelog, Docker ESP32-Mock Sensor-Simulation, CI/CD für Tauri + Capacitor Builds |
+| **v1.2** | 🔄 Geplant | Zusätzliche Sprachen (ES, FR, NL), Erweiterte Nährstoffplanung mit EC/pH-Automatisierung, Community-Sorten-Marktplatz, Auto-generierte Grow-Berichte (PDF) |
+| **v1.3** | 📋 Geplant | Zusätzliche IoT-Sensoren, Zeitraffer-Foto-Journal, Sorten-Vergleichstool, Erweitertes Analyse-Dashboard, Three.js 3D-Visualisierungen |
 
 ---
 

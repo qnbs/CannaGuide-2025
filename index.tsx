@@ -17,6 +17,10 @@ import { dbService } from './services/dbService'
 import { growReminderService } from './services/growReminderService'
 import { BootstrapConsentGate } from './components/common/BootstrapConsentGate'
 import { consentService } from './services/consentService'
+import { initSentry, Sentry } from './services/sentryService'
+
+// Initialize Sentry as early as possible
+initSentry()
 
 const root = ReactDOM.createRoot(document.getElementById('root')!)
 const SAFE_RECOVERY_ATTEMPT_KEY = 'cannaguide.safeRecoveryAttempted'
@@ -30,6 +34,9 @@ const triggerSafeRecovery = async (reason: string, error?: unknown): Promise<boo
 
         sessionStorage.setItem(SAFE_RECOVERY_ATTEMPT_KEY, '1')
         console.warn(`[SafeRecovery] Triggered by: ${reason}`, error)
+        if (error instanceof Error) {
+            Sentry.captureException(error, { tags: { recovery: reason } })
+        }
         await indexedDBStorage.removeItem(REDUX_STATE_KEY)
         window.location.reload()
         return true

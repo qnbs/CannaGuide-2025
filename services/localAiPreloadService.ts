@@ -79,7 +79,15 @@ export const localAiPreloadService = {
         return readStatus()
     },
 
-    async preloadOfflineModels(): Promise<LocalAiPreloadStatus> {
+    /** Returns true when at least the text model is preloaded and ready. */
+    isReady(): boolean {
+        const status = readStatus()
+        return status.state === 'ready' || (status.state === 'partial' && status.textModelReady)
+    },
+
+    async preloadOfflineModels(
+        onProgress?: (loaded: number, total: number, label: string) => void,
+    ): Promise<LocalAiPreloadStatus> {
         const startedAt = Date.now()
         const persisted = await getPersistentStorageAccess()
         const inProgress = writeStatus({
@@ -92,7 +100,7 @@ export const localAiPreloadService = {
 
         try {
             const localAiService = await getLocalAiService()
-            const report = await localAiService.preloadOfflineAssets()
+            const report = await localAiService.preloadOfflineAssets(false, onProgress)
             const finalStatus: LocalAiPreloadStatus = {
                 state: report.textModelReady && report.visionModelReady ? 'ready' : 'partial',
                 lastAttemptAt: startedAt,

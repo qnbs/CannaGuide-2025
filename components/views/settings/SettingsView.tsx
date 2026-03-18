@@ -366,16 +366,21 @@ const LocalAiOfflineCard: React.FC = () => {
     const isOffline = useOnlineStatus()
     const [isBusy, setIsBusy] = useState(false)
     const [status, setStatus] = useState(() => localAiPreloadService.getStatus())
+    const [progress, setProgress] = useState<{ loaded: number; total: number; label: string } | null>(null)
     const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
     const onnxBackend = detectOnnxBackend()
 
     const handlePreload = async () => {
         setIsBusy(true)
+        setProgress(null)
         try {
-            const nextStatus = await localAiPreloadService.preloadOfflineModels()
+            const nextStatus = await localAiPreloadService.preloadOfflineModels(
+                (loaded, total, label) => setProgress({ loaded, total, label }),
+            )
             setStatus(nextStatus)
         } finally {
             setIsBusy(false)
+            setProgress(null)
         }
     }
 
@@ -425,6 +430,20 @@ const LocalAiOfflineCard: React.FC = () => {
                             {isBusy ? t('settingsView.offlineAi.preloading') : t('settingsView.offlineAi.preload')}
                         </Button>
                     </div>
+                    {isBusy && progress && (
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-xs text-slate-400">
+                                <span>{progress.label}</span>
+                                <span>{progress.loaded}/{progress.total}</span>
+                            </div>
+                            <div className="h-2 w-full rounded-full bg-slate-700">
+                                <div
+                                    className="h-2 rounded-full bg-primary-500 transition-all duration-300"
+                                    style={{ width: `${progress.total > 0 ? (progress.loaded / progress.total) * 100 : 0}%` }}
+                                />
+                            </div>
+                        </div>
+                    )}
                     {isOffline && <p className="text-xs text-amber-300">{t('settingsView.offlineAi.offlineHint')}</p>}
                 </div>
             </FormSection>

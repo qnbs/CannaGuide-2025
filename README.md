@@ -76,7 +76,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
 
 CannaGuide 2025 is built upon a set of core principles designed to deliver a best-in-class experience:
 
-> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**. All actions (like logging watering or adding notes) performed while offline are automatically queued and synced in the background via the browser's SyncManager API once your connection is restored. When Gemini AI is unreachable, a **local AI fallback service** generates heuristic-based plant advice so you're never left without guidance. All your data, notes, and AI archives are stored locally and accessible anytime, anywhere.
+> **Offline First**: Your garden doesn't stop when your internet does. The app is engineered to be **100% functional offline**. All actions (like logging watering or adding notes) performed while offline are automatically queued and synced in the background via the browser's SyncManager API once your connection is restored. When the cloud AI is unreachable, a **three-layer local AI stack** — WebLLM (Qwen2.5-1.5B on WebGPU), Transformers.js (text + CLIP vision), and deterministic heuristics — delivers real ML-powered plant diagnoses, mentor chat, and grow advice entirely on-device. All your data, notes, and AI archives are stored locally and accessible anytime, anywhere.
 
 > **Performance is Key**: A fluid, responsive UI is non-negotiable. Heavy lifting, like the complex, multi-plant simulation, is offloaded to a dedicated **Web Worker**, ensuring the user interface remains smooth and instantaneous at all times. Large strain lists leverage **virtualized rendering** (via `useVirtualizer`) to maintain 60fps scrolling even with 700+ items.
 
@@ -172,7 +172,7 @@ A sophisticated hub to customize every aspect of your CannaGuide experience.
 - **Voice Control**: Navigate the app, search for strains, and perform actions using simple voice commands.
 - **Full Internationalization (i18n)**: Complete **English and German** translations with namespaced locale files (common, plants, knowledge, strains, equipment, settings, help, and more). All AI responses are automatically localized to the user's selected language.
 - **Safe Recovery**: Automatic detection and repair of corrupted application state. If IndexedDB hydration fails, the app gracefully falls back to a clean state rather than presenting a blank screen.
-- **Local AI Fallback**: When the Gemini API is unreachable (offline, quota exceeded, key missing), the app generates **heuristic-based plant advice** using local algorithms, ensuring you always have guidance — even without internet. See [docs/local-ai-developer-guide.md](/workspaces/CannaGuide-2025/docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](/workspaces/CannaGuide-2025/docs/local-ai-troubleshooting.md).
+- **Local AI Fallback**: When the cloud API is unreachable (offline, quota exceeded, key missing), the app activates a **three-layer local AI stack**: (1) WebLLM with Qwen2.5-1.5B on WebGPU-capable devices, (2) Transformers.js text generation and CLIP-ViT zero-shot vision with 33 cannabis-specific condition labels, (3) deterministic heuristic analysis. Inference results are cached for instant repeat queries. See [docs/local-ai-developer-guide.md](/workspaces/CannaGuide-2025/docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](/workspaces/CannaGuide-2025/docs/local-ai-troubleshooting.md).
 
 ---
 
@@ -240,7 +240,7 @@ All AI-powered features in the application route their requests through this ser
     - `generateStrainImage`: This method uses the specialized `gemini-2.5-flash-image` model and configures `responseModalities: [Modality.IMAGE]` to generate a unique, artistic image for a given strain, which is then used in the AI Grow Tips feature.
 - **Model Selection**: The service intelligently selects the appropriate model for the task. It uses the cost-effective and fast `gemini-2.5-flash` for most text and vision tasks, but switches to the more powerful `gemini-2.5-pro` for the complex `generateDeepDive` feature, which requires more advanced reasoning.
 - **Error Handling**: Each method includes `try...catch` blocks that wrap the API call. On failure, it logs the error and throws a new, localized error message (using keys from the translation files, e.g., `'ai.error.diagnostics'`), which RTK Query then provides to the UI for graceful display.
-- **Local Fallback**: When the API is unreachable, the `localAiFallbackService` generates heuristic-based advice using local algorithms, ensuring the grower always has actionable information.
+- **Local Fallback**: When the API is unreachable, the three-layer local AI stack (WebLLM → Transformers.js → heuristics) provides ML-powered plant advice, diagnoses, and mentor chat entirely on-device.
 
 ### PWA Update Strategy (Deployment)
 
@@ -584,7 +584,7 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
 
 CannaGuide 2025 basiert auf einer Reihe von Kernprinzipien, die darauf ausgelegt sind, ein erstklassiges Erlebnis zu bieten:
 
-> **Offline First**: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie **100% offline funktionsfähig** ist. Alle Aktionen, die offline durchgeführt werden, werden automatisch über die SyncManager-API im Hintergrund synchronisiert, sobald Ihre Verbindung wiederhergestellt ist. Wenn die Gemini-KI nicht erreichbar ist, generiert ein **lokaler KI-Fallback-Dienst** heuristische Pflanzenberatung, sodass Sie nie ohne Unterstützung sind. Alle Ihre Daten, Notizen und KI-Archive sind lokal gespeichert und jederzeit zugänglich.
+> **Offline First**: Ihr Garten macht keine Pause, wenn Ihre Internetverbindung ausfällt. Die App ist so konzipiert, dass sie **100% offline funktionsfähig** ist. Alle Aktionen, die offline durchgeführt werden, werden automatisch über die SyncManager-API im Hintergrund synchronisiert, sobald Ihre Verbindung wiederhergestellt ist. Wenn die Cloud-KI nicht erreichbar ist, aktiviert sich ein **dreistufiger lokaler KI-Stack** — WebLLM (Qwen2.5-1.5B auf WebGPU), Transformers.js (Text + CLIP-Vision), und deterministische Heuristiken — und liefert echte ML-gestützte Pflanzendiagnosen, Mentor-Chat und Anbauberatung vollständig auf dem Gerät. Alle Ihre Daten, Notizen und KI-Archive sind lokal gespeichert und jederzeit zugänglich.
 
 > **Leistung ist entscheidend**: Eine flüssige, reaktionsschnelle Benutzeroberfläche ist unerlässlich. Rechenintensive Aufgaben, wie die komplexe Pflanzensimulation, werden in einen **Web Worker** ausgelagert. Große Sortenlisten nutzen **virtualisiertes Rendering** (via `useVirtualizer`), um selbst bei 700+ Einträgen flüssiges Scrollen mit 60fps zu gewährleisten.
 
@@ -723,7 +723,7 @@ Wie im [DeepWiki des Projekts](https://deepwiki.com/qnbs/CannaGuide-2025) erwäh
 - **Bilderzeugung**: `generateStrainImage` nutzt `gemini-2.5-flash-image` mit `Modality.IMAGE`.
 - **Modellauswahl**: `gemini-2.5-flash` für die meisten Aufgaben, `gemini-2.5-pro` für `generateDeepDive`.
 - **Fehlerbehandlung**: Lokalisierte Fehlermeldungen über Übersetzungsschlüssel.
-- **Lokaler Fallback**: Heuristik-basierte Beratung bei unerreichbarer API.
+- **Lokaler Fallback**: Dreistufiger lokaler KI-Stack (WebLLM → Transformers.js → Heuristiken) liefert ML-gestützte Beratung bei unerreichbarer API.
 
 ### PWA-Update-Strategie (Deployment)
 

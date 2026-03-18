@@ -80,6 +80,16 @@ const BreedingView: React.FC = () => {
     const [result, setResult] = useState<Omit<Strain, 'id'> | null>(null);
     const [phenoA, setPhenoA] = useState({ vigor: 6, resin: 6, aroma: 6, resistance: 6 });
     const [phenoB, setPhenoB] = useState({ vigor: 6, resin: 6, aroma: 6, resistance: 6 });
+    const [automatedGenetics, setAutomatedGenetics] = useState<{
+        thc: number
+        cbd: number
+        floweringWeeks: number
+        stabilityScore: number
+        vigorScore: number
+        resinScore: number
+        aromaScore: number
+        resistanceScore: number
+    } | null>(null)
 
     useEffect(() => {
         strainService.getAllStrains().then(setAllStrains).catch(console.error);
@@ -89,12 +99,34 @@ const BreedingView: React.FC = () => {
     const seedB = useMemo(() => collectedSeeds.find(s => s.id === parentB_id), [collectedSeeds, parentB_id]);
     const parentA = useMemo(() => seedA ? allStrains.find(s => s.id === seedA.strainId) : null, [allStrains, seedA]);
     const parentB = useMemo(() => seedB ? allStrains.find(s => s.id === seedB.strainId) : null, [allStrains, seedB]);
-    const automatedGenetics = useMemo(() => {
-        if (!parentA || !parentB) return null
-        return geneticsService.estimateOffspringProfile(parentA, parentB, {
-            parentA: phenoA,
-            parentB: phenoB,
+    useEffect(() => {
+        if (!parentA || !parentB) {
+            setAutomatedGenetics(null)
+            return
+        }
+
+        const worker = new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), { type: 'module' })
+
+        worker.onmessage = (event: MessageEvent<{ type: 'OFFSPRING_PROFILE_RESULT'; result: typeof automatedGenetics } | { type: 'ERROR'; message: string }>) => {
+            if (event.data.type === 'OFFSPRING_PROFILE_RESULT') {
+                setAutomatedGenetics(event.data.result)
+            } else {
+                console.error('[BreedingView] worker error:', event.data.message)
+                setAutomatedGenetics(null)
+            }
+        }
+
+        worker.postMessage({
+            type: 'OFFSPRING_PROFILE',
+            parentA,
+            parentB,
+            phenotypes: {
+                parentA: phenoA,
+                parentB: phenoB,
+            },
         })
+
+        return () => worker.terminate()
     }, [parentA, parentB, phenoA, phenoB])
 
     const handleSeedClick = (seedId: string) => {

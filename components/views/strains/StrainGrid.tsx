@@ -67,13 +67,13 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, sel
                 return (
                     <div
                         key={`row-${virtualRow.index}`}
+                        ref={rowVirtualizer.measureElement(virtualRow.index)}
                         style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             right: 0,
                             transform: `translateY(${virtualRow.offsetTop}px)`,
-                            height: `${virtualRow.height}px`,
                         }}
                     >
                         <div

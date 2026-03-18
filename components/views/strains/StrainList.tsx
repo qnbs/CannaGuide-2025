@@ -50,12 +50,12 @@ const StrainListComponent: React.FC<StrainListProps> = ({
                  return (
                     <div
                         key={strain.id}
+                        ref={rowVirtualizer.measureElement(virtualItem.index)}
                         style={{
                             position: 'absolute',
                             top: 0,
                             left: 0,
                             width: '100%',
-                            height: `${virtualItem.height}px`,
                             transform: `translateY(${virtualItem.offsetTop}px)`,
                             paddingBottom: '8px' // Simulates space-y-2
                         }}

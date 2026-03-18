@@ -216,7 +216,7 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                             </p>
                             {image ? (
                                 <div className="relative">
-                                    <img src={image} alt="preview" className="rounded-md" />
+                                    <img src={image} alt="preview" className="rounded-md" decoding="async" />
                                     <Button
                                         variant="danger"
                                         className="!h-11 !w-11 !p-0 absolute top-2 right-2"

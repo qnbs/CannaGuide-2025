@@ -392,6 +392,8 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                     src={image}
                                     alt={t('plantsView.aiDiagnostics.title')}
                                     className="w-full h-auto rounded-lg max-h-64 object-contain"
+                                    loading="lazy"
+                                    decoding="async"
                                 />
                                 <Button
                                     variant="danger"

@@ -1,10 +1,16 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 interface UseVirtualizerOptions {
   count: number;
   getScrollElement: () => HTMLElement | null;
   estimateSize: number;
   overscan?: number;
+}
+
+interface VirtualItem {
+  index: number;
+  offsetTop: number;
+  height: number;
 }
 
 export const useVirtualizer = ({
@@ -15,6 +21,9 @@ export const useVirtualizer = ({
 }: UseVirtualizerOptions) => {
   const [scrollTop, setScrollTop] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
+  const [measureVersion, setMeasureVersion] = useState(0);
+  const measuredSizesRef = useRef(new Map<number, number>());
+  const observersRef = useRef(new Map<number, ResizeObserver>());
 
   const handleScroll = useCallback(() => {
     const scrollElement = getScrollElement();
@@ -44,28 +53,86 @@ export const useVirtualizer = ({
     }
   }, [handleScroll, getScrollElement]);
 
-  const { virtualItems, totalSize } = useMemo(() => {
-    const totalSize = count * estimateSize;
+  useEffect(() => () => {
+    observersRef.current.forEach((observer) => observer.disconnect());
+    observersRef.current.clear();
+    measuredSizesRef.current.clear();
+  }, [])
 
-    const startIndex = Math.max(0, Math.floor(scrollTop / estimateSize) - overscan);
-    const endIndex = Math.min(
-      count - 1,
-      startIndex + Math.ceil(containerHeight / estimateSize) + 2 * overscan
-    );
-    
-    const items = [];
-    for (let i = startIndex; i <= endIndex; i++) {
-      items.push({
-        index: i,
-        offsetTop: i * estimateSize,
-        height: estimateSize,
-      });
+  const measureElement = useCallback((index: number) => (element: HTMLElement | null) => {
+    const existingObserver = observersRef.current.get(index)
+    if (existingObserver) {
+      existingObserver.disconnect()
+      observersRef.current.delete(index)
     }
-    return { virtualItems: items, totalSize };
-  }, [count, estimateSize, scrollTop, overscan, containerHeight]);
+
+    if (!element) {
+      if (measuredSizesRef.current.delete(index)) {
+        setMeasureVersion((version) => version + 1)
+      }
+      return
+    }
+
+    const applyMeasurement = () => {
+      const nextSize = Math.max(1, Math.round(element.getBoundingClientRect().height))
+      const previousSize = measuredSizesRef.current.get(index)
+      if (previousSize === nextSize) return
+      measuredSizesRef.current.set(index, nextSize)
+      setMeasureVersion((version) => version + 1)
+    }
+
+    applyMeasurement()
+
+    const observer = new ResizeObserver(() => {
+      applyMeasurement()
+    })
+    observer.observe(element)
+    observersRef.current.set(index, observer)
+  }, [])
+
+  const { virtualItems, totalSize } = useMemo(() => {
+    const resolvedSizes = Array.from({ length: count }, (_, index) => measuredSizesRef.current.get(index) ?? estimateSize)
+    const offsets = new Array<number>(count + 1)
+    offsets[0] = 0
+
+    for (let index = 0; index < count; index += 1) {
+      offsets[index + 1] = offsets[index] + resolvedSizes[index]
+    }
+
+    const totalSize = offsets[count] ?? 0
+
+    const findIndexForOffset = (offset: number) => {
+      let low = 0
+      let high = count
+      while (low < high) {
+        const mid = Math.floor((low + high) / 2)
+        if ((offsets[mid + 1] ?? 0) <= offset) {
+          low = mid + 1
+        } else {
+          high = mid
+        }
+      }
+      return Math.min(low, Math.max(0, count - 1))
+    }
+
+    const startIndex = Math.max(0, findIndexForOffset(scrollTop) - overscan)
+    const endIndex = Math.min(count - 1, findIndexForOffset(scrollTop + containerHeight) + overscan)
+
+    const items: VirtualItem[] = []
+    for (let index = startIndex; index <= endIndex; index += 1) {
+      items.push({
+        index,
+        offsetTop: offsets[index] ?? 0,
+        height: resolvedSizes[index] ?? estimateSize,
+      })
+    }
+
+    return { virtualItems: items, totalSize }
+  }, [count, estimateSize, scrollTop, overscan, containerHeight, measureVersion]);
 
   return {
     virtualItems,
     totalSize,
+  measureElement,
   };
 };

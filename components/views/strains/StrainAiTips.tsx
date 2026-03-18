@@ -224,7 +224,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
                 ) : (
                     imageBase64 && (
                         <div className="mt-4 animate-fade-in">
-                            <img src={`data:image/jpeg;base64,${imageBase64}`} alt={t('ai.prompts.strainImage', { strainName: strain.name })} className="rounded-lg w-full" />
+                            <img src={`data:image/jpeg;base64,${imageBase64}`} alt={t('ai.prompts.strainImage', { strainName: strain.name })} className="rounded-lg w-full" decoding="async" />
                         </div>
                     )
                 )}

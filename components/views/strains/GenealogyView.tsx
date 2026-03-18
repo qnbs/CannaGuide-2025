@@ -25,7 +25,20 @@ import { geneticsService } from '@/services/geneticsService';
 import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { Modal } from '@/components/common/Modal';
 import { StrainCompactItem } from './StrainCompactItem';
-import { GENEALOGY_NODE_SIZE, GENEALOGY_NODE_SEPARATION } from '@/constants';
+import { GENEALOGY_NODE_SIZE } from '@/constants';
+
+
+interface GenealogyLayoutNode {
+    data: GenealogyNode;
+    depth: number;
+    x: number;
+    y: number;
+}
+
+interface GenealogyLayoutLink {
+    sourceIndex: number;
+    targetIndex: number;
+}
 
 
 interface GenealogyViewProps {
@@ -57,13 +70,12 @@ const GenealogyError: React.FC<{ message: string; onReset: () => void }> = ({ me
 // Vollständig in try/catch – bei jeglichem Fehler wird null gerendert.
 // ---------------------------------------------------------------------------
 const GenealogyLink = React.memo<{
-    link: d3.HierarchyLink<GenealogyNode>;
+    source: GenealogyLayoutNode;
+    target: GenealogyLayoutNode;
     orientation: 'horizontal' | 'vertical';
-}>(({ link, orientation }) => {
+}>(({ source, target, orientation }) => {
     let pathData = '';
     try {
-        const source = link?.source as d3.HierarchyPointNode<GenealogyNode> | undefined;
-        const target = link?.target as d3.HierarchyPointNode<GenealogyNode> | undefined;
         if (
             source?.x == null || source?.y == null ||
             target?.x == null || target?.y == null ||
@@ -103,13 +115,20 @@ const AnalysisPanel = React.memo<{ tree: GenealogyNode | null; onShowDescendants
                 setContributions([]);
                 return;
             }
-            try {
-                const result = geneticsService.calculateGeneticContribution(tree);
-                setContributions(Array.isArray(result) ? result.slice(0, 5) : []);
-            } catch (err) {
-                console.error('[AnalysisPanel] calculateGeneticContribution error:', err);
-                setContributions([]);
-            }
+            const worker = new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), { type: 'module' });
+
+            worker.onmessage = (event: MessageEvent<{ type: 'CONTRIBUTIONS_RESULT'; contributions: { name: string; contribution: number }[] } | { type: 'ERROR'; message: string }>) => {
+                if (event.data.type === 'CONTRIBUTIONS_RESULT') {
+                    setContributions(Array.isArray(event.data.contributions) ? event.data.contributions.slice(0, 5) : []);
+                } else {
+                    console.error('[AnalysisPanel] worker error:', event.data.message);
+                    setContributions([]);
+                }
+            };
+
+            worker.postMessage({ type: 'CONTRIBUTIONS', tree });
+
+            return () => worker.terminate();
         }, [tree]);
 
         return (
@@ -184,9 +203,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         grandchildren: Strain[];
     } | null>(null);
 
-    // d3-Layout-Ergebnisse: werden async in useEffect berechnet, NIE im Render
-    const [layoutNodes, setLayoutNodes] = useState<d3.HierarchyPointNode<GenealogyNode>[]>([]);
-    const [layoutLinks, setLayoutLinks] = useState<d3.HierarchyLink<GenealogyNode>[]>([]);
+    // d3-Layout-Ergebnisse: werden im Worker berechnet, NIE im Render
+    const [layoutNodes, setLayoutNodes] = useState<GenealogyLayoutNode[]>([]);
+    const [layoutLinks, setLayoutLinks] = useState<GenealogyLayoutLink[]>([]);
 
     // Refs
     const svgRef = useRef<SVGSVGElement>(null);
@@ -248,35 +267,35 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         }
     }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch, t]);
 
-    // ── d3-Layout-Berechnung in useEffect (NICHT im Render) ──────────
+    // ── d3-Layout-Berechnung im Worker (NICHT im Render) ──────────
     useEffect(() => {
         if (!tree) {
             setLayoutNodes([]);
             setLayoutLinks([]);
             return;
         }
-        try {
-            const root = d3.hierarchy(tree, (d) => d?.children);
-            const treeLayout = d3.tree<GenealogyNode>().nodeSize(
-                layoutOrientation === 'horizontal'
-                    ? [
-                          GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
-                          GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
-                      ]
-                    : [
-                          GENEALOGY_NODE_SIZE.width + GENEALOGY_NODE_SEPARATION.x,
-                          GENEALOGY_NODE_SIZE.height + GENEALOGY_NODE_SEPARATION.y,
-                      ],
-            );
-            treeLayout(root);
-            setLayoutNodes(root.descendants() as d3.HierarchyPointNode<GenealogyNode>[]);
-            setLayoutLinks(root.links());
-        } catch (err) {
-            console.error('[GenealogyView] d3 hierarchy/tree layout error:', err);
+        const worker = new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), { type: 'module' });
+
+        worker.onmessage = (event: MessageEvent<{ type: 'LAYOUT_RESULT'; nodes: GenealogyLayoutNode[]; links: GenealogyLayoutLink[] } | { type: 'ERROR'; message: string }>) => {
+            if (event.data.type === 'LAYOUT_RESULT') {
+                setLayoutNodes(event.data.nodes);
+                setLayoutLinks(event.data.links);
+                return;
+            }
+
+            console.error('[GenealogyView] worker error:', event.data.message);
             setLocalError(t('strainsView.genealogyView.errorCalculatingTree'));
             setLayoutNodes([]);
             setLayoutLinks([]);
-        }
+        };
+
+        worker.postMessage({
+            type: 'LAYOUT',
+            tree,
+            orientation: layoutOrientation,
+        });
+
+        return () => worker.terminate();
     }, [tree, layoutOrientation, t]);
 
     // ── Handler (alle in try/catch) ──────────────────────────────────
@@ -544,14 +563,20 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             return layoutLinks
                 .filter((link) => {
                     if (!visibleNodeIds) return true;
-                    return visibleNodeIds.has(link?.source?.data?.id) && visibleNodeIds.has(link?.target?.data?.id);
+                    const source = layoutNodes[link.sourceIndex];
+                    const target = layoutNodes[link.targetIndex];
+                    return !!source && !!target && visibleNodeIds.has(source?.data?.id) && visibleNodeIds.has(target?.data?.id);
                 })
                 .map((link, i) => {
                 try {
+                    const source = layoutNodes[link.sourceIndex];
+                    const target = layoutNodes[link.targetIndex];
+                    if (!source || !target) return null;
                     return (
                         <GenealogyLink
-                            key={`link-${link?.source?.data?.id ?? 'src'}-${link?.target?.data?.id ?? 'tgt'}-${i}`}
-                            link={link}
+                            key={`link-${source?.data?.id ?? 'src'}-${target?.data?.id ?? 'tgt'}-${i}`}
+                            source={source}
+                            target={target}
                             orientation={layoutOrientation}
                         />
                     );

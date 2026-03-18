@@ -36,7 +36,7 @@ const TipItem: React.FC<{ tip: SavedStrainTip, onEdit: (tip: SavedStrainTip) => 
             <div className="flex-1">
                 {tip.imageUrl && (
                     <div className="mb-4 -mx-3 -mt-3">
-                        <img src={tip.imageUrl} alt={tip.strainName} className="rounded-t-lg w-full" />
+                        <img src={tip.imageUrl} alt={tip.strainName} className="rounded-t-lg w-full" loading="lazy" decoding="async" />
                     </div>
                 )}
                 <div className="flex justify-between items-start">

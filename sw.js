@@ -1,4 +1,5 @@
-const CACHE_NAME = 'cannaguide-v21-pwa-cache';
+const CACHE_NAME = 'cannaguide-v22-pwa-cache';
+const IMAGE_CACHE_NAME = 'cannaguide-v22-image-cache';
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
@@ -18,6 +19,7 @@ const THIRD_PARTY_URLS = [];
 const workboxManifest = self.__WB_MANIFEST || [];
 const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
 const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])];
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg', '.ico'];
 
 // --- BACKGROUND SYNC CONSTANTS ---
 const DB_NAME = 'CannaGuideDB';
@@ -98,7 +100,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME) {
             console.log('[SW] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
@@ -120,6 +122,31 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (url.hostname.includes(API_HOSTNAME)) {
+    return;
+  }
+
+  const isImageRequest = request.destination === 'image' || IMAGE_EXTENSIONS.some((extension) => url.pathname.toLowerCase().endsWith(extension));
+
+  if (isImageRequest) {
+    event.respondWith(
+      caches.open(IMAGE_CACHE_NAME).then(async (cache) => {
+        const cachedResponse = await cache.match(request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        try {
+          const networkResponse = await fetch(request);
+          if (networkResponse && networkResponse.status === 200) {
+            cache.put(request, networkResponse.clone());
+          }
+          return networkResponse;
+        } catch (error) {
+          console.error('[SW] Image fetch failed:', error);
+          return new Response('', { status: 408 });
+        }
+      }),
+    );
     return;
   }
 

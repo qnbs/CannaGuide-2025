@@ -25,6 +25,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                 setGlobalEnvironment({
                     temperature: nextReading.temperatureC,
                     humidity: nextReading.humidityPercent,
+                    ph: nextReading.ph ?? undefined,
                     simulationSettings: settings.simulation,
                 }),
             )
@@ -62,6 +63,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                     <>
                         <p>{t('plantsView.sensor.temperature')}: {reading.temperatureC.toFixed(1)} °C</p>
                         <p>{t('plantsView.sensor.humidity')}: {reading.humidityPercent.toFixed(1)}%</p>
+                        <p>{t('plantsView.sensor.ph')}: {reading.ph === null || reading.ph === undefined ? t('plantsView.sensor.phUnavailable') : reading.ph.toFixed(2)}</p>
                         <p className="text-xs text-slate-400 mt-1">
                             {t('plantsView.sensor.lastUpdated')}: {new Date(reading.receivedAt).toLocaleTimeString()}
                         </p>

@@ -370,6 +370,15 @@ export interface AIResponse {
     content: string;
 }
 
+export interface YieldPredictionResult {
+    predictedDryWeight: number;
+    heuristicDryWeight: number;
+    confidence: number;
+    sampleCount: number;
+    usedTensorflowModel: boolean;
+    explanation: string;
+}
+
 export interface StructuredGrowTips {
     nutrientTip: string;
     trainingTip: string;

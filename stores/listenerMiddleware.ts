@@ -8,6 +8,8 @@ import { plantStateUpdated, resetPlants, addJournalEntry, waterAllPlants } from 
 import { addNotification, setOnboardingStep, setActiveView, processVoiceCommand, setVoiceStatusMessage } from './slices/uiSlice';
 import { setSearchTerm, resetAllFilters, setShowFavoritesOnly, setSort, toggleTypeFilter, setAdvancedFilters, setLetterFilter } from './slices/filtersSlice';
 import { urlService } from '@/services/urlService';
+import { aiService } from '@/services/aiService';
+import { ttsService } from '@/services/ttsService';
 
 // Import actions to listen for
 import { addUserStrain, updateUserStrain, deleteUserStrain } from './slices/userStrainsSlice';
@@ -97,11 +99,43 @@ startAppListening({
     effect: async (action, { dispatch, getState }) => {
         const transcript = action.payload.toLowerCase();
         const t = getT();
+    const state = getState();
+
+    const assistantMatch = transcript.match(/^(?:gemini|ask gemini|assistant|ki|frage ki|frage den mentor)\s+(.+)$/i);
+    if (assistantMatch?.[1]) {
+      const query = assistantMatch[1].trim();
+      const selectedPlantId = state.simulation.selectedPlantId ?? state.simulation.plantSlots.find((slot) => slot !== null) ?? null;
+      const plant = selectedPlantId ? state.simulation.plants.entities[selectedPlantId] : null;
+
+      if (!plant) {
+        dispatch(setVoiceStatusMessage(t('voiceControl.errors.noPlantContext')));
+        setTimeout(() => dispatch(setVoiceStatusMessage(null)), 4000);
+        return;
+      }
+
+      dispatch(setVoiceStatusMessage(t('voiceControl.assistantThinking')));
+      try {
+        const language = state.settings.settings.general.language;
+        const response = await aiService.getMentorResponse(plant, query, language);
+        const speechText = `${response.title}. ${response.content}`.slice(0, 320)
+        dispatch(addNotification({ message: response.title, type: 'info' }));
+        ttsService.speak(speechText, language, () => dispatch(setVoiceStatusMessage(null)), state.settings.settings.tts);
+        dispatch(setVoiceStatusMessage(response.content));
+      } catch (error) {
+        console.error('Voice assistant response failed:', error)
+        dispatch(setVoiceStatusMessage(t('voiceControl.errors.assistantFailed')))
+        setTimeout(() => dispatch(setVoiceStatusMessage(null)), 5000)
+      }
+
+      return;
+    }
 
         // --- Define Voice Commands ---
         const commands = [
             // Navigation
             { match: [t('nav.plants').toLowerCase(), 'show garden', 'gehe zu pflanzen'], action: () => dispatch(setActiveView(View.Plants)) },
+      { match: ['open yield predictor', 'yield predictor öffnen', 'yield prognose öffnen'], action: () => dispatch(setActiveView(View.Plants)) },
+      { match: ['open ar preview', 'ar vorschau öffnen', 'breeding preview öffnen'], action: () => dispatch(setActiveView(View.Knowledge)) },
             { match: [t('nav.strains').toLowerCase(), 'show strains', 'gehe zu sorten'], action: () => dispatch(setActiveView(View.Strains)) },
             { match: [t('nav.equipment').toLowerCase(), 'gehe zu ausrüstung'], action: () => dispatch(setActiveView(View.Equipment)) },
             { match: [t('nav.knowledge').toLowerCase(), 'show knowledge', 'gehe zu wissen'], action: () => dispatch(setActiveView(View.Knowledge)) },
@@ -109,6 +143,7 @@ startAppListening({
             { match: ['open settings', 'settings öffnen', 'settings offnen'], action: () => dispatch(setActiveView(View.Settings)) },
             { match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'], action: () => dispatch(setActiveView(View.Help)) },
             { match: ['open help', 'hilfe öffnen', 'hilfe offnen'], action: () => dispatch(setActiveView(View.Help)) },
+      { match: ['read sensors', 'sensoren lesen', 'sensor hub öffnen'], action: () => dispatch(setActiveView(View.Plants)) },
             
             // Strain Actions
             { match: [`${t('common.search', {lng: 'en'}).toLowerCase()} for`, `${t('common.search', {lng: 'de'}).toLowerCase()} nach`], action: () => {

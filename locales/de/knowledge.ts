@@ -57,6 +57,11 @@ export const knowledgeView = {
         diseaseResistance: 'Krankheitsresistenz',
         automatedGenetics: 'Automatische Genetik-Schätzung',
         stabilityScore: 'Stabilitätswert',
+        arTitle: 'AR-Zuchtvorschau',
+        arSupported: 'WebXR bereit',
+        arFallback: '3D-Fallback',
+        arPreviewLabel: 'Dreidimensionale Zuchtvorschau',
+        arLoading: 'AR-Vorschau wird geladen...',
     },
     scenarios: {
         toppingVsLst: {

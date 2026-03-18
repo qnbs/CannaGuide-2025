@@ -149,6 +149,9 @@ export const common = {
         listening: 'Listening...',
         processing: 'Processing: "{{transcript}}"',
         toggle: 'Toggle Voice Control',
+        assistantThinking: 'Thinking...',
+        noPlantContext: 'No active plant context is available for the voice assistant.',
+        assistantFailed: 'Voice assistant request failed.',
         errors: {
             generic: 'A speech recognition error occurred.',
             noSpeech: 'No speech was detected.',

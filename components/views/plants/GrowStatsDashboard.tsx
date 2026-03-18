@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { useAppSelector } from '@/stores/store'
-import { selectActivePlants, selectOpenTasksSummary } from '@/stores/selectors'
+import { selectActivePlants, selectAllPlants, selectOpenTasksSummary } from '@/stores/selectors'
 import { PLANT_STAGE_DETAILS } from '@/services/plantSimulationService'
 import { PlantStage } from '@/types'
+import { useYieldPrediction } from '@/hooks/useYieldPrediction'
 
 const ENERGY_PRICE_EUR_PER_KWH = 0.31
 
@@ -26,7 +27,9 @@ const totalDaysToHarvest = growthOrder.reduce((sum, stage) => {
 const GrowStatsDashboardComponent: React.FC = () => {
     const { t } = useTranslation()
     const activePlants = useAppSelector(selectActivePlants)
+    const allPlants = useAppSelector(selectAllPlants)
     const openTasks = useAppSelector(selectOpenTasksSummary)
+    const { prediction, isLoading: isYieldModelLoading } = useYieldPrediction(allPlants, activePlants)
 
     const {
         yieldForecast,
@@ -87,7 +90,21 @@ const GrowStatsDashboardComponent: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
                     <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.yieldForecast')}</p>
-                    <p className="text-2xl font-bold text-slate-100 mt-1">{yieldForecast.toFixed(1)} g</p>
+                    <p className="text-2xl font-bold text-slate-100 mt-1">
+                        {prediction ? prediction.predictedDryWeight.toFixed(1) : yieldForecast.toFixed(1)} g
+                    </p>
+                    <p className="text-xs text-slate-400 mt-2">
+                        {prediction ? (
+                            <>
+                                {t('plantsView.growStats.mlForecast')} {prediction.confidence.toFixed(0)}% {t('plantsView.growStats.confidence')}
+                            </>
+                        ) : (
+                            t('plantsView.growStats.heuristicFallback')
+                        )}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-1">
+                        {isYieldModelLoading ? t('plantsView.growStats.modelTraining') : prediction?.explanation ?? t('plantsView.growStats.modelIdle')}
+                    </p>
                 </div>
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
                     <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.costTracker')}</p>
@@ -98,6 +115,20 @@ const GrowStatsDashboardComponent: React.FC = () => {
                     <p className="text-2xl font-bold text-slate-100 mt-1">{totalTrackedCost.toFixed(0)} EUR</p>
                 </div>
             </div>
+
+            {prediction && (
+                <div className="mt-3 rounded-lg bg-slate-900/60 p-3 ring-1 ring-inset ring-white/20 text-sm text-slate-300">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                        <span>{t('plantsView.growStats.trainingSamples', { count: prediction.sampleCount })}</span>
+                        <span>{t('plantsView.growStats.heuristicBaseline', { value: prediction.heuristicDryWeight.toFixed(1) })}</span>
+                        {prediction.usedTensorflowModel ? (
+                            <span>{t('plantsView.growStats.modelReady')}</span>
+                        ) : (
+                            <span>{t('plantsView.growStats.modelFallback')}</span>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <div className="mt-4 rounded-lg bg-slate-900/60 p-3 ring-1 ring-inset ring-white/20">
                 <p className="text-sm font-semibold text-slate-200 mb-2">{t('plantsView.growStats.timeline')}</p>

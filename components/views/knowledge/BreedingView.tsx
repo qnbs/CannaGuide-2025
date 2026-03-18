@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, lazy, Suspense } from 'react';
 import { Card } from '@/components/common/Card';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector, useAppDispatch } from '@/stores/store';
@@ -14,6 +14,7 @@ import { createStrainObject } from '@/services/strainFactory';
 import { AiLoadingIndicator } from '@/components/common/AiLoadingIndicator';
 import { geneticsService } from '@/services/geneticsService';
 import { crossStrains, strainTypeInfo } from '@/utils/breedingUtils';
+const BreedingArPreview = lazy(() => import('./BreedingArPreview').then((module) => ({ default: module.BreedingArPreview })))
 
 
 
@@ -223,6 +224,17 @@ const BreedingView: React.FC = () => {
                                 </div>
                             )}
                         </div>
+                    </div>
+                    <div className="mt-6">
+                        <Suspense fallback={<Card className="bg-slate-900/60 text-slate-400">{t('knowledgeView.breeding.arLoading')}</Card>}>
+                            <BreedingArPreview
+                                label={newStrainName.trim() || result.name}
+                                vigor={Math.round(automatedGenetics?.stabilityScore ? automatedGenetics.stabilityScore / 10 : 6)}
+                                resin={Math.round(result.thc / 2)}
+                                aroma={Math.round((result.aromas?.length ?? 0) * 2 + (result.dominantTerpenes?.length ?? 0))}
+                                resistance={Math.round(automatedGenetics?.stabilityScore ? automatedGenetics.stabilityScore / 12 : 5)}
+                            />
+                        </Suspense>
                     </div>
                     <div className="text-right mt-6">
                         <Button onClick={handleSave} disabled={!newStrainName.trim()} glow>

@@ -84,8 +84,10 @@ describe('webBluetoothSensorService', () => {
     it('supports a subsequent reconnect after an initial denial', async () => {
         const temperatureChar = { readValue: vi.fn().mockResolvedValue(createReading(2440, 'setInt16')) }
         const humidityChar = { readValue: vi.fn().mockResolvedValue(createReading(6250, 'setUint16')) }
-        const service = { getCharacteristic: vi.fn((characteristic: number) => (characteristic === 0x2a6e ? temperatureChar : humidityChar)) }
-        const server = { getPrimaryService: vi.fn().mockResolvedValue(service), disconnect: vi.fn() }
+        const phChar = { readValue: vi.fn().mockResolvedValue(createReading(640, 'setUint16')) }
+        const environmentalService = { getCharacteristic: vi.fn((characteristic: number) => (characteristic === 0x2a6e ? temperatureChar : humidityChar)) }
+        const phService = { getCharacteristic: vi.fn().mockResolvedValue(phChar) }
+        const server = { getPrimaryService: vi.fn((serviceUuid: number | string) => (serviceUuid === 0x181a ? Promise.resolve(environmentalService) : Promise.resolve(phService))), disconnect: vi.fn() }
         const device = { gatt: { connect: vi.fn().mockResolvedValue(server) } }
 
         const requestDevice = vi
@@ -100,6 +102,7 @@ describe('webBluetoothSensorService', () => {
         const reading = await webBluetoothSensorService.readEsp32EnvironmentalSensor()
         expect(reading.temperatureC).toBeCloseTo(24.4, 1)
         expect(reading.humidityPercent).toBeCloseTo(62.5, 1)
+        expect(reading.ph).toBeCloseTo(6.4, 1)
         expect(reading.receivedAt).toBeGreaterThan(0)
     })
 })

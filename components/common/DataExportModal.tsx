@@ -18,10 +18,10 @@ interface DataExportModalProps {
 
 export const DataExportModal: React.FC<DataExportModalProps> = ({ isOpen, onClose, onExport, title, selectionCount, totalCount, translationBasePath }) => {
     const { t } = useTranslation();
-    
+
     const hasSelection = selectionCount > 0;
-    const sourceText = hasSelection 
-        ? t(`${translationBasePath}.sources.selected_other`, { count: selectionCount }) 
+    const sourceText = hasSelection
+        ? t(`${translationBasePath}.sources.selected_other`, { count: selectionCount })
         : t(`${translationBasePath}.sources.all_other`, { count: totalCount });
 
     return (

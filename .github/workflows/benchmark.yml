@@ -1,86 +1,86 @@
 name: ⚡ Performance Benchmark
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  workflow_dispatch:
-  schedule:
-    - cron: '23 3 * * 1'
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+    workflow_dispatch:
+    schedule:
+        - cron: '23 3 * * 1'
 
 permissions:
-  contents: read
+    contents: read
 
 env:
-  NODE_VERSION: '20'
+    NODE_VERSION: '20'
 
 jobs:
-  benchmark:
-    name: ⚡ Benchmark
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    benchmark:
+        name: ⚡ Benchmark
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
 
-      - name: Capture benchmark start
-        run: echo "BENCHMARK_START=$(date +%s)" >> "$GITHUB_ENV"
+            - name: Capture benchmark start
+              run: echo "BENCHMARK_START=$(date +%s)" >> "$GITHUB_ENV"
 
-      - name: Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+            - name: Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: Restore Vite cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.vite
-          key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
-          restore-keys: |
-            vite-${{ runner.os }}-
+            - name: Restore Vite cache
+              uses: actions/cache@v4
+              with:
+                  path: node_modules/.vite
+                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
+                  restore-keys: |
+                      vite-${{ runner.os }}-
 
-      - name: Install dependencies
-        run: npm ci
+            - name: Install dependencies
+              run: npm ci
 
-      - name: depcheck
-        run: npm run depcheck
+            - name: depcheck
+              run: npm run depcheck
 
-      - name: Bundle analysis
-        run: npm run benchmark
+            - name: Bundle analysis
+              run: npm run benchmark
 
-      - name: Lighthouse CI
-        run: npm run lighthouse:ci
+            - name: Lighthouse CI
+              run: npm run lighthouse:ci
 
-      - name: Collect metrics
-        run: |
-          END_TIME=$(date +%s)
-          export CI_TIME_SECONDS=$((END_TIME - BENCHMARK_START))
-          node ./scripts/collect-performance-metrics.mjs | tee benchmark-metrics.json
-          node <<'NODE'
-          const fs = require('node:fs')
-          const metrics = JSON.parse(fs.readFileSync('benchmark-metrics.json', 'utf8'))
-          const summary = [
-            '## Performance Benchmark',
-            '',
-            `- Dist size: ${metrics.distSizeKb.toFixed(1)} kB`,
-            `- Main bundle: ${metrics.mainBundleFile ?? 'n/a'} (${metrics.mainBundleKb.toFixed(1)} kB)`,
-            `- Lighthouse performance: ${metrics.lighthousePerformance ?? 'n/a'}/100`,
-            `- Lighthouse accessibility: ${metrics.lighthouseAccessibility ?? 'n/a'}/100`,
-            `- CI time: ${metrics.ciTimeSeconds}s`,
-            '',
-          ].join('\n')
-          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`)
-          NODE
+            - name: Collect metrics
+              run: |
+                  END_TIME=$(date +%s)
+                  export CI_TIME_SECONDS=$((END_TIME - BENCHMARK_START))
+                  node ./scripts/collect-performance-metrics.mjs | tee benchmark-metrics.json
+                  node <<'NODE'
+                  const fs = require('node:fs')
+                  const metrics = JSON.parse(fs.readFileSync('benchmark-metrics.json', 'utf8'))
+                  const summary = [
+                    '## Performance Benchmark',
+                    '',
+                    `- Dist size: ${metrics.distSizeKb.toFixed(1)} kB`,
+                    `- Main bundle: ${metrics.mainBundleFile ?? 'n/a'} (${metrics.mainBundleKb.toFixed(1)} kB)`,
+                    `- Lighthouse performance: ${metrics.lighthousePerformance ?? 'n/a'}/100`,
+                    `- Lighthouse accessibility: ${metrics.lighthouseAccessibility ?? 'n/a'}/100`,
+                    `- CI time: ${metrics.ciTimeSeconds}s`,
+                    '',
+                  ].join('\n')
+                  fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${summary}\n`)
+                  NODE
 
-      - name: Upload benchmark artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-artifacts
-          path: |
-            dist/stats.html
-            dist/source-map-explorer.html
-            .lighthouseci/
-            benchmark-metrics.json
-          retention-days: 14
+            - name: Upload benchmark artifacts
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: benchmark-artifacts
+                  path: |
+                      dist/stats.html
+                      dist/source-map-explorer.html
+                      .lighthouseci/
+                      benchmark-metrics.json
+                  retention-days: 14

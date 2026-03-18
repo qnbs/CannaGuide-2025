@@ -1,0 +1,27 @@
+name: Stale Issues and Pull Requests
+
+on:
+    schedule:
+        - cron: '0 7 * * 1'
+    workflow_dispatch:
+
+permissions:
+    issues: write
+    pull-requests: write
+
+jobs:
+    stale:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Mark stale items
+              uses: actions/stale@v9
+              with:
+                  stale-issue-message: 'This issue has been marked stale because there has been no recent activity.'
+                  stale-pr-message: 'This pull request has been marked stale because there has been no recent activity.'
+                  days-before-stale: 30
+                  days-before-close: 14
+                  stale-issue-label: stale
+                  stale-pr-label: stale
+                  exempt-issue-labels: security,enhancement,good first issue
+                  exempt-pr-labels: security

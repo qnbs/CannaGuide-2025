@@ -134,7 +134,7 @@ class LocalAiFallbackService {
             const diag = diagnosePlant(p, lang)
             const status = diag.issues.length === 0
                 ? (isGerman(lang) ? '✅ OK' : '✅ OK')
-                : `⚠️ ${diag.issues.length} ${isGerman(lang) ? 'Problem(e)' : 'issue(s)'}`
+                : `⚠ ${diag.issues.length} ${isGerman(lang) ? 'Problem(e)' : 'issue(s)'}`
             return `${p.name}: ${status} — ${formatPlantLine(p)}`
         })
 

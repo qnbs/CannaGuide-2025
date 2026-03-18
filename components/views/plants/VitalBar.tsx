@@ -19,7 +19,7 @@ export const VitalBar: React.FC<VitalBarProps> = memo(({ label, value, min, max,
   const isHighlighted = highlightedElement === highlightId;
 
   return (
-    <div 
+    <div
       className={`text-center p-2 rounded-lg transition-all duration-300 ${isHighlighted ? 'animate-pulse-glow' : ''}`}
       data-highlight-id={highlightId}
     >

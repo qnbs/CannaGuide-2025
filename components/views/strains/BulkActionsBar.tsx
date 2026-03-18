@@ -24,7 +24,7 @@ const BulkActionsBarComponent: React.FC<BulkActionsBarProps> = ({
         <div className="sticky bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 z-10 animate-fade-in-up">
             <div className="glass-pane max-w-fit mx-auto p-2 rounded-lg flex items-center gap-2">
                 <span className="text-sm font-semibold px-2">{t('strainsView.selectedCount', { count: selectedCount })}</span>
-                
+
                 {onAddToFavorites && (
                     <Button size="sm" variant="secondary" onClick={onAddToFavorites}
                         aria-label={t('strainsView.bulkActions.addToFavorites')}
@@ -46,9 +46,9 @@ const BulkActionsBarComponent: React.FC<BulkActionsBarProps> = ({
                         <PhosphorIcons.TrashSimple className="w-4 h-4" />
                     </Button>
                 )}
-                
+
                 <div className="w-px h-6 bg-slate-600 mx-1"></div>
-                
+
                 <Button size="sm" variant="secondary" onClick={onClearSelection}
                     aria-label={t('strainsView.clearSelection')}
                     title={t('strainsView.clearSelection')}>

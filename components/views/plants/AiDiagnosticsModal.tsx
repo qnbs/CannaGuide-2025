@@ -34,13 +34,13 @@ const DiagnosisResult: React.FC<DiagnosisResultProps> = ({ response, plantId, im
             response.confidence * 100
         ).toFixed(0)}%)
 
-**${t('plantsView.aiDiagnostics.actions')}:** 
+**${t('plantsView.aiDiagnostics.actions')}:**
 ${response.immediateActions}
 
-**${t('plantsView.aiDiagnostics.solution')}:** 
+**${t('plantsView.aiDiagnostics.solution')}:**
 ${response.longTermSolution}
 
-**${t('plantsView.aiDiagnostics.prevention')}:** 
+**${t('plantsView.aiDiagnostics.prevention')}:**
 ${response.prevention}
         `
 

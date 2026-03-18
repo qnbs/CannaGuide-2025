@@ -93,12 +93,12 @@ export const GrowShopsView: React.FC = () => {
     return (
         <div className="pb-[calc(6.5rem+env(safe-area-inset-bottom))] sm:pb-0">
             {selectedShop && <ShopDetailModal shop={selectedShop} t={t} onClose={() => setSelectedShopKey(null)} />}
-            
+
             <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1 mb-3">
                 <button type="button" onClick={() => setRegion('europe')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'europe' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>{t('equipmentView.growShops.region.europe')}</button>
                 <button type="button" onClick={() => setRegion('us')} className={`flex-1 px-2 py-1 text-sm font-semibold rounded-md transition-colors ${region === 'us' ? 'bg-slate-700 text-primary-300' : 'text-slate-300 hover:bg-slate-700/50'}`}>{t('equipmentView.growShops.region.usa')}</button>
             </div>
-            
+
             <div className="space-y-3">
                 {filteredAndSortedShops.map(shop => (
                     <Card key={shop.key} onClick={() => setSelectedShopKey(shop.key)} className="p-3 cursor-pointer">

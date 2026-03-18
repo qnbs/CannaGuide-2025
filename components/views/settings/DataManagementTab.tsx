@@ -149,7 +149,7 @@ const DataManagementTab: React.FC = () => {
         }
         e.target.value = '';
     };
-    
+
     const confirmImport = async () => {
         if (fileToImport) {
             await indexedDBStorage.setItem(REDUX_STATE_KEY, fileToImport);
@@ -159,7 +159,7 @@ const DataManagementTab: React.FC = () => {
             setTimeout(() => window.location.reload(), 1000);
         }
     };
-    
+
     const handleResetAll = () => {
         dispatch(resetAllData());
         setIsResetConfirmOpen(false);
@@ -276,7 +276,7 @@ const DataManagementTab: React.FC = () => {
                     </div>
                 </div>
             </Card>
-            
+
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-3 flex items-center gap-2"><PhosphorIcons.ArchiveBox /> {t('settingsView.data.backupAndRestore')}</h3>
                 <div className="space-y-4">

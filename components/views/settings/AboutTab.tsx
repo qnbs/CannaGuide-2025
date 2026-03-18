@@ -88,7 +88,7 @@ const AboutAppContent: React.FC = memo(() => {
                     </InfoSection>
                 </Card>
             </div>
-            
+
             <Card>
                 <InfoSection title={t('settingsView.about.disclaimer.title')} icon={<PhosphorIcons.WarningCircle />}>
                     <p className="text-sm text-slate-400 italic">{t('settingsView.about.disclaimer.content')}</p>
@@ -138,7 +138,7 @@ const ReadmeProjectContent: React.FC = memo(() => {
 const AboutTab: React.FC = () => {
     const { t } = useTranslation();
     const [activeSubTab, setActiveSubTab] = useState('about');
-    
+
     return (
         <div className="space-y-6">
             <div className="flex gap-1 bg-slate-800/50 rounded-lg p-1">

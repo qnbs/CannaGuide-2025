@@ -1,0 +1,23 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["config:recommended", ":dependencyDashboard", ":enableVulnerabilityAlerts"],
+    "dependencyDashboard": true,
+    "dependencyDashboardTitle": "Renovate Dependency Dashboard",
+    "labels": ["dependencies", "security"],
+    "rangeStrategy": "bump",
+    "separateMinorPatch": true,
+    "separateMultipleMajor": true,
+    "timezone": "UTC",
+    "packageRules": [
+        {
+            "matchDatasources": ["npm"],
+            "matchUpdateTypes": ["patch"],
+            "groupName": "security-and-patch-updates",
+            "prPriority": 10
+        },
+        {
+            "matchDepTypes": ["dependencies", "devDependencies"],
+            "groupName": "runtime-and-dev-deps"
+        }
+    ]
+}

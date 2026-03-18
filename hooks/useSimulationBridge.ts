@@ -64,7 +64,7 @@ export const usePlantSlotsData = () => {
         }),
         [plantEntities, settings.plantsView.showArchived, slots],
     );
-    
+
     return { slotsWithData, hasAvailable };
 };
 

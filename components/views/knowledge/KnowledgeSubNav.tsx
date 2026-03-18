@@ -22,7 +22,7 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
     if (navItems.length === 5) {
         navItems.push({ id: 'placeholder', icon: <div />, label: '' });
     }
-    
+
     return (
         <nav className="grid grid-cols-3 gap-2 sm:gap-4">
              {navItems.map(item => {
@@ -35,8 +35,8 @@ export const KnowledgeSubNav: React.FC<KnowledgeSubNavProps> = ({ activeTab, onT
                         key={item.id}
                         onClick={() => onTabChange(item.id as KnowledgeViewTab)}
                         className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                            ${activeTab === item.id 
-                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400' 
+                            ${activeTab === item.id
+                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                             }`}
                         aria-label={item.label}

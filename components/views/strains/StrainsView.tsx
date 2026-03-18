@@ -6,20 +6,20 @@ import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
 import { urlService } from '@/services/urlService';
 import { hydrateFilters } from '@/stores/slices/filtersSlice';
-import { 
-  selectUserStrains, 
-  selectUserStrainIds, 
-  selectFavoriteIds, 
-  selectSettings, 
+import {
+  selectUserStrains,
+  selectUserStrainIds,
+  selectFavoriteIds,
+  selectSettings,
   selectStrainsView,
   selectSavedStrainTips,
   selectSavedExports,
   selectSavedExportsCount
 } from '@/stores/selectors';
-import { 
-    setStrainsViewTab, 
-    toggleStrainSelection, 
-    clearStrainSelection, 
+import {
+    setStrainsViewTab,
+    toggleStrainSelection,
+    clearStrainSelection,
     setSelectedStrainId
 } from '@/stores/slices/strainsViewSlice';
 import { closeAddModal, addNotification, closeExportModal } from '@/stores/slices/uiSlice';
@@ -68,7 +68,7 @@ export const StrainsView: React.FC = () => {
     const strainToEdit = useAppSelector(state => state.ui.strainToEdit);
 
     const selectedIdsSet = useMemo(() => new Set<string>(selectedStrainIds), [selectedStrainIds]);
-    
+
     // This effect runs only once when the component mounts to hydrate state from URL
     useEffect(() => {
         const queryString = window.location.search;
@@ -89,7 +89,7 @@ export const StrainsView: React.FC = () => {
         [StrainViewTab.Exports]: <PhosphorIcons.FileText className="w-16 h-16 mx-auto text-blue-400" />,
         [StrainViewTab.Tips]: <PhosphorIcons.LightbulbFilament className="w-16 h-16 mx-auto text-yellow-400" />,
     }), []);
-    
+
     const viewTitles = useMemo(() => ({
         [StrainViewTab.All]: t('strainsView.tabs.allStrains'),
         [StrainViewTab.MyStrains]: t('strainsView.tabs.myStrains'),
@@ -128,7 +128,7 @@ export const StrainsView: React.FC = () => {
             allTerpenes: Array.from(terpeneSet).sort((a,b) => t(`common.terpenes.${a}`, { defaultValue: a }).localeCompare(t(`common.terpenes.${b}`, { defaultValue: b }))),
         };
     }, [allStrains, t]);
-    
+
     const strainsForCurrentTab = useMemo(() => {
         switch (strainsViewTab) {
             case StrainViewTab.MyStrains: return userStrains;
@@ -142,7 +142,7 @@ export const StrainsView: React.FC = () => {
         showFavoritesOnly, setShowFavoritesOnly, advancedFilters, setAdvancedFilters,
         letterFilter, handleSetLetterFilter, resetAllFilters, sort, handleSort, isAnyFilterActive, activeFilterCount
     } = useStrainFilters(strainsForCurrentTab, settings.strainsView);
-    
+
     useEffect(() => {
         setCurrentPage(1);
     }, [filteredStrains, strainsViewTab]);
@@ -161,7 +161,7 @@ export const StrainsView: React.FC = () => {
         }, 500);
         return () => clearTimeout(timer);
     }, [filteredStrains.length, searchTerm, t]);
-    
+
     const [tempFilterState, setTempFilterState] = useState(advancedFilters);
     useEffect(() => setTempFilterState(advancedFilters), [advancedFilters]);
 
@@ -198,7 +198,7 @@ export const StrainsView: React.FC = () => {
         const aromas = new Set(tempFilterState.selectedAromas);
         const terpenes = new Set(tempFilterState.selectedTerpenes);
 
-        strains = strains.filter(s => 
+        strains = strains.filter(s =>
             (s.thc >= tempFilterState.thcRange[0] && s.thc <= tempFilterState.thcRange[1]) &&
             (s.cbd >= tempFilterState.cbdRange[0] && s.cbd <= tempFilterState.cbdRange[1]) &&
             (s.floweringTime >= tempFilterState.floweringRange[0] && s.floweringTime <= tempFilterState.floweringRange[1]) &&
@@ -241,10 +241,10 @@ export const StrainsView: React.FC = () => {
     }, [dispatch, selectedStrainIds]);
 
     const isUserStrain = useCallback((id: string) => userStrainIds.has(id), [userStrainIds]);
-    
+
     const handleAddStrain = useCallback((strain: Strain) => dispatch(addUserStrainWithValidation(strain)), [dispatch]);
     const handleUpdateStrain = useCallback((strain: Strain) => dispatch(updateUserStrainAndCloseModal(strain)), [dispatch]);
-    
+
     const handleDeleteUserStrain = useCallback((id: string) => {
         const strainToDelete = userStrains.find(s => s.id === id);
         if (strainToDelete && window.confirm(t('strainsView.addStrainModal.validation.deleteConfirm', { name: strainToDelete.name }))) {
@@ -262,7 +262,7 @@ export const StrainsView: React.FC = () => {
     const handleToggleFavorite = useCallback((id: string) => {
         dispatch(toggleFavorite(id));
     }, [dispatch]);
-    
+
     const handleExport = useCallback((format: SimpleExportFormat) => {
         const source = selectedIdsSet.size > 0 ? 'selected' : 'all';
         const dataToExport = source === 'selected'
@@ -275,11 +275,11 @@ export const StrainsView: React.FC = () => {
             return;
         }
 
-        const sourceDescription = t(source === 'selected' 
+        const sourceDescription = t(source === 'selected'
             ? (dataToExport.length === 1 ? 'strainsView.exportModal.sources.selected_one' : 'strainsView.exportModal.sources.selected_other')
-            : (dataToExport.length === 1 ? 'strainsView.exportModal.sources.all_one' : 'strainsView.exportModal.sources.all_other'), 
+            : (dataToExport.length === 1 ? 'strainsView.exportModal.sources.all_one' : 'strainsView.exportModal.sources.all_other'),
             { count: dataToExport.length });
-        
+
         const fileName = `CannaGuide_Strains_${new Date().toISOString().slice(0, 10)}`;
 
         dispatch(exportAndSaveStrains({
@@ -301,14 +301,14 @@ export const StrainsView: React.FC = () => {
     if (selectedStrainForDetail) {
         return (
             <div className="animate-fade-in">
-                <StrainDetailView 
+                <StrainDetailView
                     strain={selectedStrainForDetail}
-                    onBack={() => dispatch(setSelectedStrainId(null))} 
+                    onBack={() => dispatch(setSelectedStrainId(null))}
                 />
             </div>
         );
     }
-    
+
     const renderContent = () => {
         if (isLoading) return <SkeletonLoader variant="list" count={5} />;
 
@@ -351,7 +351,7 @@ export const StrainsView: React.FC = () => {
             case StrainViewTab.Tips:
                 return (
                     <Suspense fallback={<SkeletonLoader count={3} />}>
-                        <StrainTipsView 
+                        <StrainTipsView
                             savedTips={savedTips}
                             deleteTip={(id) => dispatch(deleteStrainTip(id))}
                             updateTip={(tip) => dispatch(updateStrainTip(tip))}
@@ -391,8 +391,8 @@ export const StrainsView: React.FC = () => {
                 return null;
         }
     };
-    
-    
+
+
 
 
     return (
@@ -402,32 +402,32 @@ export const StrainsView: React.FC = () => {
                 {viewIcons[strainsViewTab]}
                 <h2 className="text-3xl font-bold font-display text-slate-100 mt-2">{viewTitles[strainsViewTab]}</h2>
             </div>
-            
-            <StrainSubNav 
-                activeTab={strainsViewTab} 
-                onTabChange={(id) => dispatch(setStrainsViewTab(id))} 
+
+            <StrainSubNav
+                activeTab={strainsViewTab}
+                onTabChange={(id) => dispatch(setStrainsViewTab(id))}
                 counts={{ tips: savedTips.length, exports: savedExportsCount }}
             />
-            
+
             {isAddModalOpen && <AddStrainModal isOpen={true} onClose={() => dispatch(closeAddModal())} onAddStrain={handleAddStrain} onUpdateStrain={handleUpdateStrain} strainToEdit={strainToEdit} />}
-             {isExportModalOpen && <DataExportModal 
-                isOpen={true} 
-                onClose={() => dispatch(closeExportModal())} 
-                onExport={handleExport} 
-                title={t('strainsView.exportModal.title')} 
-                selectionCount={selectedIdsSet.size} 
-                totalCount={filteredStrains.length} 
-                translationBasePath="strainsView.exportModal" 
+             {isExportModalOpen && <DataExportModal
+                isOpen={true}
+                onClose={() => dispatch(closeExportModal())}
+                onExport={handleExport}
+                title={t('strainsView.exportModal.title')}
+                selectionCount={selectedIdsSet.size}
+                totalCount={filteredStrains.length}
+                translationBasePath="strainsView.exportModal"
              />}
-            <FilterDrawer 
-                isOpen={isDrawerOpen} 
-                onClose={() => setIsDrawerOpen(false)} 
-                onApply={handleApplyFilters} 
-                onReset={handleResetFilters} 
-                tempFilterState={tempFilterState} 
-                setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))} 
-                allAromas={allAromas} 
-                allTerpenes={allTerpenes} 
+            <FilterDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                onApply={handleApplyFilters}
+                onReset={handleResetFilters}
+                tempFilterState={tempFilterState}
+                setTempFilterState={(f) => setTempFilterState(s => ({...s, ...f}))}
+                allAromas={allAromas}
+                allTerpenes={allTerpenes}
                 count={countForDrawer}
                 showFavorites={showFavoritesOnly}
                 onToggleFavorites={(val) => setShowFavoritesOnly(val)}
@@ -436,7 +436,7 @@ export const StrainsView: React.FC = () => {
                 onToggleTypeFilter={handleToggleTypeFilter}
                 isAnyFilterActive={isAnyFilterActive}
             />
-            
+
             {renderContent()}
         </div>
     );

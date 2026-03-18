@@ -91,7 +91,7 @@ export const VoiceControl: React.FC = () => {
         const recognition = new SpeechRecognitionAPI();
         recognition.continuous = false;
         recognition.interimResults = true;
-        
+
         recognition.addEventListener('result', handleResult);
         recognition.addEventListener('error', handleError);
         recognition.addEventListener('end', handleEnd);
@@ -117,7 +117,7 @@ export const VoiceControl: React.FC = () => {
 
     const toggleListening = () => {
         if (!isAvailable || !hasSpeechRecognitionSupport || !recognitionRef.current) return;
-        
+
         if (isListening) {
             recognitionRef.current.stop();
         } else {
@@ -138,7 +138,7 @@ export const VoiceControl: React.FC = () => {
             }
         }
     };
-    
+
     if (!isAvailable || !hasSpeechRecognitionSupport) {
         return null;
     }
@@ -147,8 +147,8 @@ export const VoiceControl: React.FC = () => {
         <Button
             variant="ghost"
             className={`!p-2 rounded-full transition-colors duration-200 ${
-                isListening 
-                    ? 'text-red-400 animate-pulse bg-red-500/20' 
+                isListening
+                    ? 'text-red-400 animate-pulse bg-red-500/20'
                     : 'text-slate-300 hover:text-slate-100'
             }`}
             onClick={toggleListening}

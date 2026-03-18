@@ -51,7 +51,7 @@ startAppListening({
       const { updatedPlant } = action.payload;
       const previousState = listenerApi.getOriginalState() as RootState;
       const oldPlant = previousState.simulation.plants.entities[updatedPlant.id];
-      
+
       if (!oldPlant) return;
 
       const oldProblems = new Set(oldPlant.problems.filter((p: PlantProblem) => p.status === 'active').map((p: PlantProblem) => p.type));
@@ -144,7 +144,7 @@ startAppListening({
             { match: [t('nav.help').toLowerCase(), 'show help', 'gehe zu hilfe'], action: () => dispatch(setActiveView(View.Help)) },
             { match: ['open help', 'hilfe öffnen', 'hilfe offnen'], action: () => dispatch(setActiveView(View.Help)) },
       { match: ['read sensors', 'sensoren lesen', 'sensor hub öffnen'], action: () => dispatch(setActiveView(View.Plants)) },
-            
+
             // Strain Actions
             { match: [`${t('common.search', {lng: 'en'}).toLowerCase()} for`, `${t('common.search', {lng: 'de'}).toLowerCase()} nach`], action: () => {
                 const searchTerm = transcript.split(/search for|suche nach/i)[1]?.trim();
@@ -158,7 +158,7 @@ startAppListening({
                 dispatch(setActiveView(View.Strains));
                 dispatch(setShowFavoritesOnly(true));
             }},
-            
+
             // Plant Actions
             { match: [t('plantsView.summary.waterAll').toLowerCase(), 'alle pflanzen gießen'], action: () => dispatch(waterAllPlants()) },
             { match: ['water all plants', 'water all'], action: () => dispatch(waterAllPlants()) },
@@ -218,7 +218,7 @@ startAppListening({
             const filtersState = listenerApi.getState().filters;
             const queryString = urlService.serializeFiltersToQueryString(filtersState);
 
-            const newUrl = queryString 
+            const newUrl = queryString
                 ? `${window.location.pathname}?${queryString}`
                 : window.location.pathname;
 

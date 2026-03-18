@@ -28,7 +28,7 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentSt
     const totalDuration = relevantStages.reduce((acc, stage) => acc + PLANT_STAGE_DETAILS[stage].duration, 0);
 
     const progressPercentage = Math.min(100, (currentAge / totalDuration) * 100);
-    
+
     let cumulativeDuration = 0;
 
     return (
@@ -42,7 +42,7 @@ export const PlantLifecycleTimeline: React.FC<TimelineProps> = memo(({ currentSt
                         cumulativeDuration += stageInfo.duration;
                         const isCompleted = currentAge > cumulativeDuration;
                         const isCurrent = currentStage === stage;
-                        
+
                         return (
                             <div
                                 key={stage}

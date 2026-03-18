@@ -148,7 +148,7 @@ const BreedingView: React.FC = () => {
             }, 1500); // Simulate processing time for animation
         }
     };
-    
+
     const handleSave = () => {
         if(result && newStrainName.trim()) {
             const finalStrain = createStrainObject({ ...result, name: newStrainName.trim() });
@@ -158,7 +158,7 @@ const BreedingView: React.FC = () => {
             dispatch(clearBreedingSlots());
         }
     }
-    
+
     const handleReset = () => {
         setResult(null);
         setNewStrainName('');

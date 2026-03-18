@@ -31,7 +31,7 @@ const DashboardSummaryComponent: React.FC = () => {
     const leafTempOffset = settings.simulation.leafTemperatureOffset;
     const altitudeM = settings.simulation.altitudeM ?? 0;
     const hasActiveGrows = activePlantsCount > 0;
-    
+
     const [getGardenStatus, { data: aiStatus, isLoading: isAiLoading, error: aiError, reset: resetAiStatus }] = useGetGardenStatusSummaryMutation();
 
     const [wateringState, setWateringState] = useState<'idle' | 'pending' | 'success'>('idle');

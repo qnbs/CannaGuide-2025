@@ -24,9 +24,9 @@ export const GrowConfirmationModal: React.FC = () => {
     );
 
     return (
-        <Modal 
-            isOpen={true} 
-            onClose={() => dispatch(cancelNewGrow())} 
+        <Modal
+            isOpen={true}
+            onClose={() => dispatch(cancelNewGrow())}
             title={t('plantsView.confirmationModal.title')}
             description={t('plantsView.confirmationModal.text')}
             footer={footer}

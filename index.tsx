@@ -228,7 +228,7 @@ const mountHydratedApp = async () => {
             clearTimeout(saveTimeout);
             void saveState();
         });
-        
+
         // 5. Now that the store is hydrated and the app is rendered, initialize services
         // and dispatch post-hydration actions.
         await strainService.init();

@@ -1,0 +1,21 @@
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v5.0.0
+      hooks:
+          - id: trailing-whitespace
+          - id: end-of-file-fixer
+          - id: check-yaml
+          - id: check-json
+          - id: detect-private-key
+    - repo: local
+      hooks:
+          - id: gitleaks
+            name: gitleaks
+            entry: gitleaks protect --staged --redact --verbose --config .gitleaks.toml
+            language: system
+            pass_filenames: false
+          - id: anti-trojan-source
+            name: anti-trojan-source
+            entry: npx --no-install anti-trojan-source --files
+            language: system
+            files: '\.(js|jsx|ts|tsx|mjs|cjs|json|ya?ml|md)$'

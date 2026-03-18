@@ -95,8 +95,8 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
         ec: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.ec(d.medium.ec)),
         moisture: d3.line<PlantHistoryEntry>().x(d => xScale(d.day)).y(d => yScales.moisture(d.medium.moisture)),
     }), [xScale, yScales]);
-    
-    const areaGenerator = useMemo(() => 
+
+    const areaGenerator = useMemo(() =>
         d3.area<PlantHistoryEntry>()
             .x(d => xScale(d.day))
             .y0(CHART_HEIGHT - CHART_PADDING.bottom)
@@ -114,16 +114,16 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
     const handlePointerMove = (event: React.PointerEvent<SVGRectElement>) => {
         const svg = svgRef.current;
         if (!svg) return;
-        
+
         const [mouseX] = d3.pointer(event);
         const day = xScale.invert(mouseX);
-        
+
         const bisector = d3.bisector((d: PlantHistoryEntry) => d.day).left;
         const index = bisector(history, day, 1);
         const d0 = history[index - 1];
         const d1 = history[index];
         if (!d0 || !d1) return;
-        
+
         const point = day - d0.day > d1.day - day ? d1 : d0;
         setHoveredData({ point, x: xScale(point.day) });
     };
@@ -174,7 +174,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                         </g>
                     ))}
                 </g>
-                
+
                 {view === 'growth' && <path d={areaGenerator(history) || ''} fill="url(#heightGradient)" />}
 
                 {paths.map((pathInfo) => (
@@ -184,7 +184,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 {eventEntries.map(entry => {
                     const dayOfEvent = Math.floor((entry.createdAt - plantCreatedAt) / (1000 * 3600 * 24));
                     if (dayOfEvent < 0 || dayOfEvent > maxDay) return null;
-                    
+
                     const xPos = xScale(dayOfEvent);
                     const yPos = height - padding.bottom + 2;
 
@@ -201,7 +201,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                     );
                 })}
 
-                <rect 
+                <rect
                     x={padding.left}
                     y={padding.top}
                     width={width - padding.left - padding.right}
@@ -214,7 +214,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
                 {hoveredData && (
                     <g pointerEvents="none">
                         <line x1={hoveredData.x} y1={padding.top} x2={hoveredData.x} y2={height - padding.bottom} stroke="rgb(var(--color-border))" strokeWidth="1" strokeDasharray="2,2" />
-                        
+
                         {paths.map(pathInfo => {
                             let yValue;
                             if (pathInfo.key === 'ph' || pathInfo.key === 'ec' || pathInfo.key === 'moisture') {
@@ -252,7 +252,7 @@ export const HistoryChart: React.FC<HistoryChartProps> = memo(({ history, journa
             <div className="flex justify-center flex-wrap gap-x-3 gap-y-1 text-xs mt-2">
                 {paths.map((pathInfo) => (
                     <span key={pathInfo.key} className="flex items-center gap-1.5">
-                        {pathInfo.dash ? 
+                        {pathInfo.dash ?
                             <div className="w-2.5 h-0.5 border-t border-dashed" style={{borderColor: pathInfo.color}}></div> :
                             <div className="w-2.5 h-0.5" style={{backgroundColor: pathInfo.color}}></div>
                         }

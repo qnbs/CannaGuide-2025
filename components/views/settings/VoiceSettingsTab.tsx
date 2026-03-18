@@ -77,7 +77,7 @@ const VoiceSettingsTab: React.FC = () => {
 
         const utterance = new SpeechSynthesisUtterance(t('settingsView.tts.testVoiceSentence'));
         const langCode = settings.general.language === 'de' ? 'de-DE' : 'en-US';
-        
+
         let selectedVoice = availableVoices.find(voice => voice.name === settings.tts.voiceName);
         if (!selectedVoice) selectedVoice = availableVoices.find(voice => voice.lang === langCode && voice.default);
         if (!selectedVoice) selectedVoice = availableVoices.find(voice => voice.lang.startsWith(settings.general.language));

@@ -32,7 +32,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
                     {!isPostHarvest && <p className="text-slate-300">{t('plantsView.plantCard.day')} {plant.age}</p>}
                 </div>
             </div>
-            
+
             <div className="flex-grow flex items-center justify-center my-2 min-h-[96px]">
                  <PlantVisualizer plant={plant} className="w-32 h-32" />
             </div>

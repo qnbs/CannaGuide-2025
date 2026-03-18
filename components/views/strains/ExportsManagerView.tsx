@@ -27,7 +27,7 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
             exportService.exportStrainsAsTxt(strainsToExport, fileName, t);
         }
     };
-    
+
     if (savedExports.length === 0) {
         return (
             <Card className="text-center py-10 text-slate-500">
@@ -37,7 +37,7 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
             </Card>
         );
     }
-    
+
     const sortedExports = [...savedExports].sort((a,b) => b.createdAt - a.createdAt);
 
     return (

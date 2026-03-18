@@ -31,7 +31,7 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
     useEffect(() => {
         setFormData(setup);
     }, [setup]);
-    
+
     const handleRecommendationChange = (category: RecommendationCategory | 'proTip', field: keyof RecommendationItem | 'proTip', value: string | number) => {
         setFormData(prev => {
             if (!prev.recommendation) return prev;
@@ -51,7 +51,7 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
         // Recalculate total cost before saving
         const totalCost = formData.recommendation ? (Object.values(formData.recommendation) as (RecommendationItem | string)[])
             .reduce((sum, item) => (typeof item === 'object' && item.price) ? sum + item.price : sum, 0) : 0;
-        
+
         onSave({ ...formData, totalCost });
     };
 
@@ -74,17 +74,17 @@ export const EditSetupModal: React.FC<EditSetupModalProps> = ({ setup, onClose, 
                     </div>
                     <p className="mt-3 text-sm text-slate-300">{t('equipmentView.configurator.setupNamePrompt')}</p>
                 </Card>
-                <Input 
+                <Input
                     label={t('common.name')}
                     value={formData.name}
                     onChange={e => setFormData(f => ({ ...f, name: e.target.value }))}
                 />
-                
+
                 {formData.recommendation && categoryOrder.map(key => {
                     const item = formData.recommendation[key];
                      if (!item || typeof item !== 'object') return null;
                      const categoryLabel = t(`equipmentView.configurator.categories.${key}`);
-                     
+
                      return (
                          <FormSection title={categoryLabel} key={key}>
                             <Input label={t('equipmentView.savedSetups.pdfReport.product')} value={item.name} onChange={e => handleRecommendationChange(key, 'name', e.target.value)} />

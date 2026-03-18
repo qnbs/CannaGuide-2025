@@ -223,10 +223,10 @@ export const selectGardenHealthMetrics = createSelector(
     if (activePlantsCount === 0) {
         const defaultTemp = 22;
         const defaultHumidity = 55;
-        return { 
-            gardenHealth: 100, 
-            activePlantsCount: 0, 
-            avgTemp: defaultTemp, 
+        return {
+            gardenHealth: 100,
+            activePlantsCount: 0,
+            avgTemp: defaultTemp,
             avgHumidity: defaultHumidity,
             avgVPD: calculateScientificVPD(defaultTemp, defaultHumidity, leafTempOffset, altitudeM)
         };
@@ -238,7 +238,7 @@ export const selectGardenHealthMetrics = createSelector(
         const correctedPlant = plantSimulationService.applyEnvironmentalCorrections(plant, settings.simulation)
         return sum + correctedPlant.environment.vpd
     }, 0)
-    
+
     const avgTemp = totalTemp / activePlantsCount;
     const avgHumidity = totalHumidity / activePlantsCount;
 

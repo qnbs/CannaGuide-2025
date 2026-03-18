@@ -22,7 +22,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const [activeTab, setActiveTab] = useState('overview');
-    
+
     useEffect(() => {
         dispatch(updatePlantToNow(plant.id));
     }, [plant.id, dispatch]);
@@ -53,11 +53,11 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             </div>
         </header>
     );
-    
+
     return (
         <div className="animate-fade-in space-y-6">
             {header}
-            
+
             <nav className="flex flex-wrap justify-center gap-2 sm:gap-4">
                 {tabs.map(tab => (
                     <button
@@ -76,7 +76,7 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                     </button>
                 ))}
             </nav>
-            
+
             <div>
                 {activeTab === 'overview' && <OverviewTab plant={plant} />}
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}

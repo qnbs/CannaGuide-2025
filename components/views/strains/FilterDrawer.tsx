@@ -42,7 +42,7 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode, isActi
 
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, isAnyFilterActive: _isAnyFilterActive }) => {
     const { t } = useTranslation();
-    
+
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
     const yieldLabels: Record<YieldLevel, string> = { Low: t('strainsView.addStrainModal.yields.low'), Medium: t('strainsView.addStrainModal.yields.medium'), High: t('strainsView.addStrainModal.yields.high') };
     const heightLabels: Record<HeightLevel, string> = { Short: t('strainsView.addStrainModal.heights.short'), Medium: t('strainsView.addStrainModal.heights.medium'), Tall: t('strainsView.addStrainModal.heights.tall') };
@@ -51,7 +51,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
         { value: 'Indica' as StrainType, label: t('strainsView.indica') },
         { value: 'Hybrid' as StrainType, label: t('strainsView.hybrid') },
     ];
-    
+
     const handleToggleArray = (key: keyof AdvancedFilterState, value: string) => {
         const current = tempFilterState[key];
         const currentArray = Array.isArray(current) ? (current as string[]) : [];
@@ -129,7 +129,7 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                         </div>
                     </div>
                 </FilterSection>
-                 
+
                 <FilterSection title={t('strainsView.filters.aromas')} isActive={isAromaFilterActive}>
                     <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-2">
                         {allAromas.map(aroma => (

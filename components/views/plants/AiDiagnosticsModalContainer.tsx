@@ -27,8 +27,8 @@ export const AiDiagnosticsModalContainer: React.FC = () => {
     }
 
     return (
-        <AiDiagnosticsModal 
-            plant={plant} 
+        <AiDiagnosticsModal
+            plant={plant}
             onClose={handleClose}
             diagnosePlant={diagnosePlant}
             isLoading={isLoading}

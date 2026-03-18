@@ -121,7 +121,7 @@ export const knowledgeView = {
             title: 'Problembehebung: Überwässerung',
             content: `<h3>Hilfe, meine Pflanze ertrinkt!</h3><p>Überwässerung ist der häufigste Fehler bei Anfängern. Es erstickt die Wurzeln und hindert sie daran, Sauerstoff und Nährstoffe aufzunehmen.</p>
                       <strong>Symptome:</strong> Die ganze Pflanze sieht schlaff und traurig aus. Die Blätter fühlen sich fest und schwer an und krümmen sich nach unten (Krallenbildung). Die Erde bleibt tagelang dunkel und nass.<br>
-                      <strong>Sofortmaßnahmen:</strong> 
+                      <strong>Sofortmaßnahmen:</strong>
                       <ul>
                         <li><strong>Gießen einstellen:</strong> Gieße nicht erneut, bis der Topf deutlich leichter ist.</li>
                         <li><strong>Luftzirkulation verbessern:</strong> Richte einen Ventilator auf die Erdoberfläche, um das Austrocknen zu beschleunigen.</li>

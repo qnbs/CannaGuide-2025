@@ -1,17 +1,17 @@
 name: 🚀 Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+    push:
+        branches: [main]
+    workflow_dispatch:
 
 # ---------------------------------------------------------------------------
 # Permissions – minimal surface, exactly what each job needs
 # ---------------------------------------------------------------------------
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
 # ---------------------------------------------------------------------------
 # Concurrency – at most one build+deploy pipeline runs at a time.
@@ -19,204 +19,203 @@ permissions:
 # (deploy job has its own group without cancel-in-progress so Pages stays stable).
 # ---------------------------------------------------------------------------
 concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
+    group: pages-${{ github.ref }}
+    cancel-in-progress: true
 
 # ---------------------------------------------------------------------------
 # Shared env
 # ---------------------------------------------------------------------------
 env:
-  NODE_VERSION: '20'
+    NODE_VERSION: '20'
 
 jobs:
-  # ─────────────────────────────────────────────────────────────────────────
-  # BUILD – lint, test, bundle
-  # ─────────────────────────────────────────────────────────────────────────
-  build:
-    name: 🏗️ Build
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2        # needed for lint:changed (HEAD~1 diff)
+    # ─────────────────────────────────────────────────────────────────────────
+    # BUILD – lint, test, bundle
+    # ─────────────────────────────────────────────────────────────────────────
+    build:
+        name: 🏗 Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 2 # needed for lint:changed (HEAD~1 diff)
 
-      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm            # caches ~/.npm based on package-lock.json hash
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm # caches ~/.npm based on package-lock.json hash
 
-      # ── Dependency install ──────────────────────────────────────────────
-      - name: 📦 Install dependencies
-        run: |
-          echo "::group::npm ci"
-          npm ci --prefer-offline
-          echo "::endgroup::"
+            # ── Dependency install ──────────────────────────────────────────────
+            - name: 📦 Install dependencies
+              run: |
+                  echo "::group::npm ci"
+                  npm ci --prefer-offline
+                  echo "::endgroup::"
 
-      - name: 💾 Restore Vite build cache
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.vite
-          key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
-          restore-keys: |
-            vite-${{ runner.os }}-
+            - name: 💾 Restore Vite build cache
+              uses: actions/cache@v4
+              with:
+                  path: node_modules/.vite
+                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
+                  restore-keys: |
+                      vite-${{ runner.os }}-
 
-      # ── Vite build cache (node_modules/.vite) ──────────────────────────
-      # Key includes vite config + tsconfig so cache is invalidated on config changes.
-      # ── Quality gates ───────────────────────────────────────────────────
-      - name: 🔒 Security audit
-        # Only audit production deps – devDep advisories (workbox-build,
-        # @lhci/cli) are transitive and don't ship to users.
-        run: npm audit --audit-level=high --omit=dev
+            # ── Vite build cache (node_modules/.vite) ──────────────────────────
+            # Key includes vite config + tsconfig so cache is invalidated on config changes.
+            # ── Quality gates ───────────────────────────────────────────────────
+            - name: 🔒 Security audit
+              # Only audit production deps – devDep advisories (workbox-build,
+              # @lhci/cli) are transitive and don't ship to users.
+              run: npm audit --audit-level=high --omit=dev
+              continue-on-error: false
+
+            - name: 🔍 Lint changed files
+              env:
+                  LINT_BASE_REF: HEAD~1
+              run: |
+                  echo "::group::lint:changed"
+                  npm run lint:changed
+                  echo "::endgroup::"
+
+            - name: 🔍 Lint strict scopes
+              run: |
+                  echo "::group::lint:scopes"
+                  npm run lint:scopes
+                  echo "::endgroup::"
+
+            - name: 🧪 Unit tests
+              run: |
+                  echo "::group::vitest"
+                  npm run test -- --run --reporter=verbose
+                  echo "::endgroup::"
+
+            # ── Build ───────────────────────────────────────────────────────────
+            - name: 🚀 Build for GitHub Pages
+              run: |
+                  echo "::group::vite build"
+                  npm run build:gh
+                  echo "::endgroup::"
+                  echo "✅ Build complete – dist size: $(du -sh dist | cut -f1)"
+
+            # ── Pages setup + upload ────────────────────────────────────────────
+            - name: 🌐 Configure Pages
+              uses: actions/configure-pages@v5
+
+            - name: 📤 Upload Pages artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: ./dist
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # DEPLOY – publish to GitHub Pages
+    # Own concurrency group so a parallel build cancellation never kills a
+    # running deploy (that would leave Pages in an inconsistent state).
+    # ─────────────────────────────────────────────────────────────────────────
+    deploy:
+        name: 🌍 Deploy
+        needs: build
+        runs-on: ubuntu-latest
+        concurrency:
+            group: pages-deploy
+            cancel-in-progress: false
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - name: 🚀 Deploy to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
+
+            - name: ✅ Deployed
+              run: echo "✅ Live at ${{ steps.deployment.outputs.page_url }}"
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # E2E – smoke-test the live Pages deployment
+    # ─────────────────────────────────────────────────────────────────────────
+    e2e-pages:
+        name: 🎭 E2E Smoke Tests
+        needs: deploy
+        runs-on: ubuntu-latest
+        # E2E failures should not block the green checkmark on the commit –
+        # they are post-deploy validation. Set to true to make them advisory.
         continue-on-error: false
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
 
-      - name: 🔍 Lint changed files
-        env:
-          LINT_BASE_REF: HEAD~1
-        run: |
-          echo "::group::lint:changed"
-          npm run lint:changed
-          echo "::endgroup::"
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: 🔍 Lint strict scopes
-        run: |
-          echo "::group::lint:scopes"
-          npm run lint:scopes
-          echo "::endgroup::"
+            - name: 📦 Install dependencies
+              run: npm ci --prefer-offline
 
-      - name: 🧪 Unit tests
-        run: |
-          echo "::group::vitest"
-          npm run test -- --run --reporter=verbose
-          echo "::endgroup::"
+            # Cache Playwright browser binaries (~200 MB) – key on Playwright version
+            - name: 💾 Cache Playwright Chromium
+              id: playwright-cache
+              uses: actions/cache@v4
+              with:
+                  path: ~/.cache/ms-playwright
+                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+                  restore-keys: |
+                      playwright-chromium-${{ runner.os }}-
 
-      # ── Build ───────────────────────────────────────────────────────────
-      - name: 🚀 Build for GitHub Pages
-        run: |
-          echo "::group::vite build"
-          npm run build:gh
-          echo "::endgroup::"
-          echo "✅ Build complete – dist size: $(du -sh dist | cut -f1)"
+            - name: 🎭 Install Playwright browser
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              run: npm run test:e2e:install:ci
 
-      # ── Pages setup + upload ────────────────────────────────────────────
-      - name: 🌐 Configure Pages
-        uses: actions/configure-pages@v5
+            - name: 🧪 Run E2E tests on deployed URL
+              env:
+                  DEPLOY_BASE_URL: https://qnbs.github.io/CannaGuide-2025/
+              run: |
+                  echo "::group::playwright e2e"
+                  npm run test:e2e:deploy
+                  echo "::endgroup::"
 
-      - name: 📤 Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist
+            - name: 📊 Upload Playwright traces on failure
+              if: failure()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: playwright-traces-${{ github.run_id }}
+                  path: test-results/
+                  retention-days: 7
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # DEPLOY – publish to GitHub Pages
-  # Own concurrency group so a parallel build cancellation never kills a
-  # running deploy (that would leave Pages in an inconsistent state).
-  # ─────────────────────────────────────────────────────────────────────────
-  deploy:
-    name: 🌍 Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    concurrency:
-      group: pages-deploy
-      cancel-in-progress: false
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: 🚀 Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+    # ─────────────────────────────────────────────────────────────────────────
+    # LIGHTHOUSE – audit the live Pages deployment
+    # ─────────────────────────────────────────────────────────────────────────
+    lighthouse:
+        name: 🔆 Lighthouse
+        needs: deploy
+        runs-on: ubuntu-latest
+        continue-on-error: true
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
 
-      - name: ✅ Deployed
-        run: echo "✅ Live at ${{ steps.deployment.outputs.page_url }}"
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-  # ─────────────────────────────────────────────────────────────────────────
-  # E2E – smoke-test the live Pages deployment
-  # ─────────────────────────────────────────────────────────────────────────
-  e2e-pages:
-    name: 🎭 E2E Smoke Tests
-    needs: deploy
-    runs-on: ubuntu-latest
-    # E2E failures should not block the green checkmark on the commit –
-    # they are post-deploy validation. Set to true to make them advisory.
-    continue-on-error: false
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
+            - name: 📦 Install dependencies
+              run: npm ci --prefer-offline
 
-      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+            - name: 🔆 Lighthouse CI (live URL)
+              run: |
+                  npx @lhci/cli autorun \
+                    --collect.url=https://qnbs.github.io/CannaGuide-2025/ \
+                    --collect.numberOfRuns=3 \
+                    --upload.target=temporary-public-storage
 
-      - name: 📦 Install dependencies
-        run: npm ci --prefer-offline
-
-      # Cache Playwright browser binaries (~200 MB) – key on Playwright version
-      - name: 💾 Cache Playwright Chromium
-        id: playwright-cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-          restore-keys: |
-            playwright-chromium-${{ runner.os }}-
-
-      - name: 🎭 Install Playwright browser
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npm run test:e2e:install:ci
-
-      - name: 🧪 Run E2E tests on deployed URL
-        env:
-          DEPLOY_BASE_URL: https://qnbs.github.io/CannaGuide-2025/
-        run: |
-          echo "::group::playwright e2e"
-          npm run test:e2e:deploy
-          echo "::endgroup::"
-
-      - name: 📊 Upload Playwright traces on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-traces-${{ github.run_id }}
-          path: test-results/
-          retention-days: 7
-
-  # ─────────────────────────────────────────────────────────────────────────
-  # LIGHTHOUSE – audit the live Pages deployment
-  # ─────────────────────────────────────────────────────────────────────────
-  lighthouse:
-    name: 🔆 Lighthouse
-    needs: deploy
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-
-      - name: 📦 Install dependencies
-        run: npm ci --prefer-offline
-
-      - name: 🔆 Lighthouse CI (live URL)
-        run: |
-          npx @lhci/cli autorun \
-            --collect.url=https://qnbs.github.io/CannaGuide-2025/ \
-            --collect.numberOfRuns=3 \
-            --upload.target=temporary-public-storage
-
-      - name: 📊 Upload Lighthouse report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-report-${{ github.run_id }}
-          path: .lighthouseci/
-          retention-days: 14
-
+            - name: 📊 Upload Lighthouse report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: lighthouse-report-${{ github.run_id }}
+                  path: .lighthouseci/
+                  retention-days: 14

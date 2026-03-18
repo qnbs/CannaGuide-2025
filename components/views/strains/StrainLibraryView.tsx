@@ -109,7 +109,7 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
                     </>
                 )}
             </div>
-            
+
             {selectedIds.size > 0 && (
                 <BulkActionsBar
                     selectedCount={selectedIds.size}

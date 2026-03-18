@@ -40,7 +40,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
   useEffect(() => {
     setSetup(initialSetup);
   }, [initialSetup, strain.id]);
-  
+
   const isPhotoperiod = strain.floweringType === 'Photoperiod';
 
   const lightCycleOptions = [
@@ -64,7 +64,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
       <Button onClick={handleConfirm} glow>{t('plantsView.setupModal.confirm')}</Button>
     </>
   );
-  
+
   return (
     <Modal
       isOpen={true}
@@ -99,7 +99,7 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
                 />
             </div>
              <div className="sm:col-span-2">
-                <RangeSlider 
+                <RangeSlider
                     label={t('plantsView.setupModal.wattage')}
                     min={50} max={1000} step={10}
                     singleValue={true}
@@ -136,10 +136,10 @@ export const GrowSetupModal: React.FC<GrowSetupModalProps> = ({ strain, onClose,
             </div>
             <Switch label={t('plantsView.setupModal.circulationFan')} checked={Boolean(setup.hasCirculationFan)} onChange={val => setSetup(s => ({...s, hasCirculationFan: val}))} />
         </FormSection>
-        
+
         <FormSection title={t('plantsView.setupModal.containerTitle')} icon={<PhosphorIcons.Cube />}>
              <div className="sm:col-span-2">
-                <RangeSlider 
+                <RangeSlider
                     label={t('plantsView.setupModal.potSize')}
                     min={3} max={50} step={1}
                     singleValue={true}

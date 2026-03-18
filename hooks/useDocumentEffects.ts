@@ -28,7 +28,7 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
             'theme-midnight', 'theme-forest', 'theme-purpleHaze', 'theme-desertSky', 'theme-roseQuartz', 'theme-rainbowKush',
             'theme-ogKushGreen', 'theme-runtzRainbow', 'theme-lemonSkunk'
         ];
-        
+
         // --- ATOMIC UPDATE: Step 1: Reset ---
         // Remove all managed classes to ensure a clean slate before applying the new state.
         // This prevents "stale" classes from remaining if a setting is toggled off or changes.
@@ -38,7 +38,7 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
         // Add back only the currently active classes based on the settings object.
         root.classList.add('dark'); // App is always in dark mode.
         root.classList.add(`theme-${general.theme}`);
-        
+
         if (general.uiDensity === 'compact') root.classList.add('ui-density-compact');
         if (!tts.enabled) root.classList.add('tts-disabled');
         if (general.dyslexiaFont) root.classList.add('font-dyslexia');
@@ -47,7 +47,7 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
         if (general.colorblindMode && general.colorblindMode !== 'none') {
             root.classList.add(`colorblind-${general.colorblindMode}`);
         }
-        
+
         // --- Apply styles and attributes that are not class-based ---
         root.style.fontSize =
             general.fontSize === 'sm' ? '14px' : general.fontSize === 'lg' ? '18px' : '16px';
@@ -79,6 +79,6 @@ export const useDocumentEffects = (settings: AppSettings, activeView?: View) => 
                 themeColorMap[general.theme] ||
                 '#0F172A'
         }
-        
+
     }, [settings, activeView]) // The hook re-runs whenever any part of the settings object changes.
 }

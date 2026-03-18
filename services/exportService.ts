@@ -34,7 +34,7 @@ class ExportService {
     a.download = fileName;
     document.body.appendChild(a);
     a.click();
-    
+
     setTimeout(() => {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
@@ -53,7 +53,7 @@ class ExportService {
         if (index > 0) {
             doc.addPage();
         }
-        
+
         let y = topMargin;
 
         // --- Header ---
@@ -93,7 +93,7 @@ class ExportService {
             doc.text(title, leftMargin, y);
             y += 8;
         };
-        
+
         const printTextBlock = (title: string, text: string | undefined | null) => {
             if (!text) return;
             printSectionTitle(title);
@@ -120,7 +120,7 @@ class ExportService {
         printKeyValuePair(t('strainsView.strainModal.yieldOutdoor'), t(`strainsData.${strain.id}.yieldDetails.outdoor`, { defaultValue: strain.agronomic.yieldDetails?.outdoor }));
         printKeyValuePair(t('strainsView.strainModal.heightIndoor'), t(`strainsData.${strain.id}.heightDetails.indoor`, { defaultValue: strain.agronomic.heightDetails?.indoor }));
         printKeyValuePair(t('strainsView.strainModal.heightOutdoor'), t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic.heightDetails?.outdoor }));
-        
+
         printSectionTitle(t('strainsView.strainDetail.aromaProfile'));
         printKeyValuePair(t('strainsView.strainModal.aromas'), (strain.aromas || []).map(a => t(`common.aromas.${a}`, { defaultValue: a })).join(', '));
         printKeyValuePair(t('strainsView.strainModal.dominantTerpenes'), (strain.dominantTerpenes || []).map(terp => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', '));
@@ -145,19 +145,19 @@ class ExportService {
   public exportStrainsAsTxt(strains: Strain[], fileName: string, t: TFunction) {
     let content = `CannaGuide 2025 - ${t('strainsView.exportModal.title')}\n`;
     content += `${t('common.generated')}: ${new Date().toLocaleString()}\n\n`;
-    
+
     strains.forEach(s => {
         content += `========================================\n`;
         content += `${s.name.toUpperCase()}\n`;
         content += `========================================\n\n`;
-        
+
         content += `${t('common.type')}: ${t(`strainsData.${s.id}.typeDetails`, { defaultValue: s.typeDetails || s.type })}\n`;
         content += `${t('common.genetics')}: ${t(`strainsData.${s.id}.genetics`, { defaultValue: s.genetics || 'N/A' })}\n\n`;
-        
+
         content += `--- ${t('strainsView.strainDetail.cannabinoidProfile')} ---\n`;
         content += `${t('strainsView.table.thc')}: ${s.thcRange || `${s.thc}%`}\n`;
         content += `${t('strainsView.table.cbd')}: ${s.cbdRange || `${s.cbd}%`}\n\n`;
-        
+
         content += `--- ${t('strainsView.strainModal.agronomicData')} ---\n`;
         content += `${t('strainsView.table.difficulty')}: ${t(`strainsView.difficulty.${s.agronomic.difficulty.toLowerCase()}`)}\n`;
         content += `${t('strainsView.table.flowering')}: ${s.floweringTimeRange || s.floweringTime} ${t('common.units.weeks')}\n`;
@@ -224,19 +224,19 @@ class ExportService {
         doc.text(t('equipmentView.savedSetups.pdfReport.title'), 210 - rightMargin, topMargin - 10, { align: 'right' });
         doc.setDrawColor(50);
         doc.line(leftMargin, topMargin - 7, 210 - rightMargin, topMargin - 7);
-        
+
         // Title
         doc.setFontSize(20);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(40, 50, 70);
         doc.text(setup.name, leftMargin, y);
         y += 8;
-        
+
         doc.setFontSize(9);
         doc.setTextColor(150);
         doc.text(`${t('common.generated')}: ${new Date(setup.createdAt).toLocaleString()}`, leftMargin, y);
         y += 10;
-        
+
         // Source details
         if (setup.sourceDetails) {
             doc.setFontSize(14);
@@ -244,7 +244,7 @@ class ExportService {
             doc.setTextColor(40, 50, 70);
             doc.text(t('equipmentView.savedSetups.pdfReport.sourceDetails'), leftMargin, y);
             y += 7;
-            
+
             const sourceDetails = [
                 [t('equipmentView.savedSetups.pdfReport.plantCount'), setup.sourceDetails.plantCount],
                 [t('equipmentView.savedSetups.pdfReport.experience'), t(`strainsView.tips.form.experienceOptions.${setup.sourceDetails.experience}`)],
@@ -273,7 +273,7 @@ class ExportService {
                     body.push([t(`equipmentView.configurator.categories.${key}`), item.name, `${item.price.toFixed(2)} ${t('common.units.currency_eur')}`, item.rationale]);
                 }
             }
-            
+
             ((doc as JsPDFWithAutoTable)).autoTable({
                 startY: y,
                 head: [[t('common.type'), t('equipmentView.savedSetups.pdfReport.product'), t('equipmentView.savedSetups.pdfReport.price'), t('equipmentView.savedSetups.pdfReport.rationale')]],
@@ -304,7 +304,7 @@ class ExportService {
         doc.setFont('helvetica', 'bold');
         doc.text(`${t('equipmentView.savedSetups.pdfReport.totalCost')}: ${setup.totalCost.toFixed(2)} ${t('common.units.currency_eur')}`, 210 - rightMargin, y, { align: 'right' });
     });
-    
+
     const pageCount = ((doc as JsPDFWithAutoTable)).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
@@ -334,7 +334,7 @@ class ExportService {
             content += `${t('equipmentView.savedSetups.pdfReport.priorities')}: ${setup.sourceDetails.priorities.map(p => t(`equipmentView.configurator.priorities.${p}`)).join(', ') || t('common.none')}\n`;
             content += `${t('equipmentView.savedSetups.pdfReport.customNotes')}: ${setup.sourceDetails.customNotes || t('common.none')}\n\n`;
         }
-        
+
         if (setup.recommendation) {
             content += `--- EQUIPMENT ---\n`;
             const categoryOrder: RecommendationCategory[] = ['tent', 'light', 'ventilation', 'circulationFan', 'pots', 'soil', 'nutrients', 'extra'];
@@ -351,7 +351,7 @@ class ExportService {
 
         content += `TOTAL: ${setup.totalCost.toFixed(2)} ${t('common.units.currency_eur')}\n\n\n`;
     });
-    
+
     this.generateTxt(content, `${fileName}.txt`);
   }
 

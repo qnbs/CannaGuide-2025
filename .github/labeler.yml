@@ -1,0 +1,16 @@
+documentation:
+    - README.md
+    - docs/**
+
+security:
+    - any:
+          - .github/**
+          - package.json
+          - package-lock.json
+          - .pre-commit-config.yaml
+          - .renovaterc.json
+
+tests:
+    - tests/**
+    - '**/*.test.ts'
+    - '**/*.test.tsx'

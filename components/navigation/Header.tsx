@@ -96,9 +96,9 @@ export const Header: React.FC<HeaderProps> = ({
                                 <PhosphorIcons.DownloadSimple className="w-6 h-6" />
                             </Button>
                         )}
-                        
+
                         <VoiceControl />
-                        
+
                         <Button
                             variant="ghost"
                             className="rounded-xl !p-2"

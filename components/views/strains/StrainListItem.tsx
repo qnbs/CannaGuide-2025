@@ -38,7 +38,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
 }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    
+
     const TypeIcon = typeIcons[strain.type];
 
     const handleActionClick = (e: React.MouseEvent, action: () => void) => {
@@ -95,7 +95,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         {strain.thc?.toFixed(1)}% THC | {strain.floweringTime} {t('common.units.weeks')}
                     </p>
                 </div>
-                
+
                 {/* Desktop stats */}
                 <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title="THC">
                     <span>{strain.thc?.toFixed(1)}%</span>

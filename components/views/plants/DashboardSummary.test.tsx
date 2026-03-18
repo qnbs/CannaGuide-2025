@@ -89,7 +89,7 @@ describe('DashboardSummary', () => {
         vi.clearAllMocks();
         vi.spyOn(reduxHooks, 'useAppDispatch').mockReturnValue(mockDispatch);
     });
-    
+
     it('renders stats correctly with active plants', () => {
                 const state = createMockState();
                 mockUseAppSelector.mockImplementation((selector: any) => selector(state));
@@ -124,7 +124,7 @@ describe('DashboardSummary', () => {
         mockUseAppSelector.mockImplementation((selector: any) => selector(state));
 
         render(<DashboardSummary />);
-        
+
         fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }));
 
         expect(mockDispatch).toHaveBeenCalledTimes(1);
@@ -148,7 +148,7 @@ describe('Redux Selectors', () => {
             equipment: { potType: 'Plastic' },
             environment: { internalTemperature: 23, internalHumidity: 60 },
         } as Plant;
-        
+
         const mockState: Partial<RootState> = {
             simulation: {
                 plantSlots: ['p1', 'p2', null],

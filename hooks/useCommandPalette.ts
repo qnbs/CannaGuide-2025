@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/stores/store';
 import { Command, View, StrainType, StrainViewTab } from '@/types';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { 
-    setActiveView, 
-    openAddModal, 
+import {
+    setActiveView,
+    openAddModal,
     setIsCommandPaletteOpen,
     openExportModal,
 } from '@/stores/slices/uiSlice';
@@ -35,7 +35,7 @@ export const useCommandPalette = (): { allCommands: Command[] } => {
         { id: 'strain_filter_sativa', title: `Filter: ${t('strainsView.sativa')}`, group: 'Strains', icon: PhosphorIcons.Leafy, action: () => { dispatch(setActiveView(View.Strains)); dispatch(toggleTypeFilter(StrainType.Sativa)); } },
         { id: 'strain_filter_indica', title: `Filter: ${t('strainsView.indica')}`, group: 'Strains', icon: PhosphorIcons.Leafy, action: () => { dispatch(setActiveView(View.Strains)); dispatch(toggleTypeFilter(StrainType.Indica)); } },
         { id: 'strain_filter_hybrid', title: `Filter: ${t('strainsView.hybrid')}`, group: 'Strains', icon: PhosphorIcons.Leafy, action: () => { dispatch(setActiveView(View.Strains)); dispatch(toggleTypeFilter(StrainType.Hybrid)); } },
-        
+
         // Plant Actions
         { id: 'plant_water_all', title: t('plantsView.summary.waterAll'), group: 'Plants', icon: PhosphorIcons.Drop, action: () => dispatch(waterAllPlants()) },
 

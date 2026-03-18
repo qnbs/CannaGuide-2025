@@ -24,7 +24,7 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
         { id: StrainViewTab.Exports, icon: <PhosphorIcons.FileText />, label: t('strainsView.tabs.exports', { count: counts.exports }) },
         { id: StrainViewTab.Tips, icon: <PhosphorIcons.LightbulbFilament />, label: t('strainsView.tabs.tips', { count: counts.tips }) },
     ];
-    
+
     return (
         <nav className="grid grid-cols-3 gap-2 sm:gap-4">
             {navItems.map(item => {
@@ -34,8 +34,8 @@ export const StrainSubNav: React.FC<StrainSubNavProps> = ({ activeTab, onTabChan
                         key={item.id}
                         onClick={() => onTabChange(item.id as StrainViewTab)}
                         className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200
-                            ${activeTab === item.id 
-                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400' 
+                            ${activeTab === item.id
+                                ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
                             }`}
                         aria-label={item.label}

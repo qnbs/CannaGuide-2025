@@ -39,7 +39,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
     };
 
     return (
-        <Card 
+        <Card
             className={`flex flex-col h-full text-center relative cursor-pointer !p-3 animate-fade-in-stagger ${isSelected ? 'ring-2 ring-primary-500 bg-primary-900/40' : ''}`}
             onClick={() => onSelect(strain)}
             style={{ animationDelay: `${index * 20}ms` }}
@@ -53,7 +53,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                           aria-label={t('strainsView.accessibility.selectStrain', { name: strain.name })}
                 />
             </div>
-            
+
             {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" /></span>}
 
             <div className={`mx-auto mb-2 w-12 h-12 ${typeClasses[strain.type]}`}>
@@ -69,9 +69,9 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
             </div>
 
             <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-10">
-                 <Button 
-                    variant="ghost" 
-                    size="sm" 
+                 <Button
+                    variant="ghost"
+                    size="sm"
                     className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
                     onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
                     aria-label={isFavorite

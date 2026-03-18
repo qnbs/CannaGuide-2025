@@ -128,7 +128,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
             tone: harvestData.terpeneRetentionPercent < 65 ? 'critical' : harvestData.terpeneRetentionPercent < 80 ? 'warn' : 'good',
         },
     ]
-    
+
     const topTerpenes = Object.entries(harvestData.terpeneProfile || {}).sort(([,a],[,b]) => (b as number) - (a as number)).slice(0, 3);
 
 
@@ -136,7 +136,7 @@ export const PostHarvestTab: React.FC<PostHarvestTabProps> = ({ plant }) => {
         <div className="space-y-6">
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('plantsView.postHarvest.title')}</h3>
-                
+
                 {isFinished ? (
                     <div className="text-center p-8 bg-slate-800 rounded-lg">
                         <h4 className="text-2xl font-bold text-green-400">{t('plantsView.postHarvest.processComplete')}</h4>

@@ -44,7 +44,7 @@ export const SideNav: React.FC = () => {
                 }
             }
         };
-        
+
         calculateStyle();
 
         const navElement = navRef.current;

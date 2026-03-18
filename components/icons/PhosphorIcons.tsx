@@ -26,11 +26,11 @@ interface IconProps {
  * It handles standard SVG properties and accessibility.
  */
 const IconBase: React.FC<{ children: React.ReactNode; className?: string, style?: React.CSSProperties }> = ({ children, className = '', style }) => (
-    <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="1em" 
-        height="1em" 
-        fill="currentColor" 
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="1em"
+        height="1em"
+        fill="currentColor"
         viewBox="0 0 256 256"
         className={className}
         aria-hidden="true"

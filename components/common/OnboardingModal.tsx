@@ -349,4 +349,3 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
         </Modal>
     )
 }
-

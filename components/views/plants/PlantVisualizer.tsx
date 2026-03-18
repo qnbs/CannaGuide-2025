@@ -49,7 +49,7 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
     if (stage === PlantStage.Seed) { scale = 0.2; yOffset = 18; }
     else if (stage === PlantStage.Germination) { scale = 0.3; yOffset = 16; }
     else if (stage === PlantStage.Seedling) { scale = 0.5; yOffset = 12; }
-    
+
     // Drying/Curing Visuals
     if (isDryingOrCuring) {
         if (stage === PlantStage.Drying) {
@@ -104,7 +104,7 @@ export const PlantVisualizer: React.FC<PlantVisualizerProps> = memo(({ plant, cl
             </g>
         );
     }
-    
+
     const showBuds = [PlantStage.Flowering, PlantStage.Harvest].includes(stage);
     const budColor = `rgba(var(--color-secondary-500), ${stage === PlantStage.Harvest ? 1 : 0.8})`;
     const budSize = mapRange(biomass.flowers, 0, 100, 0.5, 3);

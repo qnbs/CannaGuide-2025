@@ -1,129 +1,129 @@
-name: 🏗️ Tauri Desktop Builds
+name: 🏗 Tauri Desktop Builds
 
 on:
-  push:
-    tags: ['v*']
-  workflow_dispatch:
+    push:
+        tags: ['v*']
+    workflow_dispatch:
 
 permissions:
-  contents: write
+    contents: write
 
 env:
-  NODE_VERSION: '20'
+    NODE_VERSION: '20'
 
 jobs:
-  build-tauri:
-    name: 🖥️ ${{ matrix.target }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: ubuntu-22.04
-            target: linux
-            args: ''
-          - platform: windows-latest
-            target: windows
-            args: ''
-          - platform: macos-latest
-            target: macos-arm
-            args: '--target aarch64-apple-darwin'
-          - platform: macos-latest
-            target: macos-intel
-            args: '--target x86_64-apple-darwin'
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
+    build-tauri:
+        name: 🖥 ${{ matrix.target }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - platform: ubuntu-22.04
+                      target: linux
+                      args: ''
+                    - platform: windows-latest
+                      target: windows
+                      args: ''
+                    - platform: macos-latest
+                      target: macos-arm
+                      args: '--target aarch64-apple-darwin'
+                    - platform: macos-latest
+                      target: macos-intel
+                      args: '--target x86_64-apple-darwin'
+        runs-on: ${{ matrix.platform }}
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: 🦀 Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+            - name: 🦀 Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+              with:
+                  targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
-      - name: 📦 Rust cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
+            - name: 📦 Rust cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: src-tauri
 
-      - name: 🐧 Install Linux dependencies
-        if: matrix.platform == 'ubuntu-22.04'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+            - name: 🐧 Install Linux dependencies
+              if: matrix.platform == 'ubuntu-22.04'
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
 
-      - name: 📦 Install Node dependencies
-        run: npm ci
+            - name: 📦 Install Node dependencies
+              run: npm ci
 
-      - name: 🖼️ Generate Tauri icons (if missing)
-        run: |
-          if [ ! -d "src-tauri/icons" ] || [ -z "$(ls -A src-tauri/icons 2>/dev/null)" ]; then
-            echo "⚠️ No icons found. Run 'npx tauri icon <source.png>' locally and commit the icons."
-            echo "Using placeholder for CI..."
-            mkdir -p src-tauri/icons
-            # Create minimal 32x32 PNG placeholder via Node
-            node -e "
-              const fs = require('fs');
-              const { Buffer } = require('buffer');
-              // Minimal valid 1x1 green PNG
-              const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
-              const sizes = ['32x32', '128x128', '128x128@2x'];
-              sizes.forEach(s => fs.writeFileSync('src-tauri/icons/' + s + '.png', png));
-              fs.writeFileSync('src-tauri/icons/icon.ico', png);
-              fs.writeFileSync('src-tauri/icons/icon.icns', png);
-            "
-          fi
-        shell: bash
+            - name: 🖼 Generate Tauri icons (if missing)
+              run: |
+                  if [ ! -d "src-tauri/icons" ] || [ -z "$(ls -A src-tauri/icons 2>/dev/null)" ]; then
+                    echo "⚠ No icons found. Run 'npx tauri icon <source.png>' locally and commit the icons."
+                    echo "Using placeholder for CI..."
+                    mkdir -p src-tauri/icons
+                    # Create minimal 32x32 PNG placeholder via Node
+                    node -e "
+                      const fs = require('fs');
+                      const { Buffer } = require('buffer');
+                      // Minimal valid 1x1 green PNG
+                      const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+                      const sizes = ['32x32', '128x128', '128x128@2x'];
+                      sizes.forEach(s => fs.writeFileSync('src-tauri/icons/' + s + '.png', png));
+                      fs.writeFileSync('src-tauri/icons/icon.ico', png);
+                      fs.writeFileSync('src-tauri/icons/icon.icns', png);
+                    "
+                  fi
+              shell: bash
 
-      - name: 🔨 Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'CannaGuide ${{ github.ref_name }}'
-          releaseBody: 'Desktop release for CannaGuide 2025'
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
+            - name: 🔨 Build Tauri app
+              uses: tauri-apps/tauri-action@v0
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tagName: ${{ github.ref_name }}
+                  releaseName: 'CannaGuide ${{ github.ref_name }}'
+                  releaseBody: 'Desktop release for CannaGuide 2025'
+                  releaseDraft: true
+                  prerelease: false
+                  args: ${{ matrix.args }}
 
-  build-capacitor:
-    name: 📱 Capacitor bundle
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
+    build-capacitor:
+        name: 📱 Capacitor bundle
+        runs-on: ubuntu-latest
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
 
-      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+            - name: ⚙ Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
 
-      - name: 📦 Install Node dependencies
-        run: npm ci
+            - name: 📦 Install Node dependencies
+              run: npm ci
 
-      - name: 🏗️ Build web bundle
-        run: npm run build
+            - name: 🏗 Build web bundle
+              run: npm run build
 
-      - name: 📦 Capacitor sync check
-        run: |
-          if [ -d android ] || [ -d ios ]; then
-            npm run cap:sync
-          else
-            echo "⚠️ No native Capacitor projects are committed yet; uploading the web bundle as the release-ready fallback."
-          fi
+            - name: 📦 Capacitor sync check
+              run: |
+                  if [ -d android ] || [ -d ios ]; then
+                    npm run cap:sync
+                  else
+                    echo "⚠ No native Capacitor projects are committed yet; uploading the web bundle as the release-ready fallback."
+                  fi
 
-      - name: 📤 Upload Capacitor-ready bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: capacitor-web-bundle
-          path: |
-            dist/
-            capacitor.config.ts
-          retention-days: 14
+            - name: 📤 Upload Capacitor-ready bundle
+              uses: actions/upload-artifact@v4
+              with:
+                  name: capacitor-web-bundle
+                  path: |
+                      dist/
+                      capacitor.config.ts
+                  retention-days: 14

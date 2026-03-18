@@ -79,7 +79,7 @@ export const exportStrainTips = createAsyncThunk<void, { tips: SavedStrainTip[],
         const t = getT();
         const exportService = await getExportService();
         exportService.exportStrainTips(tips, format, fileName, t);
-        
+
         dispatch(addNotification({ message: t('common.successfullyExported_other', { count: tips.length, format: format.toUpperCase() }), type: 'success' }));
     }
 );

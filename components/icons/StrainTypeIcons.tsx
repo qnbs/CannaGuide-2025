@@ -18,9 +18,9 @@ const IconBase: React.FC<{ children: React.ReactNode; className?: string; viewBo
 
 // Geometric, outlined icons inside a hexagonal frame for a high-tech feel.
 const HexagonFrame: React.FC = () => (
-    <path 
-        d="M18.75 6.9375L12 3.375L5.25 6.9375V14.0625L12 17.625L18.75 14.0625V6.9375Z" 
-        stroke="currentColor" 
+    <path
+        d="M18.75 6.9375L12 3.375L5.25 6.9375V14.0625L12 17.625L18.75 14.0625V6.9375Z"
+        stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"

@@ -481,7 +481,9 @@ export interface AppSettings {
         persistenceIntervalMs: 500 | 1500 | 5000;
         cloudSync: {
             enabled: boolean;
-            provider: 'none' | 'gdrive';
+            provider: 'none' | 'gist';
+            gistId: string | null;
+            lastSyncAt: number | null;
         };
     };
     privacy: {

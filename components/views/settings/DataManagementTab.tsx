@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { lazy, memo, Suspense, useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/settingsSlice';
@@ -25,6 +25,7 @@ import { dbService } from '@/services/dbService';
 import { selectSettings, selectSimulation } from '@/stores/selectors';
 import { setSetting } from '@/stores/slices/settingsSlice';
 import { CommunitySharePanel } from './CommunitySharePanel';
+const CloudSyncPanel = lazy(() => import('./CloudSyncPanel'));
 import {
     Select,
     SelectContent,
@@ -299,6 +300,10 @@ const DataManagementTab: React.FC = () => {
                     </Button>
                 </div>
             </Card>
+
+            <Suspense fallback={null}>
+                <CloudSyncPanel />
+            </Suspense>
 
             <CommunitySharePanel />
 

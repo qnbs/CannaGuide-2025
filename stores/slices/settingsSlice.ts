@@ -141,6 +141,8 @@ export const defaultSettings: AppSettings = {
         cloudSync: {
             enabled: false,
             provider: 'none',
+            gistId: null,
+            lastSyncAt: null,
         },
     },
 

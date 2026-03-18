@@ -70,6 +70,8 @@ const CheckCircle: React.FC<IconProps> = memo(({ weight = 'regular', className }
 const Checks: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M173.7,82.3l-56,56a8.1,8.1,0,0,1-11.4,0l-24-24a8.1,8.1,0,0,1,11.4-11.4L112,116.7l50.3-50.4a8.1,8.1,0,0,1,11.4,11.4ZM240,88V208a16,16,0,0,1-16,16H56a16,16,0,0,1-16-16V48A16,16,0,0,1,56,32H168a8,8,0,0,1,0,16H56V208H224V88a8,8,0,0,1,16,0Z"/></IconBase>);
 const ChevronDown: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M205.7,98.3l-72,72a8.1,8.1,0,0,1-11.4,0l-72-72a8.1,8.1,0,0,1,11.4-11.4L128,150.6l66.3-66.3a8.1,8.1,0,0,1,11.4,11.4Z"/></IconBase>);
 const CommandLine: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M51,59.3,27.3,83a8.1,8.1,0,0,0,0,11.4L51,118.1a8.1,8.1,0,0,0,11.3-11.4L44,88.7a8.1,8.1,0,0,1,0-11.4L62.3,59.3a8.1,8.1,0,0,0-11.3-11.4ZM99.1,176h57.8a8,8,0,0,0,0-16H99.1a8,8,0,0,0,0,16Z"/></IconBase>);
+const CloudArrowUp: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M188,136a59.3,59.3,0,0,0-5.3-24.8A68,68,0,1,0,64,120a68.4,68.4,0,0,0,1.3,13.2A48,48,0,0,0,72,224h116a60,60,0,0,0,0-120Zm-60-40a8.1,8.1,0,0,1,5.7,2.3l24,24a8.1,8.1,0,0,1-11.4,11.4L136,123.3V176a8,8,0,0,1-16,0V123.3l-10.3,10.4a8.1,8.1,0,0,1-11.4-11.4l24-24A8.1,8.1,0,0,1,128,96Z"/></IconBase>);
+const CloudArrowDown: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M188,136a59.3,59.3,0,0,0-5.3-24.8A68,68,0,1,0,64,120a68.4,68.4,0,0,0,1.3,13.2A48,48,0,0,0,72,224h116a60,60,0,0,0,0-120Zm-60,72a8.1,8.1,0,0,1-5.7-2.3l-24-24a8.1,8.1,0,0,1,11.4-11.4L120,180.7V128a8,8,0,0,1,16,0v52.7l10.3-10.4a8.1,8.1,0,0,1,11.4,11.4l-24,24A8.1,8.1,0,0,1,128,208Z"/></IconBase>);
 const Cube: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M222.1,65.8l-88-49.5a7.8,7.8,0,0,0-8.2,0l-88,49.5A7.8,7.8,0,0,0,32,72.2v111.6a7.8,7.8,0,0,0,3.9,6.4l88,49.5a7.8,7.8,0,0,0,8.2,0l88-49.5a7.8,7.8,0,0,0,3.9-6.4V72.2A7.8,7.8,0,0,0,222.1,65.8ZM128,24.8l74.4,41.8-74.4,44L53.6,66.6ZM48,81.4l72,40.5V210L48,165.7ZM136,210V121.9l72-40.5V165.7Z"/></IconBase>);
 const Database: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M128,24C74.2,24,32,48.6,32,80v96c0,31.4,42.2,56,96,56s96-24.6,96-56V80C224,48.6,181.8,24,128,24Zm0,16c44.2,0,80,17.9,80,40s-35.8,40-80,40S48,102.1,48,80,83.8,40,128,40ZM48,176V148c15.1,14.5,43.6,24,80,24s64.9-9.5,80-24v28c0,22.1-35.8,40-80,40S48,198.1,48,176Zm0-56V100c15.1,14.5,43.6,24,80,24s64.9-9.5,80-24v20c0,22.1-35.8,40-80,40S48,142.1,48,120Z"/></IconBase>);
 const DotOutline: React.FC<IconProps> = memo(({ className }) => <IconBase className={className}><path d="M128,96a32,32,0,1,0,32,32A32,32,0,0,0,128,96Zm0,48a16,16,0,1,1,16-16A16,16,0,0,1,128,144Z"/></IconBase>);
@@ -158,6 +160,8 @@ export const PhosphorIcons = {
     CheckCircle,
     Checks,
     ChevronDown,
+    CloudArrowDown,
+    CloudArrowUp,
     CommandLine,
     Cube,
     Database,

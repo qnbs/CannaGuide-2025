@@ -60,3 +60,29 @@ export const initSentry = (): void => {
 }
 
 export { Sentry }
+
+/**
+ * Captures a local AI error with structured tags for dashboard filtering.
+ * Safe to call in production — no-ops when Sentry is not initialized.
+ */
+export const captureLocalAiError = (
+  error: unknown,
+  context: {
+    model?: string
+    stage: 'preload' | 'inference' | 'vision' | 'webllm' | 'fallback'
+    backend?: 'webgpu' | 'wasm'
+    retryAttempt?: number
+  },
+): void => {
+  Sentry.captureException(error, {
+    tags: {
+      feature: 'local-ai',
+      'ai.stage': context.stage,
+      ...(context.model && { 'ai.model': context.model }),
+      ...(context.backend && { 'ai.backend': context.backend }),
+    },
+    extra: {
+      retryAttempt: context.retryAttempt ?? 0,
+    },
+  })
+}

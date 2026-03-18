@@ -121,3 +121,12 @@ export const GardenStatusSummarySchema = z.object({
     title: z.string().min(1).max(200),
     content: z.string().min(1).max(4000),
 });
+
+/** Breeding tips (strain crossing advice) */
+export const BreedingTipsSchema = z.object({
+    crossName: z.string().min(1).max(200),
+    rationale: z.string().min(1).max(2000),
+    expectedTraits: z.array(z.string().max(300)).min(1).max(10),
+    difficulty: z.enum(['Easy', 'Medium', 'Hard']),
+    tips: z.array(z.string().max(500)).min(1).max(10),
+});

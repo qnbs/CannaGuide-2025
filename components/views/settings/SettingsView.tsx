@@ -25,7 +25,7 @@ import { apiKeyService } from '@/services/apiKeyService'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { localAiPreloadService } from '../../../services/localAiPreloadService'
-import { detectOnnxBackend } from '../../../services/localAIModelLoader'
+import { detectOnnxBackend, setForceWasm } from '../../../services/localAIModelLoader'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 
 const AboutTab = lazy(() => import('./AboutTab'))
@@ -363,25 +363,42 @@ const GeminiSecurityCard: React.FC = () => {
 
 const LocalAiOfflineCard: React.FC = () => {
     const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const settings = useAppSelector(selectSettings)
     const isOffline = useOnlineStatus()
     const [isBusy, setIsBusy] = useState(false)
     const [status, setStatus] = useState(() => localAiPreloadService.getStatus())
     const [progress, setProgress] = useState<{ loaded: number; total: number; label: string } | null>(null)
+    const [preloadDurationMs, setPreloadDurationMs] = useState<number | null>(null)
     const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
     const onnxBackend = detectOnnxBackend()
+
+    const localAiSettings = settings.localAi ?? { forceWasm: false, preferredTextModel: 'auto' as const }
 
     const handlePreload = async () => {
         setIsBusy(true)
         setProgress(null)
+        const startTime = performance.now()
         try {
             const nextStatus = await localAiPreloadService.preloadOfflineModels(
                 (loaded, total, label) => setProgress({ loaded, total, label }),
             )
+            setPreloadDurationMs(performance.now() - startTime)
             setStatus(nextStatus)
         } finally {
             setIsBusy(false)
             setProgress(null)
         }
+    }
+
+    const handleForceWasmToggle = () => {
+        const next = !localAiSettings.forceWasm
+        setForceWasm(next)
+        dispatch(setSetting({ path: 'localAi.forceWasm', value: next }))
+    }
+
+    const handleModelChange = (value: string) => {
+        dispatch(setSetting({ path: 'localAi.preferredTextModel', value }))
     }
 
     const statusLabel = (() => {
@@ -445,6 +462,33 @@ const LocalAiOfflineCard: React.FC = () => {
                         </div>
                     )}
                     {isOffline && <p className="text-xs text-amber-300">{t('settingsView.offlineAi.offlineHint')}</p>}
+                    <div className="space-y-3 border-t border-slate-700/60 pt-3">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-slate-200">{t('settingsView.offlineAi.forceWasm')}</p>
+                                <p className="text-xs text-slate-500">{t('settingsView.offlineAi.forceWasmHint')}</p>
+                            </div>
+                            <Switch checked={localAiSettings.forceWasm} onChange={handleForceWasmToggle} />
+                        </div>
+                        <div>
+                            <label className="text-sm text-slate-200 block mb-1">{t('settingsView.offlineAi.preferredModel')}</label>
+                            <Select value={localAiSettings.preferredTextModel} onValueChange={handleModelChange}>
+                                <SelectTrigger className="w-full">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="auto">{t('settingsView.offlineAi.modelAuto')}</SelectItem>
+                                    <SelectItem value="qwen2.5">{t('settingsView.offlineAi.modelQwen25')}</SelectItem>
+                                    <SelectItem value="qwen3">{t('settingsView.offlineAi.modelQwen3')}</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="text-xs text-slate-400">
+                            {preloadDurationMs != null
+                                ? <p>{t('settingsView.offlineAi.benchPreloadTime', { value: (preloadDurationMs / 1000).toFixed(1) })}</p>
+                                : <p>{t('settingsView.offlineAi.benchNotAvailable')}</p>}
+                        </div>
+                    </div>
                 </div>
             </FormSection>
         </Card>

@@ -135,6 +135,11 @@ export const defaultSettings: AppSettings = {
         },
     },
 
+    localAi: {
+        forceWasm: false,
+        preferredTextModel: 'auto',
+    },
+
     data: {
         autoBackup: 'weekly',
         persistenceIntervalMs: 1500,

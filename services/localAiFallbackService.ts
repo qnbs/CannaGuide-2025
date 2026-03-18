@@ -10,7 +10,7 @@ const formatPlantLine = (plant: Plant) =>
 // Heuristic analysis helpers
 // ---------------------------------------------------------------------------
 
-interface PlantDiagnostic {
+export interface PlantDiagnostic {
     issues: string[]
     topPriority: string
 }
@@ -52,7 +52,7 @@ function analyzeEc(ec: number, stage: PlantStage, lang: Language): string | null
     return null
 }
 
-function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
+export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
     const issues: string[] = []
     const vpdIssue = analyzeVpd(plant.environment.vpd, plant.stage, lang)
     if (vpdIssue) issues.push(vpdIssue)

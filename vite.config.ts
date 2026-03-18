@@ -5,7 +5,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import type { PluginOption } from 'vite'
 
-const CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
+const CSP = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com https://huggingface.co https://cdn-lfs.huggingface.co https://huggingfaceusercontent.com; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
 const PERMISSIONS = 'accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()'
 
 // Tauri v2 sets TAURI_ENV_PLATFORM during builds; Docker sets BUILD_BASE_PATH=/
@@ -29,9 +29,10 @@ export default defineConfig({
       filename: 'sw.js',
       manifest: false,
       registerType: 'autoUpdate',
+      showMaximumFileSizeToCacheInBytesWarning: false,
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,svg,png,webp,woff2}'],
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
       },
       devOptions: { enabled: false },
     }),
@@ -140,7 +141,7 @@ export default defineConfig({
   // ── Dependency pre-bundling hints ────────────────────────────────────
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-redux', '@reduxjs/toolkit', 'i18next', 'react-i18next'],
-    exclude: ['@google/genai'],
+    exclude: ['@google/genai', '@xenova/transformers', '@mlc-ai/web-llm'],
   },
 
   resolve: {

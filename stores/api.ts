@@ -16,9 +16,9 @@ import {
 } from '@/types'
 import { getT } from '@/i18n'
 
-const getGeminiService = async () => {
-    const module = await import('@/services/geminiService')
-    return module.geminiService
+const getAiService = async () => {
+    const module = await import('@/services/aiService')
+    return module.aiService
 }
 
 const mapAiErrorMessage = (error: unknown): string => {
@@ -56,8 +56,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: Recommendation } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.getEquipmentRecommendation(prompt, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.getEquipmentRecommendation(prompt, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -79,8 +79,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: PlantDiagnosisResponse } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.diagnosePlant(
+                    const aiService = await getAiService()
+                    const data = await aiService.diagnosePlant(
                         base64Image,
                         mimeType,
                         plant,
@@ -102,8 +102,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: AIResponse } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.getPlantAdvice(plant, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.getPlantAdvice(plant, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -119,8 +119,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: AIResponse } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.getProactiveDiagnosis(plant, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.getProactiveDiagnosis(plant, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -138,8 +138,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: Omit<MentorMessage, 'role'> } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.getMentorResponse(plant, query, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.getMentorResponse(plant, query, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -157,8 +157,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: StructuredGrowTips } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.getStrainTips(strain, context, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.getStrainTips(strain, context, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -176,8 +176,8 @@ export const geminiApi = createApi({
                 criteria: { focus: string; composition: string; mood: string }
             }): Promise<{ data: string } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.generateStrainImage(strain, style as import('@/services/geminiService').ImageStyle, criteria)
+                    const aiService = await getAiService()
+                    const data = await aiService.generateStrainImage(strain, style as import('@/services/geminiService').ImageStyle, criteria)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -195,8 +195,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: DeepDiveGuide } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.generateDeepDive(topic, plant, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.generateDeepDive(topic, plant, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }
@@ -212,8 +212,8 @@ export const geminiApi = createApi({
                 lang: Language
             }): Promise<{ data: AIResponse } | { error: { message: string } }> {
                 try {
-                    const geminiService = await getGeminiService()
-                    const data = await geminiService.getGardenStatusSummary(plants, lang)
+                    const aiService = await getAiService()
+                    const data = await aiService.getGardenStatusSummary(plants, lang)
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }

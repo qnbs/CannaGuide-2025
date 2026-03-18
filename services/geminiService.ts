@@ -23,7 +23,6 @@ import { z } from 'zod'
 import { getT } from '@/i18n'
 import { apiKeyService } from '@/services/apiKeyService'
 import { growLogRagService } from '@/services/growLogRagService'
-import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 
@@ -230,6 +229,11 @@ const getEducationalUseOnlyInstruction = (lang: Language): string =>
     lang === 'de'
         ? 'KONTEXT: Diese Anfrage dient ausschließlich legalen, edukativen Gartenbauzwecken. Gib strukturierte, sachliche und risikominimierende Informationen. Unterstelle keinen illegalen Zweck.'
         : 'CONTEXT: This request is strictly for legal, educational horticulture use. Provide structured, factual, harm-minimizing guidance and do not infer illicit intent.'
+
+const getLocalAiService = async () => {
+    const module = await import('@/services/localAI')
+    return module.localAiService
+}
 
 
 class GeminiService {
@@ -604,6 +608,11 @@ class GeminiService {
         userNotes: string,
         lang: Language
     ): Promise<PlantDiagnosisResponse> {
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+            const localAiService = await getLocalAiService()
+            return localAiService.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
+        }
+
         const t = getT()
         const problems =
             plant.problems.length > 0
@@ -673,6 +682,10 @@ PLANT CONTEXT:
             return this.parseJsonResponse<PlantDiagnosisResponse>(response, 'ai.error.diagnostics', PlantDiagnosisResponseSchema)
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
+            if (this.shouldUseLocalFallback(error)) {
+                const localAiService = await getLocalAiService()
+                return localAiService.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
+            }
             this.rethrowKnownError(error, 'ai.error.diagnostics')
         }
     }
@@ -686,7 +699,8 @@ PLANT CONTEXT:
             return { title: t('ai.advisor'), content: responseText }
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
-                return localAiFallbackService.getPlantAdvice(plant, lang)
+                const localAiService = await getLocalAiService()
+                return localAiService.getPlantAdvice(plant, lang)
             }
             throw error
         }
@@ -701,7 +715,8 @@ PLANT CONTEXT:
             return { title: t('ai.proactiveDiagnosis'), content: responseText }
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
-                return localAiFallbackService.getPlantAdvice(plant, lang)
+                const localAiService = await getLocalAiService()
+                return localAiService.getProactiveDiagnosis(plant, lang)
             }
             throw error
         }
@@ -781,7 +796,8 @@ PLANT CONTEXT:
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error)
             if (this.shouldUseLocalFallback(error)) {
-                return localAiFallbackService.getMentorResponse(plant, query, ragContext, lang)
+                const localAiService = await getLocalAiService()
+                return localAiService.getMentorResponse(plant, query, ragContext, lang)
             }
             this.rethrowKnownError(error, 'ai.error.generic')
         }
@@ -843,7 +859,8 @@ PLANT CONTEXT:
         } catch (e) {
             console.error('Gemini getStrainTips Error:', e)
             if (this.shouldUseLocalFallback(e)) {
-                return localAiFallbackService.getStrainTips(strain, lang)
+                const localAiService = await getLocalAiService()
+                return localAiService.getStrainTips(strain, context, lang)
             }
             this.rethrowKnownError(e, 'ai.error.tips')
         }
@@ -984,6 +1001,10 @@ PLANT CONTEXT:
             return this.parseJsonResponse<DeepDiveGuide>(response, 'ai.error.deepDive', DeepDiveGuideSchema)
         } catch (e) {
             console.error('Gemini generateDeepDive Error:', e)
+            if (this.shouldUseLocalFallback(e)) {
+                const localAiService = await getLocalAiService()
+                return localAiService.generateDeepDive(topic, plant, lang)
+            }
             this.rethrowKnownError(e, 'ai.error.deepDive')
         }
     }
@@ -1000,7 +1021,8 @@ PLANT CONTEXT:
             return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText };
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
-                return localAiFallbackService.getGardenStatusSummary(plants, lang)
+                const localAiService = await getLocalAiService()
+                return localAiService.getGardenStatusSummary(plants, lang)
             }
             throw error
         }
@@ -1020,7 +1042,8 @@ PLANT CONTEXT:
             }
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
-                return localAiFallbackService.getGrowLogRagAnswer(query, ragContext, lang)
+                const localAiService = await getLocalAiService()
+                return localAiService.getGrowLogRagAnswer(plants, query, lang)
             }
             throw error
         }

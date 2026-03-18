@@ -144,8 +144,7 @@ describe('localAiService', () => {
 
     it('preloadOfflineAssets counts failures when pipelines reject', async () => {
         // Clear cached pipeline promises from prior tests
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const svc = localAiService as any
+        const svc = localAiService as unknown as Record<string, unknown>
         svc.textPipelinePromise = null
         svc.visionPipelinePromise = null
         svc.webLlmPromise = null
@@ -165,8 +164,7 @@ describe('localAiService', () => {
     })
 
     it('classifies expanded cannabis labels including root rot', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const svc = localAiService as any
+        const svc = localAiService as unknown as Record<string, unknown>
         svc.visionPipelinePromise = null
 
         pipelineMock.mockImplementation(async (task: string) => {
@@ -187,8 +185,7 @@ describe('localAiService', () => {
     })
 
     it('maps new German label for botrytis bud rot', async () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const svc = localAiService as any
+        const svc = localAiService as unknown as Record<string, unknown>
         svc.visionPipelinePromise = null
 
         pipelineMock.mockImplementation(async (task: string) => {

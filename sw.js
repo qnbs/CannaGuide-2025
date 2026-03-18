@@ -1,5 +1,16 @@
-const CACHE_NAME = 'cannaguide-v22-pwa-cache';
-const IMAGE_CACHE_NAME = 'cannaguide-v22-image-cache';
+// Cache version is derived from the precache manifest hash to auto-bust on every deploy.
+// __WB_MANIFEST changes per build, so we derive a simple hash from its content.
+const workboxManifest = self.__WB_MANIFEST || [];
+const MANIFEST_HASH = workboxManifest.length > 0
+  ? workboxManifest.reduce((acc, entry) => {
+      const rev = typeof entry === 'string' ? entry : (entry.revision || entry.url);
+      let h = acc;
+      for (let i = 0; i < rev.length; i++) { h = ((h << 5) - h + rev.charCodeAt(i)) | 0; }
+      return h;
+    }, 0).toString(36)
+  : 'dev';
+const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`;
+const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`;
 const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
 
 const APP_SHELL_URLS = [
@@ -16,7 +27,7 @@ const THIRD_PARTY_URLS = [];
 
 // Workbox injects the precache manifest into __WB_MANIFEST at build time.
 // The variable must appear exactly once for workbox-build's injectManifest to work.
-const workboxManifest = self.__WB_MANIFEST || [];
+// (referenced above in MANIFEST_HASH derivation)
 const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
 const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])];
 const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg', '.ico'];
@@ -170,24 +181,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Stale-while-revalidate: serve from cache immediately, update cache in background.
+  // Ensures users see fresh content after the next navigation.
   event.respondWith(
-    caches.match(request).then(cachedResponse => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
+    caches.open(CACHE_NAME).then(async (cache) => {
+      const cachedResponse = await cache.match(request);
 
-      return fetch(request).then(networkResponse => {
+      const fetchPromise = fetch(request).then(networkResponse => {
         if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then(cache => {
-                cache.put(request, responseToCache);
-            });
+          cache.put(request, networkResponse.clone());
         }
         return networkResponse;
       }).catch(error => {
         console.error('[SW] Fetch failed:', error);
-        return new Response('Network error', { status: 408 });
+        return cachedResponse || new Response('Network error', { status: 408 });
       });
+
+      return cachedResponse || fetchPromise;
     })
   );
 });

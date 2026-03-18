@@ -3,7 +3,7 @@
 import * as d3 from 'd3'
 import { geneticsService } from '@/services/geneticsService'
 import { GENEALOGY_NODE_SIZE, GENEALOGY_NODE_SEPARATION } from '@/constants'
-import type { GenealogyNode } from '@/types'
+import type { GenealogyNode, Strain } from '@/types'
 
 interface GenealogyLayoutNode {
     data: GenealogyNode
@@ -20,6 +20,15 @@ interface GenealogyLayoutLink {
 type GenealogyWorkerMessage =
     | { type: 'LAYOUT'; tree: GenealogyNode; orientation: 'horizontal' | 'vertical' }
     | { type: 'CONTRIBUTIONS'; tree: GenealogyNode | null }
+    | {
+        type: 'OFFSPRING_PROFILE'
+        parentA: Strain
+        parentB: Strain
+        phenotypes: {
+            parentA: { vigor: number; resin: number; aroma: number; resistance: number }
+            parentB: { vigor: number; resin: number; aroma: number; resistance: number }
+        }
+    }
 
 self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
     try {
@@ -61,6 +70,16 @@ self.onmessage = (event: MessageEvent<GenealogyWorkerMessage>) => {
         if (event.data.type === 'CONTRIBUTIONS') {
             const contributions = event.data.tree ? geneticsService.calculateGeneticContribution(event.data.tree) : []
             self.postMessage({ type: 'CONTRIBUTIONS_RESULT', contributions })
+            return
+        }
+
+        if (event.data.type === 'OFFSPRING_PROFILE') {
+            const result = geneticsService.estimateOffspringProfile(
+                event.data.parentA,
+                event.data.parentB,
+                event.data.phenotypes,
+            )
+            self.postMessage({ type: 'OFFSPRING_PROFILE_RESULT', result })
         }
     } catch (error) {
         self.postMessage({

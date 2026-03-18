@@ -46,7 +46,7 @@ const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
         keyPattern: /^AIza[0-9A-Za-z_-]{20,}$/,
         placeholder: 'AIza...',
         keyStorageKey: 'geminiApiKey',
-        getKeyUrl: 'https://aistudio.google.com/api-keys',
+        getKeyUrl: 'https://aistudio.google.com/app/apikey',
         models: {
             text: 'gemini-2.5-flash',
             json: 'gemini-2.5-flash',

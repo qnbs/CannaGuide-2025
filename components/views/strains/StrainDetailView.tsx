@@ -48,7 +48,7 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
     const description = t(`strainsData.${strain.id}.description`, { defaultValue: strain.description || 'No description available.' });
-    const genetics = t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics });
+    const genetics = t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics ?? '' });
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -70,10 +70,10 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 
 const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
-    const yieldIndoor = t(`strainsData.${strain.id}.yieldDetails.indoor`, { defaultValue: strain.agronomic?.yieldDetails?.indoor });
-    const yieldOutdoor = t(`strainsData.${strain.id}.yieldDetails.outdoor`, { defaultValue: strain.agronomic?.yieldDetails?.outdoor });
-    const heightIndoor = t(`strainsData.${strain.id}.heightDetails.indoor`, { defaultValue: strain.agronomic?.heightDetails?.indoor });
-    const heightOutdoor = t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic?.heightDetails?.outdoor });
+    const yieldIndoor = t(`strainsData.${strain.id}.yieldDetails.indoor`, { defaultValue: strain.agronomic?.yieldDetails?.indoor ?? '' });
+    const yieldOutdoor = t(`strainsData.${strain.id}.yieldDetails.outdoor`, { defaultValue: strain.agronomic?.yieldDetails?.outdoor ?? '' });
+    const heightIndoor = t(`strainsData.${strain.id}.heightDetails.indoor`, { defaultValue: strain.agronomic?.heightDetails?.indoor ?? '' });
+    const heightOutdoor = t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic?.heightDetails?.outdoor ?? '' });
     return (
         <InfoSection title={t('strainsView.strainModal.agronomicData')}>
             <div className="space-y-2">
@@ -187,7 +187,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
         [StrainType.Hybrid]: HybridIcon
     }[strain.type];
 
-    const typeDetails = t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails });
+    const typeDetails = t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails ?? '' });
 
     return (
         <div className="space-y-6">

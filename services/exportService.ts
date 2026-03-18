@@ -107,7 +107,7 @@ class ExportService {
 
         // --- Content Sections ---
         printKeyValuePair(t('common.type'), t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails || strain.type }));
-        printKeyValuePair(t('common.genetics'), t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics || 'N/A' }));
+        printKeyValuePair(t('common.genetics'), t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics ?? 'N/A' }));
 
         printSectionTitle(t('strainsView.strainDetail.cannabinoidProfile'));
         printKeyValuePair(t('strainsView.table.thc'), strain.thcRange || `${strain.thc}%`);
@@ -116,16 +116,16 @@ class ExportService {
         printSectionTitle(t('strainsView.strainModal.agronomicData'));
         printKeyValuePair(t('strainsView.table.difficulty'), t(`strainsView.difficulty.${strain.agronomic.difficulty.toLowerCase()}`));
         printKeyValuePair(t('strainsView.table.flowering'), strain.floweringTimeRange ? `${strain.floweringTimeRange} ${t('common.units.weeks')}` : `${strain.floweringTime} ${t('common.units.weeks')}`);
-        printKeyValuePair(t('strainsView.strainModal.yieldIndoor'), t(`strainsData.${strain.id}.yieldDetails.indoor`, { defaultValue: strain.agronomic.yieldDetails?.indoor }));
-        printKeyValuePair(t('strainsView.strainModal.yieldOutdoor'), t(`strainsData.${strain.id}.yieldDetails.outdoor`, { defaultValue: strain.agronomic.yieldDetails?.outdoor }));
-        printKeyValuePair(t('strainsView.strainModal.heightIndoor'), t(`strainsData.${strain.id}.heightDetails.indoor`, { defaultValue: strain.agronomic.heightDetails?.indoor }));
-        printKeyValuePair(t('strainsView.strainModal.heightOutdoor'), t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic.heightDetails?.outdoor }));
+        printKeyValuePair(t('strainsView.strainModal.yieldIndoor'), t(`strainsData.${strain.id}.yieldDetails.indoor`, { defaultValue: strain.agronomic.yieldDetails?.indoor ?? 'N/A' }));
+        printKeyValuePair(t('strainsView.strainModal.yieldOutdoor'), t(`strainsData.${strain.id}.yieldDetails.outdoor`, { defaultValue: strain.agronomic.yieldDetails?.outdoor ?? 'N/A' }));
+        printKeyValuePair(t('strainsView.strainModal.heightIndoor'), t(`strainsData.${strain.id}.heightDetails.indoor`, { defaultValue: strain.agronomic.heightDetails?.indoor ?? 'N/A' }));
+        printKeyValuePair(t('strainsView.strainModal.heightOutdoor'), t(`strainsData.${strain.id}.heightDetails.outdoor`, { defaultValue: strain.agronomic.heightDetails?.outdoor ?? 'N/A' }));
 
         printSectionTitle(t('strainsView.strainDetail.aromaProfile'));
         printKeyValuePair(t('strainsView.strainModal.aromas'), (strain.aromas || []).map(a => t(`common.aromas.${a}`, { defaultValue: a })).join(', '));
         printKeyValuePair(t('strainsView.strainModal.dominantTerpenes'), (strain.dominantTerpenes || []).map(terp => t(`common.terpenes.${terp}`, { defaultValue: terp })).join(', '));
 
-        const description = t(`strainsData.${strain.id}.description`, { defaultValue: strain.description });
+        const description = t(`strainsData.${strain.id}.description`, { defaultValue: strain.description ?? '' });
         printTextBlock(t('common.description'), description);
     });
 

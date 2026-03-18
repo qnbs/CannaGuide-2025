@@ -128,6 +128,8 @@ export const useVirtualizer = ({
     }
 
     return { virtualItems: items, totalSize }
+    // measureVersion triggers recalculation when element sizes are measured via ResizeObserver
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [count, estimateSize, scrollTop, overscan, containerHeight, measureVersion]);
 
   return {

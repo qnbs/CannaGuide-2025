@@ -52,6 +52,7 @@ export default [
                 ...globals.es2021,
                 ...globals.node,
                 ...globals.worker,
+                __APP_VERSION__: 'readonly',
                 IDBTransactionMode: 'readonly',
                 IDBValidKey: 'readonly',
                 NotificationPermission: 'readonly',

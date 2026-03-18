@@ -1,16 +1,35 @@
 {
     "name": "CannaGuide 2025",
     "image": "mcr.microsoft.com/playwright:v1.58.0-noble",
-    "postCreateCommand": "npm ci",
+    "postCreateCommand": "npm ci && npx playwright install --with-deps chromium",
+    "forwardPorts": [5173],
+    "portsAttributes": {
+        "5173": {
+            "label": "Vite Dev Server",
+            "onAutoForward": "openBrowser"
+        }
+    },
     "customizations": {
         "vscode": {
             "settings": {
-                "terminal.integrated.defaultProfile.linux": "bash"
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "editor.formatOnSave": true,
+                "editor.defaultFormatter": "esbenp.prettier-vscode",
+                "editor.codeActionsOnSave": {
+                    "source.fixAll.eslint": "explicit"
+                },
+                "typescript.tsdk": "node_modules/typescript/lib",
+                "files.eol": "\n"
             },
             "extensions": [
                 "dbaeumer.vscode-eslint",
                 "esbenp.prettier-vscode",
-                "ms-playwright.playwright"
+                "ms-playwright.playwright",
+                "bradlc.vscode-tailwindcss",
+                "github.copilot",
+                "github.copilot-chat",
+                "github.vscode-github-actions",
+                "biomejs.biome"
             ]
         }
     }

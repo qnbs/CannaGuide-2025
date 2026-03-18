@@ -30,7 +30,7 @@ Released: **2026-07-07**
 | Photo diagnosis with EXIF/GPS stripping | AI | ✅ |
 | Full DSGVO/GDPR compliance (Age Gate, Consent, Privacy Policy) | Legal | ✅ |
 | WCAG 2.2 AA accessibility | A11y | ✅ |
-| 258 tests (Vitest + Playwright E2E) | Quality | ✅ |
+| 307 tests (Vitest + Playwright E2E) | Quality | ✅ |
 | PWA with 100% offline capability | PWA | ✅ |
 | ESP32 sensor integration via WebBluetooth | IoT | ✅ |
 | Breeding Lab with Punnett Square genetics | Core | ✅ |

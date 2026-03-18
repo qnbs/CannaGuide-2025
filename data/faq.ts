@@ -32,6 +32,30 @@ export const faqData: FAQItem[] = [
     triggers: {},
   },
   {
+    id: 'faq-cloud-sync',
+    questionKey: 'faq.cloudSync.question',
+    answerKey: 'faq.cloudSync.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-multi-provider-ai',
+    questionKey: 'faq.multiProviderAi.question',
+    answerKey: 'faq.multiProviderAi.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-force-wasm',
+    questionKey: 'faq.forceWasm.question',
+    answerKey: 'faq.forceWasm.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-vision-classification',
+    questionKey: 'faq.visionClassification.question',
+    answerKey: 'faq.visionClassification.answer',
+    triggers: {},
+  },
+  {
     id: 'faq-ph-value',
     questionKey: 'faq.phValue.question',
     answerKey: 'faq.phValue.answer',

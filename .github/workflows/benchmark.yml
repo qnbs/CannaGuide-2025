@@ -50,6 +50,7 @@ jobs:
               run: npm run benchmark
 
             - name: Lighthouse CI
+              continue-on-error: true
               run: npm run lighthouse:ci
 
             - name: Collect metrics

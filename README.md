@@ -12,9 +12,7 @@ This README file supports two languages.
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Security Scan](https://img.shields.io/badge/security-scanned-2e8b57)](.github/workflows/security-full.yml)
-[![OpenSSF Scorecard](https://img.shields.io/badge/OpenSSF-Scorecard-blue)](.github/workflows/scorecard.yml)
-[![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-307%20passed-brightgreen)]()
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 [![Tech Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
 [![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
@@ -22,6 +20,8 @@ This README file supports two languages.
 [![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
 [![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
+[![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
+[![Gist Sync](https://img.shields.io/badge/Cloud%20Sync-GitHub%20Gist-181717?logo=github&logoColor=white)]()
 [![Netlify Status](https://img.shields.io/badge/Netlify-deployed-00C7B7?logo=netlify&logoColor=white)](https://app.netlify.com)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
@@ -30,9 +30,9 @@ This README file supports two languages.
 
 **Current Performance Snapshot**
 
-- Lighthouse: 66 performance, 95 accessibility
-- Benchmark build: 87s
-- Main bundle: 332.9 kB transferred
+- Lighthouse: ~66 performance, ~95 accessibility
+- Benchmark build: ~87s
+- Main bundle: ~333 kB transferred
 - Bundle analysis: `dist/source-map-explorer.html`
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
@@ -55,6 +55,7 @@ CannaGuide 2025 is your definitive AI-powered digital co-pilot for the entire ca
     - [6. The Command Center (`Settings` View)](#6-the-command-center-settings-view)
     - [7. Platform-Wide Features](#7-platform-wide-features)
 - [💻 Technical Deep Dive](#-technical-deep-dive)
+- [🧠 Local AI Architecture](#-local-ai-architecture)
 - [🔒 Security & DSGVO/GDPR](#-security--dsgvogdpr)
 - [🤖 Multi-Provider AI (BYOK)](#-multi-provider-ai-byok)
 - [🏁 Getting Started (User Guide)](#-getting-started-user-guide)
@@ -163,7 +164,9 @@ A sophisticated hub to customize every aspect of your CannaGuide experience.
 - **Accessibility Suite**: Activate a **Dyslexia-Friendly Font**, **Reduced Motion** mode, and various **Colorblind Modes** (Protanopia, Deuteranopia, Tritanopia).
 - **Voice & Speech**: Configure Text-to-Speech (TTS) voices and rates, and manage voice command settings.
 - **Simulation Tuning**: Adjust simulation parameters including **leaf temperature offset** and **altitude** for precision VPD calculations.
-- **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a detailed breakdown of your **storage usage** with IndexedDB quota estimates.
+- **Local AI Settings**: Trigger on-demand **model preloading** with a real-time progress bar. Toggle **Force WASM** backend for debugging WebGPU issues. Switch preferred text model between `Qwen2.5-1.5B` (balanced) and `Qwen3-0.5B` (lightweight). View live ONNX backend detection, WebLLM status, persistent storage grants, and preload timing benchmarks.
+- **One-Tap Cloud Sync**: Back up and restore your entire app state to an **anonymous GitHub Gist** — no account or sign-up required. Displays Gist ID, last-synced timestamp, and supports both push and pull operations. All synced data is validated with Zod schemas on import.
+- **Data Sovereignty**: Export your entire app state for **backup**, import it to **restore**, or perform granular resets like clearing AI archives or plant data. View a detailed breakdown of your **storage usage** with IndexedDB quota estimates. Configure **auto-backup** intervals (daily/weekly/off) and **persistence timing** (fast/balanced/battery-saver).
 
 ### 7. Platform-Wide Features
 
@@ -172,7 +175,9 @@ A sophisticated hub to customize every aspect of your CannaGuide experience.
 - **Voice Control**: Navigate the app, search for strains, and perform actions using simple voice commands.
 - **Full Internationalization (i18n)**: Complete **English and German** translations with namespaced locale files (common, plants, knowledge, strains, equipment, settings, help, and more). All AI responses are automatically localized to the user's selected language.
 - **Safe Recovery**: Automatic detection and repair of corrupted application state. If IndexedDB hydration fails, the app gracefully falls back to a clean state rather than presenting a blank screen.
-- **Local AI Fallback**: When the cloud API is unreachable (offline, quota exceeded, key missing), the app activates a **three-layer local AI stack**: (1) WebLLM with Qwen2.5-1.5B on WebGPU-capable devices, (2) Transformers.js text generation and CLIP-ViT zero-shot vision with 33 cannabis-specific condition labels, (3) deterministic heuristic analysis. Inference results are cached for instant repeat queries. See [docs/local-ai-developer-guide.md](/workspaces/CannaGuide-2025/docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](/workspaces/CannaGuide-2025/docs/local-ai-troubleshooting.md).
+- **One-Tap Cloud Sync**: Push your entire app state to an **anonymous GitHub Gist** with a single tap — no account, no sign-up. Pull from any Gist URL to restore on a different device. Synced payloads are versioned and validated with Zod schemas.
+- **Daily Strain Catalog Automation**: A GitHub Actions workflow (`strains-daily-update.yml`) runs at **04:20 UTC** every day to merge, deduplicate, and validate the 700+ strain catalog in strict mode, producing artifact reports and auto-creating PRs for new entries.
+- **Local AI Fallback**: When the cloud API is unreachable (offline, quota exceeded, key missing), the app activates a **three-layer local AI stack**: (1) WebLLM with Qwen2.5-1.5B on WebGPU-capable devices, (2) Transformers.js text generation and CLIP-ViT zero-shot vision with 33 cannabis-specific condition labels, (3) deterministic heuristic analysis. Inference results are cached (LRU, 64 entries) for instant repeat queries. See [docs/local-ai-developer-guide.md](docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](docs/local-ai-troubleshooting.md).
 
 ---
 
@@ -187,6 +192,7 @@ CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed f
 | **Frontend**         | [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)                        | Modern, type-safe, and performant user interface.                                                          |
 | **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                           | Centralized, predictable state management with memoized selectors.                                         |
 | **AI Integration**   | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                             | Powers all online AI features; the local AI fallback stack keeps diagnostics and advice available offline. |
+| **Local AI**         | [@xenova/transformers](https://huggingface.co/docs/transformers.js) + [@mlc-ai/web-llm](https://webllm.mlc.ai/) | Three-layer on-device ML: WebLLM (Qwen2.5-1.5B, WebGPU), Transformers.js (Qwen text + CLIP vision), heuristics. |
 | **Async Operations** | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                             | Manages all Gemini API interactions with automatic caching and loading states.                             |
 | **Concurrency**      | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                          | Runs the complex plant simulation off the main thread to ensure a smooth UI.                               |
 | **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (dual-database architecture) | Full offline functionality via `CannaGuideStateDB` (Redux) and `CannaGuideDB` (strains, images, search).   |
@@ -273,6 +279,121 @@ The codebase is organized into logical directories to promote maintainability an
 - `workers/`: Web Worker scripts for background simulation processing.
 - `utils/`: Shared utility functions.
 - `types/`: TypeScript type definitions and Zod schemas.
+
+---
+
+## 🧠 Local AI Architecture
+
+CannaGuide ships with a production-grade, three-layer on-device ML stack that provides privacy-preserving, zero-latency AI when the cloud API is unreachable (offline, quota exceeded, missing key) — or whenever models are pre-loaded and warm.
+
+### Three-Layer Fallback Cascade
+
+```
+[Cloud Gemini API]
+        │ ← unavailable?
+        ▼
+┌─ Layer 1 ─── WebLLM (WebGPU) ─────────────────────────────┐
+│  Qwen2.5-1.5B-Instruct (q4f16_1, MLC-compiled)            │
+│  Full chat-completion inference on GPU via @mlc-ai/web-llm  │
+│  → Best quality, requires navigator.gpu                     │
+└────────────────────────────────────────────────────────────┘
+        │ ← WebGPU unavailable or load error?
+        ▼
+┌─ Layer 2 ─── Transformers.js (ONNX) ──────────────────────┐
+│  Text:   Xenova/Qwen2.5-1.5B-Instruct (primary)           │
+│          Xenova/Qwen3-0.5B (ultra-light fallback)          │
+│  Vision: Xenova/clip-vit-large-patch14 (zero-shot, 33 lbl) │
+│  Backend: WebGPU → WASM (auto-detected)                    │
+└────────────────────────────────────────────────────────────┘
+        │ ← model load fails or timeout?
+        ▼
+┌─ Layer 3 ─── Deterministic Heuristics ─────────────────────┐
+│  Rule-based plant diagnosis (VPD, pH, EC, temp, moisture)  │
+│  Localized EN/DE advice, zero network dependency           │
+│  Guaranteed response — always available                     │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Model Inventory
+
+| Constant            | Model                                | Purpose                                                       | Runtime         |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------- | --------------- |
+| `WEBLLM_MODEL_ID`   | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Full chat completion on WebGPU, best local quality            | @mlc-ai/web-llm |
+| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`       | Primary text generation (multilingual, strong DE performance) | Transformers.js |
+| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                  | Ultra-light fallback for low-end devices                      | Transformers.js |
+| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`      | Zero-shot plant condition classification (33 cannabis labels) | Transformers.js |
+
+### 33 Zero-Shot Cannabis Condition Labels
+
+The CLIP vision model classifies plant photos against a curated label set covering the full spectrum of cannabis cultivation problems:
+
+**Nutrient Deficiencies** (10): Nitrogen, Phosphorus, Potassium, Calcium, Magnesium, Iron, Zinc, Sulfur, Manganese, Boron  
+**Environmental Stress** (7): Heat stress, Light stress, Light burn, Cold stress, Wind burn, Nutrient burn, Nutrient lockout  
+**Watering Issues** (2): Overwatering, Underwatering  
+**Pests & Disease** (9): Powdery mildew, Botrytis bud rot, Spider mites, Fungus gnats, Aphids, Thrips, Whiteflies, Fungal leaf spot, Septoria leaf spot  
+**Other** (5): Root rot, pH imbalance, Revegetation stress, Tobacco mosaic virus, Healthy plant
+
+Each label maps to localized diagnostic text in both EN and DE with actionable cultivation advice.
+
+### ONNX Backend Routing
+
+`localAIModelLoader.ts` automatically detects the optimal execution provider:
+
+1. **WebGPU** — when `navigator.gpu` is present (modern Chrome, Edge). Offers near-native GPU acceleration.
+2. **WASM** — universal fallback for all browsers. Reliable but slower.
+
+A **Force WASM** toggle in Settings overrides auto-detection for debugging. `onnxruntime-web` (v1.21+) is a direct dependency for stable WebGPU and WASM ONNX execution.
+
+### Inference Caching & Retry
+
+- **LRU Cache**: Map with max **64 entries**, keyed by the first 200 characters of each prompt. Identical prompts return cached results instantly without model inference.
+- **Retry Logic**: Up to **2 retries** with 500ms exponential backoff before falling back to heuristics. Failed attempts do not pollute the cache.
+- **Pipeline Cache**: `loadTransformersPipeline` stores pipeline promises keyed by `task::modelId`. Subsequent calls return the cached promise; failures auto-evict so the next call can retry.
+
+### Central AI Routing (`aiService.ts`)
+
+All AI calls originate from `aiService.ts`, which decides whether to route to the cloud (Gemini) or the local stack:
+
+```ts
+shouldRouteLocally() → isOffline() || localAiPreloadService.isReady()
+```
+
+- When offline **or** local models have been pre-loaded, requests are handled entirely on-device.
+- `generateStrainImage` and `getEquipmentRecommendation` always route to Gemini (require cloud capabilities).
+- The Gemini service's `shouldUseLocalFallback()` additionally checks `isReady()` before attempting local inference on API errors.
+
+### Preload & Progress UI
+
+Users can trigger on-demand model preloading from **Settings → Local AI**:
+
+- Real-time progress bar showing loaded/total models and current label (text-model → vision-model → web-llm).
+- Persistent status tracking via `localStorage` (state, timestamps, per-model readiness, persistent storage grant status).
+- `isReady()` convenience check: returns `true` when state is `'ready'` or `'partial'` with the text model loaded.
+- Preload timing benchmarks displayed after completion.
+
+### Sentry Error Attribution
+
+All local AI failures are captured via `captureLocalAiError()` in `sentryService.ts` with structured tags:
+
+```
+feature: local-ai
+ai.stage: preload | inference | vision | webllm | fallback
+ai.model: <model-id>
+ai.backend: webgpu | wasm
+retryAttempt: 0 | 1 | 2
+```
+
+This enables filtering and monitoring of local AI health in the Sentry dashboard separately from cloud AI errors.
+
+### Bundle Strategy
+
+Local AI runtimes are code-split into a dedicated `ai-runtime` chunk via Vite's `manualChunks`:
+
+```
+@xenova/transformers + onnxruntime-web + @mlc-ai/web-llm → ai-runtime.js
+```
+
+The chunk is excluded from `optimizeDeps` pre-bundling and loaded lazily only when local AI is needed, keeping the main bundle lean.
 
 ---
 
@@ -444,6 +565,10 @@ Important:
     3.  If needed, use the in-app update banner button.
     4.  Only as last resort: browser `Application → Service Workers → Update/Unregister`.
 - **Data Corruption**: If the application state becomes corrupted, you can perform a hard reset by navigating to `Settings > Data Management > Reset All App Data`. **Warning: This will delete all your local data.**
+- **Local AI Models Not Loading**: Ensure you have a stable connection for the initial model download. Check that browser storage is not full (Settings → Data Management → Storage Insights). If persistent storage is not granted, the browser may evict cached models. Try the "Preload Models" button again.
+- **WebLLM Unavailable**: WebLLM requires WebGPU support (modern Chrome/Edge). On unsupported browsers, CannaGuide automatically falls back to Transformers.js (WASM). This is expected behavior — not an error.
+- **Local AI Slow Performance**: Enable the **Force WASM** toggle in Settings → Local AI if you suspect WebGPU driver issues. Switch to the lightweight `Qwen3-0.5B` model for faster inference on low-end devices.
+- **Cloud Sync Issues**: Gist push/pull is anonymous and rate-limited by GitHub. If push fails, wait a moment and retry. Ensure the Gist URL/ID is correct when pulling. Synced data is validated — corrupted Gists will show an error message.
 
 ---
 
@@ -480,8 +605,8 @@ Please follow the existing code style and ensure your changes are well-documente
 
 | Version | Status | Highlights |
 |---------|--------|------------|
-| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 258 tests, ESP32, Breeding Lab, EN/DE i18n |
-| **v1.1** | ✅ Released | Sentry error tracking, Playwright component tests, Netlify deployment with PR previews, PWA auto-update with changelog, Docker ESP32-Mock sensor simulation, CI/CD for Tauri + Capacitor builds |
+| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 tests, ESP32, Breeding Lab, EN/DE i18n |
+| **v1.1** | ✅ Released | **Local AI Stack** (WebLLM + Transformers.js + CLIP vision, 33 labels), ONNX backend routing (WebGPU/WASM), inference caching (LRU-64), model preload UI with benchmarks, Sentry local-AI attribution, One-Tap Cloud Sync (Gist), Daily Strain Catalog Automation (04:20 UTC), Playwright Component Tests, Netlify PR Previews, PWA auto-update with changelog, Docker ESP32-Mock, CI/CD for Tauri + Capacitor |
 | **v1.2** | 🔄 Planned | Additional languages (ES, FR, NL), Advanced nutrient scheduling with EC/pH automation, Community strain marketplace, Auto-generated grow reports (PDF) |
 | **v1.3** | 📋 Planned | Integration with additional IoT sensors, Time-lapse photo journal, Strain comparison tool, Advanced analytics dashboard, Three.js 3D visualizations |
 
@@ -492,13 +617,17 @@ Please follow the existing code style and ensure your changes are well-documente
 | Category | Tool | Purpose |
 |----------|------|---------|
 | **Error Tracking** | [Sentry](https://sentry.io) | Runtime error monitoring, performance traces, session replay |
-| **Testing** | [Vitest](https://vitest.dev/) | Unit & integration tests (258+) |
+| **Local AI** | [Transformers.js](https://huggingface.co/docs/transformers.js) | On-device text generation (Qwen2.5/Qwen3) and CLIP zero-shot vision |
+| **Local AI** | [WebLLM](https://webllm.mlc.ai/) | WebGPU-accelerated LLM inference (Qwen2.5-1.5B-Instruct) |
+| **Local AI** | [ONNX Runtime Web](https://onnxruntime.ai/) | Cross-browser ML execution (WebGPU + WASM backends) |
+| **Cloud Sync** | GitHub Gist API | Anonymous one-tap full-state backup & restore |
+| **Testing** | [Vitest](https://vitest.dev/) | Unit & integration tests (307+) |
 | **Testing** | [Playwright](https://playwright.dev/) | E2E tests + Component tests |
 | **Testing** | [Stryker](https://stryker-mutator.io/) | Mutation testing |
 | **Performance** | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | Automated performance & a11y audits |
-| **Security** | OpenSSF Scorecard, CodeQL, Snyk, Trivy, Semgrep, Gitleaks | Multi-layer security scanning |
+| **Security** | Gitleaks, Semgrep, Trivy, npm audit | Multi-layer security scanning (on-demand via workflow_dispatch) |
 | **Build** | [Vite 7](https://vitejs.dev/) | Lightning-fast HMR & optimized builds |
-| **CI/CD** | GitHub Actions (15 workflows) | CI, deploy, security, Tauri, Docker |
+| **CI/CD** | GitHub Actions (17 workflows) | CI, deploy, benchmark, mutation testing, Tauri, Docker, daily strain update |
 | **Hosting** | GitHub Pages + Netlify | Production + PR preview deployments |
 | **Desktop** | [Tauri](https://tauri.app/) | Native Windows/macOS/Linux apps |
 | **Mobile** | [Capacitor](https://capacitorjs.com/) | iOS & Android builds |
@@ -525,7 +654,7 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
+[![Tests](https://img.shields.io/badge/tests-307%20passed-brightgreen)]()
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 [![Tech-Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
 [![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
@@ -533,6 +662,8 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
 [![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
+[![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
+[![Gist Sync](https://img.shields.io/badge/Cloud%20Sync-GitHub%20Gist-181717?logo=github&logoColor=white)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-konform-blue)]()
@@ -540,9 +671,9 @@ Please follow the existing code style and ensure your changes are well-documente
 
 **Aktueller Performance-Snapshot**
 
-- Lighthouse: 66 Performance, 95 Accessibility
-- Benchmark-Build: 87s
-- Main Bundle: 332,9 kB übertragen
+- Lighthouse: ~66 Performance, ~95 Accessibility
+- Benchmark-Build: ~87s
+- Main Bundle: ~333 kB übertragen
 - Bundle-Analyse: `dist/source-map-explorer.html`
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
@@ -565,6 +696,7 @@ CannaGuide 2025 ist Ihr digitaler Co-Pilot für den gesamten Lebenszyklus des Ca
     - [6. Die Kommandozentrale (`Einstellungen`-Ansicht)](#6-die-kommandozentrale-einstellungen-ansicht)
     - [7. Plattformweite Funktionen](#7-plattformweite-funktionen)
 - [💻 Technischer Deep Dive](#-technischer-deep-dive-1)
+- [🧠 Lokale KI-Architektur](#-lokale-ki-architektur)
 - [🔒 Sicherheit & DSGVO](#-sicherheit--dsgvo)
 - [🤖 Multi-Provider KI (BYOK)](#-multi-provider-ki-byok)
 - [🏁 Erste Schritte (Benutzerhandbuch)](#-erste-schritte-benutzerhandbuch)
@@ -661,7 +793,9 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 - **Barrierefreiheit-Suite**: **Legastheniker-freundliche Schriftart**, **Modus mit reduzierter Bewegung**, **Farbfehlsichtigkeits-Modi** (Protanopie, Deuteranopie, Tritanopie).
 - **Sprache & Sprachausgabe**: TTS-Stimmen und -Raten, Sprachbefehl-Einstellungen.
 - **Simulationstuning**: **Blatttemperatur-Offset** und **Höhe** für Präzisions-VPD-Berechnungen.
-- **Datensouveränität**: Export/Import, granulare Resets, **Speichernutzungs-Übersicht** mit IndexedDB-Quota-Schätzungen.
+- **Lokale KI-Einstellungen**: Bedarfsgesteuertes **Modell-Preloading** mit Echtzeit-Fortschrittsbalken. **WASM-erzwingen**-Schalter zum Debuggen von WebGPU-Problemen. Wechsel des bevorzugten Textmodells zwischen `Qwen2.5-1.5B` (ausgewogen) und `Qwen3-0.5B` (leichtgewichtig). Live-Anzeige von ONNX-Backend-Erkennung, WebLLM-Status, Persistent-Storage-Grant und Preload-Timing-Benchmarks.
+- **Ein-Tipp Cloud-Sync**: Gesamten App-Zustand in einem **anonymen GitHub Gist** sichern und wiederherstellen — ohne Konto oder Registrierung. Zeigt Gist-ID, letzten Synchronisierungszeitpunkt und unterstützt Push- und Pull-Operationen. Alle synchronisierten Daten werden beim Import mit Zod-Schemas validiert.
+- **Datensouveränität**: Export/Import, granulare Resets, **Speichernutzungs-Übersicht** mit IndexedDB-Quota-Schätzungen. Konfigurierbare **Auto-Backup**-Intervalle (täglich/wöchentlich/aus) und **Persistenz-Timing** (schnell/ausgewogen/Energiesparer).
 
 ### 7. Plattformweite Funktionen
 
@@ -670,6 +804,8 @@ Ihre vollständige Ressource zum Lernen und zur Problemlösung.
 - **Sprachsteuerung**: Navigieren, suchen und Aktionen per Sprache ausführen.
 - **Volle Internationalisierung (i18n)**: Vollständige **Englisch und Deutsch** Übersetzungen mit namensraum-organisierten Locale-Dateien. Alle KI-Antworten werden automatisch in der gewählten Sprache lokalisiert.
 - **Safe Recovery**: Automatische Erkennung und Reparatur beschädigter Zustände. Graceful Fallback statt leerer Bildschirm.
+- **Ein-Tipp Cloud-Sync**: Gesamten App-Zustand in einem **anonymen GitHub Gist** mit einem Tipp sichern — kein Konto nötig. Per Gist-URL von einem anderen Gerät wiederherstellen. Synchronisierte Daten werden versioniert und mit Zod-Schemas validiert.
+- **Tägliche Sortenkatalog-Automatisierung**: Ein GitHub-Actions-Workflow (`strains-daily-update.yml`) läuft täglich um **04:20 UTC**, um den 700+-Sortenkatalog im Strict-Modus zusammenzuführen, zu deduplizieren und zu validieren — mit Artefakt-Reports und automatischen PRs für neue Einträge.
 - **Lokaler KI-Fallback**: Heuristische Pflanzenberatung bei unerreichbarer Gemini-API — Anleitung auch ohne Internet.
 
 ---
@@ -685,6 +821,7 @@ CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack
 | **Frontend**           | [React 19](https://react.dev/) mit [TypeScript](https://www.typescriptlang.org/)                         | Modernes, typsicheres und performantes Benutzerinterface.                                                |
 | **Zustandsverwaltung** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                           | Zentralisierte, vorhersagbare Zustandsverwaltung mit memoisiertten Selektoren.                           |
 | **KI-Integration**     | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                             | Treibt alle KI-Funktionen an: Diagnose, Beratung, Bilderzeugung und Deep Dives.                          |
+| **Lokale KI**          | [@xenova/transformers](https://huggingface.co/docs/transformers.js) + [@mlc-ai/web-llm](https://webllm.mlc.ai/) | Dreistufiges On-Device-ML: WebLLM (Qwen2.5-1.5B, WebGPU), Transformers.js (Qwen Text + CLIP Vision), Heuristiken. |
 | **Asynchrone Op.**     | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                             | Verwaltet alle Gemini-API-Interaktionen mit automatischem Caching und Ladezuständen.                     |
 | **Nebenläufigkeit**    | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                          | Komplexe Pflanzensimulation außerhalb des Haupt-Threads.                                                 |
 | **Datenpersistenz**    | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (Dual-Datenbank-Architektur) | Volle Offline-Funktionalität via `CannaGuideStateDB` (Redux) und `CannaGuideDB` (Sorten, Bilder, Suche). |
@@ -752,6 +889,121 @@ Wie im [DeepWiki des Projekts](https://deepwiki.com/qnbs/CannaGuide-2025) erwäh
 - `workers/`: Web-Worker-Skripte für Hintergrundsimulation.
 - `utils/`: Gemeinsam genutzte Hilfsfunktionen.
 - `types/`: TypeScript-Typdefinitionen und Zod-Schemas.
+
+---
+
+## 🧠 Lokale KI-Architektur
+
+CannaGuide enthält einen produktionsreifen, dreistufigen On-Device-ML-Stack, der datenschutzfreundliche, latenzfreie KI liefert, wenn die Cloud-API nicht erreichbar ist (offline, Kontingent erschöpft, fehlender Key) — oder sobald Modelle vorab geladen und warm sind.
+
+### Dreistufige Fallback-Kaskade
+
+```
+[Cloud Gemini API]
+        │ ← nicht verfügbar?
+        ▼
+┌─ Stufe 1 ─── WebLLM (WebGPU) ─────────────────────────────┐
+│  Qwen2.5-1.5B-Instruct (q4f16_1, MLC-kompiliert)          │
+│  Volle Chat-Completion-Inferenz auf GPU via @mlc-ai/web-llm │
+│  → Beste Qualität, erfordert navigator.gpu                  │
+└────────────────────────────────────────────────────────────┘
+        │ ← WebGPU nicht verfügbar oder Ladefehler?
+        ▼
+┌─ Stufe 2 ─── Transformers.js (ONNX) ──────────────────────┐
+│  Text:   Xenova/Qwen2.5-1.5B-Instruct (primär)            │
+│          Xenova/Qwen3-0.5B (Ultra-leicht-Fallback)         │
+│  Vision: Xenova/clip-vit-large-patch14 (Zero-Shot, 33 Lbl) │
+│  Backend: WebGPU → WASM (automatisch erkannt)              │
+└────────────────────────────────────────────────────────────┘
+        │ ← Modell-Lade fehler oder Timeout?
+        ▼
+┌─ Stufe 3 ─── Deterministische Heuristiken ─────────────────┐
+│  Regelbasierte Pflanzendiagnose (VPD, pH, EC, Temp, Feucht)│
+│  Lokalisierte EN/DE-Beratung, null Netzwerkabhängigkeit    │
+│  Garantierte Antwort — immer verfügbar                      │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Modellbestand
+
+| Konstante           | Modell                               | Zweck                                                         | Laufzeit        |
+| ------------------- | ------------------------------------ | ------------------------------------------------------------- | --------------- |
+| `WEBLLM_MODEL_ID`   | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Volle Chat-Completion auf WebGPU, beste lokale Qualität       | @mlc-ai/web-llm |
+| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`       | Primäre Textgenerierung (multilingual, starke DE-Performance) | Transformers.js |
+| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                  | Ultra-leichter Fallback für schwache Geräte                   | Transformers.js |
+| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`      | Zero-Shot-Pflanzenzustandsklassifikation (33 Cannabis-Labels) | Transformers.js |
+
+### 33 Zero-Shot Cannabis-Zustandslabels
+
+Das CLIP-Vision-Modell klassifiziert Pflanzenfotos gegen einen kuratierten Labelsatz, der das gesamte Spektrum der Cannabis-Anbauprobleme abdeckt:
+
+**Nährstoffmängel** (10): Stickstoff, Phosphor, Kalium, Calcium, Magnesium, Eisen, Zink, Schwefel, Mangan, Bor  
+**Umweltstress** (7): Hitzestress, Lichtstress, Lichtverbrennung, Kältestress, Windschaden, Nährstoffbrand, Nährstoffblockade  
+**Bewässerungsprobleme** (2): Überwässerung, Unterwässerung  
+**Schädlinge & Krankheiten** (9): Mehltau, Botrytis-Blütenfäule, Spinnmilben, Trauermücken, Blattläuse, Thripse, Weiße Fliegen, Blattfleckenpilze, Septoria  
+**Sonstige** (5): Wurzelfäule, pH-Ungleichgewicht, Revegetationsstress, Tabakmosaikvirus, Gesunde Pflanze
+
+Jedes Label ist mit lokalisierten Diagnosetexten in EN und DE mit umsetzbarer Anbauberatung verknüpft.
+
+### ONNX-Backend-Routing
+
+`localAIModelLoader.ts` erkennt automatisch den optimalen Ausführungs-Provider:
+
+1. **WebGPU** — wenn `navigator.gpu` vorhanden (modernes Chrome, Edge). Bietet nahezu native GPU-Beschleunigung.
+2. **WASM** — universeller Fallback für alle Browser. Zuverlässig, aber langsamer.
+
+Ein **WASM-erzwingen**-Schalter in den Einstellungen überschreibt die automatische Erkennung zum Debuggen. `onnxruntime-web` (v1.21+) ist eine direkte Abhängigkeit für stabile WebGPU- und WASM-ONNX-Ausführung.
+
+### Inferenz-Caching & Retry
+
+- **LRU-Cache**: Map mit max. **64 Einträgen**, indiziert durch die ersten 200 Zeichen jedes Prompts. Identische Prompts liefern sofort gecachte Ergebnisse ohne Modell-Inferenz.
+- **Retry-Logik**: Bis zu **2 Wiederholungen** mit 500ms exponentiellem Backoff, bevor auf Heuristiken zurückgefallen wird. Fehlgeschlagene Versuche verschmutzen den Cache nicht.
+- **Pipeline-Cache**: `loadTransformersPipeline` speichert Pipeline-Promises, indiziert durch `task::modelId`. Folgeaufrufe geben das gecachte Promise zurück; Fehler werden automatisch entfernt, damit der nächste Aufruf es erneut versuchen kann.
+
+### Zentrales KI-Routing (`aiService.ts`)
+
+Alle KI-Aufrufe gehen von `aiService.ts` aus, das entscheidet, ob an die Cloud (Gemini) oder den lokalen Stack geroutet wird:
+
+```ts
+shouldRouteLocally() → isOffline() || localAiPreloadService.isReady()
+```
+
+- Wenn offline **oder** lokale Modelle vorab geladen wurden, werden Anfragen vollständig auf dem Gerät verarbeitet.
+- `generateStrainImage` und `getEquipmentRecommendation` routen immer zu Gemini (erfordern Cloud-Fähigkeiten).
+- Die `shouldUseLocalFallback()` im Gemini-Service prüft zusätzlich `isReady()`, bevor bei API-Fehlern lokale Inferenz versucht wird.
+
+### Preload & Fortschritts-UI
+
+Nutzer können das bedarfsgesteuerte Modell-Preloading unter **Einstellungen → Lokale KI** auslösen:
+
+- Echtzeit-Fortschrittsbalken mit geladenen/gesamt Modellen und aktuellem Label (text-model → vision-model → web-llm).
+- Persistente Statusverfolgung via `localStorage` (State, Zeitstempel, Pro-Modell-Bereitschaft, Persistent-Storage-Grant-Status).
+- `isReady()`-Komfortprüfung: Gibt `true` zurück, wenn State `'ready'` oder `'partial'` mit geladenem Textmodell.
+- Preload-Timing-Benchmarks werden nach Abschluss angezeigt.
+
+### Sentry-Fehler-Attribution
+
+Alle lokalen KI-Fehler werden über `captureLocalAiError()` in `sentryService.ts` mit strukturierten Tags erfasst:
+
+```
+feature: local-ai
+ai.stage: preload | inference | vision | webllm | fallback
+ai.model: <model-id>
+ai.backend: webgpu | wasm
+retryAttempt: 0 | 1 | 2
+```
+
+Dies ermöglicht das Filtern und Monitoring der lokalen KI-Gesundheit im Sentry-Dashboard, getrennt von Cloud-KI-Fehlern.
+
+### Bundle-Strategie
+
+Lokale KI-Laufzeiten werden über Vites `manualChunks` in einen dedizierten `ai-runtime`-Chunk aufgetrennt:
+
+```
+@xenova/transformers + onnxruntime-web + @mlc-ai/web-llm → ai-runtime.js
+```
+
+Der Chunk ist vom `optimizeDeps`-Pre-Bundling ausgeschlossen und wird nur bei Bedarf lazy geladen, um das Haupt-Bundle schlank zu halten.
 
 ---
 
@@ -923,6 +1175,10 @@ Wichtig:
     3.  Falls nötig, den Update-Button im In-App-Banner nutzen.
     4.  Nur als letzter Schritt in den Browser-DevTools unter `Application → Service Workers` manuell `Update/Unregister` ausführen.
 - **Datenprobleme**: Sollte der Zustand der Anwendung beschädigt werden, können Sie einen Hard-Reset durchführen, indem Sie zu `Einstellungen > Datenverwaltung > Alle App-Daten zurücksetzen` navigieren. **Achtung: Dies löscht alle Ihre lokalen Daten.**
+- **Lokale KI-Modelle laden nicht**: Stellen Sie eine stabile Verbindung für den ersten Modell-Download sicher. Prüfen Sie, ob der Browserspeicher nicht voll ist (Einstellungen → Datenverwaltung → Speicherübersicht). Falls Persistent Storage nicht gewährt ist, kann der Browser gecachte Modelle entfernen. Versuchen Sie erneut „Modelle laden".
+- **WebLLM nicht verfügbar**: WebLLM erfordert WebGPU-Unterstützung (modernes Chrome/Edge). Auf nicht unterstützten Browsern fällt CannaGuide automatisch auf Transformers.js (WASM) zurück. Dies ist erwartetes Verhalten — kein Fehler.
+- **Lokale KI langsam**: Aktivieren Sie den **WASM-erzwingen**-Schalter in Einstellungen → Lokale KI, wenn Sie WebGPU-Treiberprobleme vermuten. Wechseln Sie zum leichtgewichtigen `Qwen3-0.5B`-Modell für schnellere Inferenz auf schwachen Geräten.
+- **Cloud-Sync-Probleme**: Gist-Push/Pull ist anonym und von GitHub ratenbegrenzt. Bei Push-Fehlern kurz warten und erneut versuchen. Stellen Sie sicher, dass die Gist-URL/ID beim Pull korrekt ist. Synchronisierte Daten werden validiert — beschädigte Gists zeigen eine Fehlermeldung.
 
 ---
 
@@ -959,8 +1215,8 @@ Bitte halten Sie sich an den bestehenden Codestil und stellen Sie sicher, dass I
 
 | Version | Status | Highlights |
 |---------|--------|------------|
-| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 258 Tests, ESP32, Zuchtlabor, EN/DE i18n |
-| **v1.1** | ✅ Veröffentlicht | Sentry Error-Tracking, Playwright Component-Tests, Netlify Deployment mit PR-Previews, PWA Auto-Update mit Changelog, Docker ESP32-Mock Sensor-Simulation, CI/CD für Tauri + Capacitor Builds |
+| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 Tests, ESP32, Zuchtlabor, EN/DE i18n |
+| **v1.1** | ✅ Veröffentlicht | **Lokaler KI-Stack** (WebLLM + Transformers.js + CLIP-Vision, 33 Labels), ONNX-Backend-Routing (WebGPU/WASM), Inferenz-Caching (LRU-64), Modell-Preload-UI mit Benchmarks, Sentry lokale-KI-Attribution, Ein-Tipp Cloud-Sync (Gist), Tägliche Sortenkatalog-Automatisierung (04:20 UTC), Playwright Component-Tests, Netlify PR-Previews, PWA Auto-Update mit Changelog, Docker ESP32-Mock, CI/CD für Tauri + Capacitor |
 | **v1.2** | 🔄 Geplant | Zusätzliche Sprachen (ES, FR, NL), Erweiterte Nährstoffplanung mit EC/pH-Automatisierung, Community-Sorten-Marktplatz, Auto-generierte Grow-Berichte (PDF) |
 | **v1.3** | 📋 Geplant | Zusätzliche IoT-Sensoren, Zeitraffer-Foto-Journal, Sorten-Vergleichstool, Erweitertes Analyse-Dashboard, Three.js 3D-Visualisierungen |
 

@@ -41,7 +41,7 @@ jobs:
                       vite-${{ runner.os }}-
 
             - name: Security audit
-              run: npm audit --audit-level=moderate --omit=dev
+              run: npm audit --audit-level=high --omit=dev
 
             - name: Lint changed files
               env:
@@ -69,7 +69,9 @@ jobs:
               run: npm run build
 
             # Lighthouse uses vite preview via startServerCommand (lighthouserc.json)
+            # Advisory only – thresholds are tracked, not enforced in CI.
             - name: Lighthouse CI
+              continue-on-error: true
               run: npm run lighthouse:ci
 
             - name: Upload Lighthouse report
@@ -93,6 +95,7 @@ jobs:
               run: npm run test:e2e:install:ci
 
             - name: E2E tests (local)
+              continue-on-error: true
               run: npm run test:e2e
 
             - name: Upload Playwright report

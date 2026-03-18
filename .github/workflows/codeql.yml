@@ -1,12 +1,9 @@
 name: CodeQL
 
+# Disabled: requires Code Scanning to be enabled in GitHub repo settings.
+# Enable in Settings → Code security → Code scanning, then switch triggers back.
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  schedule:
-    - cron: '17 3 * * 1'
+  workflow_dispatch:
 
 permissions:
   actions: read

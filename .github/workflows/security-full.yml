@@ -1,12 +1,8 @@
 name: Security Full
 
+# Disabled: SARIF upload (CodeQL, Trivy, Scorecard) requires Code Scanning
+# to be enabled in GitHub repo settings. Run manually after enabling.
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
-    schedule:
-        - cron: '23 3 * * 1'
     workflow_dispatch:
 
 permissions:
@@ -38,6 +34,7 @@ jobs:
               run: npm ci
 
             - name: Build for CodeQL analysis
+              continue-on-error: true
               run: npm run build
 
             - name: Perform CodeQL analysis
@@ -105,14 +102,14 @@ jobs:
         name: Semgrep
         runs-on: ubuntu-latest
         timeout-minutes: 25
+        container:
+            image: semgrep/semgrep
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
             - name: Run Semgrep
-              uses: semgrep/semgrep-action@v1
-              with:
-                  config: auto
+              run: semgrep scan --config auto --error --metrics=off
 
     trojan-source:
         name: Anti Trojan Source

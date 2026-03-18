@@ -87,7 +87,7 @@ export const helpView = {
     title: 'User Manual',
     introduction: {
         title: 'Introduction & Philosophy',
-        content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> 100% functionality without an internet connection (excluding live AI requests). Actions are queued and synced later.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker.</li><li><strong>Data Sovereignty:</strong> Complete control with full backup and restore capabilities.</li><li><strong>AI as a Tool:</strong> Targeted use of Gemini AI for actionable, context-sensitive insights.</li></ul>`
+        content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> 100% functionality without an internet connection. Actions are queued and synced later. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with full backup, restore, and encrypted one-tap cloud sync via GitHub Gist. No server ever sees your data.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>`
     },
     general: {
       title: 'Platform-Wide Features',
@@ -114,7 +114,19 @@ export const helpView = {
       },
       localAi: {
         title: 'Local AI Fallback & Offline Models',
-        content: 'CannaGuide can keep working even when the network or AI provider is unavailable. Open <strong>Settings → General & UI</strong> and preload the local AI models while you are online. The app first tries the WebLLM runtime on capable devices and falls back to Transformer.js when WebGPU is not available. If the Gemini API is missing, offline, or rate-limited, the app uses heuristic analysis to keep advice available.'
+        content: 'CannaGuide ships a <strong>three-layer local AI stack</strong> so advice never stops:<ol><li><strong>WebLLM</strong> — GPU-accelerated inference via WebGPU (Qwen3-0.5B). Best quality on high-end devices.</li><li><strong>Transformers.js</strong> — ONNX-based WASM/WebGPU inference (Qwen2.5-1.5B-Instruct). Works on every modern browser.</li><li><strong>Heuristic Rules</strong> — Keyword and VPD-based analysis when no model is loaded.</li></ol>Open <strong>Settings → General & UI</strong> to preload models while online. The <strong>Force WASM</strong> toggle locks inference to WASM when WebGPU causes instability. CLIP-ViT-L-14 handles vision classification with 33 cannabis-specific labels. Inference results are cached in an LRU-64 cache to avoid repeat work.'
+      },
+      cloudSync: {
+        title: 'One-Tap Cloud Sync',
+        content: 'Back up your entire app state to a <strong>private GitHub Gist</strong> with a single tap. Open <strong>Settings → Data Management</strong> and enter a GitHub Personal Access Token with <code>gist</code> scope. The app creates or updates a private Gist that you own — your data never touches a third-party server. Restore on any device by importing from the same Gist.'
+      },
+      multiProvider: {
+        title: 'Multi-Provider AI (BYOK)',
+        content: 'CannaGuide supports <strong>four cloud AI providers</strong> through a Bring-Your-Own-Key (BYOK) model: Google Gemini, OpenAI, Anthropic, and xAI/Grok. Switch providers in <strong>Settings → AI</strong>. API keys are encrypted at rest with AES-256-GCM through the integrated crypto service. All providers share the same rate limiter (15 req/min sliding window) and the same local AI fallback chain.'
+      },
+      dailyStrains: {
+        title: 'Daily Strain Catalog Updates',
+        content: 'The strain library is refreshed automatically every day at 04:20 UTC via a GitHub Actions workflow. New community-contributed strains are validated for duplicates and merged into the catalog. You receive the latest additions through the next PWA update without any manual action.'
       }
     },
     strains: {
@@ -327,5 +339,21 @@ export const faq = {
   localAiTroubleshooting: {
     question: 'What should I do if offline model preload fails?',
     answer: 'Retry on a stable connection, make sure browser storage is not full, and confirm the device is allowed to persist storage. If needed, clear the offline cache in Settings and preload again.'
+  },
+  cloudSync: {
+    question: 'How does One-Tap Cloud Sync work?',
+    answer: 'CannaGuide backs up your entire app state to a <strong>private GitHub Gist</strong> that only you own. Open Settings → Data Management, add a GitHub Personal Access Token with <code>gist</code> scope, and tap Sync. Restore on any device by importing from the same Gist. No third-party server ever touches your data.'
+  },
+  multiProviderAi: {
+    question: 'Can I use a different AI provider?',
+    answer: 'Yes. CannaGuide supports <strong>Google Gemini, OpenAI, Anthropic, and xAI/Grok</strong> through a Bring-Your-Own-Key model. Switch providers in Settings → AI. All API keys are encrypted at rest with AES-256-GCM. If every provider is unavailable, the app falls back to the local AI stack.'
+  },
+  forceWasm: {
+    question: 'What does the Force WASM toggle do?',
+    answer: 'It locks the Local AI inference backend to WASM even when WebGPU is detected. Use it when WebGPU causes crashes or visual artifacts on your device. The toggle is found under Settings → General & UI.'
+  },
+  visionClassification: {
+    question: 'How does photo-based plant diagnosis work offline?',
+    answer: 'The app uses a CLIP-ViT-L-14 vision model that recognises 33 cannabis-specific labels — from healthy leaves to nutrient deficiencies, pests, and mould. The model runs entirely in the browser via ONNX and does not send images to any server. Preload it in Settings → General & UI while online.'
   }
 };

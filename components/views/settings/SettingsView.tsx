@@ -24,6 +24,8 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { apiKeyService } from '@/services/apiKeyService'
 import { aiProviderService, type AiProvider } from '@/services/aiProviderService'
 import { aiRateLimiter } from '@/services/aiRateLimiter'
+import { localAiPreloadService } from '../../../services/localAiPreloadService'
+import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 
 const AboutTab = lazy(() => import('./AboutTab'))
 const StrainsSettingsTab = lazy(() => import('./StrainsSettingsTab'))
@@ -304,6 +306,62 @@ const GeminiSecurityCard: React.FC = () => {
     )
 }
 
+const LocalAiOfflineCard: React.FC = () => {
+    const { t } = useTranslation()
+    const isOffline = useOnlineStatus()
+    const [isBusy, setIsBusy] = useState(false)
+    const [status, setStatus] = useState(() => localAiPreloadService.getStatus())
+
+    const handlePreload = async () => {
+        setIsBusy(true)
+        try {
+            const nextStatus = await localAiPreloadService.preloadOfflineModels()
+            setStatus(nextStatus)
+        } finally {
+            setIsBusy(false)
+        }
+    }
+
+    const statusLabel = (() => {
+        switch (status.state) {
+            case 'ready':
+                return t('settingsView.offlineAi.ready')
+            case 'partial':
+                return t('settingsView.offlineAi.partial')
+            case 'preloading':
+                return t('settingsView.offlineAi.preloading')
+            case 'error':
+                return t('settingsView.offlineAi.error')
+            default:
+                return t('settingsView.offlineAi.idle')
+        }
+    })()
+
+    return (
+        <Card>
+            <FormSection title={t('settingsView.offlineAi.title')} icon={<PhosphorIcons.DownloadSimple />} defaultOpen>
+                <div className="sm:col-span-2 space-y-4">
+                    <p className="text-sm text-slate-400">
+                        {t('settingsView.offlineAi.description')}
+                    </p>
+                    <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3 text-sm text-slate-300 space-y-1">
+                        <p>{statusLabel}</p>
+                        <p>{t('settingsView.offlineAi.cacheState', { value: status.details ?? 'n/a' })}</p>
+                        <p>{t('settingsView.offlineAi.persistentStorage', { value: status.persistentStorageGranted === null ? t('settingsView.offlineAi.unknown') : status.persistentStorageGranted ? t('settingsView.offlineAi.yes') : t('settingsView.offlineAi.no') })}</p>
+                        {status.readyAt && <p>{t('settingsView.offlineAi.readyAt', { value: new Date(status.readyAt).toLocaleString() })}</p>}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                        <Button onClick={handlePreload} disabled={isBusy || isOffline}>
+                            {isBusy ? t('settingsView.offlineAi.preloading') : t('settingsView.offlineAi.preload')}
+                        </Button>
+                    </div>
+                    {isOffline && <p className="text-xs text-amber-300">{t('settingsView.offlineAi.offlineHint')}</p>}
+                </div>
+            </FormSection>
+        </Card>
+    )
+}
+
 const GeneralSettingsTab: React.FC = () => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
@@ -336,6 +394,7 @@ const GeneralSettingsTab: React.FC = () => {
     return (
         <div className="space-y-6">
             <GeminiSecurityCard />
+            <LocalAiOfflineCard />
             <Card>
                 <FormSection title={t('settingsView.categories.lookAndFeel')} icon={<PhosphorIcons.Cube />} defaultOpen>
                     <div className="sm:col-span-2 space-y-6">

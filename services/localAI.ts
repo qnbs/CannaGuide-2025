@@ -19,10 +19,10 @@ import { localAiFallbackService, diagnosePlant as diagnoseWithRules } from '@/se
 import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
 import { z } from 'zod'
 
-const TEXT_MODEL_ID = 'Xenova/TinyLlama-1.1B-Chat-v1.0'
-const VISION_MODEL_ID = 'Xenova/clip-vit-base-patch32'
-const ALT_TEXT_MODEL_ID = 'Xenova/phi-2'
-const WEBLLM_MODEL_ID = 'Phi-3-mini-4k-instruct-q4f16_1-MLC'
+const TEXT_MODEL_ID = 'Xenova/Qwen2.5-1.5B-Instruct'
+const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
+const ALT_TEXT_MODEL_ID = 'Xenova/Qwen3-0.5B'
+const WEBLLM_MODEL_ID = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
 
 const ZERO_SHOT_LABELS = [
     'healthy plant',
@@ -31,14 +31,33 @@ const ZERO_SHOT_LABELS = [
     'potassium deficiency',
     'calcium deficiency',
     'magnesium deficiency',
+    'iron deficiency',
+    'zinc deficiency',
+    'sulfur deficiency',
+    'manganese deficiency',
+    'boron deficiency',
     'overwatering',
     'underwatering',
     'heat stress',
     'light stress',
+    'light burn',
+    'cold stress',
+    'wind burn',
     'nutrient burn',
+    'nutrient lockout',
+    'root rot',
     'powdery mildew',
+    'botrytis bud rot',
     'spider mites',
+    'fungus gnats',
+    'aphids',
+    'thrips',
+    'whiteflies',
     'fungal leaf spot',
+    'septoria leaf spot',
+    'tobacco mosaic virus',
+    'pH imbalance',
+    'revegetation stress',
 ] as const
 
 const isGerman = (lang: Language) => lang === 'de'
@@ -173,12 +192,26 @@ class LocalAiService {
         return null
     }
 
-    async preloadOfflineAssets(includeWebLlm = false): Promise<LocalAiPreloadReport> {
-        const tasks: Array<Promise<unknown>> = [this.loadTextPipeline(), this.loadVisionPipeline()]
-        const [textResult, visionResult] = await Promise.allSettled(tasks)
-        const webLlmResult = includeWebLlm && supportsWebGpu()
-            ? await Promise.allSettled([this.loadWebLlmEngine()]).then((results) => results[0])
-            : null
+    async preloadOfflineAssets(
+        includeWebLlm = false,
+        onProgress?: (loaded: number, total: number, label: string) => void,
+    ): Promise<LocalAiPreloadReport> {
+        const totalSteps = includeWebLlm && supportsWebGpu() ? 3 : 2
+        let loaded = 0
+
+        onProgress?.(loaded, totalSteps, 'text-model')
+        const textResult = await Promise.allSettled([this.loadTextPipeline()]).then((r) => r[0])
+        onProgress?.(++loaded, totalSteps, 'vision-model')
+
+        const visionResult = await Promise.allSettled([this.loadVisionPipeline()]).then((r) => r[0])
+        onProgress?.(++loaded, totalSteps, 'vision-model')
+
+        let webLlmResult: PromiseSettledResult<unknown> | null = null
+        if (includeWebLlm && supportsWebGpu()) {
+            onProgress?.(loaded, totalSteps, 'web-llm')
+            webLlmResult = await Promise.allSettled([this.loadWebLlmEngine()]).then((r) => r[0])
+            onProgress?.(++loaded, totalSteps, 'web-llm')
+        }
 
         return {
             textModelReady: textResult.status === 'fulfilled',
@@ -261,6 +294,82 @@ class LocalAiService {
             'fungal leaf spot': {
                 en: 'Possible fungal leaf spot: circular lesions may indicate moisture-related disease.',
                 de: 'Mögliche Blattfleckenpilze: Kreisförmige Läsionen können auf feuchtebedingte Probleme hindeuten.',
+            },
+            'iron deficiency': {
+                en: 'Possible iron deficiency: new growth turns pale yellow while veins stay green.',
+                de: 'Möglicher Eisenmangel: Neues Wachstum wird blassgelb, während Blattadern grün bleiben.',
+            },
+            'zinc deficiency': {
+                en: 'Possible zinc deficiency: interveinal chlorosis on newer leaves with stunted growth.',
+                de: 'Möglicher Zinkmangel: Zwischenadernvergilbung an jungen Blättern mit gehemmtem Wachstum.',
+            },
+            'sulfur deficiency': {
+                en: 'Possible sulfur deficiency: uniform yellowing of new leaves.',
+                de: 'Möglicher Schwefelmangel: Gleichmäßige Vergilbung junger Blätter.',
+            },
+            'manganese deficiency': {
+                en: 'Possible manganese deficiency: light yellow areas between veins of young leaves.',
+                de: 'Möglicher Manganmangel: Hellgelbe Bereiche zwischen den Adern junger Blätter.',
+            },
+            'boron deficiency': {
+                en: 'Possible boron deficiency: hollow stems and distorted, thick new growth.',
+                de: 'Möglicher Bormangel: Hohle Stängel und verformtes, verdicktes Neuwachstum.',
+            },
+            'light burn': {
+                en: 'Possible light burn: bleached upper canopy with crispy leaf tips closest to the light.',
+                de: 'Mögliche Lichtverbrennung: Gebleichte obere Krone mit verbrannten Blattspitzen nahe der Lampe.',
+            },
+            'cold stress': {
+                en: 'Possible cold stress: purple stems and slowed growth may signal low temperatures.',
+                de: 'Möglicher Kältestress: Violette Stängel und verlangsamtes Wachstum deuten auf zu niedrige Temperaturen.',
+            },
+            'wind burn': {
+                en: 'Possible wind burn: clawed leaves and uneven canopy from excessive airflow.',
+                de: 'Möglicher Windschaden: Gekrallte Blätter und ungleichmäßiges Blätterdach durch zu starke Belüftung.',
+            },
+            'nutrient lockout': {
+                en: 'Possible nutrient lockout: deficiency symptoms despite feeding – check pH and EC.',
+                de: 'Mögliche Nährstoffblockade: Mangelsymptome trotz Düngung – pH und EC prüfen.',
+            },
+            'root rot': {
+                en: 'Possible root rot: brown, slimy roots and persistent wilting despite adequate moisture.',
+                de: 'Mögliche Wurzelfäule: Braune, schleimige Wurzeln und anhaltendes Welken trotz ausreichend Feuchtigkeit.',
+            },
+            'botrytis bud rot': {
+                en: 'Possible botrytis (bud rot): gray mold on buds, often starts inside dense colas.',
+                de: 'Mögliche Botrytis (Blütenfäule): Grauschimmel an Buds, beginnt oft in dichten Blüten.',
+            },
+            'fungus gnats': {
+                en: 'Possible fungus gnats: tiny black flies near soil surface; larvae damage roots.',
+                de: 'Mögliche Trauermücken: Kleine schwarze Fliegen an der Substratoberfläche; Larven schädigen Wurzeln.',
+            },
+            aphids: {
+                en: 'Possible aphids: clusters of small soft-bodied insects on stems and undersides of leaves.',
+                de: 'Mögliche Blattläuse: Ansammlungen kleiner Insekten an Stängeln und Blattunterseiten.',
+            },
+            thrips: {
+                en: 'Possible thrips: silver streaks on leaves and tiny elongated insects.',
+                de: 'Mögliche Thripse: Silberne Streifen auf Blättern und winzige, längliche Insekten.',
+            },
+            whiteflies: {
+                en: 'Possible whiteflies: small white moths on leaf undersides; sticky honeydew residue.',
+                de: 'Mögliche Weiße Fliegen: Kleine weiße Falter an Blattunterseiten; klebrige Honigtau-Rückstände.',
+            },
+            'septoria leaf spot': {
+                en: 'Possible septoria: yellow-brown spots with dark borders on lower leaves.',
+                de: 'Mögliche Septoria: Gelb-braune Flecken mit dunklem Rand an unteren Blättern.',
+            },
+            'tobacco mosaic virus': {
+                en: 'Possible TMV: mosaic-patterned discoloration with curled and stunted leaves.',
+                de: 'Möglicher Tabakmosaikvirus: Mosaik-artige Verfärbungen mit eingerollten und verkümmerten Blättern.',
+            },
+            'pH imbalance': {
+                en: 'Possible pH imbalance: multiple deficiency symptoms at once, check and adjust root zone pH.',
+                de: 'Mögliches pH-Ungleichgewicht: Mehrere Mangelsymptome gleichzeitig – pH in der Wurzelzone prüfen und anpassen.',
+            },
+            'revegetation stress': {
+                en: 'Possible revegetation stress: unusual leaf shapes from light-cycle interruption.',
+                de: 'Möglicher Revegetationsstress: Ungewöhnliche Blattformen durch Unterbrechung des Lichtzyklus.',
             },
         }
 

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { localAiService } from '@/services/localAI'
+import { detectOnnxBackend } from '@/services/localAIModelLoader'
 import { PlantStage, type Plant, type Strain, StrainType } from '@/types'
 
 const pipelineMock = vi.fn()
@@ -124,5 +125,85 @@ describe('localAiService', () => {
 
         expect(response.title).toBe('Local Mentor')
         expect(response.content).toBe('Use less water.')
+    })
+
+    it('preloadOfflineAssets reports progress via callback', async () => {
+        pipelineMock.mockImplementation(async () => vi.fn())
+
+        const steps: Array<[number, number, string]> = []
+        const report = await localAiService.preloadOfflineAssets(false, (loaded, total, label) => {
+            steps.push([loaded, total, label])
+        })
+
+        expect(report.textModelReady).toBe(true)
+        expect(report.visionModelReady).toBe(true)
+        expect(report.errorCount).toBe(0)
+        expect(steps.length).toBeGreaterThanOrEqual(3)
+        expect(steps[0]).toEqual([0, 2, 'text-model'])
+    })
+
+    it('preloadOfflineAssets counts failures when pipelines reject', async () => {
+        // Clear cached pipeline promises from prior tests
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const svc = localAiService as any
+        svc.textPipelinePromise = null
+        svc.visionPipelinePromise = null
+        svc.webLlmPromise = null
+
+        pipelineMock.mockRejectedValue(new Error('offline – model unavailable'))
+
+        const report = await localAiService.preloadOfflineAssets()
+
+        expect(report.textModelReady).toBe(false)
+        expect(report.visionModelReady).toBe(false)
+        expect(report.webLlmReady).toBe(false)
+        expect(report.errorCount).toBe(2)
+    })
+
+    it('detects ONNX backend as wasm when WebGPU is unavailable', () => {
+        expect(detectOnnxBackend()).toBe('wasm')
+    })
+
+    it('classifies expanded cannabis labels including root rot', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const svc = localAiService as any
+        svc.visionPipelinePromise = null
+
+        pipelineMock.mockImplementation(async (task: string) => {
+            if (task === 'zero-shot-image-classification') {
+                return vi.fn(async () => ([
+                    { label: 'root rot', score: 0.88 },
+                    { label: 'overwatering', score: 0.08 },
+                    { label: 'healthy plant', score: 0.04 },
+                ]))
+            }
+            throw new Error(`Unexpected task ${task}`)
+        })
+
+        const result = await localAiService.diagnosePlant('ZmFrZQ==', 'image/jpeg', buildPlant(), '', 'en')
+
+        expect(result.diagnosis.toLowerCase()).toContain('root rot')
+        expect(result.confidence).toBeGreaterThan(0.8)
+    })
+
+    it('maps new German label for botrytis bud rot', async () => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const svc = localAiService as any
+        svc.visionPipelinePromise = null
+
+        pipelineMock.mockImplementation(async (task: string) => {
+            if (task === 'zero-shot-image-classification') {
+                return vi.fn(async () => ([
+                    { label: 'botrytis bud rot', score: 0.91 },
+                    { label: 'healthy plant', score: 0.09 },
+                ]))
+            }
+            throw new Error(`Unexpected task ${task}`)
+        })
+
+        const result = await localAiService.diagnosePlant('ZmFrZQ==', 'image/jpeg', buildPlant(), '', 'de')
+
+        expect(result.diagnosis.toLowerCase()).toContain('botrytis')
+        expect(result.title).toContain('Lokale Diagnose')
     })
 })

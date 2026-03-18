@@ -62,6 +62,7 @@ export const settingsView = {
     persistentStorage: 'Persistent storage: {{value}}',
     webGpuSupported: 'WebGPU is available on this device.',
     webGpuUnavailable: 'WebGPU is not available, so the app will use the Transformer.js fallback.',
+    onnxBackend: 'ONNX backend: {{value}}',
     webLlmReady: 'WebLLM is ready as a high-performance local runtime.',
     webLlmFallback: 'WebLLM is not active; local AI will fall back to Transformer.js.',
     readyAt: 'Last successful preload: {{value}}',

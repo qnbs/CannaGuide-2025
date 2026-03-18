@@ -44,6 +44,7 @@ export const settingsView = {
     rotationAge: 'vor {{days}} Tagen aktualisiert',
     rotationUnknown: 'Rotationsdatum unbekannt',
     rotationAdvice: 'Wechsle gespeicherte Keys regelmäßig und entferne sie auf gemeinsam genutzten Geräten sofort nach Gebrauch.',
+    rotationDue: 'Dieser Key hat das 90-Tage-Rotationsfenster überschritten und muss ersetzt werden, bevor KI-Anfragen wieder funktionieren.',
     auditLog: 'Lokales KI-Auditprotokoll',
     auditLogEmpty: 'Bisher wurden keine KI-Anfragen protokolliert.',
     clearAuditLog: 'Auditprotokoll löschen',

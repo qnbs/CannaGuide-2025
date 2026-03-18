@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 const RATE_LIMIT_WINDOW_MS = 60_000 // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 15
+const RATE_LIMIT_MAX_REQUESTS = 10
 
 const COST_TRACKER_STORAGE_KEY = 'cg.ai.costTracker'
 const AUDIT_LOG_STORAGE_KEY = 'cg.ai.auditLog'

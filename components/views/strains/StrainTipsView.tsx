@@ -14,6 +14,7 @@ import { BulkActionsBar } from './BulkActionsBar';
 import { SearchBar } from '@/components/common/SearchBar';
 import { Speakable } from '@/components/common/Speakable';
 import { exportStrainTips } from '@/stores/slices/savedItemsSlice';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[];
@@ -79,6 +80,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
     const [sortMode, setSortMode] = useState<'grouped' | 'date'>('grouped');
     const [selectedIds, setSelectedIds] = useState(new Set<string>());
     const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
     const handleUpdateSave = (updatedTip: SavedStrainTip) => {
         updateTip(updatedTip);
@@ -137,10 +139,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
     }, [selectedIds.size, allVisibleIds]);
 
     const handleBulkDelete = useCallback(() => {
-        if (window.confirm(t('strainsView.tips.deleteConfirmPlural_other', { count: selectedIds.size }))) {
-            selectedIds.forEach(id => deleteTip(id));
-            setSelectedIds(new Set());
-        }
+        setIsDeleteConfirmOpen(true);
     }, [selectedIds, deleteTip, t]);
     
     const onExport = (format: SimpleExportFormat) => {
@@ -167,6 +166,19 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
         <div className="mt-4">
             {editingTip && <EditStrainTipModal tip={editingTip} onClose={() => setEditingTip(null)} onSave={handleUpdateSave} />}
             <DataExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} onExport={onExport} title={t('strainsView.tips.title')} selectionCount={selectedIds.size} totalCount={filteredTips.length} translationBasePath="strainsView.tips.exportModal" />
+            <ConfirmDialog
+                open={isDeleteConfirmOpen}
+                onOpenChange={setIsDeleteConfirmOpen}
+                title={t('strainsView.tips.title')}
+                description={t('strainsView.tips.deleteConfirmPlural_other', { count: selectedIds.size })}
+                confirmLabel={t('common.delete')}
+                cancelLabel={t('common.cancel')}
+                onConfirm={() => {
+                    selectedIds.forEach(id => deleteTip(id));
+                    setSelectedIds(new Set());
+                    setIsDeleteConfirmOpen(false);
+                }}
+            />
 
             {selectedIds.size > 0 && (
                 <BulkActionsBar

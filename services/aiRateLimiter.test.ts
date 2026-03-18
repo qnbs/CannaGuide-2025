@@ -24,4 +24,12 @@ describe('aiRateLimiter', () => {
 
         expect(aiRateLimiter.getAuditLog()).toHaveLength(0)
     })
+
+    it('enforces the 10 request per minute limit', () => {
+        for (let index = 0; index < 10; index += 1) {
+            aiRateLimiter.acquireSlot(`endpoint-${index}`)
+        }
+
+        expect(() => aiRateLimiter.acquireSlot('endpoint-over-limit')).toThrow('ai.error.rateLimited')
+    })
 })

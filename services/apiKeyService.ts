@@ -4,9 +4,15 @@ import { encrypt, decrypt, isEncryptedPayload } from '@/services/cryptoService'
 
 const GEMINI_API_KEY_PATTERN = /^AIza[0-9A-Za-z_-]{20,}$/
 const GEMINI_API_KEY_METADATA_KEY = 'cg.gemini.apiKey.meta.v1'
+const KEY_ROTATION_WINDOW_MS = 90 * 24 * 60 * 60 * 1000
 
 interface ApiKeyMetadata {
     updatedAt: number
+}
+
+const isRotationDue = (metadata: ApiKeyMetadata | null): boolean => {
+    if (!metadata) return false
+    return Date.now() - metadata.updatedAt >= KEY_ROTATION_WINDOW_MS
 }
 
 const normalizeApiKey = (apiKey: string): string => apiKey.trim()
@@ -40,6 +46,12 @@ export const apiKeyService = {
     async getApiKey(): Promise<string | null> {
         const key = await indexedDBStorage.getItem(GEMINI_API_KEY_STORAGE_KEY)
         if (!key || typeof key !== 'string') {
+            return null
+        }
+
+        const metadata = loadMetadata()
+        if (isRotationDue(metadata)) {
+            await this.clearApiKey()
             return null
         }
 
@@ -116,5 +128,9 @@ export const apiKeyService = {
 
     getApiKeyMetadata(): ApiKeyMetadata | null {
         return loadMetadata()
+    },
+
+    isApiKeyRotationDue(): boolean {
+        return isRotationDue(loadMetadata())
     },
 }

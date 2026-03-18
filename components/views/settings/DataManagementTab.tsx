@@ -5,6 +5,7 @@ import { exportAllData, resetAllData, resetSliceData } from '@/stores/slices/set
 import { clearArchives } from '@/stores/slices/archivesSlice';
 import { setSimulationState } from '@/stores/slices/simulationSlice';
 import { Card } from '@/components/common/Card';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
@@ -116,6 +117,7 @@ const DataManagementTab: React.FC = () => {
     const [storageRefreshTick, setStorageRefreshTick] = useState(0);
     const [resetConfirmText, setResetConfirmText] = useState('');
     const [sliceToReset, setSliceToReset] = useState<VersionedSliceName | null>(null);
+    const [isClearArchivesConfirmOpen, setIsClearArchivesConfirmOpen] = useState(false);
     const resetPhrase = String(t('settingsView.data.resetAllConfirmPhrase'));
     const isResetDisabled = resetConfirmText.toLowerCase() !== resetPhrase;
 
@@ -188,6 +190,19 @@ const DataManagementTab: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            <ConfirmDialog
+                open={isClearArchivesConfirmOpen}
+                onOpenChange={setIsClearArchivesConfirmOpen}
+                title={t('settingsView.data.clearArchives')}
+                description={t('settingsView.data.clearArchivesConfirm')}
+                confirmLabel={t('common.delete')}
+                cancelLabel={t('common.cancel')}
+                onConfirm={() => {
+                    dispatch(clearArchives())
+                    setIsClearArchivesConfirmOpen(false)
+                }}
+            />
+
             <Dialog open={isImportConfirmOpen} onOpenChange={setIsImportConfirmOpen}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
@@ -326,7 +341,7 @@ const DataManagementTab: React.FC = () => {
                             <h4 className="font-bold text-slate-100">{t('settingsView.data.clearArchives')}</h4>
                             <p className="text-sm text-slate-400">{t('settingsView.data.clearArchivesDesc')}</p>
                         </div>
-                        <Button variant="destructive" size="sm" onClick={() => { if (window.confirm(String(t('settingsView.data.clearArchivesConfirm')))) { dispatch(clearArchives()) } }}>{t('common.delete')}</Button>
+                        <Button variant="destructive" size="sm" onClick={() => setIsClearArchivesConfirmOpen(true)}>{t('common.delete')}</Button>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg">
                          <div>

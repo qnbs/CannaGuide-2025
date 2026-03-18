@@ -14,6 +14,7 @@ import {
 import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { SafeHtml } from '@/components/common/SafeHtml'
 import { SearchBar } from '@/components/common/SearchBar'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 
 interface MentorArchiveTabProps {
     archivedResponses?: ArchivedMentorResponse[]
@@ -32,6 +33,7 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
     const [editingResponse, setEditingResponse] = useState<ArchivedMentorResponse | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const [selectedIds, setSelectedIds] = useState(new Set<string>())
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
     const normalizedArchiveResponses = useMemo(
         () => Array.isArray(archivedResponses) ? archivedResponses : [],
         [archivedResponses],
@@ -86,11 +88,28 @@ export const MentorArchiveTab: React.FC<MentorArchiveTabProps> = memo(({
     }
 
     const handleDelete = (id: string) => {
-        dispatch(deleteArchivedMentorResponse(id))
+        setPendingDeleteId(id)
     }
 
     return (
         <div>
+            <ConfirmDialog
+                open={pendingDeleteId !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingDeleteId(null)
+                }}
+                title={t('common.deleteResponse')}
+                description={t('common.deleteConfirm')}
+                confirmLabel={t('common.delete')}
+                cancelLabel={t('common.cancel')}
+                onConfirm={() => {
+                    if (pendingDeleteId) {
+                        dispatch(deleteArchivedMentorResponse(pendingDeleteId))
+                    }
+                    setPendingDeleteId(null)
+                }}
+            />
+
             {editingResponse && (
                 <EditResponseModal
                     response={{ ...editingResponse, title: editingResponse.title || '' }}

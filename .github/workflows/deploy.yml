@@ -54,8 +54,6 @@ jobs:
           npm ci --prefer-offline
           echo "::endgroup::"
 
-      # ── Vite build cache (node_modules/.vite) ──────────────────────────
-      # Key includes vite config + tsconfig so cache is invalidated on config changes.
       - name: 💾 Restore Vite build cache
         uses: actions/cache@v4
         with:
@@ -64,6 +62,8 @@ jobs:
           restore-keys: |
             vite-${{ runner.os }}-
 
+      # ── Vite build cache (node_modules/.vite) ──────────────────────────
+      # Key includes vite config + tsconfig so cache is invalidated on config changes.
       # ── Quality gates ───────────────────────────────────────────────────
       - name: 🔒 Security audit
         # Only audit production deps – devDep advisories (workbox-build,

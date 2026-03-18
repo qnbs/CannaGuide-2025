@@ -12,6 +12,8 @@ dist
 dist-ssr
 coverage
 .stryker-tmp
+.lighthouseci
+benchmark-metrics.json
 *.local
 
 # Editor directories and files

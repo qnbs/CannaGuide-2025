@@ -12,11 +12,22 @@ This README file supports two languages.
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
 [![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
 [![Tech Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
+[![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
+[![Accessibility](https://img.shields.io/badge/accessibility-95%25-brightgreen)]()
+[![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
+[![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-compliant-blue)]()
 [![Built with ❤️ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+
+**Current Performance Snapshot**
+
+- Lighthouse: 66 performance, 95 accessibility
+- Benchmark build: 87s
+- Main bundle: 332.9 kB transferred
+- Bundle analysis: `dist/source-map-explorer.html`
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
@@ -484,11 +495,22 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Build-Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/qnbs/CannaGuide-2025)
 [![Tests](https://img.shields.io/badge/tests-258%20passed-brightgreen)]()
 [![Tech-Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
+[![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
+[![Accessibility](https://img.shields.io/badge/accessibility-95%25-brightgreen)]()
+[![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
+[![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-konform-blue)]()
 [![Built with ❤️ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
+
+**Aktueller Performance-Snapshot**
+
+- Lighthouse: 66 Performance, 95 Accessibility
+- Benchmark-Build: 87s
+- Main Bundle: 332,9 kB übertragen
+- Bundle-Analyse: `dist/source-map-explorer.html`
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 

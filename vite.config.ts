@@ -17,6 +17,9 @@ const base = process.env.TAURI_ENV_PLATFORM
 // https://vitejs.dev/config/
 export default defineConfig({
   base,
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.npm_package_version ?? '0.0.0'),
+  },
   plugins: [
     react({
       // React 19 Compiler – automatically memoises components and hooks

@@ -218,8 +218,53 @@ console.warn(t('common:error.generic'));
 
 Use the [GitHub Issues](https://github.com/qnbs/CannaGuide-2025/issues) tab. We provide templates for:
 
-- **Bug Reports** — Describe the problem, steps to reproduce, expected vs. actual behavior.
-- **Feature Requests** — Describe the feature, use case, and proposed solution.
+- **🐛 Bug Reports** — Describe the problem, steps to reproduce, expected vs. actual behavior.
+- **✨ Feature Requests** — Describe the feature, use case, and proposed solution.
+- **🔒 Security Reports** — Follow `SECURITY.md` for responsible disclosure.
+- **📄 Documentation** — Report inaccurate or missing documentation.
+- **🌍 Translation** — Suggest translation improvements or new language support.
+- **♿ Accessibility** — Report accessibility barriers or WCAG compliance issues.
+
+### Issue Labels
+
+| Label | Description |
+|-------|-------------|
+| `bug` | Something isn't working |
+| `enhancement` | New feature or request |
+| `security` | Security vulnerability |
+| `documentation` | Documentation improvements |
+| `a11y` | Accessibility improvements |
+| `i18n` | Translation & localization |
+| `good first issue` | Good for newcomers |
+| `help wanted` | Extra attention needed |
+| `performance` | Performance improvements |
+| `ai` | AI/Gemini integration |
+| `pwa` | PWA & offline behavior |
+
+---
+
+## Architecture Decisions
+
+When proposing significant changes, please follow these guidelines:
+
+- **State management**: Domain/persistent data in Redux, ephemeral UI state is transient.
+- **AI calls**: All AI API calls go through the provider abstraction in `services/`.
+- **Security**: All user-facing HTML must use DOMPurify. All external links need `rel="noopener noreferrer"`.
+- **Error tracking**: Runtime errors are captured by Sentry. Use `Sentry.captureException()` for explicit error reporting.
+- **Testing**: Component tests use Playwright (`tests/ct/`), unit tests use Vitest, E2E tests use Playwright (`tests/e2e/`).
+
+---
+
+## Release Process
+
+1. Maintainer bumps version in `package.json`.
+2. Update `CHANGELOG.md` following [Keep a Changelog](https://keepachangelog.com/).
+3. Create a tag: `git tag v1.x.0 && git push --tags`.
+4. GitHub Actions automatically:
+   - Deploys to GitHub Pages and Netlify.
+   - Builds Tauri desktop apps (Windows/macOS/Linux).
+   - Builds Docker images.
+5. Create a GitHub Release with the CHANGELOG excerpt.
 
 ---
 

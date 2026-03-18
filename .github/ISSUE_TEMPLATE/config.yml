@@ -6,3 +6,6 @@ contact_links:
   - name: 📖 Documentation
     url: https://github.com/qnbs/CannaGuide-2025#readme
     about: Read the full documentation in our README.
+  - name: 🗺 Roadmap
+    url: https://github.com/qnbs/CannaGuide-2025/blob/main/ROADMAP.md
+    about: Check the project roadmap for upcoming features and milestones.

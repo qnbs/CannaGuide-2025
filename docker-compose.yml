@@ -22,3 +22,25 @@ services:
       timeout: 3s
       retries: 3
       start_period: 10s
+
+  esp32-mock:
+    build:
+      context: ./docker/esp32-mock
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    restart: unless-stopped
+    read_only: true
+    environment:
+      - ESP32_MOCK_PORT=3001
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.25"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3001/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

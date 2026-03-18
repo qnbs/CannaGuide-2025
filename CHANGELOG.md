@@ -4,6 +4,48 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ---
 
+## [1.1.0] — 2026-03-18
+
+### 🔍 Observability & Error Tracking
+
+- **Sentry integration**: Runtime error monitoring with `@sentry/react`. Performance traces sampled at 10%, session replay at 1% (100% on error). Browser extension errors filtered. Common noise (`ResizeObserver`, `AbortError`, `ChunkLoadError`) ignored.
+- **`services/sentryService.ts`**: Centralized Sentry initialization with release tagging (`cannaguide@<version>`) and environment detection.
+- **Safe Recovery reporting**: Corrupted state recovery events are now captured in Sentry with recovery reason tags.
+
+### 🧪 Testing
+
+- **Playwright Component Tests**: New `playwright-ct.config.ts` configuration with `@playwright/experimental-ct-react`. Example `Button.ct.tsx` test in `tests/ct/`.
+- **`npm run test:ct`** script added for running component tests.
+
+### 🚀 Deployment & Distribution
+
+- **Netlify deployment**: `netlify.toml` with full CSP headers, SPA redirects, immutable asset caching, and automatic PR preview deploys.
+- **Capacitor CI workflow**: `.github/workflows/capacitor-build.yml` for Android APK and iOS simulator builds on release tags.
+- **Docker ESP32-Mock**: `docker/esp32-mock/` service simulating ESP32 environmental sensors with diurnal temperature/humidity cycles. Integrated into `docker-compose.yml`.
+
+### 📱 PWA Improvements
+
+- **Auto-update notification with version**: SW update notifications now include the current app version for user awareness.
+- **Update dismissal cooldown**: 1-hour cooldown prevents notification spam after user dismissal.
+- **`updateAvailable` state**: Exposed from `usePwaInstall` hook for UI integration.
+- **`__APP_VERSION__` define**: Vite injects `package.json` version at build time for release tracking.
+
+### 📖 Documentation & Maintenance
+
+- **README.md**: Updated to v1.1.0 with dynamic CI badges, Sentry badge, Netlify badge, comprehensive roadmap table, and Tools & Stack section. Both EN and DE sections updated.
+- **CONTRIBUTING.md**: Extended with architecture decisions, release process, issue labels table, and additional issue template references.
+- **ROADMAP.md**: New standalone roadmap file with versioned release tables, refactoring initiatives, and contribution guide.
+- **copilot-instructions.md**: Created at `.github/copilot-instructions.md` with full project context for AI-assisted development.
+- **Issue templates**: Added `documentation.md`, `translation.md`, and `accessibility.md` templates. Updated `config.yml` with roadmap link.
+- **PR template**: Existing template preserved with security impact checklist.
+
+### 🏗 DevOps
+
+- **15 → 16 CI/CD workflows**: Added `capacitor-build.yml`.
+- **Vite config**: Added `__APP_VERSION__` define and `types/vite-env.d.ts` type declarations.
+
+---
+
 ## [1.0.0] — 2026-07-07
 
 ### 🔒 Security & DSGVO/GDPR

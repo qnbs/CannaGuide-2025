@@ -476,6 +476,10 @@ export interface AppSettings {
             feeding: string;
         };
     };
+    localAi: {
+        forceWasm: boolean;
+        preferredTextModel: 'auto' | 'qwen2.5' | 'qwen3';
+    };
     data: {
         autoBackup: 'off' | 'daily' | 'weekly';
         persistenceIntervalMs: 500 | 1500 | 5000;

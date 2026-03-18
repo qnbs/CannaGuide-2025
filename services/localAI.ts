@@ -16,6 +16,7 @@ import {
     StructuredGrowTipsSchema,
 } from '@/types/schemas'
 import { localAiFallbackService, diagnosePlant as diagnoseWithRules } from '@/services/localAiFallbackService'
+import { captureLocalAiError } from '@/services/sentryService'
 import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
 import { z } from 'zod'
 
@@ -148,6 +149,7 @@ class LocalAiService {
                 quantized: true,
             }).catch(async (primaryError: unknown) => {
                 console.warn('[LocalAI] Primary text model failed, retrying with alternate model.', primaryError)
+                captureLocalAiError(primaryError, { model: TEXT_MODEL_ID, stage: 'preload' })
                 return loadTransformersPipeline('text-generation', ALT_TEXT_MODEL_ID, {
                     quantized: true,
                 })
@@ -178,6 +180,7 @@ class LocalAiService {
                     })) as unknown as LocalWebLlmEngine
                 } catch (error) {
                     console.warn('[LocalAI] WebLLM unavailable, falling back to Transformers.js.', error)
+                    captureLocalAiError(error, { model: WEBLLM_MODEL_ID, stage: 'webllm' })
                     return null
                 }
             })()
@@ -206,6 +209,7 @@ class LocalAiService {
                     }
                 } catch (error) {
                     console.warn(`[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`, error)
+                    captureLocalAiError(error, { model: WEBLLM_MODEL_ID, stage: 'inference', retryAttempt: attempt })
                 }
             }
 
@@ -226,6 +230,7 @@ class LocalAiService {
                 }
             } catch (error) {
                 console.warn(`[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`, error)
+                captureLocalAiError(error, { model: TEXT_MODEL_ID, stage: 'inference', retryAttempt: attempt })
                 if (attempt < MAX_RETRIES) {
                     // Brief delay before retry
                     await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)))
@@ -276,6 +281,7 @@ class LocalAiService {
             return Array.isArray(result) ? result : []
         } catch (error) {
             console.warn('[LocalAI] Vision classification failed.', error)
+            captureLocalAiError(error, { model: VISION_MODEL_ID, stage: 'vision' })
             return []
         }
     }

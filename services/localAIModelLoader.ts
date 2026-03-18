@@ -7,12 +7,20 @@ export type OnnxBackend = 'webgpu' | 'wasm'
 
 let transformersModulePromise: Promise<TransformersModule> | null = null
 let detectedBackend: OnnxBackend | null = null
+let forceWasmOverride = false
 
 /** Cached pipeline instances keyed by `task::modelId`. */
 const pipelineCache = new Map<string, Promise<LocalAiPipeline>>()
 
+/** Allow callers (e.g. settings UI) to force WASM backend for debugging. */
+export const setForceWasm = (force: boolean): void => {
+    forceWasmOverride = force
+    detectedBackend = null // reset so next call re-evaluates
+}
+
 /** Detect the best available ONNX execution provider. */
 export const detectOnnxBackend = (): OnnxBackend => {
+    if (forceWasmOverride) return 'wasm'
     if (detectedBackend) return detectedBackend
     detectedBackend =
         typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm'

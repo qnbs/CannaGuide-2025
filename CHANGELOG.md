@@ -6,6 +6,29 @@ All notable changes to CannaGuide 2025 are documented in this file. Format follo
 
 ## [1.1.0] — 2026-03-18
 
+### 🤖 Local AI (Offline-First Inference)
+
+- **Three-layer local AI stack**: WebLLM (Qwen2.5-1.5B on WebGPU) → Transformers.js (Qwen2.5/Qwen3 text + CLIP-ViT-L-14 vision) → deterministic heuristic fallback.
+- **Central routing**: `aiService.ts` routes to local AI when offline or models are pre-loaded via `shouldRouteLocally()`.
+- **Preload service**: User-triggered model download with real-time progress bar in Settings. Persists status to localStorage.
+- **33 zero-shot cannabis labels**: Nutrient deficiencies (N, P, K, Ca, Mg, Fe, Zn, S, Mn, B), watering issues, environmental stress, 9 pest/disease conditions — all mapped to localized EN+DE advice.
+- **Inference caching**: LRU Map with 64 max entries, keyed by prompt prefix. Instant response for repeat queries.
+- **Retry logic**: 2× retry with 500 ms exponential backoff before falling back to heuristics.
+- **Pipeline caching**: `localAIModelLoader.ts` caches pipeline promises by `task::modelId`, auto-evicts on failure.
+- **ONNX backend routing**: Auto-detects WebGPU → WASM. Force-WASM toggle in Settings for debugging.
+- **Model selection UI**: Settings dropdown to switch between Qwen2.5-1.5B (balanced) and Qwen3-0.5B (lightweight).
+- **Performance benchmarks**: Real-time inference speed (tokens/s) and preload timing displayed in Settings.
+- **Sentry error attribution**: `captureLocalAiError()` tags local AI failures with model, stage, backend, and retry attempt.
+- **Breeding tips**: New `BreedingTipsSchema` Zod schema + `getBreedingTips()` method for strain crossing advice.
+- **`isReady()` convenience**: `localAiPreloadService.isReady()` checks text model readiness for routing decisions.
+- **`geminiService` guard**: `shouldUseLocalFallback()` checks `isReady()` before attempting local inference on API errors.
+
+### 🔄 Automation & Sync
+
+- **Daily strain catalog validation**: `.github/workflows/strains-daily-update.yml` runs `strains:merge` at 04:20 UTC (strict mode) with duplicate check and job summary report.
+- **One-tap cloud sync**: Anonymous GitHub Gist-based full-state push/pull — no account needed. Settings UI with enable toggle, push/pull buttons, Gist ID display, last-synced timestamp.
+- **Local-only mode**: Explicit "Local Only" badge in Data Management + onboarding privacy note. All data stays on-device by default.
+
 ### 🔍 Observability & Error Tracking
 
 - **Sentry integration**: Runtime error monitoring with `@sentry/react`. Performance traces sampled at 10%, session replay at 1% (100% on error). Browser extension errors filtered. Common noise (`ResizeObserver`, `AbortError`, `ChunkLoadError`) ignored.

@@ -98,6 +98,10 @@ export default defineConfig({
           if (id.includes('@google/genai')) {
             return 'ai'
           }
+          // Local AI runtime – keep browser model engines separate from the app shell
+          if (id.includes('@xenova/transformers') || id.includes('onnxruntime-web') || id.includes('onnxruntime-node') || id.includes('@mlc-ai/web-llm')) {
+            return 'ai-runtime'
+          }
           // PDF export – on-demand only
           if (id.includes('jspdf') || id.includes('jspdf-autotable')) {
             return 'pdf-export'

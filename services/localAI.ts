@@ -1,5 +1,4 @@
 import DOMPurify from 'dompurify'
-import { pipeline, env } from '@xenova/transformers'
 import {
     AIResponse,
     DeepDiveGuide,
@@ -14,11 +13,10 @@ import {
     AIResponseSchema,
     DeepDiveGuideSchema,
     MentorMessageContentSchema,
-    PlantDiagnosisResponseSchema,
     StructuredGrowTipsSchema,
 } from '@/types/schemas'
 import { localAiFallbackService, diagnosePlant as diagnoseWithRules } from '@/services/localAiFallbackService'
-import { getT } from '@/i18n'
+import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
 import { z } from 'zod'
 
 const TEXT_MODEL_ID = 'Xenova/TinyLlama-1.1B-Chat-v1.0'
@@ -89,17 +87,17 @@ const parseJsonSafely = <T>(schema: z.ZodType<T>, value: string): T | null => {
 }
 
 class LocalAiService {
-    private textPipelinePromise: Promise<any> | null = null
-    private visionPipelinePromise: Promise<any> | null = null
-    private webLlmPromise: Promise<any> | null = null
+    private textPipelinePromise: Promise<LocalAiPipeline> | null = null
+    private visionPipelinePromise: Promise<LocalAiPipeline> | null = null
+    private webLlmPromise: Promise<LocalWebLlmEngine | null> | null = null
 
-    private async loadTextPipeline(): Promise<any> {
+    private async loadTextPipeline(): Promise<LocalAiPipeline> {
         if (!this.textPipelinePromise) {
-            this.textPipelinePromise = pipeline('text-generation', TEXT_MODEL_ID, {
+            this.textPipelinePromise = loadTransformersPipeline('text-generation', TEXT_MODEL_ID, {
                 quantized: true,
-            }).catch(async (primaryError) => {
+            }).catch(async (primaryError: unknown) => {
                 console.warn('[LocalAI] Primary text model failed, retrying with alternate model.', primaryError)
-                return pipeline('text-generation', ALT_TEXT_MODEL_ID, {
+                return loadTransformersPipeline('text-generation', ALT_TEXT_MODEL_ID, {
                     quantized: true,
                 })
             })
@@ -107,16 +105,16 @@ class LocalAiService {
         return this.textPipelinePromise
     }
 
-    private async loadVisionPipeline(): Promise<any> {
+    private async loadVisionPipeline(): Promise<LocalAiPipeline> {
         if (!this.visionPipelinePromise) {
-            this.visionPipelinePromise = pipeline('zero-shot-image-classification', VISION_MODEL_ID, {
+            this.visionPipelinePromise = loadTransformersPipeline('zero-shot-image-classification', VISION_MODEL_ID, {
                 quantized: true,
             })
         }
         return this.visionPipelinePromise
     }
 
-    private async loadWebLlmEngine(): Promise<any | null> {
+    private async loadWebLlmEngine(): Promise<LocalWebLlmEngine | null> {
         if (!supportsWebGpu()) {
             return null
         }
@@ -124,9 +122,9 @@ class LocalAiService {
             this.webLlmPromise = (async () => {
                 try {
                     const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
-                    return await CreateMLCEngine(WEBLLM_MODEL_ID, {
+                    return (await CreateMLCEngine(WEBLLM_MODEL_ID, {
                         initProgressCallback: (report: unknown) => console.debug('[LocalAI][WebLLM]', report),
-                    })
+                    })) as unknown as LocalWebLlmEngine
                 } catch (error) {
                     console.warn('[LocalAI] WebLLM unavailable, falling back to Transformers.js.', error)
                     return null
@@ -162,7 +160,9 @@ class LocalAiService {
                 temperature: 0.6,
                 return_full_text: false,
             })
-            const generated = Array.isArray(output) ? output[0]?.generated_text : output?.generated_text
+            const generated = Array.isArray(output)
+                ? (output[0] as { generated_text?: string } | undefined)?.generated_text
+                : (output as { generated_text?: string } | undefined)?.generated_text
             if (typeof generated === 'string' && generated.trim().length > 0) {
                 return generated
             }
@@ -171,6 +171,24 @@ class LocalAiService {
         }
 
         return null
+    }
+
+    async preloadOfflineAssets(includeWebLlm = false): Promise<LocalAiPreloadReport> {
+        const tasks: Array<Promise<unknown>> = [this.loadTextPipeline(), this.loadVisionPipeline()]
+        const [textResult, visionResult] = await Promise.allSettled(tasks)
+        const webLlmResult = includeWebLlm && supportsWebGpu()
+            ? await Promise.allSettled([this.loadWebLlmEngine()]).then((results) => results[0])
+            : null
+
+        return {
+            textModelReady: textResult.status === 'fulfilled',
+            visionModelReady: visionResult.status === 'fulfilled',
+            webLlmReady: webLlmResult?.status === 'fulfilled' ? webLlmResult.value !== null : false,
+            errorCount:
+                Number(textResult.status === 'rejected') +
+                Number(visionResult.status === 'rejected') +
+                Number(webLlmResult?.status === 'rejected'),
+        }
     }
 
     private async classifyPlantImage(base64Image: string, mimeType: string): Promise<Array<{ label: string; score: number }>> {
@@ -412,6 +430,29 @@ class LocalAiService {
             proTip: sanitizeText(topic),
         }
     }
+}
+
+interface LocalWebLlmEngine {
+    chat: {
+        completions: {
+            create: (request: {
+                messages: Array<{ role: 'user'; content: string }>
+                temperature: number
+                max_gen_len: number
+            }) => Promise<{
+                choices?: Array<{
+                    message?: { content?: string }
+                }>
+            }>
+        }
+    }
+}
+
+export interface LocalAiPreloadReport {
+    textModelReady: boolean
+    visionModelReady: boolean
+    webLlmReady: boolean
+    errorCount: number
 }
 
 export const localAiService = new LocalAiService()

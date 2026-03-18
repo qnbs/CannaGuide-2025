@@ -150,6 +150,9 @@ export const common = {
         listening: 'Höre zu...',
         processing: 'Verarbeite: "{{transcript}}"',
         toggle: 'Sprachsteuerung umschalten',
+        assistantThinking: 'Denke nach...',
+        noPlantContext: 'Für den Sprachassistenten ist kein aktiver Pflanzenkontext verfügbar.',
+        assistantFailed: 'Sprachassistent-Anfrage fehlgeschlagen.',
         errors: {
             generic: 'Ein Fehler bei der Spracherkennung ist aufgetreten.',
             noSpeech: 'Keine Sprache erkannt.',

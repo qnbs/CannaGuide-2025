@@ -156,8 +156,8 @@ const simulationSlice = createSlice({
             const plant = state.plants.entities[action.payload.plantId];
             if (plant) plant.equipment.exhaustFan.power = action.payload.power;
         },
-        setGlobalEnvironment: (state, action: PayloadAction<{ temperature?: number; humidity?: number; simulationSettings?: AppSettings['simulation'] }>) => {
-            const { temperature, humidity, simulationSettings } = action.payload;
+        setGlobalEnvironment: (state, action: PayloadAction<{ temperature?: number; humidity?: number; ph?: number; simulationSettings?: AppSettings['simulation'] }>) => {
+            const { temperature, humidity, ph, simulationSettings } = action.payload;
             state.plantSlots.forEach(plantId => {
                 if (plantId) {
                     const plant = state.plants.entities[plantId];
@@ -167,6 +167,9 @@ const simulationSlice = createSlice({
                         }
                         if (humidity !== undefined) {
                             plant.environment.internalHumidity = humidity;
+                        }
+                        if (ph !== undefined) {
+                            plant.medium.ph = ph;
                         }
                         plant.environment = plantSimulationService.applyEnvironmentalCorrections(plant, simulationSettings).environment;
                     }

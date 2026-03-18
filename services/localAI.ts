@@ -24,6 +24,38 @@ const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
 const ALT_TEXT_MODEL_ID = 'Xenova/Qwen3-0.5B'
 const WEBLLM_MODEL_ID = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
 
+/** Simple LRU-style inference cache keyed by truncated prompt hash. */
+const INFERENCE_CACHE_MAX = 64
+const inferenceCache = new Map<string, string>()
+
+const cacheKey = (prompt: string): string => {
+    // Use first 200 chars as key – cheap, collision-unlikely for distinct prompts
+    return prompt.slice(0, 200)
+}
+
+const getCached = (prompt: string): string | null => {
+    const key = cacheKey(prompt)
+    const hit = inferenceCache.get(key)
+    if (hit) {
+        // Move to end (most recently used)
+        inferenceCache.delete(key)
+        inferenceCache.set(key, hit)
+    }
+    return hit ?? null
+}
+
+const setCached = (prompt: string, value: string): void => {
+    const key = cacheKey(prompt)
+    if (inferenceCache.size >= INFERENCE_CACHE_MAX) {
+        // Evict oldest entry
+        const oldest = inferenceCache.keys().next().value
+        if (oldest !== undefined) inferenceCache.delete(oldest)
+    }
+    inferenceCache.set(key, value)
+}
+
+const MAX_RETRIES = 2
+
 const ZERO_SHOT_LABELS = [
     'healthy plant',
     'nitrogen deficiency',
@@ -154,39 +186,51 @@ class LocalAiService {
     }
 
     private async generateText(prompt: string): Promise<string | null> {
-        const webLlm = await this.loadWebLlmEngine()
-        if (webLlm) {
+        // Check inference cache first
+        const cached = getCached(prompt)
+        if (cached) return cached
+
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            const webLlm = await this.loadWebLlmEngine()
+            if (webLlm) {
+                try {
+                    const response = await webLlm.chat.completions.create({
+                        messages: [{ role: 'user', content: prompt }],
+                        temperature: 0.5,
+                        max_gen_len: 512,
+                    })
+                    const content = response?.choices?.[0]?.message?.content
+                    if (typeof content === 'string' && content.trim().length > 0) {
+                        setCached(prompt, content)
+                        return content
+                    }
+                } catch (error) {
+                    console.warn(`[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`, error)
+                }
+            }
+
             try {
-                const response = await webLlm.chat.completions.create({
-                    messages: [{ role: 'user', content: prompt }],
-                    temperature: 0.5,
-                    max_gen_len: 512,
+                const generator = await this.loadTextPipeline()
+                const output = await generator(prompt, {
+                    max_new_tokens: 512,
+                    do_sample: true,
+                    temperature: 0.6,
+                    return_full_text: false,
                 })
-                const content = response?.choices?.[0]?.message?.content
-                if (typeof content === 'string' && content.trim().length > 0) {
-                    return content
+                const generated = Array.isArray(output)
+                    ? (output[0] as { generated_text?: string } | undefined)?.generated_text
+                    : (output as { generated_text?: string } | undefined)?.generated_text
+                if (typeof generated === 'string' && generated.trim().length > 0) {
+                    setCached(prompt, generated)
+                    return generated
                 }
             } catch (error) {
-                console.warn('[LocalAI] WebLLM generation failed, falling back to Transformers.js.', error)
+                console.warn(`[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`, error)
+                if (attempt < MAX_RETRIES) {
+                    // Brief delay before retry
+                    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)))
+                }
             }
-        }
-
-        try {
-            const generator = await this.loadTextPipeline()
-            const output = await generator(prompt, {
-                max_new_tokens: 512,
-                do_sample: true,
-                temperature: 0.6,
-                return_full_text: false,
-            })
-            const generated = Array.isArray(output)
-                ? (output[0] as { generated_text?: string } | undefined)?.generated_text
-                : (output as { generated_text?: string } | undefined)?.generated_text
-            if (typeof generated === 'string' && generated.trim().length > 0) {
-                return generated
-            }
-        } catch (error) {
-            console.warn('[LocalAI] Transformers.js text generation failed.', error)
         }
 
         return null

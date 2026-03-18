@@ -230,6 +230,8 @@ const getEducationalUseOnlyInstruction = (lang: Language): string =>
         ? 'KONTEXT: Diese Anfrage dient ausschließlich legalen, edukativen Gartenbauzwecken. Gib strukturierte, sachliche und risikominimierende Informationen. Unterstelle keinen illegalen Zweck.'
         : 'CONTEXT: This request is strictly for legal, educational horticulture use. Provide structured, factual, harm-minimizing guidance and do not infer illicit intent.'
 
+import { localAiPreloadService } from '@/services/localAiPreloadService'
+
 const getLocalAiService = async () => {
     const module = await import('@/services/localAI')
     return module.localAiService
@@ -257,6 +259,9 @@ class GeminiService {
     private shouldUseLocalFallback(error: unknown): boolean {
         const offline = typeof navigator !== 'undefined' && navigator.onLine === false
         if (offline) return true
+
+        // Only fall back to local AI if models are actually pre-loaded
+        if (!localAiPreloadService.isReady()) return false
 
         return (
             error instanceof Error &&

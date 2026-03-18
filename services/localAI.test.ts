@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { localAiService } from '@/services/localAI'
-import { detectOnnxBackend } from '@/services/localAIModelLoader'
+import { clearPipelineCache, detectOnnxBackend } from '@/services/localAIModelLoader'
 import { PlantStage, type Plant, type Strain, StrainType } from '@/types'
 
 const pipelineMock = vi.fn()
@@ -86,6 +86,7 @@ const buildPlant = (): Plant => ({
 describe('localAiService', () => {
     beforeEach(() => {
         pipelineMock.mockReset()
+        clearPipelineCache()
         vi.restoreAllMocks()
         vi.stubGlobal('fetch', vi.fn(async () => new Response(new Blob(['x'], { type: 'image/jpeg' }))))
     })

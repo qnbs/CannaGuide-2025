@@ -20,6 +20,7 @@ import {
 } from '@/stores/slices/archivesSlice'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 
 interface AiTabProps {
     plant: Plant
@@ -38,6 +39,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
     const [editingResponse, setEditingResponse] = useState<ArchivedAdvisorResponse | null>(null)
     const [isCurrentResponseSaved, setIsCurrentResponseSaved] = useState(false)
     const [isDiagnosisSaved, setIsDiagnosisSaved] = useState(false)
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
     const plantQueryData = JSON.stringify(
         {
@@ -113,6 +115,28 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
 
     return (
         <div className="space-y-6">
+            <ConfirmDialog
+                open={pendingDeleteId !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingDeleteId(null)
+                }}
+                title={t('common.deleteResponse')}
+                description={t('common.deleteConfirm')}
+                confirmLabel={t('common.delete')}
+                cancelLabel={t('common.cancel')}
+                onConfirm={() => {
+                    if (pendingDeleteId) {
+                        dispatch(
+                            deleteArchivedAdvisorResponse({
+                                plantId: plant.id,
+                                responseId: pendingDeleteId,
+                            }),
+                        )
+                    }
+                    setPendingDeleteId(null)
+                }}
+            />
+
             {editingResponse && (
                 <EditResponseModal
                     response={editingResponse}
@@ -262,14 +286,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
                                         <Button
                                             size="sm"
                                             variant="danger"
-                                            onClick={() =>
-                                                dispatch(
-                                                    deleteArchivedAdvisorResponse({
-                                                        plantId: plant.id,
-                                                        responseId: res.id,
-                                                    }),
-                                                )
-                                            }
+                                            onClick={() => setPendingDeleteId(res.id)}
                                             aria-label={t('common.deleteResponse')}
                                         >
                                             <PhosphorIcons.TrashSimple className="w-4 h-4" />

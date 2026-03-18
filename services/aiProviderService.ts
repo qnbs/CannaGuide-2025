@@ -28,6 +28,13 @@ export interface AiProviderKeyMetadata {
     updatedAt: number
 }
 
+const KEY_ROTATION_WINDOW_MS = 90 * 24 * 60 * 60 * 1000
+
+const isRotationDue = (metadata: AiProviderKeyMetadata | null): boolean => {
+    if (!metadata) return false
+    return Date.now() - metadata.updatedAt >= KEY_ROTATION_WINDOW_MS
+}
+
 // ---------------------------------------------------------------------------
 // Provider Configurations
 // ---------------------------------------------------------------------------
@@ -144,6 +151,13 @@ async function getProviderApiKey(provider: AiProvider): Promise<string | null> {
     const config = PROVIDER_CONFIGS[provider]
     const raw = await indexedDBStorage.getItem(config.keyStorageKey)
     if (!raw || typeof raw !== 'string') return null
+
+    const metadata = loadProviderMetadata(provider)
+    if (isRotationDue(metadata)) {
+        await clearProviderApiKey(provider)
+        return null
+    }
+
     let resolved = raw
     if (isEncryptedPayload(raw)) {
         try { resolved = await decrypt(raw) } catch { return null }
@@ -191,6 +205,10 @@ function isValidProviderKeyFormat(provider: AiProvider, apiKey: string): boolean
 
 function getProviderKeyMetadata(provider: AiProvider): AiProviderKeyMetadata | null {
     return loadProviderMetadata(provider)
+}
+
+function isProviderKeyRotationDue(provider: AiProvider): boolean {
+    return isRotationDue(loadProviderMetadata(provider))
 }
 
 // ---------------------------------------------------------------------------
@@ -345,6 +363,7 @@ export const aiProviderService = {
     getMaskedProviderApiKey,
     isValidProviderKeyFormat,
     getProviderKeyMetadata,
+    isProviderKeyRotationDue,
 
     // Text generation for non-Gemini providers
     generateTextWithProvider,

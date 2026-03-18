@@ -11,6 +11,7 @@ import { addArchivedMentorResponse } from '@/stores/slices/archivesSlice'
 import { selectLanguage } from '@/stores/selectors'
 import { Speakable } from '@/components/common/Speakable'
 import { SafeHtml } from '@/components/common/SafeHtml'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 
 interface MentorChatViewProps {
     plant: Plant
@@ -57,6 +58,7 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
 
     const [input, setInput] = useState('')
     const messagesEndRef = useRef<HTMLDivElement>(null)
+    const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false)
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -109,13 +111,24 @@ export const MentorChatView: React.FC<MentorChatViewProps> = ({ plant, onClose }
     }
 
     const handleClear = () => {
-        if (window.confirm(t('knowledgeView.aiMentor.clearConfirm'))) {
-            setHistory([])
-        }
+        setIsClearConfirmOpen(true)
     }
 
     return (
         <div className="flex flex-col animate-fade-in">
+            <ConfirmDialog
+                open={isClearConfirmOpen}
+                onOpenChange={setIsClearConfirmOpen}
+                title={t('knowledgeView.aiMentor.clearChat')}
+                description={t('knowledgeView.aiMentor.clearConfirm')}
+                confirmLabel={t('common.delete')}
+                cancelLabel={t('common.cancel')}
+                onConfirm={() => {
+                    setHistory([])
+                    setIsClearConfirmOpen(false)
+                }}
+            />
+
             <header className="flex-shrink-0 mb-4">
                 <div className="flex items-center justify-between">
                     <Button variant="secondary" onClick={onClose}>

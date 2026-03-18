@@ -86,6 +86,9 @@ const GeminiSecurityCard: React.FC = () => {
     const keyMetadata = activeProvider === 'gemini'
         ? apiKeyService.getApiKeyMetadata()
         : aiProviderService.getProviderKeyMetadata(activeProvider)
+    const keyRotationDue = activeProvider === 'gemini'
+        ? apiKeyService.isApiKeyRotationDue()
+        : aiProviderService.isProviderKeyRotationDue(activeProvider)
 
     const getErrorMessage = (error: unknown, fallbackKey: string): string => {
         if (error instanceof Error && typeof error.message === 'string' && error.message.length > 0) {
@@ -282,6 +285,11 @@ const GeminiSecurityCard: React.FC = () => {
                     <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3 text-xs text-slate-300 space-y-1">
                         <p>{t('settingsView.security.rotationLabel')}: {getKeyAgeLabel(keyMetadata?.updatedAt)}</p>
                         <p>{t('settingsView.security.rotationAdvice')}</p>
+                        {keyRotationDue && (
+                            <p className="text-red-300">
+                                {t('settingsView.security.rotationDue')}
+                            </p>
+                        )}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handleSaveApiKey} disabled={isBusy || apiKeyInput.trim().length === 0}>

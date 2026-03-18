@@ -32,7 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function 
     }
 
     const sizeClasses = {
-        sm: 'min-h-9 px-3 py-1.5 text-sm',
+        sm: 'min-h-11 px-3 py-1.5 text-sm',
         base: 'min-h-11 px-4 py-2.5',
         lg: 'min-h-12 px-6 py-3 text-lg',
         icon: 'h-11 w-11 p-0 flex items-center justify-center shrink-0',

@@ -4,6 +4,7 @@ import { SavedExport, Strain } from '@/types';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 
 interface ExportsManagerViewProps {
     savedExports: SavedExport[];
@@ -14,6 +15,7 @@ interface ExportsManagerViewProps {
 
 const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, allStrains, onDelete, onUpdate: _onUpdate }) => {
     const { t } = useTranslation();
+    const [pendingDeleteId, setPendingDeleteId] = React.useState<string | null>(null);
 
     const handleDownload = async (exp: SavedExport) => {
         const { exportService } = await import('@/services/exportService');
@@ -40,6 +42,23 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
 
     return (
         <div className="space-y-3">
+            <ConfirmDialog
+                open={pendingDeleteId !== null}
+                onOpenChange={(open) => {
+                    if (!open) setPendingDeleteId(null)
+                }}
+                title={t('strainsView.exportsManager.deleteConfirm')}
+                description={t('strainsView.exportsManager.deleteConfirm')}
+                confirmLabel={t('common.delete')}
+                cancelLabel={t('common.cancel')}
+                onConfirm={() => {
+                    if (pendingDeleteId) {
+                        onDelete(pendingDeleteId)
+                    }
+                    setPendingDeleteId(null)
+                }}
+            />
+
             {sortedExports.map(exp => (
                 <Card key={exp.id} className="!p-3">
                     <div className="flex justify-between items-center">
@@ -49,7 +68,7 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                             <Button size="sm" variant="secondary" onClick={() => handleDownload(exp)} title={t('common.downloadAgain')}><PhosphorIcons.DownloadSimple /></Button>
-                            <Button size="sm" variant="danger" onClick={() => onDelete(exp.id)} title={t('common.delete')}><PhosphorIcons.TrashSimple /></Button>
+                            <Button size="sm" variant="danger" onClick={() => setPendingDeleteId(exp.id)} title={t('common.delete')}><PhosphorIcons.TrashSimple /></Button>
                         </div>
                     </div>
                 </Card>

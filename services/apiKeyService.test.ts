@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { apiKeyService } from '@/services/apiKeyService'
+import { indexedDBStorage } from '@/stores/indexedDBStorage'
 
 vi.mock('@/stores/indexedDBStorage', () => ({
     indexedDBStorage: {
@@ -23,6 +24,18 @@ describe('apiKeyService', () => {
         const metadata = apiKeyService.getApiKeyMetadata()
         expect(metadata).not.toBeNull()
         expect(metadata?.updatedAt).toBeTypeOf('number')
+    })
+
+    it('invalidates api keys that are older than 90 days', async () => {
+        localStorage.clear()
+        localStorage.setItem(
+            'cg.gemini.apiKey.meta.v1',
+            JSON.stringify({ updatedAt: Date.now() - 91 * 24 * 60 * 60 * 1000 }),
+        )
+        vi.mocked(indexedDBStorage.getItem).mockResolvedValueOnce('AIzaSyB1234567890abcdefghij')
+
+        await expect(apiKeyService.getApiKey()).resolves.toBeNull()
+        expect(vi.mocked(indexedDBStorage.removeItem)).toHaveBeenCalled()
     })
 
     describe('isValidApiKeyFormat', () => {

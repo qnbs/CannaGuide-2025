@@ -388,6 +388,25 @@ class ExportService {
         );
         y += 8;
 
+        const summaryRows = [
+            ['Stage', plant.stage],
+            ['Growth day', `${plant.age} ${t('common.days')}`],
+            ['VPD', `${plant.environment.vpd.toFixed(2)} kPa`],
+            ['Temperature', `${plant.environment.internalTemperature.toFixed(1)} °C`],
+            ['Humidity', `${plant.environment.internalHumidity.toFixed(1)} % RH`],
+        ]
+
+        ((doc as JsPDFWithAutoTable)).autoTable({
+            startY: y,
+            body: summaryRows,
+            theme: 'plain',
+            styles: { fontSize: 9, cellPadding: 1.5, overflow: 'linebreak' },
+            columnStyles: { 0: { fontStyle: 'bold', textColor: 50, cellWidth: 55 }, 1: { textColor: 20 } },
+            margin: { left: leftMargin, right: rightMargin },
+        })
+
+        y = ((doc as JsPDFWithAutoTable)).lastAutoTable.finalY + 8
+
         const journalRows = [...plant.journal]
             .reverse()
             .slice(0, 30)

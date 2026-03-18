@@ -19,6 +19,8 @@ interface DialogWrapperProps {
   showCloseButton?: boolean
   variant?: 'modal' | 'drawer'
   enableSwipeToClose?: boolean
+  onOpenAutoFocus?: (event: Event) => void
+  onCloseAutoFocus?: (event: Event) => void
 }
 
 const sizeClasses: Record<DialogWrapperSize, string> = {
@@ -42,6 +44,8 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
   showCloseButton = true,
   variant = 'modal',
   enableSwipeToClose = false,
+  onOpenAutoFocus,
+  onCloseAutoFocus,
 }) => {
   const { t } = useTranslation()
   const scrollableContentRef = useRef<HTMLDivElement>(null)
@@ -116,6 +120,8 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
             onPointerMove={handlePointerMove}
             onPointerUp={handlePointerUp}
             onPointerCancel={handlePointerUp}
+            onOpenAutoFocus={onOpenAutoFocus}
+            onCloseAutoFocus={onCloseAutoFocus}
           >
             <header className="relative flex items-start justify-between gap-3 border-b border-white/10 bg-[linear-gradient(180deg,rgba(30,41,59,0.7),rgba(15,23,42,0.16))] p-5 pb-4">
               <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/60 to-transparent" aria-hidden="true" />

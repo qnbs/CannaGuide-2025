@@ -103,6 +103,62 @@ The most important tests are:
 - mentor response sanitization
 - preload state persistence
 - WebLLM fallback behavior when WebGPU is unavailable
+
+## Sentry Error Attribution
+
+All local AI failures are reported via `captureLocalAiError()` in `services/sentryService.ts`. Structured tags enable filtering in the Sentry dashboard:
+
+| Tag | Values | Purpose |
+|-----|--------|---------|
+| `feature` | `local-ai` | Separate from cloud AI errors |
+| `ai.stage` | `preload`, `inference`, `vision`, `webllm`, `fallback` | Identify failure layer |
+| `ai.model` | Model ID string | Track per-model error rates |
+| `ai.backend` | `webgpu`, `wasm` | Correlate backend with issues |
+| `retryAttempt` | `0`, `1`, `2` | Track retry depth |
+
+## Settings UI Integration
+
+The `LocalAiOfflineCard` component in `SettingsView.tsx` exposes:
+
+- **Preload button**: Triggers `localAiPreloadService.preloadOfflineModels()` with `onProgress` callback for real-time progress bar.
+- **Force WASM toggle**: Calls `setForceWasm()` from `localAIModelLoader.ts` and persists setting via `setSetting({ path: 'localAi.forceWasm', value })`.
+- **Model selector**: Dropdown to switch `preferredTextModel` between `auto`, `qwen2.5`, and `qwen3`.
+- **Status panel**: Displays ONNX backend, WebGPU support, WebLLM readiness, persistent storage grant, last preload time, and cache state.
+
+## Bundle Strategy
+
+Local AI runtimes are code-split into a dedicated `ai-runtime` chunk via Vite's `manualChunks` in `vite.config.ts`:
+
+```
+@xenova/transformers + onnxruntime-web + @mlc-ai/web-llm → ai-runtime.js
+```
+
+These packages are excluded from `optimizeDeps.include` and loaded lazily via dynamic `import()` only when local AI is invoked. This keeps the initial main bundle lean.
+
+## Zero-Shot Label Dictionary
+
+The vision model classifies against 33 cannabis-specific labels defined in `ZERO_SHOT_LABELS`. Each label maps through `mapIssueLabel()` to localized EN/DE diagnostic text. The label set covers:
+
+- 10 nutrient deficiencies (N, P, K, Ca, Mg, Fe, Zn, S, Mn, B)
+- 7 environmental stressors (heat, light, light burn, cold, wind, nutrient burn, lockout)
+- 2 watering issues (over/under)
+- 9 pest/disease conditions (powdery mildew, botrytis, spider mites, fungus gnats, aphids, thrips, whiteflies, fungal leaf spot, septoria)
+- 5 other (root rot, pH imbalance, revegetation stress, TMV, healthy plant)
+
+## Breeding Tips Schema
+
+`BreedingTipsSchema` in `types/schemas.ts` validates AI-generated crossing advice:
+
+```ts
+z.object({
+  crossName: z.string().min(1).max(200),
+  rationale: z.string().min(1).max(2000),
+  expectedTraits: z.array(z.string().max(300)).min(1).max(10),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard']),
+})
+```
+
+Used by both the cloud Gemini service and the local AI's `getBreedingTips()` method.
 - inference cache hit/miss behavior
 - retry logic on transient failures
 

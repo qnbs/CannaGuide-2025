@@ -159,7 +159,7 @@ npm run build && npx playwright test
 - Bug fixes **should** include a regression test.
 - Test files live next to their source: `MyComponent.test.tsx` or in `tests/`.
 - Use existing mocks from `tests/mocks/` for Gemini, IndexedDB, etc.
-- Current baseline: **258 tests, 0 failures**.
+- Current baseline: **307 tests, 0 failures**.
 
 ---
 

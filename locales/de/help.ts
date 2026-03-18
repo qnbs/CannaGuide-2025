@@ -87,7 +87,7 @@ export const helpView = {
     title: 'Benutzerhandbuch',
     introduction: {
         title: 'Einführung & Philosophie',
-        content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> 100%ige Funktionalität ohne Internetverbindung (ausgenommen Live-KI-Anfragen). Aktionen werden in eine Warteschlange gestellt und später synchronisiert.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch vollständige Backup- und Wiederherstellungsfunktionen.</li><li><strong>KI als Werkzeug:</strong> Gezielter Einsatz von Gemini KI für handlungsorientierte, kontextsensitive Einblicke.</li></ul>`
+        content: `Willkommen bei CannaGuide 2025, Ihrem ultimativen Co-Piloten für den Cannabisanbau. Dieses Handbuch führt Sie durch die hochentwickelten Funktionen der App.<h4>Unsere Kernprinzipien:</h4><ul><li><strong>Offline-First:</strong> 100%ige Funktionalität ohne Internetverbindung. Aktionen werden in eine Warteschlange gestellt und später synchronisiert. Ein dreistufiger lokaler KI-Stack stellt sicher, dass Diagnosen und Ratschläge auch ohne Netzwerk verfügbar bleiben.</li><li><strong>Performance-Driven:</strong> Eine flüssige UI dank Auslagerung komplexer Simulationen in einen Web Worker und ONNX-optimierter Inferenz mit LRU-Caching.</li><li><strong>Datensouveränität:</strong> Vollständige Kontrolle durch vollständige Backup-, Wiederherstellungs- und verschlüsselte Ein-Tipp-Cloud-Synchronisation via GitHub Gist. Kein Server sieht jemals Ihre Daten.</li><li><strong>Multi-Provider-KI:</strong> Bringen Sie Ihren eigenen Schlüssel mit für Google Gemini, OpenAI, Anthropic oder xAI/Grok — oder nutzen Sie den lokalen KI-Stack ganz ohne API-Schlüssel.</li></ul>`
     },
     general: {
       title: 'Plattformweite Funktionen',
@@ -114,7 +114,19 @@ export const helpView = {
       },
       localAi: {
         title: 'Lokaler KI-Fallback & Offline-Modelle',
-        content: 'CannaGuide kann auch weiterarbeiten, wenn das Netzwerk oder der KI-Anbieter nicht verfügbar ist. Öffnen Sie <strong>Einstellungen → Allgemein & UI</strong> und laden Sie die lokalen KI-Modelle vor, solange Sie online sind. Die App versucht auf geeigneten Geräten zuerst die WebLLM-Laufzeit und fällt auf Transformer.js zurück, wenn WebGPU nicht verfügbar ist. Wenn die Gemini-API fehlt, offline ist oder ein Limit erreicht hat, nutzt die App heuristische Analysen, damit Ratschläge verfügbar bleiben.'
+        content: 'CannaGuide liefert einen <strong>dreistufigen lokalen KI-Stack</strong>, damit Ratschläge nie abreißen:<ol><li><strong>WebLLM</strong> — GPU-beschleunigte Inferenz via WebGPU (Qwen3-0.5B). Beste Qualität auf leistungsstarken Geräten.</li><li><strong>Transformers.js</strong> — ONNX-basierte WASM/WebGPU-Inferenz (Qwen2.5-1.5B-Instruct). Funktioniert in jedem modernen Browser.</li><li><strong>Heuristiken</strong> — Schlüsselwort- und VPD-basierte Analyse, wenn kein Modell geladen ist.</li></ol>Öffnen Sie <strong>Einstellungen → Allgemein & UI</strong>, um Modelle im Voraus zu laden. Der <strong>Force-WASM</strong>-Schalter fixiert die Inferenz auf WASM, wenn WebGPU Instabilität verursacht. CLIP-ViT-L-14 übernimmt die Bildklassifizierung mit 33 Cannabis-spezifischen Labels. Inferenz-Ergebnisse werden in einem LRU-64-Cache gespeichert, um Wiederholungen zu vermeiden.'
+      },
+      cloudSync: {
+        title: 'Ein-Tipp Cloud-Synchronisation',
+        content: 'Sichern Sie Ihren gesamten App-Zustand in einem <strong>privaten GitHub Gist</strong> mit einem einzigen Tipp. Öffnen Sie <strong>Einstellungen → Datenverwaltung</strong> und geben Sie einen GitHub Personal Access Token mit <code>gist</code>-Berechtigung ein. Die App erstellt oder aktualisiert ein privates Gist, das nur Ihnen gehört — Ihre Daten berühren niemals einen Drittanbieter-Server. Stellen Sie auf jedem Gerät wieder her, indem Sie aus demselben Gist importieren.'
+      },
+      multiProvider: {
+        title: 'Multi-Provider-KI (BYOK)',
+        content: 'CannaGuide unterstützt <strong>vier Cloud-KI-Anbieter</strong> über ein Bring-Your-Own-Key-Modell (BYOK): Google Gemini, OpenAI, Anthropic und xAI/Grok. Wechseln Sie den Anbieter unter <strong>Einstellungen → KI</strong>. API-Schlüssel werden im Ruhezustand mit AES-256-GCM über den integrierten Kryptodienst verschlüsselt. Alle Anbieter teilen sich denselben Rate-Limiter (15 Anfragen/Min) und dieselbe lokale KI-Fallback-Kette.'
+      },
+      dailyStrains: {
+        title: 'Tägliche Sortenkatalog-Aktualisierungen',
+        content: 'Die Sortenbibliothek wird automatisch jeden Tag um 04:20 UTC über einen GitHub-Actions-Workflow aktualisiert. Neue von der Community beigetragene Sorten werden auf Duplikate geprüft und in den Katalog integriert. Sie erhalten die neuesten Ergänzungen mit dem nächsten PWA-Update ohne manuelles Zutun.'
       }
     },
     strains: {
@@ -327,5 +339,21 @@ export const faq = {
   localAiTroubleshooting: {
     question: 'Was tun, wenn das Offline-Preload fehlschlägt?',
     answer: 'Versuchen Sie es erneut mit stabiler Verbindung, stellen Sie sicher, dass der Browser-Speicher nicht voll ist, und prüfen Sie, ob persistenter Speicher erlaubt ist. Bei Bedarf können Sie den Offline-Cache in den Einstellungen löschen und erneut vorladen.'
+  },
+  cloudSync: {
+    question: 'Wie funktioniert die Ein-Tipp Cloud-Synchronisation?',
+    answer: 'CannaGuide sichert Ihren gesamten App-Zustand in einem <strong>privaten GitHub Gist</strong>, das nur Ihnen gehört. Öffnen Sie Einstellungen → Datenverwaltung, fügen Sie einen GitHub Personal Access Token mit <code>gist</code>-Berechtigung hinzu und tippen Sie auf Sync. Stellen Sie auf jedem Gerät wieder her, indem Sie aus demselben Gist importieren. Kein Drittanbieter-Server berührt jemals Ihre Daten.'
+  },
+  multiProviderAi: {
+    question: 'Kann ich einen anderen KI-Anbieter verwenden?',
+    answer: 'Ja. CannaGuide unterstützt <strong>Google Gemini, OpenAI, Anthropic und xAI/Grok</strong> über ein Bring-Your-Own-Key-Modell. Wechseln Sie den Anbieter unter Einstellungen → KI. Alle API-Schlüssel werden im Ruhezustand mit AES-256-GCM verschlüsselt. Wenn alle Anbieter nicht verfügbar sind, nutzt die App den lokalen KI-Stack als Fallback.'
+  },
+  forceWasm: {
+    question: 'Was bewirkt der Force-WASM-Schalter?',
+    answer: 'Er fixiert das lokale KI-Inferenz-Backend auf WASM, auch wenn WebGPU erkannt wird. Verwenden Sie ihn, wenn WebGPU auf Ihrem Gerät Abstürze oder visuelle Artefakte verursacht. Den Schalter finden Sie unter Einstellungen → Allgemein & UI.'
+  },
+  visionClassification: {
+    question: 'Wie funktioniert die fotobasierte Pflanzendiagnose offline?',
+    answer: 'Die App verwendet ein CLIP-ViT-L-14-Bildmodell, das 33 Cannabis-spezifische Labels erkennt — von gesunden Blättern über Nährstoffmängel bis hin zu Schädlingen und Schimmel. Das Modell läuft vollständig im Browser über ONNX und sendet keine Bilder an einen Server. Laden Sie es unter Einstellungen → Allgemein & UI vor, solange Sie online sind.'
   }
 };

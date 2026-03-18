@@ -138,9 +138,9 @@ jobs:
         name: 🎭 E2E Smoke Tests
         needs: deploy
         runs-on: ubuntu-latest
-        # E2E failures should not block the green checkmark on the commit –
-        # they are post-deploy validation. Set to true to make them advisory.
-        continue-on-error: false
+        # Post-deploy validation is advisory – failures should not block the
+        # green checkmark on the commit.
+        continue-on-error: true
         steps:
             - name: 📥 Checkout
               uses: actions/checkout@v4

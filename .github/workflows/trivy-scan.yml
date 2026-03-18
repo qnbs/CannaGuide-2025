@@ -1,12 +1,8 @@
 name: Trivy Scan
 
+# Disabled: standalone scan is redundant with security-full.yml and
+# SARIF upload requires Code Scanning to be enabled in repo settings.
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
-    schedule:
-        - cron: '41 4 * * 1'
     workflow_dispatch:
 
 permissions:

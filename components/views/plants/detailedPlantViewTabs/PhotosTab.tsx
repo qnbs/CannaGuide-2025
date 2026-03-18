@@ -12,6 +12,7 @@ interface PhotoTabProps {
 const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
     const [imageUrl, setImageUrl] = useState<string | null>((entry.details as PhotoDetails)?.imageUrl || null);
     const [isLoading, setIsLoading] = useState(!((entry.details as PhotoDetails)?.imageUrl));
+    const details = entry.details as PhotoDetails
 
     useEffect(() => {
         let isMounted = true;
@@ -43,6 +44,7 @@ const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
             <img src={imageUrl} alt={entry.notes} className="w-full h-48 object-cover rounded-lg" loading="lazy" />
             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end rounded-lg">
                 <p className="text-white text-sm font-semibold">{entry.notes}</p>
+                {details?.timelineLabel && <p className="text-primary-200 text-xs font-semibold">{details.timelineLabel}</p>}
                 <p className="text-white/70 text-xs">{new Date(entry.createdAt).toLocaleString()}</p>
             </div>
         </div>

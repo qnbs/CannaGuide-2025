@@ -53,6 +53,7 @@ const renderDetails = (entry: JournalEntry, t: (key: string) => string): string 
         case JournalEntryType.Photo: {
             const d = entry.details as PhotoDetails;
             if (d.photoCategory) detailsArray.push(`Category: ${t(`plantsView.actionModals.photo.categories.${d.photoCategory}`)}`);
+            if (d.timelineLabel) detailsArray.push(`Timeline: ${d.timelineLabel}`);
             break;
         }
         case JournalEntryType.PestControl: {

@@ -29,6 +29,7 @@ import { dbService } from '@/services/dbService'
 import { addNotification } from '@/stores/slices/uiSlice'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { resizeImage } from '@/services/imageService'
+import { photoTimelineService } from '@/services/photoTimelineService'
 
 interface LogActionModalProps {
     plant: Plant
@@ -72,6 +73,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 const photoDetails = finalDetails as Partial<PhotoDetailsType>
                 photoDetails.imageId = imageId
                 photoDetails.imageUrl = image // For immediate optimistic UI update
+                if (!photoDetails.capturedAt) {
+                    photoDetails.capturedAt = Date.now()
+                }
+                if (!photoDetails.timelineLabel) {
+                    photoDetails.timelineLabel = photoTimelineService.buildPhotoTimelineMetadata(plant, photoDetails.capturedAt).timelineLabel
+                }
             } catch {
                 dispatch(
                     addNotification({
@@ -145,6 +152,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     isOpen={isCameraOpen}
                     onClose={() => setIsCameraOpen(false)}
                     onCapture={async (dataUrl) => {
+                        const timelineMetadata = photoTimelineService.buildPhotoTimelineMetadata(plant, Date.now())
+                        setDetails((current) => ({
+                            ...current,
+                            capturedAt: timelineMetadata.capturedAt,
+                            timelineLabel: timelineMetadata.timelineLabel,
+                        }))
                         try {
                             const resizedImage = await resizeImage(dataUrl);
                             setImage(resizedImage);
@@ -198,6 +211,9 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                     label: t(`plantsView.actionModals.photo.categories.${c}`),
                                 }))}
                             />
+                            <p className="text-xs text-slate-400">
+                                {t('plantsView.actionModals.photo.autoLabelHint')}
+                            </p>
                             {image ? (
                                 <div className="relative">
                                     <img src={image} alt="preview" className="rounded-md" />
@@ -229,18 +245,31 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                         className="hidden"
                                         onChange={async (e) => {
                                             if (e.target.files?.[0]) {
-                                                const reader = new FileReader()
-                                                reader.onload = async () => {
-                                                    try {
-                                                        const resizedImage = await resizeImage(reader.result as string);
-                                                        setImage(resizedImage);
-                                                    } catch (err) {
-                                                        console.error("Image resizing failed:", err);
-                                                        setImage(reader.result as string); // fallback to original
-                                                        dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }));
-                                                    }
+                                                const file = e.target.files[0]
+                                                const dataUrl = await new Promise<string>((resolve, reject) => {
+                                                    const reader = new FileReader()
+                                                    reader.onload = () => resolve(reader.result as string)
+                                                    reader.onerror = () => reject(reader.error)
+                                                    reader.readAsDataURL(file)
+                                                })
+
+                                                const capturedAt = (await photoTimelineService.readCaptureTimestamp(file)) ?? Date.now()
+                                                const timelineMetadata = photoTimelineService.buildPhotoTimelineMetadata(plant, capturedAt)
+
+                                                setDetails((current) => ({
+                                                    ...current,
+                                                    capturedAt: timelineMetadata.capturedAt,
+                                                    timelineLabel: timelineMetadata.timelineLabel,
+                                                }))
+
+                                                try {
+                                                    const resizedImage = await resizeImage(dataUrl)
+                                                    setImage(resizedImage)
+                                                } catch (err) {
+                                                    console.error('Image resizing failed:', err)
+                                                    setImage(dataUrl)
+                                                    dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }))
                                                 }
-                                                reader.readAsDataURL(e.target.files[0])
                                             }
                                         }}
                                     />

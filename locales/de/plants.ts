@@ -381,6 +381,12 @@ export const plantsView = {
     enabledBtn: 'Benachrichtigungen aktiv',
     checkNowBtn: 'Jetzt prüfen',
     statusLabel: 'Status: {{permission}}. Periodische Hintergrundsynchronisierung wird genutzt, wenn verfügbar.',
+    batchTitle: 'Batch-Reminder per QR',
+    batchDescription: 'Jeder Pflanzen-Batch bekommt einen lokalen Trigger-Link zum Teilen oder Scannen.',
+    batchCount: '{{count}} Batches',
+    batchQrLabel: 'Scannen, um diesen Batch auf einem Handy oder in einer PWA-Sitzung auszulösen.',
+    copyBatchLink: 'Link kopieren',
+    triggerBatchBtn: 'Batch auslösen',
   },
   sensor: {
     title: 'ESP32 Sensor Hub',

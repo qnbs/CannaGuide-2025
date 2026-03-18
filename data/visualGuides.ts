@@ -2,6 +2,11 @@ import { VisualGuide } from '@/types';
 
 export const visualGuidesData: VisualGuide[] = [
   {
+    id: 'local-ai-preload',
+    titleKey: 'visualGuides.localAiPreload.title',
+    descriptionKey: 'visualGuides.localAiPreload.description',
+  },
+  {
     id: 'topping',
     titleKey: 'visualGuides.topping.title',
     descriptionKey: 'visualGuides.topping.description',

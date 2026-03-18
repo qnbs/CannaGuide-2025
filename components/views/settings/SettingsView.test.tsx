@@ -30,6 +30,8 @@ vi.mock('@/services/apiKeyService', () => ({
   apiKeyService: {
     getApiKey: vi.fn().mockResolvedValue(null),
     getMaskedApiKey: vi.fn().mockResolvedValue(null),
+    getApiKeyMetadata: vi.fn().mockResolvedValue(null),
+    isApiKeyRotationDue: vi.fn().mockReturnValue(false),
     setApiKey: vi.fn().mockResolvedValue(undefined),
     validateApiKey: vi.fn().mockResolvedValue(undefined),
     validateStoredApiKey: vi.fn().mockResolvedValue(undefined),

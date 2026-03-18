@@ -15,6 +15,12 @@ export const helpView = {
   guides: {
     title: 'Visuelle Anleitungen',
   },
+  visualGuides: {
+    localAiPreload: {
+      title: 'Lokaler KI-Offline-Cache',
+      description: 'Lade die lokalen Text- und Bildmodelle vor, solange du online bist, damit die App Pflanzen auch ohne Netzwerkverbindung diagnostizieren kann.',
+    },
+  },
   lexicon: {
     title: 'Grower-Lexikon',
     searchPlaceholder: 'Begriffe durchsuchen...',
@@ -105,6 +111,10 @@ export const helpView = {
       accessibility: {
         title: 'Erweiterte Barrierefreiheit',
         content: 'Die App bietet umfassende Zugänglichkeitsoptionen in den Einstellungen. Aktivieren Sie eine <strong>legasthenikerfreundliche Schriftart</strong>, einen <strong>Modus mit reduzierter Bewegung</strong>, verschiedene <strong>Farbfehlsichtigkeitsfilter</strong> und nutzen Sie die integrierte <strong>Text-zu-Sprache (TTS)</strong>-Funktion, um sich Inhalte vorlesen zu lassen.'
+      },
+      localAi: {
+        title: 'Lokaler KI-Fallback & Offline-Modelle',
+        content: 'CannaGuide kann auch weiterarbeiten, wenn das Netzwerk oder der KI-Anbieter nicht verfügbar ist. Öffnen Sie <strong>Einstellungen → Allgemein & UI</strong> und laden Sie die lokalen KI-Modelle vor, solange Sie online sind. Die App versucht auf geeigneten Geräten zuerst die WebLLM-Laufzeit und fällt auf Transformer.js zurück, wenn WebGPU nicht verfügbar ist. Wenn die Gemini-API fehlt, offline ist oder ein Limit erreicht hat, nutzt die App heuristische Analysen, damit Ratschläge verfügbar bleiben.'
       }
     },
     strains: {
@@ -183,7 +193,7 @@ export const helpView = {
         content: 'Greifen Sie auf ein umfassendes Nachschlagewerk zu, das dieses Benutzerhandbuch, ein Grower-Lexikon, visuelle Anleitungen für gängige Techniken und eine durchsuchbare FAQ enthält.'
       }
     }
-  }
+  },
 };
 
 export const visualGuides = {
@@ -297,5 +307,25 @@ export const faq = {
   potSize: {
       question: 'Welche Topfgröße sollte ich verwenden?',
       answer: 'Die Topfgröße hängt von der Art der Pflanze und der gewünschten Endgröße ab. Eine gute Faustregel:<ul><li><strong>Autoflowers:</strong> 10-15 Liter Töpfe sind ideal, da sie nicht gerne umgetopft werden.</li><li><strong>Photoperiodische Pflanzen:</strong> Beginnen Sie in kleineren Töpfen (1-3 Liter) und topfen Sie 1-2 Mal in größere um, z.B. 15-25 Liter für die Endphase. Dies fördert ein gesundes Wurzelsystem.</li></ul>Größere Töpfe bedeuten mehr Platz für Wurzeln und potenziell größere Pflanzen, müssen aber seltener gegossen werden.'
+  },
+  localAiFallback: {
+    question: 'Was passiert, wenn Gemini nicht verfügbar ist?',
+    answer: 'CannaGuide wechselt automatisch auf den lokalen KI-Stack. Wenn das Online-Modell nicht antworten kann, nutzt die App heuristische Pflanzenanalysen, damit Diagnose und Ratschläge verfügbar bleiben.'
+  },
+  localAiPreload: {
+    question: 'Wie nutze ich Local AI offline?',
+    answer: 'Öffnen Sie Einstellungen → Allgemein & UI und klicken Sie auf <strong>Offline-Modelle vorladen</strong>, solange Sie online sind. Dadurch werden die lokalen Text- und Bildmodelle für den Offline-Einsatz vorbereitet.'
+  },
+  localAiStorage: {
+    question: 'Wie viel Speicher brauchen die lokalen Modelle?',
+    answer: 'Für die aktuellen lokalen KI-Modelle sollten Sie mit einigen hundert Megabyte Browser-Speicher rechnen. Nutzen Sie nach Möglichkeit ein Gerät mit ausreichend freiem Speicher und aktiviertem persistentem Speicher.'
+  },
+  localAiWebGpu: {
+    question: 'Brauche ich WebGPU?',
+    answer: 'Nein. WebGPU ermöglicht auf unterstützten Geräten die WebLLM-Laufzeit, aber die App fällt automatisch auf Transformer.js zurück, wenn WebGPU fehlt.'
+  },
+  localAiTroubleshooting: {
+    question: 'Was tun, wenn das Offline-Preload fehlschlägt?',
+    answer: 'Versuchen Sie es erneut mit stabiler Verbindung, stellen Sie sicher, dass der Browser-Speicher nicht voll ist, und prüfen Sie, ob persistenter Speicher erlaubt ist. Bei Bedarf können Sie den Offline-Cache in den Einstellungen löschen und erneut vorladen.'
   }
 };

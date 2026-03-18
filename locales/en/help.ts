@@ -15,6 +15,12 @@ export const helpView = {
   guides: {
     title: 'Visual Guides',
   },
+  visualGuides: {
+    localAiPreload: {
+      title: 'Local AI Offline Cache',
+      description: 'Warm up the local text and vision models while you are online so the app can diagnose plants without a network connection.',
+    },
+  },
   lexicon: {
     title: 'Grower\'s Lexicon',
     searchPlaceholder: 'Search terms...',
@@ -105,6 +111,10 @@ export const helpView = {
       accessibility: {
         title: 'Enhanced Accessibility',
         content: 'The app offers comprehensive accessibility options in Settings. Activate a <strong>dyslexia-friendly font</strong>, a <strong>reduced motion mode</strong>, various <strong>colorblind filters</strong>, and use the integrated <strong>Text-to-Speech (TTS)</strong> feature to have content read aloud.'
+      },
+      localAi: {
+        title: 'Local AI Fallback & Offline Models',
+        content: 'CannaGuide can keep working even when the network or AI provider is unavailable. Open <strong>Settings → General & UI</strong> and preload the local AI models while you are online. The app first tries the WebLLM runtime on capable devices and falls back to Transformer.js when WebGPU is not available. If the Gemini API is missing, offline, or rate-limited, the app uses heuristic analysis to keep advice available.'
       }
     },
     strains: {
@@ -183,7 +193,7 @@ export const helpView = {
         content: 'Access a comprehensive reference that includes this User Manual, a Grower\'s Lexicon, visual guides for common techniques, and a searchable FAQ.'
       }
     }
-  }
+  },
 };
 
 export const visualGuides = {
@@ -297,5 +307,25 @@ export const faq = {
   potSize: {
     question: 'What pot size should I use?',
     answer: 'Pot size depends on the type of plant and your desired final size. A good rule of thumb:<ul><li><strong>Autoflowers:</strong> 10-15 liter (3-4 gallon) pots are ideal, as they don\'t like being transplanted.</li><li><strong>Photoperiods:</strong> Start in smaller pots (1-3 liters) and transplant 1-2 times into larger ones, e.g., 15-25 liters (4-7 gallons) for the final stage. This promotes a healthy root system.</li></ul>Bigger pots mean more room for roots and potentially bigger plants, but they need watering less frequently.'
+  },
+  localAiFallback: {
+    question: 'What happens if Gemini is unavailable?',
+    answer: 'CannaGuide automatically falls back to the local AI stack. If the online model cannot answer, the app uses heuristic plant analysis so diagnostics and advice stay available.'
+  },
+  localAiPreload: {
+    question: 'How do I use Local AI offline?',
+    answer: 'Open Settings → General & UI and press <strong>Preload Offline Models</strong> while you are online. This warms the local text and vision models for offline use.'
+  },
+  localAiStorage: {
+    question: 'How much storage do the local models need?',
+    answer: 'Expect roughly a few hundred megabytes of browser storage for the current local AI models. Use a device with enough free space and persistent storage enabled for best results.'
+  },
+  localAiWebGpu: {
+    question: 'Do I need WebGPU?',
+    answer: 'No. WebGPU lets CannaGuide use the WebLLM runtime on supported devices, but the app automatically falls back to Transformer.js if WebGPU is missing.'
+  },
+  localAiTroubleshooting: {
+    question: 'What should I do if offline model preload fails?',
+    answer: 'Retry on a stable connection, make sure browser storage is not full, and confirm the device is allowed to persist storage. If needed, clear the offline cache in Settings and preload again.'
   }
 };

@@ -91,3 +91,39 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+  build-capacitor:
+    name: 📱 Capacitor bundle
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: 📦 Install Node dependencies
+        run: npm ci
+
+      - name: 🏗️ Build web bundle
+        run: npm run build
+
+      - name: 📦 Capacitor sync check
+        run: |
+          if [ -d android ] || [ -d ios ]; then
+            npm run cap:sync
+          else
+            echo "⚠️ No native Capacitor projects are committed yet; uploading the web bundle as the release-ready fallback."
+          fi
+
+      - name: 📤 Upload Capacitor-ready bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: capacitor-web-bundle
+          path: |
+            dist/
+            capacitor.config.ts
+          retention-days: 14

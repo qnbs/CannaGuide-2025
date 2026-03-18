@@ -88,6 +88,10 @@ export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
 const safe = (text: string) => DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
 
 class LocalAiFallbackService {
+    diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
+        return diagnosePlant(plant, lang)
+    }
+
     getMentorResponse(plant: Plant, query: string, ragContext: string, lang: Language): Omit<MentorMessage, 'role'> {
         const diagnosis = diagnosePlant(plant, lang)
         const safeQuery = safe(query)

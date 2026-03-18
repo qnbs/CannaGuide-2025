@@ -365,6 +365,7 @@ const LocalAiOfflineCard: React.FC = () => {
     const isOffline = useOnlineStatus()
     const [isBusy, setIsBusy] = useState(false)
     const [status, setStatus] = useState(() => localAiPreloadService.getStatus())
+    const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
 
     const handlePreload = async () => {
         setIsBusy(true)
@@ -402,6 +403,16 @@ const LocalAiOfflineCard: React.FC = () => {
                         <p>{statusLabel}</p>
                         <p>{t('settingsView.offlineAi.cacheState', { value: status.details ?? 'n/a' })}</p>
                         <p>{t('settingsView.offlineAi.persistentStorage', { value: status.persistentStorageGranted === null ? t('settingsView.offlineAi.unknown') : status.persistentStorageGranted ? t('settingsView.offlineAi.yes') : t('settingsView.offlineAi.no') })}</p>
+                        <p>
+                            {supportsWebGpu
+                                ? t('settingsView.offlineAi.webGpuSupported')
+                                : t('settingsView.offlineAi.webGpuUnavailable')}
+                        </p>
+                        <p>
+                            {status.webLlmReady
+                                ? t('settingsView.offlineAi.webLlmReady')
+                                : t('settingsView.offlineAi.webLlmFallback')}
+                        </p>
                         {status.readyAt && <p>{t('settingsView.offlineAi.readyAt', { value: new Date(status.readyAt).toLocaleString() })}</p>}
                     </div>
                     <div className="flex flex-wrap gap-2">

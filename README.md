@@ -147,7 +147,7 @@ A sophisticated hub to customize every aspect of your CannaGuide experience.
 -   **Voice Control**: Navigate the app, search for strains, and perform actions using simple voice commands.
 -   **Full Internationalization (i18n)**: Complete **English and German** translations with namespaced locale files (common, plants, knowledge, strains, equipment, settings, help, and more). All AI responses are automatically localized to the user's selected language.
 -   **Safe Recovery**: Automatic detection and repair of corrupted application state. If IndexedDB hydration fails, the app gracefully falls back to a clean state rather than presenting a blank screen.
--   **Local AI Fallback**: When the Gemini API is unreachable (offline, quota exceeded, key missing), the app generates **heuristic-based plant advice** using local algorithms, ensuring you always have guidance — even without internet.
+-   **Local AI Fallback**: When the Gemini API is unreachable (offline, quota exceeded, key missing), the app generates **heuristic-based plant advice** using local algorithms, ensuring you always have guidance — even without internet. See [docs/local-ai-developer-guide.md](/workspaces/CannaGuide-2025/docs/local-ai-developer-guide.md) and [docs/local-ai-troubleshooting.md](/workspaces/CannaGuide-2025/docs/local-ai-troubleshooting.md).
 
 ---
 
@@ -161,7 +161,7 @@ CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed f
 | -------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | **Frontend**         | [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)                             | Modern, type-safe, and performant user interface.                                      |
 | **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                | Centralized, predictable state management with memoized selectors.                     |
-| **AI Integration**   | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                  | Powers all AI features: diagnostics, advice, image generation, and deep dives.         |
+| **AI Integration**   | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                  | Powers all online AI features; the local AI fallback stack keeps diagnostics and advice available offline. |
 | **Async Operations** | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                  | Manages all Gemini API interactions with automatic caching and loading states.          |
 | **Concurrency**      | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                               | Runs the complex plant simulation off the main thread to ensure a smooth UI.           |
 | **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (dual-database architecture)      | Full offline functionality via `CannaGuideStateDB` (Redux) and `CannaGuideDB` (strains, images, search). |
@@ -173,6 +173,16 @@ CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed f
 | **IoT**              | [WebBluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)                        | ESP32 GATT Environmental Sensing for live sensor data.                                 |
 | **Build**            | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                                  | Lightning-fast HMR, optimized production builds, and SW injection.                     |
 | **Testing**          | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)                                          | Unit/integration tests and E2E smoke/accessibility checks.                             |
+
+### Quality Gates
+
+CannaGuide uses automated checks for everyday development and release confidence:
+
+- Coverage target: 95%+ for lines, statements, and functions.
+- Mutation testing: Stryker runs against core service, store, and component code.
+- Security gating: `npm audit` is enforced in CI.
+- Accessibility gating: Lighthouse CI runs with a 100% accessibility threshold.
+- Container gating: Docker images are scanned with Trivy before release.
 
 ### Dual IndexedDB Architecture
 

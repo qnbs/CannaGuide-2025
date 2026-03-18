@@ -59,6 +59,17 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: 🔎 Build local image for Trivy
+        run: docker build -t cannaguide-scan .
+
+      - name: 🛡️ Trivy image scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: cannaguide-scan
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+
       - name: 🧪 Test container (PR only)
         if: github.event_name == 'pull_request'
         run: |

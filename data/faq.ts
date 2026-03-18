@@ -2,6 +2,36 @@ import { FAQItem, PlantStage } from '@/types';
 
 export const faqData: FAQItem[] = [
   {
+    id: 'faq-local-ai-fallback',
+    questionKey: 'faq.localAiFallback.question',
+    answerKey: 'faq.localAiFallback.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-local-ai-preload',
+    questionKey: 'faq.localAiPreload.question',
+    answerKey: 'faq.localAiPreload.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-local-ai-storage',
+    questionKey: 'faq.localAiStorage.question',
+    answerKey: 'faq.localAiStorage.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-local-ai-webgpu',
+    questionKey: 'faq.localAiWebGpu.question',
+    answerKey: 'faq.localAiWebGpu.answer',
+    triggers: {},
+  },
+  {
+    id: 'faq-local-ai-troubleshooting',
+    questionKey: 'faq.localAiTroubleshooting.question',
+    answerKey: 'faq.localAiTroubleshooting.answer',
+    triggers: {},
+  },
+  {
     id: 'faq-ph-value',
     questionKey: 'faq.phValue.question',
     answerKey: 'faq.phValue.answer',

@@ -20,6 +20,7 @@ export const onboarding = {
     text: 'Lerne mit dem interaktiven Guide, frage den KI-Mentor um Rat und nutze die Lexika, um dein Wissen zu vertiefen.'
   },
   startGrow: 'Lass uns deinen ersten Anbau starten!',
+  localOnlyNote: 'Kein Konto nötig. Alle Daten bleiben auf deinem Gerät. Du kannst Cloud-Sync später optional in den Einstellungen aktivieren.',
   wizard: {
     stepExperience: {
       title: '🌱 Dein Erfahrungsstand',

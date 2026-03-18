@@ -20,6 +20,7 @@ export const onboarding = {
     text: 'Learn with the interactive guide, ask the AI mentor for advice, and use the lexicons to deepen your knowledge.',
   },
   startGrow: "Let's Start Your First Grow!",
+  localOnlyNote: 'No account needed. All data stays on your device. You can optionally enable cloud sync later in Settings.',
   wizard: {
     stepExperience: {
       title: '🌱 Your Experience Level',

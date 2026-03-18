@@ -195,6 +195,12 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
                         {currentStepContent.title}
                     </h3>
                     <p className="text-slate-300">{currentStepContent.text}</p>
+                    {isLastFeatureStep && (
+                        <p className="text-xs text-green-400/80 mt-4 flex items-center justify-center gap-1.5">
+                            <PhosphorIcons.ShieldCheck className="w-4 h-4" />
+                            {t('onboarding.localOnlyNote')}
+                        </p>
+                    )}
                 </div>
             </Modal>
         )

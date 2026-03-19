@@ -18,7 +18,7 @@ const extractGistId = (value: string): string => {
     const trimmed = value.trim()
     const match = trimmed.match(/(?:gist\.github\.com\/(?:[^/]+\/)?|^)([a-f0-9]{20,})/i)
     if (!match?.[1]) {
-        throw new Error(getT()('settingsView.sync.invalidGistUrl'))
+        throw new Error(getT()('settingsView.data.sync.invalidGistUrl'))
     }
     return match[1]
 }
@@ -61,7 +61,9 @@ class SyncService {
 
         if (!response.ok) {
             const t = getT()
-            throw new Error(t('settingsView.sync.pushFailed', { status: String(response.status) }))
+            throw new Error(
+                t('settingsView.data.sync.pushFailed', { status: String(response.status) }),
+            )
         }
 
         const gist = (await response.json()) as GistResponse
@@ -81,19 +83,21 @@ class SyncService {
         })
 
         if (!response.ok) {
-            throw new Error(t('settingsView.sync.pullFailed', { status: String(response.status) }))
+            throw new Error(
+                t('settingsView.data.sync.pullFailed', { status: String(response.status) }),
+            )
         }
 
         const gist = (await response.json()) as GistResponse
         const file = gist.files[SYNC_FILE_NAME]
         if (!file?.content) {
-            throw new Error(t('settingsView.sync.noSyncFile'))
+            throw new Error(t('settingsView.data.sync.noSyncFile'))
         }
 
         const parsed = JSON.parse(file.content) as SyncPayload
 
         if (!parsed.state || typeof parsed.version !== 'number') {
-            throw new Error(t('settingsView.sync.invalidPayload'))
+            throw new Error(t('settingsView.data.sync.invalidPayload'))
         }
 
         return {

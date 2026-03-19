@@ -62,6 +62,7 @@ export const STRAIN_INDEX_FLOWERING = 'by_floweringTime';
 
 // --- UI ---
 export const ITEMS_PER_PAGE = 25;
+export const MOBILE_BOTTOM_NAV_SAFE_OFFSET = 112;
 
 // --- GENEALOGY ---
 /** Bump whenever GenealogyState shape changes. Shared by slice + migrationLogic. */

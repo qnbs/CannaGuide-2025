@@ -39,7 +39,9 @@ const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title
     </div>
 );
 
-const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bankKey, isOpen }) => {
+const stripNumericPrefix = (value: string): string => value.replace(/^\d+\.\s*/, '')
+
+const SeedbankProfile: React.FC<{ bankKey: string; displayIndex: number; isOpen?: boolean }> = ({ bankKey, displayIndex, isOpen }) => {
     const { t } = useTranslation();
     const bank = t(`equipmentView.seedbanks.${bankKey}`, { returnObjects: true }) as BankData;
 
@@ -49,7 +51,10 @@ const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bank
         <details className="group glass-pane rounded-lg overflow-hidden" open={isOpen}>
             <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
                 <h4 className="font-semibold text-slate-100 flex items-center gap-3">
-                    {bank.title}
+                    <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full border border-primary-400/30 bg-primary-500/10 px-2 text-xs font-bold text-primary-300">
+                        {displayIndex}
+                    </span>
+                    <span>{stripNumericPrefix(bank.title)}</span>
                 </h4>
                 <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
             </summary>
@@ -116,13 +121,27 @@ const SeedbankProfile: React.FC<{ bankKey: string; isOpen?: boolean }> = ({ bank
 const SeedbanksView: React.FC = () => {
     const { t } = useTranslation();
     const allBanksData = t('equipmentView.seedbanks', { returnObjects: true }) as Record<string, BankData & { categories?: Record<string, ConclusionsCategory>; content?: string; summary?: string }>;
-    const bankKeys = Object.keys(allBanksData).filter(key => key !== 'conclusions' && typeof allBanksData[key] === 'object');
+    const bankKeys = Object.entries(allBanksData)
+        .filter(([key, value]) => key !== 'conclusions' && typeof value === 'object')
+        .sort(([, leftValue], [, rightValue]) => {
+            const leftTitle = (leftValue as BankData).title ?? ''
+            const rightTitle = (rightValue as BankData).title ?? ''
+            const leftNumber = Number(leftTitle.match(/^\d+/)?.[0] ?? Number.POSITIVE_INFINITY)
+            const rightNumber = Number(rightTitle.match(/^\d+/)?.[0] ?? Number.POSITIVE_INFINITY)
+
+            if (leftNumber !== rightNumber) {
+                return leftNumber - rightNumber
+            }
+
+            return leftTitle.localeCompare(rightTitle)
+        })
+        .map(([key]) => key);
     const conclusions = allBanksData.conclusions;
 
     return (
         <div className="space-y-3">
             {bankKeys.map((key, index) => (
-                <SeedbankProfile key={key} bankKey={key} isOpen={index === 0} />
+                <SeedbankProfile key={key} bankKey={key} displayIndex={index + 1} isOpen={index === 0} />
             ))}
             {conclusions && (
                  <Card>

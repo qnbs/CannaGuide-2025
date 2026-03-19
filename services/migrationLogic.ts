@@ -403,15 +403,26 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
  */
 export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStrains: Strain[]): Strain[] => {
     const mergedById = new Map<string, Strain>()
+    const bundledIds = new Set<string>()
+    const duplicateIds: string[] = []
 
     legacyStrains.forEach((strain) => {
         mergedById.set(strain.id, strain)
     })
 
     bundledStrains.forEach((strain) => {
+        if (bundledIds.has(strain.id)) {
+            duplicateIds.push(strain.id)
+        }
+        bundledIds.add(strain.id)
+
         const legacy = mergedById.get(strain.id)
         mergedById.set(strain.id, legacy ? { ...legacy, ...strain } : strain)
     })
+
+    if (duplicateIds.length > 0) {
+        console.warn('[MigrationLogic] Duplicate bundled strain ids detected:', duplicateIds.slice(0, 10))
+    }
 
     return Array.from(mergedById.values())
 }

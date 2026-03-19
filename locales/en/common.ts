@@ -151,7 +151,8 @@ export const common = {
         invalidSetup: 'Invalid grow setup configuration. Please try again.',
         invalidActionData: 'Invalid data submitted for action: {{action}}.',
     },
-    metadataDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore 700+ strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
+    metadataDescription:
+        'Your AI-powered digital companion for the entire cannabis cultivation cycle.<ul><li>Track plants</li><li>Explore 700+ strains</li><li>Get AI equipment advice</li><li>Master your grow with an interactive guide.</li></ul>',
     voiceControl: {
         listening: 'Listening...',
         processing: 'Processing: "{{transcript}}"',
@@ -172,11 +173,13 @@ export const common = {
     },
     errorBoundary: {
         title: 'Something went wrong.',
-        description: 'An unexpected error occurred. Please try reloading the application. If the problem persists, you may need to clear your site data.',
+        description:
+            'An unexpected error occurred. Please try reloading the application. If the problem persists, you may need to clear your site data.',
         reload: 'Reload Application',
         safeRecovery: 'Try Safe Recovery',
     },
-    appShortDescription: 'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.',
+    appShortDescription:
+        'Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide.',
     imageResizeFailed: 'Image resizing failed, using original.',
     offlineQueued: 'Offline. Action queued for sync.',
     failedToSave: 'Failed to save setup.',
@@ -230,7 +233,7 @@ export const common = {
         layoutOrientation: 'Tree layout: {{orientation}}',
         toastNotifications: 'Notifications',
     },
-};
+}
 
 export const nav = {
     strains: 'Strains',
@@ -239,7 +242,7 @@ export const nav = {
     knowledge: 'Knowledge',
     settings: 'Settings',
     help: 'Help',
-};
+}
 
 export const plantStages = {
     SEED: 'Seed',
@@ -251,19 +254,20 @@ export const plantStages = {
     DRYING: 'Drying',
     CURING: 'Curing',
     FINISHED: 'Finished',
-};
+}
 
 export const problemMessages = {
     nutrientDeficiency: { message: 'Nutrient deficiency detected' },
     overwatering: { message: 'Overwatering detected' },
     underwatering: { message: 'Underwatering detected' },
     pestInfestation: { message: 'Pest infestation detected' },
-};
+}
 
 export const ai = {
     error: {
         generic: 'An AI error occurred. Please try again.',
-        missingApiKey: 'No API key found. Please add your key in Settings > General & UI > AI Security.',
+        missingApiKey:
+            'No API key found. Please add your key in Settings > General & UI > AI Security.',
         equipment: 'Could not generate equipment recommendation.',
         diagnostics: 'Could not generate plant diagnosis.',
         tips: 'Could not generate strain tips.',
@@ -277,16 +281,23 @@ export const ai = {
     generating: 'AI is thinking...',
     disclaimer: 'AI-generated content. Always verify critical information.',
     prompts: {
-        equipmentSystemInstruction: 'You are an expert cannabis cultivation advisor. The user will provide their constraints and you will provide a full equipment list in JSON format. Provide specific, real product names and an estimated price in Euros. Your rationale should be concise and helpful.',
-        equipmentRequest: 'I want to set up a grow for {{plantCount}} plants in a {{tentSize}} tent with a {{budget}} budget.',
-        equipmentRequestAdvanced: 'Generate a full cannabis grow equipment list for a setup in Europe (prices in EUR). The setup should accommodate {{plantCount}} plants in a {{growSpaceWidth}}cm x {{growSpaceDepth}}cm grow space. The user\'s experience level is "{{experienceLevel}}", so recommend appropriate gear. They prefer growing "{{floweringTypePreference}}" plants. The total budget is approximately €{{budget}}. The main priorities for this grow are: {{priorities}}. Tailor your recommendations to optimize for these goals. Also, consider the user\'s custom request: "{{customNotes}}".',
-        advisor: 'You are an expert cannabis cultivation advisor. Based on the following plant data, provide concise, actionable advice for the next 24-48 hours. Format your response as simple markdown.\n\n{{plant}}',
-        proactiveDiagnosis: 'You are an expert plant pathologist specializing in cannabis. Analyze the following full plant data report. Identify any potential underlying issues or risks that are not immediately obvious. Provide a concise report with a title and content in markdown format outlining your findings and preventative recommendations.\n\n{{plant}}',
+        equipmentSystemInstruction:
+            'You are an expert cannabis cultivation advisor. The user will provide their constraints and you will provide a full equipment list in JSON format. Provide specific, real product names and an estimated price in Euros. Your rationale should be concise and helpful.',
+        equipmentRequest:
+            'I want to set up a grow for {{plantCount}} plants in a {{tentSize}} tent with a {{budget}} budget.',
+        equipmentRequestAdvanced:
+            'Generate a full cannabis grow equipment list for a setup in Europe (prices in EUR). The setup should accommodate {{plantCount}} plants in a {{growSpaceWidth}}cm x {{growSpaceDepth}}cm grow space. The user\'s experience level is "{{experienceLevel}}", so recommend appropriate gear. They prefer growing "{{floweringTypePreference}}" plants. The total budget is approximately €{{budget}}. The main priorities for this grow are: {{priorities}}. Tailor your recommendations to optimize for these goals. Also, consider the user\'s custom request: "{{customNotes}}".',
+        advisor:
+            'You are an expert cannabis cultivation advisor. Based on the following plant data, provide concise, actionable advice for the next 24-48 hours. Format your response as simple markdown.\n\n{{plant}}',
+        proactiveDiagnosis:
+            'You are an expert plant pathologist specializing in cannabis. Analyze the following full plant data report. Identify any potential underlying issues or risks that are not immediately obvious. Provide a concise report with a title and content in markdown format outlining your findings and preventative recommendations.\n\n{{plant}}',
         mentor: {
             main: 'Context: \n{{context}}\n\nUser query: "{{query}}"',
-            systemInstruction: 'You are a scientific, factual AI assistant for cannabis cultivation. Your task is to provide precise, helpful, and useful advice. Respond only in JSON format. The response must include a "title", a "content" field (markdown formatted), and an optional "uiHighlights" array of objects with "elementId" (string) and optional "plantId" (string). Highlight relevant UI elements for your response (e.g., vpd-gauge, ph-vital).',
+            systemInstruction:
+                'You are a scientific, factual AI assistant for cannabis cultivation. Your task is to provide precise, helpful, and useful advice. Respond only in JSON format. The response must include a "title", a "content" field (markdown formatted), and an optional "uiHighlights" array of objects with "elementId" (string) and optional "plantId" (string). Highlight relevant UI elements for your response (e.g., vpd-gauge, ph-vital).',
         },
-        strainTips: 'Provide structured, concise grow tips for the strain: {{strain}}. The user\'s focus is on "{{focus}}", their experience level is "{{experienceLevel}}", and they are asking about the "{{stage}}" phase. Respond only in JSON format with the keys: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
+        strainTips:
+            'Provide structured, concise grow tips for the strain: {{strain}}. The user\'s focus is on "{{focus}}", their experience level is "{{experienceLevel}}", and they are asking about the "{{stage}}" phase. Respond only in JSON format with the keys: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
         strainImage: `Subject: A beautiful cannabis plant of the '{{strainName}}' strain.
 Style: Digital art, fantasy illustration, vibrant, colorful, high-quality.
 Type: {{type}}.
@@ -295,8 +306,12 @@ Visual traits to feature:
 - Yield: {{agronomic_yield}}.
 - Height: {{agronomic_height}}.
 - Vibe: {{description_snippet}}.`,
-        deepDive: 'Generate a deep dive guide on the topic of "{{topic}}" within the context of the following plant: {{plant}}. Respond in JSON format with keys: "introduction" (string), "stepByStep" (array of strings), "prosAndCons" ({pros: string[], cons: string[]}), and "proTip" (string).',
-        gardenStatus: 'You are an expert cannabis grow master. Analyze the following summary of active plants in a garden. Provide a very concise, one-sentence summary of the garden\'s overall health, followed by a single, actionable "Top Priority" for the grower. Format as markdown.\n\nPLANT SUMMARIES:\n{{summaries}}',
+        deepDive:
+            'Generate a deep dive guide on the topic of "{{topic}}" within the context of the following plant: {{plant}}. Respond in JSON format with keys: "introduction" (string), "stepByStep" (array of strings), "prosAndCons" ({pros: string[], cons: string[]}), and "proTip" (string).',
+        gardenStatus:
+            'You are an expert cannabis grow master. Analyze the following summary of active plants in a garden. Provide a very concise, one-sentence summary of the garden\'s overall health, followed by a single, actionable "Top Priority" for the grower. Format as markdown.\n\nPLANT SUMMARIES:\n{{summaries}}',
+        nutrientPlanner:
+            'You are an expert cannabis fertigation specialist. Analyze the following EC/pH data and provide a concise, actionable nutrient adjustment recommendation.\n\nMEDIUM: {{medium}}\nGROWTH STAGE: {{stage}}\nCURRENT INPUT: EC {{currentEc}} mS/cm, pH {{currentPh}}\nOPTIMAL RANGE: EC {{ecMin}}-{{ecMax}}, pH {{phMin}}-{{phMax}}\nRECENT READINGS: {{readings}}\nPLANT INFO: {{plant}}\n\nProvide:\n1. Whether current EC/pH is in range or needs adjustment\n2. Specific steps to correct any deviations (e.g., "add pH down to reach 6.0–6.3")\n3. Nutrient strength recommendation (increase/decrease/maintain)\n4. Any warnings about potential nutrient lockout or salt buildup\n\nKeep the response practical and under 200 words. Format as markdown.',
     },
     loading: {
         equipment: {
@@ -304,36 +319,36 @@ Visual traits to feature:
             '2': 'Selecting optimal lighting for {{priorities}}...',
             '3': 'Calculating ventilation needs for {{plantCount}} plants...',
             '4': 'Matching nutrients and medium for a {{experienceLevel}} grower...',
-            '5': 'Assembling your custom equipment list...'
+            '5': 'Assembling your custom equipment list...',
         },
         diagnostics: {
             '1': 'Analyzing image for discoloration and texture...',
             '2': 'Cross-referencing with plant vitals...',
             '3': 'Consulting database for potential issues...',
-            '4': 'Formulating immediate actions and long-term solutions...'
+            '4': 'Formulating immediate actions and long-term solutions...',
         },
         advisor: {
             '1': 'Reviewing the latest vitals for {{plantName}}...',
             '2': 'Considering current growth stage and age...',
-            '3': 'Formulating tailored advice for the next 48 hours...'
+            '3': 'Formulating tailored advice for the next 48 hours...',
         },
         proactiveDiagnosis: {
             '1': 'Analyzing historical data for {{plantName}}...',
             '2': 'Identifying trends in pH and EC...',
             '3': 'Looking for early signs of environmental stress...',
-            '4': 'Assembling preventative care recommendations...'
+            '4': 'Assembling preventative care recommendations...',
         },
         growTips: {
             '1': 'Analyzing the genetic traits of {{strainName}}...',
             '2': 'Tailoring tips for a grower with {{experienceLevel}} experience...',
             '3': 'Focusing recommendations on {{focus}} for the {{stage}} phase...',
-            '4': 'Generating actionable, structured advice...'
+            '4': 'Generating actionable, structured advice...',
         },
         deepDive: {
             '1': 'Researching "{{topic}}"...',
             '2': 'Applying concepts to the current state of {{plantName}}...',
             '3': 'Structuring a step-by-step guide...',
-            '4': 'Assembling pros, cons, and a special pro-tip...'
-        }
-    }
-};
+            '4': 'Assembling pros, cons, and a special pro-tip...',
+        },
+    },
+}

@@ -7,9 +7,18 @@ import { NutrientCalculator } from './calculators/NutrientCalculator'
 import { ConverterCalculator } from './calculators/ConverterCalculator'
 import { YieldCalculator } from './calculators/YieldCalculator'
 import { ChemotypeCalculator } from './calculators/ChemotypeCalculator'
+import { EcPhPlannerCalculator } from './calculators/EcPhPlannerCalculator'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
-type CalculatorType = 'ventilation' | 'light' | 'cost' | 'nutrients' | 'converter' | 'yield' | 'chemotype'
+type CalculatorType =
+    | 'ventilation'
+    | 'light'
+    | 'cost'
+    | 'nutrients'
+    | 'ecPhPlanner'
+    | 'converter'
+    | 'yield'
+    | 'chemotype'
 
 const calculatorList: {
     id: CalculatorType
@@ -40,6 +49,12 @@ const calculatorList: {
         Component: NutrientCalculator,
         icon: <PhosphorIcons.Flask />,
         titleKey: 'equipmentView.calculators.nutrients.title',
+    },
+    {
+        id: 'ecPhPlanner',
+        Component: EcPhPlannerCalculator,
+        icon: <PhosphorIcons.Drop />,
+        titleKey: 'equipmentView.calculators.ecPhPlanner.title',
     },
     {
         id: 'converter',

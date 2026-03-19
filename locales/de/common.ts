@@ -30,12 +30,14 @@ export const common = {
     successfullyExported_one: '1 Element erfolgreich als {{format}} exportiert.',
     successfullyExported_other: '{{count}} Elemente erfolgreich als {{format}} exportiert.',
     installPwa: 'App installieren',
-    installPwaHint: 'Tipp: Du kannst diese App fur Offline-Nutzung uber dein Browsermenu installieren.',
+    installPwaHint:
+        'Tipp: Du kannst diese App fur Offline-Nutzung uber dein Browsermenu installieren.',
     installPwaSuccess: 'App erfolgreich installiert!',
     installPwaDismissed: 'Installation abgelehnt.',
     swUpdateAvailable: 'Eine neue Version ist verfügbar. Seite neu laden zum Aktualisieren.',
     swUpdateReload: 'Jetzt neu laden',
-    offlineWarning: 'Du bist derzeit offline. Einige Funktionen sind möglicherweise nicht verfügbar.',
+    offlineWarning:
+        'Du bist derzeit offline. Einige Funktionen sind möglicherweise nicht verfügbar.',
     preparingGuide: 'Dein Guide wird vorbereitet...',
     error: 'Fehler',
     deepDive: 'Deep Dive',
@@ -152,7 +154,8 @@ export const common = {
         invalidSetup: 'Ungültige Anbau-Setup-Konfiguration. Bitte versuchen Sie es erneut.',
         invalidActionData: 'Ungültige Daten für Aktion übermittelt: {{action}}.',
     },
-    metadataDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie 700+ Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
+    metadataDescription:
+        'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus.<ul><li>Verfolgen Sie Pflanzen</li><li>Erkunden Sie 700+ Sorten</li><li>Erhalten Sie KI-Ausrüstungsberatung</li><li>Meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.</li></ul>',
     voiceControl: {
         listening: 'Höre zu...',
         processing: 'Verarbeite: "{{transcript}}"',
@@ -173,11 +176,13 @@ export const common = {
     },
     errorBoundary: {
         title: 'Etwas ist schiefgelaufen.',
-        description: 'Ein unerwarteter Fehler ist aufgetreten. Bitte lade die App neu. Falls das Problem weiterhin besteht, musst du möglicherweise deine Website-Daten löschen.',
+        description:
+            'Ein unerwarteter Fehler ist aufgetreten. Bitte lade die App neu. Falls das Problem weiterhin besteht, musst du möglicherweise deine Website-Daten löschen.',
         reload: 'App neu laden',
         safeRecovery: 'Sichere Wiederherstellung versuchen',
     },
-    appShortDescription: 'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
+    appShortDescription:
+        'Ihr KI-gestützter digitaler Begleiter für den gesamten Cannabis-Anbauzyklus. Verfolgen Sie Pflanzen, erkunden Sie über 700 Sorten, erhalten Sie KI-Ausrüstungsberatung und meistern Sie Ihren Anbau mit einem interaktiven Leitfaden.',
     imageResizeFailed: 'Bildverkleinerung fehlgeschlagen, verwende Original.',
     offlineQueued: 'Offline. Aktion für Synchronisation vorgemerkt.',
     failedToSave: 'Speichern fehlgeschlagen.',
@@ -231,7 +236,7 @@ export const common = {
         layoutOrientation: 'Baumlayout: {{orientation}}',
         toastNotifications: 'Benachrichtigungen',
     },
-};
+}
 
 export const nav = {
     strains: 'Sorten',
@@ -240,7 +245,7 @@ export const nav = {
     knowledge: 'Wissen',
     settings: 'Einstellungen',
     help: 'Hilfe',
-};
+}
 
 export const plantStages = {
     SEED: 'Samen',
@@ -252,19 +257,20 @@ export const plantStages = {
     DRYING: 'Trocknung',
     CURING: 'Fermentierung',
     FINISHED: 'Fertig',
-};
+}
 
 export const problemMessages = {
     nutrientDeficiency: { message: 'Nährstoffmangel erkannt' },
     overwatering: { message: 'Überwässerung erkannt' },
     underwatering: { message: 'Unterwässerung erkannt' },
     pestInfestation: { message: 'Schädlingsbefall erkannt' },
-};
+}
 
 export const ai = {
     error: {
         generic: 'Ein KI-Fehler ist aufgetreten. Bitte versuche es erneut.',
-        missingApiKey: 'Kein API-Key gefunden. Bitte hinterlege deinen Key in Einstellungen > Allgemein & UI > KI-Sicherheit.',
+        missingApiKey:
+            'Kein API-Key gefunden. Bitte hinterlege deinen Key in Einstellungen > Allgemein & UI > KI-Sicherheit.',
         equipment: 'Ausrüstungsempfehlung konnte nicht generiert werden.',
         diagnostics: 'Pflanzendiagnose konnte nicht generiert werden.',
         tips: 'Sorten-Tipps konnten nicht generiert werden.',
@@ -278,16 +284,23 @@ export const ai = {
     generating: 'KI denkt nach...',
     disclaimer: 'KI-generierter Inhalt. Überprüfe kritische Informationen immer.',
     prompts: {
-        equipmentSystemInstruction: 'Du bist ein Experte für Cannabis-Anbauberatung. Der Benutzer gibt seine Einschränkungen an und du lieferst eine vollständige Ausrüstungsliste im JSON-Format. Gib spezifische, reale Produktnamen und einen geschätzten Preis in Euro an. Deine Begründung sollte prägnant und hilfreich sein.',
-        equipmentRequest: 'Ich möchte einen Anbau für {{plantCount}} Pflanzen in einem {{tentSize}} Zelt mit einem {{budget}} Budget einrichten.',
-        equipmentRequestAdvanced: 'Generiere eine vollständige Cannabis-Anbau-Ausrüstungsliste für ein Setup in Europa (Preise in EUR). Das Setup sollte für {{plantCount}} Pflanzen in einer Anbaufläche von {{growSpaceWidth}}cm x {{growSpaceDepth}}cm ausgelegt sein. Der Erfahrungsgrad des Benutzers ist "{{experienceLevel}}", also empfiehl bitte entsprechende Ausrüstung. Sie bevorzugen den Anbau von "{{floweringTypePreference}}"-Pflanzen. Das Gesamtbudget beträgt ungefähr {{budget}}€. Die Hauptprioritäten für diesen Anbau sind: {{priorities}}. Passe deine Empfehlungen an, um diese Ziele zu optimieren. Berücksichtige außerdem die spezifische Anfrage des Benutzers: "{{customNotes}}".',
-        advisor: 'Du bist ein Experte für Cannabis-Anbauberatung. Basierend auf den folgenden Pflanzendaten, gib prägnante, umsetzbare Ratschläge für die nächsten 24-48 Stunden. Formatiere deine Antwort als einfaches Markdown.\n\n{{plant}}',
-        proactiveDiagnosis: 'Du bist ein Experte für Pflanzenpathologie mit Spezialisierung auf Cannabis. Analysiere den folgenden vollständigen Pflanzendatenbericht. Identifiziere mögliche zugrunde liegende Probleme oder Risiken, die nicht sofort offensichtlich sind. Liefere einen prägnanten Bericht mit Titel und Inhalt im Markdown-Format, der deine Ergebnisse und präventiven Empfehlungen darlegt.\n\n{{plant}}',
+        equipmentSystemInstruction:
+            'Du bist ein Experte für Cannabis-Anbauberatung. Der Benutzer gibt seine Einschränkungen an und du lieferst eine vollständige Ausrüstungsliste im JSON-Format. Gib spezifische, reale Produktnamen und einen geschätzten Preis in Euro an. Deine Begründung sollte prägnant und hilfreich sein.',
+        equipmentRequest:
+            'Ich möchte einen Anbau für {{plantCount}} Pflanzen in einem {{tentSize}} Zelt mit einem {{budget}} Budget einrichten.',
+        equipmentRequestAdvanced:
+            'Generiere eine vollständige Cannabis-Anbau-Ausrüstungsliste für ein Setup in Europa (Preise in EUR). Das Setup sollte für {{plantCount}} Pflanzen in einer Anbaufläche von {{growSpaceWidth}}cm x {{growSpaceDepth}}cm ausgelegt sein. Der Erfahrungsgrad des Benutzers ist "{{experienceLevel}}", also empfiehl bitte entsprechende Ausrüstung. Sie bevorzugen den Anbau von "{{floweringTypePreference}}"-Pflanzen. Das Gesamtbudget beträgt ungefähr {{budget}}€. Die Hauptprioritäten für diesen Anbau sind: {{priorities}}. Passe deine Empfehlungen an, um diese Ziele zu optimieren. Berücksichtige außerdem die spezifische Anfrage des Benutzers: "{{customNotes}}".',
+        advisor:
+            'Du bist ein Experte für Cannabis-Anbauberatung. Basierend auf den folgenden Pflanzendaten, gib prägnante, umsetzbare Ratschläge für die nächsten 24-48 Stunden. Formatiere deine Antwort als einfaches Markdown.\n\n{{plant}}',
+        proactiveDiagnosis:
+            'Du bist ein Experte für Pflanzenpathologie mit Spezialisierung auf Cannabis. Analysiere den folgenden vollständigen Pflanzendatenbericht. Identifiziere mögliche zugrunde liegende Probleme oder Risiken, die nicht sofort offensichtlich sind. Liefere einen prägnanten Bericht mit Titel und Inhalt im Markdown-Format, der deine Ergebnisse und präventiven Empfehlungen darlegt.\n\n{{plant}}',
         mentor: {
             main: 'Kontext: \n{{context}}\n\nBenutzeranfrage: "{{query}}"',
-            systemInstruction: 'Du bist ein wissenschaftlicher, sachlicher KI-Assistent für den Cannabisanbau. Deine Aufgabe ist es, präzise, hilfreiche und nützliche Ratschläge zu geben. Antworte nur im JSON-Format. Die Antwort muss ein "title"-, ein "content"-Feld (markdown-formatiert) und ein optionales "uiHighlights"-Array von Objekten mit "elementId" (string) und optionaler "plantId" (string) enthalten. Hebe für deine Antwort relevante UI-Elemente hervor (z.B. vpd-gauge, ph-vital).',
+            systemInstruction:
+                'Du bist ein wissenschaftlicher, sachlicher KI-Assistent für den Cannabisanbau. Deine Aufgabe ist es, präzise, hilfreiche und nützliche Ratschläge zu geben. Antworte nur im JSON-Format. Die Antwort muss ein "title"-, ein "content"-Feld (markdown-formatiert) und ein optionales "uiHighlights"-Array von Objekten mit "elementId" (string) und optionaler "plantId" (string) enthalten. Hebe für deine Antwort relevante UI-Elemente hervor (z.B. vpd-gauge, ph-vital).',
         },
-        strainTips: 'Gib strukturierte, prägnante Anbautipps für die Sorte: {{strain}}. Der Fokus des Benutzers liegt auf "{{focus}}", sein Erfahrungslevel ist "{{experienceLevel}}", und er fragt nach der "{{stage}}"-Phase. Antworte nur im JSON-Format mit den Schlüsseln: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
+        strainTips:
+            'Gib strukturierte, prägnante Anbautipps für die Sorte: {{strain}}. Der Fokus des Benutzers liegt auf "{{focus}}", sein Erfahrungslevel ist "{{experienceLevel}}", und er fragt nach der "{{stage}}"-Phase. Antworte nur im JSON-Format mit den Schlüsseln: "nutrientTip", "trainingTip", "environmentalTip", "proTip".',
         strainImage: `Betreff: Eine wunderschöne Cannabis-Pflanze der Sorte '{{strainName}}'.
 Stil: Digitale Kunst, Fantasy-Illustration, lebendig, farbenfroh, hochwertig.
 Typ: {{type}}.
@@ -296,8 +309,12 @@ Visuell darzustellende Merkmale:
 - Ertrag: {{agronomic_yield}}.
 - Höhe: {{agronomic_height}}.
 - Stimmung: {{description_snippet}}.`,
-        deepDive: 'Generiere einen Deep Dive Guide zum Thema "{{topic}}" im Kontext der folgenden Pflanze: {{plant}}. Antworte im JSON-Format mit den Schlüsseln: "introduction" (string), "stepByStep" (Array von Strings), "prosAndCons" ({pros: string[], cons: string[]}), und "proTip" (string).',
-        gardenStatus: 'Du bist ein erfahrener Meister-Gärtner für Cannabis. Analysiere die folgende Zusammenfassung der aktiven Pflanzen in einem Garten. Gib eine sehr prägnante Zusammenfassung (ein Satz) über den allgemeinen Gesundheitszustand des Gartens und nenne die eine, wichtigste "Top-Priorität" für den Gärtner. Formatiere als Markdown.\n\nPFLANZEN-ZUSAMMENFASSUNGEN:\n{{summaries}}',
+        deepDive:
+            'Generiere einen Deep Dive Guide zum Thema "{{topic}}" im Kontext der folgenden Pflanze: {{plant}}. Antworte im JSON-Format mit den Schlüsseln: "introduction" (string), "stepByStep" (Array von Strings), "prosAndCons" ({pros: string[], cons: string[]}), und "proTip" (string).',
+        gardenStatus:
+            'Du bist ein erfahrener Meister-Gärtner für Cannabis. Analysiere die folgende Zusammenfassung der aktiven Pflanzen in einem Garten. Gib eine sehr prägnante Zusammenfassung (ein Satz) über den allgemeinen Gesundheitszustand des Gartens und nenne die eine, wichtigste "Top-Priorität" für den Gärtner. Formatiere als Markdown.\n\nPFLANZEN-ZUSAMMENFASSUNGEN:\n{{summaries}}',
+        nutrientPlanner:
+            'Du bist ein erfahrener Cannabis-Fertigationsspezialist. Analysiere die folgenden EC/pH-Daten und gib eine präzise, umsetzbare Nährstoff-Anpassungsempfehlung.\n\nMEDIUM: {{medium}}\nWACHSTUMSPHASE: {{stage}}\nAKTUELLE EINGABE: EC {{currentEc}} mS/cm, pH {{currentPh}}\nOPTIMALER BEREICH: EC {{ecMin}}-{{ecMax}}, pH {{phMin}}-{{phMax}}\nLETZTE MESSUNGEN: {{readings}}\nPFLANZEN-INFO: {{plant}}\n\nLiefere:\n1. Ob der aktuelle EC/pH im Bereich liegt oder angepasst werden muss\n2. Konkrete Schritte zur Korrektur (z.B. "pH-Senker hinzufügen, um 6.0–6.3 zu erreichen")\n3. Nährstoffstärke-Empfehlung (erhöhen/senken/beibehalten)\n4. Warnungen zu möglichem Nährstoff-Lockout oder Salzaufbau\n\nHalte die Antwort praktisch und unter 200 Wörter. Formatiere als Markdown.',
     },
     loading: {
         equipment: {
@@ -305,36 +322,36 @@ Visuell darzustellende Merkmale:
             '2': 'Wähle die optimale Beleuchtung für {{priorities}} aus...',
             '3': 'Berechne die Belüftungsanforderungen für {{plantCount}} Pflanzen...',
             '4': 'Stimme Nährstoffe und Medium auf einen {{experienceLevel}}-Grower ab...',
-            '5': 'Stelle deine individuelle Ausrüstungsliste zusammen...'
+            '5': 'Stelle deine individuelle Ausrüstungsliste zusammen...',
         },
         diagnostics: {
             '1': 'Analysiere das Bild auf Verfärbungen und Textur...',
             '2': 'Vergleiche mit den Vitalwerten der Pflanze...',
             '3': 'Konsultiere die Datenbank für mögliche Probleme...',
-            '4': 'Formuliere Sofortmaßnahmen und langfristige Lösungen...'
+            '4': 'Formuliere Sofortmaßnahmen und langfristige Lösungen...',
         },
         advisor: {
             '1': 'Überprüfe die neuesten Vitalwerte von {{plantName}}...',
             '2': 'Prüfe das aktuelle Wachstumsstadium und Alter...',
-            '3': 'Formuliere maßgeschneiderte Ratschläge für die nächsten 48 Stunden...'
+            '3': 'Formuliere maßgeschneiderte Ratschläge für die nächsten 48 Stunden...',
         },
         proactiveDiagnosis: {
             '1': 'Analysiere historische Daten für {{plantName}}...',
             '2': 'Identifiziere Trends bei pH und EC...',
             '3': 'Suche nach frühen Anzeichen von Umweltstress...',
-            '4': 'Stelle präventive Pflegeempfehlungen zusammen...'
+            '4': 'Stelle präventive Pflegeempfehlungen zusammen...',
         },
         growTips: {
             '1': 'Analysiere die genetischen Merkmale von {{strainName}}...',
             '2': 'Passe die Tipps für einen Züchter mit {{experienceLevel}}-Erfahrung an...',
             '3': 'Fokussiere die Empfehlungen auf {{focus}} für die {{stage}}-Phase...',
-            '4': 'Erstelle umsetzbare, strukturierte Ratschläge...'
+            '4': 'Erstelle umsetzbare, strukturierte Ratschläge...',
         },
         deepDive: {
             '1': 'Recherchiere zu "{{topic}}"...',
             '2': 'Wende Konzepte auf den aktuellen Zustand von {{plantName}} an...',
             '3': 'Strukturiere eine Schritt-für-Schritt-Anleitung...',
-            '4': 'Stelle Vor- und Nachteile sowie einen speziellen Profi-Tipp zusammen...'
-        }
-    }
-};
+            '4': 'Stelle Vor- und Nachteile sowie einen speziellen Profi-Tipp zusammen...',
+        },
+    },
+}

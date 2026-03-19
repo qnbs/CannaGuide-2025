@@ -28,15 +28,17 @@ import { aiProviderService, type AiProvider } from '@/services/aiProviderService
 
 const formatPlantContextForPrompt = (
     plant: Plant,
-    t: (key: string, options?: Record<string, unknown>) => string
+    t: (key: string, options?: Record<string, unknown>) => string,
 ): string => {
     const stageDetails = t(`plantStages.${plant.stage}`)
     const problems =
         plant.problems.length > 0
             ? plant.problems
                   .map((p) => {
-                      const problemKey = p.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
-                      return t(`problemMessages.${problemKey}.message`);
+                      const problemKey = p.type
+                          .toLowerCase()
+                          .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                      return t(`problemMessages.${problemKey}.message`)
                   })
                   .join(', ')
             : t('common.none')
@@ -168,7 +170,10 @@ const summarizeJournalForPrompt = (journal: JournalEntry[], maxRecent = 10): str
 
     const recentEntries = journal
         .slice(-maxRecent)
-        .map((entry) => `- day=${new Date(entry.createdAt).toISOString()} type=${entry.type} notes=${sanitizeForPrompt(entry.notes, 140)}`)
+        .map(
+            (entry) =>
+                `- day=${new Date(entry.createdAt).toISOString()} type=${entry.type} notes=${sanitizeForPrompt(entry.notes, 140)}`,
+        )
         .join('\n')
 
     return `Total entries: ${journal.length}\nBy type: ${typeSummary}\nRecent entries:\n${recentEntries}`
@@ -198,14 +203,16 @@ const createCompactPlantSnapshot = (plant: Plant) => ({
         moisture: plant.medium.moisture,
         rootHealth: plant.rootSystem.health,
     },
-    activeProblems: plant.problems.filter((p) => p.status === 'active').map((p) => ({ type: p.type, severity: p.severity })),
+    activeProblems: plant.problems
+        .filter((p) => p.status === 'active')
+        .map((p) => ({ type: p.type, severity: p.severity })),
     recentHistory: plant.history.slice(-20),
     journalSummary: summarizeJournalForPrompt(plant.journal, 8),
 })
 
-type ImageCriteria = { focus: string; composition: string; mood: string };
-export type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk';
-const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'macro', 'cyberpunk'];
+type ImageCriteria = { focus: string; composition: string; mood: string }
+export type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk'
+const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'macro', 'cyberpunk']
 
 const AI_ERROR_KEYS = new Set([
     'ai.error.missingApiKey',
@@ -237,7 +244,6 @@ const getLocalAiService = async () => {
     return module.localAiService
 }
 
-
 class GeminiService {
     private sanitizeValue<T>(value: T): T {
         if (typeof value === 'string') {
@@ -247,10 +253,9 @@ class GeminiService {
             return value.map((item) => this.sanitizeValue(item)) as T
         }
         if (value && typeof value === 'object') {
-            const nextEntries = Object.entries(value as Record<string, unknown>).map(([key, val]) => [
-                key,
-                this.sanitizeValue(val),
-            ])
+            const nextEntries = Object.entries(value as Record<string, unknown>).map(
+                ([key, val]) => [key, this.sanitizeValue(val)],
+            )
             return Object.fromEntries(nextEntries) as T
         }
         return value
@@ -292,10 +297,18 @@ class GeminiService {
     ): Promise<string> {
         aiRateLimiter.acquireSlot(endpoint)
         const provider = this.getActiveProvider()
-        return aiProviderService.generateTextWithProvider(provider, systemPrompt, userPrompt, jsonMode, maxTokens)
+        return aiProviderService.generateTextWithProvider(
+            provider,
+            systemPrompt,
+            userPrompt,
+            jsonMode,
+            maxTokens,
+        )
     }
 
-    private withGeminiSafety<T extends Record<string, unknown>>(config?: T): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
+    private withGeminiSafety<T extends Record<string, unknown>>(
+        config?: T,
+    ): T & { safetySettings: typeof GEMINI_SAFETY_SETTINGS } {
         return {
             ...(config ?? ({} as T)),
             safetySettings: GEMINI_SAFETY_SETTINGS,
@@ -311,7 +324,9 @@ class GeminiService {
     }: {
         ai: GoogleGenAI
         model: string
-        contents: string | { parts: Array<{ text?: string; inlineData?: { data: string; mimeType: string } }> }
+        contents:
+            | string
+            | { parts: Array<{ text?: string; inlineData?: { data: string; mimeType: string } }> }
         config?: Record<string, unknown>
         fallbackModel?: string
     }) {
@@ -326,7 +341,10 @@ class GeminiService {
                 throw primaryError
             }
 
-            console.warn(`[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`, primaryError)
+            console.warn(
+                `[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`,
+                primaryError,
+            )
 
             return ai.models.generateContent({
                 model: fallbackModel,
@@ -348,8 +366,8 @@ class GeminiService {
         config?: Record<string, unknown>
     }): Promise<string> {
         type ModelsWithStream = typeof ai.models & {
-            generateContentStream?: (options: Record<string, unknown>) => Promise<unknown>;
-        };
+            generateContentStream?: (options: Record<string, unknown>) => Promise<unknown>
+        }
         const streamFn = (ai.models as ModelsWithStream).generateContentStream
 
         if (typeof streamFn !== 'function') {
@@ -357,12 +375,12 @@ class GeminiService {
             return this.getResponseTextOrThrow(response, 'ai.error.generic')
         }
 
-        type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<{ text?: string }> };
-        const streamResult = await streamFn.call(ai.models, {
+        type StreamResult = { [Symbol.asyncIterator](): AsyncIterator<{ text?: string }> }
+        const streamResult = (await streamFn.call(ai.models, {
             model,
             contents,
             config: this.withGeminiSafety(config),
-        }) as StreamResult
+        })) as StreamResult
 
         let fullText = ''
         for await (const chunk of streamResult) {
@@ -396,7 +414,11 @@ class GeminiService {
         return this.sanitizeValue(response.text)
     }
 
-    private parseJsonResponse<T>(response: { text?: string }, errorKey: string, schema?: z.ZodSchema<T>): T {
+    private parseJsonResponse<T>(
+        response: { text?: string },
+        errorKey: string,
+        schema?: z.ZodSchema<T>,
+    ): T {
         const text = this.getResponseTextOrThrow(response, errorKey)
         return this.parseJsonFromText(text, errorKey, schema)
     }
@@ -406,7 +428,11 @@ class GeminiService {
         let parsed: T
         try {
             // Strip markdown code fences that some providers wrap JSON in
-            const cleaned = text.trim().replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim()
+            const cleaned = text
+                .trim()
+                .replace(/^```(?:json)?\s*\n?/i, '')
+                .replace(/\n?```\s*$/i, '')
+                .trim()
             parsed = JSON.parse(cleaned) as T
         } catch {
             throw new Error(errorKey)
@@ -432,7 +458,11 @@ class GeminiService {
         return new GoogleGenAI({ apiKey })
     }
 
-    private async generateText(prompt: string, lang: Language, endpoint = 'generateText'): Promise<string> {
+    private async generateText(
+        prompt: string,
+        lang: Language,
+        endpoint = 'generateText',
+    ): Promise<string> {
         // Route to alternate provider if configured
         if (this.isAlternateProvider()) {
             return this.generateViaAlternateProvider(
@@ -474,7 +504,8 @@ class GeminiService {
         if (this.isAlternateProvider()) {
             try {
                 const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.equipmentSystemInstruction')}`
-                const jsonInstruction = 'Respond ONLY with valid JSON matching this exact structure: { "tent": {"name":"...","price":0,"rationale":"..."}, "light": {"name":"...","price":0,"rationale":"...","watts":0}, "ventilation": {"name":"...","price":0,"rationale":"..."}, "circulationFan": {"name":"...","price":0,"rationale":"..."}, "pots": {"name":"...","price":0,"rationale":"..."}, "soil": {"name":"...","price":0,"rationale":"..."}, "nutrients": {"name":"...","price":0,"rationale":"..."}, "extra": {"name":"...","price":0,"rationale":"..."}, "proTip": "..." }'
+                const jsonInstruction =
+                    'Respond ONLY with valid JSON matching this exact structure: { "tent": {"name":"...","price":0,"rationale":"..."}, "light": {"name":"...","price":0,"rationale":"...","watts":0}, "ventilation": {"name":"...","price":0,"rationale":"..."}, "circulationFan": {"name":"...","price":0,"rationale":"..."}, "pots": {"name":"...","price":0,"rationale":"..."}, "soil": {"name":"...","price":0,"rationale":"..."}, "nutrients": {"name":"...","price":0,"rationale":"..."}, "extra": {"name":"...","price":0,"rationale":"..."}, "proTip": "..." }'
                 const text = await this.generateViaAlternateProvider(
                     'getEquipmentRecommendation',
                     systemPrompt,
@@ -482,7 +513,11 @@ class GeminiService {
                     true,
                     MAX_OUTPUT_TOKENS_JSON,
                 )
-                return this.parseJsonFromText<Recommendation>(text, 'ai.error.equipment', RecommendationSchema)
+                return this.parseJsonFromText<Recommendation>(
+                    text,
+                    'ai.error.equipment',
+                    RecommendationSchema,
+                )
             } catch (error) {
                 console.error('Alt-provider getEquipmentRecommendation Error:', error)
                 this.rethrowKnownError(error, 'ai.error.equipment')
@@ -501,7 +536,9 @@ class GeminiService {
             const response = await this.generateWithFallback({
                 ai,
                 model: 'gemini-2.5-flash',
-                contents: truncatePromptForModel(`${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`),
+                contents: truncatePromptForModel(
+                    `${getEducationalUseOnlyInstruction(lang)}\n\n${prompt}`,
+                ),
                 config: {
                     systemInstruction: localizedSystemInstruction,
                     maxOutputTokens: MAX_OUTPUT_TOKENS_JSON,
@@ -599,7 +636,11 @@ class GeminiService {
                 },
             })
 
-            return this.parseJsonResponse<Recommendation>(response, 'ai.error.equipment', RecommendationSchema)
+            return this.parseJsonResponse<Recommendation>(
+                response,
+                'ai.error.equipment',
+                RecommendationSchema,
+            )
         } catch (error) {
             console.error('Gemini getEquipmentRecommendation Error:', error)
             this.rethrowKnownError(error, 'ai.error.equipment')
@@ -611,7 +652,7 @@ class GeminiService {
         mimeType: string,
         plant: Plant,
         userNotes: string,
-        lang: Language
+        lang: Language,
     ): Promise<PlantDiagnosisResponse> {
         if (typeof navigator !== 'undefined' && navigator.onLine === false) {
             const localAiService = await getLocalAiService()
@@ -623,8 +664,10 @@ class GeminiService {
             plant.problems.length > 0
                 ? plant.problems
                       .map((p) => {
-                          const problemKey = p.type.toLowerCase().replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase());
-                          return t(`problemMessages.${problemKey}.message`);
+                          const problemKey = p.type
+                              .toLowerCase()
+                              .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())
+                          return t(`problemMessages.${problemKey}.message`)
                       })
                       .join(', ')
                 : t('common.none')
@@ -636,7 +679,7 @@ PLANT CONTEXT:
 - Active Issues: ${problems}
 - Medium Vitals: pH ${plant.medium.ph.toFixed(2)}, EC ${plant.medium.ec.toFixed(2)}
 - Environment Vitals: Temp ${plant.environment.internalTemperature.toFixed(
-            1
+            1,
         )}°C, Humidity ${plant.environment.internalHumidity.toFixed(1)}%
 - USER NOTES: "${sanitizeForPrompt(userNotes || 'None provided', 400)}"
         `.trim()
@@ -679,12 +722,24 @@ PLANT CONTEXT:
                             prevention: { type: Type.STRING },
                             diagnosis: { type: Type.STRING },
                         },
-                        required: ['title', 'content', 'confidence', 'immediateActions', 'longTermSolution', 'prevention', 'diagnosis'],
-                    }
+                        required: [
+                            'title',
+                            'content',
+                            'confidence',
+                            'immediateActions',
+                            'longTermSolution',
+                            'prevention',
+                            'diagnosis',
+                        ],
+                    },
                 },
             })
 
-            return this.parseJsonResponse<PlantDiagnosisResponse>(response, 'ai.error.diagnostics', PlantDiagnosisResponseSchema)
+            return this.parseJsonResponse<PlantDiagnosisResponse>(
+                response,
+                'ai.error.diagnostics',
+                PlantDiagnosisResponseSchema,
+            )
         } catch (error) {
             console.error('Gemini diagnosePlant Error:', error)
             if (this.shouldUseLocalFallback(error)) {
@@ -730,7 +785,7 @@ PLANT CONTEXT:
     async getMentorResponse(
         plant: Plant,
         query: string,
-        lang: Language
+        lang: Language,
     ): Promise<Omit<MentorMessage, 'role'>> {
         const t = getT()
         const plantContext = `${formatPlantContextForPrompt(plant, t)}\n\nJOURNAL SUMMARY\n---------------\n${summarizeJournalForPrompt(plant.journal)}`
@@ -745,7 +800,8 @@ PLANT CONTEXT:
             // Alternate provider path for mentor
             if (this.isAlternateProvider()) {
                 const systemPrompt = `${getEducationalUseOnlyInstruction(lang)}\n\n${t('ai.prompts.mentor.systemInstruction')}`
-                const jsonInstruction = 'Respond ONLY with valid JSON matching: { "title": "...", "content": "...", "uiHighlights": [] }'
+                const jsonInstruction =
+                    'Respond ONLY with valid JSON matching: { "title": "...", "content": "...", "uiHighlights": [] }'
                 const text = await this.generateViaAlternateProvider(
                     'getMentorResponse',
                     systemPrompt,
@@ -753,7 +809,11 @@ PLANT CONTEXT:
                     true,
                     MAX_OUTPUT_TOKENS_JSON,
                 )
-                return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(text, 'ai.error.generic', MentorMessageContentSchema)
+                return this.parseJsonFromText<Omit<MentorMessage, 'role'>>(
+                    text,
+                    'ai.error.generic',
+                    MentorMessageContentSchema,
+                )
             }
 
             aiRateLimiter.acquireSlot('getMentorResponse')
@@ -797,7 +857,11 @@ PLANT CONTEXT:
                 },
             })
 
-            return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(response, 'ai.error.generic', MentorMessageContentSchema)
+            return this.parseJsonResponse<Omit<MentorMessage, 'role'>>(
+                response,
+                'ai.error.generic',
+                MentorMessageContentSchema,
+            )
         } catch (error) {
             console.error('Gemini getMentorResponse Error:', error)
             if (this.shouldUseLocalFallback(error)) {
@@ -811,7 +875,7 @@ PLANT CONTEXT:
     async getStrainTips(
         strain: Strain,
         context: { focus: string; stage: string; experienceLevel: string },
-        lang: Language
+        lang: Language,
     ): Promise<StructuredGrowTips> {
         const t = getT()
         const prompt = t('ai.prompts.strainTips', {
@@ -827,7 +891,8 @@ PLANT CONTEXT:
         try {
             // Alternate provider path for strain tips
             if (this.isAlternateProvider()) {
-                const jsonInstruction = 'Respond ONLY with valid JSON matching: { "nutrientTip": "...", "trainingTip": "...", "environmentalTip": "...", "proTip": "..." }'
+                const jsonInstruction =
+                    'Respond ONLY with valid JSON matching: { "nutrientTip": "...", "trainingTip": "...", "environmentalTip": "...", "proTip": "..." }'
                 const text = await this.generateViaAlternateProvider(
                     'getStrainTips',
                     getEducationalUseOnlyInstruction(lang),
@@ -835,7 +900,11 @@ PLANT CONTEXT:
                     true,
                     MAX_OUTPUT_TOKENS_JSON,
                 )
-                return this.parseJsonFromText<StructuredGrowTips>(text, 'ai.error.tips', StructuredGrowTipsSchema)
+                return this.parseJsonFromText<StructuredGrowTips>(
+                    text,
+                    'ai.error.tips',
+                    StructuredGrowTipsSchema,
+                )
             }
 
             aiRateLimiter.acquireSlot('getStrainTips')
@@ -860,7 +929,11 @@ PLANT CONTEXT:
                 },
             })
 
-            return this.parseJsonResponse<StructuredGrowTips>(response, 'ai.error.tips', StructuredGrowTipsSchema)
+            return this.parseJsonResponse<StructuredGrowTips>(
+                response,
+                'ai.error.tips',
+                StructuredGrowTipsSchema,
+            )
         } catch (e) {
             console.error('Gemini getStrainTips Error:', e)
             if (this.shouldUseLocalFallback(e)) {
@@ -871,12 +944,16 @@ PLANT CONTEXT:
         }
     }
 
-    async generateStrainImage(strain: Strain, style: ImageStyle, criteria: ImageCriteria): Promise<string> {
-        const systemPrompt = `You are an advanced image generation AI. Your task is to produce a single, high-fidelity, visually stunning, and contextually accurate image based on the user's detailed prompt. Adhere strictly to all instructions, especially regarding style, subject, and mood. Interpret prompts artistically but precisely.`;
+    async generateStrainImage(
+        strain: Strain,
+        style: ImageStyle,
+        criteria: ImageCriteria,
+    ): Promise<string> {
+        const systemPrompt = `You are an advanced image generation AI. Your task is to produce a single, high-fidelity, visually stunning, and contextually accurate image based on the user's detailed prompt. Adhere strictly to all instructions, especially regarding style, subject, and mood. Interpret prompts artistically but precisely.`
 
-        let selectedStyle = style;
+        let selectedStyle = style
         if (selectedStyle === 'random') {
-            selectedStyle = availableStyles[Math.floor(Math.random() * availableStyles.length)];
+            selectedStyle = availableStyles[Math.floor(Math.random() * availableStyles.length)]
         }
 
         const stylePrompts: Record<Exclude<ImageStyle, 'random'>, string> = {
@@ -884,38 +961,40 @@ PLANT CONTEXT:
             botanical: `A detailed vintage botanical illustration of the cannabis strain '${strain.name}'. The style should mimic a 19th-century scientific drawing with fine ink lines, delicate watercolor washes, and annotations on aged, parchment-like paper. Focus on realism and anatomical accuracy.`,
             psychedelic: `A vibrant, psychedelic art piece inspired by the cannabis strain '${strain.name}'. The style should be reminiscent of 1960s poster art, featuring swirling patterns, kaleidoscopic visuals, bold neon colors, and abstract, flowing shapes. Trippy and mesmerizing.`,
             macro: `An ultra-realistic, professional macro photograph of a perfect cannabis bud from the strain '${strain.name}'. Focus on the intricate details: glistening trichomes, vibrant pistils, and complex textures. Use dramatic studio lighting to create depth. The background should be clean and dark.`,
-            cyberpunk: `A high-tech, cyberpunk-style hologram of the cannabis strain '${strain.name}'. The plant should be rendered as a glowing, neon-blue and purple wireframe or semi-translucent light form, projected into a dark, futuristic scene. Incorporate glitch effects and scan lines for a high-tech feel.`
-        };
+            cyberpunk: `A high-tech, cyberpunk-style hologram of the cannabis strain '${strain.name}'. The plant should be rendered as a glowing, neon-blue and purple wireframe or semi-translucent light form, projected into a dark, futuristic scene. Incorporate glitch effects and scan lines for a high-tech feel.`,
+        }
 
         const criteriaPrompts = {
             focus: {
                 buds: 'The main focus is a close-up on the detailed structure of the flower buds.',
                 plant: 'The composition features the entire plant, showcasing its overall shape and structure.',
-                abstract: 'The image is an abstract representation of the strain\'s essence, not a literal plant.'
+                abstract:
+                    "The image is an abstract representation of the strain's essence, not a literal plant.",
             },
             composition: {
                 symmetrical: 'The composition is balanced and formally symmetrical.',
-                dynamic: 'The composition is dynamic, using strong diagonal lines and a sense of movement.',
-                minimalist: 'The composition is minimalist, with a single subject against a simple, clean background.'
+                dynamic:
+                    'The composition is dynamic, using strong diagonal lines and a sense of movement.',
+                minimalist:
+                    'The composition is minimalist, with a single subject against a simple, clean background.',
             },
             mood: {
                 mystical: 'The overall mood is mystical, dark, and enigmatic.',
                 energetic: 'The overall mood is bright, energetic, and vibrant.',
-                calm: 'The overall mood is calm, serene, and peaceful.'
-            }
-        };
+                calm: 'The overall mood is calm, serene, and peaceful.',
+            },
+        }
 
-        const strainSpecificPrompt = stylePrompts[selectedStyle as Exclude<ImageStyle, 'random'>];
+        const strainSpecificPrompt = stylePrompts[selectedStyle as Exclude<ImageStyle, 'random'>]
         const criteriaString = `
             Artistic Direction:
             - Focus: ${criteriaPrompts.focus[criteria.focus as keyof typeof criteriaPrompts.focus]}
             - Composition: ${criteriaPrompts.composition[criteria.composition as keyof typeof criteriaPrompts.composition]}
             - Mood: ${criteriaPrompts.mood[criteria.mood as keyof typeof criteriaPrompts.mood]}
             - Integrate the strain's name '${strain.name}' creatively and elegantly into the artwork itself, for example as subtle typography, glowing runes, or part of a natural pattern.
-        `;
+        `
 
-        const prompt = `${systemPrompt}\n\n---\n\nCONTEXT: The image request is for legal, educational horticulture visualization only.\n\nEXECUTE THE FOLLOWING PROMPT:\n\n${strainSpecificPrompt}\n\n${criteriaString}`;
-
+        const prompt = `${systemPrompt}\n\n---\n\nCONTEXT: The image request is for legal, educational horticulture visualization only.\n\nEXECUTE THE FOLLOWING PROMPT:\n\n${strainSpecificPrompt}\n\n${criteriaString}`
 
         try {
             aiRateLimiter.acquireSlot('generateStrainImage')
@@ -934,11 +1013,15 @@ PLANT CONTEXT:
                 config: {
                     responseModalities: [Modality.IMAGE],
                 },
-            });
+            })
 
-            const imagePart = response.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-            if (imagePart && imagePart.inlineData && typeof imagePart.inlineData.data === 'string') {
-                return imagePart.inlineData.data;
+            const imagePart = response.candidates?.[0]?.content?.parts?.find((p) => p.inlineData)
+            if (
+                imagePart &&
+                imagePart.inlineData &&
+                typeof imagePart.inlineData.data === 'string'
+            ) {
+                return imagePart.inlineData.data
             }
 
             throw new Error(getT()('common.noImageGenerated'))
@@ -962,7 +1045,8 @@ PLANT CONTEXT:
         try {
             // Alternate provider path for deep dive
             if (this.isAlternateProvider()) {
-                const jsonInstruction = 'Respond ONLY with valid JSON matching: { "introduction": "...", "stepByStep": ["..."], "prosAndCons": { "pros": ["..."], "cons": ["..."] }, "proTip": "..." }'
+                const jsonInstruction =
+                    'Respond ONLY with valid JSON matching: { "introduction": "...", "stepByStep": ["..."], "prosAndCons": { "pros": ["..."], "cons": ["..."] }, "proTip": "..." }'
                 const text = await this.generateViaAlternateProvider(
                     'generateDeepDive',
                     getEducationalUseOnlyInstruction(lang),
@@ -970,7 +1054,11 @@ PLANT CONTEXT:
                     true,
                     MAX_OUTPUT_TOKENS_JSON,
                 )
-                return this.parseJsonFromText<DeepDiveGuide>(text, 'ai.error.deepDive', DeepDiveGuideSchema)
+                return this.parseJsonFromText<DeepDiveGuide>(
+                    text,
+                    'ai.error.deepDive',
+                    DeepDiveGuideSchema,
+                )
             }
 
             aiRateLimiter.acquireSlot('generateDeepDive')
@@ -1003,7 +1091,11 @@ PLANT CONTEXT:
                 },
             })
 
-            return this.parseJsonResponse<DeepDiveGuide>(response, 'ai.error.deepDive', DeepDiveGuideSchema)
+            return this.parseJsonResponse<DeepDiveGuide>(
+                response,
+                'ai.error.deepDive',
+                DeepDiveGuideSchema,
+            )
         } catch (e) {
             console.error('Gemini generateDeepDive Error:', e)
             if (this.shouldUseLocalFallback(e)) {
@@ -1015,15 +1107,18 @@ PLANT CONTEXT:
     }
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
-        const t = getT();
-        const plantSummaries = plants.map(p =>
-            `- ${p.name} (${t('plantsView.plantCard.day')} ${p.age}, ${t(`plantStages.${p.stage}`)}): Health ${p.health.toFixed(0)}%, Stress ${p.stressLevel.toFixed(0)}%. Problems: ${p.problems.length > 0 ? p.problems.map(prob => prob.type).join(', ') : 'None'}`
-        ).join('\n');
+        const t = getT()
+        const plantSummaries = plants
+            .map(
+                (p) =>
+                    `- ${p.name} (${t('plantsView.plantCard.day')} ${p.age}, ${t(`plantStages.${p.stage}`)}): Health ${p.health.toFixed(0)}%, Stress ${p.stressLevel.toFixed(0)}%. Problems: ${p.problems.length > 0 ? p.problems.map((prob) => prob.type).join(', ') : 'None'}`,
+            )
+            .join('\n')
 
-        const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries });
+        const prompt = t('ai.prompts.gardenStatus', { summaries: plantSummaries })
         try {
-            const responseText = await this.generateText(prompt, lang, 'getGardenStatusSummary');
-            return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText };
+            const responseText = await this.generateText(prompt, lang, 'getGardenStatusSummary')
+            return { title: t('plantsView.gardenVitals.aiStatusTitle'), content: responseText }
         } catch (error) {
             if (this.shouldUseLocalFallback(error)) {
                 const localAiService = await getLocalAiService()
@@ -1079,6 +1174,54 @@ PLANT CONTEXT:
         }
 
         return [String(messagesResult)]
+    }
+
+    async getNutrientRecommendation(
+        context: {
+            medium: string
+            stage: string
+            currentEc: number
+            currentPh: number
+            optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
+            readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
+            plant?: {
+                name: string
+                strain: { name: string }
+                stage: string
+                age: number
+                health: number
+                medium: { ph: number; ec: number }
+            }
+        },
+        lang: Language,
+    ): Promise<string> {
+        const t = getT()
+
+        const readingsSummary =
+            context.readings.length > 0
+                ? context.readings
+                      .map((r) => `EC=${r.ec.toFixed(2)} pH=${r.ph.toFixed(2)} (${r.readingType})`)
+                      .join('; ')
+                : 'No recent readings.'
+
+        const plantInfo = context.plant
+            ? `Plant: ${context.plant.name} (${context.plant.strain.name}), Stage: ${context.plant.stage}, Age: ${context.plant.age}d, Health: ${context.plant.health.toFixed(0)}%, Live pH: ${context.plant.medium.ph.toFixed(2)}, Live EC: ${context.plant.medium.ec.toFixed(2)}`
+            : 'No specific plant selected.'
+
+        const prompt = `${t('ai.prompts.nutrientPlanner', {
+            medium: context.medium,
+            stage: context.stage,
+            currentEc: context.currentEc.toFixed(2),
+            currentPh: context.currentPh.toFixed(2),
+            ecMin: context.optimalRange.ecMin.toFixed(2),
+            ecMax: context.optimalRange.ecMax.toFixed(2),
+            phMin: context.optimalRange.phMin.toFixed(2),
+            phMax: context.optimalRange.phMax.toFixed(2),
+            readings: readingsSummary,
+            plant: plantInfo,
+        })}`
+
+        return this.generateText(prompt, lang, 'getNutrientRecommendation')
     }
 }
 

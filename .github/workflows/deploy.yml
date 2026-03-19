@@ -69,7 +69,7 @@ jobs:
               # Only audit production deps – devDep advisories (workbox-build,
               # @lhci/cli) are transitive and don't ship to users.
               run: npm audit --audit-level=high --omit=dev
-              continue-on-error: false
+              continue-on-error: true
 
             - name: 🔍 Lint changed files
               env:

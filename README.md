@@ -12,28 +12,14 @@ This README file supports two languages.
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-307%20passed-brightgreen)]()
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 [![Tech Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
-[![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
-[![Accessibility](https://img.shields.io/badge/accessibility-95%25-brightgreen)]()
-[![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
-[![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
-[![Gist Sync](https://img.shields.io/badge/Cloud%20Sync-GitHub%20Gist-181717?logo=github&logoColor=white)]()
-[![Netlify Status](https://img.shields.io/badge/Netlify-deployed-00C7B7?logo=netlify&logoColor=white)](https://app.netlify.com)
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-compliant-blue)]()
 [![Built with ❤ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
-
-**Current Performance Snapshot**
-
-- Lighthouse: ~66 performance, ~95 accessibility
-- Benchmark build: ~87s
-- Main bundle: ~333 kB transferred
-- Bundle analysis: `dist/source-map-explorer.html`
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
 
@@ -654,27 +640,14 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)
 [![CI](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/ci.yml)
 [![Deploy](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml/badge.svg)](https://github.com/qnbs/CannaGuide-2025/actions/workflows/deploy.yml)
-[![Tests](https://img.shields.io/badge/tests-307%20passed-brightgreen)]()
 [![Sentry](https://img.shields.io/badge/errors-Sentry-362D59?logo=sentry&logoColor=white)](https://sentry.io)
 [![Tech-Stack](https://img.shields.io/badge/tech-React%2019%20|%20Redux%20|%20Gemini-informational)](https://ai.google.dev/)
-[![Performance](https://img.shields.io/badge/performance-66%25-orange)]()
-[![Accessibility](https://img.shields.io/badge/accessibility-95%25-brightgreen)]()
-[![Benchmark](https://img.shields.io/badge/benchmark-87s-blue)]()
-[![Bundle](https://img.shields.io/badge/bundle-332.9%20kB-gold)]()
 [![PWA Ready](https://img.shields.io/badge/PWA-100%25%20Offline-blueviolet)]()
 [![Local AI](https://img.shields.io/badge/Local%20AI-On--Device%20ML-ff6f00?logo=tensorflow&logoColor=white)]()
-[![Gist Sync](https://img.shields.io/badge/Cloud%20Sync-GitHub%20Gist-181717?logo=github&logoColor=white)]()
 [![i18n](https://img.shields.io/badge/i18n-EN%20|%20DE-orange)]()
 [![WCAG 2.2 AA](https://img.shields.io/badge/a11y-WCAG%202.2%20AA-green)]()
 [![DSGVO](https://img.shields.io/badge/DSGVO-konform-blue)]()
 [![Built with ❤ & Gemini](https://img.shields.io/badge/Built%20with-%E2%9D%A4%EF%B8%8F%20%26%20Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
-
-**Aktueller Performance-Snapshot**
-
-- Lighthouse: ~66 Performance, ~95 Accessibility
-- Benchmark-Build: ~87s
-- Main Bundle: ~333 kB übertragen
-- Bundle-Analyse: `dist/source-map-explorer.html`
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
 

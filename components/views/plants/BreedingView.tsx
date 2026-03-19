@@ -139,7 +139,7 @@ const BreedingView: React.FC = () => {
                         </div>
                     ) : (
                         <div className="space-y-2 max-h-[50dvh] overflow-y-auto pr-2">
-                            {collectedSeeds.map(seed => <SeedCard key={seed.id} seed={seed} onClick={() => handleSeedClick(seed.id)} isSelected={seed.id === parentA_id || seed.id === parentB_id} strain={allStrains.find(s => s.id === seed.strainId)} />)}
+                            {collectedSeeds.map(seed => <SeedCard key={seed.id} seed={seed} onClick={() => handleSeedClick(seed.id)} isSelected={seed.id === parentA_id || seed.id === parentB_id} strain={allStrains.find(s => s.id === seed.strainId) ?? null} />)}
                         </div>
                     )}
                 </Card>

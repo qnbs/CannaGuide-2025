@@ -1,6 +1,9 @@
 type TransformersModule = typeof import('@xenova/transformers')
 
-export type LocalAiPipeline = (input: unknown, options?: Record<string, unknown>) => Promise<unknown>
+export type LocalAiPipeline = (
+    input: unknown,
+    options?: Record<string, unknown>,
+) => Promise<unknown>
 
 /** Detected best ONNX execution provider: webgpu → wasm. */
 export type OnnxBackend = 'webgpu' | 'wasm'
@@ -22,8 +25,7 @@ export const setForceWasm = (force: boolean): void => {
 export const detectOnnxBackend = (): OnnxBackend => {
     if (forceWasmOverride) return 'wasm'
     if (detectedBackend) return detectedBackend
-    detectedBackend =
-        typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm'
+    detectedBackend = typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm'
     return detectedBackend
 }
 
@@ -60,6 +62,20 @@ export const loadTransformersPipeline = async (
         // Prefer WebGPU device when available; Transformers.js falls back to WASM automatically
         if (backend === 'webgpu' && !mergedOptions.device) {
             mergedOptions.device = 'webgpu'
+        }
+        // Add progress callback for download tracking
+        if (!mergedOptions.progress_callback) {
+            mergedOptions.progress_callback = (progress: {
+                status: string
+                file?: string
+                progress?: number
+            }) => {
+                if (progress.status === 'progress' && typeof progress.progress === 'number') {
+                    console.debug(
+                        `[LocalAI] ${modelId}: ${progress.file ?? 'model'} ${progress.progress.toFixed(0)}%`,
+                    )
+                }
+            }
         }
         return pipeline(task as never, modelId, mergedOptions as never) as Promise<LocalAiPipeline>
     })()

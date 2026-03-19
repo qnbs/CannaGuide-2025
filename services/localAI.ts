@@ -33,8 +33,12 @@ const INFERENCE_CACHE_MAX = 64
 const inferenceCache = new Map<string, string>()
 
 const cacheKey = (prompt: string): string => {
-    // Use first 200 chars as key – cheap, collision-unlikely for distinct prompts
-    return prompt.slice(0, 200)
+    // djb2 hash on full prompt for collision resistance, stringify to string key
+    let hash = 5381
+    for (let i = 0; i < prompt.length; i++) {
+        hash = ((hash << 5) + hash + prompt.charCodeAt(i)) | 0
+    }
+    return `${hash}_${prompt.length}`
 }
 
 const getCached = (prompt: string): string | null => {
@@ -59,6 +63,22 @@ const setCached = (prompt: string, value: string): void => {
 }
 
 const MAX_RETRIES = 2
+/** Timeout for any single inference call (60 seconds). */
+const INFERENCE_TIMEOUT_MS = 60_000
+
+/** Allow external callers (settings, tests) to flush the inference cache. */
+export const clearInferenceCache = (): void => {
+    inferenceCache.clear()
+}
+
+/** Race a promise against a timeout. */
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([
+        promise,
+        new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Inference timeout')), ms),
+        ),
+    ])
 
 const ZERO_SHOT_LABELS = [
     'healthy plant',
@@ -239,11 +259,14 @@ class LocalAiService {
             const webLlm = await this.loadWebLlmEngine()
             if (webLlm) {
                 try {
-                    const response = await webLlm.chat.completions.create({
-                        messages: [{ role: 'user', content: prompt }],
-                        temperature: 0.5,
-                        max_gen_len: 512,
-                    })
+                    const response = await withTimeout(
+                        webLlm.chat.completions.create({
+                            messages: [{ role: 'user', content: prompt }],
+                            temperature: 0.5,
+                            max_gen_len: 512,
+                        }),
+                        INFERENCE_TIMEOUT_MS,
+                    )
                     const content = response?.choices?.[0]?.message?.content
                     if (typeof content === 'string' && content.trim().length > 0) {
                         setCached(prompt, content)
@@ -264,12 +287,15 @@ class LocalAiService {
 
             try {
                 const generator = await this.loadTextPipeline()
-                const output = await generator(prompt, {
-                    max_new_tokens: 512,
-                    do_sample: true,
-                    temperature: 0.6,
-                    return_full_text: false,
-                })
+                const output = await withTimeout(
+                    generator(prompt, {
+                        max_new_tokens: 512,
+                        do_sample: true,
+                        temperature: 0.6,
+                        return_full_text: false,
+                    }),
+                    INFERENCE_TIMEOUT_MS,
+                )
                 const generated = Array.isArray(output)
                     ? (output[0] as { generated_text?: string } | undefined)?.generated_text
                     : (output as { generated_text?: string } | undefined)?.generated_text

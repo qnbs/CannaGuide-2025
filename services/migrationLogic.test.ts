@@ -207,9 +207,9 @@ describe('migrationLogic', () => {
             savedItems: { savedSetups: null, savedStrainTips: undefined },
         } as never)
 
-        expect(migrated.savedItems.savedSetups).toEqual({ ids: [], entities: {} })
-        expect(migrated.savedItems.savedStrainTips).toEqual({ ids: [], entities: {} })
-        expect(migrated.savedItems.savedExports).toEqual({ ids: [], entities: {} })
+        expect(migrated.savedItems!.savedSetups).toEqual({ ids: [], entities: {} })
+        expect(migrated.savedItems!.savedStrainTips).toEqual({ ids: [], entities: {} })
+        expect(migrated.savedItems!.savedExports).toEqual({ ids: [], entities: {} })
     })
 
     it('repairs missing favorites shape', () => {
@@ -230,7 +230,7 @@ describe('migrationLogic', () => {
         } as never)
 
         expect(migrated.strainsView).toBeDefined()
-        expect(migrated.strainsView.selectedStrainIds).toEqual([])
+        expect(migrated.strainsView!.selectedStrainIds).toEqual([])
     })
 
     it('repairs missing archives shape', () => {
@@ -251,8 +251,8 @@ describe('migrationLogic', () => {
 
         expect(migrated.userStrains).toEqual({ ids: [], entities: {} })
         expect(migrated.favorites).toEqual({ favoriteIds: [] })
-        expect(migrated.savedItems.savedSetups).toEqual({ ids: [], entities: {} })
-        expect(migrated.savedItems.savedStrainTips).toEqual({ ids: [], entities: {} })
-        expect(migrated.savedItems.savedExports).toEqual({ ids: [], entities: {} })
+        expect(migrated.savedItems!.savedSetups).toEqual({ ids: [], entities: {} })
+        expect(migrated.savedItems!.savedStrainTips).toEqual({ ids: [], entities: {} })
+        expect(migrated.savedItems!.savedExports).toEqual({ ids: [], entities: {} })
     })
 })

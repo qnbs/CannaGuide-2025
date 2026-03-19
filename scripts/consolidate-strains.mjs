@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Strain Consolidation Script
- * 
+ *
  * Merges all temp-additions-*.ts files into the proper alphabetical files (a.ts-z.ts, numeric.ts).
  * Each strain is sorted by the first character of its name.
  * After consolidation, temp files are deleted and index.ts is rewritten.
@@ -57,7 +57,7 @@ function extractStrainBlocks(content) {
     // Extract name from the block
     const nameMatch = block.match(/["']name["']\s*:\s*["']([^"']+)["']/);
     const idMatch = block.match(/["']?id["']?\s*:\s*["']([^"']+)["']/);
-    
+
     if (nameMatch) {
       blocks.push({
         name: nameMatch[1],
@@ -108,7 +108,7 @@ for (const tempFile of tempFiles) {
   const filePath = path.join(STRAINS_DIR, tempFile);
   const content = fs.readFileSync(filePath, 'utf-8');
   const blocks = extractStrainBlocks(content);
-  
+
   if (blocks.length === 0) {
     console.log(`  [FILE] ${tempFile}: empty (0 strains)`);
     emptyTempFiles++;
@@ -116,7 +116,7 @@ for (const tempFile of tempFiles) {
   }
 
   console.log(`  [FILE] ${tempFile}: ${blocks.length} strains`);
-  
+
   for (const entry of blocks) {
     const letter = getLetterBucket(entry.name);
     if (!buckets[letter]) buckets[letter] = [];
@@ -142,17 +142,17 @@ let skipCount = 0;
 for (const [letter, items] of Object.entries(buckets)) {
   const targetFile = letter === 'numeric' ? 'numeric.ts' : `${letter}.ts`;
   const targetPath = path.join(STRAINS_DIR, targetFile);
-  
+
   if (!fs.existsSync(targetPath)) {
     console.warn(`  [WARN] Target file ${targetFile} does not exist, creating it.`);
     const varName = letter === 'numeric' ? 'strainsNumeric' : `strains${letter.toUpperCase()}`;
     const newContent = `import { Strain, StrainType } from '@/types';\nimport { createStrainObject } from '@/services/strainFactory';\n\nexport const ${varName}: Strain[] = [\n];\n`;
     fs.writeFileSync(targetPath, newContent, 'utf-8');
   }
-  
+
   let content = fs.readFileSync(targetPath, 'utf-8');
   const existingIds = extractExistingIds(content);
-  
+
   const newBlocks = [];
   for (const item of items) {
     if (item.id && existingIds.has(item.id)) {
@@ -174,14 +174,14 @@ for (const [letter, items] of Object.entries(buckets)) {
 
   // Build the insertion text
   const insertion = newBlocks.map(item => `    ${item.block},`).join('\n');
-  
+
   // Check if there's content before the closing - add comma if needed
   const beforeClosing = content.slice(0, closingIndex).trimEnd();
   const needsTrailingComma = beforeClosing.endsWith(')') && !beforeClosing.endsWith(',');
-  
+
   const prefix = needsTrailingComma ? ',\n' : '\n';
   content = content.slice(0, closingIndex) + prefix + insertion + '\n' + content.slice(closingIndex);
-  
+
   fs.writeFileSync(targetPath, content, 'utf-8');
   console.log(`  [OK] Merged ${newBlocks.length} strains into ${targetFile}`);
   mergedCount += newBlocks.length;

@@ -5,7 +5,19 @@ import { RootState } from '../store'
 import { GEMINI_API_KEY_STORAGE_KEY, REDUX_STATE_KEY, VersionedSliceName } from '@/constants'
 import { aiProviderService } from '@/services/aiProviderService'
 
-export const simulationProfilePresets: Record<AppSettings['simulation']['simulationProfile'], Pick<AppSettings['simulation'], 'pestPressure' | 'nutrientSensitivity' | 'environmentalStability' | 'leafTemperatureOffset' | 'lightExtinctionCoefficient' | 'nutrientConversionEfficiency' | 'stomataSensitivity'>> = {
+export const simulationProfilePresets: Record<
+    AppSettings['simulation']['simulationProfile'],
+    Pick<
+        AppSettings['simulation'],
+        | 'pestPressure'
+        | 'nutrientSensitivity'
+        | 'environmentalStability'
+        | 'leafTemperatureOffset'
+        | 'lightExtinctionCoefficient'
+        | 'nutrientConversionEfficiency'
+        | 'stomataSensitivity'
+    >
+> = {
     beginner: {
         pestPressure: 0.04,
         nutrientSensitivity: 0.85,
@@ -138,6 +150,14 @@ export const defaultSettings: AppSettings = {
     localAi: {
         forceWasm: false,
         preferredTextModel: 'auto',
+        enableSemanticRag: true,
+        enableSentimentAnalysis: true,
+        enableSummarization: true,
+        enableQueryClassification: true,
+        enablePersistentCache: true,
+        enableTelemetry: true,
+        maxInferenceCacheSize: 256,
+        inferenceTimeoutMs: 60000,
     },
 
     data: {
@@ -237,8 +257,12 @@ const settingsSlice = createSlice({
 
             const keys = path.split('.')
             // Guard against prototype pollution via crafted paths
-            if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) return
-            let current: Record<string, unknown> = state.settings as unknown as Record<string, unknown>
+            if (keys.some((k) => k === '__proto__' || k === 'constructor' || k === 'prototype'))
+                return
+            let current: Record<string, unknown> = state.settings as unknown as Record<
+                string,
+                unknown
+            >
             for (let i = 0; i < keys.length - 1; i++) {
                 if (!Object.prototype.hasOwnProperty.call(current, keys[i])) return
                 current = current[keys[i]] as Record<string, unknown>
@@ -248,8 +272,12 @@ const settingsSlice = createSlice({
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
             const { path } = action.payload
             const keys = path.split('.')
-            if (keys.some(k => k === '__proto__' || k === 'constructor' || k === 'prototype')) return
-            let current: Record<string, unknown> = state.settings as unknown as Record<string, unknown>
+            if (keys.some((k) => k === '__proto__' || k === 'constructor' || k === 'prototype'))
+                return
+            let current: Record<string, unknown> = state.settings as unknown as Record<
+                string,
+                unknown
+            >
             for (let i = 0; i < keys.length - 1; i++) {
                 if (!Object.prototype.hasOwnProperty.call(current, keys[i])) return
                 current = current[keys[i]] as Record<string, unknown>

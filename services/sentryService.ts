@@ -80,7 +80,17 @@ export const captureLocalAiError = (
     error: unknown,
     context: {
         model?: string
-        stage: 'preload' | 'inference' | 'vision' | 'webllm' | 'fallback'
+        stage:
+            | 'preload'
+            | 'inference'
+            | 'vision'
+            | 'webllm'
+            | 'fallback'
+            | 'embedding'
+            | 'sentiment'
+            | 'summarization'
+            | 'classification'
+            | 'cache'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
     },

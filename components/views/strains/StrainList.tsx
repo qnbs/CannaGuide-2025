@@ -2,6 +2,7 @@ import React, { memo, useRef, useEffect } from 'react';
 import { Strain } from '@/types';
 import { StrainListItem } from './StrainListItem';
 import { useVirtualizer } from '@/hooks/useVirtualizer';
+import { MOBILE_BOTTOM_NAV_SAFE_OFFSET } from '@/constants';
 
 interface StrainListProps {
     strains: Strain[];
@@ -20,8 +21,6 @@ const StrainListComponent: React.FC<StrainListProps> = ({
     isPending, favorites, onToggleFavorite
 }) => {
     const scrollElementRef = useRef<HTMLElement | null>(null);
-    const mobileBottomSafeOffset = 112;
-
     // On component mount, find the main scrolling element of the app layout.
     useEffect(() => {
         scrollElementRef.current = document.querySelector('main');
@@ -38,7 +37,7 @@ const StrainListComponent: React.FC<StrainListProps> = ({
         <div
             className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
             style={{
-                height: `${rowVirtualizer.totalSize + mobileBottomSafeOffset}px`,
+                height: `${rowVirtualizer.totalSize + MOBILE_BOTTOM_NAV_SAFE_OFFSET}px`,
                 width: '100%',
                 position: 'relative',
             }}

@@ -45,6 +45,8 @@ export const equipmentView = {
     growSpaceDescription: 'Specify the dimensions of your grow area.',
     width: 'Width',
     depth: 'Depth',
+    noPriceAvailable: 'Price unavailable',
+    noRationaleAvailable: 'No rationale provided',
     floweringTypeTitle: 'Preferred Plant Type',
     floweringTypeAny: 'Any',
     floweringTypeAutoflower: 'Autoflower',

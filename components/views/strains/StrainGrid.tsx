@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useEffect, useState, memo } from 'react';
 import { Strain } from '@/types';
 import StrainGridItem from './StrainGridItem';
 import { useVirtualizer } from '@/hooks/useVirtualizer';
+import { MOBILE_BOTTOM_NAV_SAFE_OFFSET } from '@/constants';
 
 interface StrainGridProps {
     strains: Strain[];
@@ -19,8 +20,6 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, sel
     const [columns, setColumns] = useState(2);
     const rowHeight = 260;
     const gapSize = 16;
-    const mobileBottomSafeOffset = 112;
-
     useEffect(() => {
         scrollElementRef.current = document.querySelector('main');
 
@@ -55,7 +54,7 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, sel
         <div
             className={`transition-opacity duration-300 ${isPending ? 'opacity-50' : 'opacity-100'}`}
             style={{
-                height: `${rowVirtualizer.totalSize + mobileBottomSafeOffset}px`,
+                height: `${rowVirtualizer.totalSize + MOBILE_BOTTOM_NAV_SAFE_OFFSET}px`,
                 position: 'relative',
                 width: '100%',
             }}

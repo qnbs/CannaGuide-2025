@@ -110,6 +110,7 @@ const SetupResultDisplayComponent: React.FC<{
                 {categoryOrder.map((key) => {
                     const item = recommendation[key as RecommendationCategory]
                     if (!item || typeof item !== 'object' || !item.name) return null
+                    const price = typeof item.price === 'number' ? item.price : null
                     const categoryLabel = t(`equipmentView.configurator.categories.${key}`)
                     return (
                         <div key={key} className="p-3 bg-slate-800/50 rounded-lg">
@@ -121,10 +122,12 @@ const SetupResultDisplayComponent: React.FC<{
                                     </p>
                                 </div>
                                 <p className="text-sm font-mono font-semibold text-slate-200 flex-shrink-0">
-                                    {item.price.toFixed(2)} {t('common.units.currency_eur')}
+                                    {price !== null ? `${price.toFixed(2)} ${t('common.units.currency_eur')}` : t('equipmentView.configurator.noPriceAvailable')}
                                 </p>
                             </div>
-                            <p className="text-xs text-slate-400 mt-1 italic">&quot;{item.rationale}&quot;</p>
+                            <p className="text-xs text-slate-400 mt-1 italic">
+                                &quot;{typeof item.rationale === 'string' && item.rationale.trim().length > 0 ? item.rationale : t('equipmentView.configurator.noRationaleAvailable')}&quot;
+                            </p>
                         </div>
                     )
                 })}

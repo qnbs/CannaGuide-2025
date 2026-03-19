@@ -45,6 +45,8 @@ export const equipmentView = {
     growSpaceDescription: 'Gib die Abmessungen deines Anbaubereichs an.',
     width: 'Breite',
     depth: 'Tiefe',
+    noPriceAvailable: 'Preis nicht verfügbar',
+    noRationaleAvailable: 'Keine Begründung angegeben',
     floweringTypeTitle: 'Bevorzugter Pflanzentyp',
     floweringTypeAny: 'Beliebig',
     floweringTypeAutoflower: 'Autoflower',

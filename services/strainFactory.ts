@@ -41,30 +41,31 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
 
     const normalizedType = safeType(data.type);
 
-    if (!data.id || !nameText || !normalizedType || data.thc === undefined || data.cbd === undefined || data.floweringTime === undefined) {
-      console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${nameText || 'Unknown'}. Applying safe defaults.`, data);
-      // Apply safe defaults for missing required fields
-      if (!data.id) data.id = fallbackId;
-      if (!nameText) data.name = 'Unknown Strain';
-      if (!normalizedType) data.type = StrainType.Hybrid;
-      if (data.thc === undefined) data.thc = 0;
-      if (data.cbd === undefined) data.cbd = 0;
-      if (data.floweringTime === undefined) data.floweringTime = 9;
+    // Build safe overrides without mutating the input object
+    const safeData: Partial<Strain> = { ...data };
+    if (!safeData.id || !nameText || !normalizedType || safeData.thc === undefined || safeData.cbd === undefined || safeData.floweringTime === undefined) {
+      console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${nameText || 'Unknown'}. Applying safe defaults.`);
+      if (!safeData.id) safeData.id = fallbackId;
+      if (!nameText) safeData.name = 'Unknown Strain';
+      if (!normalizedType) safeData.type = StrainType.Hybrid;
+      if (safeData.thc === undefined) safeData.thc = 0;
+      if (safeData.cbd === undefined) safeData.cbd = 0;
+      if (safeData.floweringTime === undefined) safeData.floweringTime = 9;
   }
 
-    if (!safeType(data.type)) {
-      data.type = StrainType.Hybrid;
+    if (!safeType(safeData.type)) {
+      safeData.type = StrainType.Hybrid;
     }
 
   const merged = {
       ...defaults,
-      ...data,
-      agronomic: { ...defaults.agronomic, ...data.agronomic },
-      geneticModifiers: { ...defaults.geneticModifiers, ...data.geneticModifiers },
+      ...safeData,
+      agronomic: { ...defaults.agronomic, ...(safeData.agronomic ?? {}) },
+      geneticModifiers: { ...defaults.geneticModifiers, ...(safeData.geneticModifiers ?? {}) },
   } as Strain;
 
   // Infer floweringType if not explicitly provided
-  if (!data.floweringType && (typeDetailsText.toLowerCase().includes('autoflower') || floweringTimeRangeText.toLowerCase().includes('lifecycle'))) {
+  if (!safeData.floweringType && (typeDetailsText.toLowerCase().includes('autoflower') || floweringTimeRangeText.toLowerCase().includes('lifecycle'))) {
     merged.floweringType = 'Autoflower';
   }
 

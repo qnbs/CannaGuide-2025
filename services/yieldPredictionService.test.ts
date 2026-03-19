@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { Plant, PlantStage } from '@/types'
+import { Plant, PlantStage, StrainType } from '@/types'
 import { yieldPredictionService } from './yieldPredictionService'
 
 const makePlant = (overrides: Partial<Plant> = {}): Plant => ({
@@ -8,7 +8,8 @@ const makePlant = (overrides: Partial<Plant> = {}): Plant => ({
     strain: {
         id: 'strain-1',
         name: 'Test Strain',
-        type: 'Hybrid',
+        type: StrainType.Hybrid,
+        floweringType: 'Photoperiod',
         thc: 20,
         cbd: 1,
         floweringTime: 9,

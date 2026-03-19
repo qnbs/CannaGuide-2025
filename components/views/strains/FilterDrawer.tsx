@@ -43,9 +43,9 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode, isActi
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, isAnyFilterActive: _isAnyFilterActive }) => {
     const { t } = useTranslation();
 
-    const thcRange = Array.isArray(tempFilterState.thcRange) ? tempFilterState.thcRange : [0, 35]
-    const cbdRange = Array.isArray(tempFilterState.cbdRange) ? tempFilterState.cbdRange : [0, 20]
-    const floweringRange = Array.isArray(tempFilterState.floweringRange) ? tempFilterState.floweringRange : [4, 20]
+    const thcRange: [number, number] = Array.isArray(tempFilterState.thcRange) && tempFilterState.thcRange.length === 2 ? [tempFilterState.thcRange[0], tempFilterState.thcRange[1]] : [0, 35]
+    const cbdRange: [number, number] = Array.isArray(tempFilterState.cbdRange) && tempFilterState.cbdRange.length === 2 ? [tempFilterState.cbdRange[0], tempFilterState.cbdRange[1]] : [0, 20]
+    const floweringRange: [number, number] = Array.isArray(tempFilterState.floweringRange) && tempFilterState.floweringRange.length === 2 ? [tempFilterState.floweringRange[0], tempFilterState.floweringRange[1]] : [4, 20]
 
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
     const yieldLabels: Record<YieldLevel, string> = { Low: t('strainsView.addStrainModal.yields.low'), Medium: t('strainsView.addStrainModal.yields.medium'), High: t('strainsView.addStrainModal.yields.high') };

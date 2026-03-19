@@ -370,6 +370,7 @@ export const StrainsView: React.FC = () => {
             case StrainViewTab.MyStrains:
             case StrainViewTab.Favorites:
                 return (
+                    <ErrorBoundary>
                     <Suspense fallback={<SkeletonLoader variant={strainsViewMode} count={10} />}>
                         <StrainLibraryView
                             strains={filteredStrains}
@@ -400,9 +401,11 @@ export const StrainsView: React.FC = () => {
                             strainsViewTab={strainsViewTab}
                         />
                     </Suspense>
+                    </ErrorBoundary>
                 );
             case StrainViewTab.Tips:
                 return (
+                    <ErrorBoundary>
                     <Suspense fallback={<SkeletonLoader count={3} />}>
                         <StrainTipsView
                             savedTips={savedTips}
@@ -411,6 +414,7 @@ export const StrainsView: React.FC = () => {
                             allStrains={allStrains}
                         />
                     </Suspense>
+                    </ErrorBoundary>
                 );
             case StrainViewTab.Genealogy:
                 return (
@@ -425,12 +429,15 @@ export const StrainsView: React.FC = () => {
                 );
             case StrainViewTab.BreedingLab:
                 return (
+                    <ErrorBoundary>
                     <Suspense fallback={<SkeletonLoader count={3} />}>
                         <BreedingLabView allStrains={allStrains} />
                     </Suspense>
+                    </ErrorBoundary>
                 );
             case StrainViewTab.Exports:
                 return (
+                    <ErrorBoundary>
                      <Suspense fallback={<SkeletonLoader count={3} />}>
                         <ExportsManagerView
                             savedExports={savedExports}
@@ -439,6 +446,7 @@ export const StrainsView: React.FC = () => {
                             onUpdate={(exp) => dispatch(updateExport(exp))}
                         />
                     </Suspense>
+                    </ErrorBoundary>
                 );
             default:
                 return null;

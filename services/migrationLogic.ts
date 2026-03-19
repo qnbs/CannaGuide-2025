@@ -410,15 +410,15 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
         ...legacy,
         ...strain,
         agronomic: {
-            ...legacy.agronomic,
-            ...strain.agronomic,
+            ...(legacy.agronomic ?? {}),
+            ...(strain.agronomic ?? {}),
         },
         geneticModifiers: {
-            ...legacy.geneticModifiers,
-            ...strain.geneticModifiers,
+            ...(legacy.geneticModifiers ?? {}),
+            ...(strain.geneticModifiers ?? {}),
             vpdTolerance: {
-                ...legacy.geneticModifiers.vpdTolerance,
-                ...strain.geneticModifiers.vpdTolerance,
+                ...(legacy.geneticModifiers?.vpdTolerance ?? {}),
+                ...(strain.geneticModifiers?.vpdTolerance ?? {}),
             },
         },
         aromas: strain.aromas ?? legacy.aromas,

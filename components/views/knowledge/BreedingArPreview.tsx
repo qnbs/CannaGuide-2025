@@ -151,6 +151,16 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
             if (arButton?.parentElement) {
                 arButton.parentElement.removeChild(arButton)
             }
+            scene.traverse((obj: THREE.Mesh) => {
+                if (obj instanceof THREE.Mesh) {
+                    obj.geometry.dispose()
+                    if (Array.isArray(obj.material)) {
+                        obj.material.forEach((m: THREE.MeshStandardMaterial) => m.dispose())
+                    } else {
+                        obj.material.dispose()
+                    }
+                }
+            })
             renderer.dispose()
         }
     }, [

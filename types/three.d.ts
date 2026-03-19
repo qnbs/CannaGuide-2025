@@ -32,6 +32,8 @@ declare module 'three' {
     type PointLight = any
     type FogExp2 = any
     type Vector3 = any
+    type Object3D = any
+    type Material = any
 
     export const PlaneGeometry: any
     export const BoxGeometry: any

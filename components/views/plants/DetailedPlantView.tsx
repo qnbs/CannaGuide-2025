@@ -1,43 +1,76 @@
-import React, { useState, memo, useEffect } from 'react';
-import { Plant, PlantStage } from '@/types';
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { OverviewTab } from './detailedPlantViewTabs/OverviewTab';
-import { JournalTab } from './detailedPlantViewTabs/JournalTab';
-import { TasksTab } from './detailedPlantViewTabs/TasksTab';
-import { PhotosTab } from './detailedPlantViewTabs/PhotosTab';
-import { AiTab } from './detailedPlantViewTabs/AiTab';
-import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab';
-import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab';
-import { useAppDispatch } from '@/stores/store';
-import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice';
+import React, { useState, memo, useEffect } from 'react'
+import { Plant, PlantStage } from '@/types'
+import { useTranslation } from 'react-i18next'
+import { Button } from '@/components/common/Button'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { OverviewTab } from './detailedPlantViewTabs/OverviewTab'
+import { JournalTab } from './detailedPlantViewTabs/JournalTab'
+import { TasksTab } from './detailedPlantViewTabs/TasksTab'
+import { PhotosTab } from './detailedPlantViewTabs/PhotosTab'
+import { AiTab } from './detailedPlantViewTabs/AiTab'
+import { PostHarvestTab } from './detailedPlantViewTabs/PostHarvestTab'
+import { SimulationDebugTab } from './detailedPlantViewTabs/SimulationDebugTab'
+import { useAppDispatch } from '@/stores/store'
+import { completeTask, updatePlantToNow } from '@/stores/slices/simulationSlice'
 
 interface DetailedPlantViewProps {
-    plant: Plant;
-    onClose: () => void;
+    plant: Plant
+    onClose: () => void
 }
 
 export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant, onClose }) => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const [activeTab, setActiveTab] = useState('overview');
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const [activeTab, setActiveTab] = useState('overview')
 
     useEffect(() => {
-        dispatch(updatePlantToNow(plant.id));
-    }, [plant.id, dispatch]);
+        dispatch(updatePlantToNow(plant.id))
+    }, [plant.id, dispatch])
 
-    const isPostHarvest = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage);
+    const isPostHarvest = [
+        PlantStage.Harvest,
+        PlantStage.Drying,
+        PlantStage.Curing,
+        PlantStage.Finished,
+    ].includes(plant.stage)
 
     const tabs = [
-        { id: 'overview', label: t('plantsView.detailedView.tabs.overview'), icon: <PhosphorIcons.ChartPieSlice /> },
-        ...(isPostHarvest ? [{ id: 'postharvest', label: t('plantsView.detailedView.tabs.postHarvest'), icon: <PhosphorIcons.ArchiveBox /> }] : []),
-        { id: 'simulation', label: t('plantsView.detailedView.tabs.simulation'), icon: <PhosphorIcons.GearSix /> },
-        { id: 'journal', label: t('plantsView.detailedView.tabs.journal'), icon: <PhosphorIcons.BookOpenText /> },
-        { id: 'tasks', label: t('plantsView.detailedView.tabs.tasks'), icon: <PhosphorIcons.ListChecks /> },
-        { id: 'photos', label: t('plantsView.detailedView.tabs.photos'), icon: <PhosphorIcons.Camera /> },
+        {
+            id: 'overview',
+            label: t('plantsView.detailedView.tabs.overview'),
+            icon: <PhosphorIcons.ChartPieSlice />,
+        },
+        ...(isPostHarvest
+            ? [
+                  {
+                      id: 'postharvest',
+                      label: t('plantsView.detailedView.tabs.postHarvest'),
+                      icon: <PhosphorIcons.ArchiveBox />,
+                  },
+              ]
+            : []),
+        {
+            id: 'simulation',
+            label: t('plantsView.detailedView.tabs.simulation'),
+            icon: <PhosphorIcons.GearSix />,
+        },
+        {
+            id: 'journal',
+            label: t('plantsView.detailedView.tabs.journal'),
+            icon: <PhosphorIcons.BookOpenText />,
+        },
+        {
+            id: 'tasks',
+            label: t('plantsView.detailedView.tabs.tasks'),
+            icon: <PhosphorIcons.ListChecks />,
+        },
+        {
+            id: 'photos',
+            label: t('plantsView.detailedView.tabs.photos'),
+            icon: <PhosphorIcons.Camera />,
+        },
         { id: 'ai', label: t('plantsView.detailedView.tabs.ai'), icon: <PhosphorIcons.Sparkle /> },
-    ];
+    ]
 
     const header = (
         <header>
@@ -48,22 +81,26 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 </Button>
             </div>
             <div className="mt-4 text-center">
-                <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{plant.name}</h1>
-                <p className="text-slate-400">{plant.strain.name} - {t('plantsView.plantCard.day')} {plant.age}</p>
+                <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">
+                    {plant.name}
+                </h1>
+                <p className="text-slate-400">
+                    {plant.strain.name} - {t('plantsView.plantCard.day')} {plant.age}
+                </p>
             </div>
         </header>
-    );
+    )
 
     return (
         <div className="animate-fade-in space-y-6">
             {header}
 
             <nav className="flex flex-wrap justify-center gap-2 sm:gap-4">
-                {tabs.map(tab => (
+                {tabs.map((tab) => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`flex flex-col items-center justify-center gap-1 p-3 rounded-lg transition-all duration-200 w-24 h-20 ${
+                        className={`flex flex-col items-center justify-center gap-1 p-2 sm:p-3 rounded-lg transition-all duration-200 w-[4.5rem] h-16 sm:w-24 sm:h-20 ${
                             activeTab === tab.id
                                 ? 'bg-primary-600 text-white scale-105 shadow-lg ring-1 ring-primary-400'
                                 : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
@@ -82,10 +119,17 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
                 {activeTab === 'postharvest' && <PostHarvestTab plant={plant} />}
                 {activeTab === 'simulation' && <SimulationDebugTab plant={plant} />}
                 {activeTab === 'journal' && <JournalTab journal={plant.journal} />}
-                {activeTab === 'tasks' && <TasksTab tasks={plant.tasks} onCompleteTask={(taskId) => dispatch(completeTask({ plantId: plant.id, taskId }))} />}
+                {activeTab === 'tasks' && (
+                    <TasksTab
+                        tasks={plant.tasks}
+                        onCompleteTask={(taskId) =>
+                            dispatch(completeTask({ plantId: plant.id, taskId }))
+                        }
+                    />
+                )}
                 {activeTab === 'photos' && <PhotosTab journal={plant.journal} />}
                 {activeTab === 'ai' && <AiTab plant={plant} />}
             </div>
         </div>
-    );
-});
+    )
+})

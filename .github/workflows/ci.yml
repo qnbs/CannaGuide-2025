@@ -51,10 +51,7 @@ jobs:
             - name: Lint strict scopes
               run: npm run lint:scopes
 
-            - name: Test
-              run: npm run test -- --run
-
-            - name: Coverage
+            - name: Test + Coverage
               run: npm run test:coverage
 
             - name: Upload coverage

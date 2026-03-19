@@ -290,4 +290,101 @@ export const strainsF: Strain[] = [
         "aromas": ["Pineapple", "Mango", "Sweet", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
     })
+,
+    createStrainObject({
+        "id": "forum-cut-cookies", "name": "Forum Cut Cookies", "type": StrainType.Hybrid, "typeDetails": "Indica 75% / Sativa 25%",
+        "genetics": "GSC", "floweringType": "Photoperiod", "thc": 26, "cbd": 1, "floweringTime": 9.5
+    }),
+    createStrainObject({
+        "id": "fire-alien-kush",
+        "name": "Fire Alien Kush",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Fire OG x Alien Kush",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "An indica-dominant hybrid with a complex aroma of lemon, spice, and diesel. The effect is strong, starting with a cerebral rush that evolves into a deep, relaxing body high.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Lemon", "Spicy", "Diesel", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "f1-hybrid",
+        "name": "F1 Hybrid",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Represents a first-generation cross",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "This is a placeholder representing the concept of an 'F1 Hybrid,' which is the first filial generation cross between two distinct parent strains. F1 hybrids are prized for their 'hybrid vigor' (heterosis), often resulting in increased growth, yield, and stability. This entry serves as a genealogical placeholder.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Earthy", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "florida-kush",
+        "name": "Florida Kush",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Triangle Kush x an unknown strain",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "thcRange": "21-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A potent indica-dominant strain originating from Florida, closely related to OG Kush and Triangle Kush. It delivers a strong, relaxing, and euphoric high. The aroma is a classic OG profile of pine, earth, and lemon. It is one of the parents of Pink Panties.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Pine", "Earthy", "Lemon", "Pungent"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "forum-cut-cookies",
+        "name": "Forum Cut Cookies",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 75% / Sativa 25%",
+        "genetics": "GSC (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "24-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "The 'Forum Cut' is one of the original, legendary clone-only phenotypes of Girl Scout Cookies. It is prized for its classic GSC effects: a potent, euphoric head high that melts into a relaxing body buzz. It has a characteristic sweet, earthy, and doughy aroma. It's a parent of Mandarin Cookies.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Low",
+            "height": "Short",
+            "yieldDetails": { "indoor": "250-350 g/m²", "outdoor": "300-400 g/plant" },
+            "heightDetails": { "indoor": "70-110 cm", "outdoor": "90-130 cm" }
+        },
+        "aromas": ["Sweet", "Earthy", "Cookie", "Pungent"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
 ];

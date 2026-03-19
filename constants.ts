@@ -2,7 +2,7 @@ import { PlantStage, AdvancedFilterState } from '@/types';
 
 // --- APP ---
 export const APP_VERSION = 5;
-export const CURRENT_STRAIN_DATA_VERSION = 3;
+export const CURRENT_STRAIN_DATA_VERSION = 4;
 
 /**
  * Per-slice schema versions. Bump a slice version whenever its persisted shape

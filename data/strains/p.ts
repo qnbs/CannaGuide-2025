@@ -1082,4 +1082,220 @@ export const strainsP: Strain[] = [
         "aromas": ["Grape", "Sweet", "Berry", "Earthy"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     })
+,
+    createStrainObject({
+        "id": "pluton",
+        "name": "Pluton",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 19, "cbd": 1, "thcRange": "17-21%", "cbdRange": "<1%", "floweringTime": 10,
+        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Earthy", "Spicy", "Herbal"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "pollyanna",
+        "name": "Pollyanna",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Princess x Cinderella 99",
+        "floweringType": "Photoperiod",
+        "thc": 20, "cbd": 1, "thcRange": "18-22%", "cbdRange": "<1%", "floweringTime": 9,
+        "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Medium" },
+        "aromas": ["Sweet", "Fruity", "Tropical", "Pineapple"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
+    }),
+    createStrainObject({
+        "id": "princess",
+        "name": "Princess",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Jack Herer phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 22, "cbd": 1, "thcRange": "20-24%", "cbdRange": "<1%", "floweringTime": 9,
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Pine", "Spicy", "Sweet", "Earthy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "panama-creature",
+        "name": "Panama Creature",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Panama Red x an unknown powerful indica",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "23-27%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "9",
+        "description": "A potent and rare indica-dominant strain known for its resinous buds and strong, relaxing effects. It is a key parent in the breeding of PCS1 (Panama Creature S1) and subsequently Cake Bomb.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Earthy", "Pungent", "Chemical", "Diesel"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "panamanian-landrace", "name": "Panamanian Landrace", "type": StrainType.Sativa, "typeDetails": "Sativa 100%",
+        "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1,
+        "description": "A pure Sativa landrace from Panama, famous for its long flowering time and its energizing, cerebral, and almost psychedelic effect. A classic from the 1960s.",
+        "floweringTime": 11, "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Tropical", "Sweet", "Earthy", "Spicy"], "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "peyote-purple", "name": "Peyote Purple", "type": StrainType.Indica, "typeDetails": "Indica 100%",
+        "genetics": "Bubba Kush (selected phenotype)", "floweringType": "Photoperiod", "thc": 20, "cbd": 1,
+        "description": "A pure Indica selected from Bubba Kush, known for its vibrant purple colors and a sweet, earthy, and coffee-like aroma. The effect is deeply relaxing and almost psychedelic.",
+        "floweringTime": 8.5, "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Coffee", "Earthy", "Sweet", "Vanilla"], "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "platinum-puff", "name": "Platinum Puff", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Platinum OG x GSC", "floweringType": "Photoperiod", "thc": 25, "cbd": 1,
+        "description": "A potent hybrid known for its frosty appearance and a sweet, earthy aroma. The effect is strong, euphoric, and relaxing. It is a parent of Project 4516.",
+        "floweringTime": 9.5, "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Sweet", "Earthy", "Pungent", "Spicy"], "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "pina-acai", "name": "Pina Acai", "type": StrainType.Hybrid, "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Unknown", "floweringType": "Photoperiod", "thc": 22, "cbd": 1,
+        "description": "A sativa-dominant hybrid known for its exotic tropical fruit aroma, blending pineapple and acai berries. It delivers an uplifting, energetic, and happy high, making it a parent of Red Velvet.",
+        "floweringTime": 9.5, "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Pineapple", "Berry", "Sweet", "Tropical"], "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "pine-tar-kush", "name": "Pine Tar Kush", "type": StrainType.Indica, "typeDetails": "Indica 100%",
+        "genetics": "Pakistani Landrace", "floweringType": "Photoperiod", "thc": 20, "cbd": 1,
+        "description": "A pure indica landrace from Pakistan, known for its extremely sticky resin and a classic, pungent pine and skunk aroma. It provides a deeply relaxing and sedative body high.",
+        "floweringTime": 8, "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Pine", "Skunk", "Earthy", "Pungent"], "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
+    }),
+    createStrainObject({
+        "id": "pineapple-trainwreck", "name": "Pineapple Trainwreck", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Pineapple Express x Trainwreck", "floweringType": "Photoperiod", "thc": 23, "cbd": 1,
+        "description": "A potent sativa-dominant hybrid that combines the tropical flavor of Pineapple Express with the hard-hitting effects of Trainwreck. The result is an energetic, creative, and euphoric high.",
+        "floweringTime": 9, "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
+        "aromas": ["Pineapple", "Sweet", "Tropical", "Spicy"], "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "purple-thai", "name": "Purple Thai", "type": StrainType.Sativa, "typeDetails": "Sativa 100%",
+        "genetics": "Thai Landrace x Highland Oaxacan Gold", "floweringType": "Photoperiod", "thc": 22, "cbd": 1,
+        "description": "A classic sativa landrace cross known for its energetic, euphoric effects and beautiful purple hues. It delivers a creative and uplifting high. It is a key parent of Purple Haze.",
+        "floweringTime": 12, "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Grape", "Berry", "Earthy", "Floral"], "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "purple-afghani", "name": "Purple Afghani", "type": StrainType.Indica, "typeDetails": "Indica 100%",
+        "genetics": "Afghani Landrace (purple phenotype)", "floweringType": "Photoperiod", "thc": 19, "cbd": 1,
+        "description": "A pure indica known for its deep purple coloration and classic Afghani effects. It provides a deeply relaxing and sedating body high, with a sweet and earthy aroma. It is a parent of Purple Kush.",
+        "floweringTime": 8, "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Earthy", "Sweet", "Grape", "Pungent"], "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "petrolia-headstash",
+        "name": "Petrolia Headstash",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Afghani Landrace (Humboldt, CA)",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "70-100 cm", "outdoor": "90-130 cm" }
+        },
+        "aromas": ["Diesel", "Earthy", "Pungent", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "purple-elephant",
+        "name": "Purple Elephant",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "Purple Urkle (presumed)",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Grape", "Berry", "Sweet", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "pcs1-panama-creature-s1",
+        "name": "PCS1 (Panama Creature S1)",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Panama Creature (Selfed)",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "23-27%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "9",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Earthy", "Diesel", "Pungent", "Chemical"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "purple-1",
+        "name": "Purple #1",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 50% / Sativa 50%",
+        "genetics": "Afghani (Purple phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 15,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "A classic outdoor strain from Dutch Passion, bred for its resilience and beautiful purple colors. It offers a balanced, uplifting high. It's a parent of Shaman.",
+        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Earthy", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "pure-power-plant",
+        "name": "Pure Power Plant",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 90% / Indica 10%",
+        "genetics": "South African Sativa",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A fast-flowering sativa known for its uplifting and energetic effects, as well as its massive yields. It has a sweet and skunky aroma with citrus undertones. It is a parent of THC Bomb.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Sweet", "Skunk", "Citrus", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
 ];

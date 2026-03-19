@@ -17,44 +17,61 @@ const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
     const normalized: Strain[] = []
 
     for (const candidate of candidates) {
-        const strain = createStrainObject(candidate)
-        if (seenIds.has(strain.id)) {
-            console.warn(`[StrainService] Skipping duplicate strain id "${strain.id}" during catalog normalization.`)
-            continue
-        }
+        try {
+            const strain = createStrainObject(candidate)
+            if (seenIds.has(strain.id)) {
+                continue
+            }
 
-        seenIds.add(strain.id)
-        normalized.push(strain)
+            seenIds.add(strain.id)
+            normalized.push(strain)
+        } catch {
+            console.warn('[StrainService] Failed to normalize strain:', candidate)
+        }
     }
 
     return normalized
 }
 
 let strainsDataCache: Strain[] | null = null
+let loadPromise: Promise<Strain[]> | null = null
 
-const loadAllStrainsData = async (): Promise<Strain[]> => {
+const loadAllStrainsData = (): Promise<Strain[]> => {
     if (strainsDataCache) {
-        return strainsDataCache
+        return Promise.resolve(strainsDataCache)
     }
 
-    const modules = import.meta.glob('../data/strains/*.ts')
-    const entries = Object.entries(modules).filter(([filePath]) => !filePath.endsWith('/index.ts'))
+    // Prevent concurrent loads
+    if (loadPromise) {
+        return loadPromise
+    }
 
-    const loadedModules = await Promise.all(entries.map(([, loader]) => loader() as Promise<StrainModule>))
+    loadPromise = (async (): Promise<Strain[]> => {
+        const modules = import.meta.glob('../data/strains/*.ts')
+        const entries = Object.entries(modules).filter(([filePath]) => !filePath.endsWith('/index.ts'))
 
-    const allStrains = loadedModules.flatMap((module) =>
-        Object.values(module).filter(
-            (value): value is Strain[] =>
-                Array.isArray(value) &&
-                (value.length === 0 || (
-                    typeof value[0] === 'object' && value[0] !== null &&
-                    'id' in value[0] && 'name' in value[0] && 'type' in value[0]
-                )),
-        ),
-    )
+        const loadedModules = await Promise.allSettled(
+            entries.map(([, loader]) => loader() as Promise<StrainModule>)
+        )
 
-    strainsDataCache = normalizeStrainCatalog(allStrains.flat() as Partial<Strain>[])
-    return strainsDataCache
+        const allStrains = loadedModules
+            .filter((result): result is PromiseFulfilledResult<StrainModule> => result.status === 'fulfilled')
+            .flatMap((result) =>
+                Object.values(result.value).filter(
+                    (value): value is Strain[] =>
+                        Array.isArray(value) &&
+                        value.length > 0 &&
+                        typeof value[0] === 'object' && value[0] !== null &&
+                        'id' in value[0] && 'name' in value[0] && 'type' in value[0],
+                ),
+            )
+
+        strainsDataCache = normalizeStrainCatalog(allStrains.flat() as Partial<Strain>[])
+        loadPromise = null
+        return strainsDataCache
+    })()
+
+    return loadPromise
 }
 
 class StrainService {

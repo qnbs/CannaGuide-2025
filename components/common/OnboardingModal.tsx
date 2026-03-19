@@ -124,7 +124,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
     // ---- Step 0: Language picker ----
     if (step === 0) {
         return (
-            <Modal isOpen={true} onClose={() => {}} showCloseButton={false}>
+            <Modal isOpen={true} onClose={() => {}} showCloseButton={false} title={t('onboarding.languageTitle')} description={t('onboarding.languageSubtitle')}>
                 <div className="text-center p-2">
                     <div className="flex items-center justify-center gap-3 mb-6">
                         <CannabisLeafIcon className="w-10 h-10" />

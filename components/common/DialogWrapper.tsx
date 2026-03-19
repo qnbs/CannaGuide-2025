@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { cn } from '@/lib/utils'
 import { useTranslation } from 'react-i18next'
@@ -48,6 +49,7 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
   onCloseAutoFocus,
 }) => {
   const { t } = useTranslation()
+  const hiddenTitle = title ?? 'Dialog'
   const scrollableContentRef = useRef<HTMLDivElement>(null)
   const pointerStartY = useRef<number | null>(null)
   const [dragY, setDragY] = useState(0)
@@ -126,6 +128,9 @@ export const DialogWrapper: React.FC<DialogWrapperProps> = ({
             <header className="relative flex items-start justify-between gap-3 border-b border-white/10 bg-[linear-gradient(180deg,rgba(30,41,59,0.7),rgba(15,23,42,0.16))] p-5 pb-4">
               <div className="absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-primary-400/60 to-transparent" aria-hidden="true" />
               <div className="min-w-0">
+                <VisuallyHidden>
+                  <DialogPrimitive.Title>{hiddenTitle}</DialogPrimitive.Title>
+                </VisuallyHidden>
                 {isDrawer && (
                   <div className="mx-auto mb-2 h-1.5 w-12 rounded-full bg-slate-500/70" aria-hidden="true" />
                 )}

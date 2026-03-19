@@ -4,6 +4,7 @@ import {
     DeepDiveGuide,
     Language,
     MentorMessage,
+    Recommendation,
     Plant,
     PlantDiagnosisResponse,
     StructuredGrowTips,
@@ -13,6 +14,7 @@ import {
     AIResponseSchema,
     DeepDiveGuideSchema,
     MentorMessageContentSchema,
+    RecommendationSchema,
     StructuredGrowTipsSchema,
 } from '@/types/schemas'
 import {
@@ -576,6 +578,26 @@ class LocalAiService {
                     ? `${modelDiagnosis.content}\n\n${isGerman(lang) ? 'Notizen:' : 'Notes:'} ${notes}`
                     : modelDiagnosis.content,
         }
+    }
+
+    async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
+        const sanitizedPrompt = sanitizeText(prompt)
+        const generated = await this.generateText(
+            `${isGerman(lang) ? 'Erstelle eine strukturierte Ausrüstungsempfehlung auf Deutsch.' : 'Create a structured equipment recommendation in English.'}
+Prompt: ${sanitizedPrompt}
+Return ONLY valid JSON with this exact shape: {"tent":{"name":"...","price":0,"rationale":"..."},"light":{"name":"...","price":0,"rationale":"...","watts":0},"ventilation":{"name":"...","price":0,"rationale":"..."},"circulationFan":{"name":"...","price":0,"rationale":"..."},"pots":{"name":"...","price":0,"rationale":"..."},"soil":{"name":"...","price":0,"rationale":"..."},"nutrients":{"name":"...","price":0,"rationale":"..."},"extra":{"name":"...","price":0,"rationale":"..."},"proTip":"..."}`,
+        )
+
+        if (!generated) {
+            return localAiFallbackService.getEquipmentRecommendation(sanitizedPrompt, lang)
+        }
+
+        const parsed = parseJsonSafely(RecommendationSchema, generated)
+        if (!parsed) {
+            return localAiFallbackService.getEquipmentRecommendation(sanitizedPrompt, lang)
+        }
+
+        return parsed
     }
 
     private buildMentorPrompt(

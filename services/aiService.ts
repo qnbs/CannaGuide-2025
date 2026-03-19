@@ -46,8 +46,20 @@ async function withLocalFallback<T>(
 }
 
 export const aiService = {
-    getEquipmentRecommendation: (prompt: string, lang: Language): Promise<Recommendation> =>
-        geminiService.getEquipmentRecommendation(prompt, lang),
+    async getEquipmentRecommendation(prompt: string, lang: Language): Promise<Recommendation> {
+        if (shouldRouteLocally()) {
+            const local = await getLocalAiService()
+            return local.getEquipmentRecommendation(prompt, lang)
+        }
+
+        return withLocalFallback(
+            () => geminiService.getEquipmentRecommendation(prompt, lang),
+            async () => {
+                const local = await getLocalAiService()
+                return local.getEquipmentRecommendation(prompt, lang)
+            },
+        )
+    },
 
     async diagnosePlant(
         base64Image: string,

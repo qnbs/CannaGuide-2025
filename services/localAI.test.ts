@@ -88,7 +88,10 @@ describe('localAiService', () => {
         pipelineMock.mockReset()
         clearPipelineCache()
         vi.restoreAllMocks()
-        vi.stubGlobal('fetch', vi.fn(async () => new Response(new Blob(['x'], { type: 'image/jpeg' }))))
+        vi.stubGlobal(
+            'fetch',
+            vi.fn(async () => new Response(new Blob(['x'], { type: 'image/jpeg' }))),
+        )
     })
 
     afterEach(() => {
@@ -98,15 +101,21 @@ describe('localAiService', () => {
     it('combines zero-shot labels with heuristic diagnosis', async () => {
         pipelineMock.mockImplementation(async (task: string) => {
             if (task === 'zero-shot-image-classification') {
-                return vi.fn(async () => ([
+                return vi.fn(async () => [
                     { label: 'nitrogen deficiency', score: 0.93 },
                     { label: 'healthy plant', score: 0.07 },
-                ]))
+                ])
             }
             throw new Error(`Unexpected task ${task}`)
         })
 
-        const result = await localAiService.diagnosePlant('ZmFrZQ==', 'image/jpeg', buildPlant(), 'Lower leaves yellow', 'en')
+        const result = await localAiService.diagnosePlant(
+            'ZmFrZQ==',
+            'image/jpeg',
+            buildPlant(),
+            'Lower leaves yellow',
+            'en',
+        )
 
         expect(result.title).toContain('Local Diagnosis')
         expect(result.confidence).toBeGreaterThan(0.9)
@@ -117,15 +126,48 @@ describe('localAiService', () => {
     it('parses mentor JSON from the local text model', async () => {
         pipelineMock.mockImplementation(async (task: string) => {
             if (task === 'text-generation') {
-                return vi.fn(async () => ([{ generated_text: '{"title":"Local Mentor","content":"Use less water.","uiHighlights":[]}' }]))
+                return vi.fn(async () => [
+                    {
+                        generated_text:
+                            '{"title":"Local Mentor","content":"Use less water.","uiHighlights":[]}',
+                    },
+                ])
             }
             throw new Error(`Unexpected task ${task}`)
         })
 
-        const response = await localAiService.getMentorResponse(buildPlant(), 'What should I fix?', 'Recent log lines', 'en')
+        const response = await localAiService.getMentorResponse(
+            buildPlant(),
+            'What should I fix?',
+            'Recent log lines',
+            'en',
+        )
 
         expect(response.title).toBe('Local Mentor')
         expect(response.content).toBe('Use less water.')
+    })
+
+    it('builds equipment recommendations locally from the text model', async () => {
+        pipelineMock.mockImplementation(async (task: string) => {
+            if (task === 'text-generation') {
+                return vi.fn(async () => [
+                    {
+                        generated_text:
+                            '{"tent":{"name":"100x100x200 cm grow tent","price":180,"rationale":"Enough space."},"light":{"name":"300W LED","price":320,"rationale":"Efficient lighting.","watts":300},"ventilation":{"name":"Inline fan","price":120,"rationale":"Stable airflow."},"circulationFan":{"name":"Clip fan","price":25,"rationale":"Keeps air moving."},"pots":{"name":"11 L fabric pots","price":45,"rationale":"Root aeration."},"soil":{"name":"Living soil mix","price":55,"rationale":"Forgiving substrate."},"nutrients":{"name":"Balanced nutrient kit","price":70,"rationale":"Simple base feed."},"extra":{"name":"Thermo-hygrometer","price":35,"rationale":"Track climate."},"proTip":"Dial in climate first."}',
+                    },
+                ])
+            }
+            throw new Error(`Unexpected task ${task}`)
+        })
+
+        const recommendation = await localAiService.getEquipmentRecommendation(
+            'Need a compact beginner setup',
+            'en',
+        )
+
+        expect(recommendation.light.watts).toBe(300)
+        expect(recommendation.tent.name).toContain('grow tent')
+        expect(recommendation.proTip).toContain('climate')
     })
 
     it('preloadOfflineAssets reports progress via callback', async () => {
@@ -170,16 +212,22 @@ describe('localAiService', () => {
 
         pipelineMock.mockImplementation(async (task: string) => {
             if (task === 'zero-shot-image-classification') {
-                return vi.fn(async () => ([
+                return vi.fn(async () => [
                     { label: 'root rot', score: 0.88 },
                     { label: 'overwatering', score: 0.08 },
                     { label: 'healthy plant', score: 0.04 },
-                ]))
+                ])
             }
             throw new Error(`Unexpected task ${task}`)
         })
 
-        const result = await localAiService.diagnosePlant('ZmFrZQ==', 'image/jpeg', buildPlant(), '', 'en')
+        const result = await localAiService.diagnosePlant(
+            'ZmFrZQ==',
+            'image/jpeg',
+            buildPlant(),
+            '',
+            'en',
+        )
 
         expect(result.diagnosis.toLowerCase()).toContain('root rot')
         expect(result.confidence).toBeGreaterThan(0.8)
@@ -191,15 +239,21 @@ describe('localAiService', () => {
 
         pipelineMock.mockImplementation(async (task: string) => {
             if (task === 'zero-shot-image-classification') {
-                return vi.fn(async () => ([
+                return vi.fn(async () => [
                     { label: 'botrytis bud rot', score: 0.91 },
                     { label: 'healthy plant', score: 0.09 },
-                ]))
+                ])
             }
             throw new Error(`Unexpected task ${task}`)
         })
 
-        const result = await localAiService.diagnosePlant('ZmFrZQ==', 'image/jpeg', buildPlant(), '', 'de')
+        const result = await localAiService.diagnosePlant(
+            'ZmFrZQ==',
+            'image/jpeg',
+            buildPlant(),
+            '',
+            'de',
+        )
 
         expect(result.diagnosis.toLowerCase()).toContain('botrytis')
         expect(result.title).toContain('Lokale Diagnose')

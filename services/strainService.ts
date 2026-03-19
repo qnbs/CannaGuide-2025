@@ -2,6 +2,7 @@ import { Strain } from '@/types';
 import { dbService } from './dbService';
 import { STRAIN_DATA_VERSION_KEY, CURRENT_STRAIN_DATA_VERSION } from '@/constants';
 import { mergeStrainCatalogForUpdate } from '@/services/migrationLogic';
+import { createStrainObject } from '@/services/strainFactory';
 
 type StrainModule = Record<string, unknown>
 
@@ -10,6 +11,24 @@ const DEFAULT_AGRONOMIC = {
     yield: 'Medium',
     height: 'Medium',
 } as const
+
+const normalizeStrainCatalog = (candidates: Partial<Strain>[]): Strain[] => {
+    const seenIds = new Set<string>()
+    const normalized: Strain[] = []
+
+    for (const candidate of candidates) {
+        const strain = createStrainObject(candidate)
+        if (seenIds.has(strain.id)) {
+            console.warn(`[StrainService] Skipping duplicate strain id "${strain.id}" during catalog normalization.`)
+            continue
+        }
+
+        seenIds.add(strain.id)
+        normalized.push(strain)
+    }
+
+    return normalized
+}
 
 let strainsDataCache: Strain[] | null = null
 
@@ -34,7 +53,7 @@ const loadAllStrainsData = async (): Promise<Strain[]> => {
         ),
     )
 
-    strainsDataCache = Array.from(new Map(allStrains.flat().map((strain) => [strain.id, strain])).values())
+    strainsDataCache = normalizeStrainCatalog(allStrains.flat() as Partial<Strain>[])
     return strainsDataCache
 }
 

@@ -8,6 +8,9 @@ export const strainsView = {
   favorites: 'Favorites',
   advancedFilters: 'Advanced Filters',
   resetFilters: 'Reset Filters',
+  inlineSelector: {
+    loadError: 'Could not load strains. Please try again.',
+  },
   matchingStrains_one: '1 Matching Strain',
   matchingStrains_other: '{{count}} Matching Strains',
   weeks: 'weeks',

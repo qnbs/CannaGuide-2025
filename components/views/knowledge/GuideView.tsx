@@ -101,7 +101,7 @@ const GuideViewComponent: React.FC = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
             <aside className="hidden md:block md:col-span-4 lg:col-span-3">
-                <div className="sticky top-20 space-y-2">
+                <div className="sticky top-[calc(4rem+env(safe-area-inset-top))] space-y-2">
                     <h3 className="px-3 text-sm font-semibold text-slate-400 uppercase tracking-wider">{t('knowledgeView.tabs.guide')}</h3>
                     <nav>
                         {groupedArticles.map(([groupKey, groupData]) => {

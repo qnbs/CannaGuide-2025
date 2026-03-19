@@ -52,7 +52,7 @@ export const StrainLibraryView: React.FC<StrainLibraryViewProps> = memo((props) 
 
     return (
         <>
-            <div className="sticky top-0 z-20 bg-[rgb(var(--color-bg-primary))] -mt-4 sm:-mt-6 -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 shadow-lg border-b border-slate-800">
+            <div className="sticky top-0 z-20 bg-[rgb(var(--color-bg-primary))] -mx-4 sm:-mx-6 px-4 sm:px-6 pb-4 shadow-lg border-b border-slate-800">
                 <StrainToolbar
                     searchTerm={searchTerm}
                     onSearchTermChange={onSearchTermChange}

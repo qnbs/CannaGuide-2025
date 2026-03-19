@@ -1,9 +1,6 @@
-name: 🌿 Daily Strain Catalog Update
+name: 🌿 Strain Catalog Update
 
 on:
-    schedule:
-        # Every day at 04:20 UTC
-        - cron: '20 4 * * *'
     workflow_dispatch:
 
 permissions:

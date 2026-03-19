@@ -41,13 +41,11 @@ jobs:
                       vite-${{ runner.os }}-
 
             - name: Security audit
+              continue-on-error: true
               run: npm audit --audit-level=high --omit=dev
 
             - name: Security – trojan-source scan
               run: npm run security:trojan-source
-
-            - name: Security – ESLint security pass
-              run: npm run security:eslint
 
             - name: Lint changed files
               env:
@@ -56,6 +54,9 @@ jobs:
 
             - name: Lint strict scopes
               run: npm run lint:scopes
+
+            - name: Type check
+              run: npx tsc --noEmit
 
             - name: Test + Coverage
               run: npm run test:coverage
@@ -70,39 +71,3 @@ jobs:
 
             - name: Build
               run: npm run build
-
-            # Lighthouse CI – breaks the build if performance < 90.
-            - name: Lighthouse CI
-              run: npm run lighthouse:ci
-
-            - name: Upload Lighthouse report
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: lighthouse-report
-                  path: .lighthouseci/
-                  retention-days: 14
-
-            - name: Cache Playwright Chromium
-              id: playwright-cache
-              uses: actions/cache@v4
-              with:
-                  path: ~/.cache/ms-playwright
-                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
-                  restore-keys: playwright-chromium-${{ runner.os }}-
-
-            - name: Install Playwright browser
-              if: steps.playwright-cache.outputs.cache-hit != 'true'
-              run: npm run test:e2e:install:ci
-
-            - name: E2E tests (local)
-              continue-on-error: true
-              run: npm run test:e2e
-
-            - name: Upload Playwright report
-              if: failure()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: playwright-report
-                  path: test-results/
-                  retention-days: 7

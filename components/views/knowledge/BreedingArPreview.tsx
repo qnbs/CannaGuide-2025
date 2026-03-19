@@ -68,6 +68,7 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const [isSupported, setIsSupported] = useState(false)
+    const [webglError, setWebglError] = useState<string | null>(null)
 
     const normalizedStats = useMemo(
         () => ({
@@ -89,13 +90,45 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
             return
         }
 
+        if (typeof document === 'undefined') {
+            setWebglError('WebGL is not available in this environment.')
+            return
+        }
+
+        try {
+            const testCanvas = document.createElement('canvas')
+            const contextOptions = { failIfMajorPerformanceCaveat: true }
+            const canCreateContext =
+                testCanvas.getContext('webgl2', contextOptions) ??
+                testCanvas.getContext('webgl', contextOptions) ??
+                testCanvas.getContext('experimental-webgl', contextOptions)
+
+            if (!canCreateContext) {
+                setWebglError('This browser cannot create a WebGL context.')
+                return
+            }
+        } catch {
+            setWebglError('This browser cannot create a WebGL context.')
+            return
+        }
+
+        setWebglError(null)
+
         const scene = new THREE.Scene()
         scene.background = new THREE.Color(0x09131f)
 
         const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 100)
         camera.position.set(0, 1.2, 3.4)
 
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
+        let renderer: THREE.WebGLRenderer
+        try {
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'Failed to create WebGL renderer.'
+            setWebglError(message)
+            return
+        }
         renderer.setSize(320, 320, false)
         renderer.xr.enabled = true
 
@@ -170,6 +203,8 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
         normalizedStats.vigor,
     ])
 
+    const showFallback = webglError !== null
+
     return (
         <Card className="bg-slate-900/60 ring-1 ring-inset ring-white/20">
             <div className="flex items-start justify-between gap-4 mb-3">
@@ -190,11 +225,42 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
                 className="rounded-xl overflow-hidden bg-slate-950/80 ring-1 ring-inset ring-white/10 p-3"
                 style={{ minHeight: '340px' }}
             >
-                <canvas
-                    ref={canvasRef}
-                    className="w-full h-[320px] rounded-lg"
-                    aria-label={t('knowledgeView.breeding.arPreviewLabel')}
-                />
+                {showFallback ? (
+                    <div className="flex h-[320px] flex-col items-center justify-center gap-4 rounded-lg border border-white/5 bg-slate-900/60 px-6 text-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-amber-300">
+                            <svg
+                                className="h-6 w-6"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 8v4m0 4h.01M4.93 19h14.14c1.54 0 2.49-1.67 1.72-3L14.72 5c-.77-1.33-2.67-1.33-3.44 0L3.21 16c-.77 1.33.18 3 1.72 3Z"
+                                />
+                            </svg>
+                        </div>
+                        <div className="max-w-sm space-y-2">
+                            <h5 className="text-base font-semibold text-slate-100">
+                                {t('knowledgeView.breeding.webglUnavailableTitle')}
+                            </h5>
+                            <p className="text-sm leading-6 text-slate-300">
+                                {t('knowledgeView.breeding.webglUnavailableDescription')}
+                            </p>
+                            <p className="text-xs leading-5 text-slate-500">
+                                {t('knowledgeView.breeding.webglUnavailableHint')}
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <canvas
+                        ref={canvasRef}
+                        className="w-full h-[320px] rounded-lg"
+                        aria-label={t('knowledgeView.breeding.arPreviewLabel')}
+                    />
+                )}
             </div>
         </Card>
     )

@@ -1,5 +1,3 @@
-
-
 export const knowledgeView = {
     title: 'Knowledge Hub',
     subtitle: 'Your interactive guide to successful cultivation.',
@@ -13,7 +11,7 @@ export const knowledgeView = {
     hub: {
         selectPlant: 'Select Plant',
         noPlants: 'No active plants for contextual advice. Start a grow to begin!',
-        todaysFocus: 'Today\'s Focus for {{plantName}}',
+        todaysFocus: "Today's Focus for {{plantName}}",
     },
     aiMentor: {
         title: 'AI Mentor',
@@ -26,7 +24,7 @@ export const knowledgeView = {
     },
     archive: {
         title: 'Mentor Archive',
-        empty: 'You haven\'t archived any mentor responses yet.',
+        empty: "You haven't archived any mentor responses yet.",
         saveButton: 'Save to Archive',
         saveSuccess: 'Response saved to archive!',
         queryLabel: 'Your Query',
@@ -34,7 +32,8 @@ export const knowledgeView = {
     },
     breeding: {
         title: 'Breeding Lab',
-        description: 'Cross your collected seeds to create new, unique strains with combined characteristics.',
+        description:
+            'Cross your collected seeds to create new, unique strains with combined characteristics.',
         collectedSeeds: 'Collected Seeds',
         noSeeds: 'Collect seeds from harvest-ready plants to start breeding.',
         parentA: 'Parent A',
@@ -62,16 +61,23 @@ export const knowledgeView = {
         arFallback: '3D fallback',
         arPreviewLabel: 'Three-dimensional breeding preview',
         arLoading: 'Loading AR preview...',
+        webglUnavailableTitle: '3D preview unavailable',
+        webglUnavailableDescription:
+            'Your browser could not create a WebGL context, so this preview is shown as a static fallback.',
+        webglUnavailableHint:
+            'Turn on hardware acceleration or switch to a GPU-enabled browser profile to restore the live preview.',
     },
     scenarios: {
         toppingVsLst: {
-            title: "Run Topping vs. LST Experiment",
-            description: "Simulates a 14-day growth period comparing a plant that receives LST against one that has been topped."
+            title: 'Run Topping vs. LST Experiment',
+            description:
+                'Simulates a 14-day growth period comparing a plant that receives LST against one that has been topped.',
         },
         tempPlus2c: {
-            title: "Run Temperature +2\u00b0C Experiment",
-            description: "Simulates a 14-day growth period comparing baseline conditions against a +2\u00b0C canopy temperature increase."
-        }
+            title: 'Run Temperature +2\u00b0C Experiment',
+            description:
+                'Simulates a 14-day growth period comparing baseline conditions against a +2\u00b0C canopy temperature increase.',
+        },
     },
     knowledgebase: {
         'phase1-prep': {
@@ -84,7 +90,7 @@ export const knowledgeView = {
                         <li><strong>Ventilation:</strong> Ensure your exhaust fan, intake, and any circulation fans are working correctly. Good airflow is critical.</li>
                         <li><strong>Medium & Pots:</strong> If using soil, lightly pre-moisten it before planting. Ensure your pots have excellent drainage to prevent root rot.</li>
                       </ul>
-                      <strong>Environment Calibration:</strong> Calibrate your thermo-hygrometers. Aim for a stable environment around <strong>22-25°C (72-77°F)</strong> and <strong>65-75% relative humidity</strong>.`
+                      <strong>Environment Calibration:</strong> Calibrate your thermo-hygrometers. Aim for a stable environment around <strong>22-25°C (72-77°F)</strong> and <strong>65-75% relative humidity</strong>.`,
         },
         'phase2-seedling': {
             title: 'Phase 2: Germination & Seedling',
@@ -92,7 +98,7 @@ export const knowledgeView = {
                       <strong>Germination:</strong> Keep the medium consistently moist, but never soaking wet. A humidity dome can help maintain high humidity (70-80%), which is ideal for sprouting.<br>
                       <strong>Light:</strong> Seedlings don't need intense light. A lower wattage fluorescent or a dimmed LED is perfect. An 18/6 light cycle is standard. Keep lights far enough away to prevent burning—if the back of your hand feels uncomfortably warm at canopy level, the light is too close.<br>
                       <strong>Water:</strong> Water sparingly in a small circle around the stem. The root system is tiny and can easily drown.<br>
-                      <strong>Nutrients:</strong> Do not feed nutrients yet! Most soils contain enough for the first 2-3 weeks. Wait until the plant has at least 3-4 sets of true leaves before introducing a very weak (1/4 strength) nutrient solution.`
+                      <strong>Nutrients:</strong> Do not feed nutrients yet! Most soils contain enough for the first 2-3 weeks. Wait until the plant has at least 3-4 sets of true leaves before introducing a very weak (1/4 strength) nutrient solution.`,
         },
         'phase3-vegetative': {
             title: 'Phase 3: Vegetative Growth',
@@ -100,7 +106,7 @@ export const knowledgeView = {
                       <strong>Light:</strong> Your plant can now handle much more light. Gradually increase the intensity or lower the light source. An 18/6 light cycle remains standard for photoperiod plants.<br>
                       <strong>Nutrients:</strong> Slowly increase nutrient strength. A fertilizer rich in Nitrogen (N) is crucial for leafy growth.<br>
                       <strong>Training:</strong> Now is the perfect time to start training to create an even canopy and increase your final yield. Begin with <strong>LST (Low-Stress Training)</strong> to gently bend branches, or perform <strong>Topping</strong> to create multiple main colas.<br>
-                      <strong>Environment:</strong> The ideal humidity drops to around 50-70%. Good air circulation becomes more important as the plant grows denser.`
+                      <strong>Environment:</strong> The ideal humidity drops to around 50-70%. Good air circulation becomes more important as the plant grows denser.`,
         },
         'phase4-flowering': {
             title: 'Phase 4: Flowering',
@@ -108,14 +114,14 @@ export const knowledgeView = {
                       <strong>Light Cycle:</strong> To initiate flowering, you must switch to a strict <strong>12 hours of light and 12 hours of *uninterrupted* darkness</strong>.<br>
                       <strong>The Stretch:</strong> In the first 2-3 weeks of flowering, your plant may double or even triple in height. Be prepared for this growth spurt!<br>
                       <strong>Nutrients:</strong> Switch to a bloom-specific fertilizer, which is lower in Nitrogen (N) and higher in Phosphorus (P) and Potassium (K) to support bud development.<br>
-                      <strong>Humidity:</strong> Gradually lower the humidity to <strong>40-50%</strong> to reduce the risk of bud rot (Botrytis) in the dense flowers.`
+                      <strong>Humidity:</strong> Gradually lower the humidity to <strong>40-50%</strong> to reduce the risk of bud rot (Botrytis) in the dense flowers.`,
         },
         'phase5-harvest': {
             title: 'Phase 5: Harvest, Drying & Curing',
             content: `<h3>The Finishing Touches</h3><p>Patience in this final phase is what separates mediocre from top-shelf cannabis. Don't rush it!</p>
                       <strong>Harvest Time:</strong> The best indicator is the color of the trichomes. Use a jeweler's loupe or microscope. Harvest when most trichomes are cloudy/milky for peak THC, with a few amber ones for a more relaxing effect. Clear trichomes are too early.<br>
                       <strong>Drying:</strong> Hang branches upside down in a dark, cool space with gentle air circulation. Aim for <strong>18-20°C (64-68°F)</strong> and <strong>55-60% humidity</strong>. This slow-dry process takes 7-14 days and is crucial for preserving terpenes.<br>
-                      <strong>Curing:</strong> Once smaller stems snap instead of bend, place the buds in airtight glass jars. Open the jars daily for 5-10 minutes for the first week ("burping") to release moisture. This process dramatically improves flavor, aroma, and smoothness.`
+                      <strong>Curing:</strong> Once smaller stems snap instead of bend, place the buds in airtight glass jars. Open the jars daily for 5-10 minutes for the first week ("burping") to release moisture. This process dramatically improves flavor, aroma, and smoothness.`,
         },
         'fix-overwatering': {
             title: 'Troubleshooting: Overwatering',
@@ -127,7 +133,7 @@ export const knowledgeView = {
                         <li><strong>Improve Airflow:</strong> Point a fan at the soil surface to help it dry out.</li>
                         <li><strong>Check Drainage:</strong> Ensure your pot is not sitting in a puddle of runoff water.</li>
                       </ul>
-                      <strong>Prevention:</strong> Always lift your pot to feel its weight before and after watering. This is the most reliable way to know when it's time to water again.`
+                      <strong>Prevention:</strong> Always lift your pot to feel its weight before and after watering. This is the most reliable way to know when it's time to water again.`,
         },
         'fix-calcium-deficiency': {
             title: 'Troubleshooting: Calcium Deficiency',
@@ -143,7 +149,7 @@ export const knowledgeView = {
                       <ol>
                         <li>First, always check and correct the pH of your water/nutrient solution.</li>
                         <li>Use a Cal-Mag (Calcium-Magnesium) supplement, especially if using RO water or coco.</li>
-                      </ol>`
+                      </ol>`,
         },
         'fix-nutrient-burn': {
             title: 'Troubleshooting: Nutrient Burn',
@@ -159,7 +165,7 @@ export const knowledgeView = {
                       <ol>
                         <li><strong>Flush the medium:</strong> Water the plant with a generous amount of plain, pH-adjusted water until there is significant runoff. This washes out excess nutrient salts.</li>
                         <li><strong>Reduce feeding strength:</strong> For the next feeding, use only half of the recommended nutrient dose and slowly work your way back up.</li>
-                      </ol>`
+                      </ol>`,
         },
         'fix-pests': {
             title: 'Troubleshooting: Common Pests',
@@ -173,7 +179,7 @@ export const knowledgeView = {
                       <ul>
                         <li><strong>Symptoms:</strong> Small, black flies buzzing around the soil surface. Their larvae in the soil can damage roots, especially on seedlings.</li>
                         <li><strong>Solution:</strong> They are a sign of overwatering. Let the top layer of your soil dry out completely between waterings. Use yellow sticky traps to catch the adults.</li>
-                      </ul>`
+                      </ul>`,
         },
         'concept-training': {
             title: 'Core Concept: Plant Training',
@@ -184,7 +190,7 @@ export const knowledgeView = {
                         <li><strong>LST (Low-Stress Training):</strong> Gently bending and tying down branches to guide their growth horizontally. Can be started very early and is low-risk.</li>
                         <li><strong>HST (High-Stress Training):</strong> Techniques that involve intentionally damaging the plant to promote bushier growth, such as <strong>Topping</strong> (cutting the main stem) or <strong>Super Cropping</strong> (pinching stems). These should only be done on healthy plants during the vegetative stage.</li>
                       </ul>
-                      <strong>Result:</strong> Instead of one large main cola and many small "popcorn" buds, you get multiple large, dense colas and a much larger overall harvest.`
+                      <strong>Result:</strong> Instead of one large main cola and many small "popcorn" buds, you get multiple large, dense colas and a much larger overall harvest.`,
         },
         'concept-environment': {
             title: 'Core Concept: The Environment',
@@ -198,8 +204,8 @@ export const knowledgeView = {
                       <ul>
                         <li><strong>Exhaust Fan:</strong> Constantly removes hot, stale, humid air and pulls in fresh air rich in CO₂. This is non-negotiable.</li>
                         <li><strong>Circulation Fan(s):</strong> Creates a gentle breeze within the tent. This strengthens stems, prevents humid air pockets from forming around leaves, and deters pests.</li>
-                      </ul>`
-        }
+                      </ul>`,
+        },
     },
     sandbox: {
         title: 'Experimental Sandbox',
@@ -225,21 +231,22 @@ export const knowledgeView = {
     },
     growLog: {
         title: 'Grow-Log RAG',
-        description: 'Query your own journal directly. Relevant log entries are loaded first, then analyzed by the AI.',
+        description:
+            'Query your own journal directly. Relevant log entries are loaded first, then analyzed by the AI.',
         placeholder: 'e.g. Why does my VPD fluctuate in week 4?',
         analyzing: 'Analyzing...',
         startAnalysis: 'Start RAG Analysis',
         activeCorpus: 'Active plants in RAG corpus: {{count}}',
     },
-};
+}
 
 export const tipOfTheDay = {
     title: 'Tip of the Day',
     tips: [
-        "Always check the pH of your water after adding nutrients. Nutrients can significantly alter the pH level.",
-        "A gentle breeze from a fan pointed at your plants helps strengthen stems and prevent mold.",
+        'Always check the pH of your water after adding nutrients. Nutrients can significantly alter the pH level.',
+        'A gentle breeze from a fan pointed at your plants helps strengthen stems and prevent mold.',
         "Less is more, especially with nutrients. It's easier to fix a deficiency than a toxicity (nutrient burn).",
-        "Observe the color of your leaves. A rich, healthy green is good. Too dark green can indicate too much nitrogen, while pale green or yellow suggests a deficiency.",
-        "Fabric pots are a great choice for beginners as they make overwatering almost impossible and provide oxygen to the roots."
-    ]
-};
+        'Observe the color of your leaves. A rich, healthy green is good. Too dark green can indicate too much nitrogen, while pale green or yellow suggests a deficiency.',
+        'Fabric pots are a great choice for beginners as they make overwatering almost impossible and provide oxygen to the roots.',
+    ],
+}

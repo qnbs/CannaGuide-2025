@@ -426,12 +426,12 @@ export const settingsView = {
       projectInfo: 'Project Info & README',
       version: 'Version',
       whatsNew: {
-        title: "What's New in v2.0",
+        title: "What's New in v1.1",
         items: {
-            simulation: "Advanced Simulation Engine: Based on VPD, biomass, and a structural growth model.",
-            genealogy: "Interactive Genealogy Tree: Visualize genetic lineage and ancestor influence.",
-            ai: "AI Grow Tips & Image Generation: Get unique, AI-powered advice and imagery for any strain.",
-            breeding: "Breeding Lab & Sandbox: Cross-breed new strains and run risk-free 'what-if' experiments."
+            simulation: "Mobile-safe simulation shell: Faster view transitions, stronger offline resilience, and cleaner bottom spacing across the app.",
+            strains: "Strain library hardening: Missing legacy strain fields now fall back safely instead of crashing the page.",
+            help: "Help center structure: FAQ and visual guides are separated into app and grow topics for faster navigation.",
+            settings: "About & README refresh: Updated release info, current app scope, and clearer project documentation."
         }
       },
       techStack: {

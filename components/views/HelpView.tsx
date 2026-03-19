@@ -38,9 +38,27 @@ const FAQSection: React.FC = memo(() => {
         );
     }, [searchTerm, augmentedFaqData]);
 
+    const groupedFaq = useMemo(() => {
+        const localAiAndApp = filteredFaq.filter((item) =>
+            item.id.startsWith('faq-local-ai') ||
+            item.id === 'faq-cloud-sync' ||
+            item.id === 'faq-multi-provider-ai' ||
+            item.id === 'faq-force-wasm' ||
+            item.id === 'faq-vision-classification',
+        )
+
+        const growAndCare = filteredFaq.filter((item) => !localAiAndApp.includes(item))
+
+        return [
+            { id: 'local-ai', title: t('helpView.faq.groups.localAi'), items: localAiAndApp },
+            { id: 'grow-care', title: t('helpView.faq.groups.grow'), items: growAndCare },
+        ].filter((group) => group.items.length > 0)
+    }, [filteredFaq, t])
+
     return (
         <Card>
-            <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('helpView.faq.title')}</h3>
+            <h3 className="text-xl font-bold font-display text-primary-400 mb-2">{t('helpView.faq.title')}</h3>
+            <p className="text-sm text-slate-400 mb-4">{t('helpView.faq.subtitle')}</p>
             <div className="mb-4">
                 <SearchBar
                     placeholder={t('helpView.faq.searchPlaceholder')}
@@ -49,20 +67,28 @@ const FAQSection: React.FC = memo(() => {
                     onClear={() => setSearchTerm('')}
                 />
             </div>
-            <div className="space-y-3">
-                {filteredFaq.length > 0 ? (
-                    filteredFaq.map(item => (
-                        <details key={item.id} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
-                            <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
-                                <span className="text-lg font-bold text-slate-100">{item.question}</span>
-                                <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
-                            </summary>
-                            <Speakable elementId={`faq-${item.id}`}>
-                                <SafeHtml html={item.answer} className="p-4 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" />
-                            </Speakable>
-                        </details>
-                    ))
-                ) : (
+            <div className="space-y-6">
+                {groupedFaq.length > 0 ? groupedFaq.map((group) => (
+                    <section key={group.id} className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{group.title}</h4>
+                            <div className="h-px flex-1 bg-slate-700/60" />
+                        </div>
+                        <div className="space-y-3">
+                            {group.items.map(item => (
+                                <details key={item.id} className="group bg-slate-800 rounded-lg overflow-hidden ring-1 ring-inset ring-slate-700/50">
+                                    <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
+                                        <span className="text-lg font-bold text-slate-100">{item.question}</span>
+                                        <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
+                                    </summary>
+                                    <Speakable elementId={`faq-${item.id}`}>
+                                        <SafeHtml html={item.answer} className="p-4 border-t border-slate-700/50 prose prose-sm dark:prose-invert max-w-none" />
+                                    </Speakable>
+                                </details>
+                            ))}
+                        </div>
+                    </section>
+                )) : (
                     <p className="text-center py-4 text-slate-500">{t('helpView.faq.noResults', { term: searchTerm })}</p>
                 )}
             </div>
@@ -72,18 +98,47 @@ const FAQSection: React.FC = memo(() => {
 
 const VisualGuidesSection: React.FC = memo(() => {
     const { t } = useTranslation();
+    const appGuides = visualGuidesData.filter((guide) => guide.id === 'local-ai-preload')
+    const cultivationGuides = visualGuidesData.filter((guide) => guide.id !== 'local-ai-preload')
+
     return (
         <Card>
-            <h3 className="text-xl font-bold font-display text-primary-400 mb-4">{t('helpView.tabs.guides')}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {visualGuidesData.map(guide => (
-                    <VisualGuideCard
-                        key={guide.id}
-                        guideId={guide.id}
-                        title={t(guide.titleKey)}
-                        description={t(guide.descriptionKey)}
-                    />
-                ))}
+            <h3 className="text-xl font-bold font-display text-primary-400 mb-2">{t('helpView.tabs.guides')}</h3>
+            <p className="text-sm text-slate-400 mb-4">{t('helpView.guides.subtitle')}</p>
+            <div className="space-y-6">
+                <section className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{t('helpView.visualGuides.groups.app')}</h4>
+                        <div className="h-px flex-1 bg-slate-700/60" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {appGuides.map(guide => (
+                            <VisualGuideCard
+                                key={guide.id}
+                                guideId={guide.id}
+                                title={t(guide.titleKey)}
+                                description={t(guide.descriptionKey)}
+                            />
+                        ))}
+                    </div>
+                </section>
+
+                <section className="space-y-3">
+                    <div className="flex items-center gap-3">
+                        <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">{t('helpView.visualGuides.groups.cultivation')}</h4>
+                        <div className="h-px flex-1 bg-slate-700/60" />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {cultivationGuides.map(guide => (
+                            <VisualGuideCard
+                                key={guide.id}
+                                guideId={guide.id}
+                                title={t(guide.titleKey)}
+                                description={t(guide.descriptionKey)}
+                            />
+                        ))}
+                    </div>
+                </section>
             </div>
         </Card>
     );

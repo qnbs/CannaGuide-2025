@@ -268,7 +268,7 @@ body {
 .toast-entered { opacity: 1; transform: translateY(0) scale(1); }
 .toast-exiting { opacity: 0; transform: translateY(10px) scale(0.95); }
 
-#toast-container { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 70px); left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 24rem; padding: 0 1rem; }
+#toast-container { position: fixed; bottom: calc(env(safe-area-inset-bottom, 0) + 7rem); left: 50%; transform: translateX(-50%); z-index: 200; display: flex; flex-direction: column; gap: 0.5rem; width: 100%; max-width: 24rem; padding: 0 1rem; }
 
 /* Side Navigation Indicator */
 .side-nav-indicator {

@@ -31,7 +31,7 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
         Hard: t('strainsView.difficulty.hard'),
     };
     const difficultyMap = { Easy: { level: 1, color: 'text-success' }, Medium: { level: 2, color: 'text-warning' }, Hard: { level: 3, color: 'text-danger' },};
-    const { level, color } = difficultyMap[difficulty || 'Medium'];
+    const { level, color } = difficultyMap[difficulty] ?? difficultyMap.Medium;
 
     return (
         <div className="flex items-center gap-2 justify-end" title={difficultyLabels[difficulty]}>
@@ -77,7 +77,7 @@ const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     return (
         <InfoSection title={t('strainsView.strainModal.agronomicData')}>
             <div className="space-y-2">
-                <AttributeDisplay label={t('strainsView.strainModal.difficulty')} value={<DifficultyMeter difficulty={strain.agronomic?.difficulty || 'Medium'} />} />
+                <AttributeDisplay label={t('strainsView.strainModal.difficulty')} value={<DifficultyMeter difficulty={strain.agronomic?.difficulty ?? 'Medium'} />} />
                 <AttributeDisplay label={t('strainsView.strainModal.yieldIndoor')} value={yieldIndoor} />
                 <AttributeDisplay label={t('strainsView.strainModal.yieldOutdoor')} value={yieldOutdoor} />
                 <AttributeDisplay label={t('strainsView.strainModal.heightIndoor')} value={heightIndoor} />
@@ -185,7 +185,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
         [StrainType.Sativa]: SativaIcon,
         [StrainType.Indica]: IndicaIcon,
         [StrainType.Hybrid]: HybridIcon
-    }[strain.type];
+    }[strain.type] ?? HybridIcon;
 
     const typeDetails = t(`strainsData.${strain.id}.typeDetails`, { defaultValue: strain.typeDetails ?? '' });
 
@@ -207,7 +207,7 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                     </div>
                 </div>
                 <div className="flex items-center gap-4 mt-4">
-                    {TypeIcon && <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type]}`} />}
+                    <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type] ?? typeClasses[StrainType.Hybrid]}`} />
                     <div>
                         <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{strain.name}</h1>
                         <p className="text-slate-300">{strain.type} {typeDetails && `- ${typeDetails}`}</p>

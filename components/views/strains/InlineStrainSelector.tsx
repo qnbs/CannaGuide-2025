@@ -25,7 +25,7 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
         Easy: 'text-green-400',
         Medium: 'text-amber-400',
         Hard: 'text-red-400',
-    }[difficulty]
+    }[difficulty] ?? 'text-amber-400'
     return (
         <div
             className="flex gap-0.5 items-center"
@@ -55,7 +55,10 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
         Indica: 'text-indigo-400',
         Hybrid: 'text-blue-400',
     }
-    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[strain.type]
+    const safeType = strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
+        ? strain.type
+        : 'Hybrid'
+    const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
 
     return (
         <button
@@ -63,7 +66,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
             className="w-full text-left p-3 rounded-lg hover:bg-slate-700/50 transition-colors flex items-center gap-4 ring-1 ring-inset ring-white/20"
         >
             <div className="flex-shrink-0">
-                {TypeIcon && <TypeIcon className={`w-10 h-10 ${typeClasses[strain.type]}`} />}
+                <TypeIcon className={`w-10 h-10 ${typeClasses[safeType]}`} />
             </div>
 
             <div className="flex-grow min-w-0">
@@ -99,14 +102,14 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
             </div>
 
             <div className="flex-shrink-0 flex flex-col items-end gap-1">
-                <DifficultyMeter difficulty={strain.agronomic.difficulty} />
+                <DifficultyMeter difficulty={strain.agronomic?.difficulty ?? 'Medium'} />
                 <div
                     className="flex items-center gap-1 text-xs text-slate-400"
                     title={t('strainsView.addStrainModal.yield')}
                 >
                     <PhosphorIcons.Archive className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.yields.${strain.agronomic.yield.toLowerCase()}`)}
+                        {t(`strainsView.addStrainModal.yields.${(strain.agronomic?.yield ?? 'Medium').toLowerCase()}`)}
                     </span>
                 </div>
                 <div
@@ -115,7 +118,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Ruler className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.heights.${strain.agronomic.height.toLowerCase()}`)}
+                        {t(`strainsView.addStrainModal.heights.${(strain.agronomic?.height ?? 'Medium').toLowerCase()}`)}
                     </span>
                 </div>
             </div>

@@ -4,7 +4,6 @@ import { Card } from '@/components/common/Card';
 import { Button } from '@/components/ui/button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { CannabisLeafIcon } from '@/components/icons/CannabisLeafIcon';
-import { APP_VERSION } from '@/constants';
 import { SafeHtml } from '@/components/common/SafeHtml';
 
 const InfoSection: React.FC<{ title: string; icon?: React.ReactNode; children: React.ReactNode; id?: string }> = ({ title, icon, children, id }) => (
@@ -35,7 +34,7 @@ const AboutAppContent: React.FC = memo(() => {
                 <div className="text-center">
                     <CannabisLeafIcon className="w-20 h-20 mx-auto" />
                     <h2 className="text-3xl font-bold font-display mt-2">CannaGuide 2025</h2>
-                    <p className="text-slate-400 font-semibold">{t('settingsView.about.version')} {APP_VERSION}.0.0</p>
+                    <p className="text-slate-400 font-semibold">{t('settingsView.about.version')} {__APP_VERSION__}</p>
                     <p className="text-sm text-slate-300 max-w-xl mx-auto mt-2">{t('common.appShortDescription')}</p>
                 </div>
             </Card>
@@ -43,8 +42,9 @@ const AboutAppContent: React.FC = memo(() => {
             <Card>
                 <InfoSection title={t('settingsView.about.whatsNew.title')} icon={<PhosphorIcons.Sparkle />}>
                     <ul className="space-y-3">
-                        {Object.entries(whatsNewItems).map(([key, value]) => {
-                            const [title, description] = value.split(':');
+                        {Object.entries(whatsNewItems ?? {}).map(([key, value]) => {
+                            const [title, ...descriptionParts] = String(value).split(':');
+                            const description = descriptionParts.join(':').trim();
                             return (
                                 <ListItem key={key} icon={<PhosphorIcons.CheckCircle weight="fill" />}>
                                     <span className="font-semibold text-slate-100">{title}:</span> {description}

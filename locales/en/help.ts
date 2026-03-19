@@ -9,13 +9,23 @@ export const helpView = {
   },
   faq: {
     title: 'Frequently Asked Questions',
+    subtitle: 'Split into app operations, AI/offline support, and cultivation topics.',
     searchPlaceholder: 'Search questions...',
     noResults: 'No results found for "{{term}}".',
+    groups: {
+      localAi: 'Local AI, Sync & App Recovery',
+      grow: 'Cultivation & Plant Care',
+    },
   },
   guides: {
     title: 'Visual Guides',
+    subtitle: 'App workflow guidance stays separate from hands-on grow techniques.',
   },
   visualGuides: {
+    groups: {
+      app: 'App Workflow',
+      cultivation: 'Cultivation Techniques',
+    },
     localAiPreload: {
       title: 'Local AI Offline Cache',
       description: 'Warm up the local text and vision models while you are online so the app can diagnose plants without a network connection.',
@@ -202,7 +212,7 @@ export const helpView = {
       },
       guide: {
         title: 'Integrated Grow Guide',
-        content: 'Access a comprehensive reference that includes this User Manual, a Grower\'s Lexicon, visual guides for common techniques, and a searchable FAQ.'
+        content: 'Access a comprehensive reference that includes this User Manual, a Grower\'s Lexicon, clearly separated visual guides, and a searchable FAQ organized by app and grow topics.'
       }
     }
   },

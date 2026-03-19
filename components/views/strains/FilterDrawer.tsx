@@ -43,6 +43,10 @@ const FilterSection: React.FC<{ title: string, children: React.ReactNode, isActi
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onApply, onReset, tempFilterState, setTempFilterState, allAromas, allTerpenes, count, showFavorites, onToggleFavorites, typeFilter, onToggleTypeFilter, isAnyFilterActive: _isAnyFilterActive }) => {
     const { t } = useTranslation();
 
+    const thcRange = Array.isArray(tempFilterState.thcRange) ? tempFilterState.thcRange : [0, 35]
+    const cbdRange = Array.isArray(tempFilterState.cbdRange) ? tempFilterState.cbdRange : [0, 20]
+    const floweringRange = Array.isArray(tempFilterState.floweringRange) ? tempFilterState.floweringRange : [4, 20]
+
     const difficultyLabels: Record<DifficultyLevel, string> = { Easy: t('strainsView.difficulty.easy'), Medium: t('strainsView.difficulty.medium'), Hard: t('strainsView.difficulty.hard') };
     const yieldLabels: Record<YieldLevel, string> = { Low: t('strainsView.addStrainModal.yields.low'), Medium: t('strainsView.addStrainModal.yields.medium'), High: t('strainsView.addStrainModal.yields.high') };
     const heightLabels: Record<HeightLevel, string> = { Short: t('strainsView.addStrainModal.heights.short'), Medium: t('strainsView.addStrainModal.heights.medium'), Tall: t('strainsView.addStrainModal.heights.tall') };
@@ -61,8 +65,8 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
         setTempFilterState({ [key]: newArray });
     };
 
-    const isCannabinoidFilterActive = tempFilterState.thcRange[0] > 0 || tempFilterState.thcRange[1] < 35 || tempFilterState.cbdRange[0] > 0 || tempFilterState.cbdRange[1] < 20;
-    const isGrowDataFilterActive = tempFilterState.floweringRange[0] > 4 || tempFilterState.floweringRange[1] < 20 || tempFilterState.selectedDifficulties.length > 0 || tempFilterState.selectedYields.length > 0 || tempFilterState.selectedHeights.length > 0;
+    const isCannabinoidFilterActive = thcRange[0] > 0 || thcRange[1] < 35 || cbdRange[0] > 0 || cbdRange[1] < 20;
+    const isGrowDataFilterActive = floweringRange[0] > 4 || floweringRange[1] < 20 || tempFilterState.selectedDifficulties.length > 0 || tempFilterState.selectedYields.length > 0 || tempFilterState.selectedHeights.length > 0;
     const isAromaFilterActive = tempFilterState.selectedAromas.length > 0;
     const isTerpeneFilterActive = tempFilterState.selectedTerpenes.length > 0;
     const isQuickFilterActive = showFavorites || typeFilter.length > 0;
@@ -90,12 +94,12 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({ isOpen, onClose, onA
                 </FilterSection>
 
                 <FilterSection title={t('strainsView.addStrainModal.cannabinoids')} isActive={isCannabinoidFilterActive}>
-                    <RangeSlider label={t('strainsView.filters.thcMax')} min={0} max={35} step={1} value={tempFilterState.thcRange} onChange={val => setTempFilterState({ thcRange: val })} unit=" %" color="primary"/>
-                    <RangeSlider label={t('strainsView.filters.cbdMax')} min={0} max={20} step={1} value={tempFilterState.cbdRange} onChange={val => setTempFilterState({ cbdRange: val })} unit=" %" color="green" />
+                    <RangeSlider label={t('strainsView.filters.thcMax')} min={0} max={35} step={1} value={thcRange} onChange={val => setTempFilterState({ thcRange: val })} unit=" %" color="primary"/>
+                    <RangeSlider label={t('strainsView.filters.cbdMax')} min={0} max={20} step={1} value={cbdRange} onChange={val => setTempFilterState({ cbdRange: val })} unit=" %" color="green" />
                 </FilterSection>
 
                 <FilterSection title={t('strainsView.addStrainModal.growData')} isActive={isGrowDataFilterActive}>
-                    <RangeSlider label={t('strainsView.filters.floweringTime')} min={4} max={20} step={1} value={tempFilterState.floweringRange} onChange={val => setTempFilterState({ floweringRange: val })} unit={` ${t('common.units.weeks')}`} color="blue"/>
+                    <RangeSlider label={t('strainsView.filters.floweringTime')} min={4} max={20} step={1} value={floweringRange} onChange={val => setTempFilterState({ floweringRange: val })} unit={` ${t('common.units.weeks')}`} color="blue"/>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <h4 className="text-sm font-semibold text-slate-300 mb-2">{t('strainsView.filters.difficulty')}</h4>

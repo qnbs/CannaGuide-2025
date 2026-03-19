@@ -45,6 +45,22 @@ const GenealogyView = lazy(() => import('./GenealogyView').then(m => ({ default:
 const ExportsManagerView = lazy(() => import('./ExportsManagerView'));
 const BreedingLabView = lazy(() => import('./BreedingLab').then(m => ({ default: m.BreedingLab })));
 
+const DEFAULT_AGRONOMIC = {
+    difficulty: 'Medium',
+    yield: 'Medium',
+    height: 'Medium',
+} as const
+
+const getRangeValue = (range: [number, number] | undefined, fallback: [number, number]): [number, number] => {
+    if (Array.isArray(range) && range.length === 2) {
+        return range
+    }
+
+    return fallback
+}
+
+const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? DEFAULT_AGRONOMIC
+
 
 export const StrainsView: React.FC = () => {
     const { t } = useTranslation();
@@ -167,6 +183,9 @@ export const StrainsView: React.FC = () => {
 
     const countForDrawer = useMemo(() => {
         let strains = [...strainsForCurrentTab];
+        const thcRange = getRangeValue(tempFilterState.thcRange, INITIAL_ADVANCED_FILTERS.thcRange)
+        const cbdRange = getRangeValue(tempFilterState.cbdRange, INITIAL_ADVANCED_FILTERS.cbdRange)
+        const floweringRange = getRangeValue(tempFilterState.floweringRange, INITIAL_ADVANCED_FILTERS.floweringRange)
 
         if (searchTerm) {
             const lowerCaseSearch = searchTerm.toLowerCase();
@@ -199,12 +218,12 @@ export const StrainsView: React.FC = () => {
         const terpenes = new Set(tempFilterState.selectedTerpenes);
 
         strains = strains.filter(s =>
-            (s.thc >= tempFilterState.thcRange[0] && s.thc <= tempFilterState.thcRange[1]) &&
-            (s.cbd >= tempFilterState.cbdRange[0] && s.cbd <= tempFilterState.cbdRange[1]) &&
-            (s.floweringTime >= tempFilterState.floweringRange[0] && s.floweringTime <= tempFilterState.floweringRange[1]) &&
-            (difficulties.size === 0 || difficulties.has(s.agronomic.difficulty)) &&
-            (yields.size === 0 || yields.has(s.agronomic.yield)) &&
-            (heights.size === 0 || heights.has(s.agronomic.height)) &&
+            (s.thc >= thcRange[0] && s.thc <= thcRange[1]) &&
+            (s.cbd >= cbdRange[0] && s.cbd <= cbdRange[1]) &&
+            (s.floweringTime >= floweringRange[0] && s.floweringTime <= floweringRange[1]) &&
+            (difficulties.size === 0 || difficulties.has(getSafeAgronomic(s).difficulty)) &&
+            (yields.size === 0 || yields.has(getSafeAgronomic(s).yield)) &&
+            (heights.size === 0 || heights.has(getSafeAgronomic(s).height)) &&
             (aromas.size === 0 || (s.aromas || []).some(a => aromas.has(a))) &&
             (terpenes.size === 0 || (s.dominantTerpenes || []).some(t => terpenes.has(t)))
         );

@@ -9,13 +9,23 @@ export const helpView = {
   },
   faq: {
     title: 'Häufig gestellte Fragen',
+    subtitle: 'Getrennt nach App-Bedienung, KI/Offline-Hilfe und Anbauthemen gegliedert.',
     searchPlaceholder: 'Fragen durchsuchen...',
     noResults: 'Keine Ergebnisse für "{{term}}" gefunden.',
+    groups: {
+      localAi: 'Lokale KI, Sync & App-Wiederherstellung',
+      grow: 'Anbau & Pflanzenpflege',
+    },
   },
   guides: {
     title: 'Visuelle Anleitungen',
+    subtitle: 'App-Hinweise und Anbau-Techniken sind bewusst getrennt.',
   },
   visualGuides: {
+    groups: {
+      app: 'App-Ablauf',
+      cultivation: 'Anbau-Techniken',
+    },
     localAiPreload: {
       title: 'Lokaler KI-Offline-Cache',
       description: 'Lade die lokalen Text- und Bildmodelle vor, solange du online bist, damit die App Pflanzen auch ohne Netzwerkverbindung diagnostizieren kann.',
@@ -202,7 +212,7 @@ export const helpView = {
       },
       guide: {
         title: 'Integrierter Grow Guide',
-        content: 'Greifen Sie auf ein umfassendes Nachschlagewerk zu, das dieses Benutzerhandbuch, ein Grower-Lexikon, visuelle Anleitungen für gängige Techniken und eine durchsuchbare FAQ enthält.'
+        content: 'Greifen Sie auf ein umfassendes Nachschlagewerk zu, das dieses Benutzerhandbuch, ein Grower-Lexikon, klar getrennte visuelle Anleitungen und eine nach App- und Grow-Themen strukturierte FAQ enthält.'
       }
     }
   },

@@ -37,6 +37,8 @@ import { StrainsViewState } from '@/stores/slices/strainsViewSlice';
 import { DataExportModal } from '@/components/common/DataExportModal';
 import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
+import { Card } from '@/components/common/Card';
+import { Button } from '@/components/common/Button';
 
 // --- Lazy Loaded Views for Performance ---
 const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
@@ -77,6 +79,7 @@ export const StrainsView: React.FC = () => {
     const dispatch = useAppDispatch();
     const [allStrains, setAllStrains] = useState<Strain[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [_currentPage, setCurrentPage] = useState(1);
 
@@ -127,14 +130,23 @@ export const StrainsView: React.FC = () => {
     }), [t, savedTips.length, savedExportsCount]);
 
 
-    useEffect(() => {
+    const loadStrains = useCallback(() => {
         strainService.getAllStrains()
             .then(strains => {
                 setAllStrains(strains);
+                setLoadError(null);
                 setIsLoading(false);
             })
-            .catch(() => setIsLoading(false));
-    }, []);
+            .catch((error: unknown) => {
+                console.error('[StrainsView] Failed to load strains.', error);
+                setLoadError(t('strainsView.loadError'));
+                setIsLoading(false);
+            });
+    }, [t]);
+
+    useEffect(() => {
+        loadStrains();
+    }, [loadStrains]);
 
     const { allAromas, allTerpenes } = useMemo(() => {
         const aromaSet = new Set<string>();
@@ -338,6 +350,19 @@ export const StrainsView: React.FC = () => {
 
     const renderContent = () => {
         if (isLoading) return <SkeletonLoader variant="list" count={5} />;
+
+        if (loadError) {
+            return (
+                <Card className="text-center py-10 text-slate-300">
+                    <PhosphorIcons.WarningCircle className="w-14 h-14 mx-auto text-red-400 mb-3" />
+                    <h3 className="font-semibold text-slate-100">{t('common.error')}</h3>
+                    <p className="text-sm mb-4 text-slate-400">{loadError}</p>
+                    <Button size="sm" variant="secondary" onClick={loadStrains}>
+                        {t('common.errorBoundary.reload')}
+                    </Button>
+                </Card>
+            );
+        }
 
         switch (strainsViewTab) {
             case StrainViewTab.All:

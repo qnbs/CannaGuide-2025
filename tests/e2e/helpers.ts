@@ -20,7 +20,13 @@ export const resetAppStateKeepingLegalGates = async (page: Page) => {
 
 export const deleteAppDatabases = async (page: Page) => {
     await page.evaluate(async () => {
-        const databaseNames = ['CannaGuideStateDB', 'CannaGuideDB', 'CannaGuideSecureDB', 'CannaGuideReminderDB', 'cannaguide-db']
+        const databaseNames = [
+            'CannaGuideStateDB',
+            'CannaGuideDB',
+            'CannaGuideSecureDB',
+            'CannaGuideReminderDB',
+            'cannaguide-db',
+        ]
         await Promise.all(
             databaseNames.map(
                 (name) =>
@@ -82,8 +88,10 @@ export const seedPostOnboardingState = async (page: Page) => {
 
                 request.onerror = () => reject(request.error)
                 transaction.oncomplete = () => resolve()
-                transaction.onabort = () => reject(transaction.error ?? new Error('IndexedDB transaction aborted'))
-                transaction.onerror = () => reject(transaction.error ?? new Error('IndexedDB transaction failed'))
+                transaction.onabort = () =>
+                    reject(transaction.error ?? new Error('IndexedDB transaction aborted'))
+                transaction.onerror = () =>
+                    reject(transaction.error ?? new Error('IndexedDB transaction failed'))
             })
 
             database.close()
@@ -128,8 +136,14 @@ export const corruptIndexedDbStrains = async (page: Page) => {
                 }
 
                 transaction.oncomplete = () => resolve()
-                transaction.onabort = () => reject(transaction.error ?? new Error('IndexedDB corruption transaction aborted'))
-                transaction.onerror = () => reject(transaction.error ?? new Error('IndexedDB corruption transaction failed'))
+                transaction.onabort = () =>
+                    reject(
+                        transaction.error ?? new Error('IndexedDB corruption transaction aborted'),
+                    )
+                transaction.onerror = () =>
+                    reject(
+                        transaction.error ?? new Error('IndexedDB corruption transaction failed'),
+                    )
             })
 
             database.close()
@@ -153,6 +167,7 @@ export const bootFreshAppPastOnboarding = async (page: Page) => {
     await seedPostOnboardingState(page)
     await page.reload({ waitUntil: 'networkidle' })
     await page.waitForLoadState('networkidle')
+    await closeOnboardingIfVisible(page)
 }
 
 export const expectShellVisible = async (page: Page) => {
@@ -202,7 +217,9 @@ export const closeOnboardingIfVisible = async (page: Page) => {
 
 export const expectNoCrashPatterns = async (page: Page) => {
     await expect(page.getByRole('heading', { name: /Something went wrong\./i })).toHaveCount(0)
-    await expect(page.getByRole('button', { name: /Reload Application|App neu laden/i })).toHaveCount(0)
+    await expect(
+        page.getByRole('button', { name: /Reload Application|App neu laden/i }),
+    ).toHaveCount(0)
 }
 
 export const attachRuntimeErrorTracking = (page: Page) => {
@@ -212,7 +229,8 @@ export const attachRuntimeErrorTracking = (page: Page) => {
         /The Content Security Policy directive 'frame-ancestors' is ignored/i,
     ]
 
-    const shouldIgnore = (message: string) => ignoredPatterns.some((pattern) => pattern.test(message))
+    const shouldIgnore = (message: string) =>
+        ignoredPatterns.some((pattern) => pattern.test(message))
 
     const onPageError = (error: Error) => {
         if (!shouldIgnore(error.message)) {

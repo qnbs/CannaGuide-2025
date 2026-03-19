@@ -1,37 +1,46 @@
-import React, { memo, useRef, useEffect } from 'react';
-import { Strain } from '@/types';
-import { StrainListItem } from './StrainListItem';
-import { useVirtualizer } from '@/hooks/useVirtualizer';
-import { MOBILE_BOTTOM_NAV_SAFE_OFFSET } from '@/constants';
+import React, { memo, useRef, useEffect, useCallback } from 'react'
+import { Strain } from '@/types'
+import { StrainListItem } from './StrainListItem'
+import { useVirtualizer } from '@/hooks/useVirtualizer'
+import { MOBILE_BOTTOM_NAV_SAFE_OFFSET } from '@/constants'
 
 interface StrainListProps {
-    strains: Strain[];
-    onSelect: (strain: Strain) => void;
-    selectedIds: Set<string>;
-    onToggleSelection: (id: string) => void;
-    isUserStrain: (id: string) => boolean;
-    onDelete: (id: string) => void;
-    isPending?: boolean;
-    favorites: Set<string>;
-    onToggleFavorite: (id: string) => void;
+    strains: Strain[]
+    onSelect: (strain: Strain) => void
+    selectedIds: Set<string>
+    onToggleSelection: (id: string) => void
+    isUserStrain: (id: string) => boolean
+    onDelete: (id: string) => void
+    isPending?: boolean
+    favorites: Set<string>
+    onToggleFavorite: (id: string) => void
 }
 
 const StrainListComponent: React.FC<StrainListProps> = ({
-    strains, onSelect, selectedIds, onToggleSelection, isUserStrain, onDelete,
-    isPending, favorites, onToggleFavorite
+    strains,
+    onSelect,
+    selectedIds,
+    onToggleSelection,
+    isUserStrain,
+    onDelete,
+    isPending,
+    favorites,
+    onToggleFavorite,
 }) => {
-    const scrollElementRef = useRef<HTMLElement | null>(null);
+    const scrollElementRef = useRef<HTMLElement | null>(null)
     // On component mount, find the main scrolling element of the app layout.
     useEffect(() => {
-        scrollElementRef.current = document.querySelector('main');
-    }, []);
+        scrollElementRef.current = document.querySelector('main')
+    }, [])
+
+    const getScrollElement = useCallback(() => scrollElementRef.current, [])
 
     const rowVirtualizer = useVirtualizer({
         count: strains.length,
-        getScrollElement: () => scrollElementRef.current,
+        getScrollElement,
         estimateSize: 68, // Approximate height of a StrainListItem in px (p-3 = 12px*2, content ~44px)
         overscan: 10,
-    });
+    })
 
     return (
         <div
@@ -43,10 +52,10 @@ const StrainListComponent: React.FC<StrainListProps> = ({
             }}
         >
             {rowVirtualizer.virtualItems.map((virtualItem) => {
-                 const strain = strains[virtualItem.index];
-                 if (!strain) return null;
+                const strain = strains[virtualItem.index]
+                if (!strain) return null
 
-                 return (
+                return (
                     <div
                         key={strain.id}
                         ref={rowVirtualizer.measureElement(virtualItem.index)}
@@ -56,7 +65,7 @@ const StrainListComponent: React.FC<StrainListProps> = ({
                             left: 0,
                             width: '100%',
                             transform: `translateY(${virtualItem.offsetTop}px)`,
-                            paddingBottom: '8px' // Simulates space-y-2
+                            paddingBottom: '8px', // Simulates space-y-2
                         }}
                     >
                         <StrainListItem
@@ -70,10 +79,10 @@ const StrainListComponent: React.FC<StrainListProps> = ({
                             onToggleFavorite={onToggleFavorite}
                         />
                     </div>
-                 )
+                )
             })}
         </div>
-    );
-};
+    )
+}
 
-export const StrainList: React.FC<StrainListProps> = memo(StrainListComponent);
+export const StrainList: React.FC<StrainListProps> = memo(StrainListComponent)

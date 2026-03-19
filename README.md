@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
+
 <!--
 This README file supports two languages.
 - English version is first.
@@ -5,8 +7,6 @@ This README file supports two languages.
 -->
 
 # 🌿 CannaGuide 2025 (English)
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/qnbs/CannaGuide-2025)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Release](https://img.shields.io/badge/release-v1.1.0-brightgreen)](https://github.com/qnbs/CannaGuide-2025/releases)

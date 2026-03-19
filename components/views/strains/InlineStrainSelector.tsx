@@ -20,14 +20,18 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
     difficulty,
 }) => {
     const { t } = useTranslation()
-    const safeDifficulty = difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard' ? difficulty : 'Medium'
+    const safeDifficulty =
+        difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard'
+            ? difficulty
+            : 'Medium'
     const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 }
     const level = difficultyMap[safeDifficulty] || 2
-    const color = {
-        Easy: 'text-green-400',
-        Medium: 'text-amber-400',
-        Hard: 'text-red-400',
-    }[safeDifficulty] ?? 'text-amber-400'
+    const color =
+        {
+            Easy: 'text-green-400',
+            Medium: 'text-amber-400',
+            Hard: 'text-red-400',
+        }[safeDifficulty] ?? 'text-amber-400'
     return (
         <div
             className="flex gap-0.5 items-center"
@@ -57,20 +61,33 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
         Indica: 'text-indigo-400',
         Hybrid: 'text-blue-400',
     }
-    const safeType = strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
-        ? strain.type
-        : 'Hybrid'
-    const safeYield = strain.agronomic?.yield === 'Low' || strain.agronomic?.yield === 'Medium' || strain.agronomic?.yield === 'High'
-        ? strain.agronomic.yield
-        : 'Medium'
-    const safeHeight = strain.agronomic?.height === 'Short' || strain.agronomic?.height === 'Medium' || strain.agronomic?.height === 'Tall'
-        ? strain.agronomic.height
-        : 'Medium'
+    const safeType =
+        strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
+            ? strain.type
+            : 'Hybrid'
+    const safeYield =
+        strain.agronomic?.yield === 'Low' ||
+        strain.agronomic?.yield === 'Medium' ||
+        strain.agronomic?.yield === 'High'
+            ? strain.agronomic.yield
+            : 'Medium'
+    const safeHeight =
+        strain.agronomic?.height === 'Short' ||
+        strain.agronomic?.height === 'Medium' ||
+        strain.agronomic?.height === 'Tall'
+            ? strain.agronomic.height
+            : 'Medium'
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
-    const safeName = typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : 'Unknown Strain'
+    const safeName =
+        typeof strain.name === 'string' && strain.name.trim() !== ''
+            ? strain.name
+            : 'Unknown Strain'
     const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
     const safeCbd = typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
-    const safeFloweringTime = typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime) ? strain.floweringTime : 0
+    const safeFloweringTime =
+        typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime)
+            ? strain.floweringTime
+            : 0
 
     return (
         <button
@@ -120,9 +137,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                     title={t('strainsView.addStrainModal.yield')}
                 >
                     <PhosphorIcons.Archive className="w-3 h-3" />
-                    <span>
-                        {t(`strainsView.addStrainModal.yields.${safeYield.toLowerCase()}`)}
-                    </span>
+                    <span>{t(`strainsView.addStrainModal.yields.${safeYield.toLowerCase()}`)}</span>
                 </div>
                 <div
                     className="flex items-center gap-1 text-xs text-slate-400"
@@ -147,11 +162,14 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     const [isLoading, setIsLoading] = useState(true)
     const [loadError, setLoadError] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
-    const userStrains = useAppSelector(selectUserStrains) ?? []
-    const favorites = useAppSelector(selectFavoriteIds) ?? new Set<string>()
+    const rawUserStrains = useAppSelector(selectUserStrains)
+    const userStrains = useMemo(() => rawUserStrains ?? [], [rawUserStrains])
+    const rawFavorites = useAppSelector(selectFavoriteIds)
+    const favorites = useMemo(() => rawFavorites ?? new Set<string>(), [rawFavorites])
 
     useEffect(() => {
-        strainService.getAllStrains()
+        strainService
+            .getAllStrains()
             .then((strains) => {
                 setAllStrains(strains.filter((strain): strain is Strain => Boolean(strain)))
                 setLoadError(null)
@@ -172,9 +190,15 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
         if (searchTerm.trim() !== '') {
             strainsToShow = allStrains.filter(
                 (s) =>
-                    (typeof s.name === 'string' ? s.name : 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
-                    (typeof s.type === 'string' ? s.type : 'Hybrid').toLowerCase().includes(lowerCaseSearch) ||
-                    (Array.isArray(s.aromas) ? s.aromas : []).some((a) => typeof a === 'string' && a.toLowerCase().includes(lowerCaseSearch)),
+                    (typeof s.name === 'string' ? s.name : 'Unknown Strain')
+                        .toLowerCase()
+                        .includes(lowerCaseSearch) ||
+                    (typeof s.type === 'string' ? s.type : 'Hybrid')
+                        .toLowerCase()
+                        .includes(lowerCaseSearch) ||
+                    (Array.isArray(s.aromas) ? s.aromas : []).some(
+                        (a) => typeof a === 'string' && a.toLowerCase().includes(lowerCaseSearch),
+                    ),
             )
         }
 

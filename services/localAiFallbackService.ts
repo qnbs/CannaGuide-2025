@@ -10,6 +10,7 @@ import {
     Language,
 } from '@/types'
 import DOMPurify from 'dompurify'
+import type { ImageStyle } from '@/services/geminiService'
 
 const isGerman = (lang: Language) => lang === 'de'
 
@@ -168,6 +169,14 @@ export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
 
 // Sanitize user text in fallback responses (no HTML injection from user input)
 const safe = (text: string) => DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+
+const escapeXml = (value: string): string =>
+    safe(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;')
 
 const makeRecommendationItem = (
     name: string,
@@ -332,6 +341,83 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
     }
 }
 
+const buildStylePalette = (
+    style: ImageStyle,
+): { a: string; b: string; c: string; accent: string } => {
+    switch (style) {
+        case 'fantasy':
+            return { a: '#1b1333', b: '#35215f', c: '#7c3aed', accent: '#f9a8d4' }
+        case 'botanical':
+            return { a: '#071a12', b: '#0f3d2e', c: '#34d399', accent: '#86efac' }
+        case 'psychedelic':
+            return { a: '#1f0f2f', b: '#6d28d9', c: '#ec4899', accent: '#fde047' }
+        case 'macro':
+            return { a: '#101820', b: '#243b53', c: '#60a5fa', accent: '#f8fafc' }
+        case 'cyberpunk':
+            return { a: '#05111d', b: '#0f172a', c: '#22d3ee', accent: '#fb7185' }
+        default:
+            return { a: '#09131f', b: '#13253a', c: '#34d399', accent: '#e2e8f0' }
+    }
+}
+
+const buildStrainImageSvg = (
+    prompt: string,
+    style: ImageStyle,
+    criteria: { focus: string; composition: string; mood: string },
+    lang: Language,
+): string => {
+    const palette = buildStylePalette(style)
+    const cleanPrompt = escapeXml(prompt)
+    const cleanFocus = escapeXml(criteria.focus)
+    const cleanComposition = escapeXml(criteria.composition)
+    const cleanMood = escapeXml(criteria.mood)
+    const title = isGerman(lang) ? 'Lokale Strain-Vorschau' : 'Local Strain Preview'
+    const subtitle = isGerman(lang)
+        ? 'SVG-Poster aus dem lokalen Fallback'
+        : 'SVG poster from local fallback'
+
+    return `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1400" role="img" aria-label="${cleanPrompt}">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="${palette.a}" />
+            <stop offset="55%" stop-color="${palette.b}" />
+            <stop offset="100%" stop-color="${palette.c}" />
+        </linearGradient>
+        <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.5" />
+            <stop offset="100%" stop-color="${palette.accent}" stop-opacity="0" />
+        </radialGradient>
+        <filter id="blur"><feGaussianBlur stdDeviation="18" /></filter>
+    </defs>
+    <rect width="1200" height="1400" fill="url(#bg)" />
+    <rect width="1200" height="1400" fill="url(#glow)" />
+    <g filter="url(#blur)" opacity="0.38">
+        <circle cx="250" cy="280" r="140" fill="${palette.accent}" />
+        <circle cx="920" cy="380" r="180" fill="${palette.c}" />
+        <circle cx="820" cy="1100" r="220" fill="${palette.a}" />
+    </g>
+    <g transform="translate(600 640)">
+        <path d="M0 -290 C60 -210 120 -130 128 -30 C132 40 88 120 0 250 C-88 120 -132 40 -128 -30 C-120 -130 -60 -210 0 -290Z" fill="none" stroke="${palette.accent}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+        <path d="M0 -220 C90 -150 130 -60 128 12 C126 80 86 152 0 220 C-86 152 -126 80 -128 12 C-130 -60 -90 -150 0 -220Z" fill="none" stroke="${palette.accent}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
+        <circle cx="0" cy="0" r="92" fill="${palette.accent}" opacity="0.12" />
+        <circle cx="0" cy="0" r="34" fill="${palette.accent}" opacity="0.9" />
+    </g>
+    <g fill="#e2e8f0" font-family="Inter, Arial, sans-serif">
+        <text x="86" y="126" font-size="44" font-weight="700" letter-spacing="4">${escapeXml(title.toUpperCase())}</text>
+        <text x="86" y="180" font-size="24" opacity="0.86">${escapeXml(subtitle)}</text>
+        <text x="86" y="1210" font-size="74" font-weight="700">${cleanPrompt.slice(0, 42)}</text>
+        <text x="86" y="1268" font-size="30" opacity="0.9">${cleanFocus}</text>
+        <text x="86" y="1320" font-size="26" opacity="0.78">${cleanComposition} · ${cleanMood}</text>
+    </g>
+    <g fill="${palette.accent}" opacity="0.9">
+        <circle cx="112" cy="1034" r="6" />
+        <circle cx="142" cy="1034" r="6" />
+        <circle cx="172" cy="1034" r="6" />
+    </g>
+</svg>`
+}
+
 class LocalAiFallbackService {
     diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
         return diagnosePlant(plant, lang)
@@ -414,6 +500,17 @@ class LocalAiFallbackService {
 
     getEquipmentRecommendation(prompt: string, lang: Language): Recommendation {
         return buildEquipmentRecommendation(prompt, lang)
+    }
+
+    generateStrainImage(
+        strain: Strain,
+        style: ImageStyle,
+        criteria: { focus: string; composition: string; mood: string },
+        lang: Language,
+    ): string {
+        const prompt = `${strain.name} | ${strain.type} | ${style} | ${criteria.focus} | ${criteria.composition} | ${criteria.mood}`
+        const svg = buildStrainImageSvg(prompt, style, criteria, lang)
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
     }
 
     getStrainTips(strain: Strain, lang: Language): StructuredGrowTips {

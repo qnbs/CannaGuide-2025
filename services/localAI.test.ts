@@ -170,6 +170,26 @@ describe('localAiService', () => {
         expect(recommendation.proTip).toContain('climate')
     })
 
+    it('generates a local strain image data url', async () => {
+        pipelineMock.mockImplementation(async (task: string) => {
+            if (task === 'text-generation') {
+                return vi.fn(async () => [{ generated_text: 'botanical poster concept' }])
+            }
+            throw new Error(`Unexpected task ${task}`)
+        })
+
+        const strain = buildPlant().strain
+        const imageData = await localAiService.generateStrainImage(strain, 'botanical', {
+            focus: 'dense trichomes',
+            composition: 'macro portrait',
+            mood: 'calm and luminous',
+        })
+
+        expect(imageData).toContain('data:image/svg+xml')
+        expect(decodeURIComponent(imageData)).toContain('botanical')
+        expect(decodeURIComponent(imageData)).toContain('macro portrait')
+    })
+
     it('preloadOfflineAssets reports progress via callback', async () => {
         pipelineMock.mockImplementation(async () => vi.fn())
 

@@ -59,3 +59,5 @@ export const AlphabeticalFilter: React.FC<AlphabeticalFilterProps> = memo(({ act
         </div>
     );
 });
+
+AlphabeticalFilter.displayName = 'AlphabeticalFilter';

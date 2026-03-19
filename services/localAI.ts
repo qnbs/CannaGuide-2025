@@ -15,7 +15,10 @@ import {
     MentorMessageContentSchema,
     StructuredGrowTipsSchema,
 } from '@/types/schemas'
-import { localAiFallbackService, diagnosePlant as diagnoseWithRules } from '@/services/localAiFallbackService'
+import {
+    localAiFallbackService,
+    diagnosePlant as diagnoseWithRules,
+} from '@/services/localAiFallbackService'
 import { captureLocalAiError } from '@/services/sentryService'
 import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
 import { z } from 'zod'
@@ -95,7 +98,8 @@ const ZERO_SHOT_LABELS = [
 
 const isGerman = (lang: Language) => lang === 'de'
 
-const sanitizeText = (value: string): string => DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
+const sanitizeText = (value: string): string =>
+    DOMPurify.sanitize(value, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).trim()
 
 const supportsWebGpu = (): boolean => typeof navigator !== 'undefined' && 'gpu' in navigator
 
@@ -109,7 +113,12 @@ const toDataUrl = (base64Image: string, mimeType: string): string => {
 const summarizePlant = (plant: Plant): string =>
     `${plant.name} | ${plant.strain.name} | stage=${plant.stage} | health=${plant.health.toFixed(0)} | stress=${plant.stressLevel.toFixed(0)} | vpd=${plant.environment.vpd.toFixed(2)} | ph=${plant.medium.ph.toFixed(2)} | ec=${plant.medium.ec.toFixed(2)}`
 
-const fallbackMentorMessage = (plant: Plant, query: string, ragContext: string, lang: Language): Omit<MentorMessage, 'role'> =>
+const fallbackMentorMessage = (
+    plant: Plant,
+    query: string,
+    ragContext: string,
+    lang: Language,
+): Omit<MentorMessage, 'role'> =>
     localAiFallbackService.getMentorResponse(plant, query, ragContext, lang)
 
 const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisResponse => {
@@ -118,7 +127,10 @@ const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisResponse
         title: isGerman(lang) ? `Lokale Diagnose: ${plant.name}` : `Local Diagnosis: ${plant.name}`,
         content: heuristic.issues.length > 0 ? heuristic.issues.join('\n') : heuristic.topPriority,
         confidence: heuristic.issues.length > 0 ? 0.72 : 0.93,
-        immediateActions: heuristic.issues.length > 0 ? heuristic.issues.slice(0, 3).join('\n') : heuristic.topPriority,
+        immediateActions:
+            heuristic.issues.length > 0
+                ? heuristic.issues.slice(0, 3).join('\n')
+                : heuristic.topPriority,
         longTermSolution: heuristic.topPriority,
         prevention: isGerman(lang)
             ? 'Regelmäßig VPD, pH, EC und Substratfeuchte prüfen.'
@@ -148,11 +160,21 @@ class LocalAiService {
             this.textPipelinePromise = loadTransformersPipeline('text-generation', TEXT_MODEL_ID, {
                 quantized: true,
             }).catch(async (primaryError: unknown) => {
-                console.warn('[LocalAI] Primary text model failed, retrying with alternate model.', primaryError)
+                console.warn(
+                    '[LocalAI] Primary text model failed, retrying with alternate model.',
+                    primaryError,
+                )
                 captureLocalAiError(primaryError, { model: TEXT_MODEL_ID, stage: 'preload' })
-                return loadTransformersPipeline('text-generation', ALT_TEXT_MODEL_ID, {
-                    quantized: true,
-                })
+                try {
+                    return await loadTransformersPipeline('text-generation', ALT_TEXT_MODEL_ID, {
+                        quantized: true,
+                    })
+                } catch (altError) {
+                    // Reset so next call retries instead of returning the rejected promise
+                    this.textPipelinePromise = null
+                    captureLocalAiError(altError, { model: ALT_TEXT_MODEL_ID, stage: 'fallback' })
+                    throw altError
+                }
             })
         }
         return this.textPipelinePromise
@@ -160,9 +182,13 @@ class LocalAiService {
 
     private async loadVisionPipeline(): Promise<LocalAiPipeline> {
         if (!this.visionPipelinePromise) {
-            this.visionPipelinePromise = loadTransformersPipeline('zero-shot-image-classification', VISION_MODEL_ID, {
-                quantized: true,
-            })
+            this.visionPipelinePromise = loadTransformersPipeline(
+                'zero-shot-image-classification',
+                VISION_MODEL_ID,
+                {
+                    quantized: true,
+                },
+            )
         }
         return this.visionPipelinePromise
     }
@@ -176,10 +202,14 @@ class LocalAiService {
                 try {
                     const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
                     return (await CreateMLCEngine(WEBLLM_MODEL_ID, {
-                        initProgressCallback: (report: unknown) => console.debug('[LocalAI][WebLLM]', report),
+                        initProgressCallback: (report: unknown) =>
+                            console.debug('[LocalAI][WebLLM]', report),
                     })) as unknown as LocalWebLlmEngine
                 } catch (error) {
-                    console.warn('[LocalAI] WebLLM unavailable, falling back to Transformers.js.', error)
+                    console.warn(
+                        '[LocalAI] WebLLM unavailable, falling back to Transformers.js.',
+                        error,
+                    )
                     captureLocalAiError(error, { model: WEBLLM_MODEL_ID, stage: 'webllm' })
                     return null
                 }
@@ -208,8 +238,15 @@ class LocalAiService {
                         return content
                     }
                 } catch (error) {
-                    console.warn(`[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`, error)
-                    captureLocalAiError(error, { model: WEBLLM_MODEL_ID, stage: 'inference', retryAttempt: attempt })
+                    console.warn(
+                        `[LocalAI] WebLLM generation failed (attempt ${attempt + 1}), falling back to Transformers.js.`,
+                        error,
+                    )
+                    captureLocalAiError(error, {
+                        model: WEBLLM_MODEL_ID,
+                        stage: 'inference',
+                        retryAttempt: attempt,
+                    })
                 }
             }
 
@@ -229,8 +266,15 @@ class LocalAiService {
                     return generated
                 }
             } catch (error) {
-                console.warn(`[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`, error)
-                captureLocalAiError(error, { model: TEXT_MODEL_ID, stage: 'inference', retryAttempt: attempt })
+                console.warn(
+                    `[LocalAI] Transformers.js text generation failed (attempt ${attempt + 1}).`,
+                    error,
+                )
+                captureLocalAiError(error, {
+                    model: TEXT_MODEL_ID,
+                    stage: 'inference',
+                    retryAttempt: attempt,
+                })
                 if (attempt < MAX_RETRIES) {
                     // Brief delay before retry
                     await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)))
@@ -273,10 +317,15 @@ class LocalAiService {
         }
     }
 
-    private async classifyPlantImage(base64Image: string, mimeType: string): Promise<Array<{ label: string; score: number }>> {
+    private async classifyPlantImage(
+        base64Image: string,
+        mimeType: string,
+    ): Promise<Array<{ label: string; score: number }>> {
         try {
             const classifier = await this.loadVisionPipeline()
-            const image = await fetch(toDataUrl(base64Image, mimeType)).then((response) => response.blob())
+            const image = await fetch(toDataUrl(base64Image, mimeType)).then((response) =>
+                response.blob(),
+            )
             const result = await classifier(image, { candidate_labels: [...ZERO_SHOT_LABELS] })
             return Array.isArray(result) ? result : []
         } catch (error) {
@@ -427,7 +476,11 @@ class LocalAiService {
         return entry ? entry[lang] : null
     }
 
-    private buildDiagnosisContent(plant: Plant, lang: Language, labels: Array<{ label: string; score: number }>): PlantDiagnosisResponse {
+    private buildDiagnosisContent(
+        plant: Plant,
+        lang: Language,
+        labels: Array<{ label: string; score: number }>,
+    ): PlantDiagnosisResponse {
         const heuristic = diagnoseWithRules(plant, lang)
         const rankedIssues = labels
             .filter((item) => item.label.toLowerCase() !== 'healthy plant')
@@ -439,7 +492,9 @@ class LocalAiService {
         const topScore = labels[0]?.score ?? (mergedIssues.length > 0 ? 0.75 : 0.95)
 
         return {
-            title: isGerman(lang) ? `Lokale Diagnose: ${plant.name}` : `Local Diagnosis: ${plant.name}`,
+            title: isGerman(lang)
+                ? `Lokale Diagnose: ${plant.name}`
+                : `Local Diagnosis: ${plant.name}`,
             content: mergedIssues.length > 0 ? mergedIssues.join('\n') : heuristic.topPriority,
             confidence: Math.max(0.1, Math.min(1, topScore)),
             immediateActions: mergedIssues.slice(0, 3).join('\n') || heuristic.topPriority,
@@ -451,7 +506,13 @@ class LocalAiService {
         }
     }
 
-    async diagnosePlant(base64Image: string, mimeType: string, plant: Plant, userNotes: string, lang: Language): Promise<PlantDiagnosisResponse> {
+    async diagnosePlant(
+        base64Image: string,
+        mimeType: string,
+        plant: Plant,
+        userNotes: string,
+        lang: Language,
+    ): Promise<PlantDiagnosisResponse> {
         const labels = await this.classifyPlantImage(base64Image, mimeType)
         const modelDiagnosis = this.buildDiagnosisContent(plant, lang, labels)
         const notes = sanitizeText(userNotes)
@@ -462,11 +523,19 @@ class LocalAiService {
 
         return {
             ...modelDiagnosis,
-            content: notes.length > 0 ? `${modelDiagnosis.content}\n\n${isGerman(lang) ? 'Notizen:' : 'Notes:'} ${notes}` : modelDiagnosis.content,
+            content:
+                notes.length > 0
+                    ? `${modelDiagnosis.content}\n\n${isGerman(lang) ? 'Notizen:' : 'Notes:'} ${notes}`
+                    : modelDiagnosis.content,
         }
     }
 
-    private buildMentorPrompt(plant: Plant, query: string, ragContext: string, lang: Language): string {
+    private buildMentorPrompt(
+        plant: Plant,
+        query: string,
+        ragContext: string,
+        lang: Language,
+    ): string {
         const instruction = isGerman(lang)
             ? 'Antworte als CannaGuide AI auf Deutsch, sachlich, strukturiert und ohne HTML.'
             : 'Answer as CannaGuide AI in English, structured, factual, and without HTML.'
@@ -481,7 +550,12 @@ class LocalAiService {
         ])
     }
 
-    async getMentorResponse(plant: Plant, query: string, ragContext: string, lang: Language): Promise<Omit<MentorMessage, 'role'>> {
+    async getMentorResponse(
+        plant: Plant,
+        query: string,
+        ragContext: string,
+        lang: Language,
+    ): Promise<Omit<MentorMessage, 'role'>> {
         const prompt = this.buildMentorPrompt(plant, query, ragContext, lang)
         const generated = await this.generateText(prompt)
         if (!generated) {
@@ -506,7 +580,9 @@ class LocalAiService {
         const parsed = parseJsonSafely(AIResponseSchema, generated)
         if (!parsed) {
             return {
-                title: isGerman(lang) ? `Lokale Beratung: ${plant.name}` : `Local Advice: ${plant.name}`,
+                title: isGerman(lang)
+                    ? `Lokale Beratung: ${plant.name}`
+                    : `Local Advice: ${plant.name}`,
                 content: sanitizeText(generated),
             }
         }
@@ -518,9 +594,7 @@ class LocalAiService {
     }
 
     async getGardenStatusSummary(plants: Plant[], lang: Language): Promise<AIResponse> {
-        const summary = plants
-            .map((plant) => summarizePlant(plant))
-            .join('\n')
+        const summary = plants.map((plant) => summarizePlant(plant)).join('\n')
         const generated = await this.generateText(
             `${isGerman(lang) ? 'Erstelle eine kurze Zusammenfassung für den gesamten Garten.' : 'Create a short summary for the full grow.'}\n${summary}`,
         )
@@ -533,7 +607,11 @@ class LocalAiService {
         }
     }
 
-    async getStrainTips(strain: Strain, context: { focus: string; stage: string; experienceLevel: string }, lang: Language): Promise<StructuredGrowTips> {
+    async getStrainTips(
+        strain: Strain,
+        context: { focus: string; stage: string; experienceLevel: string },
+        lang: Language,
+    ): Promise<StructuredGrowTips> {
         const generated = await this.generateText(
             `${isGerman(lang) ? 'Gib kompakte Anbautipps auf Deutsch.' : 'Give concise grow tips in English.'}\nStrain: ${JSON.stringify(strain)}\nContext: ${JSON.stringify(context)}`,
         )
@@ -569,25 +647,49 @@ class LocalAiService {
             return {
                 introduction: localAiFallbackService.getPlantAdvice(plant, lang).content,
                 stepByStep: [
-                    isGerman(lang) ? 'Parameter prüfen und Notizen vergleichen.' : 'Check parameters and compare notes.',
+                    isGerman(lang)
+                        ? 'Parameter prüfen und Notizen vergleichen.'
+                        : 'Check parameters and compare notes.',
                 ],
                 prosAndCons: {
-                    pros: [isGerman(lang) ? 'Lokale Analyse verfügbar.' : 'Local analysis available.'],
-                    cons: [isGerman(lang) ? 'LLM-Modell konnte nicht geladen werden.' : 'LLM model could not be loaded.'],
+                    pros: [
+                        isGerman(lang) ? 'Lokale Analyse verfügbar.' : 'Local analysis available.',
+                    ],
+                    cons: [
+                        isGerman(lang)
+                            ? 'LLM-Modell konnte nicht geladen werden.'
+                            : 'LLM model could not be loaded.',
+                    ],
                 },
-                proTip: isGerman(lang) ? 'Einzelne Änderungen getrennt testen.' : 'Test changes one at a time.',
+                proTip: isGerman(lang)
+                    ? 'Einzelne Änderungen getrennt testen.'
+                    : 'Test changes one at a time.',
             }
         }
         const parsed = parseJsonSafely(DeepDiveGuideSchema, generated)
-        return parsed ?? {
-            introduction: sanitizeText(generated),
-            stepByStep: [isGerman(lang) ? 'Nutze lokale Diagnosewerte als Ausgangspunkt.' : 'Use the local diagnosis values as a starting point.'],
-            prosAndCons: {
-                pros: [isGerman(lang) ? 'Lokales Modell liefert sofortige Hilfe.' : 'The local model provides immediate help.'],
-                cons: [isGerman(lang) ? 'Antwort ist eventuell knapper als ein Cloud-LLM.' : 'The answer may be shorter than a cloud LLM response.'],
-            },
-            proTip: sanitizeText(topic),
-        }
+        return (
+            parsed ?? {
+                introduction: sanitizeText(generated),
+                stepByStep: [
+                    isGerman(lang)
+                        ? 'Nutze lokale Diagnosewerte als Ausgangspunkt.'
+                        : 'Use the local diagnosis values as a starting point.',
+                ],
+                prosAndCons: {
+                    pros: [
+                        isGerman(lang)
+                            ? 'Lokales Modell liefert sofortige Hilfe.'
+                            : 'The local model provides immediate help.',
+                    ],
+                    cons: [
+                        isGerman(lang)
+                            ? 'Antwort ist eventuell knapper als ein Cloud-LLM.'
+                            : 'The answer may be shorter than a cloud LLM response.',
+                    ],
+                },
+                proTip: sanitizeText(topic),
+            }
+        )
     }
 }
 

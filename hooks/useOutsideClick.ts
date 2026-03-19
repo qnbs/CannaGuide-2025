@@ -1,4 +1,4 @@
-import { useEffect, useRef, RefObject } from 'react'
+import { useEffect, useRef, RefObject, useCallback } from 'react'
 
 type Event = MouseEvent | TouchEvent
 
@@ -9,28 +9,29 @@ type Event = MouseEvent | TouchEvent
  * @returns A ref object to be attached to the element you want to monitor for outside clicks.
  */
 export const useOutsideClick = <T extends HTMLElement = HTMLElement>(
-    handler: (event: Event) => void
+    handler: (event: Event) => void,
 ): RefObject<T | null> => {
     const ref = useRef<T>(null)
+    const handlerRef = useRef(handler)
+    handlerRef.current = handler
+
+    const stableListener = useCallback((event: Event) => {
+        const el = ref.current
+        if (!el || el.contains(event.target as Node)) {
+            return
+        }
+        handlerRef.current(event)
+    }, [])
 
     useEffect(() => {
-        const listener = (event: Event) => {
-            const el = ref.current
-            // Do nothing if clicking ref's element or descendent elements
-            if (!el || el.contains(event.target as Node)) {
-                return
-            }
-            handler(event)
-        }
-
-        document.addEventListener('mousedown', listener)
-        document.addEventListener('touchstart', listener)
+        document.addEventListener('mousedown', stableListener)
+        document.addEventListener('touchstart', stableListener)
 
         return () => {
-            document.removeEventListener('mousedown', listener)
-            document.removeEventListener('touchstart', listener)
+            document.removeEventListener('mousedown', stableListener)
+            document.removeEventListener('touchstart', stableListener)
         }
-    }, [ref, handler]) // Reload only if ref or handler changes
+    }, [stableListener])
 
     return ref
 }

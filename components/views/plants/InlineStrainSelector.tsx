@@ -21,11 +21,12 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
     const { t } = useTranslation()
     const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 }
     const level = difficultyMap[difficulty] || 2
-    const color = {
-        Easy: 'text-green-400',
-        Medium: 'text-amber-400',
-        Hard: 'text-red-400',
-    }[difficulty] ?? 'text-amber-400'
+    const color =
+        {
+            Easy: 'text-green-400',
+            Medium: 'text-amber-400',
+            Hard: 'text-red-400',
+        }[difficulty] ?? 'text-amber-400'
     return (
         <div
             className="flex gap-0.5 items-center"
@@ -55,9 +56,10 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
         Indica: 'text-indigo-400',
         Hybrid: 'text-blue-400',
     }
-    const safeType = strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
-        ? strain.type
-        : 'Hybrid'
+    const safeType =
+        strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
+            ? strain.type
+            : 'Hybrid'
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
 
     return (
@@ -109,7 +111,9 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Archive className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.yields.${(strain.agronomic?.yield ?? 'Medium').toLowerCase()}`)}
+                        {t(
+                            `strainsView.addStrainModal.yields.${(strain.agronomic?.yield ?? 'Medium').toLowerCase()}`,
+                        )}
                     </span>
                 </div>
                 <div
@@ -118,7 +122,9 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Ruler className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.heights.${(strain.agronomic?.height ?? 'Medium').toLowerCase()}`)}
+                        {t(
+                            `strainsView.addStrainModal.heights.${(strain.agronomic?.height ?? 'Medium').toLowerCase()}`,
+                        )}
                     </span>
                 </div>
             </div>
@@ -134,11 +140,14 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     const [allStrains, setAllStrains] = useState<Strain[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
-    const userStrains = useAppSelector(selectUserStrains) ?? []
-    const favorites = useAppSelector(selectFavoriteIds) ?? new Set<string>()
+    const rawUserStrains = useAppSelector(selectUserStrains)
+    const userStrains = useMemo(() => rawUserStrains ?? [], [rawUserStrains])
+    const rawFavorites = useAppSelector(selectFavoriteIds)
+    const favorites = useMemo(() => rawFavorites ?? new Set<string>(), [rawFavorites])
 
     useEffect(() => {
-        strainService.getAllStrains()
+        strainService
+            .getAllStrains()
             .then((strains) => {
                 setAllStrains(strains)
                 setIsLoading(false)

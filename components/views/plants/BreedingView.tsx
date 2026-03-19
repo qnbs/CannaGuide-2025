@@ -34,6 +34,8 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
     const { t } = useTranslation();
     const parentStrain = seed ? allStrains.find(s => s.id === seed.strainId) : null;
     const TypeInfo = parentStrain ? strainTypeInfo[parentStrain.type] : null;
+    const safeThc = typeof parentStrain?.thc === 'number' && Number.isFinite(parentStrain.thc) ? parentStrain.thc : 0;
+    const safeCbd = typeof parentStrain?.cbd === 'number' && Number.isFinite(parentStrain.cbd) ? parentStrain.cbd : 0;
 
     return (
         <Card className="relative flex min-h-[13rem] flex-col items-center justify-center bg-slate-800/30 px-3 py-5 text-center">
@@ -43,7 +45,7 @@ const ParentSlot: React.FC<{ title: string, seed: Seed | undefined, onClear: () 
                     <div className={`w-12 h-12 mb-2 ${TypeInfo.color}`}>{TypeInfo.icon}</div>
                     <p className="font-bold text-slate-100">{seed.strainName}</p>
                     <div className="text-xs text-slate-400 mt-1">
-                        <p>THC: {parentStrain.thc.toFixed(1)}% | CBD: {parentStrain.cbd.toFixed(1)}%</p>
+                        <p>THC: {safeThc.toFixed(1)}% | CBD: {safeCbd.toFixed(1)}%</p>
                         <p>{t('common.quality')}: {(seed.quality * 100).toFixed(0)}%</p>
                     </div>
                     <Button variant="danger" className="!absolute top-2 right-2 !h-11 !w-11 !p-0" onClick={onClear} aria-label={t('knowledgeView.breeding.clearParent', { title })}><PhosphorIcons.X/></Button>

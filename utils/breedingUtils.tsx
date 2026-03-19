@@ -8,24 +8,36 @@ import { createStrainObject } from '@/services/strainFactory';
  * Pure function — safe to call outside React.
  */
 export const crossStrains = (parentA: Strain, parentB: Strain): Omit<Strain, 'id'> => {
-    const newName = `${parentA.name.split(' ')[0]} ${parentB.name.split(' ').pop()}`;
+    const getSafeText = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
+    const getSafeNumericValue = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+    const getSafeStringArray = (value: unknown): string[] => Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+
+    const parentAName = getSafeText(parentA.name, 'Parent A').trim() || 'Parent A';
+    const parentBName = getSafeText(parentB.name, 'Parent B').trim() || 'Parent B';
+    const newName = `${parentAName.split(' ')[0]} ${parentBName.split(' ').pop()}`;
     const randomFactor = (magnitude = 0.2) => 1 + (Math.random() - 0.5) * magnitude;
+    const safeParentADifficulty = parentA.agronomic?.difficulty ?? 'Medium';
+    const safeParentBDifficulty = parentB.agronomic?.difficulty ?? 'Medium';
+    const safeParentAYield = parentA.agronomic?.yield ?? 'Medium';
+    const safeParentBYield = parentB.agronomic?.yield ?? 'Medium';
+    const safeParentAHeight = parentA.agronomic?.height ?? 'Medium';
+    const safeParentBHeight = parentB.agronomic?.height ?? 'Medium';
 
     const newStrainData: Partial<Strain> = {
         name: newName,
         type: parentA.type === parentB.type ? parentA.type : StrainType.Hybrid,
-        genetics: `${parentA.name} x ${parentB.name}`,
+        genetics: `${parentAName} x ${parentBName}`,
         floweringType: 'Photoperiod',
-        thc: ((parentA.thc + parentB.thc) / 2) * randomFactor(),
-        cbd: (parentA.cbd + parentB.cbd) / 2,
-        floweringTime: ((parentA.floweringTime + parentB.floweringTime) / 2) * randomFactor(0.1),
+        thc: ((getSafeNumericValue(parentA.thc, 0) + getSafeNumericValue(parentB.thc, 0)) / 2) * randomFactor(),
+        cbd: (getSafeNumericValue(parentA.cbd, 0) + getSafeNumericValue(parentB.cbd, 0)) / 2,
+        floweringTime: ((getSafeNumericValue(parentA.floweringTime, 0) + getSafeNumericValue(parentB.floweringTime, 0)) / 2) * randomFactor(0.1),
         agronomic: {
-            difficulty: Math.random() > 0.5 ? parentA.agronomic.difficulty : parentB.agronomic.difficulty,
-            yield: Math.random() > 0.5 ? parentA.agronomic.yield : parentB.agronomic.yield,
-            height: Math.random() > 0.5 ? parentA.agronomic.height : parentB.agronomic.height,
+            difficulty: Math.random() > 0.5 ? safeParentADifficulty : safeParentBDifficulty,
+            yield: Math.random() > 0.5 ? safeParentAYield : safeParentBYield,
+            height: Math.random() > 0.5 ? safeParentAHeight : safeParentBHeight,
         },
-        aromas: [...new Set([...(parentA.aromas || []), ...(parentB.aromas || [])])].sort(() => 0.5 - Math.random()).slice(0, 4),
-        dominantTerpenes: [...new Set([...(parentA.dominantTerpenes || []), ...(parentB.dominantTerpenes || [])])].sort(() => 0.5 - Math.random()).slice(0, 3),
+        aromas: [...new Set([...getSafeStringArray(parentA.aromas), ...getSafeStringArray(parentB.aromas)])].sort(() => 0.5 - Math.random()).slice(0, 4),
+        dominantTerpenes: [...new Set([...getSafeStringArray(parentA.dominantTerpenes), ...getSafeStringArray(parentB.dominantTerpenes)])].sort(() => 0.5 - Math.random()).slice(0, 3),
     };
 
     return createStrainObject(newStrainData);

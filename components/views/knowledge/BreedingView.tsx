@@ -69,6 +69,9 @@ const TraitComparison: React.FC<{ label: string, valA: string, valB: string, val
     </div>
 );
 
+const getSafeNumericValue = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+const getSafeStringArray = (value: unknown): string[] => Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+
 const BreedingView: React.FC = () => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
@@ -230,29 +233,29 @@ const BreedingView: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                         <div className="space-y-4">
                             <Input type="text" value={newStrainName} onChange={e => setNewStrainName(e.target.value)} placeholder={t('knowledgeView.breeding.newStrainName')} />
-                            <TraitComparison label="THC" valA={`${parentA.thc.toFixed(1)}%`} valB={`${parentB.thc.toFixed(1)}%`} valChild={`~${result.thc.toFixed(1)}%`} icon={<PhosphorIcons.Lightning weight="fill" />} />
-                            <TraitComparison label={t('knowledgeView.breeding.flowering')} valA={`${parentA.floweringTime} w`} valB={`${parentB.floweringTime} w`} valChild={`~${result.floweringTime.toFixed(0)} w`} icon={<PhosphorIcons.ArrowClockwise />} />
+                            <TraitComparison label="THC" valA={`${getSafeNumericValue(parentA.thc, 0).toFixed(1)}%`} valB={`${getSafeNumericValue(parentB.thc, 0).toFixed(1)}%`} valChild={`~${getSafeNumericValue(result.thc, 0).toFixed(1)}%`} icon={<PhosphorIcons.Lightning weight="fill" />} />
+                            <TraitComparison label={t('knowledgeView.breeding.flowering')} valA={`${getSafeNumericValue(parentA.floweringTime, 0)} w`} valB={`${getSafeNumericValue(parentB.floweringTime, 0)} w`} valChild={`~${getSafeNumericValue(result.floweringTime, 0).toFixed(0)} w`} icon={<PhosphorIcons.ArrowClockwise />} />
                         </div>
                         <div className="space-y-4">
                              <div>
                                 <h4 className="font-semibold text-slate-200 mb-2">{t('strainsView.addStrainModal.aromas')}</h4>
                                 <div className="flex flex-wrap gap-1">
-                                    {(result.aromas || []).map(a => <span key={a} className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{a}</span>)}
+                                    {getSafeStringArray(result.aromas).map(a => <span key={a} className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{a}</span>)}
                                 </div>
                             </div>
                              <div>
                                 <h4 className="font-semibold text-slate-200 mb-2">{t('strainsView.addStrainModal.dominantTerpenes')}</h4>
                                 <div className="flex flex-wrap gap-1">
-                                    {(result.dominantTerpenes || []).map(a => <span key={a} className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{a}</span>)}
+                                    {getSafeStringArray(result.dominantTerpenes).map(a => <span key={a} className="bg-slate-700 text-xs px-2 py-0.5 rounded-full">{a}</span>)}
                                 </div>
                             </div>
                             {automatedGenetics && (
                                 <div className="bg-slate-900/50 p-3 rounded-lg ring-1 ring-inset ring-white/20 text-sm text-slate-200 space-y-1">
                                     <p className="font-semibold text-primary-300">{t('knowledgeView.breeding.automatedGenetics')}</p>
-                                    <p>THC: ~{automatedGenetics.thc.toFixed(1)}%</p>
-                                    <p>CBD: ~{automatedGenetics.cbd.toFixed(1)}%</p>
-                                    <p>{t('knowledgeView.breeding.flowering')}: ~{automatedGenetics.floweringWeeks.toFixed(1)} {t('common.units.weeks')}</p>
-                                    <p>{t('knowledgeView.breeding.stabilityScore')}: {automatedGenetics.stabilityScore.toFixed(0)} / 100</p>
+                                    <p>THC: ~{getSafeNumericValue(automatedGenetics.thc, 0).toFixed(1)}%</p>
+                                    <p>CBD: ~{getSafeNumericValue(automatedGenetics.cbd, 0).toFixed(1)}%</p>
+                                    <p>{t('knowledgeView.breeding.flowering')}: ~{getSafeNumericValue(automatedGenetics.floweringWeeks, 0).toFixed(1)} {t('common.units.weeks')}</p>
+                                    <p>{t('knowledgeView.breeding.stabilityScore')}: {getSafeNumericValue(automatedGenetics.stabilityScore, 0).toFixed(0)} / 100</p>
                                 </div>
                             )}
                         </div>

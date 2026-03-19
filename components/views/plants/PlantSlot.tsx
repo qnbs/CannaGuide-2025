@@ -15,6 +15,7 @@ interface PlantSlotProps {
 export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) => {
     const { t } = useTranslation();
     const stageDetails = PLANT_STAGE_DETAILS[plant.stage];
+    const safeStrainName = typeof plant.strain?.name === 'string' && plant.strain.name.trim() !== '' ? plant.strain.name : t('plantsView.unknownStrain', { defaultValue: 'Unknown Strain' });
 
     if (!stageDetails) return null;
 
@@ -25,7 +26,7 @@ export const PlantSlot: React.FC<PlantSlotProps> = memo(({ plant, onInspect }) =
             <div className="flex justify-between items-start">
                 <div className="min-w-0">
                     <h3 className="font-bold text-lg text-slate-100 truncate">{plant.name}</h3>
-                    <p className="text-xs text-slate-400 truncate">{plant.strain.name}</p>
+                    <p className="text-xs text-slate-400 truncate">{safeStrainName}</p>
                 </div>
                 <div className="text-right flex-shrink-0 bg-slate-800/80 px-2 py-0.5 rounded-full text-xs">
                     <p className="font-semibold text-slate-200">{t(`plantStages.${plant.stage}`)}</p>

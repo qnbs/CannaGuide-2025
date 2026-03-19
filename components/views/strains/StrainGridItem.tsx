@@ -47,6 +47,9 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
     };
 
     const safeType = getSafeStrainType(strain.type)
+    const safeName = typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : t('strainsView.unknownStrain')
+    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
+    const safeFloweringTime = typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime) ? strain.floweringTime : 0
 
     return (
         <Card
@@ -60,7 +63,7 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     checked={isSelected}
                     onChange={() => onToggleSelection(strain.id)}
                     className="custom-checkbox"
-                          aria-label={t('strainsView.accessibility.selectStrain', { name: strain.name })}
+                          aria-label={t('strainsView.accessibility.selectStrain', { name: safeName })}
                 />
             </div>
 
@@ -70,12 +73,12 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                 {typeIcons[safeType]}
             </div>
 
-            <h3 className="font-bold text-slate-100 truncate">{strain.name}</h3>
-            <p className="text-xs text-slate-400 mb-2">{strain.type}</p>
+            <h3 className="font-bold text-slate-100 truncate">{safeName}</h3>
+            <p className="text-xs text-slate-400 mb-2">{safeType}</p>
 
             <div className="mt-auto text-xs grid grid-cols-2 gap-2 font-mono">
-                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">{strain.thc?.toFixed(1)}%</div>
-                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1"><PhosphorIcons.ArrowClockwise className="w-3 h-3" />{strain.floweringTimeRange || strain.floweringTime} w</div>
+                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1">{safeThc.toFixed(1)}%</div>
+                <div className="bg-slate-800/70 rounded p-1 flex items-center justify-center gap-1"><PhosphorIcons.ArrowClockwise className="w-3 h-3" />{strain.floweringTimeRange || safeFloweringTime} w</div>
             </div>
 
             <div className="absolute bottom-2 right-2 flex flex-col gap-1.5 z-10">
@@ -85,8 +88,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
                     className={`!p-1.5 rounded-full favorite-btn-glow ${isFavorite ? 'is-favorite' : ''}`}
                     onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
                     aria-label={isFavorite
-                        ? t('strainsView.accessibility.removeFromFavorites', { name: strain.name })
-                        : t('strainsView.accessibility.addToFavorites', { name: strain.name })}
+                        ? t('strainsView.accessibility.removeFromFavorites', { name: safeName })
+                        : t('strainsView.accessibility.addToFavorites', { name: safeName })}
                  >
                     <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-4 h-4" />
                 </Button>

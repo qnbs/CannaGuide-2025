@@ -36,9 +36,10 @@ type TraitKey = 'thc' | 'phenotype' | 'autoflowering';
 
 /** Infer a simplified genotype from strain properties (homozygous assumption for known traits). */
 function inferGenotype(strain: Strain, traitKey: string): Genotype {
+    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0;
     switch (traitKey) {
         case 'thc':
-            return strain.thc >= 18 ? ['1', '1'] : ['0', '0'];
+            return safeThc >= 18 ? ['1', '1'] : ['0', '0'];
         case 'phenotype':
             if (strain.type === StrainType.Indica) return ['1', '1'];
             if (strain.type === StrainType.Sativa) return ['0', '0'];
@@ -187,6 +188,9 @@ interface BreedingLabProps {
 
 export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
     const { t } = useTranslation();
+    const getSafeText = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
+    const getSafeNumericValue = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+    const getSafeStringArray = (value: unknown): string[] => Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
 
     const traitDefinitions = useMemo<Record<TraitKey, Trait>>(() => ({
         thc: {
@@ -227,33 +231,33 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
     const [hasCrossed, setHasCrossed] = useState(false);
 
     const sortedStrains = useMemo(() =>
-        [...allStrains].sort((a, b) => a.name.localeCompare(b.name)), [allStrains]);
+        [...allStrains.filter((strain): strain is Strain => Boolean(strain))].sort((a, b) => getSafeText(a.name, '').localeCompare(getSafeText(b.name, ''))), [allStrains]);
 
     const strainOptions = useMemo(() => [
         { value: '', label: `— ${t('strainsView.breedingLab.selectStrainPlaceholder')} —` },
-        ...sortedStrains.map(s => ({ value: s.id, label: s.name })),
+        ...sortedStrains.map(s => ({ value: s.id, label: getSafeText(s.name, 'Unknown Strain') })),
     ], [sortedStrains, t]);
 
     const parentA = useMemo(() => allStrains.find(s => s.id === parentAId) ?? null, [allStrains, parentAId]);
     const parentB = useMemo(() => allStrains.find(s => s.id === parentBId) ?? null, [allStrains, parentBId]);
 
     const localizeType = useCallback((value: string | undefined) => {
-        if (!value) return '–';
+        if (typeof value !== 'string' || value.trim() === '') return '–';
         return t(`strainsView.${value.toLowerCase()}`, { defaultValue: value });
     }, [t]);
 
     const localizeDifficulty = useCallback((value: string | undefined) => {
-        if (!value) return '–';
+        if (typeof value !== 'string' || value.trim() === '') return '–';
         return t(`strainsView.difficulty.${value.toLowerCase()}`, { defaultValue: value });
     }, [t]);
 
     const localizeYield = useCallback((value: string | undefined) => {
-        if (!value) return '–';
+        if (typeof value !== 'string' || value.trim() === '') return '–';
         return t(`strainsView.addStrainModal.yields.${value.toLowerCase()}`, { defaultValue: value });
     }, [t]);
 
     const localizeHeight = useCallback((value: string | undefined) => {
-        if (!value) return '–';
+        if (typeof value !== 'string' || value.trim() === '') return '–';
         return t(`strainsView.addStrainModal.heights.${value.toLowerCase()}`, { defaultValue: value });
     }, [t]);
 
@@ -302,9 +306,9 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                     {parentA && (
                         <div className="mt-3 flex items-center gap-2 text-sm text-slate-300">
                             <TypeIcon type={parentA.type} />
-                            <span className="font-semibold">{parentA.name}</span>
+                            <span className="font-semibold">{getSafeText(parentA.name, 'Unknown Strain')}</span>
                             <span className="text-slate-500">·</span>
-                            <span className="text-primary-300">THC {parentA.thc.toFixed(1)}%</span>
+                            <span className="text-primary-300">THC {getSafeNumericValue(parentA.thc, 0).toFixed(1)}%</span>
                         </div>
                     )}
                 </Card>
@@ -320,9 +324,9 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                     {parentB && (
                         <div className="mt-3 flex items-center gap-2 text-sm text-slate-300">
                             <TypeIcon type={parentB.type} />
-                            <span className="font-semibold">{parentB.name}</span>
+                            <span className="font-semibold">{getSafeText(parentB.name, 'Unknown Strain')}</span>
                             <span className="text-slate-500">·</span>
-                            <span className="text-primary-300">THC {parentB.thc.toFixed(1)}%</span>
+                            <span className="text-primary-300">THC {getSafeNumericValue(parentB.thc, 0).toFixed(1)}%</span>
                         </div>
                     )}
                 </Card>
@@ -417,11 +421,11 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                         </h3>
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-sm">
                             {[
-                                { label: t('strainsView.breedingLab.summary.name'), value: offspring.name },
+                                { label: t('strainsView.breedingLab.summary.name'), value: getSafeText(offspring.name, 'Unknown Strain') },
                                 { label: t('strainsView.breedingLab.summary.type'), value: localizeType(offspring.type) },
-                                { label: t('strainsView.breedingLab.summary.thc'), value: `${offspring.thc?.toFixed(1)}%` },
-                                { label: t('strainsView.breedingLab.summary.cbd'), value: `${offspring.cbd?.toFixed(1)}%` },
-                                { label: t('strainsView.breedingLab.summary.flowering'), value: `${Math.round(offspring.floweringTime ?? 63)} ${t('common.days')}` },
+                                { label: t('strainsView.breedingLab.summary.thc'), value: `${getSafeNumericValue(offspring.thc, 0).toFixed(1)}%` },
+                                { label: t('strainsView.breedingLab.summary.cbd'), value: `${getSafeNumericValue(offspring.cbd, 0).toFixed(1)}%` },
+                                { label: t('strainsView.breedingLab.summary.flowering'), value: `${Math.round(getSafeNumericValue(offspring.floweringTime, 63))} ${t('common.days')}` },
                                 { label: t('strainsView.breedingLab.summary.height'), value: localizeHeight(offspring.agronomic?.height) },
                                 { label: t('strainsView.breedingLab.summary.yield'), value: localizeYield(offspring.agronomic?.yield) },
                                 { label: t('strainsView.breedingLab.summary.difficulty'), value: localizeDifficulty(offspring.agronomic?.difficulty) },
@@ -434,9 +438,9 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
                                 </div>
                             ))}
                         </div>
-                        {offspring.dominantTerpenes && offspring.dominantTerpenes.length > 0 && (
+                        {getSafeStringArray(offspring.dominantTerpenes).length > 0 && (
                             <div className="mt-3 flex flex-wrap gap-1">
-                                {offspring.dominantTerpenes.map((terpene) => (
+                                {getSafeStringArray(offspring.dominantTerpenes).map((terpene) => (
                                     <span key={terpene} className="text-xs bg-slate-700 text-slate-300 px-2 py-0.5 rounded-full">
                                         {t(`common.terpenes.${terpene}`, { defaultValue: terpene })}
                                     </span>

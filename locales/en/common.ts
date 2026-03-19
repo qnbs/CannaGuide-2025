@@ -133,13 +133,18 @@ export const common = {
     terpenes: {
         Bisabolol: 'Bisabolol',
         Caryophyllene: 'Caryophyllene',
+        Camphene: 'Camphene',
+        Geraniol: 'Geraniol',
         Humulene: 'Humulene',
         Limonene: 'Limonene',
         Linalool: 'Linalool',
+        Phytol: 'Phytol',
         Myrcene: 'Myrcene',
+        Guaiol: 'Guaiol',
         Nerolidol: 'Nerolidol',
         Ocimene: 'Ocimene',
         Pinene: 'Pinene',
+        Valencene: 'Valencene',
         Terpinolene: 'Terpinolene',
     },
     simulationErrors: {

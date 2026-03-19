@@ -18,6 +18,59 @@ describe('migrationLogic', () => {
         expect(merged[0].type).toBe('Hybrid')
     })
 
+    it('deep merges nested strain fields when updating legacy data', () => {
+        const merged = mergeStrainCatalogForUpdate(
+            [{
+                id: 'strain-1',
+                name: 'Legacy',
+                type: 'Hybrid',
+                floweringType: 'Photoperiod',
+                thc: 20,
+                cbd: 1,
+                floweringTime: 9,
+                agronomic: { difficulty: 'Easy', yield: 'Low', height: 'Short' },
+                geneticModifiers: {
+                    pestResistance: 0.9,
+                    nutrientUptakeRate: 0.9,
+                    stressTolerance: 0.9,
+                    rue: 1.1,
+                    vpdTolerance: { min: 0.8, max: 1.4 },
+                    transpirationFactor: 0.95,
+                    stomataSensitivity: 0.96,
+                },
+                aromas: ['Fruity'],
+            } as never],
+            [{
+                id: 'strain-1',
+                name: 'Bundled',
+                type: 'Sativa',
+                floweringType: 'Autoflower',
+                thc: 24,
+                cbd: 2,
+                floweringTime: 8,
+                agronomic: { difficulty: 'Hard', yield: 'High', height: 'Tall' },
+                geneticModifiers: {
+                    pestResistance: 1,
+                    nutrientUptakeRate: 1,
+                    stressTolerance: 1,
+                    rue: 1.2,
+                    vpdTolerance: { min: 0.9, max: 1.5 },
+                    transpirationFactor: 1,
+                    stomataSensitivity: 1,
+                },
+                dominantTerpenes: ['Limonene'],
+            } as never],
+        )
+
+        expect(merged).toHaveLength(1)
+        expect(merged[0].name).toBe('Bundled')
+        expect(merged[0].agronomic.difficulty).toBe('Hard')
+        expect(merged[0].agronomic.yield).toBe('High')
+        expect(merged[0].geneticModifiers.vpdTolerance.min).toBe(0.9)
+        expect(merged[0].aromas).toEqual(['Fruity'])
+        expect(merged[0].dominantTerpenes).toEqual(['Limonene'])
+    })
+
     it('deeply normalizes partial post-harvest data on persisted plants', () => {
         const migrated = migrateState({
             version: 4,

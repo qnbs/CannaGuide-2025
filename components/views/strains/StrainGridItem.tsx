@@ -29,6 +29,14 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-primary-400',
 };
 
+const getSafeStrainType = (type: string | undefined): StrainType => {
+    if (type === StrainType.Sativa || type === StrainType.Indica || type === StrainType.Hybrid) {
+        return type
+    }
+
+    return StrainType.Hybrid
+}
+
 
 const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, isSelected, onToggleSelection, isUserStrain, index, isFavorite, onToggleFavorite }) => {
     const { t } = useTranslation();
@@ -37,6 +45,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
         e.stopPropagation();
         action();
     };
+
+    const safeType = getSafeStrainType(strain.type)
 
     return (
         <Card
@@ -56,8 +66,8 @@ const StrainGridItem: React.FC<StrainGridItemProps> = memo(({ strain, onSelect, 
 
             {isUserStrain && <span className="absolute top-2 left-2" title={t('strainsView.tabs.myStrains')}><PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400" /></span>}
 
-            <div className={`mx-auto mb-2 w-12 h-12 ${typeClasses[strain.type]}`}>
-                {typeIcons[strain.type]}
+            <div className={`mx-auto mb-2 w-12 h-12 ${typeClasses[safeType]}`}>
+                {typeIcons[safeType]}
             </div>
 
             <h3 className="font-bold text-slate-100 truncate">{strain.name}</h3>

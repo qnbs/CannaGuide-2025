@@ -26,7 +26,7 @@ export const GeoLegalBanner: React.FC<GeoLegalBannerProps> = ({ onDismiss }) => 
 
     return (
         <div
-            className="fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] sm:bottom-4 left-1/2 -translate-x-1/2 z-[200] w-full max-w-lg animate-slide-in-up"
+            className="fixed bottom-[calc(7rem+env(safe-area-inset-bottom))] sm:bottom-4 left-1/2 -translate-x-1/2 z-[200] w-full max-w-lg animate-slide-in-up"
             role="alert"
         >
             <div className="mx-4 rounded-xl border border-amber-500/30 bg-slate-900/95 backdrop-blur-sm p-4 shadow-2xl">

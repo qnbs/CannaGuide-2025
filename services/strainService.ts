@@ -5,6 +5,12 @@ import { mergeStrainCatalogForUpdate } from '@/services/migrationLogic';
 
 type StrainModule = Record<string, unknown>
 
+const DEFAULT_AGRONOMIC = {
+    difficulty: 'Medium',
+    yield: 'Medium',
+    height: 'Medium',
+} as const
+
 let strainsDataCache: Strain[] | null = null
 
 const loadAllStrainsData = async (): Promise<Strain[]> => {
@@ -83,6 +89,8 @@ class StrainService {
         const calculateSimilarity = (s1: Strain, s2: Strain): number => {
             let score = 0;
             if (s1.id === s2.id) return -1; // Exclude self
+            const s1Agronomic = s1.agronomic ?? DEFAULT_AGRONOMIC
+            const s2Agronomic = s2.agronomic ?? DEFAULT_AGRONOMIC
 
             // Type
             if (s1.type === s2.type) score += 20;
@@ -99,9 +107,9 @@ class StrainService {
             score += terpeneIntersection.length * 10;
 
             // Agronomics
-            if (s1.agronomic.difficulty === s2.agronomic.difficulty) score += 5;
-            if (s1.agronomic.yield === s2.agronomic.yield) score += 3;
-            if (s1.agronomic.height === s2.agronomic.height) score += 2;
+            if (s1Agronomic.difficulty === s2Agronomic.difficulty) score += 5;
+            if (s1Agronomic.yield === s2Agronomic.yield) score += 3;
+            if (s1Agronomic.height === s2Agronomic.height) score += 2;
 
             return score;
         };

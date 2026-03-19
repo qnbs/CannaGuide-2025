@@ -32,6 +32,14 @@ const typeClasses: Record<StrainType, string> = {
     [StrainType.Hybrid]: 'text-primary-400',
 };
 
+const getSafeStrainType = (type: string | undefined): StrainType => {
+    if (type === StrainType.Sativa || type === StrainType.Indica || type === StrainType.Hybrid) {
+        return type
+    }
+
+    return StrainType.Hybrid
+}
+
 export const StrainListItem: React.FC<StrainListItemProps> = memo(({
     strain, onSelect, isSelected, onToggleSelection, isUserStrain,
     style, isFavorite, onToggleFavorite
@@ -39,7 +47,8 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
 
-    const TypeIcon = typeIcons[strain.type];
+    const safeType = getSafeStrainType(strain.type);
+    const TypeIcon = typeIcons[safeType];
 
     const handleActionClick = (e: React.MouseEvent, action: () => void) => {
         e.stopPropagation();
@@ -81,7 +90,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                 </div>
 
                 {/* Type Icon */}
-                <div className={`w-8 h-8 flex-shrink-0 ${typeClasses[strain.type]}`}>
+                <div className={`w-8 h-8 flex-shrink-0 ${typeClasses[safeType]}`}>
                     {TypeIcon}
                 </div>
 

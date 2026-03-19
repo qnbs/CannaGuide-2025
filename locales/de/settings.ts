@@ -426,12 +426,12 @@ export const settingsView = {
       projectInfo: 'Projekt-Infos & README',
       version: 'Version',
       whatsNew: {
-        title: "Was ist neu in v2.0",
+        title: "Was ist neu in v1.1",
         items: {
-            simulation: "Fortschrittliche Simulations-Engine: Basiert auf VPD, Biomasse und einem strukturellen Wachstumsmodell.",
-            genealogy: "Interaktiver Stammbaum: Visualisiere die genetische Abstammung und den Einfluss von Vorfahren.",
-            ai: "KI-Anbau-Tipps & Bildgenerierung: Erhalte einzigartige, KI-gestützte Ratschläge und Bilder für jede Sorte.",
-            breeding: "Zuchtlabor & Sandbox: Kreuze neue Sorten und führe risikofreie 'Was-wäre-wenn'-Experimente durch."
+            simulation: "Mobil sichere UI-Struktur: Schnellere Ansichten, robustere Offline-Stabilität und sauberere Abstände über der unteren Navigation.",
+            strains: "Abgesicherte Sortenbibliothek: Alte oder unvollständige Sortenfelder fallen jetzt sicher zurück, statt die Seite abstürzen zu lassen.",
+            help: "Neu gegliederte Hilfe: FAQ und visuelle Anleitungen sind nach App- und Anbauthemen getrennt, damit du schneller findest, was du brauchst.",
+            settings: "Über-App- und README-Aktualisierung: Aktualisierte Release-Infos, aktueller Funktionsumfang und klarere Projektdokumentation."
         }
       },
       techStack: {

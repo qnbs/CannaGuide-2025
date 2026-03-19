@@ -1,4 +1,4 @@
-import React, { useDeferredValue, useMemo, useState, useEffect } from 'react'
+import React, { useDeferredValue, useMemo, useState, useEffect, useRef } from 'react'
 import { Command as Cmdk } from 'cmdk'
 import { Command } from '@/types'
 import { useTranslation } from 'react-i18next'
@@ -19,6 +19,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     const { t } = useTranslation()
     const [query, setQuery] = useState('')
     const deferredQuery = useDeferredValue(query)
+    const inputRef = useRef<HTMLInputElement | null>(null)
+    const shouldAutoFocusInput = typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
     const { allCommands } = useCommandPalette()
 
     useEffect(() => {
@@ -87,18 +89,40 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             onOpenChange={(open) => {
                 if (!open) onClose()
             }}
+            onOpenAutoFocus={(event) => {
+                event.preventDefault()
+
+                if (!shouldAutoFocusInput) {
+                    return
+                }
+
+                window.requestAnimationFrame(() => {
+                    inputRef.current?.focus()
+                })
+            }}
             label={t('commandPalette.title')}
             className="fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))] bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[101] h-[calc(100dvh-max(1rem,env(safe-area-inset-top)+env(safe-area-inset-bottom)))] w-[calc(100%-1rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-white/20 bg-[rgba(var(--color-bg-component),0.94)] shadow-2xl sm:top-[15vh] sm:bottom-auto sm:h-auto sm:w-[calc(100%-2rem)] sm:max-w-xl sm:rounded-lg"
             overlayClassName="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md"
         >
-            <div className="flex items-center gap-3 border-b border-slate-700/50 p-4">
-                <PhosphorIcons.CommandLine className="h-6 w-6 flex-shrink-0" />
-                <h2 className="font-display text-lg font-bold text-slate-100">{t('commandPalette.title')}</h2>
+            <div className="relative flex items-center justify-center gap-3 border-b border-slate-700/50 px-4 py-4">
+                <button
+                    type="button"
+                    onClick={onClose}
+                    className="absolute left-4 top-1/2 inline-flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition-colors hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+                    aria-label={t('commandPalette.close')}
+                >
+                    <PhosphorIcons.X className="h-5 w-5" />
+                </button>
+                <div className="flex items-center gap-3 text-center">
+                    <PhosphorIcons.CommandLine className="h-6 w-6 flex-shrink-0" />
+                    <h2 className="font-display text-lg font-bold text-slate-100">{t('commandPalette.title')}</h2>
+                </div>
             </div>
 
             <div className="relative border-b border-slate-700/50 p-3">
                 <PhosphorIcons.MagnifyingGlass className="pointer-events-none absolute left-6 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
                 <Cmdk.Input
+                    ref={inputRef}
                     value={query}
                     onValueChange={setQuery}
                     placeholder={t('commandPalette.placeholder')}

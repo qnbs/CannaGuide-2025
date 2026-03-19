@@ -29,9 +29,19 @@ const heightOrder: Record<HeightLevel, number> = { 'Short': 1, 'Medium': 2, 'Tal
 const fallbackAgronomic = { difficulty: 'Medium', yield: 'Medium', height: 'Medium' } as const;
 
 const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? fallbackAgronomic;
+const getSafeText = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
+const getSafeStringArray = (value: unknown): string[] => (Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
 
 const getSafeNumericValue = (value: unknown, fallback: number): number =>
     typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+
+const getSafeStrainType = (value: unknown): StrainType => {
+    if (value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid) {
+        return value;
+    }
+
+    return StrainType.Hybrid;
+};
 
 export const useStrainFilters = (
     allStrains: Strain[],
@@ -119,19 +129,19 @@ export const useStrainFilters = (
     }, [advancedFilters]);
 
     const filteredStrains = useMemo(() => {
-        let strains = [...allStrains];
+        let strains = allStrains.filter((strain): strain is Strain => Boolean(strain));
 
         if (searchTerm) {
             const lowerCaseSearch = searchTerm.toLowerCase();
             strains = strains.filter(
                 (s) =>
-                    s.name.toLowerCase().includes(lowerCaseSearch) ||
-                    s.type.toLowerCase().includes(lowerCaseSearch) ||
-                    (s.aromas || []).some((a) => a.toLowerCase().includes(lowerCaseSearch)) ||
-                    (s.dominantTerpenes || []).some((t) =>
+                    getSafeText(s.name, 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
+                    getSafeStrainType(s.type).toLowerCase().includes(lowerCaseSearch) ||
+                    getSafeStringArray(s.aromas).some((a) => a.toLowerCase().includes(lowerCaseSearch)) ||
+                    getSafeStringArray(s.dominantTerpenes).some((t) =>
                         t.toLowerCase().includes(lowerCaseSearch)
                     ) ||
-                    s.genetics?.toLowerCase().includes(lowerCaseSearch)
+                    getSafeText(s.genetics, '').toLowerCase().includes(lowerCaseSearch)
             );
         }
 
@@ -143,10 +153,10 @@ export const useStrainFilters = (
 
         if (letterFilter) {
             if (letterFilter === '#') {
-                strains = strains.filter((s) => /^\d/.test(s.name));
+                strains = strains.filter((s) => /^\d/.test(getSafeText(s.name, '')));
             } else {
                 strains = strains.filter((s) =>
-                    s.name.toLowerCase().startsWith(letterFilter.toLowerCase())
+                    getSafeText(s.name, '').toLowerCase().startsWith(letterFilter.toLowerCase())
                 );
             }
         }
@@ -164,8 +174,8 @@ export const useStrainFilters = (
             (selectedDifficultiesSet.size === 0 || selectedDifficultiesSet.has(getSafeAgronomic(s).difficulty)) &&
             (selectedYieldsSet.size === 0 || selectedYieldsSet.has(getSafeAgronomic(s).yield)) &&
             (selectedHeightsSet.size === 0 || selectedHeightsSet.has(getSafeAgronomic(s).height)) &&
-            (selectedAromasSet.size === 0 || (s.aromas || []).some(a => selectedAromasSet.has(a))) &&
-            (selectedTerpenesSet.size === 0 || (s.dominantTerpenes || []).some(t => selectedTerpenesSet.has(t)))
+            (selectedAromasSet.size === 0 || getSafeStringArray(s.aromas).some(a => selectedAromasSet.has(a))) &&
+            (selectedTerpenesSet.size === 0 || getSafeStringArray(s.dominantTerpenes).some(t => selectedTerpenesSet.has(t)))
         );
 
         strains.sort((a, b) => {
@@ -191,7 +201,7 @@ export const useStrainFilters = (
                     break;
                 case 'name':
                 case 'type':
-                    comparison = a[key].localeCompare(b[key]);
+                    comparison = getSafeText(a[key], '').localeCompare(getSafeText(b[key], ''));
                     break;
                 case 'thc':
                 case 'cbd':

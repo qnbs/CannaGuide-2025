@@ -51,6 +51,11 @@ const DEFAULT_AGRONOMIC = {
     height: 'Medium',
 } as const
 
+const getSafeText = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
+const getSafeStringArray = (value: unknown): string[] => (Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
+const getSafeNumericValue = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
+const getSafeStrainType = (value: unknown): string => (typeof value === 'string' ? value : 'Hybrid');
+
 const getRangeValue = (range: [number, number] | undefined, fallback: [number, number]): [number, number] => {
     if (
         Array.isArray(range) &&
@@ -135,13 +140,9 @@ export const StrainsView: React.FC = () => {
         const aromaSet = new Set<string>();
         const terpeneSet = new Set<string>();
 
-        allStrains.forEach(strain => {
-            if (strain.aromas) {
-                strain.aromas.forEach(aroma => aromaSet.add(aroma));
-            }
-            if (strain.dominantTerpenes) {
-                strain.dominantTerpenes.forEach(terpene => terpeneSet.add(terpene));
-            }
+        allStrains.filter((strain): strain is Strain => Boolean(strain)).forEach(strain => {
+            getSafeStringArray(strain.aromas).forEach((aroma) => aromaSet.add(aroma));
+            getSafeStringArray(strain.dominantTerpenes).forEach((terpene) => terpeneSet.add(terpene));
         });
 
         return {
@@ -151,10 +152,12 @@ export const StrainsView: React.FC = () => {
     }, [allStrains, t]);
 
     const strainsForCurrentTab = useMemo(() => {
+        const safeAllStrains = allStrains.filter((strain): strain is Strain => Boolean(strain));
+        const safeUserStrains = userStrains.filter((strain): strain is Strain => Boolean(strain));
         switch (strainsViewTab) {
-            case StrainViewTab.MyStrains: return userStrains;
-            case StrainViewTab.Favorites: return allStrains.filter(s => favoriteIds.has(s.id));
-            case StrainViewTab.All: default: return allStrains;
+            case StrainViewTab.MyStrains: return safeUserStrains;
+            case StrainViewTab.Favorites: return safeAllStrains.filter(s => favoriteIds.has(s.id));
+            case StrainViewTab.All: default: return safeAllStrains;
         }
     }, [strainsViewTab, allStrains, userStrains, favoriteIds]);
 
@@ -195,11 +198,11 @@ export const StrainsView: React.FC = () => {
         if (searchTerm) {
             const lowerCaseSearch = searchTerm.toLowerCase();
             strains = strains.filter(s =>
-                s.name.toLowerCase().includes(lowerCaseSearch) ||
-                s.type.toLowerCase().includes(lowerCaseSearch) ||
-                (s.aromas || []).some(a => a.toLowerCase().includes(lowerCaseSearch)) ||
-                (s.dominantTerpenes || []).some(t => t.toLowerCase().includes(lowerCaseSearch)) ||
-                s.genetics?.toLowerCase().includes(lowerCaseSearch)
+                getSafeText(s.name, 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
+                getSafeStrainType(s.type).toLowerCase().includes(lowerCaseSearch) ||
+                getSafeStringArray(s.aromas).some(a => a.toLowerCase().includes(lowerCaseSearch)) ||
+                getSafeStringArray(s.dominantTerpenes).some(t => t.toLowerCase().includes(lowerCaseSearch)) ||
+                getSafeText(s.genetics, '').toLowerCase().includes(lowerCaseSearch)
             );
         }
         if (showFavoritesOnly) {
@@ -210,9 +213,9 @@ export const StrainsView: React.FC = () => {
         }
         if (letterFilter) {
             if (letterFilter === '#') {
-                strains = strains.filter(s => /^\d/.test(s.name));
+                strains = strains.filter(s => /^\d/.test(getSafeText(s.name, '')));
             } else {
-                strains = strains.filter(s => s.name.toLowerCase().startsWith(letterFilter.toLowerCase()));
+                strains = strains.filter(s => getSafeText(s.name, '').toLowerCase().startsWith(letterFilter.toLowerCase()));
             }
         }
 
@@ -223,14 +226,14 @@ export const StrainsView: React.FC = () => {
         const terpenes = new Set(tempFilterState.selectedTerpenes);
 
         strains = strains.filter(s =>
-            (s.thc >= thcRange[0] && s.thc <= thcRange[1]) &&
-            (s.cbd >= cbdRange[0] && s.cbd <= cbdRange[1]) &&
-            (s.floweringTime >= floweringRange[0] && s.floweringTime <= floweringRange[1]) &&
+            (getSafeNumericValue(s.thc, 0) >= thcRange[0] && getSafeNumericValue(s.thc, 0) <= thcRange[1]) &&
+            (getSafeNumericValue(s.cbd, 0) >= cbdRange[0] && getSafeNumericValue(s.cbd, 0) <= cbdRange[1]) &&
+            (getSafeNumericValue(s.floweringTime, 0) >= floweringRange[0] && getSafeNumericValue(s.floweringTime, 0) <= floweringRange[1]) &&
             (difficulties.size === 0 || difficulties.has(getSafeAgronomic(s).difficulty)) &&
             (yields.size === 0 || yields.has(getSafeAgronomic(s).yield)) &&
             (heights.size === 0 || heights.has(getSafeAgronomic(s).height)) &&
-            (aromas.size === 0 || (s.aromas || []).some(a => aromas.has(a))) &&
-            (terpenes.size === 0 || (s.dominantTerpenes || []).some(t => terpenes.has(t)))
+            (aromas.size === 0 || getSafeStringArray(s.aromas).some(a => aromas.has(a))) &&
+            (terpenes.size === 0 || getSafeStringArray(s.dominantTerpenes).some(t => terpenes.has(t)))
         );
 
         return strains.length;

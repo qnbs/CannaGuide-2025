@@ -49,6 +49,10 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
 
     const safeType = getSafeStrainType(strain.type);
     const TypeIcon = typeIcons[safeType];
+    const safeName = typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : t('strainsView.unknownStrain');
+    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0;
+    const safeCbd = typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0;
+    const safeFloweringTime = typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime) ? strain.floweringTime : 0;
 
     const handleActionClick = (e: React.MouseEvent, action: () => void) => {
         e.stopPropagation();
@@ -73,7 +77,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
             role="button"
             tabIndex={0}
             aria-selected={isSelected}
-            aria-label={strain.name}
+            aria-label={safeName}
             onClick={handleSelect}
             onKeyDown={handleKeyboardSelect}
         >
@@ -85,7 +89,7 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         checked={isSelected}
                         onChange={() => onToggleSelection(strain.id)}
                         className="custom-checkbox flex-shrink-0"
-                        aria-label={t('strainsView.accessibility.selectStrain', { name: strain.name })}
+                        aria-label={t('strainsView.accessibility.selectStrain', { name: safeName })}
                     />
                 </div>
 
@@ -98,22 +102,22 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                 <div className="flex-grow min-w-0">
                     <div className="flex items-center gap-2">
                         {isUserStrain && <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />}
-                        <p className="font-bold text-slate-100 truncate">{strain.name}</p>
+                        <p className="font-bold text-slate-100 truncate">{safeName}</p>
                     </div>
                     <p className="text-xs text-slate-400 mt-1 sm:hidden">
-                        {strain.thc?.toFixed(1)}% THC | {strain.floweringTime} {t('common.units.weeks')}
+                        {safeThc.toFixed(1)}% THC | {safeFloweringTime} {t('common.units.weeks')}
                     </p>
                 </div>
 
                 {/* Desktop stats */}
                 <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title="THC">
-                    <span>{strain.thc?.toFixed(1)}%</span>
+                    <span>{safeThc.toFixed(1)}%</span>
                 </div>
                  <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title="CBD">
-                    <span>{strain.cbd?.toFixed(1)}%</span>
+                    <span>{safeCbd.toFixed(1)}%</span>
                 </div>
                 <div className="hidden sm:flex items-center justify-center gap-1.5 font-mono text-sm" title={t('strainsView.table.flowering')}>
-                    <span>{strain.floweringTimeRange || strain.floweringTime}</span>
+                    <span>{strain.floweringTimeRange || safeFloweringTime}</span>
                 </div>
 
                 {/* Actions */}
@@ -134,11 +138,11 @@ export const StrainListItem: React.FC<StrainListItemProps> = memo(({
                         className={`!p-2 transition-colors favorite-btn-glow ${isFavorite ? 'is-favorite' : 'text-slate-400 hover:text-white'}`}
                         onClick={(e: React.MouseEvent<HTMLButtonElement>) => handleActionClick(e, () => onToggleFavorite(strain.id))}
                         title={isFavorite
-                            ? t('strainsView.accessibility.removeFromFavorites', { name: strain.name })
-                            : t('strainsView.accessibility.addToFavorites', { name: strain.name })}
+                                ? t('strainsView.accessibility.removeFromFavorites', { name: safeName })
+                                : t('strainsView.accessibility.addToFavorites', { name: safeName })}
                         aria-label={isFavorite
-                            ? t('strainsView.accessibility.removeFromFavorites', { name: strain.name })
-                            : t('strainsView.accessibility.addToFavorites', { name: strain.name })}
+                                ? t('strainsView.accessibility.removeFromFavorites', { name: safeName })
+                                : t('strainsView.accessibility.addToFavorites', { name: safeName })}
                     >
                         <PhosphorIcons.Heart weight={isFavorite ? 'fill' : 'regular'} className="w-5 h-5" />
                     </Button>

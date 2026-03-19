@@ -95,11 +95,13 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
 
     const onSubmit = (values: ReturnType<typeof strainToFormValues>) => {
         const parseStringToArray = (str: string = '') => str ? str.split(/\s*,\s*/).filter(Boolean) : [];
+        const safeName = typeof values.name === 'string' ? values.name : '';
+        const safeType = values.type === StrainType.Sativa || values.type === StrainType.Indica || values.type === StrainType.Hybrid ? values.type : StrainType.Hybrid;
 
         const partialStrainData: Partial<Strain> = {
-            id: isEditMode ? strainToEdit.id : `${values.name.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
-            name: values.name,
-            type: values.type as StrainType,
+            id: isEditMode ? strainToEdit.id : `${safeName.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
+            name: safeName,
+            type: safeType,
             typeDetails: values.typeDetails,
             genetics: values.genetics,
             floweringType: values.isAutoflower ? 'Autoflower' : 'Photoperiod',
@@ -201,7 +203,7 @@ export const AddStrainModal: React.FC<AddStrainModalProps> = ({ isOpen, onAddStr
                                     <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-400">{t('strainsView.addStrainModal.quickPreview')}</p>
                                     <p className="mt-2 truncate text-lg font-bold font-display text-slate-50">{values.name.trim() || '–'}</p>
                                     <p className="mt-1 text-sm text-slate-300">
-                                        {t(`strainsView.${values.type.toLowerCase()}`)} · {values.isAutoflower ? t('strainsView.addStrainModal.autoflower') : t('strainsView.addStrainModal.photoperiod')}
+                                        {t(`strainsView.${(values.type === StrainType.Sativa || values.type === StrainType.Indica || values.type === StrainType.Hybrid ? values.type : StrainType.Hybrid).toLowerCase()}`)} · {values.isAutoflower ? t('strainsView.addStrainModal.autoflower') : t('strainsView.addStrainModal.photoperiod')}
                                     </p>
                                 </div>
                                 <TokenPreview title={t('strainsView.addStrainModal.aromasPreview')} values={parsedAromas.slice(0, 4)} />

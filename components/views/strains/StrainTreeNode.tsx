@@ -24,8 +24,11 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
     const isExpandable = !!data._children && data._children.length > 0;
     const isCollapsible = !!data.children && data.children.length > 0;
     const isPlaceholder = data.isPlaceholder;
-    const { icon, color } = typeInfo[data.type] || typeInfo.Hybrid;
-    const thcPercentage = Math.min(100, (data.thc / 35) * 100);
+    const safeType = data.type === StrainType.Sativa || data.type === StrainType.Indica || data.type === StrainType.Hybrid ? data.type : StrainType.Hybrid;
+    const { icon, color } = typeInfo[safeType] || typeInfo.Hybrid;
+    const safeName = typeof data.name === 'string' && data.name.trim() !== '' ? data.name : 'Unknown Strain';
+    const safeThc = typeof data.thc === 'number' && Number.isFinite(data.thc) ? data.thc : 0;
+    const thcPercentage = Math.min(100, (safeThc / 35) * 100);
 
     const handleFocusClick = () => {
         if (!isPlaceholder) onNodeFocus(data);
@@ -55,20 +58,20 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
             role="treeitem"
             tabIndex={0}
             aria-label={t('common.accessibility.genealogyTreeNode', {
-                name: data.name,
-                type: data.type,
-                thc: data.thc?.toFixed(1),
+                name: safeName,
+                type: safeType,
+                thc: safeThc.toFixed(1),
             })}
             aria-expanded={isExpandable || isCollapsible ? isCollapsible : undefined}
         >
             <div className="flex items-center gap-2">
                 <div className={`w-5 h-5 flex-shrink-0 ${color}`}>{icon}</div>
                 <div className="flex flex-col min-w-0 flex-1">
-                    <div className="font-bold text-slate-100 truncate" title={data.name}>
-                        {data.name}
+                    <div className="font-bold text-slate-100 truncate" title={safeName}>
+                        {safeName}
                     </div>
                     <div className="text-xs text-slate-400 flex items-center gap-2">
-                        <span>{data.type}</span>
+                        <span>{safeType}</span>
                         {data.isLandrace && (
                             <span className="text-green-400 font-semibold" title={t('strainsView.landraceStrain')}>
                                 L
@@ -80,21 +83,21 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                     <button
                         className="flex-shrink-0 p-0.5 rounded text-slate-400 hover:text-primary-300 hover:bg-slate-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
                         onClick={handleDetailClick}
-                        aria-label={t('common.accessibility.openStrainDetails') + ': ' + data.name}
+                        aria-label={t('common.accessibility.openStrainDetails') + ': ' + safeName}
                         title={t('common.accessibility.openStrainDetails')}
                     >
                         <PhosphorIcons.Info className="w-4 h-4" />
                     </button>
                 )}
+                {!isPlaceholder && (
+                    <div className="genealogy-node-thc-bar" title={`THC: ${safeThc.toFixed(1)}%`}>
+                        <div
+                            className="genealogy-node-thc-fill"
+                            style={{ width: `${thcPercentage}%` }}
+                        ></div>
+                    </div>
+                )}
             </div>
-            {!isPlaceholder && (
-                <div className="genealogy-node-thc-bar" title={`THC: ${data.thc?.toFixed(1)}%`}>
-                    <div
-                        className="genealogy-node-thc-fill"
-                        style={{ width: `${thcPercentage}%` }}
-                    ></div>
-                </div>
-            )}
             {(isExpandable || isCollapsible) && (
                 <button
                     className="genealogy-node-expand-btn focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
@@ -103,8 +106,8 @@ export const StrainTreeNode: React.FC<StrainTreeNodeProps> = memo(({ node, onNod
                         onToggle(data.id);
                     }}
                     aria-label={isCollapsible
-                        ? t('common.accessibility.collapseAncestors', { name: data.name })
-                        : t('common.accessibility.expandAncestors', { name: data.name })
+                        ? t('common.accessibility.collapseAncestors', { name: safeName })
+                        : t('common.accessibility.expandAncestors', { name: safeName })
                     }
                 >
                     {isCollapsible ? <PhosphorIcons.Minus className="w-4 h-4" /> : <PhosphorIcons.Plus className="w-4 h-4" />}

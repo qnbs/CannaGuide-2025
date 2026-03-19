@@ -25,17 +25,18 @@ const Tag: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] }> = ({ difficulty }) => {
     const { t } = useTranslation();
-    const difficultyLabels: Record<Strain['agronomic']['difficulty'], string> = {
+    const safeDifficulty = difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard' ? difficulty : 'Medium';
+    const difficultyLabels: Record<'Easy' | 'Medium' | 'Hard', string> = {
         Easy: t('strainsView.difficulty.easy'),
         Medium: t('strainsView.difficulty.medium'),
         Hard: t('strainsView.difficulty.hard'),
     };
     const difficultyMap = { Easy: { level: 1, color: 'text-success' }, Medium: { level: 2, color: 'text-warning' }, Hard: { level: 3, color: 'text-danger' },};
-    const { level, color } = difficultyMap[difficulty] ?? difficultyMap.Medium;
+    const { level, color } = difficultyMap[safeDifficulty] ?? difficultyMap.Medium;
 
     return (
-        <div className="flex items-center gap-2 justify-end" title={difficultyLabels[difficulty]}>
-            <span>{difficultyLabels[difficulty]}</span>
+        <div className="flex items-center gap-2 justify-end" title={difficultyLabels[safeDifficulty]}>
+            <span>{difficultyLabels[safeDifficulty]}</span>
             <div className="flex">
                 {[...Array(3)].map((_, i) => (
                     <PhosphorIcons.Cannabis key={i} className={`w-5 h-5 ${i < level ? color : 'text-slate-700'}`} />
@@ -47,6 +48,8 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
 
 const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
+    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? `${strain.thc.toFixed(1)}%` : 'N/A';
+    const safeCbd = typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? `${strain.cbd.toFixed(1)}%` : 'N/A';
     const description = t(`strainsData.${strain.id}.description`, { defaultValue: strain.description || 'No description available.' });
     const genetics = t(`strainsData.${strain.id}.genetics`, { defaultValue: strain.genetics ?? '' });
 
@@ -60,8 +63,8 @@ const OverviewTab: React.FC<{ strain: Strain }> = ({ strain }) => {
             <InfoSection title={t('strainsView.strainDetail.cannabinoidProfile')}>
                 <div className="space-y-2">
                     <AttributeDisplay label={t('common.genetics')} value={genetics} />
-                    <AttributeDisplay label={t('strainsView.table.thc')} value={strain.thcRange || `${strain.thc?.toFixed(1)}%`} />
-                    <AttributeDisplay label={t('strainsView.table.cbd')} value={strain.cbdRange || `${strain.cbd?.toFixed(1)}%`} />
+                    <AttributeDisplay label={t('strainsView.table.thc')} value={strain.thcRange || safeThc} />
+                    <AttributeDisplay label={t('strainsView.table.cbd')} value={strain.cbdRange || safeCbd} />
                 </div>
             </InfoSection>
         </div>
@@ -90,6 +93,8 @@ const AgronomicsTab: React.FC<{ strain: Strain }> = ({ strain }) => {
 
 const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
     const { t } = useTranslation();
+    const aromas = Array.isArray(strain.aromas) ? strain.aromas.filter((item): item is string => typeof item === 'string') : [];
+    const terpenes = Array.isArray(strain.dominantTerpenes) ? strain.dominantTerpenes.filter((item): item is string => typeof item === 'string') : [];
     return (
         <InfoSection title={t('strainsView.strainDetail.aromaProfile')}>
             <div className="space-y-4">
@@ -97,7 +102,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     label={t('strainsView.strainModal.aromas')}
                     value={
                         <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                            {(strain.aromas || []).map(a => <Tag key={a}>{t(`common.aromas.${a}`, { defaultValue: a })}</Tag>)}
+                            {aromas.map(a => <Tag key={a}>{t(`common.aromas.${a}`, { defaultValue: a })}</Tag>)}
                         </div>
                     }
                 />
@@ -105,7 +110,7 @@ const ProfileTab: React.FC<{ strain: Strain }> = ({ strain }) => {
                     label={t('strainsView.strainModal.dominantTerpenes')}
                     value={
                         <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
-                            {(strain.dominantTerpenes || []).map(terp => <Tag key={terp}>{t(`common.terpenes.${terp}`, { defaultValue: terp })}</Tag>)}
+                            {terpenes.map(terp => <Tag key={terp}>{t(`common.terpenes.${terp}`, { defaultValue: terp })}</Tag>)}
                         </div>
                     }
                 />

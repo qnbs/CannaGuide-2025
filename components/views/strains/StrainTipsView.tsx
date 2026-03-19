@@ -75,6 +75,8 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
     const dispatch = useAppDispatch();
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
 
+    const getSafeText = (value: unknown, fallback = ''): string => (typeof value === 'string' ? value : fallback);
+
     const [editingTip, setEditingTip] = useState<SavedStrainTip | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortMode, setSortMode] = useState<'grouped' | 'date'>('grouped');
@@ -91,12 +93,12 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
         const lowerCaseSearch = searchTerm.toLowerCase();
         if (!lowerCaseSearch) return savedTips;
         return savedTips.filter(tip =>
-            tip.strainName.toLowerCase().includes(lowerCaseSearch) ||
-            tip.title.toLowerCase().includes(lowerCaseSearch) ||
-            tip.nutrientTip.toLowerCase().includes(lowerCaseSearch) ||
-            tip.trainingTip.toLowerCase().includes(lowerCaseSearch) ||
-            tip.environmentalTip.toLowerCase().includes(lowerCaseSearch) ||
-            tip.proTip.toLowerCase().includes(lowerCaseSearch)
+            getSafeText(tip.strainName, 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
+            getSafeText(tip.title, '').toLowerCase().includes(lowerCaseSearch) ||
+            getSafeText(tip.nutrientTip, '').toLowerCase().includes(lowerCaseSearch) ||
+            getSafeText(tip.trainingTip, '').toLowerCase().includes(lowerCaseSearch) ||
+            getSafeText(tip.environmentalTip, '').toLowerCase().includes(lowerCaseSearch) ||
+            getSafeText(tip.proTip, '').toLowerCase().includes(lowerCaseSearch)
         );
     }, [savedTips, searchTerm]);
 
@@ -106,7 +108,8 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
         }
 
         const grouped: Record<string, SavedStrainTip[]> = filteredTips.reduce((acc, tip) => {
-            (acc[tip.strainName] = acc[tip.strainName] || []).push(tip);
+            const safeStrainName = getSafeText(tip.strainName, 'Unknown Strain');
+            (acc[safeStrainName] = acc[safeStrainName] || []).push(tip);
             return acc;
         }, {} as Record<string, SavedStrainTip[]>);
 
@@ -217,7 +220,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
                     </div>
                     {sortMode === 'grouped' ? (
                         (sortedAndGrouped as [string, SavedStrainTip[]][]).map(([strainName, tips]) => {
-                             const strain = allStrains.find(s => s.id === tips[0].strainId);
+                                const strain = allStrains.find(s => s.id === tips[0].strainId) ?? null;
                              return (
                                 <details key={strainName} open={true} className="group ring-1 ring-inset ring-white/20 rounded-lg overflow-hidden">
                                      <summary className="list-none"><div className="flex justify-between items-center p-3 rounded-t-lg bg-slate-800 hover:bg-slate-700/50 cursor-pointer"><h4 className="font-bold text-slate-100">{strainName} ({tips.length})</h4><div className="flex items-center gap-2">{strain && (<div title={!hasAvailableSlots ? t('plantsView.notifications.allSlotsFull') : t('strainsView.startGrowing')}><Button size="sm" variant="secondary" className="!p-1.5" onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); dispatch(initiateGrowFromStrainList(strain)); }} disabled={!hasAvailableSlots}><PhosphorIcons.Plant className="w-4 h-4" /></Button></div>)}<PhosphorIcons.ChevronDown className="w-5 h-5 transition-transform duration-200 group-open:rotate-180" /></div></div></summary>

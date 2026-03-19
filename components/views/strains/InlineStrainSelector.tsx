@@ -19,17 +19,18 @@ const DifficultyMeter: React.FC<{ difficulty: Strain['agronomic']['difficulty'] 
     difficulty,
 }) => {
     const { t } = useTranslation()
+    const safeDifficulty = difficulty === 'Easy' || difficulty === 'Medium' || difficulty === 'Hard' ? difficulty : 'Medium'
     const difficultyMap = { Easy: 1, Medium: 2, Hard: 3 }
-    const level = difficultyMap[difficulty] || 2
+    const level = difficultyMap[safeDifficulty] || 2
     const color = {
         Easy: 'text-green-400',
         Medium: 'text-amber-400',
         Hard: 'text-red-400',
-    }[difficulty] ?? 'text-amber-400'
+    }[safeDifficulty] ?? 'text-amber-400'
     return (
         <div
             className="flex gap-0.5 items-center"
-            title={t(`strainsView.difficulty.${difficulty.toLowerCase()}`)}
+            title={t(`strainsView.difficulty.${safeDifficulty.toLowerCase()}`)}
         >
             {[...Array(3)].map((_, i) => (
                 <PhosphorIcons.Cannabis
@@ -58,7 +59,17 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
     const safeType = strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid'
         ? strain.type
         : 'Hybrid'
+    const safeYield = strain.agronomic?.yield === 'Low' || strain.agronomic?.yield === 'Medium' || strain.agronomic?.yield === 'High'
+        ? strain.agronomic.yield
+        : 'Medium'
+    const safeHeight = strain.agronomic?.height === 'Short' || strain.agronomic?.height === 'Medium' || strain.agronomic?.height === 'Tall'
+        ? strain.agronomic.height
+        : 'Medium'
     const TypeIcon = { Sativa: SativaIcon, Indica: IndicaIcon, Hybrid: HybridIcon }[safeType]
+    const safeName = typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : 'Unknown Strain'
+    const safeThc = typeof strain.thc === 'number' && Number.isFinite(strain.thc) ? strain.thc : 0
+    const safeCbd = typeof strain.cbd === 'number' && Number.isFinite(strain.cbd) ? strain.cbd : 0
+    const safeFloweringTime = typeof strain.floweringTime === 'number' && Number.isFinite(strain.floweringTime) ? strain.floweringTime : 0
 
     return (
         <button
@@ -77,16 +88,16 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                             className="w-4 h-4 text-amber-400 flex-shrink-0"
                         />
                     )}
-                    <p className="font-bold text-slate-100 truncate">{strain.name}</p>
+                    <p className="font-bold text-slate-100 truncate">{safeName}</p>
                 </div>
                 <div className="grid grid-cols-3 gap-x-4 text-xs text-slate-400 mt-1">
                     <div className="flex items-center gap-1" title="THC">
                         <PhosphorIcons.Lightning className="w-3 h-3 text-red-400" />
-                        <span>{strain.thc?.toFixed(1)}%</span>
+                        <span>{safeThc.toFixed(1)}%</span>
                     </div>
                     <div className="flex items-center gap-1" title="CBD">
                         <PhosphorIcons.Drop className="w-3 h-3 text-blue-400" />
-                        <span>{strain.cbd?.toFixed(1)}%</span>
+                        <span>{safeCbd.toFixed(1)}%</span>
                     </div>
                     <div
                         className="flex items-center gap-1"
@@ -94,7 +105,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                     >
                         <PhosphorIcons.ArrowClockwise className="w-3 h-3 text-slate-400" />
                         <span>
-                            {strain.floweringTimeRange || strain.floweringTime}{' '}
+                            {strain.floweringTimeRange || safeFloweringTime}{' '}
                             {t('common.units.weeks')}
                         </span>
                     </div>
@@ -109,7 +120,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Archive className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.yields.${(strain.agronomic?.yield ?? 'Medium').toLowerCase()}`)}
+                        {t(`strainsView.addStrainModal.yields.${safeYield.toLowerCase()}`)}
                     </span>
                 </div>
                 <div
@@ -118,7 +129,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
                 >
                     <PhosphorIcons.Ruler className="w-3 h-3" />
                     <span>
-                        {t(`strainsView.addStrainModal.heights.${(strain.agronomic?.height ?? 'Medium').toLowerCase()}`)}
+                        {t(`strainsView.addStrainModal.heights.${safeHeight.toLowerCase()}`)}
                     </span>
                 </div>
             </div>
@@ -141,7 +152,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     useEffect(() => {
         strainService.getAllStrains()
             .then((strains) => {
-                setAllStrains(strains)
+                setAllStrains(strains.filter((strain): strain is Strain => Boolean(strain)))
                 setLoadError(null)
                 setIsLoading(false)
             })
@@ -155,14 +166,14 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     const filteredStrains = useMemo(() => {
         const lowerCaseSearch = searchTerm.toLowerCase()
 
-        let strainsToShow = allStrains
+        let strainsToShow = allStrains.filter((strain): strain is Strain => Boolean(strain))
 
         if (searchTerm.trim() !== '') {
             strainsToShow = allStrains.filter(
                 (s) =>
-                    s.name.toLowerCase().includes(lowerCaseSearch) ||
-                    s.type.toLowerCase().includes(lowerCaseSearch) ||
-                    (s.aromas || []).some((a) => a.toLowerCase().includes(lowerCaseSearch)),
+                    (typeof s.name === 'string' ? s.name : 'Unknown Strain').toLowerCase().includes(lowerCaseSearch) ||
+                    (typeof s.type === 'string' ? s.type : 'Hybrid').toLowerCase().includes(lowerCaseSearch) ||
+                    (Array.isArray(s.aromas) ? s.aromas : []).some((a) => typeof a === 'string' && a.toLowerCase().includes(lowerCaseSearch)),
             )
         }
 
@@ -176,7 +187,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
             if (!aIsUser && bIsUser) return 1
             if (aIsFav && !bIsFav) return -1
             if (!aIsFav && bIsFav) return 1
-            return a.name.localeCompare(b.name)
+            return (typeof a.name === 'string' ? a.name : '').localeCompare(typeof b.name === 'string' ? b.name : '')
         })
 
         return strainsToShow.slice(0, 100) // Limit results for performance

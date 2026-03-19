@@ -133,11 +133,24 @@ export const aiService = {
         )
     },
 
-    generateStrainImage: (
+    async generateStrainImage(
         strain: Strain,
         style: ImageStyle,
         criteria: { focus: string; composition: string; mood: string },
-    ): Promise<string> => geminiService.generateStrainImage(strain, style, criteria),
+    ): Promise<string> {
+        if (shouldRouteLocally()) {
+            const local = await getLocalAiService()
+            return local.generateStrainImage(strain, style, criteria)
+        }
+
+        return withLocalFallback(
+            () => geminiService.generateStrainImage(strain, style, criteria),
+            async () => {
+                const local = await getLocalAiService()
+                return local.generateStrainImage(strain, style, criteria)
+            },
+        )
+    },
 
     async generateDeepDive(topic: string, plant: Plant, lang: Language): Promise<DeepDiveGuide> {
         if (shouldRouteLocally()) {

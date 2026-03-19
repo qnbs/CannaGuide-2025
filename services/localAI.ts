@@ -10,6 +10,7 @@ import {
     StructuredGrowTips,
     Strain,
 } from '@/types'
+import type { ImageStyle } from '@/services/geminiService'
 import {
     AIResponseSchema,
     DeepDiveGuideSchema,
@@ -598,6 +599,14 @@ Return ONLY valid JSON with this exact shape: {"tent":{"name":"...","price":0,"r
         }
 
         return parsed
+    }
+
+    async generateStrainImage(
+        strain: Strain,
+        style: ImageStyle,
+        criteria: { focus: string; composition: string; mood: string },
+    ): Promise<string> {
+        return localAiFallbackService.generateStrainImage(strain, style, criteria, 'en')
     }
 
     private buildMentorPrompt(

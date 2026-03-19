@@ -15,6 +15,7 @@ import { SearchBar } from '@/components/common/SearchBar';
 import { Speakable } from '@/components/common/Speakable';
 import { exportStrainTips } from '@/stores/slices/savedItemsSlice';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
+import { compareText } from './compareText';
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[];
@@ -115,7 +116,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({ savedTips, deleteTip, u
 
         Object.values(grouped).forEach(tips => tips.sort((a, b) => b.createdAt - a.createdAt));
 
-        return Object.entries(grouped).sort((a, b) => a[0].localeCompare(b[0]));
+        return Object.entries(grouped).sort((a, b) => compareText(a[0], b[0]));
     }, [filteredTips, sortMode]);
 
     const allVisibleIds = useMemo(() => {

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test'
 import {
     attachRuntimeErrorTracking,
+    corruptIndexedDbStrains,
     bootFreshAppPastOnboarding,
     expectShellVisible,
     expectNoCrashPatterns,
@@ -51,6 +52,26 @@ test.describe('Strains page crash detection', () => {
                 }
             }
 
+            await expect(runtimeErrors.messages, runtimeErrors.messages.join('\n')).toHaveLength(0)
+        } finally {
+            runtimeErrors.detach()
+        }
+    })
+
+    test('survives corrupted persisted strain records', async ({ page }) => {
+        const runtimeErrors = attachRuntimeErrorTracking(page)
+
+        try {
+            await bootFreshAppPastOnboarding(page)
+            await expectShellVisible(page)
+            await corruptIndexedDbStrains(page)
+
+            await page.reload({ waitUntil: 'networkidle' })
+            await expectShellVisible(page)
+            await navigateToStrains(page)
+
+            await expectNoCrashPatterns(page)
+            await expect(page.getByRole('button', { name: /All Strains|Alle Sorten/i }).first()).toBeVisible({ timeout: 15_000 })
             await expect(runtimeErrors.messages, runtimeErrors.messages.join('\n')).toHaveLength(0)
         } finally {
             runtimeErrors.detach()

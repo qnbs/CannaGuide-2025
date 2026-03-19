@@ -9,6 +9,7 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader'
 import { selectUserStrains, selectFavoriteIds } from '@/stores/selectors'
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons'
 import { SearchBar } from '@/components/common/SearchBar'
+import { compareText } from './compareText'
 
 interface InlineStrainSelectorProps {
     onClose: () => void
@@ -187,7 +188,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
             if (!aIsUser && bIsUser) return 1
             if (aIsFav && !bIsFav) return -1
             if (!aIsFav && bIsFav) return 1
-            return (typeof a.name === 'string' ? a.name : '').localeCompare(typeof b.name === 'string' ? b.name : '')
+            return compareText(a.name, b.name)
         })
 
         return strainsToShow.slice(0, 100) // Limit results for performance

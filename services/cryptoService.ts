@@ -14,8 +14,7 @@ const SECURE_KEY_ID = 'api-key-encryption'
 let secureDb: IDBDatabase | null = null
 let secureDbPromise: Promise<IDBDatabase> | null = null
 
-const bytesToBase64 = (bytes: Uint8Array): string =>
-    btoa(String.fromCharCode(...bytes))
+const bytesToBase64 = (bytes: Uint8Array): string => btoa(String.fromCharCode(...bytes))
 
 const base64ToBytes = (value: string): Uint8Array => {
     const binary = atob(value)
@@ -33,7 +32,10 @@ async function getOrCreateEncryptionKey(): Promise<CryptoKey> {
         return migrated
     }
 
-    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt'])
+    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+        'encrypt',
+        'decrypt',
+    ])
     await persistEncryptionKey(key)
     return key
 }
@@ -111,7 +113,13 @@ async function migrateLegacyEncryptionKey(): Promise<CryptoKey | null> {
     }
 
     const raw = base64ToBytes(storedRaw)
-    const importedKey = await crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt'])
+    const importedKey = await crypto.subtle.importKey(
+        'raw',
+        raw.buffer as ArrayBuffer,
+        { name: 'AES-GCM' },
+        false,
+        ['encrypt', 'decrypt'],
+    )
     await persistEncryptionKey(importedKey)
 
     try {
@@ -128,7 +136,11 @@ export async function encrypt(plaintext: string): Promise<string> {
     const key = await getOrCreateEncryptionKey()
     const encoded = new TextEncoder().encode(plaintext)
     const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded)
-    return JSON.stringify({ v: 1, iv: bytesToBase64(iv), data: bytesToBase64(new Uint8Array(encrypted)) })
+    return JSON.stringify({
+        v: 1,
+        iv: bytesToBase64(iv),
+        data: bytesToBase64(new Uint8Array(encrypted)),
+    })
 }
 
 export async function decrypt(payload: string): Promise<string> {
@@ -137,11 +149,30 @@ export async function decrypt(payload: string): Promise<string> {
     const key = await getOrCreateEncryptionKey()
     const iv = base64ToBytes(parsed.iv)
     const encrypted = base64ToBytes(parsed.data)
-    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: iv.buffer as ArrayBuffer }, key, encrypted.buffer as ArrayBuffer)
+    const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv.buffer as ArrayBuffer },
+        key,
+        encrypted.buffer as ArrayBuffer,
+    )
     return new TextDecoder().decode(decrypted)
 }
 
 /** Check if a string looks like an encrypted payload (starts with `{`) */
 export function isEncryptedPayload(value: string): boolean {
     return value.trim().startsWith('{')
+}
+
+/**
+ * If the value is not already encrypted, encrypt it and return the encrypted
+ * payload together with a migration flag.  Callers can use the flag to
+ * persist the encrypted value back to IndexedDB (best-effort migration).
+ */
+export async function ensureEncrypted(
+    value: string,
+): Promise<{ payload: string; migrated: boolean }> {
+    if (isEncryptedPayload(value)) {
+        return { payload: value, migrated: false }
+    }
+    const encrypted = await encrypt(value)
+    return { payload: encrypted, migrated: true }
 }

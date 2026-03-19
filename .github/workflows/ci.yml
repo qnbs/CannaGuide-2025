@@ -43,6 +43,12 @@ jobs:
             - name: Security audit
               run: npm audit --audit-level=high --omit=dev
 
+            - name: Security – trojan-source scan
+              run: npm run security:trojan-source
+
+            - name: Security – ESLint security pass
+              run: npm run security:eslint
+
             - name: Lint changed files
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}

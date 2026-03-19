@@ -98,28 +98,39 @@ export const localAiPreloadService = {
             details: 'warming-runtime',
         })
 
-        try {
-            const localAiService = await getLocalAiService()
-            const report = await localAiService.preloadOfflineAssets(false, onProgress)
-            const finalStatus: LocalAiPreloadStatus = {
-                state: report.textModelReady && report.visionModelReady ? 'ready' : 'partial',
-                lastAttemptAt: startedAt,
-                readyAt: report.textModelReady && report.visionModelReady ? Date.now() : null,
-                persistentStorageGranted: persisted,
-                textModelReady: report.textModelReady,
-                visionModelReady: report.visionModelReady,
-                webLlmReady: report.webLlmReady,
-                details: formatReportDetails(report),
-            }
+        const PRELOAD_MAX_RETRIES = 2
+        let lastError: unknown = null
 
-            return writeStatus(finalStatus)
-        } catch (error) {
-            const failureStatus: LocalAiPreloadStatus = {
-                ...inProgress,
-                state: 'error',
-                details: error instanceof Error ? error.message : 'preload-failed',
+        for (let attempt = 0; attempt <= PRELOAD_MAX_RETRIES; attempt++) {
+            try {
+                const localAiService = await getLocalAiService()
+                const report = await localAiService.preloadOfflineAssets(false, onProgress)
+                const finalStatus: LocalAiPreloadStatus = {
+                    state: report.textModelReady && report.visionModelReady ? 'ready' : 'partial',
+                    lastAttemptAt: startedAt,
+                    readyAt: report.textModelReady && report.visionModelReady ? Date.now() : null,
+                    persistentStorageGranted: persisted,
+                    textModelReady: report.textModelReady,
+                    visionModelReady: report.visionModelReady,
+                    webLlmReady: report.webLlmReady,
+                    details: formatReportDetails(report),
+                }
+
+                return writeStatus(finalStatus)
+            } catch (error) {
+                lastError = error
+                if (attempt < PRELOAD_MAX_RETRIES) {
+                    writeStatus({ ...inProgress, details: `retry-${attempt + 1}` })
+                    await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)))
+                }
             }
-            return writeStatus(failureStatus)
         }
+
+        const failureStatus: LocalAiPreloadStatus = {
+            ...inProgress,
+            state: 'error',
+            details: lastError instanceof Error ? lastError.message : 'preload-failed',
+        }
+        return writeStatus(failureStatus)
     },
 }

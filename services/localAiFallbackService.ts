@@ -1,6 +1,8 @@
 import {
     AIResponse,
     MentorMessage,
+    Recommendation,
+    RecommendationItem,
     Plant,
     PlantStage,
     Strain,
@@ -167,6 +169,169 @@ export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
 // Sanitize user text in fallback responses (no HTML injection from user input)
 const safe = (text: string) => DOMPurify.sanitize(text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
 
+const makeRecommendationItem = (
+    name: string,
+    price: number,
+    rationale: string,
+    watts?: number,
+): RecommendationItem => ({
+    name,
+    price,
+    rationale,
+    ...(typeof watts === 'number' ? { watts } : {}),
+})
+
+const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommendation => {
+    const normalized = prompt.toLowerCase()
+    const isBudget = /budget|cheap|starter|entry|einsteiger|günstig|preiswert/.test(normalized)
+    const isLarge = /4x4|5x5|groß|large|mehrere pflanzen|multiple plants/.test(normalized)
+    const isSilent = /silent|quiet|leise/.test(normalized)
+    const wantsSmellControl = /smell|odor|geruch|filter|carbon/.test(normalized)
+    const prefersSoil = /soil|erde|living soil|organic/.test(normalized)
+    const prefersCoco = /coco|kokos/.test(normalized)
+    const isAuto = /autoflower|autoflowering|autoflowern?/.test(normalized)
+
+    const tent = isLarge
+        ? {
+              en: { name: '120x120x200 cm grow tent', price: isBudget ? 150 : 220 },
+              de: { name: '120x120x200 cm Grow-Zelt', price: isBudget ? 150 : 220 },
+          }
+        : {
+              en: { name: '100x100x200 cm grow tent', price: isBudget ? 110 : 180 },
+              de: { name: '100x100x200 cm Grow-Zelt', price: isBudget ? 110 : 180 },
+          }
+
+    const lightWatts = isLarge ? (isBudget ? 320 : 450) : isBudget ? 200 : 300
+    const lightName = isBudget
+        ? `${lightWatts}W full-spectrum LED`
+        : `${lightWatts}W dimmable full-spectrum LED`
+
+    const ventilationName = wantsSmellControl
+        ? isSilent
+            ? 'Silent inline fan with carbon filter'
+            : 'Inline fan with carbon filter'
+        : isSilent
+          ? 'Low-noise inline exhaust fan'
+          : 'Inline exhaust fan'
+
+    const ventilationRationale = wantsSmellControl
+        ? isGerman(lang)
+            ? 'Geruchsmanagement ist wichtig, daher mit Aktivkohlefilter planen.'
+            : 'Odor control matters here, so a carbon filter is included.'
+        : isSilent
+          ? isGerman(lang)
+              ? 'Leiser Luftaustausch reduziert Störungen im Alltag.'
+              : 'Low-noise extraction keeps the room manageable in daily use.'
+          : isGerman(lang)
+            ? 'Solider Luftaustausch hält Temperatur und Feuchte stabil.'
+            : 'Solid airflow keeps temperature and humidity stable.'
+
+    const soilName = prefersCoco
+        ? isGerman(lang)
+            ? 'Coco-Blend Substrat'
+            : 'Coco blend substrate'
+        : prefersSoil
+          ? isGerman(lang)
+              ? 'Lebendige Blumenerde'
+              : 'Living soil mix'
+          : isGerman(lang)
+            ? 'Hochwertige Grow-Erde'
+            : 'Quality grow soil'
+
+    const nutrientName = prefersCoco
+        ? isGerman(lang)
+            ? 'Coco-geeigneter Basisdünger'
+            : 'Coco-friendly base nutrient kit'
+        : isAuto
+          ? isGerman(lang)
+              ? 'Sanfte Blütedüngung für Autos'
+              : 'Gentle bloom nutrients for autos'
+          : isGerman(lang)
+            ? 'Ausgewogener Basisdünger'
+            : 'Balanced base nutrient kit'
+
+    const extraName = wantsSmellControl
+        ? isGerman(lang)
+            ? 'Aktivkohlefilter-Upgrade'
+            : 'Carbon filter upgrade'
+        : isBudget
+          ? isGerman(lang)
+              ? 'Thermo-Hygrometer mit Min/Max'
+              : 'Thermo-hygrometer with min/max memory'
+          : isGerman(lang)
+            ? 'pH- und EC-Messset'
+            : 'pH and EC meter set'
+
+    const proTip = isGerman(lang)
+        ? 'Erst Klima und Licht stabilisieren, dann erst Dünger und Training schrittweise anpassen.'
+        : 'Stabilize climate and light first, then adjust nutrients and training in small steps.'
+
+    const tentItem = tent[lang]
+
+    return {
+        tent: makeRecommendationItem(
+            tentItem.name,
+            tentItem.price,
+            isGerman(lang)
+                ? 'Ein Zelt in dieser Größe gibt genug Platz für Klima, Licht und Wartung.'
+                : 'This tent size gives enough room for climate control, lighting, and maintenance.',
+        ),
+        light: makeRecommendationItem(
+            lightName,
+            isBudget ? 180 : 320,
+            isGerman(lang)
+                ? 'Vollspektrum-LED ist effizient, dimmbar und für die meisten Setups flexibel.'
+                : 'A full-spectrum LED is efficient, dimmable, and flexible for most grows.',
+            lightWatts,
+        ),
+        ventilation: makeRecommendationItem(
+            ventilationName,
+            wantsSmellControl ? (isBudget ? 170 : 260) : isBudget ? 120 : 190,
+            ventilationRationale,
+        ),
+        circulationFan: makeRecommendationItem(
+            isGerman(lang) ? 'Clip-Ventilator' : 'Clip-on circulation fan',
+            isBudget ? 25 : 45,
+            isGerman(lang)
+                ? 'Ein kleiner Umluftventilator verhindert stehende Luft und stärkt die Stängel.'
+                : 'A small circulation fan prevents stale pockets and strengthens stems.',
+        ),
+        pots: makeRecommendationItem(
+            isGerman(lang) ? 'Stofftöpfe 11 L' : '11 L fabric pots',
+            isBudget ? 30 : 45,
+            isGerman(lang)
+                ? 'Stofftöpfe verbessern die Belüftung im Wurzelraum und reduzieren Überwässerungsrisiken.'
+                : 'Fabric pots improve root-zone aeration and reduce overwatering risk.',
+        ),
+        soil: makeRecommendationItem(
+            soilName,
+            isBudget ? 35 : 55,
+            prefersCoco
+                ? isGerman(lang)
+                    ? 'Coco ist schnell reagierend und eignet sich gut für präzise Fütterung.'
+                    : 'Coco responds quickly and suits precise feeding.'
+                : isGerman(lang)
+                  ? 'Eine gute Erde verzeiht Fehler und ist für gemischte Setups am einfachsten.'
+                  : 'A good soil mix is forgiving and easiest for mixed setups.',
+        ),
+        nutrients: makeRecommendationItem(
+            nutrientName,
+            isBudget ? 35 : 70,
+            isGerman(lang)
+                ? 'Beginne mit einem soliden Basisdünger und erhöhe nur nach messbaren Reaktionen.'
+                : 'Start with a solid base nutrient kit and increase only after measurable response.',
+        ),
+        extra: makeRecommendationItem(
+            extraName,
+            isBudget ? 35 : 85,
+            isGerman(lang)
+                ? 'Kleine Mess- und Kontrollwerkzeuge liefern den größten Nutzen pro investiertem Euro.'
+                : 'Small measurement and control tools deliver the best return per dollar spent.',
+        ),
+        proTip,
+    }
+}
+
 class LocalAiFallbackService {
     diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
         return diagnosePlant(plant, lang)
@@ -245,6 +410,10 @@ class LocalAiFallbackService {
                     ? `Local analysis (AI unavailable):\n\n${plantDetails.join('\n')}`
                     : 'No active plants.',
         }
+    }
+
+    getEquipmentRecommendation(prompt: string, lang: Language): Recommendation {
+        return buildEquipmentRecommendation(prompt, lang)
     }
 
     getStrainTips(strain: Strain, lang: Language): StructuredGrowTips {

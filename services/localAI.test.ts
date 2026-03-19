@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { localAiService } from '@/services/localAI'
+import { clearInferenceCache, localAiService } from '@/services/localAI'
 import { clearPipelineCache, detectOnnxBackend } from '@/services/localAIModelLoader'
 import { PlantStage, type Plant, type Strain, StrainType } from '@/types'
 
@@ -168,6 +168,41 @@ describe('localAiService', () => {
         expect(recommendation.light.watts).toBe(300)
         expect(recommendation.tent.name).toContain('grow tent')
         expect(recommendation.proTip).toContain('climate')
+    })
+
+    it('falls back to a local nutrient recommendation when text generation is unavailable', async () => {
+        clearInferenceCache()
+        const svc = localAiService as unknown as Record<string, unknown>
+        svc.textPipelinePromise = null
+
+        pipelineMock.mockRejectedValue(new Error('offline – model unavailable'))
+
+        const recommendation = await localAiService.getNutrientRecommendation(
+            {
+                medium: 'Coco',
+                stage: 'Vegetative',
+                currentEc: 0.8,
+                currentPh: 6.9,
+                optimalRange: { ecMin: 1.0, ecMax: 1.8, phMin: 5.8, phMax: 6.2 },
+                readings: [
+                    { ec: 0.7, ph: 6.8, readingType: 'input', timestamp: 1 },
+                    { ec: 0.8, ph: 6.9, readingType: 'runoff', timestamp: 2 },
+                ],
+                plant: {
+                    name: 'Alpha',
+                    strain: { name: 'Beta' },
+                    stage: 'Vegetative',
+                    age: 42,
+                    health: 74,
+                    medium: { ph: 6.9, ec: 0.8 },
+                },
+            },
+            'en',
+        )
+
+        expect(recommendation).toContain('EC is too low')
+        expect(recommendation).toContain('pH is too high')
+        expect(recommendation).toContain('Coco reacts quickly')
     })
 
     it('generates a local strain image data url', async () => {

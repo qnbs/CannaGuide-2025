@@ -83,6 +83,17 @@ export default defineConfig({
         // Keep the warning threshold high enough to avoid noise from these lazy chunks.
         chunkSizeWarningLimit: 8000,
         rollupOptions: {
+            onwarn(warning, warn) {
+                if (
+                    warning.code === 'EVAL' &&
+                    typeof warning.id === 'string' &&
+                    warning.id.includes('onnxruntime-web')
+                ) {
+                    return
+                }
+
+                warn(warning)
+            },
             output: {
                 // ── Manual Chunks – isolate heavy / rarely-changing vendor libs ──
                 manualChunks(id) {
@@ -149,10 +160,6 @@ export default defineConfig({
                     // Radix UI primitives
                     if (id.includes('@radix-ui')) {
                         return 'radix-ui'
-                    }
-                    // Sentry – dynamically imported, off the critical path
-                    if (id.includes('@sentry')) {
-                        return 'sentry'
                     }
                     // DOMPurify – loaded with geminiService
                     if (id.includes('dompurify')) {

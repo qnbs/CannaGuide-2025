@@ -314,4 +314,144 @@ export const strainsO: Strain[] = [
         "aromas": ["Earthy", "Spicy", "Woody", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     })
+,
+    createStrainObject({
+        "id": "orange-skunk", "name": "Orange Skunk", "type": StrainType.Hybrid, "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Skunk #1", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 8
+    }),
+    createStrainObject({
+        "id": "og-eddy", "name": "OG Eddy", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "OG Kush x Grape Ape", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5
+    }),
+    createStrainObject({
+        "id": "og-chem-4-ibx", "name": "OG/Chem #4 IBX", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Chemdawg #4 (backcross)", "floweringType": "Photoperiod", "thc": 25, "cbd": 1, "floweringTime": 9.5
+    }),
+    createStrainObject({
+        "id": "og-eddy",
+        "name": "OG Eddy",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "OG Kush x Grape Ape",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "Also known as OG Eddy Lepp, this is an indica-dominant hybrid with a sweet, grape, and earthy aroma. It delivers a relaxing body high, coupled with a happy, euphoric mental state. It is a parent of California Black Rose.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Grape", "Sweet", "Earthy", "Woody"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "orange-crush",
+        "name": "Orange Crush",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Cali-O (California Orange) x Blueberry",
+        "floweringType": "Photoperiod",
+        "thc": 22, "cbd": 1, "floweringTime": 8.5,
+        "description": "A sativa-dominant hybrid known for its strong, sweet orange aroma and uplifting, cerebral effects. It provides an energetic and happy high, making it a great choice for daytime use.",
+        "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Medium" },
+        "aromas": ["Orange", "Citrus", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Terpinolene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "orange-cream",
+        "name": "Orange Cream",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Orange Crush x Juicy Fruit",
+        "floweringType": "Photoperiod",
+        "thc": 20, "cbd": 1, "floweringTime": 8.5,
+        "description": "A balanced hybrid with a sweet and creamy citrus flavor, reminiscent of an orange creamsicle. The effects are typically balanced, providing a happy, uplifting mental state along with gentle physical relaxation.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Orange", "Creamy", "Sweet", "Vanilla"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "og-kush-breath",
+        "name": "OG Kush Breath",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "GSC (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 27,
+        "cbd": 1,
+        "thcRange": "24-30%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Low",
+            "height": "Short"
+        },
+        "aromas": ["Earthy", "Nutty", "Sweet", "Vanilla"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "og-badazz",
+        "name": "OG Badazz",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "OG Kush x Afghani x Skunk",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-150 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Diesel", "Earthy", "Spicy", "Pine"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "orange-apricot",
+        "name": "Orange Apricot",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Orange Juice x Apricot Helix",
+        "floweringType": "Photoperiod",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Orange", "Apricot", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "orange-punch",
+        "name": "Orange Punch",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Granddaddy Purple x Orange Bud",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "A flavorful indica-dominant hybrid that delivers a potent, relaxing high. It has a sweet and tangy citrus aroma, reminiscent of fresh oranges. It is a parent of Runtz Muffin.",
+        "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Short" },
+        "aromas": ["Orange", "Citrus", "Sweet", "Tangy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Linalool"]
+    }),
 ];

@@ -458,4 +458,272 @@ export const strainsL: Strain[] = [
         "aromas": ["Earthy", "Sweet", "Skunk", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Limonene", "Pinene"]
     })
+,
+    createStrainObject({
+        "id": "lemon-joy",
+        "name": "Lemon Joy",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Lemon Pebbles x Lemon Cooler",
+        "floweringType": "Photoperiod",
+        "thc": 21,
+        "cbd": 1,
+        "thcRange": "19-23%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Lemon Joy is a sativa-dominant hybrid known for its vibrant and uplifting effects, along with a sweet, zesty lemon aroma. It provides a happy and energetic high, making it a key parent in the breeding of Lemon Kush.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Lemon", "Citrus", "Sweet", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "lebanese-landrace",
+        "name": "Lebanese Landrace",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 17, "cbd": 3, "thcRange": "15-20%", "cbdRange": "1-5%", "floweringTime": 8,
+        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Earthy", "Woody", "Spicy", "Hash"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "legend-og",
+        "name": "Legend OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "OG Kush phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 24, "cbd": 1, "thcRange": "22-26%", "cbdRange": "<1%", "floweringTime": 8.5,
+        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Earthy", "Pine", "Floral", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "lemon-skunk",
+        "name": "Lemon Skunk",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Skunk #1 phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 22, "cbd": 1, "thcRange": "20-24%", "cbdRange": "<1%", "floweringTime": 8.5,
+        "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Tall" },
+        "aromas": ["Lemon", "Skunk", "Citrus", "Sweet"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "lemonnade",
+        "name": "Lemonnade",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Lemon OG x Gorilla Haze",
+        "floweringType": "Photoperiod",
+        "thc": 22.5, "cbd": 1, "thcRange": "20-25%", "cbdRange": "<1%", "floweringTime": 9.5,
+        "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
+        "aromas": ["Lemon", "Citrus", "Sweet", "Sour"],
+        "dominantTerpenes": ["Limonene", "Terpinolene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "lemon-og",
+        "name": "Lemon OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Lemon Skunk x OG Kush",
+        "floweringType": "Photoperiod",
+        "thc": 21, "cbd": 1, "thcRange": "19-23%", "cbdRange": "<1%", "floweringTime": 9,
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Lemon", "Citrus", "Earthy", "Pine"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "lemon-alien-dawg", "name": "Lemon Alien Dawg", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Alien Dawg x Lemon Kush", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "lemon-kush", "name": "Lemon Kush", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Master Kush x Lemon Joy", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "lemon-joy", "name": "Lemon Joy", "type": StrainType.Hybrid, "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Lemon Pebbles x Lemon Cooler", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "lemon-pebbles", "name": "Lemon Pebbles", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Fruity Pebbles OG x Lemon Kush", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "lowryder-1",
+        "name": "Lowryder #1",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50% (Autoflower)",
+        "genetics": "Northern Lights #2 x William's Wonder x Ruderalis",
+        "floweringType": "Autoflower",
+        "thc": 12, "cbd": 1, "floweringTime": 8.5,
+        "description": "The original autoflowering strain that revolutionized cannabis cultivation. It is small, fast, and discreet, with a mild, relaxing effect. Its genetics are the foundation for a vast number of modern autoflowers.",
+        "agronomic": { "difficulty": "Easy", "yield": "Low", "height": "Short" },
+        "aromas": ["Earthy", "Pine", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "lilly",
+        "name": "Lilly",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 90% / Indica 10%",
+        "genetics": "Queen Mother x Congo",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "120-180 cm", "outdoor": ">200 cm" }
+        },
+        "aromas": ["Pineapple", "Tropical", "Sweet", "Fruity"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Ocimene"]
+    }),
+    createStrainObject({
+        "id": "lucifer-og",
+        "name": "Lucifer OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Hell's OG x SFV OG IBL",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "22-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Lemon", "Pine", "Diesel", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "lemon-cooler",
+        "name": "Lemon Cooler",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Lemon Tree x Cookies and Cream",
+        "floweringType": "Photoperiod",
+        "thc": 22.5,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Lemon", "Citrus", "Sweet", "Creamy"],
+        "dominantTerpenes": ["Limonene", "Caryophyllene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "lemon-pebbles",
+        "name": "Lemon Pebbles",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Fruity Pebbles OG x Lemon Kush",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "thcRange": "20-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "9",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Lemon", "Fruity", "Sweet", "Citrus"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "la-reunion",
+        "name": "La Reunion",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Landrace from Réunion Island",
+        "floweringType": "Photoperiod",
+        "thc": 19,
+        "cbd": 1,
+        "thcRange": "17-21%",
+        "cbdRange": "<1%",
+        "floweringTime": 13,
+        "floweringTimeRange": "12-14",
+        "description": "La Reunion is a pure sativa landrace from Réunion Island in the Indian Ocean. It is known for its classic long-flowering sativa characteristics and a powerful, energetic, and long-lasting cerebral high. Its aroma is typically spicy and hazy. It is a key parent in the breeding of the famous Queen Mother strain.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "180-250 cm", "outdoor": ">250 cm" }
+        },
+        "aromas": ["Spicy", "Haze", "Earthy", "Tropical"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "lemonnade",
+        "name": "Lemonnade",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Lemon OG x Gorilla Haze",
+        "floweringType": "Photoperiod",
+        "thc": 22.5,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Lemonnade, sometimes spelled Lemonade, is a sativa-dominant hybrid known for its overwhelmingly sweet and zesty lemon flavor. It delivers an energetic, uplifting, and happy high that is perfect for daytime use and creative activities. It is a parent of the popular Lemonchello strain.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">200 cm" }
+        },
+        "aromas": ["Lemon", "Citrus", "Sweet", "Sour"],
+        "dominantTerpenes": ["Limonene", "Terpinolene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "lemon-joy",
+        "name": "Lemon Joy",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Unknown",
+        "floweringType": "Photoperiod",
+        "thc": 21,
+        "cbd": 1,
+        "thcRange": "19-23%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Lemon Joy is a sativa-dominant hybrid known for its vibrant and uplifting effects, along with a sweet, zesty lemon aroma. It provides a happy and energetic high, making it a key parent in the breeding of Lemon Kush.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Lemon", "Citrus", "Sweet", "Earthy"],
+        "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
+    }),
 ];

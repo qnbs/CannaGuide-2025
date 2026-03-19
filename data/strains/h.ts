@@ -362,4 +362,130 @@ export const strainsH: Strain[] = [
         "aromas": ["Diesel", "Pungent", "Earthy", "Sweet"],
         "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
     }),
+
+    createStrainObject({
+        "id": "harmony", "name": "Harmony", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30% (CBD Rich)",
+        "genetics": "Unknown CBD strain", "floweringType": "Photoperiod", "thc": 8, "cbd": 12, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "high-octane-og",
+        "name": "High Octane OG",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "OG Kush phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "24-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "High Octane OG is a potent, pure indica strain known for its extremely gassy and pungent aroma. As a phenotype of OG Kush, it delivers a powerful, fast-acting high that is deeply relaxing and sedating, making it a favorite for evening use and for treating pain and insomnia.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Diesel", "Pungent", "Earthy", "Citrus"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "humboldt-og",
+        "name": "Humboldt OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush (Humboldt phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "thcRange": "21-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "description": "A potent OG Kush phenotype from Humboldt County, California. It features the classic OG aroma of pine, earth, and diesel. The effect is strong, physically relaxing, and long-lasting, making it a favorite for evening use.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Pine", "Earthy", "Diesel", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "highland-oaxacan-gold",
+        "name": "Highland Oaxacan Gold",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Mexican Landrace (Oaxaca region)",
+        "floweringType": "Photoperiod",
+        "thc": 15,
+        "cbd": 1,
+        "thcRange": "13-18%",
+        "cbdRange": "<1%",
+        "floweringTime": 11,
+        "floweringTimeRange": "10-12",
+        "description": "A classic landrace sativa from the Oaxacan highlands of Mexico. It was popular in the 1960s and 70s for its energetic, creative, and uplifting high. The aroma is sweet, spicy, and earthy. It is a parent of Purple Thai.",
+        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Sweet", "Spicy", "Earthy", "Woody"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "himalayan-kush",
+        "name": "Himalayan Kush",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Himalayan Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short"
+        },
+        "aromas": ["Earthy", "Woody", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "han-solo-hash-plant",
+        "name": "Han-Solo Hash Plant",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "(King x Hash Plant) x (G13 x Hash Plant)",
+        "floweringType": "Photoperiod",
+        "thc": 27,
+        "cbd": 1,
+        "thcRange": "25-29%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A potent indica-dominant hybrid known for its relaxing, heavy effects. It boasts a classic, pungent aroma profile of earth, spice, and traditional hash. It is a key parent strain of Hash Burger.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "90-140 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Earthy", "Spicy", "Hash", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "himalayan-kush",
+        "name": "Himalayan Kush",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Himalayan Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "floweringTime": 8.5,
+        "description": "A pure indica landrace from the Himalayan mountain range. It is prized for its resilience to cold climates and its deeply relaxing, almost meditative body high. Its aroma is a classic mix of earthy, woody, and sweet hash notes. It is a parent of Red Dragon.",
+        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Earthy", "Woody", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
 ];

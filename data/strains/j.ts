@@ -338,4 +338,131 @@ export const strainsJ: Strain[] = [
         "aromas": ["Orange", "Mango", "Sweet", "Fruity"],
         "dominantTerpenes": ["Limonene", "Myrcene", "Caryophyllene"]
     })
+,
+    createStrainObject({
+        "id": "joseph-og",
+        "name": "Joseph OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "OG Kush phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "24-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Joseph OG is a potent indica-dominant phenotype of OG Kush, known for its heavy resin production and classic OG aroma. It delivers a powerful, relaxing body high with a euphoric cerebral buzz. It's one of the parent strains of Grateful Breath.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Earthy", "Pine", "Diesel", "Lemon"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "jamaican-landrace",
+        "name": "Jamaican Landrace",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 19, "cbd": 1, "thcRange": "17-21%", "cbdRange": "<1%", "floweringTime": 11,
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Tropical", "Sweet", "Earthy", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "jet-fuel-gelato",
+        "name": "Jet Fuel Gelato",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Jet Fuel G6 x Gelato #45",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "23-29%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Jet Fuel Gelato is a potent sativa-dominant hybrid known for its uplifting and energizing effects. It has a complex aroma of sweet diesel and floral notes. This strain provides a focused and euphoric high, making it a parent to popular strains like Horchata.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall"
+        },
+        "aromas": ["Diesel", "Sweet", "Floral", "Fruity"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "juanita-la-lagrimosa",
+        "name": "Juanita la Lagrimosa",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 75% / Indica 25% (CBD Rich)",
+        "genetics": "Queen Mother x (Mexican x Afghani)",
+        "floweringType": "Photoperiod",
+        "thc": 10,
+        "cbd": 12,
+        "thcRange": "8-12%",
+        "cbdRange": "10-15%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A pioneering CBD-rich strain from Spain, often with a 1:1 THC:CBD ratio. 'Juanita the Tearful' provides a clear-headed, functional effect with significant therapeutic benefits, making it ideal for managing anxiety and pain without a strong high. Its aroma is citrusy and hazy. It is a parent of Dance World.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "450-550 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "100-160 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Citrus", "Haze", "Spicy", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "juicy-fruit",
+        "name": "Juicy Fruit",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Afghani x Thai",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A classic hybrid from the 1970s, also known as Fruity Juice. It is famous for its sweet, fruity aroma reminiscent of tropical punch and berries. The effect is uplifting and euphoric, with a gentle body buzz. It is a parent of Orange Cream Sicle.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "500-600 g/m²", "outdoor": "600-700 g/plant" },
+            "heightDetails": { "indoor": "120-180 cm", "outdoor": "150-200 cm" }
+        },
+        "aromas": ["Tropical", "Sweet", "Fruity", "Berry"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "joseph-og",
+        "name": "Joseph OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "OG Kush phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 26,
+        "cbd": 1,
+        "thcRange": "24-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Joseph OG is a potent indica-dominant phenotype of OG Kush, known for its heavy resin production and classic OG aroma. It delivers a powerful, relaxing body high with a euphoric cerebral buzz. It's one of the parent strains of Grateful Breath.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Earthy", "Pine", "Diesel", "Lemon"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
 ];

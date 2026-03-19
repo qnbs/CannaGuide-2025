@@ -146,4 +146,23 @@ export const strainsV: Strain[] = [
         "aromas": ["Earthy", "Spicy", "Pungent", "Pine"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
     })
+,
+    createStrainObject({
+        "id": "vortex",
+        "name": "Vortex",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Apollo 13 x Space Queen",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "description": "A sativa-dominant hybrid from Subcool's The Dank, known for its intense, almost psychedelic cerebral high. It has a sweet and sour aroma of lemon and tropical fruit. It is a parent of Timewreck.",
+        "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
+        "aromas": ["Lemon", "Tropical", "Sweet", "Sour"],
+        "dominantTerpenes": ["Myrcene", "Terpinolene", "Limonene"]
+    }),
 ];

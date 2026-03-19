@@ -1034,4 +1034,165 @@ export const strainsS: Strain[] = [
         "aromas": ["Berry", "Sweet", "Earthy", "Fruity"],
         "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
     })
+,
+    createStrainObject({
+        "id": "silver-haze",
+        "name": "Silver Haze",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Haze x Northern Lights",
+        "floweringType": "Photoperiod",
+        "thc": 23, "cbd": 1, "thcRange": "20-26%", "cbdRange": "<1%", "floweringTime": 10.5,
+        "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
+        "aromas": ["Spicy", "Earthy", "Citrus", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "starfighter", "name": "Starfighter", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Alien Tahoe OG x Lemon Alien Dawg", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "sharksbreath", "name": "Sharksbreath", "type": StrainType.Hybrid, "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Great White Shark x Lamb's Bread", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "sweet-irish-kush", "name": "Sweet Irish Kush", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Sweet Skunk x Kish", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8
+    }),
+    createStrainObject({
+        "id": "sweet-skunk", "name": "Sweet Skunk", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Skunk #1 x an unknown sweet Indica", "floweringType": "Photoperiod", "thc": 19, "cbd": 1, "floweringTime": 7.5
+    }),
+    createStrainObject({
+        "id": "sour-cream",
+        "name": "Sour Cream",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Sour Diesel x G13 Haze",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 10.5,
+        "floweringTimeRange": "10-11",
+        "description": "Sour Cream is a sativa-dominant hybrid with a unique aroma combining sour diesel with creamy, cheesy notes. It provides a powerful, energetic, and focused high that is great for creative tasks and daytime activities. It is a parent of Aspen OG.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "High",
+            "height": "Tall"
+        },
+        "aromas": ["Sour", "Diesel", "Cheese", "Creamy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "sherb-bx", "name": "Sherb Bx", "type": StrainType.Hybrid, "typeDetails": "Indica 85% / Sativa 15%",
+        "genetics": "Sunset Sherbet (Backcross)", "floweringType": "Photoperiod", "thc": 24, "cbd": 1,
+        "description": "A backcross of the famous Sunset Sherbet, bred to stabilize and enhance its desirable traits. It has a sweet, fruity, and creamy aroma. The effect is relaxing and happy. Parent of Permanent Marker.",
+        "floweringTime": 9, "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Sweet", "Fruity", "Creamy", "Berry"], "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "sweet-skunk",
+        "name": "Sweet Skunk",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Skunk #1 x an unknown sweet Indica",
+        "floweringType": "Photoperiod",
+        "thc": 19,
+        "cbd": 1,
+        "thcRange": "17-21%",
+        "cbdRange": "<1%",
+        "floweringTime": 7.5,
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "80-120 cm", "outdoor": "100-150 cm" }
+        },
+        "aromas": ["Sweet", "Skunk", "Fruity", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "sophisticated-lady",
+        "name": "Sophisticated Lady",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Ghost OG x Grateful Breath",
+        "floweringType": "Photoperiod",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Floral", "Earthy", "Sweet", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "sour-bubble",
+        "name": "Sour Bubble",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Bubble Gum (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "floweringTime": 8,
+        "description": "A potent indica known for its sweet and sour candy-like aroma. The effect is strongly relaxing and sedative. It is a parent of Sour Dubble.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Short" },
+        "aromas": ["Sweet", "Sour", "Candy", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "snow-lotus",
+        "name": "Snow Lotus",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Afgooey x Blockhead",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "floweringTime": 9,
+        "description": "An indica-dominant hybrid with a complex aroma of earth, cherry, and hash. The effect is potent and deeply relaxing. It is a parent of Space Cake.",
+        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Earthy", "Cherry", "Hash", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "strawberry-fields",
+        "name": "Strawberry Fields",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Strawberry (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "floweringTime": 8.5,
+        "description": "An indica strain from Vermont known for its intensely sweet strawberry aroma and flavor. The effect is relaxing and happy. It is the key parent of Strawberry Cough.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Short" },
+        "aromas": ["Strawberry", "Sweet", "Fruity", "Berry"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "swazi-landrace",
+        "name": "Swazi Landrace",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 21,
+        "cbd": 1,
+        "floweringTime": 11,
+        "description": "A pure sativa landrace from Eswatini (formerly Swaziland). It is the genetic basis for Swazi Gold and is known for its resilient nature and an uplifting, energetic high.",
+        "agronomic": { "difficulty": "Medium", "yield": "High", "height": "Tall" },
+        "aromas": ["Sweet", "Mango", "Tropical", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Terpinolene"]
+    }),
 ];

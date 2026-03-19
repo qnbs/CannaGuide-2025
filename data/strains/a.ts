@@ -715,4 +715,193 @@ export const strainsA: Strain[] = [
         "aromas": ["Hazelnut", "Papaya", "Earthy", "Sweet"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
     })
+,
+    createStrainObject({
+        "id": "appalachia", "name": "Appalachia", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Green Crack x Tres Dawg", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9,
+        "description": "A potent hybrid with an earthy, sweet, and slightly spicy aroma. It offers a balanced effect and is the parent of Bay 11.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Earthy", "Sweet", "Spicy"], "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "afghani-hawaiian",
+        "name": "Afghani Hawaiian",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Afghani x Hawaiian Sativa",
+        "floweringType": "Photoperiod",
+        "thc": 21, "cbd": 1, "thcRange": "19-23%", "cbdRange": "<1%", "floweringTime": 9,
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Tropical", "Sweet", "Earthy", "Pineapple"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "alien-tahoe-og", "name": "Alien Tahoe OG", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Tahoe OG Kush x Alien Kush", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "afghan-landrace", "name": "Afghan Landrace", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8
+    }),
+    createStrainObject({
+        "id": "american-haze", "name": "American Haze", "type": StrainType.Hybrid, "typeDetails": "Sativa 80% / Indica 20%",
+        "genetics": "Haze x American Sativa", "floweringType": "Photoperiod", "thc": 21, "cbd": 1, "floweringTime": 10
+    }),
+    createStrainObject({
+        "id": "apricot-helix",
+        "name": "Apricot Helix",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Apricot OG x Helix",
+        "floweringType": "Photoperiod",
+        "thc": 22.5,
+        "cbd": 1,
+        "thcRange": "20-25%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "Bred by Exotic Genetix, Apricot Helix is an indica-dominant hybrid known for its sweet and fruity apricot aroma with earthy undertones. It delivers a deeply relaxing and euphoric high that is great for unwinding. It's a parent of the popular Orange Apricot strain.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Apricot", "Sweet", "Earthy", "Fruity"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "aspen-og",
+        "name": "Aspen OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Sour Cream x OG Kush",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall"
+        },
+        "aromas": ["Sour", "Diesel", "Earthy", "Sweet"],
+        "dominantTerpenes": ["Caryophyllene", "Myrcene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "african-sativa",
+        "name": "African Sativa",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "African Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 12,
+        "floweringTimeRange": "11-13",
+        "description": "A general term for Sativa landraces from Africa, known for their uplifting, energetic, and cerebral effects. They are often resilient and adapted to warm climates.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "500-600 g/plant" },
+            "heightDetails": { "indoor": "150-200 cm", "outdoor": ">220 cm" }
+        },
+        "aromas": ["Earthy", "Spicy", "Sweet", "Woody"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "afghani-hash-plant",
+        "name": "Afghani Hash Plant",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Afghani Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "description": "A classic, pure indica strain selected for its incredible resin production, making it ideal for hashish. It offers a deeply relaxing, almost narcotic body high. The aroma is rich, earthy, and spicy.",
+        "agronomic": { "difficulty": "Easy", "yield": "High", "height": "Short" },
+        "aromas": ["Earthy", "Hash", "Spicy", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "alpha-og",
+        "name": "Alpha OG",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "OG Kush phenotype",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A potent phenotype of OG Kush, known for its strong, relaxing effects that are both euphoric and calming. It's one of the parent strains of the powerful Godfather OG. Aroma is classic OG: earthy, piney, and pungent.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Pine", "Earthy", "Pungent", "Diesel"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "american-sativa",
+        "name": "American Sativa",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Likely a mix of Central American landraces",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 10,
+        "floweringTimeRange": "9-11",
+        "description": "A term for early Sativa hybrids developed in the USA, often from Central and South American genetics. Known for uplifting and energetic effects. It is a parent of Nebula.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Tall" },
+        "aromas": ["Sweet", "Earthy", "Citrus"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "atlas-star",
+        "name": "Atlas Star",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Sensi Star x an unknown Dutch indica",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "A balanced hybrid known for its sweet, fruity aroma and well-rounded effects. It provides a euphoric and happy high that gently relaxes the body without being overly sedating, making it a good choice for various occasions.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Sweet", "Fruity", "Earthy", "Floral"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "afghani-bullrider",
+        "name": "Afghani Bullrider",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 95% / Sativa 5%",
+        "genetics": "Afghani (landrace phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 21,
+        "cbd": 1,
+        "floweringTime": 8.5,
+        "description": "A potent indica strain believed to be a phenotype of an Afghani landrace. It delivers a deeply relaxing, almost narcotic body high that melts away pain and stress, making it ideal for nighttime use. Its aroma is a classic mix of earthy, sweet, and pungent notes. It's a parent of Ray Charles.",
+        "agronomic": { "difficulty": "Medium", "yield": "Medium", "height": "Short" },
+        "aromas": ["Earthy", "Sweet", "Pungent", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
 ];

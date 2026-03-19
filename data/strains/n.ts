@@ -302,4 +302,109 @@ export const strainsN: Strain[] = [
         "aromas": ["Sweet", "Earthy", "Skunk", "Pine"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     })
+,
+    createStrainObject({
+        "id": "north-american-indica", "name": "North American Indica", "type": StrainType.Indica, "typeDetails": "Indica 100%", "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 8
+    }),
+    createStrainObject({
+        "id": "nicole-kush", "name": "Nicole Kush", "type": StrainType.Hybrid, "typeDetails": "Indica 75% / Sativa 25%",
+        "genetics": "Kosher Kush x MK Ultra", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8.5
+    }),
+    createStrainObject({
+        "id": "naran-j", "name": "Naran J", "type": StrainType.Hybrid, "typeDetails": "Sativa 70% / Indica 30%",
+        "genetics": "Orange Juice x New England Rock Candy", "floweringType": "Photoperiod", "thc": 24, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "new-england-rock-candy", "name": "New England Rock Candy", "type": StrainType.Hybrid, "typeDetails": "Indica 60% / Sativa 40%",
+        "genetics": "Rock Candy Kush x an unknown strain", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "northern-lights-5", "name": "Northern Lights #5", "type": StrainType.Indica, "typeDetails": "Indica 95% / Sativa 5%",
+        "genetics": "Northern Lights (phenotype)", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 8
+    }),
+    createStrainObject({
+        "id": "northern-lights-1",
+        "name": "Northern Lights #1",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Afghani (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 18, "cbd": 1, "floweringTime": 7,
+        "description": "One of the original, foundational phenotypes of the Northern Lights line. A pure, fast-flowering indica known for its high resin production and deeply relaxing effects. Its genetics are a cornerstone of many modern hybrids.",
+        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Earthy", "Pine", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "northern-lights-2",
+        "name": "Northern Lights #2",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Northern Lights (phenotype)",
+        "floweringType": "Photoperiod",
+        "thc": 19, "cbd": 1, "floweringTime": 7.5,
+        "description": "A fast-flowering and highly resilient phenotype of the Northern Lights line. It is known for its strong indica effects and piney, earthy aroma. It is a parent of the original Lowryder.",
+        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Short" },
+        "aromas": ["Pine", "Earthy", "Sweet", "Pungent"],
+        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "nepalese-sativa",
+        "name": "Nepalese Sativa",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Nepalese Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 11,
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall",
+            "yieldDetails": { "indoor": "350-450 g/m²", "outdoor": "400-500 g/plant" },
+            "heightDetails": { "indoor": "160-220 cm", "outdoor": ">250 cm" }
+        },
+        "aromas": ["Sweet", "Herbal", "Spicy", "Earthy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "nepali",
+        "name": "Nepali",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Nepalese Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "floweringTime": 8.5,
+        "description": "A pure indica landrace from Nepal, known for its high resin production and relaxing, clear-headed effects. It has a sweet and herbal aroma. It is one of the parents of Sweet Tooth.",
+        "agronomic": { "difficulty": "Hard", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Hash", "Earthy", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Humulene"]
+    }),
+    createStrainObject({
+        "id": "nevilles-a5-haze",
+        "name": "Neville's A5 Haze",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 95% / Indica 5%",
+        "genetics": "Haze x Northern Lights #5",
+        "floweringType": "Photoperiod",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 12,
+        "floweringTimeRange": "11-13",
+        "description": "A legendary and potent sativa-dominant hybrid, Neville's A5 Haze is a specific phenotype of Neville's Haze. It is renowned for its powerful, almost psychedelic cerebral high that is long-lasting and energizing. The aroma is a complex mix of spicy, incense-like, and piney notes. It is a parent of Tangerine Dream.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "High",
+            "height": "Tall"
+        },
+        "aromas": ["Spicy", "Incense", "Pine", "Earthy"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Pinene"]
+    }),
 ];

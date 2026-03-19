@@ -626,4 +626,276 @@ export const strainsM: Strain[] = [
         "aromas": ["Sweet", "Tropical", "Spicy", "Woody"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
     }),
+
+    createStrainObject({
+        "id": "moroccan-landrace",
+        "name": "Moroccan Landrace",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 15,
+        "cbd": 2,
+        "thcRange": "12-18%",
+        "cbdRange": "1-3%",
+        "floweringTime": 8,
+        "floweringTimeRange": "7-9",
+        "description": "A pure indica landrace from the mountainous regions of Morocco, traditionally cultivated for hashish (kif) production. These plants are typically short, resinous, and fast-flowering, adapted to arid climates. The effect is generally mild, relaxing, and clear-headed.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Short"
+        },
+        "aromas": ["Earthy", "Spicy", "Hash"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
+    createStrainObject({
+        "id": "malawian-landrace", "name": "Malawian Landrace", "type": StrainType.Sativa, "typeDetails": "Sativa 100%",
+        "genetics": "Landrace", "floweringType": "Photoperiod", "thc": 18, "cbd": 1, "floweringTime": 11
+    }),
+    createStrainObject({
+        "id": "mandarin-sunset", "name": "Mandarin Sunset", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Herijuana x Orange Skunk", "floweringType": "Photoperiod", "thc": 24, "cbd": 1, "floweringTime": 8.5
+    }),
+    createStrainObject({
+        "id": "mango", "name": "Mango", "type": StrainType.Hybrid, "typeDetails": "Indica 65% / Sativa 35%",
+        "genetics": "KC 33 x Afghani", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "martian-mean-green", "name": "Martian Mean Green", "type": StrainType.Hybrid, "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Sharksbreath x G13 Haze", "floweringType": "Photoperiod", "thc": 23, "cbd": 1, "floweringTime": 9.5
+    }),
+    createStrainObject({
+        "id": "mendo-montage", "name": "Mendo Montage", "type": StrainType.Hybrid, "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Mendocino Purps x Crystal Locomotive F1", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 8.5
+    }),
+    createStrainObject({
+        "id": "meatloaf", "name": "Meatloaf", "type": StrainType.Hybrid, "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Mendo Breath x Unknown", "floweringType": "Photoperiod", "thc": 25, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "maple-leaf-indica", "name": "Maple Leaf Indica", "type": StrainType.Indica, "typeDetails": "Indica 100%",
+        "genetics": "Afghani Landrace", "floweringType": "Photoperiod", "thc": 20, "cbd": 1, "floweringTime": 7.5
+    }),
+    createStrainObject({
+        "id": "master-widow", "name": "Master Widow", "type": StrainType.Hybrid, "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "White Widow x Master Kush", "floweringType": "Photoperiod", "thc": 22, "cbd": 1, "floweringTime": 9
+    }),
+    createStrainObject({
+        "id": "maple-leaf",
+        "name": "Maple Leaf",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Afghani Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 7.5,
+        "floweringTimeRange": "7-8",
+        "description": "A classic, pure indica strain descended from Afghani landraces. It's known for its fast flowering time, high resin production, and a deeply relaxing, sedative body high. The aroma is sweet and earthy with hints of citrus and spice.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "High",
+            "height": "Short"
+        },
+        "aromas": ["Sweet", "Earthy", "Citrus", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "meatloaf",
+        "name": "Meatloaf",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Mendo Breath x an unknown strain",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "22-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Meatloaf is a potent and rare indica-dominant strain, known as one of the parents of Meat Breath. It carries the heavy, relaxing genetics of Mendo Breath and is known for a unique, savory, and pungent aroma. The effect is typically a heavy body high that is deeply calming and sedating.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Pungent", "Earthy", "Diesel", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "malana",
+        "name": "Malana",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Indian Landrace (Malana)",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A pure indica landrace from the Malana Valley in India, famous for producing the highly prized 'Malana Cream' charas (hashish). It is known for its high resin production and a relaxing, cerebral high. The aroma is sweet, fruity, and hashy.",
+        "agronomic": {
+            "difficulty": "Easy",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Sweet", "Fruity", "Hash", "Earthy"],
+        "dominantTerpenes": ["Myrcene", "Pinene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "mendo-montage",
+        "name": "Mendo Montage",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Mendo Purps x Crystal Locomotive F1",
+        "floweringType": "Photoperiod",
+        "thc": 22,
+        "cbd": 1,
+        "thcRange": "20-24%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Grape", "Caramel", "Earthy", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Linalool"]
+    }),
+    createStrainObject({
+        "id": "mandarin-sunset",
+        "name": "Mandarin Sunset",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Herijuana x Orange Skunk",
+        "floweringType": "Photoperiod",
+        "thc": 24,
+        "cbd": 1,
+        "thcRange": "22-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "An indica-dominant hybrid known for its vibrant orange citrus aroma. It delivers a relaxing and euphoric high that melts away stress, making it great for evenings. Parent of Mandarin Cookies.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Orange", "Citrus", "Sweet", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Limonene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "martian-mean-green",
+        "name": "Martian Mean Green",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Sativa 60% / Indica 40%",
+        "genetics": "Sharksbreath x G13 Haze",
+        "floweringType": "Photoperiod",
+        "thc": 23,
+        "cbd": 1,
+        "thcRange": "20-26%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "A sativa-dominant hybrid from DNA Genetics, known for its potent, energetic, and creative high. The aroma is a complex mix of spicy, floral, and earthy notes. Parent of Cosmic Charlie.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Spicy", "Floral", "Earthy", "Sweet"],
+        "dominantTerpenes": ["Terpinolene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "meatloaf",
+        "name": "Meatloaf",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 80% / Sativa 20%",
+        "genetics": "Mendo Breath x an unknown strain",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "22-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "Meatloaf is a potent and rare indica-dominant strain, known as one of the parents of Meat Breath. It carries the heavy, relaxing genetics of Mendo Breath and is known for a unique, savory, and pungent aroma. The effect is typically a heavy body high that is deeply calming and sedating.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Pungent", "Earthy", "Diesel", "Spicy"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
+    createStrainObject({
+        "id": "mexican",
+        "name": "Mexican",
+        "type": StrainType.Sativa,
+        "typeDetails": "Sativa 100%",
+        "genetics": "Mexican Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 18,
+        "cbd": 1,
+        "thcRange": "16-20%",
+        "cbdRange": "<1%",
+        "floweringTime": 11,
+        "floweringTimeRange": "10-12",
+        "description": "A term for various Sativa landraces from Mexico. These strains are known for their uplifting, energetic, and cerebral effects. They often have a sweet and earthy aroma. Mexican sativas, like Acapulco Gold, are a key genetic component in many famous hybrids, including Skunk #1.",
+        "agronomic": {
+            "difficulty": "Hard",
+            "yield": "Medium",
+            "height": "Tall"
+        },
+        "aromas": ["Sweet", "Earthy", "Spicy", "Woody"],
+        "dominantTerpenes": ["Pinene", "Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "mochi-gelato",
+        "name": "Mochi Gelato",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "genetics": "Thin Mint GSC x Sunset Sherbet",
+        "floweringType": "Photoperiod",
+        "thc": 25,
+        "cbd": 1,
+        "thcRange": "22-28%",
+        "cbdRange": "<1%",
+        "floweringTime": 9.5,
+        "floweringTimeRange": "9-10",
+        "description": "Also known as Mochi, this is a balanced hybrid strain with a sweet, fruity, and creamy aroma. The effect is relaxing and happy, ideal for the evening. It's a parent of Horchata.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium"
+        },
+        "aromas": ["Sweet", "Fruity", "Creamy", "Mint"],
+        "dominantTerpenes": ["Caryophyllene", "Limonene", "Myrcene"]
+    }),
+    createStrainObject({
+        "id": "monkey-glue",
+        "name": "Monkey Glue",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Hybrid 50% / 50%",
+        "thc": 24.5,
+        "cbd": 1,
+        "thcRange": "22-27%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "genetics": "Gorilla Glue #4 x Wookie #15",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "High",
+            "height": "Medium"
+        },
+        "aromas": ["Diesel", "Pine", "Earthy", "Sweet"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Limonene"]
+    }),
 ];

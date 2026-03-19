@@ -218,4 +218,47 @@ export const strainsI: Strain[] = [
         "aromas": ["Sweet", "Skunk", "Tropical", "Citrus"],
         "dominantTerpenes": ["Myrcene", "Pinene", "Terpinolene"]
     })
+,
+    createStrainObject({
+        "id": "indian-indica",
+        "name": "Indian Indica",
+        "type": StrainType.Indica,
+        "typeDetails": "Indica 100%",
+        "genetics": "Indian Landrace",
+        "floweringType": "Photoperiod",
+        "thc": 16,
+        "cbd": 1,
+        "thcRange": "14-18%",
+        "cbdRange": "<1%",
+        "floweringTime": 9,
+        "floweringTimeRange": "8-10",
+        "description": "A general term for indica landraces from India, often from mountainous regions. Known for high resin production and relaxing effects. It is a parent of Early Girl.",
+        "agronomic": { "difficulty": "Easy", "yield": "Medium", "height": "Medium" },
+        "aromas": ["Earthy", "Spicy", "Hash"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene"]
+    }),
+    createStrainObject({
+        "id": "ice-2",
+        "name": "Ice #2",
+        "type": StrainType.Hybrid,
+        "typeDetails": "Indica 70% / Sativa 30%",
+        "genetics": "Unknown",
+        "floweringType": "Photoperiod",
+        "thc": 20,
+        "cbd": 1,
+        "thcRange": "18-22%",
+        "cbdRange": "<1%",
+        "floweringTime": 8.5,
+        "floweringTimeRange": "8-9",
+        "description": "Ice #2 is a select indica-dominant phenotype known for its heavy resin production and relaxing effects. It is a crucial parent strain for Papaya, contributing its sweet, earthy aroma and calming high.",
+        "agronomic": {
+            "difficulty": "Medium",
+            "yield": "Medium",
+            "height": "Medium",
+            "yieldDetails": { "indoor": "400-500 g/m²", "outdoor": "450-550 g/plant" },
+            "heightDetails": { "indoor": "90-140 cm", "outdoor": "120-180 cm" }
+        },
+        "aromas": ["Sweet", "Earthy", "Spicy", "Pungent"],
+        "dominantTerpenes": ["Myrcene", "Caryophyllene", "Pinene"]
+    }),
 ];

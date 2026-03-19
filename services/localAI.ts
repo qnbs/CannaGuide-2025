@@ -47,12 +47,15 @@ const INFERENCE_CACHE_MAX = 64
 const inferenceCache = new Map<string, string>()
 
 const cacheKey = (prompt: string): string => {
-    // djb2 hash on full prompt for collision resistance, stringify to string key
-    let hash = 5381
+    // Dual-hash (djb2 + FNV-1a) plus length for collision resistance
+    let djb2 = 5381
+    let fnv = 0x811c9dc5
     for (let i = 0; i < prompt.length; i++) {
-        hash = ((hash << 5) + hash + prompt.charCodeAt(i)) | 0
+        const c = prompt.charCodeAt(i)
+        djb2 = ((djb2 << 5) + djb2 + c) | 0
+        fnv = ((fnv ^ c) * 0x01000193) | 0
     }
-    return `${hash}_${prompt.length}`
+    return `${djb2}_${fnv}_${prompt.length}`
 }
 
 const getCached = (prompt: string): string | null => {
@@ -446,14 +449,11 @@ class LocalAiService {
             sentimentModelReady: nlpStatus.sentimentReady,
             summarizationModelReady: nlpStatus.summarizationReady,
             zeroShotTextModelReady: nlpStatus.zeroShotReady,
+            // Only count core model failures (text + vision) and explicitly attempted optional models
             errorCount:
                 Number(textResult.status === 'rejected') +
                 Number(visionResult.status === 'rejected') +
-                Number(webLlmResult?.status === 'rejected') +
-                Number(!embeddingReady) +
-                Number(!nlpStatus.sentimentReady) +
-                Number(!nlpStatus.summarizationReady) +
-                Number(!nlpStatus.zeroShotReady),
+                Number(hasWebLlm && webLlmResult?.status === 'rejected'),
         }
     }
 

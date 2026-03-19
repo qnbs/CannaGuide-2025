@@ -193,13 +193,26 @@ export const persistSnapshot = (): void => {
 
 /**
  * Load the most recent persisted snapshot.
+ * Validates the shape to guard against corrupted localStorage data.
  */
 export const loadPersistedSnapshot = (): TelemetrySnapshot | null => {
     try {
         const raw = localStorage.getItem(TELEMETRY_STORAGE_KEY)
         if (!raw) return null
-        return JSON.parse(raw) as TelemetrySnapshot
+        const parsed = JSON.parse(raw) as Record<string, unknown>
+        // Validate required shape — reject if critical fields are missing or wrong type
+        if (
+            typeof parsed.totalInferences !== 'number' ||
+            typeof parsed.averageLatencyMs !== 'number' ||
+            typeof parsed.successRate !== 'number' ||
+            typeof parsed.lastUpdated !== 'number'
+        ) {
+            localStorage.removeItem(TELEMETRY_STORAGE_KEY)
+            return null
+        }
+        return parsed as unknown as TelemetrySnapshot
     } catch {
+        localStorage.removeItem(TELEMETRY_STORAGE_KEY)
         return null
     }
 }

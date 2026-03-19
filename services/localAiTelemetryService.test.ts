@@ -207,6 +207,19 @@ describe('localAiTelemetryService', () => {
         expect(loaded).toBeNull()
     })
 
+    it('returns null and cleans up corrupted localStorage data', () => {
+        localStorage.setItem('cg.localai.telemetry', '{"broken": true}')
+        const loaded = loadPersistedSnapshot()
+        expect(loaded).toBeNull()
+        expect(localStorage.getItem('cg.localai.telemetry')).toBeNull()
+    })
+
+    it('returns null for invalid JSON in localStorage', () => {
+        localStorage.setItem('cg.localai.telemetry', 'not-json-at-all')
+        const loaded = loadPersistedSnapshot()
+        expect(loaded).toBeNull()
+    })
+
     it('empty snapshot returns sane defaults', () => {
         const snapshot = getSnapshot()
         expect(snapshot.totalInferences).toBe(0)

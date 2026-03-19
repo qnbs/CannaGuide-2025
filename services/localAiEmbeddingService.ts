@@ -11,6 +11,8 @@ import { captureLocalAiError } from './sentryService'
 
 const EMBEDDING_MODEL_ID = 'Xenova/all-MiniLM-L6-v2'
 const EMBEDDING_DIMENSION = 384
+/** Timeout for a single embedding inference (30s — embeddings are fast). */
+const EMBEDDING_TIMEOUT_MS = 30_000
 
 let embeddingPipelinePromise: Promise<LocalAiPipeline> | null = null
 
@@ -54,6 +56,22 @@ const normalize = (vec: Float32Array): Float32Array => {
     return vec
 }
 
+/** Race a promise against a timeout. */
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Embedding timeout')), ms)
+        promise.then(
+            (value) => {
+                clearTimeout(timer)
+                resolve(value)
+            },
+            (error) => {
+                clearTimeout(timer)
+                reject(error)
+            },
+        )
+    })
+
 /** Extract a Float32Array embedding from the pipeline output. */
 const extractEmbedding = (raw: unknown): Float32Array => {
     // Transformers.js feature-extraction returns a Tensor with { data, dims }.
@@ -83,7 +101,10 @@ const extractEmbedding = (raw: unknown): Float32Array => {
  */
 export const embedText = async (text: string): Promise<Float32Array> => {
     const pipeline = await loadEmbeddingPipeline()
-    const result = await pipeline(text, { pooling: 'mean', normalize: true })
+    const result = await withTimeout(
+        pipeline(text, { pooling: 'mean', normalize: true }),
+        EMBEDDING_TIMEOUT_MS,
+    )
     return extractEmbedding(result)
 }
 
@@ -102,7 +123,10 @@ export const embedBatch = async (texts: string[]): Promise<Float32Array[]> => {
         const slice = texts.slice(i, i + BATCH)
         const batchResults = await Promise.all(
             slice.map(async (t) => {
-                const r = await pipeline(t, { pooling: 'mean', normalize: true })
+                const r = await withTimeout(
+                    pipeline(t, { pooling: 'mean', normalize: true }),
+                    EMBEDDING_TIMEOUT_MS,
+                )
                 return extractEmbedding(r)
             }),
         )

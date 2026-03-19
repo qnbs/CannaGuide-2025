@@ -45,13 +45,17 @@ const openDb = (): Promise<IDBDatabase> => {
     return dbPromise
 }
 
-/** Generate a djb2 hash key from the prompt string. */
+/** Generate a collision-resistant cache key from the prompt string. */
 const hashKey = (prompt: string): string => {
-    let hash = 5381
+    // Use two independent hashes (djb2 + FNV-1a) plus length for collision resistance
+    let djb2 = 5381
+    let fnv = 0x811c9dc5
     for (let i = 0; i < prompt.length; i++) {
-        hash = ((hash << 5) + hash + prompt.charCodeAt(i)) | 0
+        const c = prompt.charCodeAt(i)
+        djb2 = ((djb2 << 5) + djb2 + c) | 0
+        fnv = ((fnv ^ c) * 0x01000193) | 0
     }
-    return `${hash}_${prompt.length}`
+    return `${djb2}_${fnv}_${prompt.length}`
 }
 
 /**

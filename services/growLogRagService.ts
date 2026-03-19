@@ -13,6 +13,9 @@ interface LogChunk {
     createdAt: number
 }
 
+/** Maximum chunks to process to prevent OOM on large journals. */
+const MAX_CHUNKS = 500
+
 const tokenize = (input: string): string[] =>
     input
         .toLowerCase()
@@ -50,7 +53,7 @@ const setCachedEmbedding = (key: string, vec: Float32Array): void => {
 
 class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
-        return plants.flatMap((plant) =>
+        const allChunks = plants.flatMap((plant) =>
             plant.journal.map((entry: JournalEntry) => ({
                 plantId: plant.id,
                 plantName: plant.name,
@@ -58,6 +61,12 @@ class GrowLogRagService {
                 text: `${entry.type} ${entry.notes} ${(entry.details && JSON.stringify(entry.details)) || ''}`,
             })),
         )
+        // Cap to most recent chunks to prevent OOM on large journals
+        if (allChunks.length > MAX_CHUNKS) {
+            allChunks.sort((a, b) => b.createdAt - a.createdAt)
+            return allChunks.slice(0, MAX_CHUNKS)
+        }
+        return allChunks
     }
 
     /**

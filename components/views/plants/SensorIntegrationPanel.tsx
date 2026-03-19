@@ -66,10 +66,13 @@ const SensorIntegrationPanelComponent: React.FC = () => {
     }
 
     const handleMqttToggle = () => {
+        // Always clean up existing subscriptions first
+        for (const unsub of unsubRef.current) unsub()
+        unsubRef.current = []
+
         if (mqttState === 'connected' || mqttState === 'connecting') {
             mqttSensorService.disconnect()
-            for (const unsub of unsubRef.current) unsub()
-            unsubRef.current = []
+            setMqttState('disconnected')
             return
         }
 

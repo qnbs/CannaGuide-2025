@@ -42,6 +42,7 @@ const CloudSyncPanel: React.FC = () => {
     }
 
     const handlePush = async (): Promise<void> => {
+        if (isPushing) return
         setIsPushing(true)
         try {
             const stateJson = await indexedDBStorage.getItem(REDUX_STATE_KEY)
@@ -76,6 +77,7 @@ const CloudSyncPanel: React.FC = () => {
     }
 
     const handlePullConfirm = async (): Promise<void> => {
+        if (isPulling) return
         setIsPulling(true)
         setIsPullConfirmOpen(false)
         try {

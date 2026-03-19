@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { memo, useEffect, useRef, useMemo } from 'react'
 import * as THREE from 'three'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
@@ -247,12 +247,27 @@ interface GrowRoom3DProps {
     className?: string
 }
 
+const disposeScene = (scene: THREE.Scene, renderer: THREE.WebGLRenderer): void => {
+    scene.traverse((obj: THREE.Mesh) => {
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.Points) {
+            obj.geometry.dispose()
+            if (Array.isArray(obj.material)) {
+                obj.material.forEach((m: THREE.MeshStandardMaterial) => m.dispose())
+            } else {
+                obj.material.dispose()
+            }
+        }
+    })
+    renderer.dispose()
+}
+
 const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
     const { t } = useTranslation()
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const sceneRef = useRef<THREE.Scene | null>(null)
     const frameRef = useRef(0)
+    const cancelledRef = useRef(false)
 
     const activePlants = useAppSelector(selectActivePlants)
     const gardenMetrics = useAppSelector(selectGardenHealthMetrics)
@@ -274,9 +289,16 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         return { label: t('plantsView.growRoom3d.vpdHigh'), color: 'text-red-400' }
     }, [vpdValue, t])
 
-    const setupScene = useCallback(() => {
+    useEffect(() => {
         const canvas = canvasRef.current
         if (!canvas) return
+
+        // Dispose previous scene/renderer before creating new ones
+        if (sceneRef.current && rendererRef.current) {
+            disposeScene(sceneRef.current, rendererRef.current)
+        }
+
+        cancelledRef.current = false
 
         const scene = new THREE.Scene()
         scene.background = new THREE.Color(0x0a0a1a)
@@ -331,8 +353,10 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         const particles = createAtmosphereParticles(vpdValue)
         scene.add(particles)
 
-        // Animation loop
-        const animate = () => {
+        // Animation loop with cancellation guard
+        const animate = (): void => {
+            if (cancelledRef.current) return
+
             // Gentle camera orbit
             const time = performance.now() * 0.0003
             camera.position.x = Math.cos(time) * 4.5
@@ -354,30 +378,21 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
             }
 
             renderer.render(scene, camera)
-            frameRef.current = window.requestAnimationFrame(animate)
+            if (!cancelledRef.current) {
+                frameRef.current = window.requestAnimationFrame(animate)
+            }
         }
 
         animate()
-    }, [activePlants, vpdValue])
-
-    useEffect(() => {
-        setupScene()
 
         return () => {
+            cancelledRef.current = true
             window.cancelAnimationFrame(frameRef.current)
-            rendererRef.current?.dispose()
-            sceneRef.current?.traverse((obj: THREE.Mesh) => {
-                if (obj instanceof THREE.Mesh) {
-                    obj.geometry.dispose()
-                    if (Array.isArray(obj.material)) {
-                        obj.material.forEach((m: THREE.MeshStandardMaterial) => m.dispose())
-                    } else {
-                        obj.material.dispose()
-                    }
-                }
-            })
+            disposeScene(scene, renderer)
+            sceneRef.current = null
+            rendererRef.current = null
         }
-    }, [setupScene])
+    }, [activePlants, vpdValue])
 
     return (
         <Card className={cn('relative overflow-hidden', className)}>

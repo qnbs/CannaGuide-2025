@@ -512,6 +512,11 @@ export const plantsView = {
         temp: 'Temp',
         humidity: 'LF',
         plants: 'Pflanzen',
+        webglUnavailableTitle: '3D-Raumvorschau nicht verfügbar',
+        webglUnavailableDescription:
+            'Dein Browser konnte keinen WebGL-Kontext erstellen, deshalb wird die Grow-Room-Visualisierung in einer sicheren Ersatzansicht dargestellt.',
+        webglUnavailableHint:
+            'Aktiviere Hardwarebeschleunigung oder nutze ein Browserprofil mit GPU-Zugriff, um die Live-3D-Ansicht wiederherzustellen.',
         vpdLow: 'VPD zu niedrig',
         vpdSlightlyLow: 'VPD leicht niedrig',
         vpdOptimal: 'VPD optimal',

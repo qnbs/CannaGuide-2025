@@ -1,49 +1,49 @@
 // Cache version is derived from the precache manifest hash to auto-bust on every deploy.
 // __WB_MANIFEST changes per build, so we derive a simple hash from its content.
-const workboxManifest = self.__WB_MANIFEST || [];
-const MANIFEST_HASH = workboxManifest.length > 0
-  ? workboxManifest.reduce((acc, entry) => {
-      const rev = typeof entry === 'string' ? entry : (entry.revision || entry.url);
-      let h = acc;
-      for (let i = 0; i < rev.length; i++) { h = ((h << 5) - h + rev.charCodeAt(i)) | 0; }
-      return h;
-    }, 0).toString(36)
-  : 'dev';
-const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`;
-const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`;
-const API_HOSTNAME = 'googleapis.com'; // Gemini API hostname
+const workboxManifest = self.__WB_MANIFEST || []
+const MANIFEST_HASH =
+    workboxManifest.length > 0
+        ? workboxManifest
+              .reduce((acc, entry) => {
+                  const rev = typeof entry === 'string' ? entry : entry.revision || entry.url
+                  let h = acc
+                  for (let i = 0; i < rev.length; i++) {
+                      h = ((h << 5) - h + rev.charCodeAt(i)) | 0
+                  }
+                  return h
+              }, 0)
+              .toString(36)
+        : 'dev'
+const CACHE_NAME = `cannaguide-${MANIFEST_HASH}-pwa-cache`
+const IMAGE_CACHE_NAME = `cannaguide-${MANIFEST_HASH}-image-cache`
+const API_HOSTNAME = 'googleapis.com' // Gemini API hostname
 
-const APP_SHELL_URLS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon.svg',
-  './favicon.ico',
-];
+const APP_SHELL_URLS = ['./', './index.html', './manifest.json', './icon.svg', './favicon.ico']
 
 // THIRD_PARTY_URLS: The app is Vite-bundled; all dependencies are self-hosted in /assets/.
 // No external CDN URLs need to be pre-cached.
-const THIRD_PARTY_URLS = [];
+const THIRD_PARTY_URLS = []
 
 // Workbox injects the precache manifest into __WB_MANIFEST at build time.
 // The variable must appear exactly once for workbox-build's injectManifest to work.
 // (referenced above in MANIFEST_HASH derivation)
-const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url));
-const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])];
-const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg', '.ico'];
+const workboxUrls = workboxManifest.map((entry) => (typeof entry === 'string' ? entry : entry.url))
+const urlsToCache = [...new Set([...APP_SHELL_URLS, ...THIRD_PARTY_URLS, ...workboxUrls])]
+const IMAGE_EXTENSIONS = ['.png', '.jpg', '.jpeg', '.webp', '.avif', '.gif', '.svg', '.ico']
 
 // --- BACKGROUND SYNC CONSTANTS ---
-const DB_NAME = 'CannaGuideDB';
-const DB_VERSION = 4;
-const OFFLINE_ACTIONS_STORE = 'offline_actions';
+const DB_NAME = 'CannaGuideDB'
+const DB_VERSION = 4
+const OFFLINE_ACTIONS_STORE = 'offline_actions'
 // Note: This app is client-only (no backend). The background sync handler notifies
 // open clients to replay queued actions locally rather than POSTing to a server.
-const REMINDER_DB_NAME = 'CannaGuideReminderDB';
-const REMINDER_DB_VERSION = 1;
-const REMINDER_STORE = 'grow_reminders';
-const REMINDER_COOLDOWN_MS = 4 * 60 * 60 * 1000;
+const REMINDER_DB_NAME = 'CannaGuideReminderDB'
+const REMINDER_DB_VERSION = 1
+const REMINDER_STORE = 'grow_reminders'
+const REMINDER_COOLDOWN_MS = 4 * 60 * 60 * 1000
 
-const offlineFallback = new Response(`
+const offlineFallback = new Response(
+    `
 <!DOCTYPE html>
 <html lang="en" style="height: 100%;">
 <head>
@@ -88,134 +88,161 @@ const offlineFallback = new Response(`
   <p>This page cannot be loaded right now. Please check your internet connection.</p>
   <p>Previously visited pages and data are still available.</p>
 </body>
-</html>`, {
-  headers: { 'Content-Type': 'text/html; charset=utf-8' }
-});
+</html>`,
+    {
+        headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    },
+)
 
 self.addEventListener('install', (event) => {
-  // Auto-activate: skip waiting so updates apply immediately.
-  // The app's controllerchange listener will reload the page.
-  self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Pre-caching App Shell');
-      return cache.addAll(urlsToCache).catch(err => {
-        console.error('[SW] App shell caching failed:', err);
-      });
-    })
-  );
-});
+    // Auto-activate: skip waiting so updates apply immediately.
+    // The app's controllerchange listener will reload the page.
+    self.skipWaiting()
+    event.waitUntil(
+        caches.open(CACHE_NAME).then(async (cache) => {
+            console.log('[SW] Pre-caching App Shell')
+
+            const results = await Promise.allSettled(
+                urlsToCache.map(async (url) => {
+                    await cache.add(url)
+                }),
+            )
+
+            const failedUrls = results
+                .map((result, index) => ({ result, url: urlsToCache[index] }))
+                .filter(({ result }) => result.status === 'rejected')
+                .map(({ url, result }) => ({
+                    url,
+                    reason: result.status === 'rejected' ? result.reason : null,
+                }))
+
+            if (failedUrls.length > 0) {
+                console.warn('[SW] App shell caching completed with failures:', failedUrls)
+            }
+        }),
+    )
+})
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME) {
-            console.log('[SW] Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-        console.log('[SW] New service worker activated, claiming clients.');
-        return self.clients.claim();
-    })
-  );
-});
+    event.waitUntil(
+        caches
+            .keys()
+            .then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME && cacheName !== IMAGE_CACHE_NAME) {
+                            console.log('[SW] Deleting old cache:', cacheName)
+                            return caches.delete(cacheName)
+                        }
+                    }),
+                )
+            })
+            .then(() => {
+                console.log('[SW] New service worker activated, claiming clients.')
+                return self.clients.claim()
+            }),
+    )
+})
 
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
+    const { request } = event
+    const url = new URL(request.url)
 
-  if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
-    return;
-  }
+    if (request.method !== 'GET' || !url.protocol.startsWith('http')) {
+        return
+    }
 
-  if (url.hostname.includes(API_HOSTNAME)) {
-    return;
-  }
+    if (url.hostname.includes(API_HOSTNAME)) {
+        return
+    }
 
-  const isImageRequest = request.destination === 'image' || IMAGE_EXTENSIONS.some((extension) => url.pathname.toLowerCase().endsWith(extension));
+    const isImageRequest =
+        request.destination === 'image' ||
+        IMAGE_EXTENSIONS.some((extension) => url.pathname.toLowerCase().endsWith(extension))
 
-  if (isImageRequest) {
+    if (isImageRequest) {
+        event.respondWith(
+            caches.open(IMAGE_CACHE_NAME).then(async (cache) => {
+                const cachedResponse = await cache.match(request)
+                if (cachedResponse) {
+                    return cachedResponse
+                }
+
+                try {
+                    const networkResponse = await fetch(request)
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(request, networkResponse.clone())
+                    }
+                    return networkResponse
+                } catch (error) {
+                    console.error('[SW] Image fetch failed:', error)
+                    return new Response('', { status: 408 })
+                }
+            }),
+        )
+        return
+    }
+
+    if (request.mode === 'navigate') {
+        event.respondWith(
+            fetch(request)
+                .then((networkResponse) => {
+                    if (
+                        networkResponse &&
+                        networkResponse.status === 200 &&
+                        url.origin === self.location.origin
+                    ) {
+                        const responseToCache = networkResponse.clone()
+                        caches.open(CACHE_NAME).then((cache) => {
+                            cache.put(request, responseToCache)
+                        })
+                    }
+                    return networkResponse
+                })
+                .catch(async () => {
+                    const cachedResponse = await caches.match(request)
+                    return cachedResponse || offlineFallback
+                }),
+        )
+        return
+    }
+
+    // Stale-while-revalidate: serve from cache immediately, update cache in background.
+    // Ensures users see fresh content after the next navigation.
     event.respondWith(
-      caches.open(IMAGE_CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(request);
-        if (cachedResponse) {
-          return cachedResponse;
-        }
+        caches.open(CACHE_NAME).then(async (cache) => {
+            const cachedResponse = await cache.match(request)
 
-        try {
-          const networkResponse = await fetch(request);
-          if (networkResponse && networkResponse.status === 200) {
-            cache.put(request, networkResponse.clone());
-          }
-          return networkResponse;
-        } catch (error) {
-          console.error('[SW] Image fetch failed:', error);
-          return new Response('', { status: 408 });
-        }
-      }),
-    );
-    return;
-  }
+            const fetchPromise = fetch(request)
+                .then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        cache.put(request, networkResponse.clone())
+                    }
+                    return networkResponse
+                })
+                .catch((error) => {
+                    console.error('[SW] Fetch failed:', error)
+                    return cachedResponse || new Response('Network error', { status: 408 })
+                })
 
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && url.origin === self.location.origin) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(async () => {
-          const cachedResponse = await caches.match(request);
-          return cachedResponse || offlineFallback;
+            return cachedResponse || fetchPromise
         }),
-    );
-    return;
-  }
-
-  // Stale-while-revalidate: serve from cache immediately, update cache in background.
-  // Ensures users see fresh content after the next navigation.
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const cachedResponse = await cache.match(request);
-
-      const fetchPromise = fetch(request).then(networkResponse => {
-        if (networkResponse && networkResponse.status === 200) {
-          cache.put(request, networkResponse.clone());
-        }
-        return networkResponse;
-      }).catch(error => {
-        console.error('[SW] Fetch failed:', error);
-        return cachedResponse || new Response('Network error', { status: 408 });
-      });
-
-      return cachedResponse || fetchPromise;
-    })
-  );
-});
+    )
+})
 
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting()
+    }
 
-  if (event.data?.type === 'UPDATE_REMINDERS' && Array.isArray(event.data.payload)) {
-    event.waitUntil(replaceReminders(event.data.payload));
-  }
+    if (event.data?.type === 'UPDATE_REMINDERS' && Array.isArray(event.data.payload)) {
+        event.waitUntil(replaceReminders(event.data.payload))
+    }
 
-  if (event.data?.type === 'REQUEST_REMINDER_CHECK') {
-    event.waitUntil(notifyDueReminders());
-  }
-});
-
+    if (event.data?.type === 'REQUEST_REMINDER_CHECK') {
+        event.waitUntil(notifyDueReminders())
+    }
+})
 
 // --- BACKGROUND SYNC IMPLEMENTATION ---
 
@@ -225,11 +252,11 @@ self.addEventListener('message', (event) => {
  */
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(request.result);
+        const request = indexedDB.open(DB_NAME, DB_VERSION)
+        request.onerror = () => reject(request.error)
+        request.onsuccess = () => resolve(request.result)
         // Migrations are handled by the main app thread.
-    });
+    })
 }
 
 /**
@@ -237,27 +264,31 @@ function openDB() {
  * @returns {Promise<any[]>} A promise that resolves with an array of actions, including their DB keys.
  */
 function getQueuedActions() {
-    return openDB().then(db => {
+    return openDB().then((db) => {
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readonly');
-            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE);
-            const request = store.getAll();
-            const keysRequest = store.getAllKeys();
+            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readonly')
+            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+            const request = store.getAll()
+            const keysRequest = store.getAllKeys()
 
-            let items = [];
-            let keys = [];
+            let items = []
+            let keys = []
 
             transaction.oncomplete = () => {
                 // Combine keys with items
-                const result = items.map((item, index) => ({ id: keys[index], ...item }));
-                resolve(result);
-            };
-            transaction.onerror = () => reject(transaction.error);
+                const result = items.map((item, index) => ({ id: keys[index], ...item }))
+                resolve(result)
+            }
+            transaction.onerror = () => reject(transaction.error)
 
-            request.onsuccess = () => { items = request.result; };
-            keysRequest.onsuccess = () => { keys = keysRequest.result; };
-        });
-    });
+            request.onsuccess = () => {
+                items = request.result
+            }
+            keysRequest.onsuccess = () => {
+                keys = keysRequest.result
+            }
+        })
+    })
 }
 
 /**
@@ -266,106 +297,106 @@ function getQueuedActions() {
  * @returns {Promise<void>}
  */
 function deleteQueuedAction(id) {
-    return openDB().then(db => {
+    return openDB().then((db) => {
         return new Promise((resolve, reject) => {
-            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite');
-            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE);
-            const request = store.delete(id);
-            transaction.oncomplete = () => resolve();
-            transaction.onerror = () => reject(transaction.error);
-        });
-    });
+            const transaction = db.transaction(OFFLINE_ACTIONS_STORE, 'readwrite')
+            const store = transaction.objectStore(OFFLINE_ACTIONS_STORE)
+            const request = store.delete(id)
+            transaction.oncomplete = () => resolve()
+            transaction.onerror = () => reject(transaction.error)
+        })
+    })
 }
 
 function openReminderDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(REMINDER_DB_NAME, REMINDER_DB_VERSION);
-    request.onerror = () => reject(request.error);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(REMINDER_STORE)) {
-        db.createObjectStore(REMINDER_STORE, { keyPath: 'id' });
-      }
-    };
-    request.onsuccess = () => resolve(request.result);
-  });
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(REMINDER_DB_NAME, REMINDER_DB_VERSION)
+        request.onerror = () => reject(request.error)
+        request.onupgradeneeded = () => {
+            const db = request.result
+            if (!db.objectStoreNames.contains(REMINDER_STORE)) {
+                db.createObjectStore(REMINDER_STORE, { keyPath: 'id' })
+            }
+        }
+        request.onsuccess = () => resolve(request.result)
+    })
 }
 
 function replaceReminders(reminders) {
-  return openReminderDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(REMINDER_STORE, 'readwrite');
-      const store = tx.objectStore(REMINDER_STORE);
-      const clearReq = store.clear();
+    return openReminderDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(REMINDER_STORE, 'readwrite')
+            const store = tx.objectStore(REMINDER_STORE)
+            const clearReq = store.clear()
 
-      clearReq.onsuccess = () => {
-        reminders.forEach((reminder) => {
-          store.put({ ...reminder, lastNotifiedAt: reminder.lastNotifiedAt || 0 });
-        });
-      };
+            clearReq.onsuccess = () => {
+                reminders.forEach((reminder) => {
+                    store.put({ ...reminder, lastNotifiedAt: reminder.lastNotifiedAt || 0 })
+                })
+            }
 
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  });
+            tx.oncomplete = () => resolve()
+            tx.onerror = () => reject(tx.error)
+        })
+    })
 }
 
 function getStoredReminders() {
-  return openReminderDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(REMINDER_STORE, 'readonly');
-      const store = tx.objectStore(REMINDER_STORE);
-      const req = store.getAll();
-      req.onsuccess = () => resolve(req.result || []);
-      req.onerror = () => reject(req.error);
-    });
-  });
+    return openReminderDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(REMINDER_STORE, 'readonly')
+            const store = tx.objectStore(REMINDER_STORE)
+            const req = store.getAll()
+            req.onsuccess = () => resolve(req.result || [])
+            req.onerror = () => reject(req.error)
+        })
+    })
 }
 
 function updateReminderNotificationTime(id, timestamp) {
-  return openReminderDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(REMINDER_STORE, 'readwrite');
-      const store = tx.objectStore(REMINDER_STORE);
-      const getReq = store.get(id);
-      getReq.onsuccess = () => {
-        const existing = getReq.result;
-        if (existing) {
-          store.put({ ...existing, lastNotifiedAt: timestamp });
-        }
-      };
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error);
-    });
-  });
+    return openReminderDB().then((db) => {
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(REMINDER_STORE, 'readwrite')
+            const store = tx.objectStore(REMINDER_STORE)
+            const getReq = store.get(id)
+            getReq.onsuccess = () => {
+                const existing = getReq.result
+                if (existing) {
+                    store.put({ ...existing, lastNotifiedAt: timestamp })
+                }
+            }
+            tx.oncomplete = () => resolve()
+            tx.onerror = () => reject(tx.error)
+        })
+    })
 }
 
 async function notifyDueReminders() {
-  const reminders = await getStoredReminders();
-  if (!reminders.length) return;
+    const reminders = await getStoredReminders()
+    if (!reminders.length) return
 
-  const now = Date.now();
+    const now = Date.now()
 
-  for (const reminder of reminders) {
-    const dueAt = reminder.dueAt || now;
-    const lastNotifiedAt = reminder.lastNotifiedAt || 0;
-    const isDue = dueAt <= now;
-    const isCooledDown = now - lastNotifiedAt >= REMINDER_COOLDOWN_MS;
+    for (const reminder of reminders) {
+        const dueAt = reminder.dueAt || now
+        const lastNotifiedAt = reminder.lastNotifiedAt || 0
+        const isDue = dueAt <= now
+        const isCooledDown = now - lastNotifiedAt >= REMINDER_COOLDOWN_MS
 
-    if (!isDue || !isCooledDown) {
-      continue;
+        if (!isDue || !isCooledDown) {
+            continue
+        }
+
+        await self.registration.showNotification(reminder.title || 'Grow Reminder', {
+            body: reminder.body || 'You have a pending grow reminder.',
+            icon: './icon.svg',
+            badge: './icon.svg',
+            tag: `grow-reminder-${reminder.id}`,
+            data: { plantId: reminder.plantId, reminderId: reminder.id },
+        })
+
+        await updateReminderNotificationTime(reminder.id, now)
     }
-
-    await self.registration.showNotification(reminder.title || 'Grow Reminder', {
-      body: reminder.body || 'You have a pending grow reminder.',
-      icon: './icon.svg',
-      badge: './icon.svg',
-      tag: `grow-reminder-${reminder.id}`,
-      data: { plantId: reminder.plantId, reminderId: reminder.id },
-    });
-
-    await updateReminderNotificationTime(reminder.id, now);
-  }
 }
 
 /**
@@ -374,61 +405,61 @@ async function notifyDueReminders() {
  * server to POST to. Adding a real server endpoint here is left as a future extension.
  */
 async function syncData() {
-  console.log('[SW] Attempting to sync data...');
-  try {
-    const queuedActions = await getQueuedActions();
-    if (!queuedActions || queuedActions.length === 0) {
-      console.log('[SW] No actions to sync.');
-      return;
-    }
+    console.log('[SW] Attempting to sync data...')
+    try {
+        const queuedActions = await getQueuedActions()
+        if (!queuedActions || queuedActions.length === 0) {
+            console.log('[SW] No actions to sync.')
+            return
+        }
 
-    console.log(`[SW] Found ${queuedActions.length} action(s) to sync.`);
-    const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        console.log(`[SW] Found ${queuedActions.length} action(s) to sync.`)
+        const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true })
 
-    for (const action of queuedActions) {
-      const { id, ...actionData } = action;
-      // Notify all open app windows so they can replay the action in Redux.
-      for (const client of clients) {
-        client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData });
-      }
-      await deleteQueuedAction(id);
+        for (const action of queuedActions) {
+            const { id, ...actionData } = action
+            // Notify all open app windows so they can replay the action in Redux.
+            for (const client of clients) {
+                client.postMessage({ type: 'REPLAY_OFFLINE_ACTION', payload: actionData })
+            }
+            await deleteQueuedAction(id)
+        }
+        console.log('[SW] All queued actions dispatched to clients.')
+    } catch (error) {
+        console.error('[SW] Sync failed, will retry later.', error)
+        throw error
     }
-    console.log('[SW] All queued actions dispatched to clients.');
-  } catch (error) {
-    console.error('[SW] Sync failed, will retry later.', error);
-    throw error;
-  }
 }
 
 // Background Sync event listener
 self.addEventListener('sync', (event) => {
-  if (event.tag === 'data-sync') {
-    console.log('[SW] Sync event received for "data-sync"');
-    event.waitUntil(syncData());
-    return;
-  }
+    if (event.tag === 'data-sync') {
+        console.log('[SW] Sync event received for "data-sync"')
+        event.waitUntil(syncData())
+        return
+    }
 
-  if (event.tag === 'grow-reminders-sync') {
-    console.log('[SW] Sync event received for "grow-reminders-sync"');
-    event.waitUntil(notifyDueReminders());
-  }
-});
+    if (event.tag === 'grow-reminders-sync') {
+        console.log('[SW] Sync event received for "grow-reminders-sync"')
+        event.waitUntil(notifyDueReminders())
+    }
+})
 
 self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'grow-reminders') {
-    console.log('[SW] Periodic sync event for grow reminders');
-    event.waitUntil(notifyDueReminders());
-  }
-});
+    if (event.tag === 'grow-reminders') {
+        console.log('[SW] Periodic sync event for grow reminders')
+        event.waitUntil(notifyDueReminders())
+    }
+})
 
 self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      if (clients.length > 0) {
-        return clients[0].focus();
-      }
-      return self.clients.openWindow('./');
-    })
-  );
-});
+    event.notification.close()
+    event.waitUntil(
+        self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+            if (clients.length > 0) {
+                return clients[0].focus()
+            }
+            return self.clients.openWindow('./')
+        }),
+    )
+})

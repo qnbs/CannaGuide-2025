@@ -1,5 +1,3 @@
-
-
 export const knowledgeView = {
     title: 'Wissens-Hub',
     subtitle: 'Dein interaktiver Leitfaden für den erfolgreichen Anbau.',
@@ -12,13 +10,15 @@ export const knowledgeView = {
     },
     hub: {
         selectPlant: 'Pflanze auswählen',
-        noPlants: 'Keine aktiven Pflanzen für kontextbezogene Ratschläge vorhanden. Starte einen Anbau!',
+        noPlants:
+            'Keine aktiven Pflanzen für kontextbezogene Ratschläge vorhanden. Starte einen Anbau!',
         todaysFocus: 'Heutiger Fokus für {{plantName}}',
     },
     aiMentor: {
         title: 'KI-Mentor',
         plantContext: 'Chatte mit dem KI-Mentor im Kontext von {{name}}',
-        plantContextSubtitle: 'Wähle eine Pflanze aus, um kontextbezogene Fragen zu stellen und Ratschläge zu erhalten.',
+        plantContextSubtitle:
+            'Wähle eine Pflanze aus, um kontextbezogene Fragen zu stellen und Ratschläge zu erhalten.',
         startChat: 'Chat starten',
         inputPlaceholder: 'Frage den Mentor...',
         clearChat: 'Chat löschen',
@@ -34,7 +34,8 @@ export const knowledgeView = {
     },
     breeding: {
         title: 'Zuchtlabor',
-        description: 'Kreuze deine gesammelten Samen, um neue, einzigartige Sorten mit kombinierten Eigenschaften zu erschaffen.',
+        description:
+            'Kreuze deine gesammelten Samen, um neue, einzigartige Sorten mit kombinierten Eigenschaften zu erschaffen.',
         collectedSeeds: 'Gesammelte Samen',
         noSeeds: 'Sammle Samen von erntereifen Pflanzen, um mit dem Züchten zu beginnen.',
         parentA: 'Elternteil A',
@@ -47,7 +48,8 @@ export const knowledgeView = {
         newStrainName: 'Name der neuen Sorte',
         potentialTraits: 'Mögliche Merkmale',
         saveStrain: 'Sorte speichern',
-        breedingSuccess: 'Neue Sorte "{{name}}" erfolgreich gezüchtet und zu "Meine Sorten" hinzugefügt!',
+        breedingSuccess:
+            'Neue Sorte "{{name}}" erfolgreich gezüchtet und zu "Meine Sorten" hinzugefügt!',
         splicingGenes: 'Gene werden gespleißt...',
         flowering: 'Blütezeit',
         phenoTracking: 'Phäno-Tracking',
@@ -62,16 +64,23 @@ export const knowledgeView = {
         arFallback: '3D-Fallback',
         arPreviewLabel: 'Dreidimensionale Zuchtvorschau',
         arLoading: 'AR-Vorschau wird geladen...',
+        webglUnavailableTitle: '3D-Vorschau nicht verfügbar',
+        webglUnavailableDescription:
+            'Dein Browser konnte keinen WebGL-Kontext erstellen, deshalb wird diese Vorschau als statische Ersatzansicht angezeigt.',
+        webglUnavailableHint:
+            'Aktiviere Hardwarebeschleunigung oder wechsle zu einem Browserprofil mit GPU-Zugriff, um die Live-Vorschau wiederherzustellen.',
     },
     scenarios: {
         toppingVsLst: {
             title: "Experiment 'Topping vs. LST' starten",
-            description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht eine Pflanze, die LST erhält, mit einer, die getoppt wurde."
+            description:
+                'Simuliert eine 14-tägige Wachstumsperiode und vergleicht eine Pflanze, die LST erhält, mit einer, die getoppt wurde.',
         },
         tempPlus2c: {
-            title: "Experiment Temperatur +2\u00b0C starten",
-            description: "Simuliert eine 14-tägige Wachstumsperiode und vergleicht Ausgangsbedingungen mit einem Anstieg der Dachtemperatur um +2\u00b0C."
-        }
+            title: 'Experiment Temperatur +2\u00b0C starten',
+            description:
+                'Simuliert eine 14-tägige Wachstumsperiode und vergleicht Ausgangsbedingungen mit einem Anstieg der Dachtemperatur um +2\u00b0C.',
+        },
     },
     knowledgebase: {
         'phase1-prep': {
@@ -84,7 +93,7 @@ export const knowledgeView = {
                         <li><strong>Belüftung:</strong> Stelle sicher, dass dein Abluftventilator, der Lufteinlass und alle Umluftventilatoren korrekt funktionieren. Guter Luftstrom ist entscheidend.</li>
                         <li><strong>Substrat & Töpfe:</strong> Wenn du Erde verwendest, befeuchte sie leicht vor dem Einpflanzen. Sorge für eine ausgezeichnete Drainage deiner Töpfe, um Wurzelfäule zu verhindern.</li>
                       </ul>
-                      <strong>Umgebung kalibrieren:</strong> Kalibriere deine Thermo-Hygrometer. Strebe eine stabile Umgebung um <strong>22-25°C (72-77°F)</strong> und <strong>65-75% relative Luftfeuchtigkeit</strong> an.`
+                      <strong>Umgebung kalibrieren:</strong> Kalibriere deine Thermo-Hygrometer. Strebe eine stabile Umgebung um <strong>22-25°C (72-77°F)</strong> und <strong>65-75% relative Luftfeuchtigkeit</strong> an.`,
         },
         'phase2-seedling': {
             title: 'Phase 2: Keimung & Sämling',
@@ -92,7 +101,7 @@ export const knowledgeView = {
                       <strong>Keimung:</strong> Halte das Medium konstant feucht, aber niemals durchnässt. Eine Feuchtigkeitshaube kann helfen, eine hohe Luftfeuchtigkeit (70-80%) aufrechtzuerhalten, was ideal zum Keimen ist.<br>
                       <strong>Licht:</strong> Sämlinge benötigen kein intensives Licht. Eine Leuchtstoffröhre mit geringer Wattzahl oder eine gedimmte LED ist perfekt. Ein 18/6-Lichtzyklus ist Standard. Halte die Lampen weit genug entfernt, um Verbrennungen zu vermeiden – wenn sich dein Handrücken auf Höhe der Pflanzenspitze unangenehm warm anfühlt, ist die Lampe zu nah.<br>
                       <strong>Wasser:</strong> Gieße sparsam in einem kleinen Kreis um den Stängel. Das Wurzelsystem ist winzig und kann leicht ertrinken.<br>
-                      <strong>Nährstoffe:</strong> Dünge noch nicht! Die meisten Substrate enthalten genug Nährstoffe für die ersten 2-3 Wochen. Warte, bis die Pflanze mindestens 3-4 Sätze echter Blätter hat, bevor du eine sehr schwache (1/4 Stärke) Nährlösung einführst.`
+                      <strong>Nährstoffe:</strong> Dünge noch nicht! Die meisten Substrate enthalten genug Nährstoffe für die ersten 2-3 Wochen. Warte, bis die Pflanze mindestens 3-4 Sätze echter Blätter hat, bevor du eine sehr schwache (1/4 Stärke) Nährlösung einführst.`,
         },
         'phase3-vegetative': {
             title: 'Phase 3: Vegetatives Wachstum',
@@ -100,7 +109,7 @@ export const knowledgeView = {
                       <strong>Licht:</strong> Deine Pflanze verträgt jetzt viel mehr Licht. Erhöhe allmählich die Intensität oder senke die Lichtquelle. Ein 18/6-Lichtzyklus bleibt Standard für photoperiodische Pflanzen.<br>
                       <strong>Nährstoffe:</strong> Erhöhe langsam die Nährstoffstärke. Ein stickstoffreicher (N) Dünger ist jetzt entscheidend für das Blattwachstum.<br>
                       <strong>Training:</strong> Jetzt ist der perfekte Zeitpunkt, um mit dem Training zu beginnen, um ein gleichmäßiges Kronendach zu schaffen und deinen Endertrag zu steigern. Beginne mit <strong>LST (Low-Stress-Training)</strong>, um Äste sanft zu biegen, oder führe ein <strong>Topping</strong> durch, um mehrere Hauptblüten zu erzeugen.<br>
-                      <strong>Umgebung:</strong> Die ideale Luftfeuchtigkeit sinkt auf etwa 50-70%. Eine gute Luftzirkulation wird wichtiger, da die Pflanze dichter wird.`
+                      <strong>Umgebung:</strong> Die ideale Luftfeuchtigkeit sinkt auf etwa 50-70%. Eine gute Luftzirkulation wird wichtiger, da die Pflanze dichter wird.`,
         },
         'phase4-flowering': {
             title: 'Phase 4: Blüte',
@@ -108,14 +117,14 @@ export const knowledgeView = {
                       <strong>Lichtzyklus:</strong> Um die Blüte einzuleiten, musst du auf einen strikten Zyklus von <strong>12 Stunden Licht und 12 Stunden *ununterbrochener* Dunkelheit</strong> umschalten.<br>
                       <strong>Der Stretch:</strong> In den ersten 2-3 Wochen der Blüte kann deine Pflanze ihre Höhe verdoppeln oder sogar verdreifachen. Sei auf diesen Wachstumsschub vorbereitet!<br>
                       <strong>Nährstoffe:</strong> Wechsle zu einem Blütedünger, der weniger Stickstoff (N) und mehr Phosphor (P) und Kalium (K) enthält, um die Blütenentwicklung zu unterstützen.<br>
-                      <strong>Luftfeuchtigkeit:</strong> Senke die Luftfeuchtigkeit schrittweise auf <strong>40-50%</strong>, um das Risiko von Knospenfäule (Botrytis) in den dichten Blüten zu verringern.`
+                      <strong>Luftfeuchtigkeit:</strong> Senke die Luftfeuchtigkeit schrittweise auf <strong>40-50%</strong>, um das Risiko von Knospenfäule (Botrytis) in den dichten Blüten zu verringern.`,
         },
         'phase5-harvest': {
             title: 'Phase 5: Ernte, Trocknen & Curing',
             content: `<h3>Der letzte Schliff</h3><p>Geduld in dieser letzten Phase entscheidet über die Qualität des Endprodukts. Überstürze es nicht!</p>
                       <strong>Erntezeitpunkt:</strong> Beobachte die Trichome mit einer Juwelierlupe oder einem Mikroskop. Ernte, wenn die meisten Trichome milchig/trüb sind (für maximale THC-Potenz) und einige wenige bernsteinfarben sind (für eine entspannendere Wirkung). Klare Trichome sind zu früh.<br>
                       <strong>Trocknen:</strong> Hänge die Zweige kopfüber in einem dunklen, kühlen Raum mit sanfter Luftzirkulation auf. Strebe <strong>18-20°C (64-68°F)</strong> und <strong>55-60% Luftfeuchtigkeit</strong> an. Dieser langsame Trocknungsprozess dauert 7-14 Tage und ist entscheidend für den Erhalt der Terpene.<br>
-                      <strong>Curing (Fermentierung):</strong> Sobald die kleineren Stängel beim Biegen knacken statt sich nur zu biegen, lege die trockenen Blüten in luftdichte Gläser. Öffne die Gläser in der ersten Woche täglich für 5-10 Minuten ("burping"), um Feuchtigkeit entweichen zu lassen. Dieser Prozess verbessert Geschmack, Aroma und Sanftheit dramatisch.`
+                      <strong>Curing (Fermentierung):</strong> Sobald die kleineren Stängel beim Biegen knacken statt sich nur zu biegen, lege die trockenen Blüten in luftdichte Gläser. Öffne die Gläser in der ersten Woche täglich für 5-10 Minuten ("burping"), um Feuchtigkeit entweichen zu lassen. Dieser Prozess verbessert Geschmack, Aroma und Sanftheit dramatisch.`,
         },
         'fix-overwatering': {
             title: 'Problembehebung: Überwässerung',
@@ -127,7 +136,7 @@ export const knowledgeView = {
                         <li><strong>Luftzirkulation verbessern:</strong> Richte einen Ventilator auf die Erdoberfläche, um das Austrocknen zu beschleunigen.</li>
                         <li><strong>Drainage prüfen:</strong> Stelle sicher, dass dein Topf nicht in einer Pfütze aus abgelaufenem Wasser steht.</li>
                       </ul>
-                      <strong>Prävention:</strong> Hebe deinen Topf immer an, um sein Gewicht vor und nach dem Gießen zu fühlen. Dies ist die zuverlässigste Methode, um zu wissen, wann es Zeit zum Gießen ist.`
+                      <strong>Prävention:</strong> Hebe deinen Topf immer an, um sein Gewicht vor und nach dem Gießen zu fühlen. Dies ist die zuverlässigste Methode, um zu wissen, wann es Zeit zum Gießen ist.`,
         },
         'fix-calcium-deficiency': {
             title: 'Problembehebung: Kalziummangel',
@@ -143,7 +152,7 @@ export const knowledgeView = {
                       <ol>
                         <li>Überprüfe und korrigiere immer zuerst den pH-Wert deiner Wasser-/Nährlösung.</li>
                         <li>Verwende ein Cal-Mag (Kalzium-Magnesium) Ergänzungsmittel, besonders bei RO-Wasser oder Kokos.</li>
-                      </ol>`
+                      </ol>`,
         },
         'fix-nutrient-burn': {
             title: 'Problembehebung: Nährstoffbrand',
@@ -159,7 +168,7 @@ export const knowledgeView = {
                       <ol>
                         <li><strong>Medium spülen:</strong> Gieße die Pflanze mit einer großzügigen Menge reinem, pH-angepasstem Wasser, bis viel Wasser unten herausläuft. Dies wäscht überschüssige Nährsalze aus.</li>
                         <li><strong>Düngerstärke reduzieren:</strong> Verwende bei der nächsten Düngung nur die Hälfte der empfohlenen Dosis und arbeite dich langsam wieder nach oben.</li>
-                      </ol>`
+                      </ol>`,
         },
         'fix-pests': {
             title: 'Problembehebung: Häufige Schädlinge',
@@ -173,7 +182,7 @@ export const knowledgeView = {
                       <ul>
                         <li><strong>Symptome:</strong> Kleine, schwarze Fliegen, die um die Erdoberfläche schwirren. Ihre Larven im Boden können die Wurzeln schädigen, besonders bei Sämlingen.</li>
                         <li><strong>Lösung:</strong> Sie sind ein Zeichen für Überwässerung. Lasse die oberste Erdschicht zwischen den Gießvorgängen vollständig austrocknen. Verwende gelbe Klebefallen, um die erwachsenen Fliegen zu fangen.</li>
-                      </ul>`
+                      </ul>`,
         },
         'concept-training': {
             title: 'Grundkonzept: Pflanzentraining',
@@ -184,7 +193,7 @@ export const knowledgeView = {
                         <li><strong>LST (Low-Stress-Training):</strong> Sanftes Biegen und Festbinden von Ästen, um ihr Wachstum horizontal zu lenken. Kann sehr früh begonnen werden und ist risikoarm.</li>
                         <li><strong>HST (High-Stress-Training):</strong> Techniken, bei denen die Pflanze absichtlich beschädigt wird, um buschigeres Wachstum zu fördern, wie <strong>Topping</strong> (Abschneiden des Haupttriebs) oder <strong>Super Cropping</strong> (Quetschen von Stängeln). Sollte nur bei gesunden Pflanzen in der vegetativen Phase durchgeführt werden.</li>
                       </ul>
-                      <strong>Ergebnis:</strong> Statt einer großen Hauptblüte und vielen kleinen "Popcorn"-Buds erhältst du mehrere große, dichte Colas und eine viel größere Gesamternte.`
+                      <strong>Ergebnis:</strong> Statt einer großen Hauptblüte und vielen kleinen "Popcorn"-Buds erhältst du mehrere große, dichte Colas und eine viel größere Gesamternte.`,
         },
         'concept-environment': {
             title: 'Grundkonzept: Die Umgebung',
@@ -198,8 +207,8 @@ export const knowledgeView = {
                       <ul>
                         <li><strong>Abluftventilator:</strong> Entfernt ständig heiße, verbrauchte, feuchte Luft und zieht frische, CO₂-reiche Luft an. Dies ist unverzichtbar.</li>
                         <li><strong>Umluftventilator(en):</strong> Erzeugt eine sanfte Brise im Zelt. Dies stärkt die Stängel, verhindert die Bildung von feuchten Luftpolstern um die Blätter und schreckt Schädlinge ab.</li>
-                      </ul>`
-        }
+                      </ul>`,
+        },
     },
     sandbox: {
         title: 'Experimentelle Sandbox',
@@ -209,7 +218,8 @@ export const knowledgeView = {
         startExperiment: 'Neues Experiment',
         modal: {
             title: 'Neues Experiment starten',
-            description: 'Wähle eine Pflanze aus, um eine 14-tägige Simulation "Topping vs. LST" durchzuführen.',
+            description:
+                'Wähle eine Pflanze aus, um eine 14-tägige Simulation "Topping vs. LST" durchzuführen.',
             runScenario: 'Szenario starten',
             noPlants: 'Du musst zuerst eine Pflanze anbauen, um ein Experiment zu starten.',
         },
@@ -225,21 +235,22 @@ export const knowledgeView = {
     },
     growLog: {
         title: 'Grow-Log RAG',
-        description: 'Frage dein eigenes Journal direkt ab. Relevante Log-Einträge werden zuerst geladen und dann von der KI analysiert.',
+        description:
+            'Frage dein eigenes Journal direkt ab. Relevante Log-Einträge werden zuerst geladen und dann von der KI analysiert.',
         placeholder: 'z. B. Warum schwankt mein VPD in Woche 4?',
         analyzing: 'Analysiere...',
         startAnalysis: 'RAG Analyse starten',
         activeCorpus: 'Aktive Pflanzen im RAG-Korpus: {{count}}',
     },
-};
+}
 
 export const tipOfTheDay = {
     title: 'Tipp des Tages',
     tips: [
-        "Überprüfe immer den pH-Wert deines Wassers, nachdem du Nährstoffe hinzugefügt hast. Nährstoffe können den pH-Wert erheblich verändern.",
-        "Eine sanfte Brise von einem Ventilator, der auf deine Pflanzen gerichtet ist, stärkt die Stängel und beugt Schimmel vor.",
-        "Weniger ist mehr, besonders bei Nährstoffen. Es ist einfacher, einen Mangel zu beheben als einen Überschuss (Nährstoffbrand).",
-        "Beobachte die Farbe deiner Blätter. Ein sattes, gesundes Grün ist gut. Zu dunkelgrün kann auf zu viel Stickstoff hindeuten, blassgrün oder gelb auf einen Mangel.",
-        "Stofftöpfe sind eine großartige Wahl für Anfänger, da sie eine Überwässerung fast unmöglich machen und die Wurzeln mit Sauerstoff versorgen."
-    ]
-};
+        'Überprüfe immer den pH-Wert deines Wassers, nachdem du Nährstoffe hinzugefügt hast. Nährstoffe können den pH-Wert erheblich verändern.',
+        'Eine sanfte Brise von einem Ventilator, der auf deine Pflanzen gerichtet ist, stärkt die Stängel und beugt Schimmel vor.',
+        'Weniger ist mehr, besonders bei Nährstoffen. Es ist einfacher, einen Mangel zu beheben als einen Überschuss (Nährstoffbrand).',
+        'Beobachte die Farbe deiner Blätter. Ein sattes, gesundes Grün ist gut. Zu dunkelgrün kann auf zu viel Stickstoff hindeuten, blassgrün oder gelb auf einen Mangel.',
+        'Stofftöpfe sind eine großartige Wahl für Anfänger, da sie eine Überwässerung fast unmöglich machen und die Wurzeln mit Sauerstoff versorgen.',
+    ],
+}

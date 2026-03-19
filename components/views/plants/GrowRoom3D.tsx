@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useRef, useMemo } from 'react'
+import React, { memo, useEffect, useRef, useMemo, useState } from 'react'
 import * as THREE from 'three'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
@@ -16,6 +16,29 @@ const CANVAS_HEIGHT = 400
 const ROOM_WIDTH = 4
 const ROOM_DEPTH = 3
 const ROOM_HEIGHT = 2.5
+
+const getWebGLSupportError = (): string | null => {
+    if (typeof document === 'undefined') {
+        return 'WebGL is not available in this environment.'
+    }
+
+    try {
+        const testCanvas = document.createElement('canvas')
+        const contextOptions = { failIfMajorPerformanceCaveat: true }
+        const context =
+            testCanvas.getContext('webgl2', contextOptions) ??
+            testCanvas.getContext('webgl', contextOptions) ??
+            testCanvas.getContext('experimental-webgl', contextOptions)
+
+        if (context) {
+            return null
+        }
+
+        return 'This browser cannot create a WebGL context.'
+    } catch {
+        return 'This browser cannot create a WebGL context.'
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Color helpers driven by VPD / plant health
@@ -268,6 +291,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
     const sceneRef = useRef<THREE.Scene | null>(null)
     const frameRef = useRef(0)
     const cancelledRef = useRef(false)
+    const [webglError, setWebglError] = useState<string | null>(null)
 
     const activePlants = useAppSelector(selectActivePlants)
     const gardenMetrics = useAppSelector(selectGardenHealthMetrics)
@@ -293,6 +317,14 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         const canvas = canvasRef.current
         if (!canvas) return
 
+        const supportError = getWebGLSupportError()
+        if (supportError) {
+            setWebglError(supportError)
+            return
+        }
+
+        setWebglError(null)
+
         // Dispose previous scene/renderer before creating new ones
         if (sceneRef.current && rendererRef.current) {
             disposeScene(sceneRef.current, rendererRef.current)
@@ -309,7 +341,15 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         camera.position.set(3.5, 2.8, 4.0)
         camera.lookAt(0, 0.5, 0)
 
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false })
+        let renderer: THREE.WebGLRenderer
+        try {
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false })
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : 'Failed to create WebGL renderer.'
+            setWebglError(message)
+            return
+        }
         renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT, false)
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
         renderer.toneMapping = THREE.ACESFilmicToneMapping
@@ -394,6 +434,8 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         }
     }, [activePlants, vpdValue])
 
+    const showFallback = webglError !== null
+
     return (
         <Card className={cn('relative overflow-hidden', className)}>
             <div className="flex items-center justify-between mb-3">
@@ -418,13 +460,44 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
 
             {/* Canvas */}
             <div className="relative rounded-lg overflow-hidden bg-slate-900/50">
-                <canvas
-                    ref={canvasRef}
-                    width={CANVAS_WIDTH}
-                    height={CANVAS_HEIGHT}
-                    className="w-full h-auto"
-                    style={{ imageRendering: 'auto' }}
-                />
+                {showFallback ? (
+                    <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 py-8 text-center">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-amber-300">
+                            <svg
+                                className="h-7 w-7"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 8v4m0 4h.01M4.93 19h14.14c1.54 0 2.49-1.67 1.72-3L14.72 5c-.77-1.33-2.67-1.33-3.44 0L3.21 16c-.77 1.33.18 3 1.72 3Z"
+                                />
+                            </svg>
+                        </div>
+                        <div className="max-w-md space-y-2">
+                            <h4 className="text-lg font-bold font-display text-slate-100">
+                                {t('plantsView.growRoom3d.webglUnavailableTitle')}
+                            </h4>
+                            <p className="text-sm leading-6 text-slate-300">
+                                {t('plantsView.growRoom3d.webglUnavailableDescription')}
+                            </p>
+                            <p className="text-xs leading-5 text-slate-500">
+                                {t('plantsView.growRoom3d.webglUnavailableHint')}
+                            </p>
+                        </div>
+                    </div>
+                ) : (
+                    <canvas
+                        ref={canvasRef}
+                        width={CANVAS_WIDTH}
+                        height={CANVAS_HEIGHT}
+                        className="w-full h-auto"
+                        style={{ imageRendering: 'auto' }}
+                    />
+                )}
 
                 {/* VPD Overlay */}
                 <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between pointer-events-none">

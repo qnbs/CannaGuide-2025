@@ -1,8 +1,7 @@
-import React, { useState } from 'react'
+import React, { lazy, Suspense, useState } from 'react'
 import { Plant, ModalType, JournalEntryType } from '@/types'
 import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
-import { HistoryChart } from '../HistoryChart'
 import { EquipmentControls } from '../EquipmentControls'
 import { ActionToolbar } from '../ActionToolbar'
 import { useAppDispatch } from '@/stores/store'
@@ -13,7 +12,11 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { PlantVisualizer } from '../PlantVisualizer'
 import { exportService } from '@/services/exportService'
 import { dbService } from '@/services/dbService'
-import { VPDChart } from '../VPDChart'
+
+const HistoryChart = lazy(() =>
+    import('../HistoryChart').then((m) => ({ default: m.HistoryChart })),
+)
+const VPDChart = lazy(() => import('../VPDChart').then((m) => ({ default: m.VPDChart })))
 
 interface OverviewTabProps {
     plant: Plant
@@ -105,26 +108,47 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                     <h3 className="text-xl font-bold font-display text-primary-400">
                         {t('plantsView.detailedView.history')}
                     </h3>
-                    <Button size="sm" variant="secondary" onClick={handleExportReport} disabled={isExporting}>
+                    <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={handleExportReport}
+                        disabled={isExporting}
+                    >
                         <PhosphorIcons.FilePdf className="w-5 h-5 mr-1" />
                         {isExporting ? t('common.exporting') : t('common.exportPdf')}
                     </Button>
                 </div>
                 <div className="p-3 bg-slate-800/50 rounded-lg">
-                    <div className="h-64 rounded-lg" data-highlight-id="history-chart" id={`history-chart-${plant.id}`}>
-                        <HistoryChart
-                            history={plant.history}
-                            journal={plant.journal}
-                            plantCreatedAt={plant.createdAt}
-                        />
+                    <div
+                        className="h-64 rounded-lg"
+                        data-highlight-id="history-chart"
+                        id={`history-chart-${plant.id}`}
+                    >
+                        <Suspense
+                            fallback={
+                                <div className="h-64 animate-pulse bg-slate-700/30 rounded-lg" />
+                            }
+                        >
+                            <HistoryChart
+                                history={plant.history}
+                                journal={plant.journal}
+                                plantCreatedAt={plant.createdAt}
+                            />
+                        </Suspense>
                     </div>
                 </div>
             </Card>
 
             {/* 6. Hourly VPD Simulation */}
             <Card>
-                <h3 className="text-xl font-bold font-display text-primary-400 mb-3">{t('plantsView.vpd.simulation24h')}</h3>
-                <VPDChart plant={plant} />
+                <h3 className="text-xl font-bold font-display text-primary-400 mb-3">
+                    {t('plantsView.vpd.simulation24h')}
+                </h3>
+                <Suspense
+                    fallback={<div className="h-64 animate-pulse bg-slate-700/30 rounded-lg" />}
+                >
+                    <VPDChart plant={plant} />
+                </Suspense>
             </Card>
         </div>
     )

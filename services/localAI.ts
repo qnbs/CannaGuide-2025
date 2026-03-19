@@ -151,7 +151,9 @@ const fallbackMentorMessage = (
 const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisResponse => {
     const heuristic = diagnoseWithRules(plant, lang)
     return {
-        title: isGerman(lang) ? `Lokale Diagnose: ${plant.name}` : `Local Diagnosis: ${plant.name}`,
+        title: isGerman(lang)
+            ? `Lokale Diagnose: ${sanitizeText(plant.name)}`
+            : `Local Diagnosis: ${sanitizeText(plant.name)}`,
         content: heuristic.issues.length > 0 ? heuristic.issues.join('\n') : heuristic.topPriority,
         confidence: heuristic.issues.length > 0 ? 0.72 : 0.93,
         immediateActions:
@@ -248,6 +250,7 @@ class LocalAiService {
                             '[LocalAI] WebLLM unavailable after retries, falling back to Transformers.js.',
                             error,
                         )
+                        this.webLlmPromise = null
                         return null
                     }
                 }

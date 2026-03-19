@@ -182,7 +182,7 @@ const BreedingView: React.FC = () => {
                         </div>
                     ) : (
                         <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
-                            {collectedSeeds.map(seed => <SeedCard key={seed.id} seed={seed} onClick={() => handleSeedClick(seed.id)} isSelected={seed.id === parentA_id || seed.id === parentB_id} strain={allStrains.find(s => s.id === seed.strainId)} />)}
+                            {collectedSeeds.map(seed => <SeedCard key={seed.id} seed={seed} onClick={() => handleSeedClick(seed.id)} isSelected={seed.id === parentA_id || seed.id === parentB_id} strain={allStrains.find(s => s.id === seed.strainId) ?? null} />)}
                         </div>
                     )}
                 </Card>
@@ -261,10 +261,10 @@ const BreedingView: React.FC = () => {
                         <Suspense fallback={<Card className="bg-slate-900/60 text-slate-400">{t('knowledgeView.breeding.arLoading')}</Card>}>
                             <BreedingArPreview
                                 label={newStrainName.trim() || result.name}
-                                vigor={Math.round(automatedGenetics?.stabilityScore ? automatedGenetics.stabilityScore / 10 : 6)}
+                                vigor={Math.round((automatedGenetics?.stabilityScore ?? 60) / 10)}
                                 resin={Math.round(result.thc / 2)}
                                 aroma={Math.round((result.aromas?.length ?? 0) * 2 + (result.dominantTerpenes?.length ?? 0))}
-                                resistance={Math.round(automatedGenetics?.stabilityScore ? automatedGenetics.stabilityScore / 12 : 5)}
+                                resistance={Math.round((automatedGenetics?.stabilityScore ?? 60) / 12)}
                             />
                         </Suspense>
                     </div>

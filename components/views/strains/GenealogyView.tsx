@@ -687,9 +687,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     {t('strainsView.genealogyView.children')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {descendants?.children?.map((strain) => (
+                                    {descendants?.children?.filter((strain): strain is Strain => !!strain).map((strain) => (
                                         <StrainCompactItem
-                                            key={`child-${strain?.id ?? 'unknown'}`}
+                                            key={`child-${strain.id}`}
                                             strain={strain}
                                             onClick={() => handleDescendantClick(strain)}
                                         />
@@ -703,9 +703,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     {t('strainsView.genealogyView.grandchildren')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {descendants?.grandchildren?.map((strain) => (
+                                    {descendants?.grandchildren?.filter((strain): strain is Strain => !!strain).map((strain) => (
                                         <StrainCompactItem
-                                            key={`grandchild-${strain?.id ?? 'unknown'}`}
+                                            key={`grandchild-${strain.id}`}
                                             strain={strain}
                                             onClick={() => handleDescendantClick(strain)}
                                         />

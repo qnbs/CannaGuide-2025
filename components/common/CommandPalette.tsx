@@ -20,14 +20,20 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
     const [query, setQuery] = useState('')
     const deferredQuery = useDeferredValue(query)
     const inputRef = useRef<HTMLInputElement | null>(null)
-    const shouldAutoFocusInput = typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
+    const shouldAutoFocusInput =
+        typeof window !== 'undefined' && window.matchMedia('(pointer: fine)').matches
     const { allCommands } = useCommandPalette()
 
     useEffect(() => {
         if (isOpen) {
             setQuery('')
+            if (shouldAutoFocusInput) {
+                window.requestAnimationFrame(() => {
+                    inputRef.current?.focus()
+                })
+            }
         }
-    }, [isOpen])
+    }, [isOpen, shouldAutoFocusInput])
 
     const displayedCommands = useMemo(() => {
         if (!deferredQuery.trim()) return groupAndSortCommands(allCommands)
@@ -89,17 +95,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
             onOpenChange={(open) => {
                 if (!open) onClose()
             }}
-            onOpenAutoFocus={(event) => {
-                event.preventDefault()
-
-                if (!shouldAutoFocusInput) {
-                    return
-                }
-
-                window.requestAnimationFrame(() => {
-                    inputRef.current?.focus()
-                })
-            }}
             label={t('commandPalette.title')}
             className="fixed left-1/2 top-[max(0.5rem,env(safe-area-inset-top))] bottom-[max(0.5rem,env(safe-area-inset-bottom))] z-[101] h-[calc(100dvh-max(1rem,env(safe-area-inset-top)+env(safe-area-inset-bottom)))] w-[calc(100%-1rem)] -translate-x-1/2 overflow-hidden rounded-xl border border-white/20 bg-[rgba(var(--color-bg-component),0.94)] shadow-2xl sm:top-[15vh] sm:bottom-auto sm:h-auto sm:w-[calc(100%-2rem)] sm:max-w-xl sm:rounded-lg"
             overlayClassName="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md"
@@ -115,7 +110,9 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                 </button>
                 <div className="flex items-center gap-3 text-center">
                     <PhosphorIcons.CommandLine className="h-6 w-6 flex-shrink-0" />
-                    <h2 className="font-display text-lg font-bold text-slate-100">{t('commandPalette.title')}</h2>
+                    <h2 className="font-display text-lg font-bold text-slate-100">
+                        {t('commandPalette.title')}
+                    </h2>
                 </div>
             </div>
 
@@ -156,9 +153,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
                                             <CommandIcon />
                                         </div>
                                         <div className="truncate">
-                                            <p className="truncate font-semibold">{command.title}</p>
+                                            <p className="truncate font-semibold">
+                                                {command.title}
+                                            </p>
                                             {command.subtitle && (
-                                                <p className="truncate text-xs text-slate-400">{command.subtitle}</p>
+                                                <p className="truncate text-xs text-slate-400">
+                                                    {command.subtitle}
+                                                </p>
                                             )}
                                         </div>
                                     </div>

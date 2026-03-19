@@ -19,7 +19,14 @@ const clampTimestamp = (value: number): number => {
 }
 
 const formatExifDateString = (value: string): number | null => {
-    const normalized = value.trim().replace(/^\0+/, '').replace(/:/g, '-', 2)
+    let count = 0
+    const normalized = value
+        .trim()
+        .replace(/^\0+/, '')
+        .replace(/:/g, (match) => {
+            count += 1
+            return count <= 2 ? '-' : match
+        })
     const parsed = Date.parse(normalized.replace(' ', 'T'))
     return Number.isFinite(parsed) ? parsed : null
 }
@@ -36,8 +43,10 @@ const readAscii = (view: DataView, offset: number, length: number): string => {
     return result
 }
 
-const readUint16 = (view: DataView, offset: number, littleEndian: boolean): number => view.getUint16(offset, littleEndian)
-const readUint32 = (view: DataView, offset: number, littleEndian: boolean): number => view.getUint32(offset, littleEndian)
+const readUint16 = (view: DataView, offset: number, littleEndian: boolean): number =>
+    view.getUint16(offset, littleEndian)
+const readUint32 = (view: DataView, offset: number, littleEndian: boolean): number =>
+    view.getUint32(offset, littleEndian)
 
 const extractExifTimestampFromJpeg = async (file: File): Promise<number | null> => {
     if (!file.type.toLowerCase().includes('jpeg') && !file.name.toLowerCase().match(/\.(jpe?g)$/)) {
@@ -107,9 +116,10 @@ const extractExifTimestampFromJpeg = async (file: File): Promise<number | null> 
                         continue
                     }
 
-                    const valueOffset = count <= 4
-                        ? entryOffset + 8
-                        : tiffStart + readUint32(view, entryOffset + 8, littleEndian)
+                    const valueOffset =
+                        count <= 4
+                            ? entryOffset + 8
+                            : tiffStart + readUint32(view, entryOffset + 8, littleEndian)
                     const rawValue = readAscii(view, valueOffset, count)
                     const parsed = formatExifDateString(rawValue)
                     if (parsed) {
@@ -129,7 +139,10 @@ const extractExifTimestampFromJpeg = async (file: File): Promise<number | null> 
     return null
 }
 
-export const buildPhotoTimelineMetadata = (plant: Plant, capturedAt: number): PhotoTimelineMetadata => {
+export const buildPhotoTimelineMetadata = (
+    plant: Plant,
+    capturedAt: number,
+): PhotoTimelineMetadata => {
     const normalizedCapturedAt = clampTimestamp(capturedAt)
     const plantDay = Math.max(1, Math.round((normalizedCapturedAt - plant.createdAt) / DAY_MS) + 1)
     const plantWeek = Math.max(1, Math.ceil(plantDay / 7))
@@ -154,7 +167,9 @@ export const photoTimelineService = {
             return null
         }
 
-        return Number.isFinite(file.lastModified) && file.lastModified > 0 ? file.lastModified : null
+        return Number.isFinite(file.lastModified) && file.lastModified > 0
+            ? file.lastModified
+            : null
     },
     buildPhotoTimelineMetadata,
 }

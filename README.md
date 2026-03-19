@@ -187,23 +187,23 @@ CannaGuide 2025 is built on a modern, robust, and scalable tech stack designed f
 
 ### Key Technologies
 
-| Category             | Technology                                                                                               | Purpose                                                                                                    |
-| -------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **Frontend**         | [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)                        | Modern, type-safe, and performant user interface.                                                          |
-| **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                           | Centralized, predictable state management with memoized selectors.                                         |
-| **AI Integration**   | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                             | Powers all online AI features; the local AI fallback stack keeps diagnostics and advice available offline. |
+| Category             | Technology                                                                                                      | Purpose                                                                                                         |
+| -------------------- | --------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Frontend**         | [React 19](https://react.dev/) with [TypeScript](https://www.typescriptlang.org/)                               | Modern, type-safe, and performant user interface.                                                               |
+| **State Management** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                  | Centralized, predictable state management with memoized selectors.                                              |
+| **AI Integration**   | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                    | Powers all online AI features; the local AI fallback stack keeps diagnostics and advice available offline.      |
 | **Local AI**         | [@xenova/transformers](https://huggingface.co/docs/transformers.js) + [@mlc-ai/web-llm](https://webllm.mlc.ai/) | Three-layer on-device ML: WebLLM (Qwen2.5-1.5B, WebGPU), Transformers.js (Qwen text + CLIP vision), heuristics. |
-| **Async Operations** | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                             | Manages all Gemini API interactions with automatic caching and loading states.                             |
-| **Concurrency**      | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                          | Runs the complex plant simulation off the main thread to ensure a smooth UI.                               |
-| **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (dual-database architecture) | Full offline functionality via `CannaGuideStateDB` (Redux) and `CannaGuideDB` (strains, images, search).   |
-| **PWA & Offline**    | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) (InjectManifest)  | Network-First navigation, Cache-First assets, Background Sync, and auto-update flow.                       |
-| **Validation**       | [Zod](https://zod.dev/)                                                                                  | Runtime schema validation for AI responses, import payloads, and community shares.                         |
-| **Visualization**    | [d3 v7](https://d3js.org/)                                                                               | Genealogy trees, growth charts, and comparison visualizations.                                             |
-| **Styling**          | [Tailwind CSS](https://tailwindcss.com/)                                                                 | Utility-first approach with themed CSS custom properties.                                                  |
-| **i18n**             | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/)                        | Namespaced EN/DE translations with `getT()` for non-component contexts.                                    |
-| **IoT**              | [WebBluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)                   | ESP32 GATT Environmental Sensing for live sensor data.                                                     |
-| **Build**            | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                             | Lightning-fast HMR, optimized production builds, and SW injection.                                         |
-| **Testing**          | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)                                    | Unit/integration tests and E2E smoke/accessibility checks.                                                 |
+| **Async Operations** | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                    | Manages all Gemini API interactions with automatic caching and loading states.                                  |
+| **Concurrency**      | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                                 | Runs the complex plant simulation off the main thread to ensure a smooth UI.                                    |
+| **Data Persistence** | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (dual-database architecture)        | Full offline functionality via `CannaGuideStateDB` (Redux) and `CannaGuideDB` (strains, images, search).        |
+| **PWA & Offline**    | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) (InjectManifest)         | Network-First navigation, Cache-First assets, Background Sync, and auto-update flow.                            |
+| **Validation**       | [Zod](https://zod.dev/)                                                                                         | Runtime schema validation for AI responses, import payloads, and community shares.                              |
+| **Visualization**    | [d3 v7](https://d3js.org/)                                                                                      | Genealogy trees, growth charts, and comparison visualizations.                                                  |
+| **Styling**          | [Tailwind CSS](https://tailwindcss.com/)                                                                        | Utility-first approach with themed CSS custom properties.                                                       |
+| **i18n**             | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/)                               | Namespaced EN/DE translations with `getT()` for non-component contexts.                                         |
+| **IoT**              | [WebBluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)                          | ESP32 GATT Environmental Sensing for live sensor data.                                                          |
+| **Build**            | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                                    | Lightning-fast HMR, optimized production builds, and SW injection.                                              |
+| **Testing**          | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)                                           | Unit/integration tests and E2E smoke/accessibility checks.                                                      |
 
 ### Quality Gates
 
@@ -316,21 +316,21 @@ CannaGuide ships with a production-grade, three-layer on-device ML stack that pr
 
 ### Model Inventory
 
-| Constant            | Model                                | Purpose                                                       | Runtime         |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------- | --------------- |
+| Constant            | Model                               | Purpose                                                       | Runtime         |
+| ------------------- | ----------------------------------- | ------------------------------------------------------------- | --------------- |
 | `WEBLLM_MODEL_ID`   | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Full chat completion on WebGPU, best local quality            | @mlc-ai/web-llm |
-| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`       | Primary text generation (multilingual, strong DE performance) | Transformers.js |
-| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                  | Ultra-light fallback for low-end devices                      | Transformers.js |
-| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`      | Zero-shot plant condition classification (33 cannabis labels) | Transformers.js |
+| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`      | Primary text generation (multilingual, strong DE performance) | Transformers.js |
+| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                 | Ultra-light fallback for low-end devices                      | Transformers.js |
+| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`     | Zero-shot plant condition classification (33 cannabis labels) | Transformers.js |
 
 ### 33 Zero-Shot Cannabis Condition Labels
 
 The CLIP vision model classifies plant photos against a curated label set covering the full spectrum of cannabis cultivation problems:
 
-**Nutrient Deficiencies** (10): Nitrogen, Phosphorus, Potassium, Calcium, Magnesium, Iron, Zinc, Sulfur, Manganese, Boron  
-**Environmental Stress** (7): Heat stress, Light stress, Light burn, Cold stress, Wind burn, Nutrient burn, Nutrient lockout  
-**Watering Issues** (2): Overwatering, Underwatering  
-**Pests & Disease** (9): Powdery mildew, Botrytis bud rot, Spider mites, Fungus gnats, Aphids, Thrips, Whiteflies, Fungal leaf spot, Septoria leaf spot  
+**Nutrient Deficiencies** (10): Nitrogen, Phosphorus, Potassium, Calcium, Magnesium, Iron, Zinc, Sulfur, Manganese, Boron
+**Environmental Stress** (7): Heat stress, Light stress, Light burn, Cold stress, Wind burn, Nutrient burn, Nutrient lockout
+**Watering Issues** (2): Overwatering, Underwatering
+**Pests & Disease** (9): Powdery mildew, Botrytis bud rot, Spider mites, Fungus gnats, Aphids, Thrips, Whiteflies, Fungal leaf spot, Septoria leaf spot
 **Other** (5): Root rot, pH imbalance, Revegetation stress, Tobacco mosaic virus, Healthy plant
 
 Each label maps to localized diagnostic text in both EN and DE with actionable cultivation advice.
@@ -603,36 +603,36 @@ Please follow the existing code style and ensure your changes are well-documente
 
 > Full details with milestones, epics, and linked issues: [ROADMAP.md](ROADMAP.md)
 
-| Version | Status | Highlights |
-|---------|--------|------------|
-| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 tests, ESP32, Breeding Lab, EN/DE i18n |
+| Version  | Status      | Highlights                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Released | 700+ strains, VPD simulation, Multi-Provider AI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 tests, ESP32, Breeding Lab, EN/DE i18n                                                                                                                                                                                                                                                                  |
 | **v1.1** | ✅ Released | **Local AI Stack** (WebLLM + Transformers.js + CLIP vision, 33 labels), ONNX backend routing (WebGPU/WASM), inference caching (LRU-64), model preload UI with benchmarks, Sentry local-AI attribution, One-Tap Cloud Sync (Gist), Daily Strain Catalog Automation (04:20 UTC), Playwright Component Tests, Netlify PR Previews, PWA auto-update with changelog, Docker ESP32-Mock, CI/CD for Tauri + Capacitor |
-| **v1.2** | 🔄 Planned | Additional languages (ES, FR, NL), Advanced nutrient scheduling with EC/pH automation, Community strain marketplace, Auto-generated grow reports (PDF) |
-| **v1.3** | 📋 Planned | Integration with additional IoT sensors, Time-lapse photo journal, Strain comparison tool, Advanced analytics dashboard, Three.js 3D visualizations |
+| **v1.2** | 🔄 Planned  | Additional languages (ES, FR, NL), Advanced nutrient scheduling with EC/pH automation, Community strain marketplace, Auto-generated grow reports (PDF)                                                                                                                                                                                                                                                         |
+| **v1.3** | 📋 Planned  | Integration with additional IoT sensors, Time-lapse photo journal, Strain comparison tool, Advanced analytics dashboard, Three.js 3D visualizations                                                                                                                                                                                                                                                            |
 
 ---
 
 ## 📊 Tools & Stack
 
-| Category | Tool | Purpose |
-|----------|------|---------|
-| **Error Tracking** | [Sentry](https://sentry.io) | Runtime error monitoring, performance traces, session replay |
-| **Local AI** | [Transformers.js](https://huggingface.co/docs/transformers.js) | On-device text generation (Qwen2.5/Qwen3) and CLIP zero-shot vision |
-| **Local AI** | [WebLLM](https://webllm.mlc.ai/) | WebGPU-accelerated LLM inference (Qwen2.5-1.5B-Instruct) |
-| **Local AI** | [ONNX Runtime Web](https://onnxruntime.ai/) | Cross-browser ML execution (WebGPU + WASM backends) |
-| **Cloud Sync** | GitHub Gist API | Anonymous one-tap full-state backup & restore |
-| **Testing** | [Vitest](https://vitest.dev/) | Unit & integration tests (307+) |
-| **Testing** | [Playwright](https://playwright.dev/) | E2E tests + Component tests |
-| **Testing** | [Stryker](https://stryker-mutator.io/) | Mutation testing |
-| **Performance** | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | Automated performance & a11y audits |
-| **Security** | Gitleaks, Semgrep, Trivy, npm audit | Multi-layer security scanning (on-demand via workflow_dispatch) |
-| **Build** | [Vite 7](https://vitejs.dev/) | Lightning-fast HMR & optimized builds |
-| **CI/CD** | GitHub Actions (17 workflows) | CI, deploy, benchmark, mutation testing, Tauri, Docker, daily strain update |
-| **Hosting** | GitHub Pages + Netlify | Production + PR preview deployments |
-| **Desktop** | [Tauri](https://tauri.app/) | Native Windows/macOS/Linux apps |
-| **Mobile** | [Capacitor](https://capacitorjs.com/) | iOS & Android builds |
-| **Container** | Docker + Chainguard nginx | Hardened self-hosting |
-| **Code Quality** | ESLint 9 + Biome + Prettier | Linting, formatting, static analysis |
+| Category           | Tool                                                           | Purpose                                                                     |
+| ------------------ | -------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| **Error Tracking** | [Sentry](https://sentry.io)                                    | Runtime error monitoring, performance traces, session replay                |
+| **Local AI**       | [Transformers.js](https://huggingface.co/docs/transformers.js) | On-device text generation (Qwen2.5/Qwen3) and CLIP zero-shot vision         |
+| **Local AI**       | [WebLLM](https://webllm.mlc.ai/)                               | WebGPU-accelerated LLM inference (Qwen2.5-1.5B-Instruct)                    |
+| **Local AI**       | [ONNX Runtime Web](https://onnxruntime.ai/)                    | Cross-browser ML execution (WebGPU + WASM backends)                         |
+| **Cloud Sync**     | GitHub Gist API                                                | Anonymous one-tap full-state backup & restore                               |
+| **Testing**        | [Vitest](https://vitest.dev/)                                  | Unit & integration tests (307+)                                             |
+| **Testing**        | [Playwright](https://playwright.dev/)                          | E2E tests + Component tests                                                 |
+| **Testing**        | [Stryker](https://stryker-mutator.io/)                         | Mutation testing                                                            |
+| **Performance**    | [Lighthouse CI](https://github.com/GoogleChrome/lighthouse-ci) | Automated performance & a11y audits                                         |
+| **Security**       | Gitleaks, Semgrep, Trivy, npm audit                            | Multi-layer security scanning (on-demand via workflow_dispatch)             |
+| **Build**          | [Vite 7](https://vitejs.dev/)                                  | Lightning-fast HMR & optimized builds                                       |
+| **CI/CD**          | GitHub Actions (17 workflows)                                  | CI, deploy, benchmark, mutation testing, Tauri, Docker, daily strain update |
+| **Hosting**        | GitHub Pages + Netlify                                         | Production + PR preview deployments                                         |
+| **Desktop**        | [Tauri](https://tauri.app/)                                    | Native Windows/macOS/Linux apps                                             |
+| **Mobile**         | [Capacitor](https://capacitorjs.com/)                          | iOS & Android builds                                                        |
+| **Container**      | Docker + Chainguard nginx                                      | Hardened self-hosting                                                       |
+| **Code Quality**   | ESLint 9 + Biome + Prettier                                    | Linting, formatting, static analysis                                        |
 
 ---
 
@@ -816,23 +816,23 @@ CannaGuide 2025 basiert auf einem modernen, robusten und skalierbaren Tech-Stack
 
 ### Schlüsseltechnologien
 
-| Kategorie              | Technologie                                                                                              | Zweck                                                                                                    |
-| ---------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Frontend**           | [React 19](https://react.dev/) mit [TypeScript](https://www.typescriptlang.org/)                         | Modernes, typsicheres und performantes Benutzerinterface.                                                |
-| **Zustandsverwaltung** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                           | Zentralisierte, vorhersagbare Zustandsverwaltung mit memoisiertten Selektoren.                           |
-| **KI-Integration**     | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                             | Treibt alle KI-Funktionen an: Diagnose, Beratung, Bilderzeugung und Deep Dives.                          |
+| Kategorie              | Technologie                                                                                                     | Zweck                                                                                                             |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Frontend**           | [React 19](https://react.dev/) mit [TypeScript](https://www.typescriptlang.org/)                                | Modernes, typsicheres und performantes Benutzerinterface.                                                         |
+| **Zustandsverwaltung** | [Redux Toolkit](https://redux-toolkit.js.org/)                                                                  | Zentralisierte, vorhersagbare Zustandsverwaltung mit memoisiertten Selektoren.                                    |
+| **KI-Integration**     | [Google Gemini API](https://ai.google.dev/gemini-api/docs) (`@google/genai`)                                    | Treibt alle KI-Funktionen an: Diagnose, Beratung, Bilderzeugung und Deep Dives.                                   |
 | **Lokale KI**          | [@xenova/transformers](https://huggingface.co/docs/transformers.js) + [@mlc-ai/web-llm](https://webllm.mlc.ai/) | Dreistufiges On-Device-ML: WebLLM (Qwen2.5-1.5B, WebGPU), Transformers.js (Qwen Text + CLIP Vision), Heuristiken. |
-| **Asynchrone Op.**     | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                             | Verwaltet alle Gemini-API-Interaktionen mit automatischem Caching und Ladezuständen.                     |
-| **Nebenläufigkeit**    | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                          | Komplexe Pflanzensimulation außerhalb des Haupt-Threads.                                                 |
-| **Datenpersistenz**    | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (Dual-Datenbank-Architektur) | Volle Offline-Funktionalität via `CannaGuideStateDB` (Redux) und `CannaGuideDB` (Sorten, Bilder, Suche). |
-| **Validierung**        | [Zod](https://zod.dev/)                                                                                  | Runtime-Schema-Validierung für KI-Antworten, Import-Payloads und Community-Shares.                       |
-| **Visualisierung**     | [d3 v7](https://d3js.org/)                                                                               | Stammbäume, Wachstumsdiagramme und Vergleichsvisualisierungen.                                           |
-| **PWA & Offline**      | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) (InjectManifest)  | Network-First Navigation, Cache-First Assets, Background Sync und Auto-Update.                           |
-| **Styling**            | [Tailwind CSS](https://tailwindcss.com/)                                                                 | Utility-First-Ansatz mit Theme-CSS-Custom-Properties.                                                    |
-| **i18n**               | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/)                        | Namensraum-organisierte EN/DE-Übersetzungen mit `getT()` für Nicht-Komponenten-Kontexte.                 |
-| **IoT**                | [WebBluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)                   | ESP32 GATT Environmental Sensing für Live-Sensordaten.                                                   |
-| **Build**              | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                             | Blitzschnelles HMR, optimierte Produktionbuilds und SW-Injection.                                        |
-| **Testing**            | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)                                    | Unit-/Integrationstests und E2E-Smoke-/Accessibility-Checks.                                             |
+| **Asynchrone Op.**     | [RTK Query](https://redux-toolkit.js.org/rtk-query/overview)                                                    | Verwaltet alle Gemini-API-Interaktionen mit automatischem Caching und Ladezuständen.                              |
+| **Nebenläufigkeit**    | [Web Workers](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API)                                 | Komplexe Pflanzensimulation außerhalb des Haupt-Threads.                                                          |
+| **Datenpersistenz**    | [IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API) (Dual-Datenbank-Architektur)        | Volle Offline-Funktionalität via `CannaGuideStateDB` (Redux) und `CannaGuideDB` (Sorten, Bilder, Suche).          |
+| **Validierung**        | [Zod](https://zod.dev/)                                                                                         | Runtime-Schema-Validierung für KI-Antworten, Import-Payloads und Community-Shares.                                |
+| **Visualisierung**     | [d3 v7](https://d3js.org/)                                                                                      | Stammbäume, Wachstumsdiagramme und Vergleichsvisualisierungen.                                                    |
+| **PWA & Offline**      | [Service Workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) (InjectManifest)         | Network-First Navigation, Cache-First Assets, Background Sync und Auto-Update.                                    |
+| **Styling**            | [Tailwind CSS](https://tailwindcss.com/)                                                                        | Utility-First-Ansatz mit Theme-CSS-Custom-Properties.                                                             |
+| **i18n**               | [i18next](https://www.i18next.com/) + [react-i18next](https://react.i18next.com/)                               | Namensraum-organisierte EN/DE-Übersetzungen mit `getT()` für Nicht-Komponenten-Kontexte.                          |
+| **IoT**                | [WebBluetooth API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API)                          | ESP32 GATT Environmental Sensing für Live-Sensordaten.                                                            |
+| **Build**              | [Vite 7](https://vitejs.dev/) + [VitePWA](https://vite-pwa-org.netlify.app/)                                    | Blitzschnelles HMR, optimierte Produktionbuilds und SW-Injection.                                                 |
+| **Testing**            | [Vitest](https://vitest.dev/) + [Playwright](https://playwright.dev/)                                           | Unit-/Integrationstests und E2E-Smoke-/Accessibility-Checks.                                                      |
 
 ### Duale IndexedDB-Architektur
 
@@ -926,21 +926,21 @@ CannaGuide enthält einen produktionsreifen, dreistufigen On-Device-ML-Stack, de
 
 ### Modellbestand
 
-| Konstante           | Modell                               | Zweck                                                         | Laufzeit        |
-| ------------------- | ------------------------------------ | ------------------------------------------------------------- | --------------- |
+| Konstante           | Modell                              | Zweck                                                         | Laufzeit        |
+| ------------------- | ----------------------------------- | ------------------------------------------------------------- | --------------- |
 | `WEBLLM_MODEL_ID`   | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Volle Chat-Completion auf WebGPU, beste lokale Qualität       | @mlc-ai/web-llm |
-| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`       | Primäre Textgenerierung (multilingual, starke DE-Performance) | Transformers.js |
-| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                  | Ultra-leichter Fallback für schwache Geräte                   | Transformers.js |
-| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`      | Zero-Shot-Pflanzenzustandsklassifikation (33 Cannabis-Labels) | Transformers.js |
+| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`      | Primäre Textgenerierung (multilingual, starke DE-Performance) | Transformers.js |
+| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                 | Ultra-leichter Fallback für schwache Geräte                   | Transformers.js |
+| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`     | Zero-Shot-Pflanzenzustandsklassifikation (33 Cannabis-Labels) | Transformers.js |
 
 ### 33 Zero-Shot Cannabis-Zustandslabels
 
 Das CLIP-Vision-Modell klassifiziert Pflanzenfotos gegen einen kuratierten Labelsatz, der das gesamte Spektrum der Cannabis-Anbauprobleme abdeckt:
 
-**Nährstoffmängel** (10): Stickstoff, Phosphor, Kalium, Calcium, Magnesium, Eisen, Zink, Schwefel, Mangan, Bor  
-**Umweltstress** (7): Hitzestress, Lichtstress, Lichtverbrennung, Kältestress, Windschaden, Nährstoffbrand, Nährstoffblockade  
-**Bewässerungsprobleme** (2): Überwässerung, Unterwässerung  
-**Schädlinge & Krankheiten** (9): Mehltau, Botrytis-Blütenfäule, Spinnmilben, Trauermücken, Blattläuse, Thripse, Weiße Fliegen, Blattfleckenpilze, Septoria  
+**Nährstoffmängel** (10): Stickstoff, Phosphor, Kalium, Calcium, Magnesium, Eisen, Zink, Schwefel, Mangan, Bor
+**Umweltstress** (7): Hitzestress, Lichtstress, Lichtverbrennung, Kältestress, Windschaden, Nährstoffbrand, Nährstoffblockade
+**Bewässerungsprobleme** (2): Überwässerung, Unterwässerung
+**Schädlinge & Krankheiten** (9): Mehltau, Botrytis-Blütenfäule, Spinnmilben, Trauermücken, Blattläuse, Thripse, Weiße Fliegen, Blattfleckenpilze, Septoria
 **Sonstige** (5): Wurzelfäule, pH-Ungleichgewicht, Revegetationsstress, Tabakmosaikvirus, Gesunde Pflanze
 
 Jedes Label ist mit lokalisierten Diagnosetexten in EN und DE mit umsetzbarer Anbauberatung verknüpft.
@@ -1213,12 +1213,12 @@ Bitte halten Sie sich an den bestehenden Codestil und stellen Sie sicher, dass I
 
 > Vollständige Details mit Meilensteinen, Epics und verlinkten Issues: [ROADMAP.md](ROADMAP.md)
 
-| Version | Status | Highlights |
-|---------|--------|------------|
-| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 Tests, ESP32, Zuchtlabor, EN/DE i18n |
+| Version  | Status            | Highlights                                                                                                                                                                                                                                                                                                                                                                                                              |
+| -------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **v1.0** | ✅ Veröffentlicht | 700+ Sorten, VPD-Simulation, Multi-Provider KI (Gemini/OpenAI/xAI/Anthropic), DSGVO, WCAG 2.2 AA, 307 Tests, ESP32, Zuchtlabor, EN/DE i18n                                                                                                                                                                                                                                                                              |
 | **v1.1** | ✅ Veröffentlicht | **Lokaler KI-Stack** (WebLLM + Transformers.js + CLIP-Vision, 33 Labels), ONNX-Backend-Routing (WebGPU/WASM), Inferenz-Caching (LRU-64), Modell-Preload-UI mit Benchmarks, Sentry lokale-KI-Attribution, Ein-Tipp Cloud-Sync (Gist), Tägliche Sortenkatalog-Automatisierung (04:20 UTC), Playwright Component-Tests, Netlify PR-Previews, PWA Auto-Update mit Changelog, Docker ESP32-Mock, CI/CD für Tauri + Capacitor |
-| **v1.2** | 🔄 Geplant | Zusätzliche Sprachen (ES, FR, NL), Erweiterte Nährstoffplanung mit EC/pH-Automatisierung, Community-Sorten-Marktplatz, Auto-generierte Grow-Berichte (PDF) |
-| **v1.3** | 📋 Geplant | Zusätzliche IoT-Sensoren, Zeitraffer-Foto-Journal, Sorten-Vergleichstool, Erweitertes Analyse-Dashboard, Three.js 3D-Visualisierungen |
+| **v1.2** | 🔄 Geplant        | Zusätzliche Sprachen (ES, FR, NL), Erweiterte Nährstoffplanung mit EC/pH-Automatisierung, Community-Sorten-Marktplatz, Auto-generierte Grow-Berichte (PDF)                                                                                                                                                                                                                                                              |
+| **v1.3** | 📋 Geplant        | Zusätzliche IoT-Sensoren, Zeitraffer-Foto-Journal, Sorten-Vergleichstool, Erweitertes Analyse-Dashboard, Three.js 3D-Visualisierungen                                                                                                                                                                                                                                                                                   |
 
 ---
 

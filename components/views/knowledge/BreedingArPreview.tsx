@@ -12,7 +12,12 @@ interface BreedingArPreviewProps {
     resistance: number
 }
 
-const createPlant = (vigor: number, resin: number, aroma: number, resistance: number): THREE.Group => {
+const createPlant = (
+    vigor: number,
+    resin: number,
+    aroma: number,
+    resistance: number,
+): THREE.Group => {
     const group = new THREE.Group()
     const stemHeight = 1.2 + vigor * 0.08
     const leafScale = 0.45 + aroma * 0.03
@@ -20,12 +25,16 @@ const createPlant = (vigor: number, resin: number, aroma: number, resistance: nu
 
     const stem = new THREE.Mesh(
         new THREE.CylinderGeometry(0.08, 0.12, stemHeight, 10),
-        new THREE.MeshStandardMaterial({ color: new THREE.Color(`hsl(${120 + resistance * 2}, 42%, 34%)`) }),
+        new THREE.MeshStandardMaterial({
+            color: new THREE.Color(`hsl(${120 + resistance * 2}, 42%, 34%)`),
+        }),
     )
     stem.position.y = stemHeight / 2
     group.add(stem)
 
-    const leafMaterial = new THREE.MeshStandardMaterial({ color: new THREE.Color(`hsl(${98 + aroma * 1.4}, 60%, 38%)`) })
+    const leafMaterial = new THREE.MeshStandardMaterial({
+        color: new THREE.Color(`hsl(${98 + aroma * 1.4}, 60%, 38%)`),
+    })
     const leafGeometry = new THREE.SphereGeometry(leafScale, 16, 12)
 
     for (let index = 0; index < 4; index += 1) {
@@ -38,7 +47,9 @@ const createPlant = (vigor: number, resin: number, aroma: number, resistance: nu
 
     const bloom = new THREE.Mesh(
         new THREE.SphereGeometry(bloomRadius, 20, 16),
-        new THREE.MeshStandardMaterial({ color: new THREE.Color(`hsl(${300 - resin * 3}, 68%, 60%)`) }),
+        new THREE.MeshStandardMaterial({
+            color: new THREE.Color(`hsl(${300 - resin * 3}, 68%, 60%)`),
+        }),
     )
     bloom.position.y = stemHeight + bloomRadius * 0.7
     group.add(bloom)
@@ -46,18 +57,27 @@ const createPlant = (vigor: number, resin: number, aroma: number, resistance: nu
     return group
 }
 
-const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({ label, vigor, resin, aroma, resistance }) => {
+const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
+    label,
+    vigor,
+    resin,
+    aroma,
+    resistance,
+}) => {
     const { t } = useTranslation()
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const containerRef = useRef<HTMLDivElement | null>(null)
     const [isSupported, setIsSupported] = useState(false)
 
-    const normalizedStats = useMemo(() => ({
-        vigor: Math.max(0, Math.min(10, vigor)),
-        resin: Math.max(0, Math.min(10, resin)),
-        aroma: Math.max(0, Math.min(10, aroma)),
-        resistance: Math.max(0, Math.min(10, resistance)),
-    }), [aroma, resistance, resin, vigor])
+    const normalizedStats = useMemo(
+        () => ({
+            vigor: Math.max(0, Math.min(10, vigor)),
+            resin: Math.max(0, Math.min(10, resin)),
+            aroma: Math.max(0, Math.min(10, aroma)),
+            resistance: Math.max(0, Math.min(10, resistance)),
+        }),
+        [aroma, resistance, resin, vigor],
+    )
 
     useEffect(() => {
         setIsSupported(typeof navigator !== 'undefined' && 'xr' in navigator)
@@ -86,7 +106,12 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({ label, v
         keyLight.position.set(2, 3, 2)
         scene.add(keyLight)
 
-        const preview = createPlant(normalizedStats.vigor, normalizedStats.resin, normalizedStats.aroma, normalizedStats.resistance)
+        const preview = createPlant(
+            normalizedStats.vigor,
+            normalizedStats.resin,
+            normalizedStats.aroma,
+            normalizedStats.resistance,
+        )
         preview.position.y = -0.9
         scene.add(preview)
 
@@ -109,13 +134,16 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({ label, v
 
         let arButton: HTMLButtonElement | null = null
         if ('xr' in navigator) {
-            arButton = ARButton.createButton(renderer, {
+            const created = ARButton.createButton(renderer, {
                 requiredFeatures: ['hit-test'],
                 optionalFeatures: ['dom-overlay'],
                 domOverlay: { root: containerRef.current ?? undefined },
             })
-            arButton.className = `${arButton.className} mt-3 w-full`
-            containerRef.current?.appendChild(arButton)
+            if (created) {
+                created.className = `${created.className} mt-3 w-full`
+                containerRef.current?.appendChild(created)
+                arButton = created
+            }
         }
 
         return () => {
@@ -125,21 +153,38 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({ label, v
             }
             renderer.dispose()
         }
-    }, [normalizedStats.aroma, normalizedStats.resistance, normalizedStats.resin, normalizedStats.vigor])
+    }, [
+        normalizedStats.aroma,
+        normalizedStats.resistance,
+        normalizedStats.resin,
+        normalizedStats.vigor,
+    ])
 
     return (
         <Card className="bg-slate-900/60 ring-1 ring-inset ring-white/20">
             <div className="flex items-start justify-between gap-4 mb-3">
                 <div>
-                    <h4 className="text-lg font-bold text-primary-300 font-display">{t('knowledgeView.breeding.arTitle')}</h4>
+                    <h4 className="text-lg font-bold text-primary-300 font-display">
+                        {t('knowledgeView.breeding.arTitle')}
+                    </h4>
                     <p className="text-sm text-slate-400">{label}</p>
                 </div>
                 <div className="text-xs rounded-full px-2.5 py-1 bg-slate-800 text-slate-300 ring-1 ring-inset ring-white/10">
-                    {isSupported ? t('knowledgeView.breeding.arSupported') : t('knowledgeView.breeding.arFallback')}
+                    {isSupported
+                        ? t('knowledgeView.breeding.arSupported')
+                        : t('knowledgeView.breeding.arFallback')}
                 </div>
             </div>
-            <div ref={containerRef} className="rounded-xl overflow-hidden bg-slate-950/80 ring-1 ring-inset ring-white/10 p-3" style={{ minHeight: '340px' }}>
-                <canvas ref={canvasRef} className="w-full h-[320px] rounded-lg" aria-label={t('knowledgeView.breeding.arPreviewLabel')} />
+            <div
+                ref={containerRef}
+                className="rounded-xl overflow-hidden bg-slate-950/80 ring-1 ring-inset ring-white/10 p-3"
+                style={{ minHeight: '340px' }}
+            >
+                <canvas
+                    ref={canvasRef}
+                    className="w-full h-[320px] rounded-lg"
+                    aria-label={t('knowledgeView.breeding.arPreviewLabel')}
+                />
             </div>
         </Card>
     )

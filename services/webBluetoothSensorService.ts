@@ -1,18 +1,23 @@
 declare global {
     interface Navigator {
         bluetooth: {
-            requestDevice(options: { filters: Array<{ namePrefix?: string }>; optionalServices?: number[] }): Promise<BluetoothDevice>
+            requestDevice(options: {
+                filters: Array<{ namePrefix?: string }>
+                optionalServices?: (number | string)[]
+            }): Promise<BluetoothDevice>
         }
     }
     interface BluetoothDevice {
         gatt?: { connect(): Promise<BluetoothRemoteGATTServer> }
     }
     interface BluetoothRemoteGATTServer {
-        getPrimaryService(service: number): Promise<BluetoothRemoteGATTService>
+        getPrimaryService(service: number | string): Promise<BluetoothRemoteGATTService>
         disconnect(): void
     }
     interface BluetoothRemoteGATTService {
-        getCharacteristic(characteristic: number): Promise<BluetoothRemoteGATTCharacteristic>
+        getCharacteristic(
+            characteristic: number | string,
+        ): Promise<BluetoothRemoteGATTCharacteristic>
     }
     interface BluetoothRemoteGATTCharacteristic {
         readValue(): Promise<DataView>

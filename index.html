@@ -1,69 +1,178 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;" />
-    <meta http-equiv="Permissions-Policy" content="accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()" />
-    <title>CannaGuide 2025 - Cannabis Grow Guide with Gemini</title>
-    <meta name="description" content="Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide." />
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta name="color-scheme" content="dark light" />
+        <meta
+            http-equiv="Content-Security-Policy"
+            content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com; worker-src 'self' blob:; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests;"
+        />
+        <meta
+            http-equiv="Permissions-Policy"
+            content="accelerometer=(), ambient-light-sensor=(), autoplay=(self), bluetooth=(self), camera=(self), display-capture=(), encrypted-media=(), fullscreen=(self), geolocation=(), magnetometer=(), microphone=(self), midi=(), payment=(), picture-in-picture=(self), publickey-credentials-get=(), screen-wake-lock=(self), usb=(), xr-spatial-tracking=(), gyroscope=()"
+        />
+        <title>CannaGuide 2025 - Cannabis Grow Guide with Gemini</title>
+        <meta
+            name="description"
+            content="Cannabis Grow Guide with Gemini - Your AI-powered digital companion for the entire cannabis cultivation cycle. Track plants, explore 700+ strains, get AI equipment advice, and master your grow with an interactive guide."
+        />
 
-    <!-- PWA -->
-    <link rel="manifest" href="%BASE_URL%manifest.json" />
-    <meta name="theme-color" content="#0A1927" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="CannaGuide 2025" />
-    <link rel="icon" href="favicon.ico" sizes="any" />
-    <link rel="icon" href="icon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="icon.svg" />
+        <!-- PWA -->
+        <link rel="manifest" href="%BASE_URL%manifest.json" />
+        <meta name="theme-color" content="#0A1927" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="CannaGuide 2025" />
+        <link rel="icon" href="favicon.ico" sizes="any" />
+        <link rel="icon" href="icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="icon.svg" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700&display=swap" rel="stylesheet">
-
-  </head>
-  <body class="bg-bg-primary">
-    <svg width="0" height="0" style="position: absolute;">
-      <defs>
-        <filter id="protanopia">
-          <feColorMatrix type="matrix" values="0.567, 0.433, 0,     0, 0,
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            rel="preload"
+            as="style"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700&display=swap"
+            onload="
+                this.onload = null
+                this.rel = 'stylesheet'
+            "
+        />
+        <noscript
+            ><link
+                href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lexend:wght@400;700&display=swap"
+                rel="stylesheet"
+        /></noscript>
+    </head>
+    <body class="bg-bg-primary">
+        <svg width="0" height="0" style="position: absolute">
+            <defs>
+                <filter id="protanopia">
+                    <feColorMatrix
+                        type="matrix"
+                        values="0.567, 0.433, 0,     0, 0,
                                                 0.558, 0.442, 0,     0, 0,
                                                 0,     0.242, 0.758, 0, 0,
-                                                0,     0,     0,     1, 0"/>
-        </filter>
-        <filter id="deuteranopia">
-          <feColorMatrix type="matrix" values="0.625, 0.375, 0,   0, 0,
+                                                0,     0,     0,     1, 0"
+                    />
+                </filter>
+                <filter id="deuteranopia">
+                    <feColorMatrix
+                        type="matrix"
+                        values="0.625, 0.375, 0,   0, 0,
                                                 0.7,   0.3,   0,   0, 0,
                                                 0,     0.3,   0.7, 0, 0,
-                                                0,     0,     0,   1, 0"/>
-        </filter>
-        <filter id="tritanopia">
-          <feColorMatrix type="matrix" values="0.95, 0.05,  0,     0, 0,
+                                                0,     0,     0,   1, 0"
+                    />
+                </filter>
+                <filter id="tritanopia">
+                    <feColorMatrix
+                        type="matrix"
+                        values="0.95, 0.05,  0,     0, 0,
                                                 0,    0.433, 0.567, 0, 0,
                                                 0,    0.475, 0.525, 0, 0,
-                                                0,    0,     0,     1, 0"/>
-        </filter>
-      </defs>
-    </svg>
-    <div id="root">
-      <div style="display: flex; flex-direction: column; height: 100vh; align-items: center; justify-content: center; color: #94a3b8; font-family: Inter, sans-serif;">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width: 6rem; height: 6rem; color: #34d399; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;">
-          <defs><linearGradient id="cannaGuideLeafGradient" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="rgb(74, 222, 128)"></stop><stop offset="100%" stop-color="rgb(16, 185, 129)"></stop></linearGradient></defs>
-          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"></path>
-          <g transform="translate(5.2, 5.2) scale(0.6)"><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z"></path><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z"></path><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z"></path><path fill="url(#cannaGuideLeafGradient)" stroke="none" d="M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z"></path></g>
+                                                0,    0,     0,     1, 0"
+                    />
+                </filter>
+            </defs>
         </svg>
-        <p style="margin-top: 1rem; font-size: 1.125rem; font-weight: 600;">Preparing your guide...</p>
-      </div>
-    </div>
-    <div id="toast-container"></div>
-    <noscript>
-      <div style="position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0F172A; color: #cbd5e1; text-align: center; padding: 2rem;">
-        <h1 style="font-size: 1.5rem; font-weight: bold; color: white;">JavaScript Required</h1>
-        <p>This application requires JavaScript to function. Please enable it in your browser settings and refresh the page.</p>
-      </div>
-    </noscript>
-    <script type="module" src="./index.tsx"></script>
-  </body>
+        <div id="root">
+            <div
+                style="
+                    display: flex;
+                    flex-direction: column;
+                    height: 100vh;
+                    align-items: center;
+                    justify-content: center;
+                    color: #94a3b8;
+                    font-family: Inter, sans-serif;
+                "
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    style="
+                        width: 6rem;
+                        height: 6rem;
+                        color: #34d399;
+                        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+                    "
+                >
+                    <defs>
+                        <linearGradient
+                            id="cannaGuideLeafGradient"
+                            x1="0%"
+                            y1="0%"
+                            x2="0%"
+                            y2="100%"
+                        >
+                            <stop offset="0%" stop-color="rgb(74, 222, 128)"></stop>
+                            <stop offset="100%" stop-color="rgb(16, 185, 129)"></stop>
+                        </linearGradient>
+                    </defs>
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                    ></path>
+                    <g transform="translate(5.2, 5.2) scale(0.6)">
+                        <path
+                            fill="url(#cannaGuideLeafGradient)"
+                            stroke="none"
+                            d="M20.21,12.79a.78.78,0,0,0,0-1.11,5.27,5.27,0,0,1-3.79-3.79.78.78,0,0,0-1.11,0L12,11.16,8.69,7.89a.78.78,0,0,0-1.11,0A5.27,5.27,0,0,1,3.79,11.68a.78.78,0,0,0,0,1.11L7.06,16a.79.79,0,0,0,1.11,0,3.15,3.15,0,0,0,4.46,0,.79.79,0,0,0,1.11,0Z"
+                        ></path>
+                        <path
+                            fill="url(#cannaGuideLeafGradient)"
+                            stroke="none"
+                            d="M16.94,16a.79.79,0,0,0,1.11,0L21.42,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L18.05,13.2A5.28,5.28,0,0,1,16.94,16Z"
+                        ></path>
+                        <path
+                            fill="url(#cannaGuideLeafGradient)"
+                            stroke="none"
+                            d="M12,21.9a.79.79,0,0,0,.55-.22l3.27-3.27a.78.78,0,0,0-1.11-1.11L12,20,9.29,17.31a.78.78,0,0,0-1.11,1.11L11.45,21.68A.79.79,0,0,0,12,21.9Z"
+                        ></path>
+                        <path
+                            fill="url(#cannaGuideLeafGradient)"
+                            stroke="none"
+                            d="M2.58,12a.79.79,0,0,0,0-1.12.78.78,0,0,0-1.11,0L.1,12.21a.78.78,0,0,0,0,1.11.77.77,0,0,0,.55.22.79.79,0,0,0,.56-.22l1.37-1.37A5.28,5.28,0,0,1,2.58,12Z"
+                        ></path>
+                    </g>
+                </svg>
+                <p style="margin-top: 1rem; font-size: 1.125rem; font-weight: 600">
+                    Preparing your guide...
+                </p>
+            </div>
+        </div>
+        <div id="toast-container"></div>
+        <noscript>
+            <div
+                style="
+                    position: fixed;
+                    inset: 0;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    background-color: #0f172a;
+                    color: #cbd5e1;
+                    text-align: center;
+                    padding: 2rem;
+                "
+            >
+                <h1 style="font-size: 1.5rem; font-weight: bold; color: white">
+                    JavaScript Required
+                </h1>
+                <p>
+                    This application requires JavaScript to function. Please enable it in your
+                    browser settings and refresh the page.
+                </p>
+            </div>
+        </noscript>
+        <script type="module" src="./index.tsx"></script>
+    </body>
 </html>

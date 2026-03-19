@@ -1,88 +1,99 @@
-import * as Sentry from '@sentry/react'
+type SentryModule = typeof import('@sentry/react')
 
-const SENTRY_DSN = import.meta.env.VITE_SENTRY_DSN as string | undefined
-const IS_PRODUCTION = import.meta.env.PROD
+let _sentry: SentryModule | null = null
+let _initPromise: Promise<void> | null = null
 
 /**
  * Initializes Sentry error tracking for the application.
+ * Dynamically imports @sentry/react to keep it off the critical rendering path.
  * Only activates in production when a DSN is configured.
  */
 export const initSentry = (): void => {
-  if (!SENTRY_DSN || !IS_PRODUCTION) {
-    return
-  }
+    const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined
+    const isProd = import.meta.env.PROD
 
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    environment: IS_PRODUCTION ? 'production' : 'development',
-    release: `cannaguide@${__APP_VERSION__}`,
+    if (!dsn || !isProd) {
+        return
+    }
 
-    // Performance monitoring — sample 10% of transactions
-    tracesSampleRate: 0.1,
-
-    // Session replay — 1% of sessions, 100% on error
-    replaysSessionSampleRate: 0.01,
-    replaysOnErrorSampleRate: 1.0,
-
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({
-        maskAllText: false,
-        blockAllMedia: false,
-      }),
-    ],
-
-    // Filter out noise
-    beforeSend(event) {
-      // Don't send events from extensions or third-party scripts
-      if (event.exception?.values?.some(v =>
-        v.stacktrace?.frames?.some(f =>
-          f.filename?.includes('extensions/') ||
-          f.filename?.includes('chrome-extension')
-        )
-      )) {
-        return null
-      }
-      return event
-    },
-
-    // Ignore common non-actionable errors
-    ignoreErrors: [
-      'ResizeObserver loop',
-      'Non-Error promise rejection',
-      'AbortError',
-      'NetworkError',
-      'Load failed',
-      'Failed to fetch',
-      'ChunkLoadError',
-    ],
-  })
+    _initPromise = import('@sentry/react').then((mod) => {
+        _sentry = mod
+        mod.init({
+            dsn,
+            environment: 'production',
+            release: `cannaguide@${__APP_VERSION__}`,
+            tracesSampleRate: 0.1,
+            replaysSessionSampleRate: 0.01,
+            replaysOnErrorSampleRate: 1.0,
+            integrations: [
+                mod.browserTracingIntegration(),
+                mod.replayIntegration({
+                    maskAllText: false,
+                    blockAllMedia: false,
+                }),
+            ],
+            beforeSend(event) {
+                if (
+                    event.exception?.values?.some((v) =>
+                        v.stacktrace?.frames?.some(
+                            (f) =>
+                                f.filename?.includes('extensions/') ||
+                                f.filename?.includes('chrome-extension'),
+                        ),
+                    )
+                ) {
+                    return null
+                }
+                return event
+            },
+            ignoreErrors: [
+                'ResizeObserver loop',
+                'Non-Error promise rejection',
+                'AbortError',
+                'NetworkError',
+                'Load failed',
+                'Failed to fetch',
+                'ChunkLoadError',
+            ],
+        })
+    })
 }
 
-export { Sentry }
+/** Lazy Sentry proxy — no-ops safely when SDK is not loaded. */
+export const Sentry = {
+    captureException(error: unknown, hint?: Parameters<SentryModule['captureException']>[1]): void {
+        _sentry?.captureException(error, hint)
+    },
+    captureMessage(message: string, level?: Parameters<SentryModule['captureMessage']>[1]): void {
+        _sentry?.captureMessage(message, level)
+    },
+    get ready(): Promise<void> {
+        return _initPromise ?? Promise.resolve()
+    },
+}
 
 /**
  * Captures a local AI error with structured tags for dashboard filtering.
- * Safe to call in production — no-ops when Sentry is not initialized.
+ * Safe to call in production — no-ops when Sentry is not loaded.
  */
 export const captureLocalAiError = (
-  error: unknown,
-  context: {
-    model?: string
-    stage: 'preload' | 'inference' | 'vision' | 'webllm' | 'fallback'
-    backend?: 'webgpu' | 'wasm'
-    retryAttempt?: number
-  },
+    error: unknown,
+    context: {
+        model?: string
+        stage: 'preload' | 'inference' | 'vision' | 'webllm' | 'fallback'
+        backend?: 'webgpu' | 'wasm'
+        retryAttempt?: number
+    },
 ): void => {
-  Sentry.captureException(error, {
-    tags: {
-      feature: 'local-ai',
-      'ai.stage': context.stage,
-      ...(context.model && { 'ai.model': context.model }),
-      ...(context.backend && { 'ai.backend': context.backend }),
-    },
-    extra: {
-      retryAttempt: context.retryAttempt ?? 0,
-    },
-  })
+    Sentry.captureException(error, {
+        tags: {
+            feature: 'local-ai',
+            'ai.stage': context.stage,
+            ...(context.model && { 'ai.model': context.model }),
+            ...(context.backend && { 'ai.backend': context.backend }),
+        },
+        extra: {
+            retryAttempt: context.retryAttempt ?? 0,
+        },
+    })
 }

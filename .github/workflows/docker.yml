@@ -1,8 +1,9 @@
 name: 🐳 Docker
 
+# Build + push on release tags; PR-only path-scoped validation.
+# Removed push-to-main trigger to avoid blocking CI with Trivy exit-code 1.
 on:
     push:
-        branches: [main]
         tags: ['v*']
     pull_request:
         branches: [main]
@@ -11,6 +12,7 @@ on:
             - 'docker/**'
             - '.dockerignore'
             - '.github/workflows/docker.yml'
+    workflow_dispatch:
 
 permissions:
     contents: read

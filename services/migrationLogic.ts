@@ -229,6 +229,133 @@ const sanitizeGenealogyNodeMigration = (raw: unknown, depth = 0): boolean => {
     return true
 }
 
+/**
+ * Ensures entity-adapter slices have the { ids: [], entities: {} } shape
+ * that RTK selectors require.  Runs on EVERY boot to guard against
+ * corrupt / legacy IndexedDB data.
+ */
+const ensureEntityAdapterShape = (obj: unknown): { ids: string[]; entities: Record<string, unknown> } => {
+    if (
+        obj && typeof obj === 'object' &&
+        Array.isArray((obj as Record<string, unknown>).ids) &&
+        (obj as Record<string, unknown>).entities && typeof (obj as Record<string, unknown>).entities === 'object'
+    ) {
+        return obj as { ids: string[]; entities: Record<string, unknown> }
+    }
+    return { ids: [], entities: {} }
+}
+
+const ensureUserStrainsShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    s.userStrains = ensureEntityAdapterShape(s.userStrains)
+}
+
+const ensureSavedItemsShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.savedItems || typeof s.savedItems !== 'object') {
+        s.savedItems = {
+            savedSetups: { ids: [], entities: {} },
+            savedStrainTips: { ids: [], entities: {} },
+            savedExports: { ids: [], entities: {} },
+        }
+        return
+    }
+    const items = s.savedItems as Record<string, unknown>
+    items.savedSetups = ensureEntityAdapterShape(items.savedSetups)
+    items.savedStrainTips = ensureEntityAdapterShape(items.savedStrainTips)
+    items.savedExports = ensureEntityAdapterShape(items.savedExports)
+}
+
+const ensureFavoritesShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.favorites || typeof s.favorites !== 'object') {
+        s.favorites = { favoriteIds: [] }
+        return
+    }
+    const favs = s.favorites as Record<string, unknown>
+    if (!Array.isArray(favs.favoriteIds)) {
+        favs.favoriteIds = []
+    }
+}
+
+const ensureArchivesShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.archives || typeof s.archives !== 'object') {
+        s.archives = { archivedMentorResponses: [], archivedAdvisorResponses: {} }
+        return
+    }
+    const archives = s.archives as Record<string, unknown>
+    if (!Array.isArray(archives.archivedMentorResponses)) {
+        archives.archivedMentorResponses = []
+    }
+    if (!archives.archivedAdvisorResponses || typeof archives.archivedAdvisorResponses !== 'object') {
+        archives.archivedAdvisorResponses = {}
+    }
+}
+
+const ensureNotesShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.notes || typeof s.notes !== 'object') {
+        s.notes = { strainNotes: {} }
+        return
+    }
+    const notes = s.notes as Record<string, unknown>
+    if (!notes.strainNotes || typeof notes.strainNotes !== 'object') {
+        notes.strainNotes = {}
+    }
+}
+
+const ensureKnowledgeShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.knowledge || typeof s.knowledge !== 'object') {
+        s.knowledge = { knowledgeProgress: {} }
+        return
+    }
+    const knowledge = s.knowledge as Record<string, unknown>
+    if (!knowledge.knowledgeProgress || typeof knowledge.knowledgeProgress !== 'object') {
+        knowledge.knowledgeProgress = {}
+    }
+}
+
+const ensureBreedingShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.breeding || typeof s.breeding !== 'object') {
+        s.breeding = { collectedSeeds: [], breedingSlots: { parentA: null, parentB: null } }
+        return
+    }
+    const breeding = s.breeding as Record<string, unknown>
+    if (!Array.isArray(breeding.collectedSeeds)) {
+        breeding.collectedSeeds = []
+    }
+    if (!breeding.breedingSlots || typeof breeding.breedingSlots !== 'object') {
+        breeding.breedingSlots = { parentA: null, parentB: null }
+    }
+}
+
+const ensureSandboxShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.sandbox || typeof s.sandbox !== 'object') {
+        s.sandbox = { currentExperiment: null, status: 'idle', savedExperiments: [] }
+        return
+    }
+    const sandbox = s.sandbox as Record<string, unknown>
+    if (!Array.isArray(sandbox.savedExperiments)) {
+        sandbox.savedExperiments = []
+    }
+}
+
+const ensureStrainsViewShape = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    if (!s.strainsView || typeof s.strainsView !== 'object') {
+        s.strainsView = { strainsViewTab: 'all', strainsViewMode: 'list', selectedStrainIds: [], selectedStrainId: null }
+        return
+    }
+    const sv = s.strainsView as Record<string, unknown>
+    if (!Array.isArray(sv.selectedStrainIds)) {
+        sv.selectedStrainIds = []
+    }
+}
+
 const ensureGenealogyShape = (state: PersistedState): void => {
     if (!state.genealogy || typeof state.genealogy !== 'object') {
         // No genealogy key → supply clean initial state
@@ -621,6 +748,15 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     // Shape-level sanitization (runs every boot)
     ensureSimulationShape(migratedState)
     ensureGenealogyShape(migratedState)
+    ensureUserStrainsShape(migratedState)
+    ensureSavedItemsShape(migratedState)
+    ensureFavoritesShape(migratedState)
+    ensureArchivesShape(migratedState)
+    ensureNotesShape(migratedState)
+    ensureKnowledgeShape(migratedState)
+    ensureBreedingShape(migratedState)
+    ensureSandboxShape(migratedState)
+    ensureStrainsViewShape(migratedState)
 
     // Strip all transient / runtime-only state (runs every boot)
     stripTransientState(migratedState)

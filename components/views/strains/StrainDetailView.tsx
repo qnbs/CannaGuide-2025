@@ -163,7 +163,7 @@ interface StrainDetailViewProps {
 export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBack }) => {
     const { t } = useTranslation();
     const dispatch = useAppDispatch();
-    const favoriteIds = useAppSelector(selectFavoriteIds) as Set<string>;
+    const favoriteIds = useAppSelector(selectFavoriteIds) ?? new Set<string>();
     const isFavorite = favoriteIds.has(strain.id);
     const hasAvailableSlots = useAppSelector(selectHasAvailableSlots);
     const [activeTab, setActiveTab] = useState('overview');

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback, useRef, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Strain, StrainViewTab, AppSettings, SavedStrainTip, SavedExport } from '@/types';
+import { Strain, StrainViewTab } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/stores/store';
 import { strainService } from '@/services/strainService';
 import { useStrainFilters } from '@/hooks/useStrainFilters';
@@ -33,7 +33,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { FilterDrawer } from './FilterDrawer';
 import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 import { StrainSubNav } from './StrainSubNav';
-import { StrainsViewState } from '@/stores/slices/strainsViewSlice';
+
 import { DataExportModal } from '@/components/common/DataExportModal';
 import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
@@ -84,15 +84,19 @@ export const StrainsView: React.FC = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [_currentPage, setCurrentPage] = useState(1);
 
-    const settings = useAppSelector(selectSettings) as AppSettings;
-    const { strainsViewTab, strainsViewMode, selectedStrainIds, selectedStrainId } = useAppSelector(selectStrainsView) as StrainsViewState;
+    const settings = useAppSelector(selectSettings);
+    const strainsViewState = useAppSelector(selectStrainsView);
+    const strainsViewTab = strainsViewState?.strainsViewTab ?? StrainViewTab.All;
+    const strainsViewMode = strainsViewState?.strainsViewMode ?? 'list';
+    const selectedStrainIds = strainsViewState?.selectedStrainIds ?? [];
+    const selectedStrainId = strainsViewState?.selectedStrainId ?? null;
     const selectedStrainForDetail = useMemo(() => allStrains.find(s => s.id === selectedStrainId) || null, [allStrains, selectedStrainId]);
-    const userStrains = useAppSelector(selectUserStrains) as Strain[];
-    const userStrainIds = useAppSelector(selectUserStrainIds) as Set<string>;
-    const favoriteIds = useAppSelector(selectFavoriteIds) as Set<string>;
-    const savedTips = useAppSelector(selectSavedStrainTips) as SavedStrainTip[];
-    const savedExports = useAppSelector(selectSavedExports) as SavedExport[];
-    const savedExportsCount = useAppSelector(selectSavedExportsCount);
+    const userStrains = useAppSelector(selectUserStrains) ?? [];
+    const userStrainIds = useAppSelector(selectUserStrainIds) ?? new Set<string>();
+    const favoriteIds = useAppSelector(selectFavoriteIds) ?? new Set<string>();
+    const savedTips = useAppSelector(selectSavedStrainTips) ?? [];
+    const savedExports = useAppSelector(selectSavedExports) ?? [];
+    const savedExportsCount = useAppSelector(selectSavedExportsCount) ?? 0;
     const isAddModalOpen = useAppSelector(state => state.ui.isAddModalOpen);
     const isExportModalOpen = useAppSelector(state => state.ui.isExportModalOpen);
     const strainToEdit = useAppSelector(state => state.ui.strainToEdit);

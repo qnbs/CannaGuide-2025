@@ -5,6 +5,7 @@ import {
     embedBatch,
     cosineSimilarity,
 } from '@/services/localAiEmbeddingService'
+import DOMPurify from 'dompurify'
 
 interface LogChunk {
     plantId: string
@@ -19,7 +20,7 @@ const MAX_CHUNKS = 500
 const tokenize = (input: string): string[] =>
     input
         .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, ' ')
+        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
         .split(/\s+/)
         .filter((token) => token.length > 2)
 
@@ -54,12 +55,15 @@ const setCachedEmbedding = (key: string, vec: Float32Array): void => {
 class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
         const allChunks = plants.flatMap((plant) =>
-            plant.journal.map((entry: JournalEntry) => ({
-                plantId: plant.id,
-                plantName: plant.name,
-                createdAt: entry.createdAt,
-                text: `${entry.type} ${entry.notes} ${(entry.details && JSON.stringify(entry.details)) || ''}`,
-            })),
+            plant.journal.map((entry: JournalEntry) => {
+                const rawText = `${entry.type} ${entry.notes} ${(entry.details && JSON.stringify(entry.details)) || ''}`
+                return {
+                    plantId: plant.id,
+                    plantName: plant.name,
+                    createdAt: entry.createdAt,
+                    text: DOMPurify.sanitize(rawText, { ALLOWED_TAGS: [] }),
+                }
+            }),
         )
         // Cap to most recent chunks to prevent OOM on large journals
         if (allChunks.length > MAX_CHUNKS) {

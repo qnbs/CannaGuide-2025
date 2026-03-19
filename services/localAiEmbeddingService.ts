@@ -14,6 +14,9 @@ const EMBEDDING_DIMENSION = 384
 /** Timeout for a single embedding inference (30s — embeddings are fast). */
 const EMBEDDING_TIMEOUT_MS = 30_000
 
+/** Maximum input length in characters to prevent model OOM. */
+const MAX_INPUT_LENGTH = 512
+
 let embeddingPipelinePromise: Promise<LocalAiPipeline> | null = null
 
 const loadEmbeddingPipeline = async (): Promise<LocalAiPipeline> => {
@@ -33,6 +36,7 @@ const loadEmbeddingPipeline = async (): Promise<LocalAiPipeline> => {
 
 /** Cosine similarity between two equal-length vectors. */
 export const cosineSimilarity = (a: Float32Array, b: Float32Array): number => {
+    if (a.length !== b.length || a.length === 0) return 0
     let dot = 0
     let normA = 0
     let normB = 0
@@ -100,12 +104,19 @@ const extractEmbedding = (raw: unknown): Float32Array => {
  * Returns a Float32Array of length 384 (MiniLM dimension).
  */
 export const embedText = async (text: string): Promise<Float32Array> => {
-    const pipeline = await loadEmbeddingPipeline()
-    const result = await withTimeout(
-        pipeline(text, { pooling: 'mean', normalize: true }),
-        EMBEDDING_TIMEOUT_MS,
-    )
-    return extractEmbedding(result)
+    const sanitized = text.trim().slice(0, MAX_INPUT_LENGTH)
+    if (sanitized.length === 0) return new Float32Array(EMBEDDING_DIMENSION)
+    try {
+        const pipeline = await loadEmbeddingPipeline()
+        const result = await withTimeout(
+            pipeline(sanitized, { pooling: 'mean', normalize: true }),
+            EMBEDDING_TIMEOUT_MS,
+        )
+        return extractEmbedding(result)
+    } catch (error) {
+        captureLocalAiError(error, { model: EMBEDDING_MODEL_ID, stage: 'embedding' })
+        throw error
+    }
 }
 
 /**
@@ -121,16 +132,22 @@ export const embedBatch = async (texts: string[]): Promise<Float32Array[]> => {
     const BATCH = 8
     for (let i = 0; i < texts.length; i += BATCH) {
         const slice = texts.slice(i, i + BATCH)
-        const batchResults = await Promise.all(
+        const batchResults = await Promise.allSettled(
             slice.map(async (t) => {
+                const sanitized = t.trim().slice(0, MAX_INPUT_LENGTH)
+                if (sanitized.length === 0) return new Float32Array(EMBEDDING_DIMENSION)
                 const r = await withTimeout(
-                    pipeline(t, { pooling: 'mean', normalize: true }),
+                    pipeline(sanitized, { pooling: 'mean', normalize: true }),
                     EMBEDDING_TIMEOUT_MS,
                 )
                 return extractEmbedding(r)
             }),
         )
-        results.push(...batchResults)
+        results.push(
+            ...batchResults.map((r) =>
+                r.status === 'fulfilled' ? r.value : new Float32Array(EMBEDDING_DIMENSION),
+            ),
+        )
     }
     return results
 }

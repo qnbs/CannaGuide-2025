@@ -33,7 +33,7 @@ import {
     createInferenceTimer,
     recordCacheHit,
     recordCacheMiss,
-    persistSnapshot,
+    debouncedPersistSnapshot,
 } from './localAiTelemetryService'
 import { z } from 'zod'
 
@@ -147,15 +147,24 @@ const sanitizeText = (value: string): string =>
 
 const supportsWebGpu = (): boolean => typeof navigator !== 'undefined' && 'gpu' in navigator
 
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+])
+
 const toDataUrl = (base64Image: string, mimeType: string): string => {
     if (base64Image.startsWith('data:')) {
         return base64Image
     }
-    return `data:${mimeType};base64,${base64Image}`
+    const safeMime = ALLOWED_IMAGE_MIME_TYPES.has(mimeType) ? mimeType : 'image/jpeg'
+    return `data:${safeMime};base64,${base64Image}`
 }
 
 const summarizePlant = (plant: Plant): string =>
-    `${plant.name} | ${plant.strain.name} | stage=${plant.stage} | health=${plant.health.toFixed(0)} | stress=${plant.stressLevel.toFixed(0)} | vpd=${plant.environment.vpd.toFixed(2)} | ph=${plant.medium.ph.toFixed(2)} | ec=${plant.medium.ec.toFixed(2)}`
+    `${sanitizeText(plant.name)} | ${sanitizeText(plant.strain.name)} | stage=${plant.stage} | health=${plant.health.toFixed(0)} | stress=${plant.stressLevel.toFixed(0)} | vpd=${plant.environment.vpd.toFixed(2)} | ph=${plant.medium.ph.toFixed(2)} | ec=${plant.medium.ec.toFixed(2)}`
 
 const fallbackMentorMessage = (
     plant: Plant,
@@ -321,7 +330,7 @@ class LocalAiService {
                             model: WEBLLM_MODEL_ID,
                             task: 'text-generation',
                         })
-                        persistSnapshot()
+                        debouncedPersistSnapshot()
                         return content
                     }
                 } catch (error) {
@@ -365,7 +374,7 @@ class LocalAiService {
                         model: TEXT_MODEL_ID,
                         task: 'text-generation',
                     })
-                    persistSnapshot()
+                    debouncedPersistSnapshot()
                     return generated
                 }
             } catch (error) {
@@ -466,7 +475,10 @@ class LocalAiService {
             const image = await fetch(toDataUrl(base64Image, mimeType)).then((response) =>
                 response.blob(),
             )
-            const result = await classifier(image, { candidate_labels: [...ZERO_SHOT_LABELS] })
+            const result = await withTimeout(
+                classifier(image, { candidate_labels: [...ZERO_SHOT_LABELS] }),
+                INFERENCE_TIMEOUT_MS,
+            )
             return Array.isArray(result) ? result : []
         } catch (error) {
             console.warn('[LocalAI] Vision classification failed.', error)

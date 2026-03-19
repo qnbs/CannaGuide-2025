@@ -124,7 +124,12 @@ export const recordCacheMiss = (): void => {
 const estimateTokenCount = (value: unknown): number => {
     if (typeof value === 'string') return Math.ceil(value.length / 4)
     if (typeof value === 'object' && value !== null) {
-        return Math.ceil(JSON.stringify(value).length / 4)
+        try {
+            return Math.ceil(JSON.stringify(value).length / 4)
+        } catch {
+            // Circular references or other serialization failures
+            return 0
+        }
     }
     return 0
 }
@@ -189,6 +194,18 @@ export const persistSnapshot = (): void => {
     } catch {
         // Silently ignore quota errors
     }
+}
+
+let _persistTimer: ReturnType<typeof setTimeout> | null = null
+/**
+ * Debounced persistence — batches rapid inference calls into one write.
+ */
+export const debouncedPersistSnapshot = (delayMs = 5_000): void => {
+    if (_persistTimer) clearTimeout(_persistTimer)
+    _persistTimer = setTimeout(() => {
+        persistSnapshot()
+        _persistTimer = null
+    }, delayMs)
 }
 
 /**

@@ -9,6 +9,10 @@ const DB_NAME = 'CannaGuideLocalAiCache'
 const DB_VERSION = 1
 const STORE_NAME = 'inferences'
 const MAX_ENTRIES = 256
+/** Maximum value size in characters to prevent storage bloat. */
+const MAX_VALUE_SIZE = 50_000
+/** Cache entries expire after 7 days. */
+const TTL_MS = 7 * 24 * 60 * 60 * 1000
 
 interface CacheEntry {
     key: string
@@ -36,7 +40,14 @@ const openDb = (): Promise<IDBDatabase> => {
                 store.createIndex('accessedAt', 'accessedAt', { unique: false })
             }
         }
-        request.onsuccess = () => resolve(request.result)
+        request.onsuccess = () => {
+            const db = request.result
+            // Auto-recover on unexpected close (e.g. IDB eviction)
+            db.onclose = () => {
+                dbPromise = null
+            }
+            resolve(db)
+        }
         request.onerror = () => {
             dbPromise = null
             reject(request.error)
@@ -73,6 +84,12 @@ export const getCachedInference = async (prompt: string): Promise<string | null>
             getReq.onsuccess = () => {
                 const entry = getReq.result as CacheEntry | undefined
                 if (entry) {
+                    // Check TTL expiry
+                    if (Date.now() - entry.createdAt > TTL_MS) {
+                        store.delete(key)
+                        resolve(null)
+                        return
+                    }
                     // Touch the entry (update accessedAt for LRU)
                     entry.accessedAt = Date.now()
                     store.put(entry)
@@ -97,6 +114,8 @@ export const setCachedInference = async (
     value: string,
     meta: { model: string; task: string },
 ): Promise<void> => {
+    // Reject oversized values to prevent storage bloat
+    if (value.length > MAX_VALUE_SIZE) return
     try {
         const db = await openDb()
         const key = hashKey(prompt)

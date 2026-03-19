@@ -135,9 +135,15 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
 
 /**
  * Batch sentiment analysis for multiple texts.
+ * Uses allSettled for resilience — individual failures return neutral.
  */
 export const analyzeSentimentBatch = async (texts: string[]): Promise<SentimentResult[]> => {
-    return Promise.all(texts.map((t) => analyzeSentiment(t)))
+    const results = await Promise.allSettled(texts.map((t) => analyzeSentiment(t)))
+    return results.map((r) =>
+        r.status === 'fulfilled'
+            ? r.value
+            : { label: 'POSITIVE' as const, score: 0.5, normalized: 'neutral' as const },
+    )
 }
 
 // ─── Text Summarization ──────────────────────────────────────────────────────

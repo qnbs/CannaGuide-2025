@@ -71,14 +71,21 @@ export const clearInferenceCache = (): void => {
     inferenceCache.clear()
 }
 
-/** Race a promise against a timeout. */
+/** Race a promise against a timeout (cleans up timer to avoid unhandled rejections). */
 const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
-    Promise.race([
-        promise,
-        new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error('Inference timeout')), ms),
-        ),
-    ])
+    new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Inference timeout')), ms)
+        promise.then(
+            (value) => {
+                clearTimeout(timer)
+                resolve(value)
+            },
+            (error) => {
+                clearTimeout(timer)
+                reject(error)
+            },
+        )
+    })
 
 const ZERO_SHOT_LABELS = [
     'healthy plant',

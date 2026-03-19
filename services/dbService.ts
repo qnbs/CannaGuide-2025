@@ -25,6 +25,7 @@ import {
     STRAIN_INDEX_FLOWERING,
 } from '@/constants';
 import { resizeImage } from '@/services/imageService';
+import { createStrainObject } from '@/services/strainFactory';
 
 
 // --- TYPE DEFINITIONS ---
@@ -306,12 +307,21 @@ export const dbService = {
             const store = transaction.objectStore(STRAINS_STORE);
             const request = store.openCursor();
             const results: Strain[] = [];
+            const seenIds = new Set<string>();
 
             request.onerror = () => reject(request.error);
             request.onsuccess = () => {
                 const cursor = request.result;
                 if (cursor) {
-                    results.push(cursor.value);
+                    if (cursor.value && typeof cursor.value === 'object') {
+                        const normalized = createStrainObject(cursor.value as Partial<Strain>);
+                        if (!seenIds.has(normalized.id)) {
+                            seenIds.add(normalized.id);
+                            results.push(normalized);
+                        } else {
+                            console.warn(`[dbService] Skipping duplicate strain id "${normalized.id}" while reading IndexedDB.`);
+                        }
+                    }
                     cursor.continue();
                 } else {
                     // Cursor is exhausted, all data has been read.

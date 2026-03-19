@@ -133,6 +133,7 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     const { t } = useTranslation()
     const [allStrains, setAllStrains] = useState<Strain[]>([])
     const [isLoading, setIsLoading] = useState(true)
+    const [loadError, setLoadError] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
     const userStrains = useAppSelector(selectUserStrains) as Strain[]
     const favorites = useAppSelector(selectFavoriteIds) as Set<string>
@@ -141,10 +142,15 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
         strainService.getAllStrains()
             .then((strains) => {
                 setAllStrains(strains)
+                setLoadError(null)
                 setIsLoading(false)
             })
-            .catch(() => setIsLoading(false))
-    }, [])
+            .catch((error: unknown) => {
+                console.error('[InlineStrainSelector] Failed to load strains.', error)
+                setLoadError(t('strainsView.inlineSelector.loadError'))
+                setIsLoading(false)
+            })
+    }, [t])
 
     const filteredStrains = useMemo(() => {
         const lowerCaseSearch = searchTerm.toLowerCase()
@@ -197,6 +203,10 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
             <div className="flex-grow overflow-y-auto pr-2 -mr-4">
                 {isLoading ? (
                     <SkeletonLoader count={5} />
+                ) : loadError ? (
+                    <div className="rounded-lg border border-rose-500/20 bg-rose-500/10 p-4 text-sm text-rose-200">
+                        {loadError}
+                    </div>
                 ) : (
                     <div className="space-y-1">
                         {filteredStrains.map((strain) => (

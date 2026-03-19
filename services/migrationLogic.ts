@@ -413,6 +413,7 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
     bundledStrains.forEach((strain) => {
         if (bundledIds.has(strain.id)) {
             duplicateIds.push(strain.id)
+            return
         }
         bundledIds.add(strain.id)
 

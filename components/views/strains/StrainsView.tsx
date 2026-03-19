@@ -52,7 +52,12 @@ const DEFAULT_AGRONOMIC = {
 } as const
 
 const getRangeValue = (range: [number, number] | undefined, fallback: [number, number]): [number, number] => {
-    if (Array.isArray(range) && range.length === 2) {
+    if (
+        Array.isArray(range) &&
+        range.length === 2 &&
+        typeof range[0] === 'number' && Number.isFinite(range[0]) &&
+        typeof range[1] === 'number' && Number.isFinite(range[1])
+    ) {
         return range
     }
 

@@ -26,6 +26,12 @@ import { INITIAL_ADVANCED_FILTERS } from '@/constants';
 const difficultyOrder: Record<DifficultyLevel, number> = { 'Easy': 1, 'Medium': 2, 'Hard': 3 };
 const yieldOrder: Record<YieldLevel, number> = { 'Low': 1, 'Medium': 2, 'High': 3 };
 const heightOrder: Record<HeightLevel, number> = { 'Short': 1, 'Medium': 2, 'Tall': 3 };
+const fallbackAgronomic = { difficulty: 'Medium', yield: 'Medium', height: 'Medium' } as const;
+
+const getSafeAgronomic = (strain: Strain) => strain.agronomic ?? fallbackAgronomic;
+
+const getSafeNumericValue = (value: unknown, fallback: number): number =>
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
 export const useStrainFilters = (
     allStrains: Strain[],
@@ -152,12 +158,12 @@ export const useStrainFilters = (
         const selectedTerpenesSet = new Set(advancedFilters.selectedTerpenes);
 
         strains = strains.filter(s =>
-            (s.thc >= advancedFilters.thcRange[0] && s.thc <= advancedFilters.thcRange[1]) &&
-            (s.cbd >= advancedFilters.cbdRange[0] && s.cbd <= advancedFilters.cbdRange[1]) &&
-            (s.floweringTime >= advancedFilters.floweringRange[0] && s.floweringTime <= advancedFilters.floweringRange[1]) &&
-            (selectedDifficultiesSet.size === 0 || selectedDifficultiesSet.has(s.agronomic.difficulty)) &&
-            (selectedYieldsSet.size === 0 || selectedYieldsSet.has(s.agronomic.yield)) &&
-            (selectedHeightsSet.size === 0 || selectedHeightsSet.has(s.agronomic.height)) &&
+            (getSafeNumericValue(s.thc, 0) >= advancedFilters.thcRange[0] && getSafeNumericValue(s.thc, 0) <= advancedFilters.thcRange[1]) &&
+            (getSafeNumericValue(s.cbd, 0) >= advancedFilters.cbdRange[0] && getSafeNumericValue(s.cbd, 0) <= advancedFilters.cbdRange[1]) &&
+            (getSafeNumericValue(s.floweringTime, 0) >= advancedFilters.floweringRange[0] && getSafeNumericValue(s.floweringTime, 0) <= advancedFilters.floweringRange[1]) &&
+            (selectedDifficultiesSet.size === 0 || selectedDifficultiesSet.has(getSafeAgronomic(s).difficulty)) &&
+            (selectedYieldsSet.size === 0 || selectedYieldsSet.has(getSafeAgronomic(s).yield)) &&
+            (selectedHeightsSet.size === 0 || selectedHeightsSet.has(getSafeAgronomic(s).height)) &&
             (selectedAromasSet.size === 0 || (s.aromas || []).some(a => selectedAromasSet.has(a))) &&
             (selectedTerpenesSet.size === 0 || (s.dominantTerpenes || []).some(t => selectedTerpenesSet.has(t)))
         );
@@ -175,13 +181,13 @@ export const useStrainFilters = (
 
             switch (key) {
                 case 'difficulty':
-                    comparison = difficultyOrder[a.agronomic.difficulty] - difficultyOrder[b.agronomic.difficulty];
+                    comparison = difficultyOrder[getSafeAgronomic(a).difficulty] - difficultyOrder[getSafeAgronomic(b).difficulty];
                     break;
                 case 'yield':
-                    comparison = yieldOrder[a.agronomic.yield] - yieldOrder[b.agronomic.yield];
+                    comparison = yieldOrder[getSafeAgronomic(a).yield] - yieldOrder[getSafeAgronomic(b).yield];
                     break;
                 case 'height':
-                    comparison = heightOrder[a.agronomic.height] - heightOrder[b.agronomic.height];
+                    comparison = heightOrder[getSafeAgronomic(a).height] - heightOrder[getSafeAgronomic(b).height];
                     break;
                 case 'name':
                 case 'type':
@@ -190,7 +196,7 @@ export const useStrainFilters = (
                 case 'thc':
                 case 'cbd':
                 case 'floweringTime':
-                    comparison = a[key] - b[key];
+                    comparison = getSafeNumericValue(a[key], 0) - getSafeNumericValue(b[key], 0);
                     break;
                 default:
                     return 0;

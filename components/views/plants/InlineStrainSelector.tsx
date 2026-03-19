@@ -47,7 +47,7 @@ const DetailedStrainSelectItem: React.FC<{ strain: Strain; onClick: () => void }
     onClick,
 }) => {
     const { t } = useTranslation()
-    const userStrains = useAppSelector(selectUserStrains) as Strain[]
+    const userStrains = useAppSelector(selectUserStrains) ?? []
     const isUserStrain = userStrains.some((s) => s.id === strain.id)
 
     const typeClasses: Record<string, string> = {
@@ -134,8 +134,8 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
     const [allStrains, setAllStrains] = useState<Strain[]>([])
     const [isLoading, setIsLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
-    const userStrains = useAppSelector(selectUserStrains) as Strain[]
-    const favorites = useAppSelector(selectFavoriteIds) as Set<string>
+    const userStrains = useAppSelector(selectUserStrains) ?? []
+    const favorites = useAppSelector(selectFavoriteIds) ?? new Set<string>()
 
     useEffect(() => {
         strainService.getAllStrains()

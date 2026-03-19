@@ -22,6 +22,28 @@ declare module 'three' {
     export const CylinderGeometry: any
     export const SphereGeometry: any
     export const Color: any
+
+    type PlaneGeometry = any
+    type BoxGeometry = any
+    type BufferGeometry = any
+    type BufferAttribute = any
+    type PointsMaterial = any
+    type Points = any
+    type PointLight = any
+    type FogExp2 = any
+    type Vector3 = any
+
+    export const PlaneGeometry: any
+    export const BoxGeometry: any
+    export const BufferGeometry: any
+    export const BufferAttribute: any
+    export const PointsMaterial: any
+    export const Points: any
+    export const PointLight: any
+    export const FogExp2: any
+    export const Vector3: any
+    export const DoubleSide: any
+    export const ACESFilmicToneMapping: any
 }
 
 declare module 'three/examples/jsm/webxr/ARButton.js' {

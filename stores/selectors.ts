@@ -43,6 +43,7 @@ const selectBreeding = (state: RootState) => state.breeding
 const selectSandbox = (state: RootState) => state.sandbox
 const selectGenealogy = (state: RootState) => state.genealogy
 export const selectNavigation = (state: RootState) => state.navigation
+const selectNutrientPlanner = (state: RootState) => state.nutrientPlanner
 
 // --- Adapter Selectors ---
 import { userStrainsAdapter } from './slices/userStrainsSlice'
@@ -337,3 +338,40 @@ export const selectSavedExperiments = createSelector(
 
 // --- Genealogy Selector ---
 export const selectGenealogyState = selectGenealogy
+
+// --- Nutrient Planner Selectors ---
+import type {
+    NutrientPlannerState,
+    NutrientScheduleEntry,
+    EcPhReading,
+    NutrientAlert,
+} from './slices/nutrientPlannerSlice'
+
+export const selectNutrientSchedule = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): NutrientScheduleEntry[] => np.schedule,
+)
+export const selectNutrientReadings = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): EcPhReading[] => np.readings,
+)
+export const selectActiveNutrientAlerts = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): NutrientAlert[] => np.alerts.filter((a) => !a.dismissed),
+)
+export const selectNutrientMedium = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): 'Soil' | 'Coco' | 'Hydro' => np.medium,
+)
+export const selectNutrientAutoAdjust = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): boolean => np.autoAdjustEnabled,
+)
+export const selectNutrientAiLoading = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): boolean => np.isAiLoading,
+)
+export const selectNutrientAiRecommendation = createSelector(
+    [selectNutrientPlanner],
+    (np: NutrientPlannerState): string | null => np.lastAiRecommendation,
+)

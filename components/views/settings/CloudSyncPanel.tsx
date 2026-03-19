@@ -232,4 +232,6 @@ const CloudSyncPanel: React.FC = () => {
     )
 }
 
-export default memo(CloudSyncPanel)
+const CloudSyncPanelMemo = memo(CloudSyncPanel)
+CloudSyncPanelMemo.displayName = 'CloudSyncPanel'
+export default CloudSyncPanelMemo

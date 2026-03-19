@@ -3,12 +3,20 @@ import { GenealogyNode, StrainType } from '@/types';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { useTranslation } from 'react-i18next';
-import type { HierarchyNode } from 'd3-hierarchy';
+
+/** Minimal node shape accepted by StrainTreeNode – compatible with both
+ *  d3 HierarchyNode and the plain GenealogyLayoutNode from the worker. */
+interface TreeNodeLike {
+  data: GenealogyNode;
+  depth?: number;
+  x?: number;
+  y?: number;
+}
 
 interface StrainTreeNodeProps {
-  node: HierarchyNode<GenealogyNode>;
-  onNodeClick: (nodeData: GenealogyNode) => void;  // opens strain detail modal
-  onNodeFocus: (nodeData: GenealogyNode) => void;  // pans tree to centre this node
+  node: TreeNodeLike;
+  onNodeClick: (nodeData: GenealogyNode) => void;
+  onNodeFocus: (nodeData: GenealogyNode) => void;
   onToggle: (nodeId: string) => void;
 }
 

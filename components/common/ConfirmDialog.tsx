@@ -17,7 +17,7 @@ interface ConfirmDialogProps {
     cancelLabel: string
     onConfirm: () => void
     onOpenChange: (open: boolean) => void
-    confirmVariant?: 'danger' | 'secondary'
+    confirmVariant?: 'destructive' | 'secondary'
 }
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -28,7 +28,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     cancelLabel,
     onConfirm,
     onOpenChange,
-    confirmVariant = 'danger',
+    confirmVariant = 'destructive',
 }) => {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

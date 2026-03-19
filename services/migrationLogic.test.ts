@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import { migrateState, mergeStrainCatalogForUpdate } from '@/services/migrationLogic'
-import { PlantStage } from '@/types'
+import { PlantStage, StrainType } from '@/types'
 
 describe('migrationLogic', () => {
     it('keeps the first bundled strain when duplicate ids are present', () => {
         const merged = mergeStrainCatalogForUpdate(
             [],
             [
-                { id: 'strain-1', name: 'Alpha', type: 'Hybrid', floweringType: 'Photoperiod', thc: 20, cbd: 1, floweringTime: 9, agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' }, geneticModifiers: { pestResistance: 1, nutrientUptakeRate: 1, stressTolerance: 1, rue: 1, vpdTolerance: { min: 0.8, max: 1.6 }, transpirationFactor: 1, stomataSensitivity: 1 } },
-                { id: 'strain-1', name: 'Beta', type: 'Sativa', floweringType: 'Photoperiod', thc: 25, cbd: 2, floweringTime: 10, agronomic: { difficulty: 'Hard', yield: 'High', height: 'Tall' }, geneticModifiers: { pestResistance: 1, nutrientUptakeRate: 1, stressTolerance: 1, rue: 1, vpdTolerance: { min: 0.8, max: 1.6 }, transpirationFactor: 1, stomataSensitivity: 1 } },
+                { id: 'strain-1', name: 'Alpha', type: StrainType.Hybrid, floweringType: 'Photoperiod', thc: 20, cbd: 1, floweringTime: 9, agronomic: { difficulty: 'Medium', yield: 'Medium', height: 'Medium' }, geneticModifiers: { pestResistance: 1, nutrientUptakeRate: 1, stressTolerance: 1, rue: 1, vpdTolerance: { min: 0.8, max: 1.6 }, transpirationFactor: 1, stomataSensitivity: 1 } },
+                { id: 'strain-1', name: 'Beta', type: StrainType.Sativa, floweringType: 'Photoperiod', thc: 25, cbd: 2, floweringTime: 10, agronomic: { difficulty: 'Hard', yield: 'High', height: 'Tall' }, geneticModifiers: { pestResistance: 1, nutrientUptakeRate: 1, stressTolerance: 1, rue: 1, vpdTolerance: { min: 0.8, max: 1.6 }, transpirationFactor: 1, stomataSensitivity: 1 } },
             ],
         )
 

@@ -43,10 +43,24 @@ const getSafeStrainType = (value: unknown): StrainType => {
     return StrainType.Hybrid;
 };
 
+const defaultStrainsViewSettings: AppSettings['strainsView'] = {
+    defaultSortKey: 'name',
+    defaultSortDirection: 'asc',
+    defaultViewMode: 'list',
+    strainsPerPage: 25,
+    visibleColumns: ['type', 'thc', 'cbd', 'floweringTime'],
+    prioritizeUserStrains: true,
+    genealogyDefaultDepth: 2,
+    genealogyDefaultLayout: 'horizontal',
+    aiTipsDefaultFocus: 'overall',
+    aiTipsDefaultExperience: 'advanced',
+};
+
 export const useStrainFilters = (
     allStrains: Strain[],
-    strainsViewSettings: AppSettings['strainsView']
+    strainsViewSettings?: AppSettings['strainsView']
 ) => {
+    const safeSettings = strainsViewSettings ?? defaultStrainsViewSettings;
     const dispatch = useAppDispatch();
     const { searchTerm, typeFilter, showFavoritesOnly, advancedFilters, letterFilter, sortKey, sortDirection } =
         useAppSelector((state) => state.filters);
@@ -179,7 +193,7 @@ export const useStrainFilters = (
         );
 
         strains.sort((a, b) => {
-            if (strainsViewSettings.prioritizeUserStrains) {
+            if (safeSettings.prioritizeUserStrains) {
                 const aIsPriority = userStrainIds.has(a.id) || favorites.has(a.id);
                 const bIsPriority = userStrainIds.has(b.id) || favorites.has(b.id);
                 if (aIsPriority && !bIsPriority) return -1;
@@ -216,7 +230,7 @@ export const useStrainFilters = (
         });
 
         return strains;
-    }, [allStrains, searchTerm, showFavoritesOnly, typeFilter, advancedFilters, favorites, userStrainIds, strainsViewSettings.prioritizeUserStrains, sortKey, sortDirection, letterFilter]);
+    }, [allStrains, searchTerm, showFavoritesOnly, typeFilter, advancedFilters, favorites, userStrainIds, safeSettings.prioritizeUserStrains, sortKey, sortDirection, letterFilter]);
 
     return {
         filteredStrains,

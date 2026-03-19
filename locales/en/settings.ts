@@ -86,6 +86,53 @@ export const settingsView = {
         benchPreloadTime: 'Last preload: {{value}} s',
         benchInferenceSpeed: 'Inference speed: {{value}} tok/s',
         benchNotAvailable: 'Run a preload to see performance data.',
+        // Embedding & Semantic RAG
+        embeddingModelReady: 'Embedding model (MiniLM) is ready for semantic search.',
+        embeddingModelMissing:
+            'Embedding model not loaded. Semantic RAG will use keyword fallback.',
+        enableSemanticRag: 'Semantic RAG Search',
+        enableSemanticRagHint:
+            'Use vector embeddings for more accurate grow-log context retrieval instead of keyword matching.',
+        // NLP Models
+        sentimentModelReady: 'Sentiment analysis model is ready.',
+        sentimentModelMissing: 'Sentiment model not loaded.',
+        summarizationModelReady: 'Summarization model is ready.',
+        summarizationModelMissing: 'Summarization model not loaded.',
+        zeroShotTextModelReady: 'Query classification model is ready.',
+        zeroShotTextModelMissing: 'Query classification model not loaded.',
+        enableSentiment: 'Journal Sentiment Analysis',
+        enableSentimentHint:
+            'Analyze the emotional tone of journal entries to track grower mood and detect patterns.',
+        enableSummarization: 'Text Summarization',
+        enableSummarizationHint:
+            'Condense long grow logs and mentor chat histories into concise summaries.',
+        enableQueryClassification: 'Smart Query Routing',
+        enableQueryClassificationHint:
+            'Automatically categorize questions to improve AI response relevance.',
+        // Persistent Cache
+        enablePersistentCache: 'Persistent Inference Cache',
+        enablePersistentCacheHint:
+            'Store AI responses in IndexedDB so repeat queries return instantly, even after reloading the app.',
+        persistentCacheSize: 'Cached responses: {{value}}',
+        clearPersistentCache: 'Clear Inference Cache',
+        // Telemetry
+        enableTelemetry: 'Local AI Telemetry',
+        enableTelemetryHint:
+            'Track inference speed, token throughput, and model usage locally. No data leaves the device.',
+        telemetryInferences: 'Total inferences: {{value}}',
+        telemetryAvgLatency: 'Avg latency: {{value}} ms',
+        telemetryAvgSpeed: 'Avg speed: {{value}} tok/s',
+        telemetryCacheHitRate: 'Cache hit rate: {{value}}%',
+        telemetrySuccessRate: 'Success rate: {{value}}%',
+        telemetryPeakSpeed: 'Peak speed: {{value}} tok/s',
+        // Advanced
+        inferenceTimeout: 'Inference Timeout',
+        inferenceTimeoutHint: 'Maximum time in seconds to wait for a single local AI response.',
+        maxCacheSize: 'Max Cache Entries',
+        maxCacheSizeHint: 'Maximum number of cached inference results stored in IndexedDB.',
+        // Model Status Section
+        modelStatusTitle: 'Model Status Overview',
+        modelsLoaded: '{{loaded}} of {{total}} models ready',
     },
     general: {
         title: 'General Settings',

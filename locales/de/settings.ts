@@ -90,6 +90,53 @@ export const settingsView = {
         benchPreloadTime: 'Letzter Preload: {{value}} s',
         benchInferenceSpeed: 'Inferenzgeschwindigkeit: {{value}} tok/s',
         benchNotAvailable: 'Starte einen Preload, um Leistungsdaten zu sehen.',
+        // Embedding & Semantic RAG
+        embeddingModelReady: 'Embedding-Modell (MiniLM) ist bereit für semantische Suche.',
+        embeddingModelMissing:
+            'Embedding-Modell nicht geladen. Semantisches RAG nutzt Keyword-Fallback.',
+        enableSemanticRag: 'Semantische RAG-Suche',
+        enableSemanticRagHint:
+            'Verwende Vektor-Embeddings für genauere Grow-Log-Kontextabfrage statt Schlüsselwortsuche.',
+        // NLP Models
+        sentimentModelReady: 'Stimmungsanalyse-Modell ist bereit.',
+        sentimentModelMissing: 'Stimmungsanalyse-Modell nicht geladen.',
+        summarizationModelReady: 'Zusammenfassungs-Modell ist bereit.',
+        summarizationModelMissing: 'Zusammenfassungs-Modell nicht geladen.',
+        zeroShotTextModelReady: 'Frageklassifikations-Modell ist bereit.',
+        zeroShotTextModelMissing: 'Frageklassifikations-Modell nicht geladen.',
+        enableSentiment: 'Journal-Stimmungsanalyse',
+        enableSentimentHint:
+            'Analysiere den emotionalen Ton der Tagebucheinträge, um Stimmung und Muster zu erkennen.',
+        enableSummarization: 'Text-Zusammenfassung',
+        enableSummarizationHint:
+            'Lange Grow-Logs und Mentor-Chatverläufe in prägnante Zusammenfassungen verdichten.',
+        enableQueryClassification: 'Intelligentes Frage-Routing',
+        enableQueryClassificationHint:
+            'Fragen automatisch kategorisieren, um die KI-Antwortrelevanz zu verbessern.',
+        // Persistent Cache
+        enablePersistentCache: 'Persistenter Inferenz-Cache',
+        enablePersistentCacheHint:
+            'KI-Antworten in IndexedDB speichern, damit wiederholte Abfragen sofort beantwortet werden – auch nach Neuladen der App.',
+        persistentCacheSize: 'Gespeicherte Antworten: {{value}}',
+        clearPersistentCache: 'Inferenz-Cache leeren',
+        // Telemetry
+        enableTelemetry: 'Lokale KI-Telemetrie',
+        enableTelemetryHint:
+            'Inferenzgeschwindigkeit, Token-Durchsatz und Modellnutzung lokal verfolgen. Keine Daten verlassen das Gerät.',
+        telemetryInferences: 'Gesamte Inferenzen: {{value}}',
+        telemetryAvgLatency: 'Durchschn. Latenz: {{value}} ms',
+        telemetryAvgSpeed: 'Durchschn. Geschwindigkeit: {{value}} tok/s',
+        telemetryCacheHitRate: 'Cache-Trefferquote: {{value}}%',
+        telemetrySuccessRate: 'Erfolgsrate: {{value}}%',
+        telemetryPeakSpeed: 'Spitzengeschwindigkeit: {{value}} tok/s',
+        // Advanced
+        inferenceTimeout: 'Inferenz-Timeout',
+        inferenceTimeoutHint: 'Maximale Wartezeit in Sekunden für eine einzelne lokale KI-Antwort.',
+        maxCacheSize: 'Max. Cache-Einträge',
+        maxCacheSizeHint: 'Maximale Anzahl gespeicherter Inferenzergebnisse in IndexedDB.',
+        // Model Status Section
+        modelStatusTitle: 'Modellstatus-Übersicht',
+        modelsLoaded: '{{loaded}} von {{total}} Modellen bereit',
     },
     general: {
         title: 'Allgemeine Einstellungen',

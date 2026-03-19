@@ -10,6 +10,10 @@ export interface LocalAiPreloadStatus {
     textModelReady: boolean
     visionModelReady: boolean
     webLlmReady: boolean
+    embeddingModelReady: boolean
+    sentimentModelReady: boolean
+    summarizationModelReady: boolean
+    zeroShotTextModelReady: boolean
     details: string | null
 }
 
@@ -23,6 +27,10 @@ const DEFAULT_STATUS: LocalAiPreloadStatus = {
     textModelReady: false,
     visionModelReady: false,
     webLlmReady: false,
+    embeddingModelReady: false,
+    sentimentModelReady: false,
+    summarizationModelReady: false,
+    zeroShotTextModelReady: false,
     details: null,
 }
 
@@ -60,6 +68,10 @@ const formatReportDetails = (report: LocalAiPreloadReport): string => {
         `text=${report.textModelReady ? 'ready' : 'missing'}`,
         `vision=${report.visionModelReady ? 'ready' : 'missing'}`,
         `webLlm=${report.webLlmReady ? 'ready' : 'skipped'}`,
+        `embedding=${report.embeddingModelReady ? 'ready' : 'missing'}`,
+        `sentiment=${report.sentimentModelReady ? 'ready' : 'missing'}`,
+        `summarization=${report.summarizationModelReady ? 'ready' : 'missing'}`,
+        `zeroShot=${report.zeroShotTextModelReady ? 'ready' : 'missing'}`,
     ]
 
     if (report.errorCount > 0) {
@@ -105,14 +117,19 @@ export const localAiPreloadService = {
             try {
                 const localAiService = await getLocalAiService()
                 const report = await localAiService.preloadOfflineAssets(false, onProgress)
+                const coreReady = report.textModelReady && report.visionModelReady
                 const finalStatus: LocalAiPreloadStatus = {
-                    state: report.textModelReady && report.visionModelReady ? 'ready' : 'partial',
+                    state: coreReady ? 'ready' : 'partial',
                     lastAttemptAt: startedAt,
-                    readyAt: report.textModelReady && report.visionModelReady ? Date.now() : null,
+                    readyAt: coreReady ? Date.now() : null,
                     persistentStorageGranted: persisted,
                     textModelReady: report.textModelReady,
                     visionModelReady: report.visionModelReady,
                     webLlmReady: report.webLlmReady,
+                    embeddingModelReady: report.embeddingModelReady,
+                    sentimentModelReady: report.sentimentModelReady,
+                    summarizationModelReady: report.summarizationModelReady,
+                    zeroShotTextModelReady: report.zeroShotTextModelReady,
                     details: formatReportDetails(report),
                 }
 

@@ -1,6 +1,7 @@
 import { geminiService, type ImageStyle } from '@/services/geminiService'
 import { localAiPreloadService } from '@/services/localAiPreloadService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
+import { growLogRagService } from '@/services/growLogRagService'
 import {
     Language,
     Plant,
@@ -142,8 +143,10 @@ export const aiService = {
         lang: Language,
     ): Promise<Omit<MentorMessage, 'role'>> {
         if (shouldRouteLocally()) {
+            // Use semantic RAG when embedding model is available
+            const ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
             const local = await getLocalAiService()
-            return local.getMentorResponse(plant, query, '', lang)
+            return local.getMentorResponse(plant, query, ragContext, lang)
         }
         return withLocalFallback(
             () => geminiService.getMentorResponse(plant, query, lang),
@@ -212,12 +215,70 @@ export const aiService = {
 
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
         if (shouldRouteLocally()) {
+            // Use semantic RAG when embedding model is available
+            const ragContext = await growLogRagService.retrieveSemanticContext(plants, query)
             const local = await getLocalAiService()
-            return local.getGrowLogRagAnswer(plants, query, lang)
+            return local.getGrowLogRagAnswer(plants, query, lang, ragContext)
         }
         return withLocalFallback(
             () => geminiService.getGrowLogRagAnswer(plants, query, lang),
             () => localAiFallbackService.getGrowLogRagAnswer(query, '', lang),
         )
+    },
+
+    /** Analyze sentiment of journal entries for trend tracking. */
+    async analyzeJournalSentiment(
+        entries: Array<{ notes: string; createdAt: number }>,
+    ): Promise<{ overall: string; recentAverage: number; entryCount: number }> {
+        try {
+            const { analyzeJournalSentimentTrend } = await import('@/services/localAiNlpService')
+            return analyzeJournalSentimentTrend(entries)
+        } catch {
+            return { overall: 'stable', recentAverage: 0.5, entryCount: entries.length }
+        }
+    },
+
+    /** Summarize long text locally (grow logs, mentor history). */
+    async summarizeText(text: string, maxLength?: number): Promise<string> {
+        try {
+            const { summarizeText } = await import('@/services/localAiNlpService')
+            const result = await summarizeText(text, maxLength)
+            return result.summary
+        } catch {
+            return text.slice(0, maxLength ?? 130)
+        }
+    },
+
+    /** Classify a query into grow topic categories. */
+    async classifyQuery(text: string): Promise<{ topLabel: string; topScore: number }> {
+        try {
+            const { classifyGrowTopic } = await import('@/services/localAiNlpService')
+            const result = await classifyGrowTopic(text)
+            return { topLabel: result.topLabel, topScore: result.topScore }
+        } catch {
+            return { topLabel: 'general question', topScore: 1 }
+        }
+    },
+
+    /** Analyze sentiment of a single text. */
+    async analyzeSentiment(
+        text: string,
+    ): Promise<{ label: string; score: number; normalized: string }> {
+        try {
+            const { analyzeSentiment } = await import('@/services/localAiNlpService')
+            return analyzeSentiment(text)
+        } catch {
+            return { label: 'POSITIVE', score: 0.5, normalized: 'neutral' }
+        }
+    },
+
+    /** Get local AI telemetry snapshot. */
+    async getTelemetrySnapshot(): Promise<Record<string, unknown> | null> {
+        try {
+            const { getSnapshot } = await import('@/services/localAiTelemetryService')
+            return getSnapshot() as unknown as Record<string, unknown>
+        } catch {
+            return null
+        }
     },
 }

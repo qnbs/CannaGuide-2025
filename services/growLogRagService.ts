@@ -1,4 +1,10 @@
 import { Plant, JournalEntry } from '@/types'
+import {
+    isEmbeddingModelReady,
+    embedText,
+    embedBatch,
+    cosineSimilarity,
+} from '@/services/localAiEmbeddingService'
 
 interface LogChunk {
     plantId: string
@@ -28,6 +34,20 @@ const scoreChunk = (chunk: LogChunk, queryTokens: string[]): number => {
     return score + ageBoost
 }
 
+/** Embedding cache to avoid recomputing embeddings for unchanged chunks. */
+const embeddingCache = new Map<string, Float32Array>()
+const EMBEDDING_CACHE_MAX = 512
+
+const getCachedEmbedding = (key: string): Float32Array | undefined => embeddingCache.get(key)
+
+const setCachedEmbedding = (key: string, vec: Float32Array): void => {
+    if (embeddingCache.size >= EMBEDDING_CACHE_MAX) {
+        const oldest = embeddingCache.keys().next().value
+        if (oldest !== undefined) embeddingCache.delete(oldest)
+    }
+    embeddingCache.set(key, vec)
+}
+
 class GrowLogRagService {
     private buildChunks(plants: Plant[]): LogChunk[] {
         return plants.flatMap((plant) =>
@@ -40,22 +60,112 @@ class GrowLogRagService {
         )
     }
 
+    /**
+     * Retrieve relevant context using keyword scoring.
+     * Used when embedding model is not available.
+     */
+    private keywordRetrieve(chunks: LogChunk[], query: string, limit: number): string {
+        const tokens = tokenize(query)
+        const ranked = chunks
+            .map((chunk) => ({ chunk, score: scoreChunk(chunk, tokens) }))
+            .sort((a, b) => b.score - a.score)
+            .slice(0, limit)
+            .map(
+                ({ chunk }) =>
+                    `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()}: ${chunk.text.slice(0, 240)}`,
+            )
+        return ranked.join('\n')
+    }
+
+    /**
+     * Retrieve relevant context using semantic embeddings.
+     * Falls back to keyword scoring if embedding fails.
+     */
+    private async semanticRetrieve(
+        chunks: LogChunk[],
+        query: string,
+        limit: number,
+    ): Promise<string> {
+        try {
+            const queryVec = await embedText(query)
+            const chunkTexts = chunks.map((c) => c.text.slice(0, 256))
+
+            // Use cached embeddings where available, compute missing ones
+            const uncachedIndices: number[] = []
+            const uncachedTexts: string[] = []
+            const allVecs: Array<Float32Array | null> = chunkTexts.map((text, i) => {
+                const key = `${chunks[i].plantId}:${chunks[i].createdAt}`
+                const cached = getCachedEmbedding(key)
+                if (cached) return cached
+                uncachedIndices.push(i)
+                uncachedTexts.push(text)
+                return null
+            })
+
+            if (uncachedTexts.length > 0) {
+                const computed = await embedBatch(uncachedTexts)
+                for (let j = 0; j < uncachedIndices.length; j++) {
+                    const idx = uncachedIndices[j]
+                    allVecs[idx] = computed[j]
+                    const key = `${chunks[idx].plantId}:${chunks[idx].createdAt}`
+                    setCachedEmbedding(key, computed[j])
+                }
+            }
+
+            const ageWeight = 0.15
+            const scored = chunks
+                .map((chunk, i) => {
+                    const vec = allVecs[i]
+                    const semantic = vec ? cosineSimilarity(queryVec, vec) : 0
+                    const recency = Math.max(
+                        0,
+                        1 - (Date.now() - chunk.createdAt) / (1000 * 60 * 60 * 24 * 30),
+                    )
+                    return { chunk, score: semantic * (1 - ageWeight) + recency * ageWeight }
+                })
+                .sort((a, b) => b.score - a.score)
+                .slice(0, limit)
+                .map(
+                    ({ chunk, score }) =>
+                        `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()} [${(score * 100).toFixed(0)}%]: ${chunk.text.slice(0, 240)}`,
+                )
+
+            return scored.join('\n')
+        } catch {
+            // Fall back to keyword scoring on any embedding error
+            return this.keywordRetrieve(chunks, query, limit)
+        }
+    }
+
     public retrieveRelevantContext(plants: Plant[], query: string, limit = 6): string {
         const chunks = this.buildChunks(plants)
         if (chunks.length === 0) {
             return 'No grow log entries found.'
         }
 
-        const tokens = tokenize(query)
-        const ranked = chunks
-            .map((chunk) => ({ chunk, score: scoreChunk(chunk, tokens) }))
-            .sort((a, b) => b.score - a.score)
-            .slice(0, limit)
-            .map(({ chunk }) =>
-                `- ${chunk.plantName} @ ${new Date(chunk.createdAt).toLocaleString()}: ${chunk.text.slice(0, 240)}`,
-            )
+        // Use keyword scoring for synchronous callers
+        return this.keywordRetrieve(chunks, query, limit)
+    }
 
-        return ranked.join('\n')
+    /**
+     * Async context retrieval using semantic embeddings when available.
+     * Falls back to keyword scoring transparently.
+     */
+    public async retrieveSemanticContext(
+        plants: Plant[],
+        query: string,
+        limit = 6,
+    ): Promise<string> {
+        const chunks = this.buildChunks(plants)
+        if (chunks.length === 0) {
+            return 'No grow log entries found.'
+        }
+
+        if (isEmbeddingModelReady()) {
+            return this.semanticRetrieve(chunks, query, limit)
+        }
+
+        return this.keywordRetrieve(chunks, query, limit)
     }
 }
 

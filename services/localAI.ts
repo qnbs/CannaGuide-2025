@@ -23,7 +23,18 @@ import {
     diagnosePlant as diagnoseWithRules,
 } from '@/services/localAiFallbackService'
 import { captureLocalAiError } from '@/services/sentryService'
-import { loadTransformersPipeline, type LocalAiPipeline } from './localAIModelLoader'
+import {
+    loadTransformersPipeline,
+    detectOnnxBackend,
+    type LocalAiPipeline,
+} from './localAIModelLoader'
+import { getCachedInference, setCachedInference } from './localAiCacheService'
+import {
+    createInferenceTimer,
+    recordCacheHit,
+    recordCacheMiss,
+    persistSnapshot,
+} from './localAiTelemetryService'
 import { z } from 'zod'
 
 const TEXT_MODEL_ID = 'Xenova/Qwen2.5-1.5B-Instruct'
@@ -264,14 +275,28 @@ class LocalAiService {
     }
 
     private async generateText(prompt: string): Promise<string | null> {
-        // Check inference cache first
+        // Check in-memory inference cache first
         const cached = getCached(prompt)
-        if (cached) return cached
+        if (cached) {
+            recordCacheHit()
+            return cached
+        }
+
+        // Check persistent IndexedDB cache
+        const persisted = await getCachedInference(prompt)
+        if (persisted) {
+            setCached(prompt, persisted) // Backfill in-memory cache
+            recordCacheHit()
+            return persisted
+        }
+
+        recordCacheMiss()
 
         for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
             const webLlm = await this.loadWebLlmEngine()
             if (webLlm) {
                 try {
+                    const timer = createInferenceTimer()
                     const response = await withTimeout(
                         webLlm.chat.completions.create({
                             messages: [{ role: 'user', content: prompt }],
@@ -282,7 +307,18 @@ class LocalAiService {
                     )
                     const content = response?.choices?.[0]?.message?.content
                     if (typeof content === 'string' && content.trim().length > 0) {
+                        timer.stop({
+                            model: WEBLLM_MODEL_ID,
+                            task: 'text-generation',
+                            backend: 'webllm',
+                            tokensGenerated: Math.ceil(content.length / 4),
+                        })
                         setCached(prompt, content)
+                        void setCachedInference(prompt, content, {
+                            model: WEBLLM_MODEL_ID,
+                            task: 'text-generation',
+                        })
+                        persistSnapshot()
                         return content
                     }
                 } catch (error) {
@@ -299,6 +335,7 @@ class LocalAiService {
             }
 
             try {
+                const timer = createInferenceTimer()
                 const generator = await this.loadTextPipeline()
                 const output = await withTimeout(
                     generator(prompt, {
@@ -313,7 +350,19 @@ class LocalAiService {
                     ? (output[0] as { generated_text?: string } | undefined)?.generated_text
                     : (output as { generated_text?: string } | undefined)?.generated_text
                 if (typeof generated === 'string' && generated.trim().length > 0) {
+                    const currentBackend = detectOnnxBackend()
+                    timer.stop({
+                        model: TEXT_MODEL_ID,
+                        task: 'text-generation',
+                        backend: currentBackend,
+                        tokensGenerated: Math.ceil(generated.length / 4),
+                    })
                     setCached(prompt, generated)
+                    void setCachedInference(prompt, generated, {
+                        model: TEXT_MODEL_ID,
+                        task: 'text-generation',
+                    })
+                    persistSnapshot()
                     return generated
                 }
             } catch (error) {
@@ -340,7 +389,11 @@ class LocalAiService {
         includeWebLlm = false,
         onProgress?: (loaded: number, total: number, label: string) => void,
     ): Promise<LocalAiPreloadReport> {
-        const totalSteps = includeWebLlm && supportsWebGpu() ? 3 : 2
+        const hasEmbeddings = true // Always attempt embedding model
+        const hasNlp = true // Always attempt NLP models
+        const hasWebLlm = includeWebLlm && supportsWebGpu()
+        // Base: text + vision + embedding + 3 NLP (sentiment, summarization, zero-shot)
+        const totalSteps = 2 + (hasEmbeddings ? 1 : 0) + (hasNlp ? 3 : 0) + (hasWebLlm ? 1 : 0)
         let loaded = 0
 
         onProgress?.(loaded, totalSteps, 'text-model')
@@ -350,8 +403,36 @@ class LocalAiService {
         const visionResult = await Promise.allSettled([this.loadVisionPipeline()]).then((r) => r[0])
         onProgress?.(++loaded, totalSteps, 'vision-model')
 
+        // Embedding model
+        let embeddingReady = false
+        if (hasEmbeddings) {
+            onProgress?.(loaded, totalSteps, 'embedding-model')
+            try {
+                const { preloadEmbeddingModel } = await import('./localAiEmbeddingService')
+                embeddingReady = await preloadEmbeddingModel()
+            } catch {
+                embeddingReady = false
+            }
+            onProgress?.(++loaded, totalSteps, 'embedding-model')
+        }
+
+        // NLP models (sentiment, summarization, zero-shot-classification)
+        let nlpStatus = { sentimentReady: false, summarizationReady: false, zeroShotReady: false }
+        if (hasNlp) {
+            try {
+                const { preloadNlpModels } = await import('./localAiNlpService')
+                nlpStatus = await preloadNlpModels((nlpLoaded, _total, label) => {
+                    onProgress?.(loaded + nlpLoaded, totalSteps, label)
+                })
+            } catch {
+                // NLP preload failure is non-critical
+            }
+            loaded += 3
+            onProgress?.(loaded, totalSteps, 'nlp-complete')
+        }
+
         let webLlmResult: PromiseSettledResult<unknown> | null = null
-        if (includeWebLlm && supportsWebGpu()) {
+        if (hasWebLlm) {
             onProgress?.(loaded, totalSteps, 'web-llm')
             webLlmResult = await Promise.allSettled([this.loadWebLlmEngine()]).then((r) => r[0])
             onProgress?.(++loaded, totalSteps, 'web-llm')
@@ -361,10 +442,18 @@ class LocalAiService {
             textModelReady: textResult.status === 'fulfilled',
             visionModelReady: visionResult.status === 'fulfilled',
             webLlmReady: webLlmResult?.status === 'fulfilled' ? webLlmResult.value !== null : false,
+            embeddingModelReady: embeddingReady,
+            sentimentModelReady: nlpStatus.sentimentReady,
+            summarizationModelReady: nlpStatus.summarizationReady,
+            zeroShotTextModelReady: nlpStatus.zeroShotReady,
             errorCount:
                 Number(textResult.status === 'rejected') +
                 Number(visionResult.status === 'rejected') +
-                Number(webLlmResult?.status === 'rejected'),
+                Number(webLlmResult?.status === 'rejected') +
+                Number(!embeddingReady) +
+                Number(!nlpStatus.sentimentReady) +
+                Number(!nlpStatus.summarizationReady) +
+                Number(!nlpStatus.zeroShotReady),
         }
     }
 
@@ -736,8 +825,13 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
         return parsed
     }
 
-    async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
-        const plantSummary = plants.map((plant) => summarizePlant(plant)).join('\n')
+    async getGrowLogRagAnswer(
+        plants: Plant[],
+        query: string,
+        lang: Language,
+        ragContext?: string,
+    ): Promise<AIResponse> {
+        const plantSummary = ragContext || plants.map((plant) => summarizePlant(plant)).join('\n')
         const generated = await this.generateText(
             `${isGerman(lang) ? 'Beantworte die Frage anhand des Grow-Log-Kontexts.' : 'Answer the question using the grow-log context.'}\nQuestion: ${sanitizeText(query)}\nContext:\n${plantSummary}`,
         )
@@ -824,6 +918,10 @@ export interface LocalAiPreloadReport {
     textModelReady: boolean
     visionModelReady: boolean
     webLlmReady: boolean
+    embeddingModelReady: boolean
+    sentimentModelReady: boolean
+    summarizationModelReady: boolean
+    zeroShotTextModelReady: boolean
     errorCount: number
 }
 

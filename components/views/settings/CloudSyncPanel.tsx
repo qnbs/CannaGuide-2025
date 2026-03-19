@@ -14,7 +14,7 @@ import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 
 const formatSyncDate = (ts: number | null, t: (key: string) => string): string => {
-    if (!ts) return t('settingsView.sync.never')
+    if (!ts) return t('settingsView.data.sync.never')
     return new Date(ts).toLocaleString()
 }
 
@@ -53,13 +53,23 @@ const CloudSyncPanel: React.FC = () => {
             const result = await syncService.pushToGist(stateJson, cloudSync.gistId)
             dispatch(setSetting({ path: 'data.cloudSync.gistId', value: result.gistId }))
             dispatch(setSetting({ path: 'data.cloudSync.lastSyncAt', value: result.syncedAt }))
-            dispatch(addNotification({ type: 'success', message: String(t('settingsView.sync.pushSuccess')) }))
+            dispatch(
+                addNotification({
+                    type: 'success',
+                    message: String(t('settingsView.data.sync.pushSuccess')),
+                }),
+            )
         } catch (error) {
             console.error('[CloudSync] Push failed:', error)
-            dispatch(addNotification({
-                type: 'error',
-                message: error instanceof Error ? error.message : String(t('settingsView.sync.pushFailed', { status: 'unknown' })),
-            }))
+            dispatch(
+                addNotification({
+                    type: 'error',
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : String(t('settingsView.data.sync.pushFailed', { status: 'unknown' })),
+                }),
+            )
         } finally {
             setIsPushing(false)
         }
@@ -74,14 +84,24 @@ const CloudSyncPanel: React.FC = () => {
 
             const result = await syncService.pullFromGist(gistRef)
             await indexedDBStorage.setItem(REDUX_STATE_KEY, result.state)
-            dispatch(addNotification({ type: 'success', message: String(t('settingsView.sync.pullSuccess')) }))
+            dispatch(
+                addNotification({
+                    type: 'success',
+                    message: String(t('settingsView.data.sync.pullSuccess')),
+                }),
+            )
             setTimeout(() => window.location.reload(), 1000)
         } catch (error) {
             console.error('[CloudSync] Pull failed:', error)
-            dispatch(addNotification({
-                type: 'error',
-                message: error instanceof Error ? error.message : String(t('settingsView.sync.pullFailed', { status: 'unknown' })),
-            }))
+            dispatch(
+                addNotification({
+                    type: 'error',
+                    message:
+                        error instanceof Error
+                            ? error.message
+                            : String(t('settingsView.data.sync.pullFailed', { status: 'unknown' })),
+                }),
+            )
             setIsPulling(false)
         }
     }
@@ -95,9 +115,9 @@ const CloudSyncPanel: React.FC = () => {
             <ConfirmDialog
                 open={isPullConfirmOpen}
                 onOpenChange={setIsPullConfirmOpen}
-                title={String(t('settingsView.sync.confirmPullTitle'))}
-                description={String(t('settingsView.sync.confirmPull'))}
-                confirmLabel={String(t('settingsView.sync.pullButton'))}
+                title={String(t('settingsView.data.sync.confirmPullTitle'))}
+                description={String(t('settingsView.data.sync.confirmPull'))}
+                confirmLabel={String(t('settingsView.data.sync.pullButton'))}
                 cancelLabel={String(t('common.cancel'))}
                 onConfirm={handlePullConfirm}
             />
@@ -110,10 +130,10 @@ const CloudSyncPanel: React.FC = () => {
                     </div>
                     <div>
                         <h3 className="text-lg font-bold text-green-400 flex items-center gap-2">
-                            {t('settingsView.localOnlyBadge')}
+                            {t('settingsView.data.localOnlyBadge')}
                         </h3>
                         <p className="text-sm text-slate-300 mt-1">
-                            {t('settingsView.localOnlyDesc')}
+                            {t('settingsView.data.localOnlyDesc')}
                         </p>
                     </div>
                 </div>
@@ -121,29 +141,33 @@ const CloudSyncPanel: React.FC = () => {
 
             {/* Cloud Sync Card */}
             <Card>
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                     <h3 className="text-xl font-bold font-display text-primary-400 flex items-center gap-2">
                         <PhosphorIcons.CloudArrowUp />
-                        {t('settingsView.sync.title')}
+                        {t('settingsView.data.sync.title')}
                     </h3>
                     <Button
                         variant={isSyncEnabled ? 'default' : 'secondary'}
                         size="sm"
+                        className="shrink-0"
                         onClick={handleToggleSync}
                     >
                         {isSyncEnabled
-                            ? t('settingsView.sync.disableSync')
-                            : t('settingsView.sync.enableSync')
-                        }
+                            ? t('settingsView.data.sync.disableSync')
+                            : t('settingsView.data.sync.enableSync')}
                     </Button>
                 </div>
-                <p className="text-sm text-slate-400 mb-4">{t('settingsView.sync.description')}</p>
+                <p className="text-sm text-slate-400 mb-4">
+                    {t('settingsView.data.sync.description')}
+                </p>
 
                 {isSyncEnabled && (
                     <div className="space-y-4">
                         {/* Status */}
                         <div className="flex items-center justify-between text-sm bg-slate-800/50 rounded-lg p-3">
-                            <span className="text-slate-300">{t('settingsView.sync.lastSynced')}</span>
+                            <span className="text-slate-300">
+                                {t('settingsView.data.sync.lastSynced')}
+                            </span>
                             <span className="text-slate-100 font-mono text-xs">
                                 {formatSyncDate(cloudSync.lastSyncAt, (k) => String(t(k)))}
                             </span>
@@ -151,8 +175,12 @@ const CloudSyncPanel: React.FC = () => {
 
                         {cloudSync.gistId && (
                             <div className="flex items-center justify-between text-sm bg-slate-800/50 rounded-lg p-3">
-                                <span className="text-slate-300">{t('settingsView.sync.gistIdLabel')}</span>
-                                <code className="text-xs text-primary-300 font-mono">{cloudSync.gistId.slice(0, 12)}…</code>
+                                <span className="text-slate-300">
+                                    {t('settingsView.data.sync.gistIdLabel')}
+                                </span>
+                                <code className="text-xs text-primary-300 font-mono">
+                                    {cloudSync.gistId.slice(0, 12)}…
+                                </code>
                             </div>
                         )}
 
@@ -164,26 +192,36 @@ const CloudSyncPanel: React.FC = () => {
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.CloudArrowUp className="mr-2" />
-                                {isPushing ? t('settingsView.sync.syncing') : t('settingsView.sync.pushButton')}
+                                {isPushing
+                                    ? t('settingsView.data.sync.syncing')
+                                    : t('settingsView.data.sync.pushButton')}
                             </Button>
                             <Button
                                 variant="secondary"
                                 onClick={handlePullClick}
-                                disabled={isPushing || isPulling || (!pullGistInput.trim() && !cloudSync.gistId)}
+                                disabled={
+                                    isPushing ||
+                                    isPulling ||
+                                    (!pullGistInput.trim() && !cloudSync.gistId)
+                                }
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.CloudArrowDown className="mr-2" />
-                                {isPulling ? t('settingsView.sync.syncing') : t('settingsView.sync.pullButton')}
+                                {isPulling
+                                    ? t('settingsView.data.sync.syncing')
+                                    : t('settingsView.data.sync.pullButton')}
                             </Button>
                         </div>
 
                         {/* Pull from specific Gist */}
                         <div>
-                            <label className="text-xs text-slate-400 mb-1 block">{t('settingsView.sync.gistIdPlaceholder')}</label>
+                            <label className="text-xs text-slate-400 mb-1 block">
+                                {t('settingsView.data.sync.gistIdPlaceholder')}
+                            </label>
                             <Input
                                 value={pullGistInput}
                                 onChange={(e) => setPullGistInput(e.target.value)}
-                                placeholder={t('settingsView.sync.gistIdPlaceholder')}
+                                placeholder={t('settingsView.data.sync.gistIdPlaceholder')}
                                 className="font-mono text-xs"
                             />
                         </div>

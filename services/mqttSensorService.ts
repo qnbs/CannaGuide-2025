@@ -40,6 +40,9 @@ const DEFAULT_CONFIG: MqttSensorConfig = {
 const RECONNECT_PERIOD_MS = 5000
 const CONNECT_TIMEOUT_MS = 10000
 
+/** Only allow WebSocket URLs to prevent SSRF / protocol confusion. */
+const isValidBrokerUrl = (url: string): boolean => /^wss?:\/\/.+/i.test(url)
+
 class MqttSensorService {
     private client: mqtt.MqttClient | null = null
     private config: MqttSensorConfig = { ...DEFAULT_CONFIG }
@@ -63,6 +66,9 @@ class MqttSensorService {
     }
 
     configure(config: Partial<MqttSensorConfig>): void {
+        if (config.brokerUrl !== undefined && !isValidBrokerUrl(config.brokerUrl)) {
+            throw new Error('Invalid broker URL — must start with ws:// or wss://')
+        }
         this.config = { ...this.config, ...config }
     }
 
@@ -216,14 +222,22 @@ class MqttSensorService {
     private emitReading(reading: SensorReading): void {
         this.lastReading = reading
         for (const callback of this.sensorCallbacks) {
-            callback(reading)
+            try {
+                callback(reading)
+            } catch (e) {
+                console.warn('[MQTT] Sensor callback error:', e)
+            }
         }
     }
 
     private setConnectionState(state: MqttConnectionState): void {
         this.connectionState = state
         for (const callback of this.stateCallbacks) {
-            callback(state)
+            try {
+                callback(state)
+            } catch (e) {
+                console.warn('[MQTT] State callback error:', e)
+            }
         }
     }
 }

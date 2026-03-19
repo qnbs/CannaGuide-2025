@@ -73,6 +73,16 @@ const SensorIntegrationPanelComponent: React.FC = () => {
             return
         }
 
+        if (!/^wss?:\/\/.+/i.test(brokerUrl)) {
+            dispatch(
+                addNotification({
+                    message: t('plantsView.sensor.mqttError'),
+                    type: 'error',
+                }),
+            )
+            return
+        }
+
         mqttSensorService.configure({ brokerUrl })
 
         const unsubSensor = mqttSensorService.onSensorUpdate((next) => {
@@ -114,6 +124,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
             <div className="flex gap-2 mt-3">
                 <button
                     type="button"
+                    aria-pressed={mode === 'ble'}
                     className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${mode === 'ble' ? 'bg-primary-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
                     onClick={() => setMode('ble')}
                 >
@@ -122,6 +133,7 @@ const SensorIntegrationPanelComponent: React.FC = () => {
                 </button>
                 <button
                     type="button"
+                    aria-pressed={mode === 'mqtt'}
                     className={`flex-1 text-xs font-medium py-1.5 rounded-md transition-colors ${mode === 'mqtt' ? 'bg-primary-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
                     onClick={() => setMode('mqtt')}
                 >
@@ -201,3 +213,4 @@ const SensorIntegrationPanelComponent: React.FC = () => {
 }
 
 export const SensorIntegrationPanel = memo(SensorIntegrationPanelComponent)
+SensorIntegrationPanel.displayName = 'SensorIntegrationPanel'

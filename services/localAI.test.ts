@@ -235,6 +235,7 @@ describe('localAiService', () => {
 
         expect(report.textModelReady).toBe(true)
         expect(report.visionModelReady).toBe(true)
+        expect(report.errorCount).toBe(0)
         expect(steps.length).toBeGreaterThanOrEqual(3)
         expect(steps[0]).toEqual([0, 6, 'text-model'])
     })
@@ -253,7 +254,7 @@ describe('localAiService', () => {
         expect(report.textModelReady).toBe(false)
         expect(report.visionModelReady).toBe(false)
         expect(report.webLlmReady).toBe(false)
-        expect(report.errorCount).toBeGreaterThanOrEqual(2)
+        expect(report.errorCount).toBe(2)
     })
 
     it('detects ONNX backend as wasm when WebGPU is unavailable', () => {

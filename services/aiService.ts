@@ -143,8 +143,12 @@ export const aiService = {
         lang: Language,
     ): Promise<Omit<MentorMessage, 'role'>> {
         if (shouldRouteLocally()) {
-            // Use semantic RAG when embedding model is available
-            const ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
+            let ragContext = ''
+            try {
+                ragContext = await growLogRagService.retrieveSemanticContext([plant], query)
+            } catch {
+                ragContext = growLogRagService.retrieveRelevantContext([plant], query)
+            }
             const local = await getLocalAiService()
             return local.getMentorResponse(plant, query, ragContext, lang)
         }
@@ -215,8 +219,12 @@ export const aiService = {
 
     async getGrowLogRagAnswer(plants: Plant[], query: string, lang: Language): Promise<AIResponse> {
         if (shouldRouteLocally()) {
-            // Use semantic RAG when embedding model is available
-            const ragContext = await growLogRagService.retrieveSemanticContext(plants, query)
+            let ragContext = ''
+            try {
+                ragContext = await growLogRagService.retrieveSemanticContext(plants, query)
+            } catch {
+                ragContext = growLogRagService.retrieveRelevantContext(plants, query)
+            }
             const local = await getLocalAiService()
             return local.getGrowLogRagAnswer(plants, query, lang, ragContext)
         }

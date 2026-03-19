@@ -13,6 +13,25 @@ import DOMPurify from 'dompurify'
  * operation with graceful degradation.
  */
 
+/** Timeout for NLP inference calls (45s — summarization is heavier). */
+const NLP_TIMEOUT_MS = 45_000
+
+/** Race a promise against a timeout. */
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    new Promise<T>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('NLP inference timeout')), ms)
+        promise.then(
+            (value) => {
+                clearTimeout(timer)
+                resolve(value)
+            },
+            (error) => {
+                clearTimeout(timer)
+                reject(error)
+            },
+        )
+    })
+
 // ─── Models ──────────────────────────────────────────────────────────────────
 const SENTIMENT_MODEL_ID = 'Xenova/distilbert-base-uncased-finetuned-sst-2-english'
 const SUMMARIZATION_MODEL_ID = 'Xenova/distilbart-cnn-6-6'
@@ -100,7 +119,7 @@ export const analyzeSentiment = async (text: string): Promise<SentimentResult> =
     }
     try {
         const pipeline = await loadSentimentPipeline()
-        const result = await pipeline(sanitized.slice(0, 512))
+        const result = await withTimeout(pipeline(sanitized.slice(0, 512)), NLP_TIMEOUT_MS)
         const output = Array.isArray(result) ? result[0] : result
         const typed = output as { label?: string; score?: number }
         const label = (typed.label ?? 'POSITIVE') as 'POSITIVE' | 'NEGATIVE'
@@ -140,11 +159,14 @@ export const summarizeText = async (
         const pipeline = await loadSummarizationPipeline()
         // Truncate to 1024 tokens (roughly 4096 chars) to stay within model context
         const truncated = sanitized.slice(0, 4096)
-        const result = await pipeline(truncated, {
-            max_length: maxLength,
-            min_length: minLength,
-            do_sample: false,
-        })
+        const result = await withTimeout(
+            pipeline(truncated, {
+                max_length: maxLength,
+                min_length: minLength,
+                do_sample: false,
+            }),
+            NLP_TIMEOUT_MS,
+        )
         const output = Array.isArray(result) ? result[0] : result
         const summary =
             typeof (output as { summary_text?: string }).summary_text === 'string'
@@ -208,10 +230,13 @@ export const classifyGrowTopic = async (
     }
     try {
         const pipeline = await loadZeroShotTextPipeline()
-        const result = await pipeline(sanitized.slice(0, 512), {
-            candidate_labels: [...candidateLabels],
-            multi_label: false,
-        })
+        const result = await withTimeout(
+            pipeline(sanitized.slice(0, 512), {
+                candidate_labels: [...candidateLabels],
+                multi_label: false,
+            }),
+            NLP_TIMEOUT_MS,
+        )
         const output = result as {
             labels?: string[]
             scores?: number[]

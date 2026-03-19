@@ -1,9 +1,12 @@
 name: Renovate
 
-# Disabled: requires RENOVATE_TOKEN secret to be configured.
-# Add token in Settings → Secrets → Actions, then switch triggers back.
+# Runs on a weekly schedule and can be triggered manually.
+# Requires RENOVATE_TOKEN secret (GitHub PAT with repo scope).
+# Add token in Settings → Secrets → Actions.
 on:
     workflow_dispatch:
+    schedule:
+        - cron: '0 4 * * 1' # Every Monday at 04:00 UTC
 
 permissions:
     contents: write

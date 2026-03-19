@@ -26,3 +26,4 @@ benchmark-metrics.json
 *.njsproj
 *.sln
 *.sw?
+test-results/

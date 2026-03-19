@@ -1,4 +1,12 @@
-import { AIResponse, MentorMessage, Plant, PlantStage, Strain, StructuredGrowTips, Language } from '@/types'
+import {
+    AIResponse,
+    MentorMessage,
+    Plant,
+    PlantStage,
+    Strain,
+    StructuredGrowTips,
+    Language,
+} from '@/types'
 import DOMPurify from 'dompurify'
 
 const isGerman = (lang: Language) => lang === 'de'
@@ -16,11 +24,12 @@ export interface PlantDiagnostic {
 }
 
 function analyzeVpd(vpd: number, stage: PlantStage, lang: Language): string | null {
-    const ideal = stage === PlantStage.Seedling || stage === PlantStage.Germination
-        ? { min: 0.4, max: 0.8 }
-        : stage === PlantStage.Flowering
-            ? { min: 1.0, max: 1.5 }
-            : { min: 0.8, max: 1.2 }
+    const ideal =
+        stage === PlantStage.Seedling || stage === PlantStage.Germination
+            ? { min: 0.4, max: 0.8 }
+            : stage === PlantStage.Flowering
+              ? { min: 1.0, max: 1.5 }
+              : { min: 0.8, max: 1.2 }
 
     if (vpd < ideal.min) {
         return isGerman(lang)
@@ -36,19 +45,35 @@ function analyzeVpd(vpd: number, stage: PlantStage, lang: Language): string | nu
 }
 
 function analyzePh(ph: number, lang: Language): string | null {
-    if (ph < 5.8) return isGerman(lang) ? `pH zu niedrig (${ph.toFixed(2)}). Ziel: 5.8–6.5. Kalk oder pH-Up nutzen.` : `pH too low (${ph.toFixed(2)}). Target: 5.8–6.5. Use lime or pH-Up.`
-    if (ph > 6.8) return isGerman(lang) ? `pH zu hoch (${ph.toFixed(2)}). Ziel: 5.8–6.5. pH-Down oder Essig nutzen.` : `pH too high (${ph.toFixed(2)}). Target: 5.8–6.5. Use pH-Down.`
+    if (ph < 5.8)
+        return isGerman(lang)
+            ? `pH zu niedrig (${ph.toFixed(2)}). Ziel: 5.8–6.5. Kalk oder pH-Up nutzen.`
+            : `pH too low (${ph.toFixed(2)}). Target: 5.8–6.5. Use lime or pH-Up.`
+    if (ph > 6.8)
+        return isGerman(lang)
+            ? `pH zu hoch (${ph.toFixed(2)}). Ziel: 5.8–6.5. pH-Down oder Essig nutzen.`
+            : `pH too high (${ph.toFixed(2)}). Target: 5.8–6.5. Use pH-Down.`
     return null
 }
 
 function analyzeEc(ec: number, stage: PlantStage, lang: Language): string | null {
-    const target = stage === PlantStage.Seedling ? { min: 0.4, max: 0.8 }
-        : stage === PlantStage.Vegetative ? { min: 1.0, max: 1.8 }
-        : stage === PlantStage.Flowering ? { min: 1.2, max: 2.2 }
-        : null
+    const target =
+        stage === PlantStage.Seedling
+            ? { min: 0.4, max: 0.8 }
+            : stage === PlantStage.Vegetative
+              ? { min: 1.0, max: 1.8 }
+              : stage === PlantStage.Flowering
+                ? { min: 1.2, max: 2.2 }
+                : null
     if (!target) return null
-    if (ec < target.min) return isGerman(lang) ? `EC zu niedrig (${ec.toFixed(2)}, Ziel ${target.min}–${target.max}). Nährstoffe erhöhen.` : `EC too low (${ec.toFixed(2)}, target ${target.min}–${target.max}). Increase nutrients.`
-    if (ec > target.max) return isGerman(lang) ? `EC zu hoch (${ec.toFixed(2)}, Ziel ${target.min}–${target.max}). Mit klarem Wasser spülen.` : `EC too high (${ec.toFixed(2)}, target ${target.min}–${target.max}). Flush with plain water.`
+    if (ec < target.min)
+        return isGerman(lang)
+            ? `EC zu niedrig (${ec.toFixed(2)}, Ziel ${target.min}–${target.max}). Nährstoffe erhöhen.`
+            : `EC too low (${ec.toFixed(2)}, target ${target.min}–${target.max}). Increase nutrients.`
+    if (ec > target.max)
+        return isGerman(lang)
+            ? `EC zu hoch (${ec.toFixed(2)}, Ziel ${target.min}–${target.max}). Mit klarem Wasser spülen.`
+            : `EC too high (${ec.toFixed(2)}, target ${target.min}–${target.max}). Flush with plain water.`
     return null
 }
 
@@ -62,24 +87,79 @@ export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
     if (ecIssue) issues.push(ecIssue)
 
     if (plant.environment.internalTemperature > 30) {
-        issues.push(isGerman(lang) ? `Temperatur zu hoch (${plant.environment.internalTemperature.toFixed(1)}°C). Unter 28°C halten.` : `Temperature too high (${plant.environment.internalTemperature.toFixed(1)}°C). Keep below 28°C.`)
+        issues.push(
+            isGerman(lang)
+                ? `Temperatur zu hoch (${plant.environment.internalTemperature.toFixed(1)}°C). Unter 28°C halten.`
+                : `Temperature too high (${plant.environment.internalTemperature.toFixed(1)}°C). Keep below 28°C.`,
+        )
     } else if (plant.environment.internalTemperature < 18) {
-        issues.push(isGerman(lang) ? `Temperatur zu niedrig (${plant.environment.internalTemperature.toFixed(1)}°C). Über 20°C halten.` : `Temperature too low (${plant.environment.internalTemperature.toFixed(1)}°C). Keep above 20°C.`)
+        issues.push(
+            isGerman(lang)
+                ? `Temperatur zu niedrig (${plant.environment.internalTemperature.toFixed(1)}°C). Über 20°C halten.`
+                : `Temperature too low (${plant.environment.internalTemperature.toFixed(1)}°C). Keep above 20°C.`,
+        )
     }
 
     if (plant.medium.moisture < 30) {
-        issues.push(isGerman(lang) ? 'Substrat zu trocken. Bewässerung erhöhen.' : 'Medium too dry. Increase watering.')
+        issues.push(
+            isGerman(lang)
+                ? 'Substrat zu trocken. Bewässerung erhöhen.'
+                : 'Medium too dry. Increase watering.',
+        )
     } else if (plant.medium.moisture > 80) {
-        issues.push(isGerman(lang) ? 'Substrat zu feucht. Überwässerungsgefahr.' : 'Medium too wet. Risk of overwatering.')
+        issues.push(
+            isGerman(lang)
+                ? 'Substrat zu feucht. Überwässerungsgefahr.'
+                : 'Medium too wet. Risk of overwatering.',
+        )
     }
 
     if (plant.rootSystem.health < 60) {
-        issues.push(isGerman(lang) ? `Wurzelgesundheit niedrig (${plant.rootSystem.health.toFixed(0)}%). Mykorrhiza und Drainage prüfen.` : `Root health low (${plant.rootSystem.health.toFixed(0)}%). Check mycorrhizae and drainage.`)
+        issues.push(
+            isGerman(lang)
+                ? `Wurzelgesundheit niedrig (${plant.rootSystem.health.toFixed(0)}%). Mykorrhiza und Drainage prüfen.`
+                : `Root health low (${plant.rootSystem.health.toFixed(0)}%). Check mycorrhizae and drainage.`,
+        )
     }
 
-    const topPriority = issues.length > 0
-        ? issues[0]
-        : (isGerman(lang) ? 'Alle Parameter im Normalbereich.' : 'All parameters within normal range.')
+    // CO2 analysis
+    const co2 = plant.environment.co2Level
+    if (co2 < 300) {
+        issues.push(
+            isGerman(lang)
+                ? `CO₂ sehr niedrig (${co2} ppm). Frischluft oder CO₂-Ergänzung prüfen.`
+                : `CO₂ very low (${co2} ppm). Check ventilation or CO₂ supplementation.`,
+        )
+    } else if (co2 > 1500) {
+        issues.push(
+            isGerman(lang)
+                ? `CO₂ zu hoch (${co2} ppm). Auf unter 1500 ppm senken, um Pflanzenstress zu vermeiden.`
+                : `CO₂ too high (${co2} ppm). Reduce below 1500 ppm to avoid plant stress.`,
+        )
+    }
+
+    // Light hours analysis
+    const lightHours = plant.equipment.light.lightHours
+    if (plant.stage === PlantStage.Flowering && lightHours > 14) {
+        issues.push(
+            isGerman(lang)
+                ? `Lichtperiode zu lang für Blüte (${lightHours}h). 12/12 empfohlen.`
+                : `Light period too long for flowering (${lightHours}h). 12/12 recommended.`,
+        )
+    } else if (plant.stage === PlantStage.Vegetative && lightHours < 14) {
+        issues.push(
+            isGerman(lang)
+                ? `Lichtperiode kurz für Vegetative (${lightHours}h). 18/6 empfohlen.`
+                : `Light period short for vegetative (${lightHours}h). 18/6 recommended.`,
+        )
+    }
+
+    const topPriority =
+        issues.length > 0
+            ? issues[0]
+            : isGerman(lang)
+              ? 'Alle Parameter im Normalbereich.'
+              : 'All parameters within normal range.'
 
     return { issues, topPriority }
 }
@@ -92,7 +172,12 @@ class LocalAiFallbackService {
         return diagnosePlant(plant, lang)
     }
 
-    getMentorResponse(plant: Plant, query: string, ragContext: string, lang: Language): Omit<MentorMessage, 'role'> {
+    getMentorResponse(
+        plant: Plant,
+        query: string,
+        ragContext: string,
+        lang: Language,
+    ): Omit<MentorMessage, 'role'> {
         const diagnosis = diagnosePlant(plant, lang)
         const safeQuery = safe(query)
         const safeRag = safe(ragContext)
@@ -100,21 +185,24 @@ class LocalAiFallbackService {
         if (isGerman(lang)) {
             return {
                 title: `Lokaler Mentor: ${plant.name}`,
-                content: `<p><strong>Hinweis:</strong> KI-API nicht verfügbar. Antwort basiert auf lokaler Analyse.</p><p><strong>Frage:</strong> ${safeQuery}</p><p><strong>Pflanze:</strong> ${formatPlantLine(plant)}</p>${diagnosis.issues.length > 0 ? `<p><strong>Erkannte Probleme:</strong></p><ul>${diagnosis.issues.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p>Alle Werte im Normalbereich.</p>'}<p><strong>Relevante Logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Empfehlung:</strong> ${diagnosis.topPriority}</p>`,
+                content: `<p><strong>Hinweis:</strong> KI-API nicht verfügbar. Antwort basiert auf lokaler Analyse.</p><p><strong>Frage:</strong> ${safeQuery}</p><p><strong>Pflanze:</strong> ${formatPlantLine(plant)}</p>${diagnosis.issues.length > 0 ? `<p><strong>Erkannte Probleme:</strong></p><ul>${diagnosis.issues.map((i) => `<li>${i}</li>`).join('')}</ul>` : '<p>Alle Werte im Normalbereich.</p>'}<p><strong>Relevante Logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Empfehlung:</strong> ${diagnosis.topPriority}</p>`,
             }
         }
 
         return {
             title: `Local Mentor: ${plant.name}`,
-            content: `<p><strong>Note:</strong> AI API unavailable. This answer uses local heuristic analysis.</p><p><strong>Question:</strong> ${safeQuery}</p><p><strong>Plant:</strong> ${formatPlantLine(plant)}</p>${diagnosis.issues.length > 0 ? `<p><strong>Detected issues:</strong></p><ul>${diagnosis.issues.map(i => `<li>${i}</li>`).join('')}</ul>` : '<p>All parameters within normal range.</p>'}<p><strong>Relevant logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Recommendation:</strong> ${diagnosis.topPriority}</p>`,
+            content: `<p><strong>Note:</strong> AI API unavailable. This answer uses local heuristic analysis.</p><p><strong>Question:</strong> ${safeQuery}</p><p><strong>Plant:</strong> ${formatPlantLine(plant)}</p>${diagnosis.issues.length > 0 ? `<p><strong>Detected issues:</strong></p><ul>${diagnosis.issues.map((i) => `<li>${i}</li>`).join('')}</ul>` : '<p>All parameters within normal range.</p>'}<p><strong>Relevant logs:</strong><br/>${safeRag.replace(/\n/g, '<br/>')}</p><p><strong>Recommendation:</strong> ${diagnosis.topPriority}</p>`,
         }
     }
 
     getPlantAdvice(plant: Plant, lang: Language): AIResponse {
         const diagnosis = diagnosePlant(plant, lang)
-        const issueList = diagnosis.issues.length > 0
-            ? diagnosis.issues.map((i, idx) => `${idx + 1}. ${i}`).join('\n')
-            : (isGerman(lang) ? 'Keine akuten Probleme erkannt.' : 'No acute issues detected.')
+        const issueList =
+            diagnosis.issues.length > 0
+                ? diagnosis.issues.map((i, idx) => `${idx + 1}. ${i}`).join('\n')
+                : isGerman(lang)
+                  ? 'Keine akuten Probleme erkannt.'
+                  : 'No acute issues detected.'
 
         if (isGerman(lang)) {
             return {
@@ -130,27 +218,32 @@ class LocalAiFallbackService {
     }
 
     getGardenStatusSummary(plants: Plant[], lang: Language): AIResponse {
-        const plantDetails = plants.map(p => {
+        const plantDetails = plants.map((p) => {
             const diag = diagnosePlant(p, lang)
-            const status = diag.issues.length === 0
-                ? (isGerman(lang) ? '✅ OK' : '✅ OK')
-                : `⚠ ${diag.issues.length} ${isGerman(lang) ? 'Problem(e)' : 'issue(s)'}`
+            const status =
+                diag.issues.length === 0
+                    ? isGerman(lang)
+                        ? '✅ OK'
+                        : '✅ OK'
+                    : `⚠ ${diag.issues.length} ${isGerman(lang) ? 'Problem(e)' : 'issue(s)'}`
             return `${p.name}: ${status} — ${formatPlantLine(p)}`
         })
 
         if (isGerman(lang)) {
             return {
                 title: 'Lokaler Gartenstatus',
-                content: plantDetails.length > 0
-                    ? `Lokale Analyse (KI nicht verfügbar):\n\n${plantDetails.join('\n')}`
-                    : 'Keine aktiven Pflanzen.',
+                content:
+                    plantDetails.length > 0
+                        ? `Lokale Analyse (KI nicht verfügbar):\n\n${plantDetails.join('\n')}`
+                        : 'Keine aktiven Pflanzen.',
             }
         }
         return {
             title: 'Local Garden Status',
-            content: plantDetails.length > 0
-                ? `Local analysis (AI unavailable):\n\n${plantDetails.join('\n')}`
-                : 'No active plants.',
+            content:
+                plantDetails.length > 0
+                    ? `Local analysis (AI unavailable):\n\n${plantDetails.join('\n')}`
+                    : 'No active plants.',
         }
     }
 
@@ -159,24 +252,29 @@ class LocalAiFallbackService {
 
         if (isGerman(lang)) {
             return {
-                nutrientTip: thcLevel === 'high'
-                    ? `${strain.name} mit hohem THC (${strain.thc}%) braucht starke PK-Düngung in der Blüte. EC langsam auf 1.8–2.2 steigern.`
-                    : `Nährstoffe für ${strain.name} langsam steigern und EC engmaschig messen.`,
-                trainingTip: strain.floweringType === 'Autoflower'
-                    ? 'Autoflower: Nur sanftes LST, kein Topping. Training in den ersten 3 Wochen abschließen.'
-                    : 'Früh mit sanftem LST beginnen, vor starken Eingriffen 48h Erholung einplanen.',
-                environmentalTip: 'Tag/Nacht-Differenz klein halten, VPD zielgerichtet für die Phase steuern.',
+                nutrientTip:
+                    thcLevel === 'high'
+                        ? `${strain.name} mit hohem THC (${strain.thc}%) braucht starke PK-Düngung in der Blüte. EC langsam auf 1.8–2.2 steigern.`
+                        : `Nährstoffe für ${strain.name} langsam steigern und EC engmaschig messen.`,
+                trainingTip:
+                    strain.floweringType === 'Autoflower'
+                        ? 'Autoflower: Nur sanftes LST, kein Topping. Training in den ersten 3 Wochen abschließen.'
+                        : 'Früh mit sanftem LST beginnen, vor starken Eingriffen 48h Erholung einplanen.',
+                environmentalTip:
+                    'Tag/Nacht-Differenz klein halten, VPD zielgerichtet für die Phase steuern.',
                 proTip: 'Jede Anpassung einzeln testen und im Journal mit Datum dokumentieren.',
             }
         }
 
         return {
-            nutrientTip: thcLevel === 'high'
-                ? `${strain.name} with high THC (${strain.thc}%) needs strong PK boost during flower. Gradually raise EC to 1.8–2.2.`
-                : `Increase nutrients gradually for ${strain.name} and monitor EC closely.`,
-            trainingTip: strain.floweringType === 'Autoflower'
-                ? 'Autoflower: Gentle LST only, no topping. Finish all training within the first 3 weeks.'
-                : 'Start with gentle LST early and allow 48h recovery after heavy interventions.',
+            nutrientTip:
+                thcLevel === 'high'
+                    ? `${strain.name} with high THC (${strain.thc}%) needs strong PK boost during flower. Gradually raise EC to 1.8–2.2.`
+                    : `Increase nutrients gradually for ${strain.name} and monitor EC closely.`,
+            trainingTip:
+                strain.floweringType === 'Autoflower'
+                    ? 'Autoflower: Gentle LST only, no topping. Finish all training within the first 3 weeks.'
+                    : 'Start with gentle LST early and allow 48h recovery after heavy interventions.',
             environmentalTip: 'Keep day/night swings moderate and target VPD by stage.',
             proTip: 'Test one change at a time and document outcomes in the journal.',
         }

@@ -191,6 +191,9 @@ export const common = {
         notSupported: 'WebBluetooth wird in diesem Browser nicht unterstützt.',
         connectionFailed: 'Verbindung zum ESP32-Gerät konnte nicht hergestellt werden.',
     },
+    mqtt: {
+        notConnected: 'MQTT-Broker ist nicht verbunden.',
+    },
     communityShare: {
         invalidGistUrl: 'Ungültige Gist-URL oder ID.',
         exportFailed: 'Gist-Export fehlgeschlagen ({{status}}).',

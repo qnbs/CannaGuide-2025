@@ -10,5 +10,8 @@
     "ignorePatterns": ["dist/**", "coverage/**", "node_modules/**", "test-results/**"],
     "vitest": {
         "configFile": "vite.config.ts"
+    },
+    "thresholds": {
+        "break": 95
     }
 }

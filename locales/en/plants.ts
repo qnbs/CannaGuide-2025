@@ -412,7 +412,7 @@ export const plantsView = {
     sensor: {
         title: 'ESP32 Sensor Hub',
         description:
-            'WebBluetooth integration for temperature/humidity sensors. Supports ESP32 (Environmental Sensing).',
+            'BLE & MQTT integration for temperature/humidity sensors. Supports ESP32 (Environmental Sensing).',
         connect: 'Read Sensor',
         connecting: 'Connecting...',
         success: 'Sensor values applied.',
@@ -423,6 +423,12 @@ export const plantsView = {
         phUnavailable: 'pH not reported by this sensor',
         lastUpdated: 'Last updated',
         noData: 'No sensor data yet.',
+        mqttBrokerUrl: 'MQTT Broker (WebSocket)',
+        mqttConnect: 'Connect MQTT',
+        mqttDisconnect: 'Disconnect',
+        mqttConnected: 'MQTT broker connected.',
+        mqttError: 'MQTT connection failed.',
+        mqttLive: 'Live — receiving sensor data via MQTT.',
     },
     growStats: {
         title: 'Grow Stats Dashboard',

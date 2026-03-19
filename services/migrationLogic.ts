@@ -406,6 +406,26 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
     const bundledIds = new Set<string>()
     const duplicateIds: string[] = []
 
+    const mergeStrainEntry = (legacy: Strain, strain: Strain): Strain => ({
+        ...legacy,
+        ...strain,
+        agronomic: {
+            ...legacy.agronomic,
+            ...strain.agronomic,
+        },
+        geneticModifiers: {
+            ...legacy.geneticModifiers,
+            ...strain.geneticModifiers,
+            vpdTolerance: {
+                ...legacy.geneticModifiers.vpdTolerance,
+                ...strain.geneticModifiers.vpdTolerance,
+            },
+        },
+        aromas: strain.aromas ?? legacy.aromas,
+        dominantTerpenes: strain.dominantTerpenes ?? legacy.dominantTerpenes,
+        terpeneProfile: strain.terpeneProfile ?? legacy.terpeneProfile,
+    })
+
     legacyStrains.forEach((strain) => {
         mergedById.set(strain.id, strain)
     })
@@ -418,7 +438,7 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
         bundledIds.add(strain.id)
 
         const legacy = mergedById.get(strain.id)
-        mergedById.set(strain.id, legacy ? { ...legacy, ...strain } : strain)
+        mergedById.set(strain.id, legacy ? mergeStrainEntry(legacy, strain) : strain)
     })
 
     if (duplicateIds.length > 0) {

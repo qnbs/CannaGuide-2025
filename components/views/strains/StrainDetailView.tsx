@@ -214,8 +214,8 @@ export const StrainDetailView: React.FC<StrainDetailViewProps> = ({ strain, onBa
                 <div className="flex items-center gap-4 mt-4">
                     <TypeIcon className={`w-12 h-12 flex-shrink-0 ${typeClasses[strain.type] ?? typeClasses[StrainType.Hybrid]}`} />
                     <div>
-                        <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{strain.name}</h1>
-                        <p className="text-slate-300">{strain.type} {typeDetails && `- ${typeDetails}`}</p>
+                        <h1 className="text-3xl sm:text-4xl font-bold font-display text-primary-300">{typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : t('strainsView.unknownStrain')}</h1>
+                        <p className="text-slate-300">{strain.type ?? StrainType.Hybrid} {typeDetails && `- ${typeDetails}`}</p>
                     </div>
                 </div>
             </header>

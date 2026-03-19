@@ -12,6 +12,8 @@ interface StrainCompactItemProps {
 export const StrainCompactItem: React.FC<StrainCompactItemProps> = memo(({ strain, onClick }) => {
     const userStrains = useAppSelector(selectUserStrains);
     const isUserStrain = userStrains.some(s => s.id === strain.id);
+    const safeName = typeof strain.name === 'string' && strain.name.trim() !== '' ? strain.name : 'Unknown Strain';
+    const safeType = strain.type === 'Sativa' || strain.type === 'Indica' || strain.type === 'Hybrid' ? strain.type : 'Hybrid';
 
     return (
         <button
@@ -22,9 +24,11 @@ export const StrainCompactItem: React.FC<StrainCompactItemProps> = memo(({ strai
                 <PhosphorIcons.Star weight="fill" className="w-4 h-4 text-amber-400 flex-shrink-0" />
             )}
             <div className="flex-grow min-w-0">
-                <p className="font-semibold text-slate-100 truncate">{strain.name}</p>
-                <p className="text-xs text-slate-400">{strain.type}</p>
+                <p className="font-semibold text-slate-100 truncate">{safeName}</p>
+                <p className="text-xs text-slate-400">{safeType}</p>
             </div>
         </button>
     );
 });
+
+StrainCompactItem.displayName = 'StrainCompactItem';

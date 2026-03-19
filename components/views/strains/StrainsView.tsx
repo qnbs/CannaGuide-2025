@@ -58,9 +58,6 @@ const getSafeText = (value: unknown, fallback = ''): string => (typeof value ===
 const getSafeStringArray = (value: unknown): string[] => (Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
 const getSafeNumericValue = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 const getSafeStrainType = (value: unknown): string => (typeof value === 'string' ? value : 'Hybrid');
-const getSafeSortLabel = (value: unknown, fallback: string): string => {
-    return typeof value === 'string' && value.length > 0 ? value : fallback
-}
 
 const getRangeValue = (range: [number, number] | undefined, fallback: [number, number]): [number, number] => {
     if (

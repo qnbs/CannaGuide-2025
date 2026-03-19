@@ -12,12 +12,12 @@ interface StrainImageGalleryTabProps {
 
 export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ strain }) => {
     const { t } = useTranslation();
-    const savedTips = useAppSelector(selectSavedStrainTips) as SavedStrainTip[];
+    const savedTips = useAppSelector(selectSavedStrainTips) ?? [];
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-    const images = useMemo(() => savedTips
-        .filter(tip => tip.strainId === strain.id && tip.imageUrl)
-        .map(tip => ({ url: tip.imageUrl!, createdAt: tip.createdAt, title: tip.title }))
+    const images = useMemo(() => (savedTips as SavedStrainTip[])
+        .filter(tip => tip?.strainId === strain.id && tip.imageUrl)
+        .map(tip => ({ url: tip.imageUrl as string, createdAt: tip.createdAt, title: tip.title ?? '' }))
         .sort((a, b) => b.createdAt - a.createdAt),
     [savedTips, strain.id]);
 

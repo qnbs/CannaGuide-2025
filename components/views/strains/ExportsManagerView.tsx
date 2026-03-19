@@ -19,8 +19,9 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
 
     const handleDownload = async (exp: SavedExport) => {
         const { exportService } = await import('@/services/exportService');
-        const strainsToExport = allStrains.filter(s => exp.strainIds.includes(s.id));
-        const fileName = exp.name;
+        const strainIds = Array.isArray(exp.strainIds) ? exp.strainIds : [];
+        const strainsToExport = allStrains.filter(s => strainIds.includes(s.id));
+        const fileName = typeof exp.name === 'string' ? exp.name : 'export';
         if (exp.format === 'pdf') {
             exportService.exportStrainsAsPdf(strainsToExport, fileName, t);
         } else if (exp.format === 'txt') {
@@ -63,8 +64,8 @@ const ExportsManagerView: React.FC<ExportsManagerViewProps> = ({ savedExports, a
                 <Card key={exp.id} className="!p-3">
                     <div className="flex justify-between items-center">
                         <div className="min-w-0">
-                            <h4 className="font-bold text-slate-100 truncate">{exp.name}</h4>
-                            <p className="text-xs text-slate-400">{new Date(exp.createdAt).toLocaleString()} &bull; {exp.format.toUpperCase()} &bull; {t('strainsView.exportsManager.strainCount', { count: exp.strainIds.length })}</p>
+                            <h4 className="font-bold text-slate-100 truncate">{exp.name ?? 'Export'}</h4>
+                            <p className="text-xs text-slate-400">{new Date(exp.createdAt).toLocaleString()} &bull; {(exp.format ?? 'txt').toUpperCase()} &bull; {t('strainsView.exportsManager.strainCount', { count: Array.isArray(exp.strainIds) ? exp.strainIds.length : 0 })}</p>
                         </div>
                         <div className="flex gap-2 flex-shrink-0">
                             <Button size="sm" variant="secondary" onClick={() => handleDownload(exp)} title={t('common.downloadAgain')}><PhosphorIcons.DownloadSimple /></Button>

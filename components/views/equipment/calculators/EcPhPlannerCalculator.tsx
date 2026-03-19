@@ -27,7 +27,7 @@ import {
     selectNutrientAiRecommendation,
 } from '@/stores/selectors'
 import { selectActivePlants, selectSettings } from '@/stores/selectors'
-import { geminiService } from '@/services/geminiService'
+import { aiService } from '@/services/aiService'
 import DOMPurify from 'dompurify'
 import { cn } from '@/lib/utils'
 
@@ -182,7 +182,7 @@ export const EcPhPlannerCalculator: React.FC = memo(() => {
                 ? activePlants.find((p) => p.id === selectedPlantId)
                 : null
 
-            const recommendation = await geminiService.getNutrientRecommendation(
+            const recommendation = await aiService.getNutrientRecommendation(
                 {
                     medium,
                     stage: currentStage,

@@ -61,6 +61,39 @@ export const aiService = {
         )
     },
 
+    async getNutrientRecommendation(
+        context: {
+            medium: string
+            stage: string
+            currentEc: number
+            currentPh: number
+            optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
+            readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
+            plant?: {
+                name: string
+                strain: { name: string }
+                stage: string
+                age: number
+                health: number
+                medium: { ph: number; ec: number }
+            }
+        },
+        lang: Language,
+    ): Promise<string> {
+        if (shouldRouteLocally()) {
+            const local = await getLocalAiService()
+            return local.getNutrientRecommendation(context, lang)
+        }
+
+        return withLocalFallback(
+            () => geminiService.getNutrientRecommendation(context, lang),
+            async () => {
+                const local = await getLocalAiService()
+                return local.getNutrientRecommendation(context, lang)
+            },
+        )
+    },
+
     async diagnosePlant(
         base64Image: string,
         mimeType: string,

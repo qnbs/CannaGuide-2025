@@ -14,6 +14,23 @@ import type { ImageStyle } from '@/services/geminiService'
 
 const isGerman = (lang: Language) => lang === 'de'
 
+type NutrientRecommendationContext = {
+    medium: string
+    stage: string
+    currentEc: number
+    currentPh: number
+    optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
+    readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
+    plant?: {
+        name: string
+        strain: { name: string }
+        stage: string
+        age: number
+        health: number
+        medium: { ph: number; ec: number }
+    }
+}
+
 const formatPlantLine = (plant: Plant) =>
     `${plant.name}: health ${plant.health.toFixed(0)}%, stress ${plant.stressLevel.toFixed(0)}%, VPD ${plant.environment.vpd.toFixed(2)} kPa`
 
@@ -177,6 +194,150 @@ const escapeXml = (value: string): string =>
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&apos;')
+
+const mediumAdvice = (medium: string, lang: Language): string => {
+    const normalized = medium.toLowerCase()
+    if (normalized.includes('coco')) {
+        return isGerman(lang)
+            ? 'Coco reagiert schnell. Kleine Korrekturen und engmaschige Kontrollen sind hier sinnvoll.'
+            : 'Coco reacts quickly. Small corrections and frequent checks make the most sense here.'
+    }
+    if (normalized.includes('hydro')) {
+        return isGerman(lang)
+            ? 'Hydro benötigt die engste Kontrolle. Änderungen in kleinen Schritten vornehmen und die Werte täglich prüfen.'
+            : 'Hydro needs the tightest control. Make changes in small steps and verify values daily.'
+    }
+    return isGerman(lang)
+        ? 'Erde verzeiht etwas mehr. Sanfte Anpassungen und langsames Nachregeln sind meistens die beste Wahl.'
+        : 'Soil is more forgiving. Gentle adjustments and slower corrections are usually the best choice.'
+}
+
+const summarizeTrend = (context: NutrientRecommendationContext, lang: Language): string | null => {
+    if (context.readings.length < 2) {
+        return null
+    }
+
+    const orderedReadings = [...context.readings].sort(
+        (left, right) => left.timestamp - right.timestamp,
+    )
+    const firstReading = orderedReadings[0]
+    const lastReading = orderedReadings[orderedReadings.length - 1]
+    const ecDelta = lastReading.ec - firstReading.ec
+    const phDelta = lastReading.ph - firstReading.ph
+
+    const changes: string[] = []
+    if (Math.abs(ecDelta) >= 0.15) {
+        changes.push(
+            isGerman(lang)
+                ? `EC ${ecDelta > 0 ? 'steigt' : 'fällt'} über die letzten Messungen um ${Math.abs(ecDelta).toFixed(2)}.`
+                : `EC has ${ecDelta > 0 ? 'risen' : 'fallen'} by ${Math.abs(ecDelta).toFixed(2)} across the recent readings.`,
+        )
+    }
+    if (Math.abs(phDelta) >= 0.15) {
+        changes.push(
+            isGerman(lang)
+                ? `pH ${phDelta > 0 ? 'steigt' : 'fällt'} über die letzten Messungen um ${Math.abs(phDelta).toFixed(2)}.`
+                : `pH has ${phDelta > 0 ? 'risen' : 'fallen'} by ${Math.abs(phDelta).toFixed(2)} across the recent readings.`,
+        )
+    }
+
+    return changes.length > 0 ? changes.join(' ') : null
+}
+
+const buildNutrientRecommendation = (
+    context: NutrientRecommendationContext,
+    lang: Language,
+): string => {
+    const withinEc =
+        context.currentEc >= context.optimalRange.ecMin &&
+        context.currentEc <= context.optimalRange.ecMax
+    const withinPh =
+        context.currentPh >= context.optimalRange.phMin &&
+        context.currentPh <= context.optimalRange.phMax
+    const plantLabel = context.plant
+        ? `${context.plant.name} (${context.plant.strain.name})`
+        : isGerman(lang)
+          ? 'ohne ausgewählte Pflanze'
+          : 'without a selected plant'
+
+    const lines: string[] = [
+        isGerman(lang)
+            ? `Lokaler Nährstoffplan für ${plantLabel}.`
+            : `Local nutrient plan for ${plantLabel}.`,
+        isGerman(lang)
+            ? `Aktuell: EC ${context.currentEc.toFixed(2)} bei Ziel ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)}, pH ${context.currentPh.toFixed(2)} bei Ziel ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)}.`
+            : `Current values: EC ${context.currentEc.toFixed(2)} against target ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)}, pH ${context.currentPh.toFixed(2)} against target ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)}.`,
+    ]
+
+    if (withinEc) {
+        lines.push(
+            isGerman(lang)
+                ? 'EC liegt im Sollbereich. Die Fütterung kann stabil bleiben.'
+                : 'EC is within target. Keep the feed strength steady for now.',
+        )
+    } else if (context.currentEc < context.optimalRange.ecMin) {
+        lines.push(
+            isGerman(lang)
+                ? `EC ist zu niedrig. Die nächste Gabe leicht anheben und in ${context.medium.toLowerCase().includes('hydro') ? 'kleinen' : 'moderaten'} Schritten auf ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)} bringen.`
+                : `EC is too low. Increase the next feed slightly and move back toward ${context.optimalRange.ecMin.toFixed(2)}-${context.optimalRange.ecMax.toFixed(2)} in ${context.medium.toLowerCase().includes('hydro') ? 'small' : 'moderate'} steps.`,
+        )
+    } else {
+        lines.push(
+            isGerman(lang)
+                ? 'EC ist zu hoch. Die Mischung etwas verdünnen oder eine Bewässerung mit klarem Wasser einplanen.'
+                : 'EC is too high. Dilute the mix a bit or plan a plain-water irrigation.',
+        )
+    }
+
+    if (withinPh) {
+        lines.push(isGerman(lang) ? 'pH liegt im Zielbereich.' : 'pH is within the target range.')
+    } else if (context.currentPh < context.optimalRange.phMin) {
+        lines.push(
+            isGerman(lang)
+                ? `pH ist zu niedrig. Leicht anheben, damit die Wurzelzone wieder in den Bereich ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)} kommt.`
+                : `pH is too low. Raise it gently so the root zone moves back into ${context.optimalRange.phMin.toFixed(2)}-${context.optimalRange.phMax.toFixed(2)}.`,
+        )
+    } else {
+        lines.push(
+            isGerman(lang)
+                ? 'pH ist zu hoch. Sanft senken, damit Nährstoffe wieder sauber verfügbar werden.'
+                : 'pH is too high. Lower it gently so nutrients become available again.',
+        )
+    }
+
+    const trend = summarizeTrend(context, lang)
+    if (trend) {
+        lines.push(trend)
+    }
+
+    if (context.readings.length > 0) {
+        const latest = [...context.readings].sort(
+            (left, right) => right.timestamp - left.timestamp,
+        )[0]
+        lines.push(
+            isGerman(lang)
+                ? `Letzte Messung (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`
+                : `Latest reading (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`,
+        )
+    }
+
+    if (context.plant) {
+        lines.push(
+            isGerman(lang)
+                ? `Pflanze: ${context.plant.name}, ${context.plant.stage}, ${context.plant.age} Tage, Gesundheit ${context.plant.health.toFixed(0)}%.`
+                : `Plant: ${context.plant.name}, ${context.plant.stage}, ${context.plant.age} days old, health ${context.plant.health.toFixed(0)}%.`,
+        )
+    }
+
+    lines.push(mediumAdvice(context.medium, lang))
+    lines.push(
+        isGerman(lang)
+            ? 'Nächster Schritt: nur eine Variable pro Runde ändern und die Reaktion protokollieren.'
+            : 'Next step: change only one variable per round and record the plant response.',
+    )
+
+    return lines.join('\n')
+}
 
 const makeRecommendationItem = (
     name: string,
@@ -500,6 +661,10 @@ class LocalAiFallbackService {
 
     getEquipmentRecommendation(prompt: string, lang: Language): Recommendation {
         return buildEquipmentRecommendation(prompt, lang)
+    }
+
+    getNutrientRecommendation(context: NutrientRecommendationContext, lang: Language): string {
+        return buildNutrientRecommendation(context, lang)
     }
 
     generateStrainImage(

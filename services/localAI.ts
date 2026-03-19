@@ -601,6 +601,38 @@ Return ONLY valid JSON with this exact shape: {"tent":{"name":"...","price":0,"r
         return parsed
     }
 
+    async getNutrientRecommendation(
+        context: {
+            medium: string
+            stage: string
+            currentEc: number
+            currentPh: number
+            optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
+            readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
+            plant?: {
+                name: string
+                strain: { name: string }
+                stage: string
+                age: number
+                health: number
+                medium: { ph: number; ec: number }
+            }
+        },
+        lang: Language,
+    ): Promise<string> {
+        const generated = await this.generateText(
+            `${isGerman(lang) ? 'Erstelle eine kompakte Nährstoff-Empfehlung auf Deutsch.' : 'Create a compact nutrient recommendation in English.'}
+Context: ${sanitizeText(JSON.stringify(context))}
+Return a concise plain-text answer with practical next steps, EC/pH guidance, and one medium-specific note. Do not use HTML.`,
+        )
+
+        if (generated && generated.trim().length > 0) {
+            return sanitizeText(generated)
+        }
+
+        return localAiFallbackService.getNutrientRecommendation(context, lang)
+    }
+
     async generateStrainImage(
         strain: Strain,
         style: ImageStyle,

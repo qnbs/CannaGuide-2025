@@ -39,6 +39,7 @@ import type { SimpleExportFormat } from '@/components/common/DataExportModal';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
+import { compareText } from './compareText';
 
 // --- Lazy Loaded Views for Performance ---
 const StrainLibraryView = lazy(() => import('./StrainLibraryView').then(m => ({ default: m.StrainLibraryView })));
@@ -57,6 +58,9 @@ const getSafeText = (value: unknown, fallback = ''): string => (typeof value ===
 const getSafeStringArray = (value: unknown): string[] => (Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []);
 const getSafeNumericValue = (value: unknown, fallback: number): number => typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 const getSafeStrainType = (value: unknown): string => (typeof value === 'string' ? value : 'Hybrid');
+const getSafeSortLabel = (value: unknown, fallback: string): string => {
+    return typeof value === 'string' && value.length > 0 ? value : fallback
+}
 
 const getRangeValue = (range: [number, number] | undefined, fallback: [number, number]): [number, number] => {
     if (
@@ -158,8 +162,8 @@ export const StrainsView: React.FC = () => {
         });
 
         return {
-            allAromas: Array.from(aromaSet).sort((a,b) => t(`common.aromas.${a}`, { defaultValue: a }).localeCompare(t(`common.aromas.${b}`, { defaultValue: b }))),
-            allTerpenes: Array.from(terpeneSet).sort((a,b) => t(`common.terpenes.${a}`, { defaultValue: a }).localeCompare(t(`common.terpenes.${b}`, { defaultValue: b }))),
+            allAromas: Array.from(aromaSet).sort((a, b) => compareText(t(`common.aromas.${a}`, { defaultValue: a }), t(`common.aromas.${b}`, { defaultValue: b }))),
+            allTerpenes: Array.from(terpeneSet).sort((a, b) => compareText(t(`common.terpenes.${a}`, { defaultValue: a }), t(`common.terpenes.${b}`, { defaultValue: b }))),
         };
     }, [allStrains, t]);
 

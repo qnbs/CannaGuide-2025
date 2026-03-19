@@ -15,6 +15,7 @@ import { Select } from '@/components/ui/form';
 import { Button } from '@/components/common/Button';
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
 import { SativaIcon, IndicaIcon, HybridIcon } from '@/components/icons/StrainTypeIcons';
+import { compareText } from './compareText';
 
 // ---------------------------------------------------------------------------
 // Genotype helpers
@@ -231,7 +232,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
     const [hasCrossed, setHasCrossed] = useState(false);
 
     const sortedStrains = useMemo(() =>
-        [...allStrains.filter((strain): strain is Strain => Boolean(strain))].sort((a, b) => getSafeText(a.name, '').localeCompare(getSafeText(b.name, ''))), [allStrains]);
+        [...allStrains.filter((strain): strain is Strain => Boolean(strain))].sort((a, b) => compareText(a.name, b.name)), [allStrains]);
 
     const strainOptions = useMemo(() => [
         { value: '', label: `— ${t('strainsView.breedingLab.selectStrainPlaceholder')} —` },

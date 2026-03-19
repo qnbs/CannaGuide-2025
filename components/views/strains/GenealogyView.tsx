@@ -26,6 +26,7 @@ import { SkeletonLoader } from '@/components/common/SkeletonLoader';
 import { Modal } from '@/components/common/Modal';
 import { StrainCompactItem } from './StrainCompactItem';
 import { GENEALOGY_NODE_SIZE } from '@/constants';
+import { compareText } from './compareText';
 
 
 interface GenealogyLayoutNode {
@@ -406,7 +407,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
         try {
             if (!Array.isArray(allStrains)) return [];
             return [...allStrains].sort((a, b) =>
-                (a?.name ?? '').localeCompare(b?.name ?? ''),
+                compareText(a?.name, b?.name),
             );
         } catch {
             return [];

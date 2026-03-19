@@ -2,7 +2,15 @@ import { Strain, GeneticModifiers, StrainType } from '@/types';
 
 // This factory ensures that every strain object has a consistent shape and default values.
 export const createStrainObject = (data: Partial<Strain>): Strain => {
-  const nameHash = (data.name || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const safeText = (value: unknown): string => (typeof value === 'string' ? value : '');
+  const safeType = (value: unknown): StrainType | undefined => {
+      return value === StrainType.Sativa || value === StrainType.Indica || value === StrainType.Hybrid ? value : undefined;
+  };
+
+  const nameText = safeText(data.name);
+  const typeDetailsText = safeText(data.typeDetails);
+  const floweringTimeRangeText = safeText(data.floweringTimeRange);
+  const nameHash = nameText.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const fallbackId = typeof globalThis.crypto?.randomUUID === 'function'
       ? globalThis.crypto.randomUUID()
       : `unknown-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -31,16 +39,22 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
     geneticModifiers: defaultGeneticModifiers,
   };
 
-  if (!data.id || !data.name || !data.type || data.thc === undefined || data.cbd === undefined || data.floweringTime === undefined) {
-      console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${data.name || 'Unknown'}. Applying safe defaults.`, data);
+    const normalizedType = safeType(data.type);
+
+    if (!data.id || !nameText || !normalizedType || data.thc === undefined || data.cbd === undefined || data.floweringTime === undefined) {
+      console.warn(`[strainFactory] Strain is missing required fields (id, name, type, thc, cbd, floweringTime) for: ${nameText || 'Unknown'}. Applying safe defaults.`, data);
       // Apply safe defaults for missing required fields
       if (!data.id) data.id = fallbackId;
-      if (!data.name) data.name = 'Unknown Strain';
-      if (!data.type) data.type = StrainType.Hybrid;
+      if (!nameText) data.name = 'Unknown Strain';
+      if (!normalizedType) data.type = StrainType.Hybrid;
       if (data.thc === undefined) data.thc = 0;
       if (data.cbd === undefined) data.cbd = 0;
       if (data.floweringTime === undefined) data.floweringTime = 9;
   }
+
+    if (!safeType(data.type)) {
+      data.type = StrainType.Hybrid;
+    }
 
   const merged = {
       ...defaults,
@@ -50,7 +64,7 @@ export const createStrainObject = (data: Partial<Strain>): Strain => {
   } as Strain;
 
   // Infer floweringType if not explicitly provided
-  if (!data.floweringType && (data.typeDetails?.toLowerCase().includes('autoflower') || data.floweringTimeRange?.toLowerCase().includes('lifecycle'))) {
+  if (!data.floweringType && (typeDetailsText.toLowerCase().includes('autoflower') || floweringTimeRangeText.toLowerCase().includes('lifecycle'))) {
     merged.floweringType = 'Autoflower';
   }
 

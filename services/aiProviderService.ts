@@ -6,7 +6,7 @@
 // ---------------------------------------------------------------------------
 
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { encrypt, decrypt, isEncryptedPayload } from '@/services/cryptoService'
+import { encrypt, decrypt, isEncryptedPayload, ensureEncrypted } from '@/services/cryptoService'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -101,7 +101,8 @@ const PROVIDER_CONFIGS: Record<AiProvider, AiProviderConfig> = {
 
 const ACTIVE_PROVIDER_KEY = 'cg.ai.activeProvider'
 
-const getProviderMetadataKey = (provider: AiProvider): string => `cg.ai.provider.${provider}.meta.v1`
+const getProviderMetadataKey = (provider: AiProvider): string =>
+    `cg.ai.provider.${provider}.meta.v1`
 
 const loadProviderMetadata = (provider: AiProvider): AiProviderKeyMetadata | null => {
     try {
@@ -160,7 +161,21 @@ async function getProviderApiKey(provider: AiProvider): Promise<string | null> {
 
     let resolved = raw
     if (isEncryptedPayload(raw)) {
-        try { resolved = await decrypt(raw) } catch { return null }
+        try {
+            resolved = await decrypt(raw)
+        } catch {
+            return null
+        }
+    } else {
+        // Auto-migrate unencrypted key to AES-256-GCM
+        try {
+            const { payload, migrated } = await ensureEncrypted(raw)
+            if (migrated) {
+                await indexedDBStorage.setItem(config.keyStorageKey, payload)
+            }
+        } catch {
+            // Migration is best-effort; the plain key still works this call.
+        }
     }
     const trimmed = resolved.trim()
     return trimmed.length > 0 ? trimmed : null
@@ -188,7 +203,11 @@ async function clearProviderApiKey(provider: AiProvider): Promise<void> {
 }
 
 async function clearAllProviderApiKeys(): Promise<void> {
-    await Promise.all(Object.keys(PROVIDER_CONFIGS).map((provider) => clearProviderApiKey(provider as AiProvider)))
+    await Promise.all(
+        Object.keys(PROVIDER_CONFIGS).map((provider) =>
+            clearProviderApiKey(provider as AiProvider),
+        ),
+    )
 }
 
 async function getMaskedProviderApiKey(provider: AiProvider): Promise<string | null> {
@@ -215,7 +234,10 @@ function isProviderKeyRotationDue(provider: AiProvider): boolean {
 // OpenAI-compatible API call (for xAI/Grok and OpenAI)
 // ---------------------------------------------------------------------------
 
-interface OpenAiMessage { role: 'system' | 'user'; content: string }
+interface OpenAiMessage {
+    role: 'system' | 'user'
+    content: string
+}
 
 interface OpenAiChatResponse {
     choices: Array<{
@@ -255,7 +277,7 @@ async function callOpenAiCompatible(
         throw new Error(`API error ${response.status}: ${errorText.slice(0, 200)}`)
     }
 
-    const data = await response.json() as OpenAiChatResponse
+    const data = (await response.json()) as OpenAiChatResponse
     const text = data.choices?.[0]?.message?.content
     if (!text) throw new Error('ai.error.generic')
     return text
@@ -298,8 +320,8 @@ async function callAnthropic(
         throw new Error(`API error ${response.status}: ${errorText.slice(0, 200)}`)
     }
 
-    const data = await response.json() as AnthropicResponse
-    const text = data.content?.find(c => c.type === 'text')?.text
+    const data = (await response.json()) as AnthropicResponse
+    const text = data.content?.find((c) => c.type === 'text')?.text
     if (!text) throw new Error('ai.error.generic')
     return text
 }
@@ -325,16 +347,26 @@ async function generateTextWithProvider(
         case 'openai':
             return callOpenAiCompatible(
                 'https://api.openai.com/v1',
-                apiKey, model,
-                [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                jsonMode, maxTokens,
+                apiKey,
+                model,
+                [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt },
+                ],
+                jsonMode,
+                maxTokens,
             )
         case 'xai':
             return callOpenAiCompatible(
                 'https://api.x.ai/v1',
-                apiKey, model,
-                [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                jsonMode, maxTokens,
+                apiKey,
+                model,
+                [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt },
+                ],
+                jsonMode,
+                maxTokens,
             )
         case 'anthropic':
             return callAnthropic(apiKey, model, systemPrompt, userPrompt, maxTokens)

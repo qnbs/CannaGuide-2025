@@ -199,20 +199,32 @@ class LocalAiService {
         }
         if (!this.webLlmPromise) {
             this.webLlmPromise = (async () => {
-                try {
-                    const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
-                    return (await CreateMLCEngine(WEBLLM_MODEL_ID, {
-                        initProgressCallback: (report: unknown) =>
-                            console.debug('[LocalAI][WebLLM]', report),
-                    })) as unknown as LocalWebLlmEngine
-                } catch (error) {
-                    console.warn(
-                        '[LocalAI] WebLLM unavailable, falling back to Transformers.js.',
-                        error,
-                    )
-                    captureLocalAiError(error, { model: WEBLLM_MODEL_ID, stage: 'webllm' })
-                    return null
+                const PRELOAD_RETRIES = 2
+                for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
+                    try {
+                        const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
+                        return (await CreateMLCEngine(WEBLLM_MODEL_ID, {
+                            initProgressCallback: (report: unknown) =>
+                                console.debug('[LocalAI][WebLLM]', report),
+                        })) as unknown as LocalWebLlmEngine
+                    } catch (error) {
+                        captureLocalAiError(error, {
+                            model: WEBLLM_MODEL_ID,
+                            stage: 'webllm',
+                            retryAttempt: attempt,
+                        })
+                        if (attempt < PRELOAD_RETRIES) {
+                            await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
+                            continue
+                        }
+                        console.warn(
+                            '[LocalAI] WebLLM unavailable after retries, falling back to Transformers.js.',
+                            error,
+                        )
+                        return null
+                    }
                 }
+                return null
             })()
         }
         return this.webLlmPromise

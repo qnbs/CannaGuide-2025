@@ -1,6 +1,6 @@
 import { GEMINI_API_KEY_STORAGE_KEY } from '@/constants'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
-import { encrypt, decrypt, isEncryptedPayload } from '@/services/cryptoService'
+import { encrypt, decrypt, isEncryptedPayload, ensureEncrypted } from '@/services/cryptoService'
 
 const GEMINI_API_KEY_PATTERN = /^AIza[0-9A-Za-z_-]{20,}$/
 const GEMINI_API_KEY_METADATA_KEY = 'cg.gemini.apiKey.meta.v1'
@@ -61,6 +61,16 @@ export const apiKeyService = {
                 resolved = await decrypt(key)
             } catch {
                 return null
+            }
+        } else {
+            // Auto-migrate unencrypted key to AES-256-GCM
+            try {
+                const { payload, migrated } = await ensureEncrypted(key)
+                if (migrated) {
+                    await indexedDBStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, payload)
+                }
+            } catch {
+                // Migration is best-effort; the plain key still works this call.
             }
         }
 

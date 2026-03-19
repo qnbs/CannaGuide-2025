@@ -1,10 +1,7 @@
-import React, { useMemo } from 'react'
+import React, { lazy, Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAppDispatch, useAppSelector } from '@/stores/store'
-import {
-    selectSandboxState,
-    selectActivePlants,
-} from '@/stores/selectors'
+import { selectSandboxState, selectActivePlants } from '@/stores/selectors'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Modal } from '@/components/common/Modal'
@@ -15,9 +12,12 @@ import {
     deleteExperiment,
 } from '@/stores/slices/sandboxSlice'
 import { scenarioService } from '@/services/scenarioService'
-import { ComparisonView } from '../plants/ComparisonView'
 import { Card } from '@/components/common/Card'
 import { SavedExperiment } from '@/types'
+
+const ComparisonView = lazy(() =>
+    import('../plants/ComparisonView').then((m) => ({ default: m.ComparisonView })),
+)
 
 const SavedExperimentCard: React.FC<{
     experiment: SavedExperiment
@@ -27,15 +27,20 @@ const SavedExperimentCard: React.FC<{
     const { t } = useTranslation()
     const scenario = scenarioService.getScenarioById(experiment.scenarioId)
     if (!scenario) return null
-    const scenarioTitle = scenario.title || t(scenario.titleKey, { defaultValue: scenario.titleKey })
+    const scenarioTitle =
+        scenario.title || t(scenario.titleKey, { defaultValue: scenario.titleKey })
     return (
         <Card className="!p-3 bg-slate-800">
             <div className="flex justify-between items-start">
                 <div>
                     <h4 className="font-bold text-slate-100">{scenarioTitle}</h4>
-                    <p className="text-xs text-slate-400">{t('knowledgeView.sandbox.basedOn', { name: experiment.basePlantName })}</p>
+                    <p className="text-xs text-slate-400">
+                        {t('knowledgeView.sandbox.basedOn', { name: experiment.basePlantName })}
+                    </p>
                     <p className="text-xs text-slate-500">
-                        {t('knowledgeView.sandbox.run', { date: new Date(experiment.createdAt).toLocaleDateString() })}
+                        {t('knowledgeView.sandbox.run', {
+                            date: new Date(experiment.createdAt).toLocaleDateString(),
+                        })}
                     </p>
                 </div>
                 <div className="flex gap-2">
@@ -83,9 +88,7 @@ const SandboxView: React.FC = () => {
 
     const handleSave = () => {
         if (currentExperiment) {
-            const basePlant = activePlants.find(
-                (p) => p.id === currentExperiment.basePlantId,
-            )
+            const basePlant = activePlants.find((p) => p.id === currentExperiment.basePlantId)
             const scenario = currentExperiment.scenarioId
                 ? scenarioService.getScenarioById(currentExperiment.scenarioId)
                 : null
@@ -98,10 +101,14 @@ const SandboxView: React.FC = () => {
     if (status === 'succeeded' && currentExperiment) {
         return (
             <div>
-                <ComparisonView
-                    experiment={currentExperiment as SavedExperiment}
-                    onFinish={() => dispatch(clearCurrentExperiment())}
-                />
+                <Suspense
+                    fallback={<div className="h-64 animate-pulse bg-slate-700/30 rounded-lg" />}
+                >
+                    <ComparisonView
+                        experiment={currentExperiment as SavedExperiment}
+                        onFinish={() => dispatch(clearCurrentExperiment())}
+                    />
+                </Suspense>
                 <div className="mt-4 text-center">
                     <Button onClick={handleSave}>
                         <PhosphorIcons.ArchiveBox className="w-5 h-5 mr-2" />

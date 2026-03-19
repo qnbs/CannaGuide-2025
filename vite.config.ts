@@ -85,6 +85,11 @@ export default defineConfig({
             output: {
                 // ── Manual Chunks – isolate heavy / rarely-changing vendor libs ──
                 manualChunks(id) {
+                    // Group all strain data files into a single deferred chunk
+                    if (id.includes('/data/strains/') && !id.endsWith('index.ts')) {
+                        return 'strains-data'
+                    }
+
                     if (!id.includes('node_modules')) return undefined
 
                     // React runtime core

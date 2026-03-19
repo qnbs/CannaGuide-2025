@@ -71,10 +71,8 @@ jobs:
             - name: Build
               run: npm run build
 
-            # Lighthouse uses vite preview via startServerCommand (lighthouserc.json)
-            # Advisory only – thresholds are tracked, not enforced in CI.
+            # Lighthouse CI – breaks the build if performance < 90.
             - name: Lighthouse CI
-              continue-on-error: true
               run: npm run lighthouse:ci
 
             - name: Upload Lighthouse report

@@ -1,54 +1,65 @@
-import React, { useMemo, useRef, useEffect, useState, memo } from 'react';
-import { Strain } from '@/types';
-import StrainGridItem from './StrainGridItem';
-import { useVirtualizer } from '@/hooks/useVirtualizer';
-import { MOBILE_BOTTOM_NAV_SAFE_OFFSET } from '@/constants';
+import React, { useMemo, useRef, useEffect, useState, useCallback, memo } from 'react'
+import { Strain } from '@/types'
+import StrainGridItem from './StrainGridItem'
+import { useVirtualizer } from '@/hooks/useVirtualizer'
+import { MOBILE_BOTTOM_NAV_SAFE_OFFSET } from '@/constants'
 
 interface StrainGridProps {
-    strains: Strain[];
-    onSelect: (strain: Strain) => void;
-    selectedIds: Set<string>;
-    onToggleSelection: (id: string) => void;
-    isUserStrain: (id: string) => boolean;
-    isPending?: boolean;
-    favorites: Set<string>;
-    onToggleFavorite: (id: string) => void;
+    strains: Strain[]
+    onSelect: (strain: Strain) => void
+    selectedIds: Set<string>
+    onToggleSelection: (id: string) => void
+    isUserStrain: (id: string) => boolean
+    isPending?: boolean
+    favorites: Set<string>
+    onToggleFavorite: (id: string) => void
 }
 
-const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, selectedIds, onToggleSelection, isUserStrain, isPending, favorites, onToggleFavorite }) => {
-    const scrollElementRef = useRef<HTMLElement | null>(null);
-    const [columns, setColumns] = useState(2);
-    const rowHeight = 260;
-    const gapSize = 16;
+const StrainGridComponent: React.FC<StrainGridProps> = ({
+    strains,
+    onSelect,
+    selectedIds,
+    onToggleSelection,
+    isUserStrain,
+    isPending,
+    favorites,
+    onToggleFavorite,
+}) => {
+    const scrollElementRef = useRef<HTMLElement | null>(null)
+    const [columns, setColumns] = useState(2)
+    const rowHeight = 260
+    const gapSize = 16
     useEffect(() => {
-        scrollElementRef.current = document.querySelector('main');
+        scrollElementRef.current = document.querySelector('main')
 
         const updateColumns = () => {
-            const width = window.innerWidth;
+            const width = window.innerWidth
             if (width >= 1280) {
-                setColumns(5);
+                setColumns(5)
             } else if (width >= 1024) {
-                setColumns(4);
+                setColumns(4)
             } else if (width >= 768) {
-                setColumns(3);
+                setColumns(3)
             } else {
-                setColumns(2);
+                setColumns(2)
             }
-        };
+        }
 
-        updateColumns();
-        window.addEventListener('resize', updateColumns);
-        return () => window.removeEventListener('resize', updateColumns);
-    }, []);
+        updateColumns()
+        window.addEventListener('resize', updateColumns)
+        return () => window.removeEventListener('resize', updateColumns)
+    }, [])
 
-    const rowCount = useMemo(() => Math.ceil(strains.length / columns), [strains.length, columns]);
+    const getScrollElement = useCallback(() => scrollElementRef.current, [])
+
+    const rowCount = useMemo(() => Math.ceil(strains.length / columns), [strains.length, columns])
 
     const rowVirtualizer = useVirtualizer({
         count: rowCount,
-        getScrollElement: () => scrollElementRef.current,
+        getScrollElement,
         estimateSize: rowHeight + gapSize,
         overscan: 4,
-    });
+    })
 
     return (
         <div
@@ -60,8 +71,8 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, sel
             }}
         >
             {rowVirtualizer.virtualItems.map((virtualRow) => {
-                const startIndex = virtualRow.index * columns;
-                const items = strains.slice(startIndex, startIndex + columns);
+                const startIndex = virtualRow.index * columns
+                const items = strains.slice(startIndex, startIndex + columns)
 
                 return (
                     <div
@@ -80,7 +91,7 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, sel
                             style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}
                         >
                             {items.map((strain, localIndex) => {
-                                const index = startIndex + localIndex;
+                                const index = startIndex + localIndex
                                 return (
                                     <StrainGridItem
                                         key={strain.id}
@@ -93,13 +104,13 @@ const StrainGridComponent: React.FC<StrainGridProps> = ({ strains, onSelect, sel
                                         isFavorite={favorites.has(strain.id)}
                                         onToggleFavorite={onToggleFavorite}
                                     />
-                                );
+                                )
                             })}
                         </div>
                     </div>
-                );
+                )
             })}
         </div>
-    );
-};
-export const StrainGrid = memo(StrainGridComponent);
+    )
+}
+export const StrainGrid = memo(StrainGridComponent)

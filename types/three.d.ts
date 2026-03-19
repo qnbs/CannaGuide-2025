@@ -1,4 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare module 'three' {
     type Group = any
     type Scene = any

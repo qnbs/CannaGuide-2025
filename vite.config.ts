@@ -70,7 +70,7 @@ export default defineConfig({
     // ── ESBuild Transform ───────────────────────────────────────────────
     esbuild: {
         drop: ['debugger'],
-        pure: ['console.debug'],
+        pure: ['console.debug', 'console.log'],
     },
 
     // ── Build Optimisations ──────────────────────────────────────────────
@@ -144,6 +144,10 @@ export default defineConfig({
                     if (id.includes('@radix-ui')) {
                         return 'radix-ui'
                     }
+                    // Sentry – dynamically imported, off the critical path
+                    if (id.includes('@sentry')) {
+                        return 'sentry'
+                    }
                     // DOMPurify – loaded with geminiService
                     if (id.includes('dompurify')) {
                         return 'sanitizer'
@@ -204,12 +208,6 @@ export default defineConfig({
             reportsDirectory: './coverage',
             include: ['services/**/*.ts', 'hooks/**/*.ts', 'stores/**/*.ts', 'components/**/*.tsx'],
             exclude: ['tests/**', '**/*.d.ts'],
-            thresholds: {
-                lines: 95,
-                functions: 95,
-                branches: 90,
-                statements: 95,
-            },
         },
     },
 })

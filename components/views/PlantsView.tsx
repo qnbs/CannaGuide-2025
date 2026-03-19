@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { Plant } from '@/types'
 import { PlantSlot } from './plants/PlantSlot'
 import { TipOfTheDay } from './plants/TipOfTheDay'
@@ -233,9 +234,11 @@ export const PlantsView: React.FC = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div className="lg:col-span-2 space-y-6">
                             <DashboardSummary />
-                            <Suspense fallback={null}>
-                                <GrowRoom3D />
-                            </Suspense>
+                            <ErrorBoundary>
+                                <Suspense fallback={null}>
+                                    <GrowRoom3D />
+                                </Suspense>
+                            </ErrorBoundary>
                             <GrowStatsDashboard />
                             <TipOfTheDay />
                             {showGrowFromStrainBanner && (

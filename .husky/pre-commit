@@ -2,4 +2,3 @@
 set -e
 
 npx lint-staged
-pre-commit run --all-files

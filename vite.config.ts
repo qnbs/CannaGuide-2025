@@ -79,8 +79,9 @@ export default defineConfig({
         target: 'esnext',
         // Minify with esbuild (default, fastest)
         minify: 'esbuild',
-        // Warn when a chunk exceeds 250 kB (gzip ~80 kB)
-        chunkSizeWarningLimit: 250,
+        // Local AI runtime bundles are intentionally large and loaded on demand.
+        // Keep the warning threshold high enough to avoid noise from these lazy chunks.
+        chunkSizeWarningLimit: 8000,
         rollupOptions: {
             output: {
                 // ── Manual Chunks – isolate heavy / rarely-changing vendor libs ──

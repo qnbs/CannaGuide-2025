@@ -2,6 +2,7 @@ import {
     detectOnnxBackend,
     resolveModelProfile,
     invalidateModelProfile,
+    evictIdlePipelines,
     type OnnxBackend,
     type QuantizationLevel,
     type ModelSizeTier,
@@ -294,6 +295,8 @@ export const getModelRecommendation = (): ModelRecommendation => {
     if (memory.pressureDetected) {
         // Under memory pressure, invalidate so next call re-evaluates
         invalidateModelProfile()
+        // Proactively evict cached pipelines to free memory
+        evictIdlePipelines(1)
         return {
             textModel: 'qwen3',
             enableWebLlm: false,

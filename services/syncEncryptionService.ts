@@ -17,6 +17,10 @@ const base64ToBytes = (value: string): Uint8Array => {
     return Uint8Array.from(binary, (char) => char.charCodeAt(0))
 }
 
+/** Creates a clean ArrayBuffer copy (cross-env WebCrypto compat). */
+const toBuffer = (bytes: Uint8Array): ArrayBuffer =>
+    bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer
+
 /**
  * Generates a new AES-256-GCM key and returns it as a Base64 string
  * suitable for persisting in Redux / localStorage.
@@ -32,7 +36,7 @@ export async function generateSyncEncryptionKey(): Promise<string> {
 
 async function importKey(base64Key: string): Promise<CryptoKey> {
     const raw = base64ToBytes(base64Key)
-    return crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, { name: ALGO }, false, [
+    return crypto.subtle.importKey('raw', toBuffer(raw), { name: ALGO }, false, [
         'encrypt',
         'decrypt',
     ])
@@ -67,9 +71,9 @@ export async function decryptSyncPayload(payload: string, base64Key: string): Pr
     const iv = base64ToBytes(parsed.iv)
     const encrypted = base64ToBytes(parsed.data)
     const decrypted = await crypto.subtle.decrypt(
-        { name: ALGO, iv: iv.buffer as ArrayBuffer },
+        { name: ALGO, iv: toBuffer(iv) },
         key,
-        encrypted.buffer as ArrayBuffer,
+        toBuffer(encrypted),
     )
     return new TextDecoder().decode(decrypted)
 }

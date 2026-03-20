@@ -158,6 +158,15 @@ export const settingsView = {
         inferenceTimeoutHint: 'Maximum time in seconds to wait for a single local AI response.',
         maxCacheSize: 'Max Cache Entries',
         maxCacheSizeHint: 'Maximum number of cached inference results stored in IndexedDB.',
+        // Progressive Quantization
+        quantizationLevel: 'Model Quantization',
+        quantizationLevelHint:
+            'Controls model precision and size. Auto selects the best option based on your GPU and memory. q4f16 uses 4-bit float16 for high-end GPUs, q4 uses lightweight 0.5B model for broad compatibility.',
+        quantAuto: 'Auto (VRAM-based)',
+        quantQ4f16: 'q4f16 (Premium, 1.5B)',
+        quantQ4: 'q4 (Standard, 0.5B)',
+        quantNone: 'None (Full precision)',
+        quantActiveProfile: 'Active profile: {{sizeTier}} {{quantLevel}} — ~{{savings}}% savings',
         // Model Status Section
         modelStatusTitle: 'Model Status Overview',
         modelsLoaded: '{{loaded}} of {{total}} models ready',

@@ -27,6 +27,7 @@ import {
     loadTransformersPipeline,
     detectOnnxBackend,
     clearPipelineCache,
+    getResolvedProfile,
     type LocalAiPipeline,
 } from './localAIModelLoader'
 import { getCachedInference, setCachedInference } from './localAiCacheService'
@@ -39,10 +40,12 @@ import {
 import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { z } from 'zod'
 
-const TEXT_MODEL_ID = 'Xenova/Qwen2.5-1.5B-Instruct'
 const VISION_MODEL_ID = 'Xenova/clip-vit-large-patch14'
+/** Fallback text model ID (always the lightweight 0.5B). */
 const ALT_TEXT_MODEL_ID = 'Xenova/Qwen3-0.5B'
-const WEBLLM_MODEL_ID = 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC'
+
+/** Resolve the active WebLLM model ID via the progressive quantization profile. */
+const getWebLlmModelId = (): string | null => getResolvedProfile().webLlmModelId
 
 /** Simple LRU-style inference cache keyed by truncated prompt hash. */
 const INFERENCE_CACHE_MAX = 64
@@ -219,14 +222,16 @@ class LocalAiService implements BaseAIProvider {
 
     private async loadTextPipeline(): Promise<LocalAiPipeline> {
         if (!this.textPipelinePromise) {
-            this.textPipelinePromise = loadTransformersPipeline('text-generation', TEXT_MODEL_ID, {
-                quantized: true,
+            const profile = getResolvedProfile()
+            const primaryId = profile.transformersModelId
+            this.textPipelinePromise = loadTransformersPipeline('text-generation', primaryId, {
+                quantized: profile.useQuantized,
             }).catch(async (primaryError: unknown) => {
                 console.warn(
                     '[LocalAI] Primary text model failed, retrying with alternate model.',
                     primaryError,
                 )
-                captureLocalAiError(primaryError, { model: TEXT_MODEL_ID, stage: 'preload' })
+                captureLocalAiError(primaryError, { model: primaryId, stage: 'preload' })
                 try {
                     return await loadTransformersPipeline('text-generation', ALT_TEXT_MODEL_ID, {
                         quantized: true,
@@ -263,19 +268,23 @@ class LocalAiService implements BaseAIProvider {
         if (!supportsWebGpu()) {
             return null
         }
+        const webLlmId = getWebLlmModelId()
+        if (!webLlmId) {
+            return null
+        }
         if (!this.webLlmPromise) {
             this.webLlmPromise = (async () => {
                 const PRELOAD_RETRIES = 2
                 for (let attempt = 0; attempt <= PRELOAD_RETRIES; attempt++) {
                     try {
                         const { CreateMLCEngine } = await import('@mlc-ai/web-llm')
-                        return (await CreateMLCEngine(WEBLLM_MODEL_ID, {
+                        return (await CreateMLCEngine(webLlmId, {
                             initProgressCallback: (report: unknown) =>
                                 console.debug('[LocalAI][WebLLM]', report),
                         })) as unknown as LocalWebLlmEngine
                     } catch (error) {
                         captureLocalAiError(error, {
-                            model: WEBLLM_MODEL_ID,
+                            model: webLlmId,
                             stage: 'webllm',
                             retryAttempt: attempt,
                         })
@@ -330,15 +339,16 @@ class LocalAiService implements BaseAIProvider {
                     )
                     const content = response?.choices?.[0]?.message?.content
                     if (typeof content === 'string' && content.trim().length > 0) {
+                        const activeWebLlmId = getWebLlmModelId() ?? 'webllm-unknown'
                         timer.stop({
-                            model: WEBLLM_MODEL_ID,
+                            model: activeWebLlmId,
                             task: 'text-generation',
                             backend: 'webllm',
                             tokensGenerated: Math.ceil(content.length / 4),
                         })
                         setCached(prompt, content)
                         void setCachedInference(prompt, content, {
-                            model: WEBLLM_MODEL_ID,
+                            model: activeWebLlmId,
                             task: 'text-generation',
                         }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
                         debouncedPersistSnapshot()
@@ -350,13 +360,15 @@ class LocalAiService implements BaseAIProvider {
                         error,
                     )
                     captureLocalAiError(error, {
-                        model: WEBLLM_MODEL_ID,
+                        model: getWebLlmModelId() ?? 'webllm-unknown',
                         stage: 'inference',
                         retryAttempt: attempt,
                     })
                 }
             }
 
+            const activeProfile = getResolvedProfile()
+            const activeTextId = activeProfile.transformersModelId
             try {
                 const timer = createInferenceTimer()
 
@@ -368,9 +380,9 @@ class LocalAiService implements BaseAIProvider {
                         const workerResult = await withTimeout(
                             enqueueInference({
                                 task: 'text-generation',
-                                modelId: TEXT_MODEL_ID,
+                                modelId: activeTextId,
                                 input: prompt,
-                                pipelineOptions: { quantized: true },
+                                pipelineOptions: { quantized: activeProfile.useQuantized },
                                 inferenceOptions: {
                                     max_new_tokens: 512,
                                     do_sample: true,
@@ -414,14 +426,14 @@ class LocalAiService implements BaseAIProvider {
                 if (typeof generated === 'string' && generated.trim().length > 0) {
                     const currentBackend = detectOnnxBackend()
                     timer.stop({
-                        model: TEXT_MODEL_ID,
+                        model: activeTextId,
                         task: 'text-generation',
                         backend: currentBackend,
                         tokensGenerated: Math.ceil(generated.length / 4),
                     })
                     setCached(prompt, generated)
                     void setCachedInference(prompt, generated, {
-                        model: TEXT_MODEL_ID,
+                        model: activeTextId,
                         task: 'text-generation',
                     }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
                     debouncedPersistSnapshot()
@@ -433,7 +445,7 @@ class LocalAiService implements BaseAIProvider {
                     error,
                 )
                 captureLocalAiError(error, {
-                    model: TEXT_MODEL_ID,
+                    model: activeTextId,
                     stage: 'inference',
                     retryAttempt: attempt,
                 })

@@ -595,6 +595,8 @@ export interface AppSettings {
         enableTelemetry: boolean
         maxInferenceCacheSize: number
         inferenceTimeoutMs: number
+        /** Progressive quantization preference: 'auto' (VRAM-based), 'q4f16', 'q4', or 'none'. */
+        quantizationLevel: 'auto' | 'q4f16' | 'q4' | 'none'
     }
     data: {
         autoBackup: 'off' | 'daily' | 'weekly'

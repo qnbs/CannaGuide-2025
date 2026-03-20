@@ -159,6 +159,7 @@ export const defaultSettings: AppSettings = {
         enableTelemetry: true,
         maxInferenceCacheSize: 256,
         inferenceTimeoutMs: 60000,
+        quantizationLevel: 'auto',
     },
 
     data: {

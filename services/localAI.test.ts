@@ -237,7 +237,7 @@ describe('localAiService', () => {
         expect(report.visionModelReady).toBe(true)
         expect(report.errorCount).toBe(0)
         expect(steps.length).toBeGreaterThanOrEqual(3)
-        expect(steps[0]).toEqual([0, 6, 'text-model'])
+        expect(steps[0]).toEqual([0, 8, 'text-model'])
     })
 
     it('preloadOfflineAssets counts failures when pipelines reject', async () => {

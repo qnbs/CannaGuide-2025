@@ -155,6 +155,15 @@ export const settingsView = {
         // Model Status Section
         modelStatusTitle: 'Model Status Overview',
         modelsLoaded: '{{loaded}} of {{total}} models ready',
+        // Health & Device
+        healthStatus: 'AI Health: {{value}}',
+        deviceClass: 'Device class: {{value}}',
+        // Language Detection
+        langDetectionReady: 'Language detection model is ready.',
+        langDetectionMissing: 'Language detection model not loaded.',
+        // Image Similarity
+        imgSimilarityReady: 'Image similarity (CLIP features) is ready.',
+        imgSimilarityMissing: 'Image similarity model not loaded.',
     },
     general: {
         title: 'General Settings',

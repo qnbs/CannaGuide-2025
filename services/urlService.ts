@@ -13,8 +13,8 @@ const parseArray = (val: string | null): string[] => val ? val.split(',') : [];
 const parseRange = (val: string | null): [number, number] | undefined => {
     if (!val) return undefined;
     const parts = val.split(',').map(Number);
-    if (parts.length === 2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
-        return [parts[0], parts[1]];
+    if (parts.length === 2 && !isNaN(parts[0]!) && !isNaN(parts[1]!)) {
+        return [parts[0]!, parts[1]!];
     }
     return undefined;
 };
@@ -83,7 +83,7 @@ export const urlService = {
 
         if (params.has('s')) {
             const [key, dir] = params.get('s')!.split('-');
-              if (VALID_SORT_KEYS.has(key) && VALID_SORT_DIRS.has(dir)) {
+              if (key && dir && VALID_SORT_KEYS.has(key) && VALID_SORT_DIRS.has(dir)) {
                   parsedState.sortKey = key as SortKey;
                   parsedState.sortDirection = dir as SortDirection;
               }

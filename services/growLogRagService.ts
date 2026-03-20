@@ -107,7 +107,8 @@ class GrowLogRagService {
             const uncachedIndices: number[] = []
             const uncachedTexts: string[] = []
             const allVecs: Array<Float32Array | null> = chunkTexts.map((text, i) => {
-                const key = `${chunks[i].plantId}:${chunks[i].createdAt}`
+                const chunk = chunks[i]!
+                const key = `${chunk.plantId}:${chunk.createdAt}`
                 const cached = getCachedEmbedding(key)
                 if (cached) return cached
                 uncachedIndices.push(i)
@@ -118,10 +119,12 @@ class GrowLogRagService {
             if (uncachedTexts.length > 0) {
                 const computed = await embedBatch(uncachedTexts)
                 for (let j = 0; j < uncachedIndices.length; j++) {
-                    const idx = uncachedIndices[j]
-                    allVecs[idx] = computed[j]
-                    const key = `${chunks[idx].plantId}:${chunks[idx].createdAt}`
-                    setCachedEmbedding(key, computed[j])
+                    const idx = uncachedIndices[j]!
+                    allVecs[idx] = computed[j] ?? null
+                    const chunk = chunks[idx]!
+                    const key = `${chunk.plantId}:${chunk.createdAt}`
+                    const emb = computed[j]
+                    if (emb) setCachedEmbedding(key, emb)
                 }
             }
 
@@ -129,7 +132,7 @@ class GrowLogRagService {
             const scored = chunks
                 .map((chunk, i) => {
                     const vec = allVecs[i]
-                    const semantic = vec ? cosineSimilarity(queryVec, vec) : 0
+                    const semantic = vec ? cosineSimilarity(queryVec, vec as unknown as Float32Array) : 0
                     const recency = Math.max(
                         0,
                         1 - (Date.now() - chunk.createdAt) / (1000 * 60 * 60 * 24 * 30),

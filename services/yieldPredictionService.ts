@@ -128,27 +128,27 @@ const calculateFeatureStats = (samples: Array<{ features: number[]; target: numb
 
     samples.forEach((sample) => {
         sample.features.forEach((value, index) => {
-            means[index] += value
+            means[index] = (means[index] ?? 0) + value
         })
     })
 
     means.forEach((value, index) => {
-        means[index] = value / samples.length
+        means[index] = (value ?? 0) / samples.length
     })
 
     samples.forEach((sample) => {
         sample.features.forEach((value, index) => {
-            variances[index] += (value - means[index]) ** 2
+            variances[index] = (variances[index] ?? 0) + (value - (means[index] ?? 0)) ** 2
         })
     })
 
-    const stdDevs = variances.map((value) => Math.max(Math.sqrt(value / samples.length), 0.05))
+    const stdDevs = variances.map((value) => Math.max(Math.sqrt((value ?? 0) / samples.length), 0.05))
 
     return { means, stdDevs }
 }
 
 const normalizeVector = (features: number[], means: number[], stdDevs: number[]) =>
-    features.map((value, index) => (value - means[index]) / stdDevs[index])
+    features.map((value, index) => (value - (means[index] ?? 0)) / (stdDevs[index] ?? 1))
 
 const loadTensorflow = async (): Promise<TfModule> => import('@tensorflow/tfjs')
 
@@ -174,7 +174,7 @@ export const predictYield = async (historicalPlants: Plant[], activePlants: Plan
     const normalizedTraining = trainingSamples.map((sample) => normalizeVector(sample.features, means, stdDevs))
     const model = tf.sequential()
 
-    model.add(tf.layers.dense({ inputShape: [normalizedTraining[0].length], units: 16, activation: 'relu' }))
+    model.add(tf.layers.dense({ inputShape: [normalizedTraining[0]!.length], units: 16, activation: 'relu' }))
     model.add(tf.layers.dense({ units: 8, activation: 'relu' }))
     model.add(tf.layers.dense({ units: 1 }))
 
@@ -196,7 +196,7 @@ export const predictYield = async (historicalPlants: Plant[], activePlants: Plan
         const features = normalizeVector(buildFeatureVector(plant), means, stdDevs)
         const prediction = tf.tidy(() => {
             const result = model.predict(tf.tensor2d([features])) as import('@tensorflow/tfjs').Tensor
-            return result.dataSync()[0] * TARGET_SCALE
+            return (result.dataSync()[0] ?? 0) * TARGET_SCALE
         })
 
         return Math.max(0, prediction)

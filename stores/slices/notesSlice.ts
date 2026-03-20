@@ -26,8 +26,8 @@ const notesSlice = createSlice({
 
             if (!state.strainNotes[strainId]) {
                 state.strainNotes[strainId] = { past: [], present: note, future: [] }
-            } else if (previous !== note) {
-                const past = state.strainNotes[strainId].past
+            } else if (previous !== undefined && previous !== note) {
+                const past = state.strainNotes[strainId]!.past
                 past.push(previous)
                 if (past.length > MAX_UNDO_HISTORY) {
                     past.splice(0, past.length - MAX_UNDO_HISTORY)

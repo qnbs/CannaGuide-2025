@@ -214,7 +214,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
             })
             let messageIndex = 0
             const updateLoadingMessage = () => {
-                setLoadingMessage(messages[messageIndex % messages.length])
+                setLoadingMessage(messages[messageIndex % messages.length] ?? '')
                 messageIndex++
             }
 

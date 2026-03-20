@@ -25,8 +25,8 @@ describe('archivesSlice', () => {
                 addArchivedMentorResponse({ title: 'Test', content: 'Content', tags: [] } as any),
             )
             expect(state.archivedMentorResponses).toHaveLength(1)
-            expect(state.archivedMentorResponses[0].title).toBe('Test')
-            expect(state.archivedMentorResponses[0].id).toMatch(/^mentor-/)
+            expect(state.archivedMentorResponses[0]!.title).toBe('Test')
+            expect(state.archivedMentorResponses[0]!.id).toMatch(/^mentor-/)
         })
 
         it('rejects invalid mentor response (empty title)', () => {
@@ -61,13 +61,13 @@ describe('archivesSlice', () => {
                 initial,
                 addArchivedMentorResponse({ title: 'Original', content: 'Original', tags: [] } as any),
             )
-            const id = state.archivedMentorResponses[0].id
+            const id = state.archivedMentorResponses[0]!.id
             state = archivesReducer(
                 state,
-                updateArchivedMentorResponse({ ...state.archivedMentorResponses[0], title: 'Updated' }),
+                updateArchivedMentorResponse({ ...state.archivedMentorResponses[0]!, title: 'Updated' }),
             )
-            expect(state.archivedMentorResponses[0].title).toBe('Updated')
-            expect(state.archivedMentorResponses[0].id).toBe(id)
+            expect(state.archivedMentorResponses[0]!.title).toBe('Updated')
+            expect(state.archivedMentorResponses[0]!.id).toBe(id)
         })
 
         it('deletes a mentor response', () => {
@@ -75,7 +75,7 @@ describe('archivesSlice', () => {
                 initial,
                 addArchivedMentorResponse({ title: 'Delete Me', content: 'Content', tags: [] } as any),
             )
-            const id = state.archivedMentorResponses[0].id
+            const id = state.archivedMentorResponses[0]!.id
             state = archivesReducer(state, deleteArchivedMentorResponse(id))
             expect(state.archivedMentorResponses).toHaveLength(0)
         })
@@ -106,7 +106,7 @@ describe('archivesSlice', () => {
                 initial,
                 addArchivedAdvisorResponse({ plant: mockPlant as any, response: mockResponse as any, query: 'help' }),
             )
-            const responseId = state.archivedAdvisorResponses['plant-1'][0].id
+            const responseId = state.archivedAdvisorResponses['plant-1']![0]!.id
             state = archivesReducer(
                 state,
                 deleteArchivedAdvisorResponse({ plantId: 'plant-1', responseId }),

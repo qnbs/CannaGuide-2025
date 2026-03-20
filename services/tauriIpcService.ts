@@ -148,10 +148,10 @@ export async function decodeSensorBinary(
         const readings: DecodedSensorReading[] = []
         for (let i = 0; i < packet.count; i++) {
             const offset = i * FLOATS_PER_READING
-            const ph = packet.values[offset + 2]
+            const ph = packet.values[offset + 2] ?? 0
             readings.push({
-                temperatureC: packet.values[offset],
-                humidityPercent: packet.values[offset + 1],
+                temperatureC: packet.values[offset] ?? 0,
+                humidityPercent: packet.values[offset + 1] ?? 0,
                 ph: ph === 0 ? null : ph,
                 timestamp: packet.start_timestamp + i * packet.interval_ms,
             })

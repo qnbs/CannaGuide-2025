@@ -127,8 +127,8 @@ describe('MqttSensorService', () => {
         }
 
         expect(readings).toHaveLength(1)
-        expect(readings[0].temperatureC).toBe(24.5)
-        expect(readings[0].humidityPercent).toBe(62.1)
+        expect(readings[0]!.temperatureC).toBe(24.5)
+        expect(readings[0]!.humidityPercent).toBe(62.1)
 
         unsub()
     })
@@ -154,8 +154,8 @@ describe('MqttSensorService', () => {
                 Buffer.from(JSON.stringify({ value: 55.0 })),
             )
             expect(readings).toHaveLength(1)
-            expect(readings[0].temperatureC).toBe(23.0)
-            expect(readings[0].humidityPercent).toBe(55.0)
+            expect(readings[0]!.temperatureC).toBe(23.0)
+            expect(readings[0]!.humidityPercent).toBe(55.0)
         }
 
         unsub()

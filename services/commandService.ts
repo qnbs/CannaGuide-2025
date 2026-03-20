@@ -67,7 +67,7 @@ export const groupAndSortCommands = (commands: Command[]): Command[] => {
         if (!grouped[command.group]) {
             grouped[command.group] = []
         }
-        grouped[command.group].push(command)
+        grouped[command.group]!.push(command)
     }
 
     const sortedGroups = Object.keys(grouped).sort((a, b) => {
@@ -91,7 +91,7 @@ export const groupAndSortCommands = (commands: Command[]): Command[] => {
         })
         // Sort by priority (descending) then title (ascending)
         result.push(
-            ...grouped[group].sort((a, b) => {
+            ...(grouped[group] ?? []).sort((a, b) => {
                 const pa = a.priority ?? 0
                 const pb = b.priority ?? 0
                 if (pa !== pb) return pb - pa

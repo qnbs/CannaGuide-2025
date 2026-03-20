@@ -85,6 +85,9 @@ jobs:
                   npm run lint:scopes
                   echo "::endgroup::"
 
+            - name: 🔬 Type check
+              run: npx tsc --noEmit
+
             - name: 🧪 Unit tests
               run: |
                   echo "::group::vitest"

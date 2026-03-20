@@ -62,7 +62,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
             })
             let messageIndex = 0
             const intervalId = setInterval(() => {
-                setLoadingMessage(messages[messageIndex % messages.length])
+                setLoadingMessage(messages[messageIndex % messages.length] ?? '')
                 messageIndex++
             }, 2000)
             return () => clearInterval(intervalId)
@@ -74,7 +74,7 @@ const AiTabComponent: React.FC<AiTabProps> = ({ plant }) => {
             })
             let messageIndex = 0
             const intervalId = setInterval(() => {
-                setLoadingMessage(messages[messageIndex % messages.length])
+                setLoadingMessage(messages[messageIndex % messages.length] ?? '')
                 messageIndex++
             }, 2000)
             return () => clearInterval(intervalId)

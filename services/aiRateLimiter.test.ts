@@ -14,8 +14,8 @@ describe('aiRateLimiter', () => {
 
         const entries = aiRateLimiter.getAuditLog()
         expect(entries).toHaveLength(1)
-        expect(entries[0].endpoint).toBe('diagnosePlant')
-        expect(entries[0].timestamp).toBeTypeOf('number')
+        expect(entries[0]!.endpoint).toBe('diagnosePlant')
+        expect(entries[0]!.timestamp).toBeTypeOf('number')
     })
 
     it('clears the audit log', () => {

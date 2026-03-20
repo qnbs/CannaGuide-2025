@@ -61,7 +61,8 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
 
             if (nextIndex >= 0) {
                 e.preventDefault()
-                onTabChange(TAB_IDS[nextIndex])
+                const nextTab = TAB_IDS[nextIndex]
+                if (nextTab) onTabChange(nextTab)
                 const btns =
                     navRef.current?.querySelectorAll<HTMLButtonElement>('button[role="tab"]')
                 btns?.[nextIndex]?.focus()

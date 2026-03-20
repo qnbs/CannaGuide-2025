@@ -30,6 +30,7 @@ const startNextInQueue = createAsyncThunk<void, void, { state: RootState }>(
         }
 
         const nextItem = state.ttsQueue[0];
+        if (!nextItem) return;
         dispatch(ttsSlice.actions._setSpeakingState({ isSpeaking: true, isPaused: false, id: nextItem.id }));
 
         const onEnd = () => {

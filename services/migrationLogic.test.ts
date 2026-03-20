@@ -50,8 +50,8 @@ describe('migrationLogic', () => {
         )
 
         expect(merged).toHaveLength(1)
-        expect(merged[0].name).toBe('Alpha')
-        expect(merged[0].type).toBe('Hybrid')
+        expect(merged[0]!.name).toBe('Alpha')
+        expect(merged[0]!.type).toBe('Hybrid')
     })
 
     it('deep merges nested strain fields when updating legacy data', () => {
@@ -103,12 +103,12 @@ describe('migrationLogic', () => {
         )
 
         expect(merged).toHaveLength(1)
-        expect(merged[0].name).toBe('Bundled')
-        expect(merged[0].agronomic.difficulty).toBe('Hard')
-        expect(merged[0].agronomic.yield).toBe('High')
-        expect(merged[0].geneticModifiers.vpdTolerance.min).toBe(0.9)
-        expect(merged[0].aromas).toEqual(['Fruity'])
-        expect(merged[0].dominantTerpenes).toEqual(['Limonene'])
+        expect(merged[0]!.name).toBe('Bundled')
+        expect(merged[0]!.agronomic.difficulty).toBe('Hard')
+        expect(merged[0]!.agronomic.yield).toBe('High')
+        expect(merged[0]!.geneticModifiers.vpdTolerance.min).toBe(0.9)
+        expect(merged[0]!.aromas).toEqual(['Fruity'])
+        expect(merged[0]!.dominantTerpenes).toEqual(['Limonene'])
     })
 
     it('deeply normalizes partial post-harvest data on persisted plants', () => {

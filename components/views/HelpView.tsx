@@ -401,7 +401,7 @@ const LexiconSection: React.FC = memo(() => {
                                     <div className="h-px flex-1 bg-slate-700/40" />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {groupedByLetter[letter].map((item) => (
+                                    {(groupedByLetter[letter] ?? []).map((item) => (
                                         <LexiconCard
                                             key={item.key}
                                             entry={{ key: item.key, category: item.category }}
@@ -588,7 +588,10 @@ const ManualSection: React.FC = memo(() => {
             </Card>
 
             {/* Sections */}
-            {validSections.map((key, idx) => renderSection(key, manualContent[key], idx))}
+            {validSections.map((key, idx) => {
+                const section = manualContent[key]
+                return section ? renderSection(key, section, idx) : null
+            })}
         </div>
     )
 })

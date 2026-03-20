@@ -47,19 +47,19 @@ export const LexiconCard: React.FC<{ entry: LexiconEntry }> = memo(({ entry }) =
             ? details
             : undefined
 
-    const style = CATEGORY_STYLE[entry.category] ?? CATEGORY_STYLE.General
+    const style = CATEGORY_STYLE[entry.category] ?? CATEGORY_STYLE.General ?? { border: '', pill: '', icon: null }
 
     return (
         <Card
-            className={`bg-slate-800/50 ring-1 ring-inset ring-slate-700/50 ${style.border} transition-all duration-200 flex flex-col`}
+            className={`bg-slate-800/50 ring-1 ring-inset ring-slate-700/50 ${style?.border ?? ''} transition-all duration-200 flex flex-col`}
         >
             <div className="flex items-start justify-between gap-2 mb-1.5">
                 <h3 className="text-base font-bold text-primary-300 leading-snug">{term}</h3>
             </div>
             <span
-                className={`inline-flex items-center gap-1 self-start text-[10px] uppercase font-semibold tracking-wider rounded-full px-2 py-0.5 ring-1 ring-inset mb-2.5 ${style.pill}`}
+                className={`inline-flex items-center gap-1 self-start text-[10px] uppercase font-semibold tracking-wider rounded-full px-2 py-0.5 ring-1 ring-inset mb-2.5 ${style?.pill ?? ''}`}
             >
-                {style.icon}
+                {style?.icon}
                 {entry.category}
             </span>
             <Speakable elementId={`lexicon-${entry.key}`}>

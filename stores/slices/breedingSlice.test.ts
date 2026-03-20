@@ -27,7 +27,7 @@ describe('breedingSlice', () => {
     it('addSeed adds a seed to the collection', () => {
         const state = breedingReducer(initial, addSeed(mockSeed as any))
         expect(state.collectedSeeds).toHaveLength(1)
-        expect(state.collectedSeeds[0].id).toBe('seed-1')
+        expect(state.collectedSeeds[0]!.id).toBe('seed-1')
     })
 
     it('setParentA sets parent A slot', () => {
@@ -52,6 +52,6 @@ describe('breedingSlice', () => {
         const newSeeds = [{ ...mockSeed, id: 'seed-new' }]
         state = breedingReducer(state, setCollectedSeeds(newSeeds as any))
         expect(state.collectedSeeds).toHaveLength(1)
-        expect(state.collectedSeeds[0].id).toBe('seed-new')
+        expect(state.collectedSeeds[0]!.id).toBe('seed-new')
     })
 })

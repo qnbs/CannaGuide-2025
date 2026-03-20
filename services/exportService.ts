@@ -626,8 +626,8 @@ class ExportService {
                 const row = Math.floor(i / 2)
                 const x = leftMargin + col * (cellWidth + 6)
                 const imgY = y + row * (cellHeight + 6)
-                const format = photos[i].startsWith('data:image/png') ? 'PNG' : 'JPEG'
-                doc.addImage(photos[i], format, x, imgY, cellWidth, cellHeight)
+                const format = photos[i]!.startsWith('data:image/png') ? 'PNG' : 'JPEG'
+                doc.addImage(photos[i]!, format, x, imgY, cellWidth, cellHeight)
             }
         }
 

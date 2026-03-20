@@ -20,8 +20,8 @@ const initialState: SimulationState = {
 };
 
 const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
-    const [startHour, startMinute] = start.split(':').map(Number)
-    const [endHour, endMinute] = end.split(':').map(Number)
+    const [startHour = 0, startMinute = 0] = start.split(':').map(Number)
+    const [endHour = 0, endMinute = 0] = end.split(':').map(Number)
     if (![startHour, startMinute, endHour, endMinute].every(Number.isFinite)) {
         return false
     }
@@ -360,11 +360,11 @@ export const updatePlantToNow = createAsyncThunk<void, string, { state: RootStat
                             void showBrowserNotification(result.updatedPlant.name, stageChangeEntry.notes, `stage-change-${result.updatedPlant.id}`, result.updatedPlant.id)
                         }
 
-                        if (settings.notifications.problemDetected && newProblemEntries.length > 0) {
+                        if (settings.notifications.problemDetected && newProblemEntries.length > 0 && newProblemEntries[0]) {
                             void showBrowserNotification(result.updatedPlant.name, newProblemEntries[0].notes, `problem-${result.updatedPlant.id}`, result.updatedPlant.id)
                         }
 
-                        if (settings.notifications.newTask && filteredTasks.length > 0) {
+                        if (settings.notifications.newTask && filteredTasks.length > 0 && filteredTasks[0]) {
                             void showBrowserNotification(result.updatedPlant.name, filteredTasks[0].title, `task-${result.updatedPlant.id}`, result.updatedPlant.id)
                         }
                     }

@@ -272,7 +272,7 @@ export const BreedingLab: React.FC<BreedingLabProps> = ({ allStrains }) => {
     const handleNextGen = useCallback(() => {
         setGeneration(prev => {
             const idx = GENERATIONS.indexOf(prev);
-            return idx < GENERATIONS.length - 1 ? GENERATIONS[idx + 1] : prev;
+            return idx < GENERATIONS.length - 1 ? (GENERATIONS[idx + 1] ?? prev) : prev;
         });
     }, []);
 

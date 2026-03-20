@@ -268,10 +268,12 @@ const settingsSlice = createSlice({
                 unknown
             >
             for (let i = 0; i < keys.length - 1; i++) {
-                if (!Object.prototype.hasOwnProperty.call(current, keys[i])) return
-                current = current[keys[i]] as Record<string, unknown>
+                const k = keys[i];
+                if (!k || !Object.prototype.hasOwnProperty.call(current, k)) return
+                current = current[k] as Record<string, unknown>
             }
-            current[keys[keys.length - 1]] = value
+            const lastKey = keys[keys.length - 1];
+            if (lastKey) current[lastKey] = value
         },
         toggleSetting: (state, action: PayloadAction<{ path: string }>) => {
             const { path } = action.payload
@@ -283,11 +285,12 @@ const settingsSlice = createSlice({
                 unknown
             >
             for (let i = 0; i < keys.length - 1; i++) {
-                if (!Object.prototype.hasOwnProperty.call(current, keys[i])) return
-                current = current[keys[i]] as Record<string, unknown>
+                const k = keys[i];
+                if (!k || !Object.prototype.hasOwnProperty.call(current, k)) return
+                current = current[k] as Record<string, unknown>
             }
             const finalKey = keys[keys.length - 1]
-            current[finalKey] = !current[finalKey]
+            if (finalKey) current[finalKey] = !current[finalKey]
         },
     },
 })

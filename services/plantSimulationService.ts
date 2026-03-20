@@ -1462,11 +1462,11 @@ class PlantSimulationService {
         ) {
             let cumulativeDuration = 0
             for (let i = 0; i <= currentStageIndex; i++) {
-                cumulativeDuration += PLANT_STAGE_DETAILS[STAGES_ORDER[i]].duration
+                cumulativeDuration += PLANT_STAGE_DETAILS[STAGES_ORDER[i]!]!.duration
             }
 
             let shouldAdvance = p.age >= cumulativeDuration
-            const nextStage = STAGES_ORDER[currentStageIndex + 1]
+            const nextStage = STAGES_ORDER[currentStageIndex + 1]!
 
             if (
                 nextStage === PlantStage.Flowering &&

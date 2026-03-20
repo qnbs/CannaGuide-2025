@@ -1107,7 +1107,7 @@ const GeneralSettingsTab: React.FC = () => {
                                                 aria-pressed={isActive}
                                             >
                                                 <div className="flex gap-0.5">
-                                                    {swatches.map((color) => (
+                                                    {swatches?.map((color) => (
                                                         <div
                                                             key={color}
                                                             className="w-4 h-4 rounded-full border border-white/10"

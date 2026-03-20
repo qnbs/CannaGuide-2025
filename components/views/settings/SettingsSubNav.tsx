@@ -60,7 +60,7 @@ export const SettingsSubNav: React.FC<SettingsSubNavProps> = ({ activeTab, onTab
 
             if (nextIndex >= 0) {
                 const nextId = navItemIds[nextIndex]
-                onTabChange(nextId)
+                if (nextId) onTabChange(nextId)
                 const btn = navRef.current?.querySelector<HTMLButtonElement>(
                     `[data-tab="${nextId}"]`,
                 )

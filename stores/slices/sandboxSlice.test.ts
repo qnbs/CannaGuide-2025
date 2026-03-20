@@ -67,7 +67,7 @@ describe('sandboxSlice', () => {
         }
         const state = sandboxReducer(withExps, deleteExperiment('exp-1'))
         expect(state.savedExperiments).toHaveLength(1)
-        expect(state.savedExperiments[0].id).toBe('exp-2')
+        expect(state.savedExperiments[0]!.id).toBe('exp-2')
     })
 
     it('saveExperiment saves current experiment and resets state', () => {
@@ -81,7 +81,7 @@ describe('sandboxSlice', () => {
             saveExperiment({ scenario: { id: 'sc-1' } as any, basePlantName: 'TestPlant' }),
         )
         expect(state.savedExperiments).toHaveLength(1)
-        expect(state.savedExperiments[0].basePlantName).toBe('TestPlant')
+        expect(state.savedExperiments[0]!.basePlantName).toBe('TestPlant')
         expect(state.currentExperiment).toBeNull()
         expect(state.status).toBe('idle')
     })

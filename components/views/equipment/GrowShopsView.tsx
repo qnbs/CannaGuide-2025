@@ -226,24 +226,26 @@ export const GrowShopsView: React.FC = () => {
 
         if (!Array.isArray(shopKeys)) return []
 
-        let shops = shopKeys.map((key) => ({ ...allShops[key], key }))
+        let shops = shopKeys.map((key) => ({ ...allShops[key], key })).filter(
+            (shop): shop is Shop & { key: string } => !!shop.name
+        )
 
         // Search filter
         if (searchQuery.trim()) {
             const q = searchQuery.toLowerCase()
             shops = shops.filter(
                 (shop) =>
-                    shop.name.toLowerCase().includes(q) ||
-                    shop.location.toLowerCase().includes(q) ||
-                    shop.strengths.some((s: string) => s.toLowerCase().includes(q)),
+                    (shop.name ?? '').toLowerCase().includes(q) ||
+                    (shop.location ?? '').toLowerCase().includes(q) ||
+                    (shop.strengths ?? []).some((s: string) => s.toLowerCase().includes(q)),
             )
         }
 
         // Sort
         if (sortMode === 'rating') {
-            shops.sort((a, b) => b.rating - a.rating)
+            shops.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
         } else {
-            shops.sort((a, b) => a.name.localeCompare(b.name))
+            shops.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
         }
 
         return shops

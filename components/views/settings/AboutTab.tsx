@@ -169,62 +169,62 @@ const ReadmeProjectContent = memo(() => {
     return (
         <Card className="animate-fade-in">
             <div className="space-y-8">
-                <SafeHtml html={readmeContent.header} />
+                <SafeHtml html={readmeContent.header ?? ''} />
                 <InfoSection
-                    title={readmeContent.philosophyTitle}
+                    title={readmeContent.philosophyTitle ?? ''}
                     icon={<PhosphorIcons.Sparkle />}
                     id="philosophy"
                 >
-                    <SafeHtml html={readmeContent.philosophyContent} />
+                    <SafeHtml html={readmeContent.philosophyContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.featuresTitle}
+                    title={readmeContent.featuresTitle ?? ''}
                     icon={<PhosphorIcons.ListChecks />}
                     id="features"
                 >
-                    <SafeHtml html={readmeContent.featuresContent} />
+                    <SafeHtml html={readmeContent.featuresContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.techTitle}
+                    title={readmeContent.techTitle ?? ''}
                     icon={<PhosphorIcons.BracketsCurly />}
                     id="tech"
                 >
-                    <SafeHtml html={readmeContent.techContent} />
+                    <SafeHtml html={readmeContent.techContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.devTitle}
+                    title={readmeContent.devTitle ?? ''}
                     icon={<PhosphorIcons.BracketsCurly />}
                     id="dev"
                 >
-                    <SafeHtml html={readmeContent.devContent} />
+                    <SafeHtml html={readmeContent.devContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.troubleshootingTitle}
+                    title={readmeContent.troubleshootingTitle ?? ''}
                     icon={<PhosphorIcons.Wrench />}
                     id="troubleshooting"
                 >
-                    <SafeHtml html={readmeContent.troubleshootingContent} />
+                    <SafeHtml html={readmeContent.troubleshootingContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.aiStudioTitle}
+                    title={readmeContent.aiStudioTitle ?? ''}
                     icon={<PhosphorIcons.Brain />}
                     id="aistudio"
                 >
-                    <SafeHtml html={readmeContent.aiStudioContent} />
+                    <SafeHtml html={readmeContent.aiStudioContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.contributingTitle}
+                    title={readmeContent.contributingTitle ?? ''}
                     icon={<PhosphorIcons.Heart />}
                     id="contributing"
                 >
-                    <SafeHtml html={readmeContent.contributingContent} />
+                    <SafeHtml html={readmeContent.contributingContent ?? ''} />
                 </InfoSection>
                 <InfoSection
-                    title={readmeContent.disclaimerTitle}
+                    title={readmeContent.disclaimerTitle ?? ''}
                     icon={<PhosphorIcons.WarningCircle />}
                     id="disclaimer"
                 >
-                    <SafeHtml html={readmeContent.disclaimerContent} />
+                    <SafeHtml html={readmeContent.disclaimerContent ?? ''} />
                 </InfoSection>
             </div>
         </Card>

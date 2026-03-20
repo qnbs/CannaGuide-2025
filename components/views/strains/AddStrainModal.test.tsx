@@ -61,7 +61,7 @@ describe('AddStrainModal', () => {
         fireEvent.click(screen.getByRole('button', { name: /^save$/i }));
 
         expect(handleAddStrain).toHaveBeenCalledTimes(1);
-        expect(handleAddStrain.mock.calls[0][0].type).toBe(StrainType.Sativa);
+        expect(handleAddStrain.mock.calls[0]![0].type).toBe(StrainType.Sativa);
     });
 
     it('reinitializes form values when switching into edit mode', () => {

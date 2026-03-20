@@ -43,14 +43,14 @@ describe('uiSlice', () => {
     it('addNotification creates notification with id', () => {
         const state = uiReducer(initialState, addNotification({ message: 'Test', type: 'success' }))
         expect(state.notifications).toHaveLength(1)
-        expect(state.notifications[0].message).toBe('Test')
-        expect(state.notifications[0].type).toBe('success')
-        expect(state.notifications[0].id).toBeDefined()
+        expect(state.notifications[0]!.message).toBe('Test')
+        expect(state.notifications[0]!.type).toBe('success')
+        expect(state.notifications[0]!.id).toBeDefined()
     })
 
     it('removeNotification removes by id', () => {
         let state = uiReducer(initialState, addNotification({ message: 'Test', type: 'info' }))
-        const id = state.notifications[0].id
+        const id = state.notifications[0]!.id
         state = uiReducer(state, removeNotification(id))
         expect(state.notifications).toHaveLength(0)
     })

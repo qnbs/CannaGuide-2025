@@ -787,14 +787,14 @@ const buildStyleTexture = (
 
 // ─── Mood Overlay ───────────────────────────────────────────────────────────
 
-const buildMoodOverlay = (mood: string): string => {
+const buildMoodOverlay = (mood: string, h: number): string => {
     switch (mood.toLowerCase()) {
         case 'mystical':
-            return '<rect width="1200" height="1400" fill="#7c3aed" opacity="0.04"/>'
+            return `<rect width="1200" height="${h}" fill="#7c3aed" opacity="0.04"/>`
         case 'energetic':
-            return '<rect width="600" height="1400" x="300" fill="#f97316" opacity="0.025"/>'
+            return `<rect width="600" height="${h}" x="300" fill="#f97316" opacity="0.025"/>`
         case 'calm':
-            return '<rect width="1200" height="1400" fill="#38bdf8" opacity="0.025"/>'
+            return `<rect width="1200" height="${h}" fill="#38bdf8" opacity="0.025"/>`
         default:
             return ''
     }
@@ -810,7 +810,8 @@ const buildFocusElement = (
     cy: number,
 ): string => {
     switch (focus.toLowerCase()) {
-        case 'buds': {
+        case 'buds':
+        case 'knospen': {
             const outer = [0, 60, 120, 180, 240, 300]
             const inner = [30, 90, 150, 210, 270, 330]
             return `<g transform="translate(${cx},${cy})" filter="url(#softglow)">
@@ -837,7 +838,8 @@ const buildFocusElement = (
                 .join('\n            ')}
         </g>`
         }
-        case 'abstract': {
+        case 'abstract':
+        case 'abstrakt': {
             const hex = [0, 1, 2, 3, 4, 5]
                 .map((i) => {
                     const a = ((i * 60 - 90) * Math.PI) / 180
@@ -869,6 +871,8 @@ const buildFocusElement = (
             <polygon points="${innerHex}" fill="none" stroke="${palette.accent2}" stroke-width="0.8" opacity="0.08"/>
         </g>`
         }
+        case 'plant':
+        case 'pflanze':
         default:
             return `<g filter="url(#softglow)">
             ${buildFanLeaves(strainType, palette, cx, cy)}
@@ -903,7 +907,7 @@ const buildStrainImageSvg = (
 ): string => {
     const p = buildStylePalette(style)
     const { centerX: cx, centerY: cy, decorScale } = getCompositionLayout(criteria.composition)
-    const cleanName = escapeXml(strain.name).slice(0, 42)
+    const cleanName = escapeXml(strain.name.slice(0, 42))
     const nameFontSize = cleanName.length > 28 ? 48 : cleanName.length > 20 ? 56 : 68
     const typeLabel = escapeXml(strain.type)
     const flowerTypeLabel = escapeXml(strain.floweringType)
@@ -935,8 +939,8 @@ const buildStrainImageSvg = (
     const floweringText = isGerman(lang)
         ? `${strain.floweringTime} Tage Blüte`
         : `${strain.floweringTime}d flowering`
-    const genetics = strain.genetics ? escapeXml(strain.genetics).slice(0, 55) : ''
-    const description = strain.description ? escapeXml(strain.description).slice(0, 100) : ''
+    const genetics = strain.genetics ? escapeXml(strain.genetics.slice(0, 55)) : ''
+    const description = strain.description ? escapeXml(strain.description.slice(0, 100)) : ''
 
     // ─ Build dynamic data bars
     let dataY = 820
@@ -1033,15 +1037,16 @@ const buildStrainImageSvg = (
     }
 
     const footerY = Math.max(dataY + 40, 1180)
+    const svgHeight = Math.max(1400, footerY + 120)
 
     // ─ Dynamic composition accent
     const accentBand =
         criteria.composition.toLowerCase() === 'dynamic'
-            ? `<rect x="0" y="0" width="5" height="1400" fill="${p.accent}" opacity="0.15"/>
-    <line x1="0" y1="0" x2="1200" y2="1400" stroke="${p.accent}" stroke-width="0.5" opacity="0.06"/>`
+            ? `<rect x="0" y="0" width="5" height="${svgHeight}" fill="${p.accent}" opacity="0.15"/>
+    <line x1="0" y1="0" x2="1200" y2="${svgHeight}" stroke="${p.accent}" stroke-width="0.5" opacity="0.06"/>`
             : ''
 
-    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1400" role="img" aria-label="${cleanName} — ${typeLabel} ${flowerTypeLabel} cannabis strain poster, ${escapeXml(style)} style, ${escapeXml(criteria.focus)} focus, ${escapeXml(criteria.mood)} mood">
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 ${svgHeight}" role="img" aria-label="${cleanName} — ${typeLabel} ${flowerTypeLabel} cannabis strain poster, ${escapeXml(style)} style, ${escapeXml(criteria.focus)} focus, ${escapeXml(criteria.mood)} mood">
     <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="0.8" y2="1">
             <stop offset="0%" stop-color="${p.bg1}"/>
@@ -1065,14 +1070,14 @@ const buildStrainImageSvg = (
     </defs>
 
     <!-- Background -->
-    <rect width="1200" height="1400" fill="url(#bg)"/>
-    <rect width="1200" height="1400" fill="url(#glow)"/>
+    <rect width="1200" height="${svgHeight}" fill="url(#bg)"/>
+    <rect width="1200" height="${svgHeight}" fill="url(#glow)"/>
 
     <!-- Noise texture -->
-    <rect width="1200" height="1400" filter="url(#noise)" opacity="0.03"/>
+    <rect width="1200" height="${svgHeight}" filter="url(#noise)" opacity="0.03"/>
 
     <!-- Mood tint -->
-    ${buildMoodOverlay(criteria.mood)}
+    ${buildMoodOverlay(criteria.mood, svgHeight)}
 
     <!-- Ambient orbs -->
     <g filter="url(#blur)" opacity="${(0.25 * decorScale).toFixed(2)}">

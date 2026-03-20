@@ -1,19 +1,25 @@
 {
     "name": "@cannaguide/ai-core",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "private": true,
     "type": "module",
     "main": "./src/index.ts",
-    "types": "./src/index.ts",
+    "types": "./dist/index.d.ts",
     "exports": {
         ".": {
-            "types": "./src/index.ts",
+            "types": "./dist/index.d.ts",
             "default": "./src/index.ts"
         }
     },
+    "files": [
+        "src",
+        "dist",
+        "CHANGELOG.md"
+    ],
     "scripts": {
         "typecheck": "tsc --noEmit",
-        "build": "tsc --noEmit"
+        "build": "tsc -b",
+        "clean": "rm -rf dist tsconfig.tsbuildinfo"
     },
     "dependencies": {
         "zod": "^3.25.76"

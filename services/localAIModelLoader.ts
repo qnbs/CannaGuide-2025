@@ -34,6 +34,21 @@ const MAX_CONCURRENT_LOADS = 3
 let activeLoads = 0
 const loadQueue: Array<() => void> = []
 
+/** Reject pipeline loads when memory pressure is critically high. */
+const checkMemoryPressure = (): void => {
+    const perf = performance as unknown as {
+        memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number }
+    }
+    if (perf.memory) {
+        const usagePercent = (perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit) * 100
+        if (usagePercent > 90) {
+            throw new Error(
+                `Memory pressure too high (${usagePercent.toFixed(0)}%) — aborting model load to prevent OOM.`,
+            )
+        }
+    }
+}
+
 const acquireLoadSlot = (): Promise<void> => {
     if (activeLoads < MAX_CONCURRENT_LOADS) {
         activeLoads++
@@ -84,6 +99,7 @@ export const loadTransformersPipeline = async (
     if (cached) return cached
 
     const promise = (async () => {
+        checkMemoryPressure()
         await acquireLoadSlot()
         try {
             const { pipeline } = await getTransformersModule()

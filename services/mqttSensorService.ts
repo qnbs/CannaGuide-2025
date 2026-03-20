@@ -1,4 +1,5 @@
 import mqtt from 'mqtt'
+import DOMPurify from 'dompurify'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
 
@@ -39,6 +40,17 @@ const DEFAULT_CONFIG: MqttSensorConfig = {
 
 const RECONNECT_PERIOD_MS = 5000
 const CONNECT_TIMEOUT_MS = 10000
+/** Maximum allowed MQTT payload size (64 KB) to prevent memory abuse. */
+const MAX_PAYLOAD_SIZE = 65_536
+/** Sensor value plausibility range. */
+const SENSOR_RANGE = { tempMin: -40, tempMax: 80, humMin: 0, humMax: 100, phMin: 0, phMax: 14 }
+
+/** Validate a numeric sensor value falls within a plausible range. */
+const clampSensorValue = (value: unknown, min: number, max: number): number | null => {
+    if (typeof value !== 'number' || !Number.isFinite(value)) return null
+    if (value < min || value > max) return null
+    return value
+}
 
 /** Only allow WebSocket URLs to prevent SSRF / protocol confusion. */
 const isValidBrokerUrl = (url: string): boolean => {
@@ -231,25 +243,48 @@ class MqttSensorService {
 
         switch (suffix) {
             case 'temperature':
-                this.partialTemp = typeof data.value === 'number' ? data.value : null
+                this.partialTemp = clampSensorValue(
+                    data.value,
+                    SENSOR_RANGE.tempMin,
+                    SENSOR_RANGE.tempMax,
+                )
                 break
             case 'humidity':
-                this.partialHumidity = typeof data.value === 'number' ? data.value : null
+                this.partialHumidity = clampSensorValue(
+                    data.value,
+                    SENSOR_RANGE.humMin,
+                    SENSOR_RANGE.humMax,
+                )
                 break
             case 'ph':
-                this.partialPh = typeof data.value === 'number' ? data.value : null
+                this.partialPh = clampSensorValue(
+                    data.value,
+                    SENSOR_RANGE.phMin,
+                    SENSOR_RANGE.phMax,
+                )
                 break
-            case 'env':
-                // Combined payload — emit immediately
-                if (typeof data.temperature === 'number' && typeof data.humidity === 'number') {
+            case 'env': {
+                // Combined payload — validate & emit immediately
+                const temp = clampSensorValue(
+                    data.temperature,
+                    SENSOR_RANGE.tempMin,
+                    SENSOR_RANGE.tempMax,
+                )
+                const hum = clampSensorValue(
+                    data.humidity,
+                    SENSOR_RANGE.humMin,
+                    SENSOR_RANGE.humMax,
+                )
+                if (temp !== null && hum !== null) {
                     this.emitReading({
-                        temperatureC: data.temperature,
-                        humidityPercent: data.humidity,
-                        ph: typeof data.ph === 'number' ? data.ph : null,
+                        temperatureC: temp,
+                        humidityPercent: hum,
+                        ph: clampSensorValue(data.ph, SENSOR_RANGE.phMin, SENSOR_RANGE.phMax),
                         receivedAt: Date.now(),
                     })
                 }
                 return
+            }
         }
 
         // Assemble from individual topics when we have temp + humidity
@@ -267,8 +302,15 @@ class MqttSensorService {
     }
 
     private parsePayload(payload: Buffer): Record<string, unknown> | null {
+        if (payload.length > MAX_PAYLOAD_SIZE) {
+            console.warn('[MQTT] Payload exceeds maximum allowed size, discarding.')
+            return null
+        }
         try {
-            return JSON.parse(payload.toString()) as Record<string, unknown>
+            const raw = payload.toString('utf-8')
+            // Sanitize the raw string to strip any embedded HTML/script content
+            const sanitized = DOMPurify.sanitize(raw, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
+            return JSON.parse(sanitized) as Record<string, unknown>
         } catch (error) {
             console.warn(
                 '[MQTT] Failed to parse JSON payload:',

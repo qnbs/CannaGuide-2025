@@ -156,14 +156,47 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
         scene.add(base)
 
         let frameHandle = 0
-        const animate = () => {
+        let animating = false
+        let cancelled = false
+
+        const animate = (): void => {
+            if (cancelled || document.hidden) {
+                animating = false
+                return
+            }
             preview.rotation.y += 0.008
             preview.rotation.x = Math.sin(performance.now() * 0.0008) * 0.03
             renderer.render(scene, camera)
             frameHandle = window.requestAnimationFrame(animate)
         }
 
-        animate()
+        const startAnimation = (): void => {
+            if (animating || cancelled) return
+            animating = true
+            animate()
+        }
+
+        startAnimation()
+
+        const handleVisibility = (): void => {
+            if (!document.hidden && !cancelled) {
+                startAnimation()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibility)
+
+        const handleContextLost = (e: Event): void => {
+            e.preventDefault()
+            cancelled = true
+            window.cancelAnimationFrame(frameHandle)
+            animating = false
+        }
+        const handleContextRestored = (): void => {
+            cancelled = false
+            startAnimation()
+        }
+        canvas.addEventListener('webglcontextlost', handleContextLost)
+        canvas.addEventListener('webglcontextrestored', handleContextRestored)
 
         let arButton: HTMLButtonElement | null = null
         if ('xr' in navigator) {
@@ -180,7 +213,12 @@ const BreedingArPreviewComponent: React.FC<BreedingArPreviewProps> = ({
         }
 
         return () => {
+            cancelled = true
+            animating = false
             window.cancelAnimationFrame(frameHandle)
+            document.removeEventListener('visibilitychange', handleVisibility)
+            canvas.removeEventListener('webglcontextlost', handleContextLost)
+            canvas.removeEventListener('webglcontextrestored', handleContextRestored)
             if (arButton?.parentElement) {
                 arButton.parentElement.removeChild(arButton)
             }

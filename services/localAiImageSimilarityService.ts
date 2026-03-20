@@ -211,7 +211,12 @@ export const findSimilarImages = async (
                 index: i,
                 score: cosineSimilarity(queryFeatures.features, candidateFeatures.features),
             })
-        } catch {
+        } catch (error) {
+            captureLocalAiError(error, {
+                model: CLIP_MODEL_ID,
+                stage: 'similarity-candidate',
+                candidateIndex: i,
+            })
             results.push({ index: i, score: 0 })
         }
     }
@@ -239,7 +244,8 @@ export const analyzeGrowthProgression = async (
         try {
             const feat = await extractImageFeatures(photo.base64, photo.mimeType)
             features.push(feat.features)
-        } catch {
+        } catch (error) {
+            captureLocalAiError(error, { model: CLIP_MODEL_ID, stage: 'growth-extraction' })
             features.push(new Float32Array(FEATURE_DIM))
         }
     }

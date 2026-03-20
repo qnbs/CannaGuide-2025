@@ -91,11 +91,17 @@ export const captureLocalAiError = (
             | 'summarization'
             | 'classification'
             | 'cache'
+            | 'cache-read'
+            | 'cache-write'
+            | 'cache-clear'
             | 'cache-persist'
             | 'batch'
+            | 'similarity-candidate'
+            | 'growth-extraction'
         backend?: 'webgpu' | 'wasm'
         retryAttempt?: number
         batchItem?: number
+        candidateIndex?: number
     },
 ): void => {
     Sentry.captureException(error, {
@@ -108,6 +114,7 @@ export const captureLocalAiError = (
         extra: {
             retryAttempt: context.retryAttempt ?? 0,
             ...(context.batchItem !== undefined && { batchItem: context.batchItem }),
+            ...(context.candidateIndex !== undefined && { candidateIndex: context.candidateIndex }),
         },
     })
 }

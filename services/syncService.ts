@@ -1,4 +1,10 @@
 import { getT } from '@/i18n'
+import {
+    encryptSyncPayload,
+    decryptSyncPayload,
+    isEncryptedSyncPayload,
+} from '@/services/syncEncryptionService'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 const SYNC_FILE_NAME = 'cannaguide-sync.json'
 
@@ -27,11 +33,17 @@ class SyncService {
     /**
      * Pushes the full Redux state to a GitHub Gist (anonymous, no account needed).
      * If gistId is provided, updates the existing gist; otherwise creates a new one.
+     * When an encryption key is provided the payload is E2EE-encrypted (AES-256-GCM)
+     * before upload so the Gist content is unreadable without the key.
      */
     public async pushToGist(
         stateJson: string,
         existingGistId: string | null,
+        encryptionKeyBase64: string | null = null,
     ): Promise<{ gistId: string; url: string; syncedAt: number }> {
+        if (isLocalOnlyMode()) {
+            throw new Error(getT()('settingsView.data.sync.blockedByLocalOnly'))
+        }
         const syncedAt = Date.now()
         const payload: SyncPayload = {
             version: 1,
@@ -39,12 +51,17 @@ class SyncService {
             state: JSON.parse(stateJson),
         }
 
+        const rawPayload = JSON.stringify(payload, null, 2)
+        const fileContent = encryptionKeyBase64
+            ? await encryptSyncPayload(rawPayload, encryptionKeyBase64)
+            : rawPayload
+
         const body = {
             description: 'CannaGuide cloud sync backup',
             public: false,
             files: {
                 [SYNC_FILE_NAME]: {
-                    content: JSON.stringify(payload, null, 2),
+                    content: fileContent,
                 },
             },
         }
@@ -73,8 +90,15 @@ class SyncService {
     /**
      * Pulls a full Redux state snapshot from a GitHub Gist.
      * Returns the raw state JSON string for hydration via indexedDBStorage.
+     * When an encryption key is provided, the payload is decrypted first.
      */
-    public async pullFromGist(gistUrlOrId: string): Promise<{ state: string; syncedAt: number }> {
+    public async pullFromGist(
+        gistUrlOrId: string,
+        encryptionKeyBase64: string | null = null,
+    ): Promise<{ state: string; syncedAt: number }> {
+        if (isLocalOnlyMode()) {
+            throw new Error(getT()('settingsView.data.sync.blockedByLocalOnly'))
+        }
         const gistId = extractGistId(gistUrlOrId)
         const t = getT()
 
@@ -94,7 +118,17 @@ class SyncService {
             throw new Error(t('settingsView.data.sync.noSyncFile'))
         }
 
-        const parsed = JSON.parse(file.content) as SyncPayload
+        let rawContent = file.content
+
+        // Decrypt if the payload is E2EE-encrypted
+        if (isEncryptedSyncPayload(rawContent)) {
+            if (!encryptionKeyBase64) {
+                throw new Error(t('settingsView.data.sync.encryptionKeyRequired'))
+            }
+            rawContent = await decryptSyncPayload(rawContent, encryptionKeyBase64)
+        }
+
+        const parsed = JSON.parse(rawContent) as SyncPayload
 
         if (!parsed.state || typeof parsed.version !== 'number') {
             throw new Error(t('settingsView.data.sync.invalidPayload'))

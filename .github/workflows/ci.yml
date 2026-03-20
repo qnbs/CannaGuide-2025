@@ -56,9 +56,11 @@ jobs:
                   restore-keys: |
                       turbo-${{ runner.os }}-
 
-            - name: Security audit
+            - name: Security audit (advisory)
               continue-on-error: true
-              run: npm audit --audit-level=high --omit=dev
+              run: |
+                  echo "::warning::Security audit is advisory — check output for HIGH/CRITICAL vulnerabilities"
+                  npm audit --audit-level=high --omit=dev
 
             - name: Security – trojan-source scan
               run: npm run security:trojan-source

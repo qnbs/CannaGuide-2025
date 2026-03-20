@@ -210,3 +210,47 @@ jobs:
                       test-results/
                       tests/e2e/visual-regression.e2e.ts-snapshots/
                   retention-days: 14
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # DOCKER — Validate docker-compose.yml + IoT-Mocks build in CI
+    # ─────────────────────────────────────────────────────────────────────────
+    docker-compose-validation:
+        name: 🐳 Docker Compose Validation
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: 📥 Checkout
+              uses: actions/checkout@v4
+
+            - name: 🔍 Validate docker-compose.yml syntax
+              run: docker compose config --quiet
+
+            - name: 🏗 Build ESP32 Mock image
+              run: docker compose build esp32-mock
+
+            - name: 🌡 Start ESP32 Mock container
+              run: |
+                  docker compose up -d esp32-mock
+                  echo "⏳ Waiting for ESP32 mock container..."
+                  for i in $(seq 1 20); do
+                    if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
+                      echo "✅ ESP32 mock container healthy"
+                      break
+                    fi
+                    sleep 1
+                  done
+
+            - name: 🧪 Verify containerized sensor endpoint
+              run: |
+                  RESPONSE=$(curl -sf http://localhost:3001/sensor)
+                  echo "Sensor response: $RESPONSE"
+                  echo "$RESPONSE" | node -e "
+                    const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+                    if (typeof d.temperature !== 'number') process.exit(1);
+                    if (typeof d.humidity !== 'number') process.exit(1);
+                    console.log('✅ Containerized sensor OK:', d.temperature + '°C');
+                  "
+
+            - name: 🧹 Cleanup
+              if: always()
+              run: docker compose down --timeout 5

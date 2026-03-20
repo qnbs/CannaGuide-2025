@@ -840,3 +840,68 @@ export interface SavedExport {
     strainIds: string[]
     sourceDescription: string
 }
+
+// ---------------------------------------------------------------------------
+// Time-Series IoT Data
+// ---------------------------------------------------------------------------
+
+export type TimeSeriesResolution = 'raw' | 'hourly' | 'daily'
+
+export interface TimeSeriesEntry {
+    id?: number
+    deviceId: string
+    timestamp: number
+    resolution: TimeSeriesResolution
+    temperatureC: number
+    humidityPercent: number
+    vpd: number | null
+    ph: number | null
+    sampleCount: number
+}
+
+// ---------------------------------------------------------------------------
+// Predictive Analytics
+// ---------------------------------------------------------------------------
+
+export type RiskLevel = 'low' | 'moderate' | 'high' | 'critical'
+
+export interface BotrytisRiskAssessment {
+    riskLevel: RiskLevel
+    riskScore: number
+    factors: string[]
+    recommendation: string
+}
+
+export interface EnvironmentAlert {
+    type: 'temperature' | 'humidity' | 'vpd' | 'ph'
+    severity: RiskLevel
+    message: string
+    currentValue: number
+    idealRange: [number, number]
+}
+
+export interface PredictiveInsight {
+    botrytisRisk: BotrytisRiskAssessment
+    environmentAlerts: EnvironmentAlert[]
+    yieldImpact: { impactPercent: number; description: string; factors: string[] }
+    analyzedSamples: number
+    analysisTimestamp: number
+}
+
+// ---------------------------------------------------------------------------
+// Plugin Architecture
+// ---------------------------------------------------------------------------
+
+export type PluginCategory = 'nutrient-schedule' | 'hardware' | 'grow-profile'
+
+export interface PluginManifest {
+    id: string
+    name: string
+    version: string
+    description: string
+    author: string
+    category: PluginCategory
+    minAppVersion?: number
+    icon?: string
+    tags?: string[]
+}

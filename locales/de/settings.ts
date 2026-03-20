@@ -724,4 +724,50 @@ export const settingsView = {
         importSuccess_other: '{{count}} Sorten importiert.',
         importError: 'Gist-Import fehlgeschlagen.',
     },
+    plugins: {
+        title: 'Plugins',
+        description:
+            'Erweitere CannaGuide mit Düngeplänen, Hardware-Integrationen und Grow-Profilen.',
+        installed: 'Installierte Plugins',
+        noPlugins: 'Noch keine Plugins installiert.',
+        install: 'Plugin installieren',
+        uninstall: 'Deinstallieren',
+        enable: 'Aktivieren',
+        disable: 'Deaktivieren',
+        importJson: 'Aus JSON importieren',
+        exportJson: 'Als JSON exportieren',
+        invalidManifest: 'Ungültiges Plugin-Manifest.',
+        installSuccess: 'Plugin "{{name}}" erfolgreich installiert.',
+        uninstallSuccess: 'Plugin "{{name}}" deinstalliert.',
+        maxPluginsReached: 'Maximale Anzahl an Plugins erreicht.',
+        categories: {
+            'nutrient-schedule': 'Düngeplan',
+            hardware: 'Hardware-Integration',
+            'grow-profile': 'Grow-Profil',
+        },
+    },
+    timeSeries: {
+        title: 'Sensordaten-Speicher',
+        description:
+            'Sensormesswerte werden automatisch komprimiert: Rohdaten für 24 Stunden, Stundenmittel für 7 Tage und Tagesmittel unbegrenzt.',
+        entryCount: '{{count}} Zeitreihen-Einträge gespeichert',
+        compactionRun:
+            'Komprimierung abgeschlossen: {{hourly}} stündliche, {{daily}} tägliche Aggregationen.',
+        clearDevice: 'Daten für Gerät löschen',
+        clearConfirm: 'Alle Sensordaten für dieses Gerät werden unwiderruflich gelöscht.',
+    },
+    predictiveAnalytics: {
+        title: 'Prädiktive Analytik',
+        description: 'KI-gestützte Vorhersagen basierend auf historischen Sensordaten.',
+        botrytisRisk: 'Botrytis-Risiko',
+        environmentAlerts: 'Umgebungs-Warnungen',
+        yieldImpact: 'Ertragsauswirkung',
+        noData: 'Keine Sensordaten für die Analyse verfügbar.',
+        riskLevels: {
+            low: 'Niedrig',
+            moderate: 'Mittel',
+            high: 'Hoch',
+            critical: 'Kritisch',
+        },
+    },
 }

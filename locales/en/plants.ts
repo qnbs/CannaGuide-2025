@@ -513,5 +513,11 @@ export const plantsView = {
         legendOptimal: 'Optimal',
         legendCaution: 'Caution',
         legendDanger: 'Danger',
+        fullscreen: 'Fullscreen',
+        exitFullscreen: 'Exit fullscreen',
+        contextLost: 'WebGL context was lost — the 3D view will recover automatically.',
+        loading: 'Loading 3D scene…',
+        canvasAriaLabel: '3D visualization of the grow room with {{count}} active plants',
+        legendAriaLabel: 'VPD status legend',
     },
 }

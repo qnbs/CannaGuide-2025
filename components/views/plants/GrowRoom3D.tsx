@@ -1,9 +1,9 @@
-import React, { memo, useEffect, useRef, useMemo, useState } from 'react'
+import React, { memo, useEffect, useRef, useMemo, useState, useCallback } from 'react'
 import * as THREE from 'three'
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { useAppSelector } from '@/stores/store'
-import { selectActivePlants, selectGardenHealthMetrics } from '@/stores/selectors'
+import { selectActivePlants, selectGardenHealthMetrics, selectSettings } from '@/stores/selectors'
 import { Plant, PlantStage } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -11,11 +11,12 @@ import { cn } from '@/lib/utils'
 // Constants
 // ---------------------------------------------------------------------------
 
-const CANVAS_WIDTH = 640
-const CANVAS_HEIGHT = 400
+const ASPECT_RATIO = 16 / 10
 const ROOM_WIDTH = 4
 const ROOM_DEPTH = 3
 const ROOM_HEIGHT = 2.5
+const MAX_PARTICLES = 120
+const MAX_PIXEL_RATIO = 2
 
 const getWebGLSupportError = (): string | null => {
     if (typeof document === 'undefined') {
@@ -144,7 +145,7 @@ const createPlant3D = (plant: Plant): THREE.Group => {
             const bud = new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), budMaterial)
             bud.position.set(
                 Math.cos(angle) * 0.08,
-                0.22 + height * 0.85 + Math.random() * 0.05,
+                0.22 + height * 0.85 + Math.sin(angle * 2.7) * 0.03,
                 Math.sin(angle) * 0.08,
             )
             group.add(bud)
@@ -239,7 +240,7 @@ const createGrowRoom = (): THREE.Group => {
 // ---------------------------------------------------------------------------
 
 const createAtmosphereParticles = (vpd: number): THREE.Points => {
-    const count = Math.round(30 + vpd * 40) // more particles for higher VPD
+    const count = Math.min(Math.round(30 + vpd * 40), MAX_PARTICLES)
     const geometry = new THREE.BufferGeometry()
     const positions = new Float32Array(count * 3)
 
@@ -286,17 +287,26 @@ const disposeScene = (scene: THREE.Scene, renderer: THREE.WebGLRenderer): void =
 
 const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
     const { t } = useTranslation()
+    const containerRef = useRef<HTMLDivElement | null>(null)
     const canvasRef = useRef<HTMLCanvasElement | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const sceneRef = useRef<THREE.Scene | null>(null)
+    const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
     const frameRef = useRef(0)
     const cancelledRef = useRef(false)
+    const animatingRef = useRef(false)
     const [webglError, setWebglError] = useState<string | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [isFullscreen, setIsFullscreen] = useState(false)
 
     const activePlants = useAppSelector(selectActivePlants)
     const gardenMetrics = useAppSelector(selectGardenHealthMetrics)
+    const settings = useAppSelector(selectSettings)
 
-    // VPD for display overlay
+    const reducedMotion = settings.general.reducedMotion
+    const reducedMotionRef = useRef(reducedMotion)
+    reducedMotionRef.current = reducedMotion
+
     const vpdValue = gardenMetrics.avgVPD
     const avgTemp = gardenMetrics.avgTemp
     const avgHumidity = gardenMetrics.avgHumidity
@@ -313,13 +323,42 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         return { label: t('plantsView.growRoom3d.vpdHigh'), color: 'text-red-400' }
     }, [vpdValue, t])
 
+    const toggleFullscreen = useCallback(() => {
+        setIsFullscreen((prev) => !prev)
+    }, [])
+
+    // Lock body scroll in fullscreen mode
+    useEffect(() => {
+        if (isFullscreen) {
+            document.body.style.overflow = 'hidden'
+        } else {
+            document.body.style.overflow = ''
+        }
+        return () => {
+            document.body.style.overflow = ''
+        }
+    }, [isFullscreen])
+
+    // Escape key exits fullscreen
+    useEffect(() => {
+        if (!isFullscreen) return
+        const handleKeyDown = (e: KeyboardEvent): void => {
+            if (e.key === 'Escape') setIsFullscreen(false)
+        }
+        document.addEventListener('keydown', handleKeyDown)
+        return () => document.removeEventListener('keydown', handleKeyDown)
+    }, [isFullscreen])
+
+    // Main Three.js scene setup & animation
     useEffect(() => {
         const canvas = canvasRef.current
-        if (!canvas) return
+        const container = containerRef.current
+        if (!canvas || !container) return
 
         const supportError = getWebGLSupportError()
         if (supportError) {
             setWebglError(supportError)
+            setIsLoading(false)
             return
         }
 
@@ -331,15 +370,20 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         }
 
         cancelledRef.current = false
+        animatingRef.current = false
 
         const scene = new THREE.Scene()
         scene.background = new THREE.Color(0x0a0a1a)
         scene.fog = new THREE.FogExp2(0x0a0a1a, 0.15)
         sceneRef.current = scene
 
-        const camera = new THREE.PerspectiveCamera(45, CANVAS_WIDTH / CANVAS_HEIGHT, 0.1, 50)
+        // Responsive camera based on container size
+        const containerWidth = container.clientWidth || 640
+        const containerHeight = Math.round(containerWidth / ASPECT_RATIO)
+        const camera = new THREE.PerspectiveCamera(45, containerWidth / containerHeight, 0.1, 50)
         camera.position.set(3.5, 2.8, 4.0)
         camera.lookAt(0, 0.5, 0)
+        cameraRef.current = camera
 
         let renderer: THREE.WebGLRenderer
         try {
@@ -348,10 +392,11 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
             const message =
                 error instanceof Error ? error.message : 'Failed to create WebGL renderer.'
             setWebglError(message)
+            setIsLoading(false)
             return
         }
-        renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT, false)
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        renderer.setSize(containerWidth, containerHeight, false)
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO))
         renderer.toneMapping = THREE.ACESFilmicToneMapping
         renderer.toneMappingExposure = 1.1
         rendererRef.current = renderer
@@ -360,12 +405,10 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         const ambient = new THREE.AmbientLight(0x404060, 0.5)
         scene.add(ambient)
 
-        // Grow light (warm from above)
         const growLight = new THREE.PointLight(0xffe4b5, 1.5, 6)
         growLight.position.set(0, ROOM_HEIGHT - 0.2, 0)
         scene.add(growLight)
 
-        // Rim light
         const rimLight = new THREE.DirectionalLight(0x4466aa, 0.4)
         rimLight.position.set(-3, 2, 3)
         scene.add(rimLight)
@@ -393,51 +436,119 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
         const particles = createAtmosphereParticles(vpdValue)
         scene.add(particles)
 
-        // Animation loop with cancellation guard
-        const animate = (): void => {
-            if (cancelledRef.current) return
+        setIsLoading(false)
 
-            // Gentle camera orbit
-            const time = performance.now() * 0.0003
-            camera.position.x = Math.cos(time) * 4.5
-            camera.position.z = Math.sin(time) * 4.0
-            camera.position.y = 2.4 + Math.sin(time * 0.5) * 0.3
-            camera.lookAt(0, 0.5, 0)
-
-            // Animate particles
-            const positions = particles.geometry.attributes.position
-            if (positions) {
-                for (let i = 0; i < positions.count; i++) {
-                    const y = positions.getY(i)
-                    positions.setY(i, y + Math.sin(time * 3 + i) * 0.001)
-                    if (y > ROOM_HEIGHT * 0.9) {
-                        positions.setY(i, 0.3)
-                    }
-                }
-                positions.needsUpdate = true
+        // --- Responsive canvas via ResizeObserver ---
+        const resizeObserver = new ResizeObserver((entries) => {
+            const entry = entries[0]
+            if (!entry) return
+            const newWidth = Math.round(entry.contentRect.width)
+            if (newWidth < 1) return
+            const newHeight = Math.round(newWidth / ASPECT_RATIO)
+            canvas.width = newWidth
+            canvas.height = newHeight
+            renderer.setSize(newWidth, newHeight, false)
+            camera.aspect = newWidth / newHeight
+            camera.updateProjectionMatrix()
+            // Render one frame on resize for reduced-motion users
+            if (reducedMotionRef.current && !cancelledRef.current) {
+                renderer.render(scene, camera)
             }
+        })
+        resizeObserver.observe(container)
 
-            renderer.render(scene, camera)
-            if (!cancelledRef.current) {
+        // --- WebGL context loss handling ---
+        const handleContextLost = (e: Event): void => {
+            e.preventDefault()
+            cancelledRef.current = true
+            window.cancelAnimationFrame(frameRef.current)
+            animatingRef.current = false
+            setWebglError(t('plantsView.growRoom3d.contextLost'))
+        }
+        const handleContextRestored = (): void => {
+            setWebglError(null)
+        }
+        canvas.addEventListener('webglcontextlost', handleContextLost)
+        canvas.addEventListener('webglcontextrestored', handleContextRestored)
+
+        // --- Animation with visibility-based pause & reduced-motion support ---
+        const startAnimation = (): void => {
+            if (animatingRef.current || cancelledRef.current) return
+            animatingRef.current = true
+
+            const animate = (): void => {
+                if (cancelledRef.current) {
+                    animatingRef.current = false
+                    return
+                }
+                if (document.hidden) {
+                    animatingRef.current = false
+                    return
+                }
+
+                if (!reducedMotionRef.current) {
+                    const time = performance.now() * 0.0003
+                    camera.position.x = Math.cos(time) * 4.5
+                    camera.position.z = Math.sin(time) * 4.0
+                    camera.position.y = 2.4 + Math.sin(time * 0.5) * 0.3
+                    camera.lookAt(0, 0.5, 0)
+
+                    const positions = particles.geometry.attributes.position
+                    if (positions) {
+                        for (let i = 0; i < positions.count; i++) {
+                            const y = positions.getY(i)
+                            positions.setY(i, y + Math.sin(time * 3 + i) * 0.001)
+                            if (y > ROOM_HEIGHT * 0.9) {
+                                positions.setY(i, 0.3)
+                            }
+                        }
+                        positions.needsUpdate = true
+                    }
+
+                    renderer.render(scene, camera)
+                }
+
                 frameRef.current = window.requestAnimationFrame(animate)
             }
+            animate()
         }
 
-        animate()
+        const handleVisibility = (): void => {
+            if (!document.hidden && !cancelledRef.current) {
+                startAnimation()
+            }
+        }
+        document.addEventListener('visibilitychange', handleVisibility)
+
+        // Render initial frame (visible immediately, even for reduced-motion users)
+        renderer.render(scene, camera)
+        startAnimation()
 
         return () => {
             cancelledRef.current = true
+            animatingRef.current = false
             window.cancelAnimationFrame(frameRef.current)
+            document.removeEventListener('visibilitychange', handleVisibility)
+            canvas.removeEventListener('webglcontextlost', handleContextLost)
+            canvas.removeEventListener('webglcontextrestored', handleContextRestored)
+            resizeObserver.disconnect()
             disposeScene(scene, renderer)
             sceneRef.current = null
             rendererRef.current = null
+            cameraRef.current = null
         }
-    }, [activePlants, vpdValue])
+    }, [activePlants, vpdValue, t])
 
     const showFallback = webglError !== null
 
     return (
-        <Card className={cn('relative overflow-hidden', className)}>
+        <Card
+            className={cn(
+                'relative overflow-hidden',
+                isFullscreen && 'fixed inset-2 z-50 flex flex-col bg-slate-950/95 backdrop-blur-sm',
+                className,
+            )}
+        >
             <div className="flex items-center justify-between mb-3">
                 <h3 className="text-lg font-bold font-display text-slate-100 flex items-center gap-2">
                     <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-primary-900/40 border border-primary-500/20">
@@ -447,21 +558,84 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                             fill="none"
                             stroke="currentColor"
                             strokeWidth="2"
+                            aria-hidden="true"
                         >
                             <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
                         </svg>
                     </span>
                     {t('plantsView.growRoom3d.title')}
                 </h3>
-                <span className="text-[0.65rem] text-slate-500 uppercase tracking-widest">
-                    {t('plantsView.growRoom3d.live')}
-                </span>
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        onClick={toggleFullscreen}
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500"
+                        aria-label={
+                            isFullscreen
+                                ? t('plantsView.growRoom3d.exitFullscreen')
+                                : t('plantsView.growRoom3d.fullscreen')
+                        }
+                        aria-expanded={isFullscreen}
+                    >
+                        {isFullscreen ? (
+                            <svg
+                                className="w-4 h-4"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M4 14h6v6m10-10h-6V4m0 16v-6h6M4 4v6h6"
+                                />
+                            </svg>
+                        ) : (
+                            <svg
+                                className="w-4 h-4"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                aria-hidden="true"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15 3h6v6m-6 12v-6h6M3 9V3h6M3 15v6h6"
+                                />
+                            </svg>
+                        )}
+                    </button>
+                    <span className="text-[0.65rem] text-slate-500 uppercase tracking-widest">
+                        {t('plantsView.growRoom3d.live')}
+                    </span>
+                </div>
             </div>
 
-            {/* Canvas */}
-            <div className="relative rounded-lg overflow-hidden bg-slate-900/50">
+            {/* Canvas area */}
+            <div
+                ref={containerRef}
+                className={cn(
+                    'relative rounded-lg overflow-hidden bg-slate-900/50',
+                    isFullscreen && 'flex-1 min-h-0',
+                )}
+            >
+                {isLoading && !showFallback && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-900/80 z-10 rounded-lg">
+                        <p className="text-sm text-slate-400 animate-pulse">
+                            {t('plantsView.growRoom3d.loading')}
+                        </p>
+                    </div>
+                )}
+
                 {showFallback ? (
-                    <div className="flex min-h-[400px] flex-col items-center justify-center gap-4 px-6 py-8 text-center">
+                    <div
+                        className="flex min-h-[250px] sm:min-h-[400px] flex-col items-center justify-center gap-4 px-6 py-8 text-center"
+                        role="alert"
+                    >
                         <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10 text-amber-300">
                             <svg
                                 className="h-7 w-7"
@@ -469,6 +643,7 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth="1.8"
+                                aria-hidden="true"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -492,70 +667,103 @@ const GrowRoom3DComponent: React.FC<GrowRoom3DProps> = ({ className }) => {
                 ) : (
                     <canvas
                         ref={canvasRef}
-                        width={CANVAS_WIDTH}
-                        height={CANVAS_HEIGHT}
-                        className="w-full h-auto"
-                        style={{ imageRendering: 'auto' }}
+                        className="w-full h-auto block"
+                        style={{ imageRendering: 'auto', aspectRatio: '16 / 10' }}
+                        role="img"
+                        aria-label={t('plantsView.growRoom3d.canvasAriaLabel', {
+                            count: activePlants.length,
+                        })}
                     />
                 )}
 
                 {/* VPD Overlay */}
-                <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between pointer-events-none">
-                    <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 space-y-0.5">
-                        <div className="flex items-center gap-2">
-                            <span className="text-[0.6rem] uppercase tracking-wider text-slate-500">
-                                VPD
+                {!showFallback && (
+                    <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 flex flex-wrap items-end justify-between gap-2 pointer-events-none">
+                        <div
+                            className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 space-y-0.5"
+                            role="status"
+                            aria-live="polite"
+                        >
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <span className="text-[0.55rem] sm:text-[0.6rem] uppercase tracking-wider text-slate-500">
+                                    VPD
+                                </span>
+                                <span
+                                    className={cn(
+                                        'text-base sm:text-lg font-bold font-display',
+                                        vpdStatus.color,
+                                    )}
+                                >
+                                    {vpdValue.toFixed(2)}
+                                </span>
+                                <span className="text-[0.55rem] sm:text-[0.6rem] text-slate-500">
+                                    kPa
+                                </span>
+                            </div>
+                            <span
+                                className={cn(
+                                    'text-[0.65rem] sm:text-xs font-semibold',
+                                    vpdStatus.color,
+                                )}
+                            >
+                                {vpdStatus.label}
                             </span>
-                            <span className={cn('text-lg font-bold font-display', vpdStatus.color)}>
-                                {vpdValue.toFixed(2)}
-                            </span>
-                            <span className="text-[0.6rem] text-slate-500">kPa</span>
                         </div>
-                        <span className={cn('text-xs font-semibold', vpdStatus.color)}>
-                            {vpdStatus.label}
-                        </span>
+                        <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-2 py-1.5 sm:px-3 sm:py-2 flex gap-2 sm:gap-4 text-xs">
+                            <div className="text-center">
+                                <span className="text-slate-500 block text-[0.5rem] sm:text-[0.55rem] uppercase">
+                                    {t('plantsView.growRoom3d.temp')}
+                                </span>
+                                <span className="text-slate-200 font-semibold text-[0.7rem] sm:text-xs">
+                                    {avgTemp.toFixed(1)}°C
+                                </span>
+                            </div>
+                            <div className="text-center">
+                                <span className="text-slate-500 block text-[0.5rem] sm:text-[0.55rem] uppercase">
+                                    {t('plantsView.growRoom3d.humidity')}
+                                </span>
+                                <span className="text-slate-200 font-semibold text-[0.7rem] sm:text-xs">
+                                    {avgHumidity.toFixed(0)}%
+                                </span>
+                            </div>
+                            <div className="text-center">
+                                <span className="text-slate-500 block text-[0.5rem] sm:text-[0.55rem] uppercase">
+                                    {t('plantsView.growRoom3d.plants')}
+                                </span>
+                                <span className="text-slate-200 font-semibold text-[0.7rem] sm:text-xs">
+                                    {activePlants.length}/3
+                                </span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="bg-slate-900/80 backdrop-blur-sm rounded-lg px-3 py-2 flex gap-4 text-xs">
-                        <div className="text-center">
-                            <span className="text-slate-500 block text-[0.55rem] uppercase">
-                                {t('plantsView.growRoom3d.temp')}
-                            </span>
-                            <span className="text-slate-200 font-semibold">
-                                {avgTemp.toFixed(1)}°C
-                            </span>
-                        </div>
-                        <div className="text-center">
-                            <span className="text-slate-500 block text-[0.55rem] uppercase">
-                                {t('plantsView.growRoom3d.humidity')}
-                            </span>
-                            <span className="text-slate-200 font-semibold">
-                                {avgHumidity.toFixed(0)}%
-                            </span>
-                        </div>
-                        <div className="text-center">
-                            <span className="text-slate-500 block text-[0.55rem] uppercase">
-                                {t('plantsView.growRoom3d.plants')}
-                            </span>
-                            <span className="text-slate-200 font-semibold">
-                                {activePlants.length}/3
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                )}
             </div>
 
             {/* Legend */}
-            <div className="mt-2 flex flex-wrap gap-3 text-[0.65rem] text-slate-500">
-                <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-green-500 inline-block" />
-                    {t('plantsView.growRoom3d.legendOptimal')}
+            <div
+                className="mt-2 flex flex-wrap gap-3 text-[0.65rem] text-slate-500"
+                role="list"
+                aria-label={t('plantsView.growRoom3d.legendAriaLabel')}
+            >
+                <span className="flex items-center gap-1" role="listitem">
+                    <span
+                        className="h-2 w-2 rounded-full bg-green-500 inline-block"
+                        aria-hidden="true"
+                    />
+                    {t('plantsView.growRoom3d.legendOptimal')} (0.8–1.2)
                 </span>
-                <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-yellow-500 inline-block" />
+                <span className="flex items-center gap-1" role="listitem">
+                    <span
+                        className="h-2 w-2 rounded-full bg-yellow-500 inline-block"
+                        aria-hidden="true"
+                    />
                     {t('plantsView.growRoom3d.legendCaution')}
                 </span>
-                <span className="flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-red-500 inline-block" />
+                <span className="flex items-center gap-1" role="listitem">
+                    <span
+                        className="h-2 w-2 rounded-full bg-red-500 inline-block"
+                        aria-hidden="true"
+                    />
                     {t('plantsView.growRoom3d.legendDanger')}
                 </span>
             </div>

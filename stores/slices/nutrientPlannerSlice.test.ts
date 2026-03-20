@@ -85,8 +85,8 @@ describe('nutrientPlannerSlice', () => {
                 }),
             )
             expect(state.readings).toHaveLength(1)
-            expect(state.readings[0].ec).toBe(3.0)
-            expect(state.readings[0].ph).toBe(7.5)
+            expect(state.readings[0]!.ec).toBe(3.0)
+            expect(state.readings[0]!.ph).toBe(7.5)
             // Should generate EC high + pH high alerts
             const activeAlerts = state.alerts.filter((a) => !a.dismissed)
             expect(activeAlerts.length).toBeGreaterThanOrEqual(2)
@@ -140,7 +140,7 @@ describe('nutrientPlannerSlice', () => {
                 notes: '',
             }),
         )
-        const alertId = state.alerts[0].id
+        const alertId = state.alerts[0]!.id
         state = reducer(state, dismissAlert(alertId))
         expect(state.alerts.find((a) => a.id === alertId)?.dismissed).toBe(true)
     })

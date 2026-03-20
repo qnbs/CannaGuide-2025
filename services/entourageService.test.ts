@@ -75,7 +75,7 @@ describe('EntourageService', () => {
         expect(result.predictedEffects.length).toBeGreaterThan(0)
         // Should be sorted descending by score
         for (let i = 1; i < result.predictedEffects.length; i++) {
-            expect(result.predictedEffects[i - 1].score).toBeGreaterThanOrEqual(result.predictedEffects[i].score)
+            expect(result.predictedEffects[i - 1]!.score).toBeGreaterThanOrEqual(result.predictedEffects[i]!.score)
         }
     })
 

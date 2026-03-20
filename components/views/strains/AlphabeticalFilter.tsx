@@ -27,7 +27,7 @@ export const AlphabeticalFilter: React.FC<AlphabeticalFilterProps> = memo(({ act
 
             if (nextIndex >= 0) {
                 e.preventDefault();
-                buttons[nextIndex].focus();
+                buttons[nextIndex]?.focus();
             }
         },
         [],

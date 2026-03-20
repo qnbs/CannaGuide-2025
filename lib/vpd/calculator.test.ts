@@ -27,7 +27,7 @@ describe('VPD Calculator', () => {
             const temps = [-10, 0, 10, 20, 30, 40]
             const svps = temps.map(calculateSVP)
             for (let i = 1; i < svps.length; i++) {
-                expect(svps[i]).toBeGreaterThan(svps[i - 1])
+                expect(svps[i]!).toBeGreaterThan(svps[i - 1]!)
             }
         })
     })
@@ -55,7 +55,7 @@ describe('VPD Calculator', () => {
             const altitudes = [0, 500, 1000, 2000, 3000]
             const pressures = altitudes.map(barometricPressure)
             for (let i = 1; i < pressures.length; i++) {
-                expect(pressures[i]).toBeLessThan(pressures[i - 1])
+                expect(pressures[i]!).toBeLessThan(pressures[i - 1]!)
             }
         })
     })

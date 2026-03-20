@@ -48,7 +48,7 @@ const writeSnoozedMap = (map: Record<string, number>) => {
 
 const isWithinQuietHours = (start: string, end: string, now = new Date()): boolean => {
     const toMinutes = (value: string) => {
-        const [hours, minutes] = value.split(':').map(Number)
+        const [hours = NaN, minutes = NaN] = value.split(':').map(Number)
         if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null
         return hours * 60 + minutes
     }
@@ -203,7 +203,7 @@ class GrowReminderService {
                 reminders: sortedReminders,
                 title:
                     sortedReminders.length === 1
-                        ? sortedReminders[0].title
+                        ? (sortedReminders[0]?.title ?? '')
                         : `${sortedReminders.length} reminders for ${plantName}`,
                 body: sortedReminders.map((reminder) => reminder.title).join(' · '),
                 severity: topSeverity,
@@ -296,6 +296,7 @@ class GrowReminderService {
             }
 
             const primaryReminder = batchReminders[0]
+            if (!primaryReminder) continue
             const title = batchReminders.length === 1 ? primaryReminder.title : `${batchReminders.length} reminders for ${batch.plantName}`
             const body = batchReminders.length === 1 ? primaryReminder.body : batchReminders.map((reminder) => reminder.title).join(' · ')
 

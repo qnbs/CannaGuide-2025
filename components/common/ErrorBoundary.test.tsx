@@ -61,7 +61,7 @@ describe('ErrorBoundary', () => {
 
         // Click the second button (safe recovery)
         const buttons = screen.getAllByRole('button')
-        const safeRecoveryBtn = buttons[buttons.length - 1]
+        const safeRecoveryBtn = buttons[buttons.length - 1]!
         fireEvent.click(safeRecoveryBtn)
 
         expect(handler).toHaveBeenCalledTimes(1)

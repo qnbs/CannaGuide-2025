@@ -347,7 +347,7 @@ const StrainTipsView: React.FC<StrainTipsViewProps> = ({
                         ? (sortedAndGrouped as [string, SavedStrainTip[]][]).map(
                               ([strainName, tips]) => {
                                   const strain =
-                                      allStrains.find((s) => s.id === tips[0].strainId) ?? null
+                                      allStrains.find((s) => s.id === tips[0]?.strainId) ?? null
                                   return (
                                       <details
                                           key={strainName}

@@ -42,13 +42,13 @@ const GuideViewComponent: React.FC = () => {
             if (match && match[1]) {
                 const groupKey = groupNameMapping[match[1]];
                 if (groupKey) {
-                    groups[groupKey].articles.push(article);
+                    groups[groupKey]!.articles.push(article);
                 }
             }
         });
 
         // Sort articles within the 'Phases' group numerically by their title for correct order
-        groups['Phases'].articles.sort((a, b) => {
+        groups['Phases']!.articles.sort((a, b) => {
             const aTitle = t(a.titleKey);
             const bTitle = t(b.titleKey);
             const aNum = parseInt(aTitle.match(/\d+/)?.[0] || '0');
@@ -90,7 +90,7 @@ const GuideViewComponent: React.FC = () => {
 
     useEffect(() => {
         if (groupedArticles.length > 0 && !activeSection) {
-            setActiveSection(groupedArticles[0][0]);
+            setActiveSection(groupedArticles[0]?.[0] ?? '');
         }
     }, [groupedArticles, activeSection]);
 

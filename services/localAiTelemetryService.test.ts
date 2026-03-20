@@ -104,8 +104,8 @@ describe('localAiTelemetryService', () => {
         const snapshot = getSnapshot()
         expect(snapshot.modelBreakdown).toHaveProperty('modelA')
         expect(snapshot.modelBreakdown).toHaveProperty('modelB')
-        expect(snapshot.modelBreakdown['modelA'].count).toBe(1)
-        expect(snapshot.modelBreakdown['modelB'].count).toBe(1)
+        expect(snapshot.modelBreakdown['modelA']!.count).toBe(1)
+        expect(snapshot.modelBreakdown['modelB']!.count).toBe(1)
     })
 
     it('computes backend breakdown correctly', () => {

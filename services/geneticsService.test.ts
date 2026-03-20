@@ -100,8 +100,8 @@ describe('GeneticsService', () => {
             const tree = { id: 's1', name: 'Afghan', type: StrainType.Indica, thc: 15, isLandrace: true }
             const contributions = geneticsService.calculateGeneticContribution(tree)
             expect(contributions).toHaveLength(1)
-            expect(contributions[0].name).toBe('Afghan')
-            expect(contributions[0].contribution).toBeCloseTo(100)
+            expect(contributions[0]!.name).toBe('Afghan')
+            expect(contributions[0]!.contribution).toBeCloseTo(100)
         })
 
         it('splits contribution equally between two children', () => {
@@ -114,8 +114,8 @@ describe('GeneticsService', () => {
             }
             const contributions = geneticsService.calculateGeneticContribution(tree)
             expect(contributions).toHaveLength(2)
-            expect(contributions[0].contribution).toBeCloseTo(50)
-            expect(contributions[1].contribution).toBeCloseTo(50)
+            expect(contributions[0]!.contribution).toBeCloseTo(50)
+            expect(contributions[1]!.contribution).toBeCloseTo(50)
         })
 
         it('returns sorted contributions (highest first)', () => {
@@ -133,7 +133,7 @@ describe('GeneticsService', () => {
             }
             const contributions = geneticsService.calculateGeneticContribution(tree)
             for (let i = 1; i < contributions.length; i++) {
-                expect(contributions[i - 1].contribution).toBeGreaterThanOrEqual(contributions[i].contribution)
+                expect(contributions[i - 1]!.contribution).toBeGreaterThanOrEqual(contributions[i]!.contribution)
             }
         })
     })

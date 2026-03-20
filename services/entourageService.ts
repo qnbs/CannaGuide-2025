@@ -347,7 +347,7 @@ class EntourageService {
             `THC:CBD ratio ${thcCbdRatio}. ` +
             (dominantTerpene ? `Dominant terpene: ${dominantTerpene.name} — ${dominantTerpene.description} ` : '') +
             `Top predicted effects: ${topEffectNames}. ` +
-            (synergies.length > 0
+            (synergies.length > 0 && synergies[0]
                 ? `Key synergy: ${synergies[0].terpene}×${synergies[0].cannabinoid} – ${synergies[0].effect}.`
                 : '');
 

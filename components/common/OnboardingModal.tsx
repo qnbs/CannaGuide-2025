@@ -190,11 +190,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({ onClose }) => 
         return (
             <Modal isOpen={true} onClose={() => {}} footer={footer} showCloseButton={false}>
                 <div className="text-center p-4">
-                    <div className="mb-4">{currentStepContent.icon}</div>
+                    <div className="mb-4">{currentStepContent?.icon}</div>
                     <h3 className="text-2xl font-bold font-display text-slate-100 mb-2">
-                        {currentStepContent.title}
+                        {currentStepContent?.title}
                     </h3>
-                    <p className="text-slate-300">{currentStepContent.text}</p>
+                    <p className="text-slate-300">{currentStepContent?.text}</p>
                     {isLastFeatureStep && (
                         <p className="text-xs text-green-400/80 mt-4 flex items-center justify-center gap-1.5">
                             <PhosphorIcons.ShieldCheck className="w-4 h-4" />

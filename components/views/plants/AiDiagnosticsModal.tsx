@@ -52,7 +52,7 @@ ${response.prevention}
         if (image) {
             const imageId = `diag-${plantId}-${Date.now()}`
             try {
-                const base64Data = image.split(',')[1]
+                const base64Data = image.split(',')[1] ?? ''
                 const mimeType = base64ToMimeType(base64Data)
                 await dbService.addImage({
                     id: imageId,
@@ -187,10 +187,10 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                 data: {},
             })
             let i = 0
-            setLoadingMessage(messages[0])
+            setLoadingMessage(messages[0] ?? '')
             const interval = setInterval(() => {
                 i++
-                setLoadingMessage(messages[i % messages.length])
+                setLoadingMessage(messages[i % messages.length] ?? '')
             }, 2500)
             return () => clearInterval(interval)
         }
@@ -269,7 +269,7 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
 
     const handleGetDiagnosis = () => {
         if (!image) return
-        const base64Data = image.split(',')[1]
+        const base64Data = image.split(',')[1] ?? ''
         const mimeType = base64ToMimeType(base64Data)
         diagnosePlant({ base64Image: base64Data, mimeType, plant, userNotes, lang })
     }
@@ -371,7 +371,10 @@ export const AiDiagnosticsModal: React.FC<AiDiagnosticsModalProps> = ({
                                 accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
                                 className="hidden"
                                 disabled={!consentGiven}
-                                onChange={(e) => e.target.files && handleFile(e.target.files[0])}
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0]
+                                    if (file) handleFile(file)
+                                }}
                             />
                             <Button
                                 onClick={() => setIsCameraOpen(true)}

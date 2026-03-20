@@ -96,11 +96,11 @@ export interface GrowthProgressionResult {
 /** Normalize a vector to unit length. */
 const normalize = (vec: Float32Array): Float32Array => {
     let norm = 0
-    for (let i = 0; i < vec.length; i++) norm += vec[i] * vec[i]
+    for (let i = 0; i < vec.length; i++) norm += vec[i]! * vec[i]!
     norm = Math.sqrt(norm)
     if (norm > 0) {
         const result = new Float32Array(vec.length)
-        for (let i = 0; i < vec.length; i++) result[i] = vec[i] / norm
+        for (let i = 0; i < vec.length; i++) result[i] = vec[i]! / norm
         return result
     }
     return vec
@@ -113,9 +113,9 @@ export const cosineSimilarity = (a: Float32Array, b: Float32Array): number => {
     let normA = 0
     let normB = 0
     for (let i = 0; i < a.length; i++) {
-        dot += a[i] * b[i]
-        normA += a[i] * a[i]
-        normB += b[i] * b[i]
+        dot += a[i]! * b[i]!
+        normA += a[i]! * a[i]!
+        normB += b[i]! * b[i]!
     }
     const denom = Math.sqrt(normA) * Math.sqrt(normB)
     return denom === 0 ? 0 : dot / denom
@@ -202,10 +202,11 @@ export const findSimilarImages = async (
     // Process candidates sequentially to avoid memory pressure
     const results: SimilarityResult[] = []
     for (let i = 0; i < maxCandidates; i++) {
+        const candidate = candidates[i]!
         try {
             const candidateFeatures = await extractImageFeatures(
-                candidates[i].base64,
-                candidates[i].mimeType,
+                candidate.base64,
+                candidate.mimeType,
             )
             results.push({
                 index: i,
@@ -253,7 +254,7 @@ export const analyzeGrowthProgression = async (
     // Compute consecutive change scores (1 - similarity = change)
     const changes: number[] = []
     for (let i = 1; i < features.length; i++) {
-        const similarity = cosineSimilarity(features[i - 1], features[i])
+        const similarity = cosineSimilarity(features[i - 1]!, features[i]!)
         changes.push(Math.max(0, 1 - similarity))
     }
 

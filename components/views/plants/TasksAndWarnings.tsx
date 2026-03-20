@@ -133,7 +133,7 @@ export const TasksAndWarnings: React.FC<TasksAndWarningsProps> = memo(
                         <div className="space-y-2">
                             {sortedProblems.map((problem, index) => {
                                 const severity = getSeverityFromProblem(problem)
-                                const config = severityConfig[severity] ?? severityConfig.info
+                                const config = severityConfig[severity] ?? severityConfig.info ?? { border: '', bg: '', icon: null }
                                 const problemKey = problem.type
                                     .toLowerCase()
                                     .replace(/_(\w)/g, (_: string, c: string) => c.toUpperCase())

@@ -70,7 +70,7 @@ const SandboxView: React.FC = () => {
             activePlants.length > 0 &&
             (!selectedPlantId || !activePlants.some((p) => p.id === selectedPlantId))
         ) {
-            setSelectedPlantId(activePlants[0].id)
+            setSelectedPlantId(activePlants[0]?.id ?? null)
         } else if (activePlants.length === 0) {
             setSelectedPlantId(null)
         }

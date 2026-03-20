@@ -200,7 +200,7 @@ export const fetchAndBuildGenealogy = createAsyncThunk<
     const { genealogy } = getState()
     // `in` check: null (strain not found) is a valid cached result
     if (strainId in genealogy.computedTrees) {
-        return { strainId, tree: genealogy.computedTrees[strainId] }
+        return { strainId, tree: genealogy.computedTrees[strainId] ?? null }
     }
     const tree = geneticsService.buildGenealogyTree(strainId, allStrains)
     return { strainId, tree }

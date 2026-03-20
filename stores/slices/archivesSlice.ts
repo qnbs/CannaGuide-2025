@@ -60,9 +60,9 @@ const archivesSlice = createSlice({
             if (!state.archivedAdvisorResponses[plant.id]) {
                 state.archivedAdvisorResponses[plant.id] = [];
             }
-            state.archivedAdvisorResponses[plant.id].push(newResponse);
-            if (state.archivedAdvisorResponses[plant.id].length > MAX_ADVISOR_ARCHIVES_PER_PLANT) {
-                state.archivedAdvisorResponses[plant.id] = state.archivedAdvisorResponses[plant.id].slice(-MAX_ADVISOR_ARCHIVES_PER_PLANT);
+            state.archivedAdvisorResponses[plant.id]!.push(newResponse);
+            if (state.archivedAdvisorResponses[plant.id]!.length > MAX_ADVISOR_ARCHIVES_PER_PLANT) {
+                state.archivedAdvisorResponses[plant.id] = state.archivedAdvisorResponses[plant.id]!.slice(-MAX_ADVISOR_ARCHIVES_PER_PLANT);
             }
         },
         updateArchivedAdvisorResponse: (state, action: PayloadAction<ArchivedAdvisorResponse>) => {

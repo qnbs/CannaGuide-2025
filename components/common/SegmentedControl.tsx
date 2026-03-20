@@ -35,7 +35,7 @@ export function SegmentedControl<T extends string>({
 
             if (nextIndex >= 0) {
                 e.preventDefault()
-                buttons[nextIndex].focus()
+                buttons[nextIndex]?.focus()
             }
         },
         [],

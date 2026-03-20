@@ -41,9 +41,9 @@ export const cosineSimilarity = (a: Float32Array, b: Float32Array): number => {
     let normA = 0
     let normB = 0
     for (let i = 0; i < a.length; i++) {
-        dot += a[i] * b[i]
-        normA += a[i] * a[i]
-        normB += b[i] * b[i]
+        dot += a[i]! * b[i]!
+        normA += a[i]! * a[i]!
+        normB += b[i]! * b[i]!
     }
     const denom = Math.sqrt(normA) * Math.sqrt(normB)
     return denom === 0 ? 0 : dot / denom
@@ -52,10 +52,10 @@ export const cosineSimilarity = (a: Float32Array, b: Float32Array): number => {
 /** Normalize a vector to unit length in-place. */
 const normalize = (vec: Float32Array): Float32Array => {
     let norm = 0
-    for (let i = 0; i < vec.length; i++) norm += vec[i] * vec[i]
+    for (let i = 0; i < vec.length; i++) norm += vec[i]! * vec[i]!
     norm = Math.sqrt(norm)
     if (norm > 0) {
-        for (let i = 0; i < vec.length; i++) vec[i] /= norm
+        for (let i = 0; i < vec.length; i++) vec[i] = vec[i]! / norm
     }
     return vec
 }

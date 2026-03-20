@@ -48,6 +48,14 @@ jobs:
                   restore-keys: |
                       tsc-${{ runner.os }}-
 
+            - name: Restore Turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
+                  restore-keys: |
+                      turbo-${{ runner.os }}-
+
             - name: Security audit
               continue-on-error: true
               run: npm audit --audit-level=high --omit=dev
@@ -63,8 +71,8 @@ jobs:
             - name: Lint strict scopes
               run: npm run lint:scopes
 
-            - name: Type check
-              run: npx tsc --noEmit
+            - name: Type check (all workspaces)
+              run: npx turbo run typecheck
 
             - name: Test + Coverage
               run: npm run test:coverage

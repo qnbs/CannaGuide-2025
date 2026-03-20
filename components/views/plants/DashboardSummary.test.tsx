@@ -128,7 +128,7 @@ describe('DashboardSummary', () => {
         fireEvent.click(screen.getByRole('button', { name: 'plantsView.summary.waterAll' }));
 
         expect(mockDispatch).toHaveBeenCalledTimes(1);
-        expect(typeof mockDispatch.mock.calls[0][0]).toBe('function');
+        expect(typeof mockDispatch.mock.calls[0]![0]).toBe('function');
     });
 });
 

@@ -52,7 +52,10 @@ export const VoiceControl: React.FC = () => {
 
     const handleResult = useCallback((event: WSpeechRecognitionEvent) => {
         const latest = event.results[event.results.length - 1]
-        const transcript = latest[0].transcript.trim();
+        if (!latest) return
+        const firstResult = latest[0]
+        if (!firstResult) return
+        const transcript = firstResult.transcript.trim();
         if (latest && !latest.isFinal) {
             dispatch(setVoiceStatusMessage(t('voiceControl.processing', { transcript })));
             return;

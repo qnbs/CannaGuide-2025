@@ -211,7 +211,7 @@ export const SetupConfigurator: React.FC<SetupConfiguratorProps> = ({ onSaveSetu
             })
             let messageIndex = 0
             const intervalId = setInterval(() => {
-                setLoadingMessage(messages[messageIndex % messages.length])
+                setLoadingMessage(messages[messageIndex % messages.length] ?? '')
                 messageIndex++
             }, 2500)
             return () => clearInterval(intervalId)

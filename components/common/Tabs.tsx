@@ -46,9 +46,12 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, setActiveTab, class
 
             if (nextIndex >= 0) {
                 e.preventDefault()
-                setActiveTab(tabs[nextIndex].id)
-                const btn = navRef.current?.querySelector(`[data-tab-id="${tabs[nextIndex].id}"]`) as HTMLElement
-                btn?.focus()
+                const tab = tabs[nextIndex]
+                if (tab) {
+                    setActiveTab(tab.id)
+                    const btn = navRef.current?.querySelector(`[data-tab-id="${tab.id}"]`) as HTMLElement
+                    btn?.focus()
+                }
             }
         },
         [tabs, activeTab, setActiveTab],

@@ -3,6 +3,7 @@
     "description": "AI-powered cannabis cultivation guide – plant tracker, 700+ strain encyclopedia, VPD calculator, breeding simulator, Gemini AI mentor & offline-first PWA.",
     "private": true,
     "version": "1.1.0",
+    "packageManager": "npm@10.8.2",
     "homepage": "https://qnbs.github.io/CannaGuide-2025/",
     "type": "module",
     "workspaces": [
@@ -35,6 +36,7 @@
         "turbo:test": "turbo run test",
         "turbo:lint": "turbo run lint",
         "turbo:typecheck": "turbo run typecheck",
+        "typecheck": "tsc --noEmit",
         "turbo:tauri:build": "turbo run tauri:build",
         "bundle:visualize": "ANALYZE=1 vite build --sourcemap",
         "bundle:explore": "node ./scripts/explore-bundle.mjs",

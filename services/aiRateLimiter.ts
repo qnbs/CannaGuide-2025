@@ -35,7 +35,7 @@ const requestTimestamps: number[] = []
 
 function pruneWindow(): void {
     const cutoff = Date.now() - RATE_LIMIT_WINDOW_MS
-    while (requestTimestamps.length > 0 && requestTimestamps[0] < cutoff) {
+    while (requestTimestamps.length > 0 && (requestTimestamps[0] ?? 0) < cutoff) {
         requestTimestamps.shift()
     }
 }
@@ -44,7 +44,7 @@ function pruneWindow(): void {
 function checkRateLimit(): void {
     pruneWindow()
     if (requestTimestamps.length >= RATE_LIMIT_MAX_REQUESTS) {
-        const oldestTs = requestTimestamps[0]
+        const oldestTs = requestTimestamps[0] ?? 0
         const retryAfterMs = RATE_LIMIT_WINDOW_MS - (Date.now() - oldestTs)
         const retryAfterSec = Math.ceil(retryAfterMs / 1000)
         throw new Error(`ai.error.rateLimited:${retryAfterSec}`)

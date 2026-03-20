@@ -134,21 +134,33 @@ export const DetailedPlantView: React.FC<DetailedPlantViewProps> = memo(({ plant
             if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                 e.preventDefault()
                 const nextIndex = (currentIndex + 1) % tabs.length
-                setActiveTab(tabs[nextIndex].id)
-                ;(tabListRef.current?.children[nextIndex] as HTMLElement)?.focus()
+                const nextTab = tabs[nextIndex]
+                if (nextTab) {
+                    setActiveTab(nextTab.id)
+                    ;(tabListRef.current?.children[nextIndex] as HTMLElement)?.focus()
+                }
             } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
                 e.preventDefault()
                 const prevIndex = (currentIndex - 1 + tabs.length) % tabs.length
-                setActiveTab(tabs[prevIndex].id)
-                ;(tabListRef.current?.children[prevIndex] as HTMLElement)?.focus()
+                const prevTab = tabs[prevIndex]
+                if (prevTab) {
+                    setActiveTab(prevTab.id)
+                    ;(tabListRef.current?.children[prevIndex] as HTMLElement)?.focus()
+                }
             } else if (e.key === 'Home') {
                 e.preventDefault()
-                setActiveTab(tabs[0].id)
-                ;(tabListRef.current?.children[0] as HTMLElement)?.focus()
+                const firstTab = tabs[0]
+                if (firstTab) {
+                    setActiveTab(firstTab.id)
+                    ;(tabListRef.current?.children[0] as HTMLElement)?.focus()
+                }
             } else if (e.key === 'End') {
                 e.preventDefault()
-                setActiveTab(tabs[tabs.length - 1].id)
-                ;(tabListRef.current?.children[tabs.length - 1] as HTMLElement)?.focus()
+                const lastTab = tabs[tabs.length - 1]
+                if (lastTab) {
+                    setActiveTab(lastTab.id)
+                    ;(tabListRef.current?.children[tabs.length - 1] as HTMLElement)?.focus()
+                }
             }
         }
 

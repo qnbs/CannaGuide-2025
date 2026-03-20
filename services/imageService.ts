@@ -27,7 +27,7 @@ export const validateImageFile = (file: File): ImageValidationError | null => {
 }
 
 const dataUrlToFile = (dataUrl: string, fileName = `image-${Date.now()}.jpg`): File => {
-    const [meta, base64Data] = dataUrl.split(',')
+    const [meta = '', base64Data = ''] = dataUrl.split(',')
     const mimeMatch = meta.match(/data:(.*?);base64/)
     const mimeType = mimeMatch?.[1] ?? 'image/jpeg'
     const binaryString = atob(base64Data)
@@ -77,7 +77,7 @@ export const base64ToMimeType = (base64: string): string => {
     }
     for (const s in signatures) {
         if (base64.startsWith(s)) {
-            return signatures[s]
+            return signatures[s] ?? 'image/jpeg'
         }
     }
     // Since we resize to jpeg, this is a safe fallback.

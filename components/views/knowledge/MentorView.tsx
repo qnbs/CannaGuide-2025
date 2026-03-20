@@ -43,7 +43,7 @@ export const MentorView: React.FC = () => {
 
     useEffect(() => {
         if (activePlants.length > 0 && (!selectedPlantId || !activePlants.some((p) => p.id === selectedPlantId))) {
-            setSelectedPlantId(activePlants[0].id)
+            setSelectedPlantId(activePlants[0]?.id ?? null)
         } else if (activePlants.length === 0) {
             setSelectedPlantId(null)
         }
@@ -109,14 +109,14 @@ export const MentorView: React.FC = () => {
                     >
                         <summary className="list-none flex justify-between items-center p-4 cursor-pointer">
                             <h4 className="font-semibold text-slate-100">
-                                {t(relevantArticles[0].titleKey)}
+                                {t(relevantArticles[0]!.titleKey)}
                             </h4>
                             <PhosphorIcons.ChevronDown className="w-5 h-5 text-slate-400 transition-transform duration-200 group-open:rotate-180" />
                         </summary>
                         <div className="p-4 border-t border-slate-700/50">
                             <SafeHtml
                                 className="prose prose-sm dark:prose-invert max-w-none prose-h3:text-primary-400 prose-strong:text-slate-100 prose-ul:list-disc prose-ol:list-decimal prose-li:my-1"
-                                html={t(relevantArticles[0].contentKey)}
+                                html={t(relevantArticles[0]!.contentKey)}
                             />
                         </div>
                     </details>

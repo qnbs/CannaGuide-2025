@@ -28,3 +28,4 @@ benchmark-metrics.json
 *.sln
 *.sw?
 test-results/
+.turbo/

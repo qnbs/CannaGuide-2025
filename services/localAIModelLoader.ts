@@ -11,6 +11,7 @@ export type OnnxBackend = 'webgpu' | 'wasm'
 let transformersModulePromise: Promise<TransformersModule> | null = null
 let detectedBackend: OnnxBackend | null = null
 let forceWasmOverride = false
+let vramInsufficientOverride = false
 
 /** Cached pipeline instances keyed by `task::modelId`. */
 const pipelineCache = new Map<string, Promise<LocalAiPipeline>>()
@@ -21,9 +22,15 @@ export const setForceWasm = (force: boolean): void => {
     detectedBackend = null // reset so next call re-evaluates
 }
 
+/** Called by VRAM profiler when GPU memory is too low for safe WebGPU usage. */
+export const setVramInsufficientOverride = (insufficient: boolean): void => {
+    vramInsufficientOverride = insufficient
+    detectedBackend = null
+}
+
 /** Detect the best available ONNX execution provider. */
 export const detectOnnxBackend = (): OnnxBackend => {
-    if (forceWasmOverride) return 'wasm'
+    if (forceWasmOverride || vramInsufficientOverride) return 'wasm'
     if (detectedBackend) return detectedBackend
     detectedBackend = typeof navigator !== 'undefined' && 'gpu' in navigator ? 'webgpu' : 'wasm'
     return detectedBackend

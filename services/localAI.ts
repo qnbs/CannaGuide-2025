@@ -35,6 +35,7 @@ import {
     recordCacheMiss,
     debouncedPersistSnapshot,
 } from './localAiTelemetryService'
+import { enqueueInference, isWorkerAvailable } from './inferenceQueueService'
 import { z } from 'zod'
 
 const TEXT_MODEL_ID = 'Xenova/Qwen2.5-1.5B-Instruct'
@@ -352,19 +353,58 @@ class LocalAiService {
 
             try {
                 const timer = createInferenceTimer()
-                const generator = await this.loadTextPipeline()
-                const output = await withTimeout(
-                    generator(prompt, {
-                        max_new_tokens: 512,
-                        do_sample: true,
-                        temperature: 0.6,
-                        return_full_text: false,
-                    }),
-                    INFERENCE_TIMEOUT_MS,
-                )
-                const generated = Array.isArray(output)
-                    ? (output[0] as { generated_text?: string } | undefined)?.generated_text
-                    : (output as { generated_text?: string } | undefined)?.generated_text
+
+                let generated: string | undefined
+
+                // Prefer off-main-thread inference via Web Worker
+                if (isWorkerAvailable()) {
+                    try {
+                        const workerResult = await withTimeout(
+                            enqueueInference({
+                                task: 'text-generation',
+                                modelId: TEXT_MODEL_ID,
+                                input: prompt,
+                                pipelineOptions: { quantized: true },
+                                inferenceOptions: {
+                                    max_new_tokens: 512,
+                                    do_sample: true,
+                                    temperature: 0.6,
+                                    return_full_text: false,
+                                },
+                                priority: 'normal',
+                                timeoutMs: INFERENCE_TIMEOUT_MS,
+                            }),
+                            INFERENCE_TIMEOUT_MS,
+                        )
+                        generated = Array.isArray(workerResult)
+                            ? (workerResult[0] as { generated_text?: string } | undefined)
+                                  ?.generated_text
+                            : (workerResult as { generated_text?: string } | undefined)
+                                  ?.generated_text
+                    } catch (workerError) {
+                        console.debug(
+                            '[LocalAI] Worker inference failed, falling back to main thread.',
+                            workerError,
+                        )
+                    }
+                }
+
+                // Fallback: main-thread Transformers.js inference
+                if (!generated) {
+                    const generator = await this.loadTextPipeline()
+                    const output = await withTimeout(
+                        generator(prompt, {
+                            max_new_tokens: 512,
+                            do_sample: true,
+                            temperature: 0.6,
+                            return_full_text: false,
+                        }),
+                        INFERENCE_TIMEOUT_MS,
+                    )
+                    generated = Array.isArray(output)
+                        ? (output[0] as { generated_text?: string } | undefined)?.generated_text
+                        : (output as { generated_text?: string } | undefined)?.generated_text
+                }
                 if (typeof generated === 'string' && generated.trim().length > 0) {
                     const currentBackend = detectOnnxBackend()
                     timer.stop({

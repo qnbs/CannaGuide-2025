@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { localAiPreloadService } from '@/services/localAiPreloadService'
+import { localAiPreloadService, ensurePersistentStorage } from '@/services/localAiPreloadService'
 
 const preloadOfflineAssetsMock = vi.fn()
 
@@ -7,6 +7,17 @@ vi.mock('@/services/localAI', () => ({
     localAiService: {
         preloadOfflineAssets: (...args: unknown[]) => preloadOfflineAssetsMock(...args),
     },
+}))
+
+vi.mock('@/services/localAiHealthService', () => ({
+    probeGpuVram: vi
+        .fn()
+        .mockResolvedValue({ vramMB: null, probed: true, adapterDescription: null }),
+    isVramInsufficient: vi.fn().mockReturnValue(false),
+}))
+
+vi.mock('@/services/localAIModelLoader', () => ({
+    setVramInsufficientOverride: vi.fn(),
 }))
 
 describe('localAiPreloadService', () => {
@@ -60,5 +71,40 @@ describe('localAiPreloadService', () => {
 
         expect(status.state).toBe('error')
         expect(status.details).toBe('download failed')
+    })
+
+    describe('ensurePersistentStorage', () => {
+        it('returns true when browser grants persistent storage', async () => {
+            Object.defineProperty(navigator, 'storage', {
+                configurable: true,
+                value: {
+                    persisted: vi.fn().mockResolvedValue(false),
+                    persist: vi.fn().mockResolvedValue(true),
+                },
+            })
+            const result = await ensurePersistentStorage()
+            expect(result).toBe(true)
+        })
+
+        it('returns true when already persisted', async () => {
+            Object.defineProperty(navigator, 'storage', {
+                configurable: true,
+                value: {
+                    persisted: vi.fn().mockResolvedValue(true),
+                    persist: vi.fn(),
+                },
+            })
+            const result = await ensurePersistentStorage()
+            expect(result).toBe(true)
+        })
+
+        it('returns null when storage API is unavailable', async () => {
+            Object.defineProperty(navigator, 'storage', {
+                configurable: true,
+                value: undefined,
+            })
+            const result = await ensurePersistentStorage()
+            expect(result).toBeNull()
+        })
     })
 })

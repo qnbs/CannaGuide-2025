@@ -136,7 +136,9 @@ export const TasksTab: React.FC<TasksTabProps> = memo(({ tasks, onCompleteTask }
                                     </p>
                                     <p className="text-xs text-slate-500">
                                         {t('plantsView.detailedView.tasksCompleted', {
-                                            date: new Date(task.completedAt!).toLocaleString(),
+                                            date: new Date(
+                                                task.completedAt ?? Date.now(),
+                                            ).toLocaleString(),
                                         })}
                                     </p>
                                 </div>

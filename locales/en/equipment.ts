@@ -243,6 +243,12 @@ export const equipmentView = {
         shipping: 'Shipping',
         paymentMethods: 'Payment Methods',
         visitShop: 'Visit {{shopName}}',
+        searchPlaceholder: 'Search shops...',
+        sortBy: 'Sort',
+        sortRating: 'Rating',
+        sortName: 'A–Z',
+        shopsFound: 'shops',
+        noResults: 'No shops match your search.',
         shops: {
             zamnesia: {
                 name: 'Zamnesia',

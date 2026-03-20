@@ -115,3 +115,5 @@ export const EquipmentView: React.FC = () => {
         </div>
     )
 }
+
+EquipmentView.displayName = 'EquipmentView'

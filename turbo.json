@@ -66,6 +66,19 @@
         },
         "typecheck": {
             "dependsOn": ["^build"]
+        },
+        "lint:changed": {
+            "cache": false
+        },
+        "lint:scopes": {
+            "cache": false
+        },
+        "test:coverage": {
+            "dependsOn": ["^build"],
+            "outputs": ["coverage/**"]
+        },
+        "security:trojan-source": {
+            "cache": false
         }
     }
 }

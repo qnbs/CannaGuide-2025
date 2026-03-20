@@ -12,11 +12,82 @@ permissions:
 
 env:
     NODE_VERSION: '20'
+    TURBO_TELEMETRY_DISABLED: 1
 
 jobs:
+    # ─────────────────────────────────────────────────────────────────────
+    # Quality Gates — fully Turbo-powered
+    # ─────────────────────────────────────────────────────────────────────
     quality:
-        name: 🔍 Quality Gates
+        name: 🔍 Quality Gates (Node ${{ matrix.node-version }})
         runs-on: ubuntu-latest
+        timeout-minutes: 15
+        strategy:
+            fail-fast: true
+            matrix:
+                node-version: [20]
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup Node ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci --prefer-offline
+
+            - name: Restore Turbo cache
+              uses: actions/cache@v4
+              with:
+                  path: .turbo
+                  key: turbo-${{ runner.os }}-node${{ matrix.node-version }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
+                  restore-keys: |
+                      turbo-${{ runner.os }}-node${{ matrix.node-version }}-
+
+            - name: Lint changed files
+              env:
+                  LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+              run: npx turbo run lint:changed
+
+            - name: Lint strict scopes
+              run: npx turbo run lint:scopes
+
+            - name: Type check (all workspaces)
+              run: npx turbo run typecheck
+
+            - name: Test + Coverage
+              run: npx turbo run test:coverage
+
+            - name: Upload coverage
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: coverage-report-node${{ matrix.node-version }}
+                  path: coverage/
+                  retention-days: 14
+
+            - name: Build
+              run: npx turbo run build
+
+            - name: Upload build artifact
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dist-node${{ matrix.node-version }}
+                  path: dist/
+                  retention-days: 1
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Security — hard-fail, no continue-on-error
+    # ─────────────────────────────────────────────────────────────────────
+    security:
+        name: 🛡 Security
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -32,60 +103,228 @@ jobs:
             - name: Install dependencies
               run: npm ci --prefer-offline
 
-            - name: Restore Vite cache
+            - name: Security audit (critical)
+              run: npm audit --audit-level=critical --omit=dev
+
+            - name: Trojan-source scan
+              run: npx turbo run security:trojan-source
+
+    # ─────────────────────────────────────────────────────────────────────
+    # E2E — Playwright (reuses build artifact from quality)
+    # ─────────────────────────────────────────────────────────────────────
+    e2e:
+        name: 🎭 E2E Tests
+        needs: quality
+        runs-on: ubuntu-latest
+        timeout-minutes: 15
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+
+            - name: Install dependencies
+              run: npm ci --prefer-offline
+
+            - name: Cache Playwright Chromium
+              id: playwright-cache
               uses: actions/cache@v4
               with:
-                  path: node_modules/.vite
-                  key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
+                  path: ~/.cache/ms-playwright
+                  key: playwright-chromium-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
                   restore-keys: |
-                      vite-${{ runner.os }}-
+                      playwright-chromium-${{ runner.os }}-
 
-            - name: Restore TypeScript build info
-              uses: actions/cache@v4
+            - name: Install Playwright browser
+              if: steps.playwright-cache.outputs.cache-hit != 'true'
+              run: npm run test:e2e:install:ci
+
+            - name: Download build artifact
+              uses: actions/download-artifact@v4
               with:
-                  path: tsconfig.tsbuildinfo
-                  key: tsc-${{ runner.os }}-${{ hashFiles('tsconfig.json', 'package-lock.json') }}
-                  restore-keys: |
-                      tsc-${{ runner.os }}-
+                  name: dist-node20
+                  path: dist/
 
-            - name: Restore Turbo cache
-              uses: actions/cache@v4
-              with:
-                  path: .turbo
-                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
-                  restore-keys: |
-                      turbo-${{ runner.os }}-
+            - name: Run E2E tests
+              run: npm run test:e2e
 
-            - name: Security audit (advisory)
-              continue-on-error: true
-              run: |
-                  echo "::warning::Security audit is advisory — check output for HIGH/CRITICAL vulnerabilities"
-                  npm audit --audit-level=high --omit=dev
-
-            - name: Security – trojan-source scan
-              run: npm run security:trojan-source
-
-            - name: Lint changed files
-              env:
-                  LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
-              run: npm run lint:changed
-
-            - name: Lint strict scopes
-              run: npm run lint:scopes
-
-            - name: Type check (all workspaces)
-              run: npx turbo run typecheck
-
-            - name: Test + Coverage
-              run: npm run test:coverage
-
-            - name: Upload coverage
-              if: always()
+            - name: Upload Playwright traces on failure
+              if: failure()
               uses: actions/upload-artifact@v4
               with:
-                  name: coverage-report
-                  path: coverage/
-                  retention-days: 14
+                  name: e2e-traces-${{ github.run_id }}
+                  path: test-results/
+                  retention-days: 7
 
-            - name: Build
-              run: npm run build
+    # ─────────────────────────────────────────────────────────────────────
+    # Docker Compose + IoT Integration (ESP32 + Tauri mock)
+    # ─────────────────────────────────────────────────────────────────────
+    docker-integration:
+        name: 🐳 Docker Compose + IoT
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Validate docker-compose.yml syntax
+              run: docker compose config --quiet
+
+            - name: Build mock images
+              run: docker compose build esp32-mock tauri-mock
+
+            - name: Start mock containers
+              run: docker compose up -d esp32-mock tauri-mock
+
+            - name: ESP32 Mock healthcheck
+              run: |
+                  for i in $(seq 1 30); do
+                    if curl -sf http://localhost:3001/health > /dev/null 2>&1; then
+                      echo "✅ ESP32 mock healthy"
+                      break
+                    fi
+                    echo "⏳ Waiting for ESP32 mock... ($i/30)"
+                    sleep 1
+                    if [ "$i" -eq 30 ]; then
+                      echo "❌ ESP32 mock failed to start within 30s"
+                      docker compose logs esp32-mock
+                      exit 1
+                    fi
+                  done
+
+            - name: Tauri Mock healthcheck
+              run: |
+                  for i in $(seq 1 30); do
+                    if curl -sf http://localhost:3002/health > /dev/null 2>&1; then
+                      echo "✅ Tauri mock healthy"
+                      break
+                    fi
+                    echo "⏳ Waiting for Tauri mock... ($i/30)"
+                    sleep 1
+                    if [ "$i" -eq 30 ]; then
+                      echo "❌ Tauri mock failed to start within 30s"
+                      docker compose logs tauri-mock
+                      exit 1
+                    fi
+                  done
+
+            - name: Verify sensor endpoint
+              run: |
+                  RESPONSE=$(curl -sf http://localhost:3001/sensor)
+                  echo "Sensor response: $RESPONSE"
+                  echo "$RESPONSE" | node -e "
+                    const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+                    if (typeof d.temperature !== 'number') process.exit(1);
+                    if (typeof d.humidity !== 'number') process.exit(1);
+                    console.log('✅ Sensor OK:', d.temperature + '°C', d.humidity + '% RH');
+                  "
+
+            - name: Verify Tauri IPC mock
+              run: |
+                  RESPONSE=$(curl -sf http://localhost:3002/health)
+                  echo "Tauri mock response: $RESPONSE"
+                  echo "$RESPONSE" | node -e "
+                    const d = JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+                    if (d.status !== 'ok') process.exit(1);
+                    console.log('✅ Tauri IPC mock OK');
+                  "
+
+            - name: Cleanup
+              if: always()
+              run: docker compose down --timeout 5
+
+    # ─────────────────────────────────────────────────────────────────────
+    # Tauri Build Check (Linux only — full matrix in tauri-build.yml)
+    # ─────────────────────────────────────────────────────────────────────
+    tauri-check:
+        name: 🖥 Tauri Build Check
+        needs: quality
+        runs-on: ubuntu-22.04
+        timeout-minutes: 20
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node ${{ env.NODE_VERSION }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ env.NODE_VERSION }}
+                  cache: npm
+
+            - name: Setup Rust
+              uses: dtolnay/rust-toolchain@stable
+
+            - name: Rust cache
+              uses: Swatinem/rust-cache@v2
+              with:
+                  workspaces: src-tauri
+                  shared-key: tauri-linux-ci
+
+            - name: Install Linux dependencies
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+            - name: Install Node dependencies
+              run: npm ci --prefer-offline
+
+            - name: Download build artifact
+              uses: actions/download-artifact@v4
+              with:
+                  name: dist-node20
+                  path: dist/
+
+            - name: Generate Tauri icons (if missing)
+              run: |
+                  if [ ! -d "src-tauri/icons" ] || [ -z "$(ls -A src-tauri/icons 2>/dev/null)" ]; then
+                    mkdir -p src-tauri/icons
+                    node -e "
+                      const fs = require('fs');
+                      const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+                      ['32x32','128x128','128x128@2x'].forEach(s => fs.writeFileSync('src-tauri/icons/' + s + '.png', png));
+                      fs.writeFileSync('src-tauri/icons/icon.ico', png);
+                      fs.writeFileSync('src-tauri/icons/icon.icns', png);
+                    "
+                  fi
+
+            - name: Verify Tauri Rust compiles
+              working-directory: src-tauri
+              run: cargo check
+
+    # ─────────────────────────────────────────────────────────────────────
+    # CI Gate — all jobs must pass
+    # ─────────────────────────────────────────────────────────────────────
+    ci-status:
+        name: ✅ CI Status
+        if: always()
+        needs: [quality, security, e2e, docker-integration, tauri-check]
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check all jobs passed
+              run: |
+                  echo "Quality:          ${{ needs.quality.result }}"
+                  echo "Security:         ${{ needs.security.result }}"
+                  echo "E2E:              ${{ needs.e2e.result }}"
+                  echo "Docker:           ${{ needs.docker-integration.result }}"
+                  echo "Tauri:            ${{ needs.tauri-check.result }}"
+                  echo "---"
+                  if [[ "${{ needs.quality.result }}" != "success" ]]; then
+                    echo "❌ Quality gates failed"; exit 1
+                  fi
+                  if [[ "${{ needs.security.result }}" != "success" ]]; then
+                    echo "❌ Security checks failed"; exit 1
+                  fi
+                  if [[ "${{ needs.e2e.result }}" != "success" ]]; then
+                    echo "❌ E2E tests failed"; exit 1
+                  fi
+                  if [[ "${{ needs.docker-integration.result }}" != "success" ]]; then
+                    echo "❌ Docker integration failed"; exit 1
+                  fi
+                  if [[ "${{ needs.tauri-check.result }}" != "success" ]]; then
+                    echo "❌ Tauri build check failed"; exit 1
+                  fi
+                  echo "✅ All CI checks passed!"

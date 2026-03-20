@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { Strain, StrainType } from '@/types'
 import { getT } from '@/i18n'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 
 const GIST_FILE_NAME = 'cannaguide-strains.json'
 
@@ -45,7 +46,13 @@ const extractGistId = (value: string): string => {
 }
 
 class CommunityShareService {
-    public async exportStrainsToAnonymousGist(strains: Strain[]): Promise<{ id: string; url: string }> {
+    public async exportStrainsToAnonymousGist(
+        strains: Strain[],
+    ): Promise<{ id: string; url: string }> {
+        if (isLocalOnlyMode()) {
+            throw new Error(getT()('common.communityShare.blockedByLocalOnly'))
+        }
+
         const payload = {
             description: 'CannaGuide anonymous strain share',
             public: false,
@@ -71,7 +78,9 @@ class CommunityShareService {
         })
 
         if (!response.ok) {
-            throw new Error(getT()('common.communityShare.exportFailed', { status: response.status }))
+            throw new Error(
+                getT()('common.communityShare.exportFailed', { status: response.status }),
+            )
         }
 
         const gist = (await response.json()) as { id: string; html_url: string }
@@ -79,11 +88,17 @@ class CommunityShareService {
     }
 
     public async importStrainsFromGist(gistUrlOrId: string): Promise<Strain[]> {
+        if (isLocalOnlyMode()) {
+            throw new Error(getT()('common.communityShare.blockedByLocalOnly'))
+        }
+
         const gistId = extractGistId(gistUrlOrId)
         const response = await fetch(`https://api.github.com/gists/${gistId}`)
 
         if (!response.ok) {
-            throw new Error(getT()('common.communityShare.fetchFailed', { status: response.status }))
+            throw new Error(
+                getT()('common.communityShare.fetchFailed', { status: response.status }),
+            )
         }
 
         const gist = (await response.json()) as {
@@ -98,7 +113,11 @@ class CommunityShareService {
         const parsed = JSON.parse(file.content)
         const result = GistPayloadSchema.safeParse(parsed)
         if (!result.success) {
-            throw new Error(getT()('common.communityShare.invalidPayload', { details: result.error.issues.map((i) => i.message).join(', ') }))
+            throw new Error(
+                getT()('common.communityShare.invalidPayload', {
+                    details: result.error.issues.map((i) => i.message).join(', '),
+                }),
+            )
         }
 
         return result.data.strains as Strain[]

@@ -93,9 +93,9 @@ pub fn process_image_binary(
     let _format = opts.format.as_deref().unwrap_or("jpeg");
     let _quality = opts.quality.unwrap_or(85);
 
-    // Validate input size (max 50 MB raw image)
-    if image_data.len() > 50 * 1024 * 1024 {
-        return Err("Image exceeds maximum size of 50 MB".to_string());
+    // Validate input size (max 20 MB raw image — matches frontend MAX_IPC_IMAGE_SIZE)
+    if image_data.len() > 20 * 1024 * 1024 {
+        return Err("Image exceeds maximum size of 20 MB".to_string());
     }
 
     if image_data.is_empty() {

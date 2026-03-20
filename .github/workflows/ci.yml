@@ -16,26 +16,22 @@ env:
 
 jobs:
     # ─────────────────────────────────────────────────────────────────────
-    # Quality Gates — fully Turbo-powered
+    # Quality Gates — npm run for root tasks, turbo for workspace packages
     # ─────────────────────────────────────────────────────────────────────
     quality:
-        name: 🔍 Quality Gates (Node ${{ matrix.node-version }})
+        name: 🔍 Quality Gates
         runs-on: ubuntu-latest
         timeout-minutes: 15
-        strategy:
-            fail-fast: true
-            matrix:
-                node-version: [20]
         steps:
             - name: Checkout
               uses: actions/checkout@v4
               with:
                   fetch-depth: 0
 
-            - name: Setup Node ${{ matrix.node-version }}
+            - name: Setup Node ${{ env.NODE_VERSION }}
               uses: actions/setup-node@v4
               with:
-                  node-version: ${{ matrix.node-version }}
+                  node-version: ${{ env.NODE_VERSION }}
                   cache: npm
 
             - name: Install dependencies
@@ -45,39 +41,42 @@ jobs:
               uses: actions/cache@v4
               with:
                   path: .turbo
-                  key: turbo-${{ runner.os }}-node${{ matrix.node-version }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
+                  key: turbo-${{ runner.os }}-${{ hashFiles('turbo.json', 'package-lock.json') }}
                   restore-keys: |
-                      turbo-${{ runner.os }}-node${{ matrix.node-version }}-
+                      turbo-${{ runner.os }}-
 
             - name: Lint changed files
               env:
                   LINT_BASE_REF: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
-              run: npx turbo run lint:changed
+              run: npm run lint:changed
 
             - name: Lint strict scopes
-              run: npx turbo run lint:scopes
+              run: npm run lint:scopes
 
-            - name: Type check (all workspaces)
+            - name: Type check (workspaces)
               run: npx turbo run typecheck
 
+            - name: Type check (root)
+              run: npm run typecheck
+
             - name: Test + Coverage
-              run: npx turbo run test:coverage
+              run: npm run test:coverage
 
             - name: Upload coverage
               if: always()
               uses: actions/upload-artifact@v4
               with:
-                  name: coverage-report-node${{ matrix.node-version }}
+                  name: coverage-report
                   path: coverage/
                   retention-days: 14
 
             - name: Build
-              run: npx turbo run build
+              run: npm run build
 
             - name: Upload build artifact
               uses: actions/upload-artifact@v4
               with:
-                  name: dist-node${{ matrix.node-version }}
+                  name: dist
                   path: dist/
                   retention-days: 1
 
@@ -107,7 +106,7 @@ jobs:
               run: npm audit --audit-level=critical --omit=dev
 
             - name: Trojan-source scan
-              run: npx turbo run security:trojan-source
+              run: npm run security:trojan-source
 
     # ─────────────────────────────────────────────────────────────────────
     # E2E — Playwright (reuses build artifact from quality)
@@ -146,7 +145,7 @@ jobs:
             - name: Download build artifact
               uses: actions/download-artifact@v4
               with:
-                  name: dist-node20
+                  name: dist
                   path: dist/
 
             - name: Run E2E tests
@@ -275,7 +274,7 @@ jobs:
             - name: Download build artifact
               uses: actions/download-artifact@v4
               with:
-                  name: dist-node20
+                  name: dist
                   path: dist/
 
             - name: Generate Tauri icons (if missing)

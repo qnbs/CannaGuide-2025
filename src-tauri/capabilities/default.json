@@ -8,7 +8,6 @@
         {
             "identifier": "core:window:default",
             "allow": [{ "window": "main" }]
-        },
-        "ipc:default"
+        }
     ]
 }

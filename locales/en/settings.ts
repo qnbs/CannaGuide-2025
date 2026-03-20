@@ -69,6 +69,11 @@ export const settingsView = {
         hybrid: 'Hybrid (Smart)',
         hybridDesc:
             'Automatically uses local models when preloaded, otherwise falls back to the cloud. Best of both worlds.',
+        eco: 'Eco',
+        ecoDesc:
+            'Battery-saving mode for low-end or mobile devices. Uses only the small 0.5B text model and rule-based heuristics. No cloud, no heavy models.',
+        ecoAutoDetected:
+            'Eco mode was auto-activated because your device has low memory or battery.',
         activeIndicator: 'Active mode: {{mode}}',
         localNotReady:
             'Local AI models are not preloaded yet. Preload them below for the best local experience.',

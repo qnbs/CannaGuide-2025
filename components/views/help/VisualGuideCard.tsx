@@ -1,4 +1,5 @@
 import React, { memo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/common/Card'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
@@ -9,10 +10,6 @@ interface VisualGuideCardProps {
 }
 
 const GUIDE_META: Record<string, { icon: React.ReactNode; color: string }> = {
-    'local-ai-preload': {
-        icon: <PhosphorIcons.Brain className="w-4 h-4" />,
-        color: 'text-indigo-400',
-    },
     topping: { icon: <PhosphorIcons.Scissors className="w-4 h-4" />, color: 'text-lime-400' },
     lst: { icon: <PhosphorIcons.ArrowDown className="w-4 h-4" />, color: 'text-orange-400' },
     defoliation: { icon: <PhosphorIcons.Leafy className="w-4 h-4" />, color: 'text-emerald-400' },
@@ -20,15 +17,19 @@ const GUIDE_META: Record<string, { icon: React.ReactNode; color: string }> = {
 }
 
 const GuideVisuals: React.FC<{ guideId: string }> = ({ guideId }) => {
+    const { t } = useTranslation()
+    const ariaLabels: Record<string, string> = {
+        topping: t('common.accessibility.toppingTechnique'),
+        lst: t('common.accessibility.lowStressTraining'),
+        defoliation: t('common.accessibility.defoliationTechnique'),
+        harvesting: t('common.accessibility.harvestingTechnique'),
+    }
+    const ariaLabel = ariaLabels[guideId] ?? guideId
+
     switch (guideId) {
         case 'topping':
             return (
-                <svg
-                    viewBox="0 0 100 100"
-                    className="w-24 h-24"
-                    role="img"
-                    aria-label="Topping technique"
-                >
+                <svg viewBox="0 0 100 100" className="w-24 h-24" role="img" aria-label={ariaLabel}>
                     <style>{`
                     .plant-stem { stroke: #84cc16; stroke-width: 2; fill: none; }
                     .plant-leaf { fill: #4d7c0f; }
@@ -105,12 +106,7 @@ const GuideVisuals: React.FC<{ guideId: string }> = ({ guideId }) => {
             )
         case 'lst':
             return (
-                <svg
-                    viewBox="0 0 100 100"
-                    className="w-24 h-24"
-                    role="img"
-                    aria-label="Low-stress training"
-                >
+                <svg viewBox="0 0 100 100" className="w-24 h-24" role="img" aria-label={ariaLabel}>
                     <style>{`
                     .plant-stem { stroke: #84cc16; stroke-width: 2; fill: none; }
                     .plant-leaf { fill: #4d7c0f; }
@@ -147,12 +143,7 @@ const GuideVisuals: React.FC<{ guideId: string }> = ({ guideId }) => {
             )
         case 'defoliation':
             return (
-                <svg
-                    viewBox="0 0 100 100"
-                    className="w-24 h-24"
-                    role="img"
-                    aria-label="Defoliation technique"
-                >
+                <svg viewBox="0 0 100 100" className="w-24 h-24" role="img" aria-label={ariaLabel}>
                     <style>{`
                     .plant-stem { stroke: #84cc16; stroke-width: 2; fill: none; }
                     .plant-leaf { fill: #4d7c0f; }
@@ -202,12 +193,7 @@ const GuideVisuals: React.FC<{ guideId: string }> = ({ guideId }) => {
             )
         case 'harvesting':
             return (
-                <svg
-                    viewBox="0 0 100 100"
-                    className="w-24 h-24"
-                    role="img"
-                    aria-label="Harvesting technique"
-                >
+                <svg viewBox="0 0 100 100" className="w-24 h-24" role="img" aria-label={ariaLabel}>
                     <style>{`
                     .plant-stem { stroke: #84cc16; stroke-width: 2; fill: none; }
                     .bud { fill: #a855f7; }

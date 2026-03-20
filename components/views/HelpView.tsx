@@ -196,14 +196,6 @@ FAQSection.displayName = 'FAQSection'
 /* ------------------------------------------------------------------ */
 const VisualGuidesSection: React.FC = memo(() => {
     const { t } = useTranslation()
-    const appGuides = useMemo(
-        () => visualGuidesData.filter((guide) => guide.id === 'local-ai-preload'),
-        [],
-    )
-    const cultivationGuides = useMemo(
-        () => visualGuidesData.filter((guide) => guide.id !== 'local-ai-preload'),
-        [],
-    )
 
     return (
         <Card>
@@ -211,52 +203,15 @@ const VisualGuidesSection: React.FC = memo(() => {
                 {t('helpView.tabs.guides')}
             </h3>
             <p className="text-sm text-slate-400 mb-4">{t('helpView.guides.subtitle')}</p>
-            <div className="space-y-6">
-                <section className="space-y-3">
-                    <div className="flex items-center gap-3">
-                        <PhosphorIcons.Gear className="w-4 h-4 text-slate-500" />
-                        <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-                            {t('helpView.visualGuides.groups.app')}
-                        </h4>
-                        <span className="text-xs tabular-nums text-slate-500 bg-slate-800 rounded-full px-2 py-0.5">
-                            {appGuides.length}
-                        </span>
-                        <div className="h-px flex-1 bg-slate-700/60" />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {appGuides.map((guide) => (
-                            <VisualGuideCard
-                                key={guide.id}
-                                guideId={guide.id}
-                                title={t(guide.titleKey)}
-                                description={t(guide.descriptionKey)}
-                            />
-                        ))}
-                    </div>
-                </section>
-
-                <section className="space-y-3">
-                    <div className="flex items-center gap-3">
-                        <PhosphorIcons.Scissors className="w-4 h-4 text-slate-500" />
-                        <h4 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">
-                            {t('helpView.visualGuides.groups.cultivation')}
-                        </h4>
-                        <span className="text-xs tabular-nums text-slate-500 bg-slate-800 rounded-full px-2 py-0.5">
-                            {cultivationGuides.length}
-                        </span>
-                        <div className="h-px flex-1 bg-slate-700/60" />
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {cultivationGuides.map((guide) => (
-                            <VisualGuideCard
-                                key={guide.id}
-                                guideId={guide.id}
-                                title={t(guide.titleKey)}
-                                description={t(guide.descriptionKey)}
-                            />
-                        ))}
-                    </div>
-                </section>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {visualGuidesData.map((guide) => (
+                    <VisualGuideCard
+                        key={guide.id}
+                        guideId={guide.id}
+                        title={t(guide.titleKey)}
+                        description={t(guide.descriptionKey)}
+                    />
+                ))}
             </div>
         </Card>
     )
@@ -368,7 +323,7 @@ const LexiconSection: React.FC = memo(() => {
             <div
                 className="flex flex-wrap gap-2 mb-4"
                 role="tablist"
-                aria-label="Lexicon categories"
+                aria-label={t('common.accessibility.lexiconCategories')}
             >
                 {categories.map((cat) => {
                     const count = categoryCounts[cat] ?? 0
@@ -414,7 +369,7 @@ const LexiconSection: React.FC = memo(() => {
                 <div
                     className="flex flex-wrap gap-1 mb-4"
                     role="navigation"
-                    aria-label="Alphabet navigation"
+                    aria-label={t('common.accessibility.alphabetNavigation')}
                 >
                     {availableLetters.map((letter) => (
                         <button
@@ -570,7 +525,7 @@ const ManualSection: React.FC = memo(() => {
                             <span className="text-lg">{title}</span>
                             {subSections.length > 0 && (
                                 <span className="ml-2 text-xs tabular-nums text-slate-500 font-normal">
-                                    {subSections.length} sub-sections
+                                    {t('helpView.subSectionCount', { count: subSections.length })}
                                 </span>
                             )}
                         </div>
@@ -613,7 +568,7 @@ const ManualSection: React.FC = memo(() => {
                 </div>
                 <nav
                     className="grid grid-cols-2 sm:grid-cols-3 gap-2"
-                    aria-label="Manual table of contents"
+                    aria-label={t('common.accessibility.manualTableOfContents')}
                 >
                     {validSections.map((key) => {
                         const sec = manualContent[key]

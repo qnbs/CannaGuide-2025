@@ -17,6 +17,7 @@ export const helpView = {
     itemCount: '{{count}} Einträge',
     termCount: '{{count}} Begriffe',
     sectionCount: '{{count}} Abschnitte',
+    subSectionCount: '{{count}} Unterabschnitte',
     guideCount: '{{count}} Anleitungen',
     faq: {
         title: 'Häufig gestellte Fragen',
@@ -34,18 +35,7 @@ export const helpView = {
     },
     guides: {
         title: 'Visuelle Anleitungen',
-        subtitle: 'App-Hinweise und Anbau-Techniken sind bewusst getrennt.',
-    },
-    visualGuides: {
-        groups: {
-            app: 'App-Ablauf',
-            cultivation: 'Anbau-Techniken',
-        },
-        localAiPreload: {
-            title: 'Lokaler KI-Offline-Cache',
-            description:
-                'Lade die lokalen Text- und Bildmodelle vor, solange du online bist, damit die App Pflanzen auch ohne Netzwerkverbindung diagnostizieren kann.',
-        },
+        subtitle: 'Schritt-für-Schritt visuelle Anleitungen zu wichtigen Anbau-Techniken.',
     },
     lexicon: {
         title: 'Grower-Lexikon',

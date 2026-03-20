@@ -75,7 +75,7 @@ export const HelpSubNav: React.FC<HelpSubNavProps> = ({ activeTab, onTabChange }
             ref={navRef}
             className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3"
             role="tablist"
-            aria-label="Help navigation"
+            aria-label={t('common.accessibility.helpNavigation')}
         >
             {navItems.map((item) => {
                 const isActive = activeTab === item.id

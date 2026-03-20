@@ -60,7 +60,10 @@ const StorageInfo: React.FC<{ refreshTick: number }> = memo(({ refreshTick }) =>
                     })
                     setIsLoading(false)
                 })
-                .catch(() => setIsLoading(false))
+                .catch((err) => {
+                    console.error('[DataManagementTab] Storage estimate failed:', err)
+                    setIsLoading(false)
+                })
         } else {
             setIsLoading(false)
         }

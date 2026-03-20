@@ -29,6 +29,34 @@ export const detectOnnxBackend = (): OnnxBackend => {
     return detectedBackend
 }
 
+/** Guard against concurrent excessive pipeline loads (max 3 simultaneous). */
+const MAX_CONCURRENT_LOADS = 3
+let activeLoads = 0
+const loadQueue: Array<() => void> = []
+
+const acquireLoadSlot = (): Promise<void> => {
+    if (activeLoads < MAX_CONCURRENT_LOADS) {
+        activeLoads++
+        return Promise.resolve()
+    }
+    return new Promise<void>((resolve) => loadQueue.push(resolve))
+}
+
+const releaseLoadSlot = (): void => {
+    activeLoads--
+    const next = loadQueue.shift()
+    if (next) {
+        activeLoads++
+        next()
+    }
+}
+
+/** Count of currently loaded pipeline instances. */
+export const getLoadedPipelineCount = (): number => pipelineCache.size
+
+/** List of pipeline keys currently loaded. */
+export const getLoadedPipelineKeys = (): string[] => [...pipelineCache.keys()]
+
 export const getTransformersModule = async (): Promise<TransformersModule> => {
     if (!transformersModulePromise) {
         transformersModulePromise = (async () => {
@@ -56,28 +84,37 @@ export const loadTransformersPipeline = async (
     if (cached) return cached
 
     const promise = (async () => {
-        const { pipeline } = await getTransformersModule()
-        const backend = detectOnnxBackend()
-        const mergedOptions: Record<string, unknown> = { ...options }
-        // Prefer WebGPU device when available; Transformers.js falls back to WASM automatically
-        if (backend === 'webgpu' && !mergedOptions.device) {
-            mergedOptions.device = 'webgpu'
-        }
-        // Add progress callback for download tracking
-        if (!mergedOptions.progress_callback) {
-            mergedOptions.progress_callback = (progress: {
-                status: string
-                file?: string
-                progress?: number
-            }) => {
-                if (progress.status === 'progress' && typeof progress.progress === 'number') {
-                    console.debug(
-                        `[LocalAI] ${modelId}: ${progress.file ?? 'model'} ${progress.progress.toFixed(0)}%`,
-                    )
+        await acquireLoadSlot()
+        try {
+            const { pipeline } = await getTransformersModule()
+            const backend = detectOnnxBackend()
+            const mergedOptions: Record<string, unknown> = { ...options }
+            // Prefer WebGPU device when available; Transformers.js falls back to WASM automatically
+            if (backend === 'webgpu' && !mergedOptions.device) {
+                mergedOptions.device = 'webgpu'
+            }
+            // Add progress callback for download tracking
+            if (!mergedOptions.progress_callback) {
+                mergedOptions.progress_callback = (progress: {
+                    status: string
+                    file?: string
+                    progress?: number
+                }) => {
+                    if (progress.status === 'progress' && typeof progress.progress === 'number') {
+                        console.debug(
+                            `[LocalAI] ${modelId}: ${progress.file ?? 'model'} ${progress.progress.toFixed(0)}%`,
+                        )
+                    }
                 }
             }
+            return pipeline(
+                task as never,
+                modelId,
+                mergedOptions as never,
+            ) as Promise<LocalAiPipeline>
+        } finally {
+            releaseLoadSlot()
         }
-        return pipeline(task as never, modelId, mergedOptions as never) as Promise<LocalAiPipeline>
     })()
 
     pipelineCache.set(cacheKey, promise)

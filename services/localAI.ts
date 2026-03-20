@@ -404,8 +404,8 @@ class LocalAiService {
         const hasEmbeddings = true // Always attempt embedding model
         const hasNlp = true // Always attempt NLP models
         const hasWebLlm = includeWebLlm && supportsWebGpu()
-        // Base: text + vision + embedding + 3 NLP (sentiment, summarization, zero-shot)
-        const totalSteps = 2 + (hasEmbeddings ? 1 : 0) + (hasNlp ? 3 : 0) + (hasWebLlm ? 1 : 0)
+        // Base: text + vision + embedding + 3 NLP + langDetect + imgSimilarity + (optional WebLLM)
+        const totalSteps = 2 + (hasEmbeddings ? 1 : 0) + (hasNlp ? 3 : 0) + 2 + (hasWebLlm ? 1 : 0)
         let loaded = 0
 
         onProgress?.(loaded, totalSteps, 'text-model')
@@ -443,6 +443,29 @@ class LocalAiService {
             onProgress?.(loaded, totalSteps, 'nlp-complete')
         }
 
+        // Language detection model (reuses zero-shot pipeline)
+        let langDetectReady = false
+        onProgress?.(loaded, totalSteps, 'lang-detection')
+        try {
+            const { preloadLanguageDetectionModel } =
+                await import('./localAiLanguageDetectionService')
+            langDetectReady = await preloadLanguageDetectionModel()
+        } catch {
+            // Non-critical
+        }
+        onProgress?.(++loaded, totalSteps, 'lang-detection')
+
+        // Image similarity model (reuses CLIP pipeline)
+        let imgSimilarityReady = false
+        onProgress?.(loaded, totalSteps, 'image-similarity')
+        try {
+            const { preloadImageSimilarityModel } = await import('./localAiImageSimilarityService')
+            imgSimilarityReady = await preloadImageSimilarityModel()
+        } catch {
+            // Non-critical
+        }
+        onProgress?.(++loaded, totalSteps, 'image-similarity')
+
         let webLlmResult: PromiseSettledResult<unknown> | null = null
         if (hasWebLlm) {
             onProgress?.(loaded, totalSteps, 'web-llm')
@@ -458,6 +481,8 @@ class LocalAiService {
             sentimentModelReady: nlpStatus.sentimentReady,
             summarizationModelReady: nlpStatus.summarizationReady,
             zeroShotTextModelReady: nlpStatus.zeroShotReady,
+            languageDetectionReady: langDetectReady,
+            imageSimilarityReady: imgSimilarityReady,
             // Only count core model failures (text + vision) and explicitly attempted optional models
             errorCount:
                 Number(textResult.status === 'rejected') +
@@ -934,6 +959,8 @@ export interface LocalAiPreloadReport {
     sentimentModelReady: boolean
     summarizationModelReady: boolean
     zeroShotTextModelReady: boolean
+    languageDetectionReady: boolean
+    imageSimilarityReady: boolean
     errorCount: number
 }
 

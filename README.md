@@ -23,9 +23,9 @@ This README file supports two languages.
 [![Built with Gemini](https://img.shields.io/badge/Built%20with-Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![Google AI Studio](https://img.shields.io/badge/Google%20AI%20Studio-Ready-34A853?logo=google&logoColor=white)](https://aistudio.google.com/)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Enabled-000000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
-[![Claude Sonnet 4](https://img.shields.io/badge/Claude-Sonnet%204-FF9900?logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
-[![OpenAI GPT-4o mini](https://img.shields.io/badge/OpenAI-GPT--4o%20mini-412991?logo=openai&logoColor=white)](https://openai.com/)
-[![xAI Grok 3](https://img.shields.io/badge/xAI-Grok%203-111111)](https://x.ai/)
+[![Claude Opus 4.6](https://img.shields.io/badge/Claude-Opus%204.6-FF9900?logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
+[![OpenAI GPT 5.4mini](https://img.shields.io/badge/OpenAI-GPT%205.4mini-412991?logo=openai&logoColor=white)](https://openai.com/)
+[![xAI Grok 4.20](https://img.shields.io/badge/xAI-Grok%204.20-111111)](https://x.ai/)
 [![Codespaces / VS Code](https://img.shields.io/badge/Codespaces%20%2F%20VS%20Code-Ready-007ACC?logo=visualstudiocode&logoColor=white)](https://github.com/features/codespaces)
 
 **The Definitive AI-Powered Cannabis Cultivation Companion**
@@ -308,12 +308,16 @@ CannaGuide ships with a production-grade, three-layer on-device ML stack that pr
 
 ### Model Inventory
 
-| Constant            | Model                               | Purpose                                                       | Runtime         |
-| ------------------- | ----------------------------------- | ------------------------------------------------------------- | --------------- |
-| `WEBLLM_MODEL_ID`   | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Full chat completion on WebGPU, best local quality            | @mlc-ai/web-llm |
-| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`      | Primary text generation (multilingual, strong DE performance) | Transformers.js |
-| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                 | Ultra-light fallback for low-end devices                      | Transformers.js |
-| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`     | Zero-shot plant condition classification (33 cannabis labels) | Transformers.js |
+| Constant                  | Model                                                    | Purpose                                                       | Runtime         |
+| ------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- | --------------- |
+| `WEBLLM_MODEL_ID`         | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC`                      | Full chat completion on WebGPU, best local quality            | @mlc-ai/web-llm |
+| `TEXT_MODEL_ID`           | `Xenova/Qwen2.5-1.5B-Instruct`                           | Primary text generation (multilingual, strong DE performance) | Transformers.js |
+| `ALT_TEXT_MODEL_ID`       | `Xenova/Qwen3-0.5B`                                      | Ultra-light fallback for low-end devices                      | Transformers.js |
+| `VISION_MODEL_ID`         | `Xenova/clip-vit-large-patch14`                          | Zero-shot plant condition classification (33 cannabis labels) | Transformers.js |
+| `EMBEDDING_MODEL_ID`      | `Xenova/all-MiniLM-L6-v2`                                | 384-dim semantic embeddings for RAG & strain similarity       | Transformers.js |
+| `SENTIMENT_MODEL_ID`      | `Xenova/distilbert-base-uncased-finetuned-sst-2-english` | Journal sentiment analysis (positive/negative/neutral)        | Transformers.js |
+| `SUMMARIZATION_MODEL_ID`  | `Xenova/distilbart-cnn-6-6`                              | Text summarization for grow logs and mentor history           | Transformers.js |
+| `ZERO_SHOT_TEXT_MODEL_ID` | `Xenova/mobilebert-uncased-mnli`                         | Query classification (15 grow topics) + language detection    | Transformers.js |
 
 ### 33 Zero-Shot Cannabis Condition Labels
 
@@ -386,6 +390,69 @@ Local AI runtimes are code-split into a dedicated `ai-runtime` chunk via Vite's 
 ```
 
 The chunk is excluded from `optimizeDeps` pre-bundling and loaded lazily only when local AI is needed, keeping the main bundle lean.
+
+### Extended NLP Pipeline
+
+Beyond core text generation and vision, the local stack includes dedicated NLP pipelines:
+
+| Pipeline                     | Model              | Capabilities                                                                               |
+| ---------------------------- | ------------------ | ------------------------------------------------------------------------------------------ |
+| **Sentiment Analysis**       | DistilBERT (SST-2) | Journal entry mood tracking, trend detection (improving/declining/stable), batch analysis  |
+| **Text Summarization**       | DistilBART (CNN)   | Condense grow logs (up to 4096 chars), mentor chat compression, configurable output length |
+| **Zero-Shot Classification** | MobileBERT (MNLI)  | 15 cannabis grow topic categories, smart query routing, language detection                 |
+| **Semantic Embeddings**      | all-MiniLM-L6-v2   | 384-dim vectors, cosine similarity ranking, RAG context retrieval, strain matching         |
+
+### Language Detection
+
+`localAiLanguageDetectionService.ts` auto-detects input language for the bilingual EN/DE app:
+
+1. **Model-based** — Zero-shot classification between "English text" and "German text" with confidence scores.
+2. **Heuristic fallback** — Word-frequency analysis using German indicators (ä, ö, ü, ß + 35 common words) and English indicators for sub-3-char inputs or when the model is unavailable.
+
+This enables automatic AI response language selection and journal entry tagging without user intervention.
+
+### Image Similarity & Growth Progression
+
+`localAiImageSimilarityService.ts` uses CLIP's 768-dimensional feature vectors for visual analysis:
+
+- **Photo comparison** — Cosine similarity between two plant photos (0–1 score).
+- **Similar image search** — Rank a collection of photos by visual similarity to a query image.
+- **Growth progression tracking** — Analyze chronological photos to detect visual change rate and classify growth trends (accelerating / decelerating / stable).
+
+Sequential processing prevents memory pressure on low-end devices.
+
+### Health Monitoring & Adaptive Selection
+
+`localAiHealthService.ts` provides comprehensive stack diagnostics:
+
+- **Device classification**: `high-end` / `mid-range` / `low-end` / `unknown` based on WebGPU, core count, and RAM via `navigator.deviceMemory`.
+- **Memory pressure detection**: Monitors `performance.memory` (Chromium) and warns at >80% heap usage.
+- **Adaptive model recommendations**: Automatically suggests lighter models (Qwen3-0.5B, disable WebLLM) when memory or device class warrants it.
+- **Storage quota monitoring**: Reports IndexedDB/Cache usage via `navigator.storage.estimate()`.
+- **Health assessment**: Aggregates preload status, telemetry success rate, latency, and memory into `healthy` / `degraded` / `critical` / `unknown`.
+
+### Concurrent Load Management
+
+`localAIModelLoader.ts` enforces a maximum of **3 simultaneous pipeline loads** via an internal semaphore queue. This prevents memory exhaustion when preloading multiple models in parallel on memory-constrained devices.
+
+### Service Architecture Overview
+
+```
+aiService.ts (Central Router)
+├─ Cloud: geminiService.ts (Gemini, OpenAI, xAI, Anthropic)
+└─ Local AI Stack:
+   ├─ localAI.ts              ← Core: text generation, vision diagnosis, mentor chat
+   ├─ localAiFallbackService  ← Layer 3: deterministic heuristics (VPD, pH, EC, temp)
+   ├─ localAiNlpService       ← Sentiment, summarization, zero-shot classification
+   ├─ localAiEmbeddingService ← Semantic search, RAG, strain similarity
+   ├─ localAiLanguageDetectionService ← Auto EN/DE detection
+   ├─ localAiImageSimilarityService   ← CLIP feature comparison, growth tracking
+   ├─ localAiHealthService    ← Diagnostics, device class, adaptive selection
+   ├─ localAiCacheService     ← IndexedDB persistent LRU cache (256 entries, 7d TTL)
+   ├─ localAiTelemetryService ← Inference metrics, token throughput, backend usage
+   ├─ localAiPreloadService   ← Progress tracking, status persistence, retry logic
+   └─ localAIModelLoader      ← ONNX backend routing, pipeline cache, load semaphore
+```
 
 ---
 
@@ -657,9 +724,9 @@ Please follow the existing code style and ensure your changes are well-documente
 [![Built with Gemini](https://img.shields.io/badge/Built%20with-Gemini-4285F4?logo=google&logoColor=white)](https://ai.google.dev/)
 [![Google AI Studio](https://img.shields.io/badge/Google%20AI%20Studio-Ready-34A853?logo=google&logoColor=white)](https://aistudio.google.com/)
 [![GitHub Copilot](https://img.shields.io/badge/GitHub%20Copilot-Enabled-000000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
-[![Claude Sonnet 4](https://img.shields.io/badge/Claude-Sonnet%204-FF9900?logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
-[![OpenAI GPT-4o mini](https://img.shields.io/badge/OpenAI-GPT--4o%20mini-412991?logo=openai&logoColor=white)](https://openai.com/)
-[![xAI Grok 3](https://img.shields.io/badge/xAI-Grok%203-111111)](https://x.ai/)
+[![Claude Opus 4.6](https://img.shields.io/badge/Claude-Opus%204.6-FF9900?logo=anthropic&logoColor=white)](https://www.anthropic.com/claude)
+[![OpenAI GPT 5.4mini](https://img.shields.io/badge/OpenAI-GPT%205.4mini-412991?logo=openai&logoColor=white)](https://openai.com/)
+[![xAI Grok 4.20](https://img.shields.io/badge/xAI-Grok%204.20-111111)](https://x.ai/)
 [![Codespaces / VS Code](https://img.shields.io/badge/Codespaces%20%2F%20VS%20Code-Ready-007ACC?logo=visualstudiocode&logoColor=white)](https://github.com/features/codespaces)
 
 **Der definitive KI-gestützte Cannabis-Anbau-Begleiter**
@@ -911,12 +978,16 @@ CannaGuide enthält einen produktionsreifen, dreistufigen On-Device-ML-Stack, de
 
 ### Modellbestand
 
-| Konstante           | Modell                              | Zweck                                                         | Laufzeit        |
-| ------------------- | ----------------------------------- | ------------------------------------------------------------- | --------------- |
-| `WEBLLM_MODEL_ID`   | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC` | Volle Chat-Completion auf WebGPU, beste lokale Qualität       | @mlc-ai/web-llm |
-| `TEXT_MODEL_ID`     | `Xenova/Qwen2.5-1.5B-Instruct`      | Primäre Textgenerierung (multilingual, starke DE-Performance) | Transformers.js |
-| `ALT_TEXT_MODEL_ID` | `Xenova/Qwen3-0.5B`                 | Ultra-leichter Fallback für schwache Geräte                   | Transformers.js |
-| `VISION_MODEL_ID`   | `Xenova/clip-vit-large-patch14`     | Zero-Shot-Pflanzenzustandsklassifikation (33 Cannabis-Labels) | Transformers.js |
+| Konstante                 | Modell                                                   | Zweck                                                         | Laufzeit        |
+| ------------------------- | -------------------------------------------------------- | ------------------------------------------------------------- | --------------- |
+| `WEBLLM_MODEL_ID`         | `Qwen2.5-1.5B-Instruct-q4f16_1-MLC`                      | Volle Chat-Completion auf WebGPU, beste lokale Qualität       | @mlc-ai/web-llm |
+| `TEXT_MODEL_ID`           | `Xenova/Qwen2.5-1.5B-Instruct`                           | Primäre Textgenerierung (multilingual, starke DE-Performance) | Transformers.js |
+| `ALT_TEXT_MODEL_ID`       | `Xenova/Qwen3-0.5B`                                      | Ultra-leichter Fallback für schwache Geräte                   | Transformers.js |
+| `VISION_MODEL_ID`         | `Xenova/clip-vit-large-patch14`                          | Zero-Shot-Pflanzenzustandsklassifikation (33 Cannabis-Labels) | Transformers.js |
+| `EMBEDDING_MODEL_ID`      | `Xenova/all-MiniLM-L6-v2`                                | 384-dim semantische Embeddings für RAG & Sortenähnlichkeit    | Transformers.js |
+| `SENTIMENT_MODEL_ID`      | `Xenova/distilbert-base-uncased-finetuned-sst-2-english` | Journal-Stimmungsanalyse (positiv/negativ/neutral)            | Transformers.js |
+| `SUMMARIZATION_MODEL_ID`  | `Xenova/distilbart-cnn-6-6`                              | Textzusammenfassung für Grow-Logs und Mentor-Verlauf          | Transformers.js |
+| `ZERO_SHOT_TEXT_MODEL_ID` | `Xenova/mobilebert-uncased-mnli`                         | Frageklassifikation (15 Grow-Themen) + Spracherkennung        | Transformers.js |
 
 ### 33 Zero-Shot Cannabis-Zustandslabels
 
@@ -989,6 +1060,65 @@ Lokale KI-Laufzeiten werden über Vites `manualChunks` in einen dedizierten `ai-
 ```
 
 Der Chunk ist vom `optimizeDeps`-Pre-Bundling ausgeschlossen und wird nur bei Bedarf lazy geladen, um das Haupt-Bundle schlank zu halten.
+
+### Erweiterte NLP-Pipeline
+
+Neben Kerntext-Generierung und Vision umfasst der lokale Stack dedizierte NLP-Pipelines:
+
+| Pipeline                     | Modell             | Fähigkeiten                                                                                      |
+| ---------------------------- | ------------------ | ------------------------------------------------------------------------------------------------ |
+| **Stimmungsanalyse**         | DistilBERT (SST-2) | Journal-Stimmungsverfolgung, Trendanalyse (besser/schlechter/stabil), Batch-Analyse              |
+| **Textzusammenfassung**      | DistilBART (CNN)   | Grow-Logs verdichten (bis 4096 Zeichen), Mentor-Chat-Komprimierung, konfigurierbare Ausgabelänge |
+| **Zero-Shot-Klassifikation** | MobileBERT (MNLI)  | 15 Cannabis-Grow-Themenkategorien, intelligentes Frage-Routing, Spracherkennung                  |
+| **Semantische Embeddings**   | all-MiniLM-L6-v2   | 384-dim Vektoren, Kosinus-Ähnlichkeitsranking, RAG-Kontextabfrage, Sortenabgleich                |
+
+### Spracherkennung
+
+`localAiLanguageDetectionService.ts` erkennt automatisch die Eingabesprache für die zweisprachige EN/DE-App:
+
+1. **Modellbasiert** — Zero-Shot-Klassifikation zwischen „English text" und „German text" mit Konfidenzwerten.
+2. **Heuristischer Fallback** — Worthäufigkeitsanalyse mit deutschen Indikatoren (ä, ö, ü, ß + 35 häufige Wörter) und englischen Indikatoren bei Kurzeingaben oder wenn das Modell nicht verfügbar ist.
+
+### Bildähnlichkeit & Wachstumsverlauf
+
+`localAiImageSimilarityService.ts` nutzt CLIPs 768-dimensionale Feature-Vektoren für visuelle Analyse:
+
+- **Fotovergleich** — Kosinus-Ähnlichkeit zwischen zwei Pflanzenfotos (Score 0–1).
+- **Ähnliche-Bilder-Suche** — Ranking einer Fotosammlung nach visueller Ähnlichkeit zu einem Referenzbild.
+- **Wachstumsverlauf-Tracking** — Analyse chronologischer Fotos zur Erkennung der visuellen Veränderungsrate und Klassifikation von Wachstumstrends (beschleunigend / abnehmend / stabil).
+
+### Gesundheitsüberwachung & Adaptive Auswahl
+
+`localAiHealthService.ts` liefert umfassende Stack-Diagnostik:
+
+- **Geräteklassifikation**: `high-end` / `mid-range` / `low-end` / `unknown` basierend auf WebGPU, Kernanzahl und RAM via `navigator.deviceMemory`.
+- **Speicherdruckerkennung**: Überwacht `performance.memory` (Chromium) und warnt ab >80% Heap-Auslastung.
+- **Adaptive Modellempfehlungen**: Empfiehlt automatisch leichtere Modelle (Qwen3-0.5B, WebLLM deaktivieren) bei Speicher- oder Geräteklassen-Einschränkungen.
+- **Speicherkontingentüberwachung**: Meldet IndexedDB/Cache-Nutzung via `navigator.storage.estimate()`.
+- **Gesundheitsbewertung**: Aggregiert Preload-Status, Telemetrie-Erfolgsrate, Latenz und Speicher zu `healthy` / `degraded` / `critical` / `unknown`.
+
+### Parallele Ladesteuerung
+
+`localAIModelLoader.ts` begrenzt gleichzeitige Pipeline-Ladevorgänge auf maximal **3 Slots** via interner Semaphore-Queue. Dies verhindert Speichererschöpfung beim Vorladen mehrerer Modelle auf speicherbeschränkten Geräten.
+
+### Service-Architektur-Übersicht
+
+```
+aiService.ts (Zentrales Routing)
+├─ Cloud: geminiService.ts (Gemini, OpenAI, xAI, Anthropic)
+└─ Lokaler KI-Stack:
+   ├─ localAI.ts              ← Kern: Textgenerierung, Bilddiagnose, Mentor-Chat
+   ├─ localAiFallbackService  ← Stufe 3: deterministische Heuristiken (VPD, pH, EC, Temp)
+   ├─ localAiNlpService       ← Stimmungsanalyse, Zusammenfassung, Zero-Shot-Klassifikation
+   ├─ localAiEmbeddingService ← Semantische Suche, RAG, Sortenähnlichkeit
+   ├─ localAiLanguageDetectionService ← Auto EN/DE-Erkennung
+   ├─ localAiImageSimilarityService   ← CLIP-Feature-Vergleich, Wachstumsverlauf
+   ├─ localAiHealthService    ← Diagnostik, Geräteklasse, adaptive Auswahl
+   ├─ localAiCacheService     ← IndexedDB persistenter LRU-Cache (256 Einträge, 7d TTL)
+   ├─ localAiTelemetryService ← Inferenz-Metriken, Token-Durchsatz, Backend-Nutzung
+   ├─ localAiPreloadService   ← Fortschrittsverfolgung, Statuspersistenz, Retry-Logik
+   └─ localAIModelLoader      ← ONNX-Backend-Routing, Pipeline-Cache, Lade-Semaphore
+```
 
 ---
 

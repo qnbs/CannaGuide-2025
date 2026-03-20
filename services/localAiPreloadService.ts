@@ -14,6 +14,8 @@ export interface LocalAiPreloadStatus {
     sentimentModelReady: boolean
     summarizationModelReady: boolean
     zeroShotTextModelReady: boolean
+    languageDetectionReady: boolean
+    imageSimilarityReady: boolean
     details: string | null
 }
 
@@ -31,6 +33,8 @@ const DEFAULT_STATUS: LocalAiPreloadStatus = {
     sentimentModelReady: false,
     summarizationModelReady: false,
     zeroShotTextModelReady: false,
+    languageDetectionReady: false,
+    imageSimilarityReady: false,
     details: null,
 }
 
@@ -72,6 +76,8 @@ const formatReportDetails = (report: LocalAiPreloadReport): string => {
         `sentiment=${report.sentimentModelReady ? 'ready' : 'missing'}`,
         `summarization=${report.summarizationModelReady ? 'ready' : 'missing'}`,
         `zeroShot=${report.zeroShotTextModelReady ? 'ready' : 'missing'}`,
+        `langDetect=${report.languageDetectionReady ? 'ready' : 'missing'}`,
+        `imgSimilarity=${report.imageSimilarityReady ? 'ready' : 'missing'}`,
     ]
 
     if (report.errorCount > 0) {
@@ -130,6 +136,8 @@ export const localAiPreloadService = {
                     sentimentModelReady: report.sentimentModelReady,
                     summarizationModelReady: report.summarizationModelReady,
                     zeroShotTextModelReady: report.zeroShotTextModelReady,
+                    languageDetectionReady: report.languageDetectionReady,
+                    imageSimilarityReady: report.imageSimilarityReady,
                     details: formatReportDetails(report),
                 }
 

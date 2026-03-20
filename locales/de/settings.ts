@@ -160,6 +160,15 @@ export const settingsView = {
         // Model Status Section
         modelStatusTitle: 'Modellstatus-Übersicht',
         modelsLoaded: '{{loaded}} von {{total}} Modellen bereit',
+        // Health & Device
+        healthStatus: 'KI-Gesundheit: {{value}}',
+        deviceClass: 'Geräteklasse: {{value}}',
+        // Language Detection
+        langDetectionReady: 'Spracherkennungs-Modell ist bereit.',
+        langDetectionMissing: 'Spracherkennungs-Modell nicht geladen.',
+        // Image Similarity
+        imgSimilarityReady: 'Bildähnlichkeit (CLIP-Features) ist bereit.',
+        imgSimilarityMissing: 'Bildähnlichkeits-Modell nicht geladen.',
     },
     general: {
         title: 'Allgemeine Einstellungen',

@@ -531,8 +531,30 @@ const LocalAiOfflineCard: React.FC = () => {
         label: string
     } | null>(null)
     const [preloadDurationMs, setPreloadDurationMs] = useState<number | null>(null)
+    const [healthStatus, setHealthStatus] = useState<string | null>(null)
+    const [deviceClass, setDeviceClass] = useState<string | null>(null)
     const supportsWebGpu = typeof navigator !== 'undefined' && 'gpu' in navigator
     const onnxBackend = detectOnnxBackend()
+
+    useEffect(() => {
+        let cancelled = false
+        const loadHealth = async () => {
+            try {
+                const { quickHealthCheck, classifyDevice } =
+                    await import('../../../services/localAiHealthService')
+                if (cancelled) return
+                const check = quickHealthCheck()
+                setHealthStatus(check.status)
+                setDeviceClass(classifyDevice())
+            } catch {
+                // Non-critical
+            }
+        }
+        void loadHealth()
+        return () => {
+            cancelled = true
+        }
+    }, [status])
 
     const localAiSettings = settings.localAi ?? {
         forceWasm: false,
@@ -593,6 +615,14 @@ const LocalAiOfflineCard: React.FC = () => {
                     </p>
                     <div className="rounded-md border border-slate-700/60 bg-slate-900/40 p-3 text-sm text-slate-300 space-y-1">
                         <p>{statusLabel}</p>
+                        {healthStatus && (
+                            <p>
+                                {t('settingsView.offlineAi.healthStatus', { value: healthStatus })}
+                            </p>
+                        )}
+                        {deviceClass && (
+                            <p>{t('settingsView.offlineAi.deviceClass', { value: deviceClass })}</p>
+                        )}
                         <p>
                             {t('settingsView.offlineAi.cacheState', {
                                 value: status.details ?? 'n/a',
@@ -619,6 +649,12 @@ const LocalAiOfflineCard: React.FC = () => {
                                 ? t('settingsView.offlineAi.webLlmReady')
                                 : t('settingsView.offlineAi.webLlmFallback')}
                         </p>
+                        {status.languageDetectionReady && (
+                            <p>{t('settingsView.offlineAi.langDetectionReady')}</p>
+                        )}
+                        {status.imageSimilarityReady && (
+                            <p>{t('settingsView.offlineAi.imgSimilarityReady')}</p>
+                        )}
                         {status.readyAt && (
                             <p>
                                 {t('settingsView.offlineAi.readyAt', {
@@ -626,6 +662,21 @@ const LocalAiOfflineCard: React.FC = () => {
                                 })}
                             </p>
                         )}
+                        <p className="text-xs text-slate-500 pt-1">
+                            {t('settingsView.offlineAi.modelsLoaded', {
+                                loaded: [
+                                    status.textModelReady,
+                                    status.visionModelReady,
+                                    status.embeddingModelReady,
+                                    status.sentimentModelReady,
+                                    status.summarizationModelReady,
+                                    status.zeroShotTextModelReady,
+                                    status.languageDetectionReady,
+                                    status.imageSimilarityReady,
+                                ].filter(Boolean).length,
+                                total: 8,
+                            })}
+                        </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={handlePreload} disabled={isBusy || isOffline}>

@@ -16,7 +16,7 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Frontend:** React 19 + TypeScript (strict mode, zero `any`)
 - **State:** Redux Toolkit + RTK Query (memoized selectors, listener middleware)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
-- **Local AI:** @xenova/transformers, @mlc-ai/web-llm, TensorFlow.js
+- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)

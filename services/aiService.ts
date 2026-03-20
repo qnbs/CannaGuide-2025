@@ -311,4 +311,69 @@ export const aiService = {
             return null
         }
     },
+
+    /** Detect the language of a text input (model-based with heuristic fallback). */
+    async detectLanguage(
+        text: string,
+    ): Promise<{ language: 'en' | 'de' | 'unknown'; confidence: number; method: string }> {
+        try {
+            const { detectLanguage } = await import('@/services/localAiLanguageDetectionService')
+            return detectLanguage(text)
+        } catch {
+            const { detectLanguageHeuristic } =
+                await import('@/services/localAiLanguageDetectionService')
+            return detectLanguageHeuristic(text)
+        }
+    },
+
+    /** Compare two plant photos for visual similarity (0–1 score). */
+    async compareImages(
+        imageA: { base64: string; mimeType: string },
+        imageB: { base64: string; mimeType: string },
+    ): Promise<number> {
+        try {
+            const { compareImages } = await import('@/services/localAiImageSimilarityService')
+            return compareImages(imageA, imageB)
+        } catch {
+            return 0
+        }
+    },
+
+    /** Analyze visual growth progression from chronological plant photos. */
+    async analyzeGrowthProgression(
+        photos: Array<{ base64: string; mimeType: string; timestamp: number }>,
+    ): Promise<{ averageChange: number; trend: string }> {
+        try {
+            const { analyzeGrowthProgression } =
+                await import('@/services/localAiImageSimilarityService')
+            const result = await analyzeGrowthProgression(photos)
+            return { averageChange: result.averageChange, trend: result.trend }
+        } catch {
+            return { averageChange: 0, trend: 'stable' }
+        }
+    },
+
+    /** Get a comprehensive local AI health report. */
+    async getHealthReport(): Promise<Record<string, unknown>> {
+        try {
+            const { generateHealthReport } = await import('@/services/localAiHealthService')
+            return (await generateHealthReport()) as unknown as Record<string, unknown>
+        } catch {
+            return { status: 'unknown', generatedAt: Date.now() }
+        }
+    },
+
+    /** Quick health check for polling. */
+    async getQuickHealthCheck(): Promise<{
+        status: string
+        memoryPressure: boolean
+        modelsReady: boolean
+    }> {
+        try {
+            const { quickHealthCheck } = await import('./localAiHealthService')
+            return quickHealthCheck()
+        } catch {
+            return { status: 'unknown', memoryPressure: false, modelsReady: false }
+        }
+    },
 }

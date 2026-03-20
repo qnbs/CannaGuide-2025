@@ -4,6 +4,21 @@
 
 The project has been configured as a **Turborepo monorepo** with npm workspaces.
 
+### Turbo Pipeline
+
+| Task          | Depends On | Outputs                              | Cached | Notes                                       |
+| ------------- | ---------- | ------------------------------------ | ------ | ------------------------------------------- |
+| `build`       | `^build`   | `dist/**`                            | Yes    | Web app (Vite) + workspace packages (tsc)   |
+| `tauri:build` | `build`    | `src-tauri/target/release/bundle/**` | No     | Platform-specific binaries; env passthrough |
+| `tauri:dev`   | `^build`   | —                                    | No     | Persistent dev process; env passthrough     |
+| `dev`         | `^build`   | —                                    | No     | Persistent (Vite dev server)                |
+| `test`        | `^build`   | `coverage/**`                        | Yes    |                                             |
+| `test:e2e`    | `build`    | `test-results/**`                    | Yes    | Needs web build artifact                    |
+| `lint`        | `^build`   | —                                    | Yes    |                                             |
+| `typecheck`   | `^build`   | —                                    | Yes    |                                             |
+
+Environment variables forwarded for Tauri: `TAURI_SIGNING_PRIVATE_KEY`, `TAURI_SIGNING_PRIVATE_KEY_PASSWORD`, `TAURI_ENV_*`.
+
 ### Directory Structure
 
 ```

@@ -35,6 +35,7 @@
         "turbo:test": "turbo run test",
         "turbo:lint": "turbo run lint",
         "turbo:typecheck": "turbo run typecheck",
+        "turbo:tauri:build": "turbo run tauri:build",
         "bundle:visualize": "ANALYZE=1 vite build --sourcemap",
         "bundle:explore": "node ./scripts/explore-bundle.mjs",
         "benchmark": "npm run build:analyze && npm run bundle:explore",

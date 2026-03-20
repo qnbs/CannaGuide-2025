@@ -30,6 +30,30 @@
             "cache": false,
             "persistent": true
         },
+        "tauri:build": {
+            "dependsOn": ["build"],
+            "outputs": ["src-tauri/target/release/bundle/**"],
+            "inputs": [
+                "src-tauri/src/**/*.rs",
+                "src-tauri/Cargo.toml",
+                "src-tauri/Cargo.lock",
+                "src-tauri/tauri.conf.json",
+                "src-tauri/build.rs",
+                "dist/**"
+            ],
+            "cache": false,
+            "env": [
+                "TAURI_SIGNING_PRIVATE_KEY",
+                "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
+                "TAURI_ENV_*"
+            ]
+        },
+        "tauri:dev": {
+            "dependsOn": ["^build"],
+            "cache": false,
+            "persistent": true,
+            "env": ["TAURI_ENV_*"]
+        },
         "test": {
             "dependsOn": ["^build"],
             "outputs": ["coverage/**"]

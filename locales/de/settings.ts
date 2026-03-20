@@ -163,6 +163,16 @@ export const settingsView = {
         inferenceTimeoutHint: 'Maximale Wartezeit in Sekunden für eine einzelne lokale KI-Antwort.',
         maxCacheSize: 'Max. Cache-Einträge',
         maxCacheSizeHint: 'Maximale Anzahl gespeicherter Inferenzergebnisse in IndexedDB.',
+        // Progressive Quantisierung
+        quantizationLevel: 'Modell-Quantisierung',
+        quantizationLevelHint:
+            'Steuert Modellpräzision und -größe. Auto wählt die beste Option anhand von GPU und Arbeitsspeicher. q4f16 nutzt 4-Bit Float16 für High-End-GPUs, q4 nutzt das leichte 0,5B-Modell für breite Kompatibilität.',
+        quantAuto: 'Automatisch (VRAM-basiert)',
+        quantQ4f16: 'q4f16 (Premium, 1.5B)',
+        quantQ4: 'q4 (Standard, 0.5B)',
+        quantNone: 'Keine (Volle Präzision)',
+        quantActiveProfile:
+            'Aktives Profil: {{sizeTier}} {{quantLevel}} — ~{{savings}}% Einsparung',
         // Model Status Section
         modelStatusTitle: 'Modellstatus-Übersicht',
         modelsLoaded: '{{loaded}} von {{total}} Modellen bereit',

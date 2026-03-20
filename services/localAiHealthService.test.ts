@@ -45,6 +45,15 @@ describe('localAiHealthService', () => {
             expect(['webgpu', 'wasm']).toContain(rec.preferredBackend)
             expect(rec.reason.length).toBeGreaterThan(0)
         })
+
+        it('includes progressive quantization fields', () => {
+            const rec = getModelRecommendation()
+            expect(['q4f16', 'q4', 'none']).toContain(rec.quantLevel)
+            expect(['1.5B', '0.5B']).toContain(rec.sizeTier)
+            expect(typeof rec.estimatedSavingsPercent).toBe('number')
+            expect(rec.estimatedSavingsPercent).toBeGreaterThanOrEqual(0)
+            expect(rec.estimatedSavingsPercent).toBeLessThanOrEqual(100)
+        })
     })
 
     describe('quickHealthCheck', () => {

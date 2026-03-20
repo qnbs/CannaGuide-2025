@@ -155,3 +155,188 @@ export const loadTransformersPipeline = async (
 export const clearPipelineCache = (): void => {
     pipelineCache.clear()
 }
+
+// ─── Progressive Quantization & Model-Switching ──────────────────────────────
+
+/** Quantization level controlling download size and inference cost. */
+export type QuantizationLevel = 'q4f16' | 'q4' | 'none'
+
+/** Model size tier — determines base model selection. */
+export type ModelSizeTier = '1.5B' | '0.5B'
+
+/** Resolved model profile based on device capabilities and VRAM. */
+export interface ModelProfile {
+    /** Selected quantization level. */
+    quantLevel: QuantizationLevel
+    /** Model size tier. */
+    sizeTier: ModelSizeTier
+    /** Resolved Transformers.js model ID. */
+    transformersModelId: string
+    /** Resolved WebLLM model ID (null if not recommended for this tier). */
+    webLlmModelId: string | null
+    /** Whether to pass `quantized: true` to the Transformers.js pipeline. */
+    useQuantized: boolean
+    /** Human-readable reason for this selection. */
+    reason: string
+    /** Estimated download + inference savings vs full 1.5B model (0–100). */
+    estimatedSavingsPercent: number
+}
+
+/** Transformers.js model IDs by size tier. */
+const TRANSFORMERS_MODELS: Record<ModelSizeTier, string> = {
+    '1.5B': 'Xenova/Qwen2.5-1.5B-Instruct',
+    '0.5B': 'Xenova/Qwen3-0.5B',
+}
+
+/** WebLLM model IDs by size tier (q4f16 quantization). */
+const WEBLLM_MODELS: Record<ModelSizeTier, string> = {
+    '1.5B': 'Qwen2.5-1.5B-Instruct-q4f16_1-MLC',
+    '0.5B': 'Qwen2.5-0.5B-Instruct-q4f16_1-MLC',
+}
+
+/** VRAM threshold in MB for the q4f16 / 1.5B premium tier. */
+const VRAM_THRESHOLD_Q4F16_MB = 6144
+
+/** System RAM threshold in GB for the premium tier. */
+const RAM_THRESHOLD_HIGH_GB = 8
+
+/** Manual quantization override (null = auto-detect). */
+let quantOverride: QuantizationLevel | null = null
+
+/** Manual model size tier override (null = auto-detect). */
+let sizeOverride: ModelSizeTier | null = null
+
+/** Cached resolved profile — invalidated on override or VRAM changes. */
+let cachedProfile: ModelProfile | null = null
+
+/**
+ * Set manual quantization level override.
+ * Pass `null` to return to automatic VRAM-based detection.
+ */
+export const setModelQuant = (level: QuantizationLevel | null): void => {
+    quantOverride = level
+    cachedProfile = null
+    console.debug(`[LocalAI] Quantization override set to: ${level ?? 'auto'}`)
+}
+
+/** Get the current quantization override (null = auto). */
+export const getModelQuantOverride = (): QuantizationLevel | null => quantOverride
+
+/**
+ * Set manual model size tier override.
+ * Pass `null` to return to automatic detection.
+ */
+export const setModelSizeTier = (tier: ModelSizeTier | null): void => {
+    sizeOverride = tier
+    cachedProfile = null
+    console.debug(`[LocalAI] Model size override set to: ${tier ?? 'auto'}`)
+}
+
+/** Get the current model size tier override (null = auto). */
+export const getModelSizeTierOverride = (): ModelSizeTier | null => sizeOverride
+
+/**
+ * Resolve the optimal model profile based on device capabilities and VRAM.
+ *
+ * **Strategy (Progressive Quantization):**
+ * - **Premium tier** — WebGPU + high VRAM (≥ 6 GB) + ≥ 8 GB RAM:
+ *   q4f16 with 1.5B model (full WebLLM + Transformers.js).
+ * - **Standard tier** — everything else:
+ *   q4 with 0.5B model only, saving ~70 % download and inference time.
+ *   WebLLM uses the lightweight 0.5B variant if WebGPU is available;
+ *   otherwise falls back to WASM-only Transformers.js.
+ *
+ * @param vramMB - GPU VRAM in MB (pass from `probeGpuVram()` or `null` if unknown).
+ */
+export const resolveModelProfile = (vramMB: number | null = null): ModelProfile => {
+    if (cachedProfile) return cachedProfile
+
+    const backend = detectOnnxBackend()
+    const hasWebGpu = backend === 'webgpu'
+    const memoryGB =
+        typeof navigator !== 'undefined'
+            ? ((navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0)
+            : 0
+
+    // ── Manual overrides ─────────────────────────────────────────────────
+    if (quantOverride !== null || sizeOverride !== null) {
+        const qLevel = quantOverride ?? 'q4'
+        const sTier = sizeOverride ?? '0.5B'
+        cachedProfile = buildProfile(qLevel, sTier, 'Manual override applied.')
+        return cachedProfile
+    }
+
+    // ── Premium tier: WebGPU + high VRAM + 8 GB+ RAM ────────────────────
+    if (
+        hasWebGpu &&
+        vramMB !== null &&
+        vramMB >= VRAM_THRESHOLD_Q4F16_MB &&
+        memoryGB >= RAM_THRESHOLD_HIGH_GB
+    ) {
+        cachedProfile = buildProfile(
+            'q4f16',
+            '1.5B',
+            `WebGPU + high VRAM (${vramMB} MB) + ${memoryGB} GB RAM → q4f16 1.5B premium tier.`,
+        )
+        return cachedProfile
+    }
+
+    // ── Standard tier: everything else — 0.5B q4 ────────────────────────
+    const reasonParts: string[] = []
+    if (!hasWebGpu) reasonParts.push('no WebGPU')
+    else if (vramMB !== null && vramMB < VRAM_THRESHOLD_Q4F16_MB)
+        reasonParts.push(`VRAM ${vramMB} MB < ${VRAM_THRESHOLD_Q4F16_MB} MB`)
+    if (memoryGB < RAM_THRESHOLD_HIGH_GB && memoryGB > 0)
+        reasonParts.push(`RAM ${memoryGB} GB < ${RAM_THRESHOLD_HIGH_GB} GB`)
+    if (reasonParts.length === 0) reasonParts.push('device capabilities unknown')
+
+    cachedProfile = buildProfile(
+        'q4',
+        '0.5B',
+        `${reasonParts.join(', ')} → 0.5B q4 standard tier (~70 % savings).`,
+    )
+    return cachedProfile
+}
+
+/** Build a concrete ModelProfile from the given parameters. */
+const buildProfile = (
+    quantLevel: QuantizationLevel,
+    sizeTier: ModelSizeTier,
+    reason: string,
+): ModelProfile => {
+    const backend = detectOnnxBackend()
+    const hasWebGpu = backend === 'webgpu'
+
+    // WebLLM is only useful with WebGPU
+    let webLlmModelId: string | null = null
+    if (hasWebGpu) {
+        webLlmModelId = quantLevel === 'q4f16' ? WEBLLM_MODELS[sizeTier] : WEBLLM_MODELS['0.5B']
+    }
+
+    const estimatedSavingsPercent = sizeTier === '0.5B' ? 70 : quantLevel === 'q4f16' ? 40 : 0
+
+    return {
+        quantLevel,
+        sizeTier,
+        transformersModelId: TRANSFORMERS_MODELS[sizeTier],
+        webLlmModelId,
+        useQuantized: quantLevel !== 'none',
+        reason,
+        estimatedSavingsPercent,
+    }
+}
+
+/** Get the currently resolved model profile (resolves with defaults if not yet resolved). */
+export const getResolvedProfile = (): ModelProfile => cachedProfile ?? resolveModelProfile()
+
+/** Invalidate the cached profile (e.g. after VRAM probe completes). */
+export const invalidateModelProfile = (): void => {
+    cachedProfile = null
+}
+
+/** Reset all quantization state (useful for tests). */
+export const resetQuantizationState = (): void => {
+    cachedProfile = null
+    quantOverride = null
+    sizeOverride = null
+}

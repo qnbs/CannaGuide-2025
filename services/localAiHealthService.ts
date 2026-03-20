@@ -1,4 +1,11 @@
-import { detectOnnxBackend, type OnnxBackend } from './localAIModelLoader'
+import {
+    detectOnnxBackend,
+    resolveModelProfile,
+    invalidateModelProfile,
+    type OnnxBackend,
+    type QuantizationLevel,
+    type ModelSizeTier,
+} from './localAIModelLoader'
 import { localAiPreloadService, type LocalAiPreloadStatus } from './localAiPreloadService'
 import {
     getSnapshot,
@@ -65,6 +72,12 @@ export interface ModelRecommendation {
     preferredBackend: OnnxBackend
     /** Reason for the recommendation. */
     reason: string
+    /** Active quantization level from progressive quantization. */
+    quantLevel: QuantizationLevel
+    /** Active model size tier from progressive quantization. */
+    sizeTier: ModelSizeTier
+    /** Estimated download + inference savings percentage. */
+    estimatedSavingsPercent: number
 }
 
 export interface HealthReport {
@@ -267,6 +280,7 @@ export const classifyDevice = (): DeviceClass => {
 
 /**
  * Recommend model configuration based on device capabilities and current state.
+ * Integrates the progressive quantization profile for VRAM-aware model selection.
  */
 export const getModelRecommendation = (): ModelRecommendation => {
     const deviceClass = classifyDevice()
@@ -274,12 +288,20 @@ export const getModelRecommendation = (): ModelRecommendation => {
     const backend = detectOnnxBackend()
     const vram = cachedVramInfo
 
+    // Resolve the progressive quantization profile with VRAM data
+    const profile = resolveModelProfile(vram?.vramMB ?? null)
+
     if (memory.pressureDetected) {
+        // Under memory pressure, invalidate so next call re-evaluates
+        invalidateModelProfile()
         return {
             textModel: 'qwen3',
             enableWebLlm: false,
             preferredBackend: 'wasm',
             reason: 'Memory pressure detected — using lightweight model and WASM backend.',
+            quantLevel: 'q4',
+            sizeTier: '0.5B',
+            estimatedSavingsPercent: 70,
         }
     }
 
@@ -290,37 +312,52 @@ export const getModelRecommendation = (): ModelRecommendation => {
             enableWebLlm: false,
             preferredBackend: 'wasm',
             reason: `Low VRAM detected (${vram.vramMB}MB < ${MIN_VRAM_FOR_WEBGPU_MB}MB) — forcing quantized model and WASM backend to prevent GPU crash.`,
+            quantLevel: profile.quantLevel,
+            sizeTier: profile.sizeTier,
+            estimatedSavingsPercent: profile.estimatedSavingsPercent,
         }
     }
 
     switch (deviceClass) {
         case 'high-end':
             return {
-                textModel: 'qwen2.5',
-                enableWebLlm: true,
+                textModel: profile.sizeTier === '1.5B' ? 'qwen2.5' : 'qwen3',
+                enableWebLlm: profile.webLlmModelId !== null,
                 preferredBackend: backend,
-                reason: 'High-end device detected — full model suite with WebLLM enabled.',
+                reason: `High-end device — ${profile.reason}`,
+                quantLevel: profile.quantLevel,
+                sizeTier: profile.sizeTier,
+                estimatedSavingsPercent: profile.estimatedSavingsPercent,
             }
         case 'mid-range':
             return {
-                textModel: 'auto',
-                enableWebLlm: backend === 'webgpu',
+                textModel: profile.sizeTier === '1.5B' ? 'auto' : 'qwen3',
+                enableWebLlm: profile.webLlmModelId !== null,
                 preferredBackend: backend,
-                reason: 'Mid-range device — auto model selection, WebLLM if WebGPU available.',
+                reason: `Mid-range device — ${profile.reason}`,
+                quantLevel: profile.quantLevel,
+                sizeTier: profile.sizeTier,
+                estimatedSavingsPercent: profile.estimatedSavingsPercent,
             }
         case 'low-end':
             return {
                 textModel: 'qwen3',
                 enableWebLlm: false,
                 preferredBackend: 'wasm',
-                reason: 'Low-end device — lightweight model recommended, WebLLM disabled.',
+                reason: `Low-end device — ${profile.reason}`,
+                quantLevel: profile.quantLevel,
+                sizeTier: profile.sizeTier,
+                estimatedSavingsPercent: profile.estimatedSavingsPercent,
             }
         default:
             return {
                 textModel: 'auto',
                 enableWebLlm: false,
                 preferredBackend: backend,
-                reason: 'Device class unknown — using safe defaults.',
+                reason: `Device class unknown — ${profile.reason}`,
+                quantLevel: profile.quantLevel,
+                sizeTier: profile.sizeTier,
+                estimatedSavingsPercent: profile.estimatedSavingsPercent,
             }
     }
 }
@@ -398,6 +435,11 @@ export const generateHealthReport = async (): Promise<HealthReport> => {
     const preloadStatus = localAiPreloadService.getStatus()
     const memory = getMemoryInfo()
     const vram = await probeGpuVram()
+
+    // Ensure progressive quantization profile is resolved with fresh VRAM data
+    invalidateModelProfile()
+    resolveModelProfile(vram.vramMB ?? null)
+
     const storage = await getStorageInfo()
     const telemetry = getSnapshot()
     const persistedTelemetry = loadPersistedSnapshot()

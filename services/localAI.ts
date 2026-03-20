@@ -27,6 +27,7 @@ import {
     loadTransformersPipeline,
     detectOnnxBackend,
     clearPipelineCache,
+    evictIdlePipelines,
     getResolvedProfile,
     type LocalAiPipeline,
 } from './localAIModelLoader'
@@ -1064,3 +1065,13 @@ export interface LocalAiPreloadReport {
 }
 
 export const localAiService = new LocalAiService()
+
+// ─── Idle Tab Cleanup ────────────────────────────────────────────────────────
+// Evict rarely-used pipelines when the tab goes hidden to reduce memory.
+if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            evictIdlePipelines(2)
+        }
+    })
+}

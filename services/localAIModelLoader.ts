@@ -140,15 +140,40 @@ export const loadTransformersPipeline = async (
         }
     })()
 
-    // Evict oldest if cache exceeds a reasonable limit (prevent memory leak)
-    if (pipelineCache.size >= 12) {
+    // Evict oldest BEFORE inserting — prevents exceeding limit during load
+    const memPressure = isMemoryPressureElevated()
+    const evictionLimit = memPressure ? 6 : 12
+    while (pipelineCache.size >= evictionLimit) {
         const oldest = pipelineCache.keys().next().value
         if (oldest) pipelineCache.delete(oldest)
+        else break
     }
     pipelineCache.set(cacheKey, promise)
     // Evict from cache on failure so retry is possible
     promise.catch(() => pipelineCache.delete(cacheKey))
     return promise
+}
+
+/** Returns true when JS heap usage exceeds 70 %. */
+const isMemoryPressureElevated = (): boolean => {
+    const perf = performance as unknown as {
+        memory?: { usedJSHeapSize: number; jsHeapSizeLimit: number }
+    }
+    if (!perf.memory) return false
+    return (perf.memory.usedJSHeapSize / perf.memory.jsHeapSizeLimit) * 100 > 70
+}
+
+/**
+ * Evict least-recently-used pipelines when the tab is hidden.
+ * Called from a visibility-change listener to free GPU/WASM memory while idle.
+ */
+export const evictIdlePipelines = (keepCount = 3): void => {
+    while (pipelineCache.size > keepCount) {
+        const oldest = pipelineCache.keys().next().value
+        if (oldest) pipelineCache.delete(oldest)
+        else break
+    }
+    console.debug(`[LocalAI] Evicted idle pipelines, ${pipelineCache.size} remaining.`)
 }
 
 /** Reset cached pipelines (useful for tests and forced re-download). */

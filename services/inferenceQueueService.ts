@@ -38,6 +38,8 @@ interface QueuedTask {
 
 const DEFAULT_TIMEOUT_MS = 60_000
 const MAX_QUEUE_SIZE = 32
+/** Reject tasks that have been queued longer than this before processing. */
+const STALE_THRESHOLD_MS = 30_000
 const PRIORITY_ORDER: Record<InferencePriority, number> = { high: 0, normal: 1, low: 2 }
 
 // ─── State ───────────────────────────────────────────────────────────────────
@@ -108,6 +110,16 @@ const getWorker = (): Worker | null => {
 // ─── Queue Processing ────────────────────────────────────────────────────────
 
 const processQueue = (): void => {
+    // Prune stale tasks that have waited too long in the queue
+    const now = Date.now()
+    for (let i = queue.length - 1; i >= 0; i--) {
+        const item = queue[i]
+        if (item && now - item.enqueuedAt > STALE_THRESHOLD_MS) {
+            queue.splice(i, 1)
+            item.reject(new Error('Inference task expired in queue'))
+        }
+    }
+
     while (activeCount < MAX_CONCURRENT && queue.length > 0) {
         const task = queue.shift()
         if (!task) break

@@ -1,75 +1,215 @@
-import React, { useState, useEffect, useMemo, memo } from 'react';
-import { JournalEntry, PhotoDetails, JournalEntryType } from '@/types';
-import { Card } from '@/components/common/Card';
-import { useTranslation } from 'react-i18next';
-import { dbService } from '@/services/dbService';
-import { SkeletonLoader } from '@/components/common/SkeletonLoader';
+import React, { useState, useEffect, useMemo, memo, useCallback } from 'react'
+import { JournalEntry, PhotoDetails, JournalEntryType } from '@/types'
+import { Card } from '@/components/common/Card'
+import { useTranslation } from 'react-i18next'
+import { dbService } from '@/services/dbService'
+import { SkeletonLoader } from '@/components/common/SkeletonLoader'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 
 interface PhotoTabProps {
-    journal: JournalEntry[];
+    journal: JournalEntry[]
 }
 
-const PhotoItem: React.FC<{ entry: JournalEntry }> = ({ entry }) => {
-    const [imageUrl, setImageUrl] = useState<string | null>((entry.details as PhotoDetails)?.imageUrl || null);
-    const [isLoading, setIsLoading] = useState(!((entry.details as PhotoDetails)?.imageUrl));
+const PhotoItem: React.FC<{
+    entry: JournalEntry
+    onOpen: (url: string, entry: JournalEntry) => void
+}> = memo(({ entry, onOpen }) => {
+    const [imageUrl, setImageUrl] = useState<string | null>(
+        (entry.details as PhotoDetails)?.imageUrl || null,
+    )
+    const [isLoading, setIsLoading] = useState(!(entry.details as PhotoDetails)?.imageUrl)
     const details = entry.details as PhotoDetails
 
     useEffect(() => {
-        let isMounted = true;
-        const details = entry.details as PhotoDetails;
-        if (details?.imageId && !imageUrl) {
-            setIsLoading(true);
-            dbService.getImage(details.imageId)
-                .then(storedImage => {
-                    if (isMounted && storedImage) setImageUrl(storedImage.data);
+        let isMounted = true
+        const photoDetails = entry.details as PhotoDetails
+        if (photoDetails?.imageId && !imageUrl) {
+            setIsLoading(true)
+            dbService
+                .getImage(photoDetails.imageId)
+                .then((storedImage) => {
+                    if (isMounted && storedImage) setImageUrl(storedImage.data)
                 })
                 .catch(console.error)
                 .finally(() => {
                     if (isMounted) setIsLoading(false)
-                });
+                })
         } else if (imageUrl) {
-            setIsLoading(false);
+            setIsLoading(false)
         }
-        return () => { isMounted = false; }
-    }, [entry.details, imageUrl]);
+        return () => {
+            isMounted = false
+        }
+    }, [entry.details, imageUrl])
 
     if (isLoading) {
-        return <SkeletonLoader className="w-full h-48 rounded-lg" />;
+        return <SkeletonLoader className="w-full aspect-square rounded-lg" />
     }
 
-    if (!imageUrl) return null;
+    if (!imageUrl) return null
 
     return (
-        <div className="group relative">
-            <img src={imageUrl} alt={entry.notes} className="w-full h-48 object-cover rounded-lg" loading="lazy" />
-            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity p-2 flex flex-col justify-end rounded-lg">
-                <p className="text-white text-sm font-semibold">{entry.notes}</p>
-                {details?.timelineLabel && <p className="text-primary-200 text-xs font-semibold">{details.timelineLabel}</p>}
-                <p className="text-white/70 text-xs">{new Date(entry.createdAt).toLocaleString()}</p>
+        <div
+            className="group relative cursor-pointer"
+            onClick={() => onOpen(imageUrl, entry)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault()
+                    onOpen(imageUrl, entry)
+                }
+            }}
+            aria-label={entry.notes}
+        >
+            <img
+                src={imageUrl}
+                alt={entry.notes}
+                className="w-full aspect-square object-cover rounded-lg ring-1 ring-inset ring-white/10"
+                loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-200 p-3 flex flex-col justify-end rounded-lg">
+                <p className="text-white text-sm font-semibold truncate">{entry.notes}</p>
+                {details?.photoCategory && (
+                    <span className="inline-flex items-center self-start mt-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-full bg-primary-500/30 text-primary-200">
+                        {details.photoCategory}
+                    </span>
+                )}
+                {details?.timelineLabel && (
+                    <p className="text-primary-200 text-xs font-semibold mt-0.5">
+                        {details.timelineLabel}
+                    </p>
+                )}
+                <p className="text-white/60 text-[11px] mt-0.5">
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                </p>
             </div>
         </div>
-    );
-};
+    )
+})
 
+PhotoItem.displayName = 'PhotoItem'
+
+const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () => void }> = memo(
+    ({ imageUrl, entry, onClose }) => {
+        const details = entry.details as PhotoDetails
+
+        useEffect(() => {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'Escape') onClose()
+            }
+            document.addEventListener('keydown', handleKeyDown)
+            return () => document.removeEventListener('keydown', handleKeyDown)
+        }, [onClose])
+
+        return (
+            <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 animate-fade-in"
+                onClick={onClose}
+                role="dialog"
+                aria-modal="true"
+                aria-label={entry.notes}
+            >
+                <div
+                    className="relative max-w-[90vw] max-h-[90vh]"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <button
+                        className="absolute -top-3 -right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 transition-colors"
+                        onClick={onClose}
+                        aria-label="Close"
+                    >
+                        <PhosphorIcons.X className="w-5 h-5" />
+                    </button>
+                    <img
+                        src={imageUrl}
+                        alt={entry.notes}
+                        className="max-w-full max-h-[85vh] rounded-lg object-contain"
+                    />
+                    <div className="mt-3 text-center space-y-1">
+                        <p className="text-white font-semibold">{entry.notes}</p>
+                        {details?.photoCategory && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider rounded-full bg-primary-500/30 text-primary-200">
+                                {details.photoCategory}
+                            </span>
+                        )}
+                        <p className="text-white/50 text-sm">
+                            {new Date(entry.createdAt).toLocaleString()}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        )
+    },
+)
+
+Lightbox.displayName = 'Lightbox'
 
 export const PhotosTab: React.FC<PhotoTabProps> = memo(({ journal }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation()
+    const [lightbox, setLightbox] = useState<{ url: string; entry: JournalEntry } | null>(null)
 
-    const photoJournalEntries = useMemo(() =>
-        journal.filter(entry => entry.type === JournalEntryType.Photo && ((entry.details as PhotoDetails)?.imageUrl || (entry.details as PhotoDetails)?.imageId)),
-    [journal]);
+    const photoJournalEntries = useMemo(
+        () =>
+            journal.filter(
+                (entry) =>
+                    entry.type === JournalEntryType.Photo &&
+                    ((entry.details as PhotoDetails)?.imageUrl ||
+                        (entry.details as PhotoDetails)?.imageId),
+            ),
+        [journal],
+    )
+
+    const handleOpenLightbox = useCallback((url: string, entry: JournalEntry) => {
+        setLightbox({ url, entry })
+    }, [])
+
+    const handleCloseLightbox = useCallback(() => {
+        setLightbox(null)
+    }, [])
 
     return (
-        <Card>
-            {photoJournalEntries.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {[...photoJournalEntries].reverse().map(entry => (
-                        <PhotoItem key={entry.id} entry={entry} />
-                    ))}
-                </div>
-            ) : (
-                <p className="text-center text-slate-400 py-8">{t('plantsView.detailedView.photosNoEntries')}</p>
+        <>
+            {lightbox && (
+                <Lightbox
+                    imageUrl={lightbox.url}
+                    entry={lightbox.entry}
+                    onClose={handleCloseLightbox}
+                />
             )}
-        </Card>
-    );
-});
+            <Card>
+                {photoJournalEntries.length > 0 ? (
+                    <>
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold font-display text-primary-400 flex items-center gap-2">
+                                <PhosphorIcons.Camera className="w-5 h-5" />
+                                {t('plantsView.detailedView.tabs.photos')}
+                            </h3>
+                            <span className="text-xs font-bold rounded-full bg-slate-800 text-slate-300 px-2.5 py-1 ring-1 ring-inset ring-white/20">
+                                {photoJournalEntries.length}
+                            </span>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {[...photoJournalEntries].reverse().map((entry) => (
+                                <PhotoItem
+                                    key={entry.id}
+                                    entry={entry}
+                                    onOpen={handleOpenLightbox}
+                                />
+                            ))}
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-center py-8">
+                        <PhosphorIcons.Camera className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                        <p className="text-slate-400">
+                            {t('plantsView.detailedView.photosNoEntries')}
+                        </p>
+                    </div>
+                )}
+            </Card>
+        </>
+    )
+})
+
+PhotosTab.displayName = 'PhotosTab'

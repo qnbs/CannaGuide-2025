@@ -50,6 +50,14 @@ export type Theme =
     | 'lemonSkunk'
 export type GrowGoal = 'medical' | 'recreational' | 'hobbyist'
 
+/**
+ * AI execution mode.
+ * - cloud:  Always use the cloud provider (local AI only as error fallback)
+ * - local:  Always use the on-device models – no cloud API calls
+ * - hybrid: Smart routing – use local when models are pre-loaded, cloud otherwise
+ */
+export type AiMode = 'cloud' | 'local' | 'hybrid'
+
 /** Scientifically recognised cannabis terpenes */
 export type TerpeneName =
     | 'Myrcene'
@@ -504,6 +512,7 @@ export interface MentorMessage {
 export interface AppSettings {
     version: number
     onboardingCompleted: boolean
+    aiMode: AiMode
     general: {
         language: Language
         theme: Theme

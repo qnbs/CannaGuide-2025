@@ -14,6 +14,7 @@ export const settingsView = {
         accessibility: 'Accessibility',
         lookAndFeel: 'Look & Feel',
         interactivity: 'Interactivity',
+        ai: 'AI Configuration',
     },
     security: {
         title: 'AI Security (Multi-Model BYOK)',
@@ -52,6 +53,27 @@ export const settingsView = {
         auditLog: 'Local AI audit log',
         auditLogEmpty: 'No AI requests have been recorded yet.',
         clearAuditLog: 'Clear audit log',
+    },
+    aiMode: {
+        title: 'AI Execution Mode',
+        description:
+            'Choose how the app processes AI requests. Cloud mode uses your API key for best quality, Local mode runs everything on your device for maximum privacy, and Hybrid mode automatically picks the best option.',
+        label: 'AI Mode',
+        cloud: 'Cloud',
+        cloudDesc:
+            'All AI requests are sent to the cloud provider (Gemini, OpenAI, etc.). Best quality, requires an API key and internet connection.',
+        local: 'Local',
+        localDesc:
+            'All AI runs on your device using local models. No data leaves the device. Works completely offline once models are preloaded.',
+        hybrid: 'Hybrid (Smart)',
+        hybridDesc:
+            'Automatically uses local models when preloaded, otherwise falls back to the cloud. Best of both worlds.',
+        activeIndicator: 'Active mode: {{mode}}',
+        localNotReady:
+            'Local AI models are not preloaded yet. Preload them below for the best local experience.',
+        localReady: 'Local AI models are loaded and ready for inference.',
+        switchingToLocal: 'Switching to local mode — models will be preloaded automatically.',
+        imageGenCloudOnly: 'Note: Image generation is only available in Cloud or Hybrid mode.',
     },
     offlineAi: {
         title: 'Local AI Offline Cache',

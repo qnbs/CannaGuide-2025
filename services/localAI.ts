@@ -10,7 +10,7 @@ import {
     StructuredGrowTips,
     Strain,
 } from '@/types'
-import type { ImageStyle } from '@/services/geminiService'
+import type { BaseAIProvider, ImageStyle } from '@/types/aiProvider'
 import {
     AIResponseSchema,
     DeepDiveGuideSchema,
@@ -191,7 +191,10 @@ const fallbackDiagnosis = (plant: Plant, lang: Language): PlantDiagnosisResponse
         prevention: isGerman(lang)
             ? 'Regelmäßig VPD, pH, EC und Substratfeuchte prüfen.'
             : 'Check VPD, pH, EC, and substrate moisture regularly.',
-        diagnosis: heuristic.issues.length > 0 ? heuristic.issues[0] : heuristic.topPriority,
+        diagnosis:
+            heuristic.issues.length > 0
+                ? (heuristic.issues[0] ?? heuristic.topPriority)
+                : heuristic.topPriority,
     }
 }
 
@@ -206,7 +209,9 @@ const parseJsonSafely = <T>(schema: z.ZodType<T>, value: string): T | null => {
     }
 }
 
-class LocalAiService {
+class LocalAiService implements BaseAIProvider {
+    readonly id = 'local' as const
+
     private textPipelinePromise: Promise<LocalAiPipeline> | null = null
     private visionPipelinePromise: Promise<LocalAiPipeline> | null = null
     private webLlmPromise: Promise<LocalWebLlmEngine | null> | null = null
@@ -840,18 +845,18 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
     async getMentorResponse(
         plant: Plant,
         query: string,
-        ragContext: string,
         lang: Language,
+        ragContext?: string,
     ): Promise<Omit<MentorMessage, 'role'>> {
-        const prompt = this.buildMentorPrompt(plant, query, ragContext, lang)
+        const prompt = this.buildMentorPrompt(plant, query, ragContext ?? '', lang)
         const generated = await this.generateText(prompt)
         if (!generated) {
-            return fallbackMentorMessage(plant, query, ragContext, lang)
+            return fallbackMentorMessage(plant, query, ragContext ?? '', lang)
         }
 
         const parsed = parseJsonSafely(MentorMessageContentSchema, generated)
         if (!parsed) {
-            return fallbackMentorMessage(plant, query, ragContext, lang)
+            return fallbackMentorMessage(plant, query, ragContext ?? '', lang)
         }
 
         return parsed

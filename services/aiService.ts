@@ -1,4 +1,5 @@
-import { geminiService, type ImageStyle } from '@/services/geminiService'
+import { geminiService } from '@/services/geminiService'
+import type { ImageStyle } from '@/types/aiProvider'
 import { localAiPreloadService } from '@/services/localAiPreloadService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { growLogRagService } from '@/services/growLogRagService'
@@ -184,7 +185,7 @@ export const aiService = {
                 ragContext = growLogRagService.retrieveRelevantContext([plant], query)
             }
             const local = await getLocalAiService()
-            return local.getMentorResponse(plant, query, ragContext, lang)
+            return local.getMentorResponse(plant, query, lang, ragContext)
         }
         return withLocalFallback(
             () => geminiService.getMentorResponse(plant, query, lang),

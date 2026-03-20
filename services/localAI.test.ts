@@ -139,8 +139,8 @@ describe('localAiService', () => {
         const response = await localAiService.getMentorResponse(
             buildPlant(),
             'What should I fix?',
-            'Recent log lines',
             'en',
+            'Recent log lines',
         )
 
         expect(response.title).toBe('Local Mentor')

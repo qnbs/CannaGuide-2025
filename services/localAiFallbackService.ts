@@ -10,26 +10,11 @@ import {
     Language,
 } from '@/types'
 import DOMPurify from 'dompurify'
-import type { ImageStyle } from '@/services/geminiService'
+import type { ImageStyle, NutrientContext } from '@/types/aiProvider'
 
 const isGerman = (lang: Language) => lang === 'de'
 
-type NutrientRecommendationContext = {
-    medium: string
-    stage: string
-    currentEc: number
-    currentPh: number
-    optimalRange: { ecMin: number; ecMax: number; phMin: number; phMax: number }
-    readings: Array<{ ec: number; ph: number; readingType: string; timestamp: number }>
-    plant?: {
-        name: string
-        strain: { name: string }
-        stage: string
-        age: number
-        health: number
-        medium: { ph: number; ec: number }
-    }
-}
+type NutrientRecommendationContext = NutrientContext
 
 const formatPlantLine = (plant: Plant) =>
     `${plant.name}: health ${plant.health.toFixed(0)}%, stress ${plant.stressLevel.toFixed(0)}%, VPD ${plant.environment.vpd.toFixed(2)} kPa`
@@ -176,7 +161,10 @@ export function diagnosePlant(plant: Plant, lang: Language): PlantDiagnostic {
 
     const topPriority =
         issues.length > 0
-            ? issues[0]
+            ? (issues[0] ??
+              (isGerman(lang)
+                  ? 'Alle Parameter im Normalbereich.'
+                  : 'All parameters within normal range.'))
             : isGerman(lang)
               ? 'Alle Parameter im Normalbereich.'
               : 'All parameters within normal range.'
@@ -222,6 +210,7 @@ const summarizeTrend = (context: NutrientRecommendationContext, lang: Language):
     )
     const firstReading = orderedReadings[0]
     const lastReading = orderedReadings[orderedReadings.length - 1]
+    if (!firstReading || !lastReading) return null
     const ecDelta = lastReading.ec - firstReading.ec
     const phDelta = lastReading.ph - firstReading.ph
 
@@ -314,11 +303,13 @@ const buildNutrientRecommendation = (
         const latest = [...context.readings].sort(
             (left, right) => right.timestamp - left.timestamp,
         )[0]
-        lines.push(
-            isGerman(lang)
-                ? `Letzte Messung (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`
-                : `Latest reading (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`,
-        )
+        if (latest) {
+            lines.push(
+                isGerman(lang)
+                    ? `Letzte Messung (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`
+                    : `Latest reading (${latest.readingType}): EC ${latest.ec.toFixed(2)}, pH ${latest.ph.toFixed(2)}.`,
+            )
+        }
     }
 
     if (context.plant) {
@@ -512,7 +503,7 @@ const AVAILABLE_STYLES: Exclude<ImageStyle, 'random'>[] = [
 
 const resolveStyle = (style: ImageStyle): Exclude<ImageStyle, 'random'> => {
     if (style === 'random') {
-        return AVAILABLE_STYLES[Math.floor(Math.random() * AVAILABLE_STYLES.length)]
+        return AVAILABLE_STYLES[Math.floor(Math.random() * AVAILABLE_STYLES.length)] ?? 'botanical'
     }
     return style as Exclude<ImageStyle, 'random'>
 }

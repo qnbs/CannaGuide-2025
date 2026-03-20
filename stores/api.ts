@@ -184,7 +184,7 @@ export const geminiApi = createApi({
                     const aiService = await getAiService()
                     const data = await aiService.generateStrainImage(
                         strain,
-                        style as import('@/services/geminiService').ImageStyle,
+                        style as import('@/types/aiProvider').ImageStyle,
                         criteria,
                         lang,
                     )

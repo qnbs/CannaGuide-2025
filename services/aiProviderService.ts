@@ -272,9 +272,9 @@ async function callOpenAiCompatible(
     })
 
     if (!response.ok) {
-        const errorText = await response.text().catch(() => '')
+        await response.text().catch(() => '')
         if (response.status === 429) throw new Error('ai.error.rateLimited:60')
-        throw new Error(`API error ${response.status}: ${errorText.slice(0, 200)}`)
+        throw new Error(`API error ${response.status}`)
     }
 
     const data = (await response.json()) as OpenAiChatResponse
@@ -315,9 +315,9 @@ async function callAnthropic(
     })
 
     if (!response.ok) {
-        const errorText = await response.text().catch(() => '')
+        await response.text().catch(() => '')
         if (response.status === 429) throw new Error('ai.error.rateLimited:60')
-        throw new Error(`API error ${response.status}: ${errorText.slice(0, 200)}`)
+        throw new Error(`API error ${response.status}`)
     }
 
     const data = (await response.json()) as AnthropicResponse

@@ -184,7 +184,7 @@ const loadPlugins = (): void => {
 // ---------------------------------------------------------------------------
 
 const SEMVER_REGEX = /^\d+\.\d+\.\d+$/
-const PLUGIN_ID_REGEX = /^[\w][\w./-]{2,63}$/
+const PLUGIN_ID_REGEX = /^[\w][\w.-]{2,63}$/
 
 const validateManifest = (manifest: CannaGuidePlugin): string[] => {
     const errors: string[] = []

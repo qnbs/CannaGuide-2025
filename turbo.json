@@ -42,11 +42,7 @@
                 "dist/**"
             ],
             "cache": false,
-            "env": [
-                "TAURI_SIGNING_PRIVATE_KEY",
-                "TAURI_SIGNING_PRIVATE_KEY_PASSWORD",
-                "TAURI_ENV_*"
-            ]
+            "env": ["TAURI_SIGNING_*", "TAURI_ENV_*"]
         },
         "tauri:dev": {
             "dependsOn": ["^build"],

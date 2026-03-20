@@ -65,6 +65,9 @@ async function tauriInvoke<T>(cmd: string, args?: Record<string, unknown>): Prom
 // Image Processing — binary IPC
 // ---------------------------------------------------------------------------
 
+/** Maximum image size accepted for IPC transfer (20 MB). */
+const MAX_IPC_IMAGE_SIZE = 20 * 1024 * 1024
+
 /**
  * Process an image for AI inference using Tauri's native binary IPC.
  *
@@ -79,6 +82,10 @@ export async function processImageBinary(
 ): Promise<ImageProcessResult | null> {
     if (!isTauriEnvironment()) {
         return null
+    }
+
+    if (imageData.byteLength > MAX_IPC_IMAGE_SIZE) {
+        throw new Error(`Image exceeds maximum IPC size of ${MAX_IPC_IMAGE_SIZE / 1024 / 1024} MB`)
     }
 
     const result = await tauriInvoke<{
@@ -117,7 +124,7 @@ export async function processImageBinary(
 /**
  * Decode a binary sensor packet from ESP32 bulk data.
  *
- * Wire format: interleaved little-endian f32 values:
+ * Wire format: sequential little-endian f32 values per reading:
  *   [temp₀, hum₀, ph₀, temp₁, hum₁, ph₁, …]
  *
  * In Tauri: delegates decoding to Rust (zero-copy from USB/serial buffer).

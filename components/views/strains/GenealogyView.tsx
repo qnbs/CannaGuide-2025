@@ -1,10 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import * as d3 from 'd3';
-import { useAppDispatch, useAppSelector } from '@/stores/store';
-import {
-    selectGenealogyState,
-} from '@/stores/selectors';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
+import * as d3 from 'd3'
+import { useAppDispatch, useAppSelector } from '@/stores/store'
+import { selectGenealogyState } from '@/stores/selectors'
 import {
     fetchAndBuildGenealogy,
     setSelectedGenealogyStrain,
@@ -14,149 +12,257 @@ import {
     resetGenealogyCache,
     resetGenealogy,
     isGenealogyStateCorrupt,
-} from '@/stores/slices/genealogySlice';
-import { Strain, GenealogyNode } from '@/types';
-import { StrainTreeNode } from './StrainTreeNode';
-import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { Select } from '@/components/ui/form';
-import { geneticsService } from '@/services/geneticsService';
-import { SkeletonLoader } from '@/components/common/SkeletonLoader';
-import { Modal } from '@/components/common/Modal';
-import { StrainCompactItem } from './StrainCompactItem';
-import { GENEALOGY_NODE_SIZE } from '@/constants';
-import { compareText } from './compareText';
-
+} from '@/stores/slices/genealogySlice'
+import { type Strain, type GenealogyNode, StrainType } from '@/types'
+import { StrainTreeNode } from './StrainTreeNode'
+import { Card } from '@/components/common/Card'
+import { Button } from '@/components/common/Button'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { Select } from '@/components/ui/form'
+import { geneticsService } from '@/services/geneticsService'
+import { SkeletonLoader } from '@/components/common/SkeletonLoader'
+import { Modal } from '@/components/common/Modal'
+import { StrainCompactItem } from './StrainCompactItem'
+import { GENEALOGY_NODE_SIZE } from '@/constants'
+import { compareText } from './compareText'
 
 interface GenealogyLayoutNode {
-    data: GenealogyNode;
-    depth: number;
-    x: number;
-    y: number;
+    data: GenealogyNode
+    depth: number
+    x: number
+    y: number
 }
 
 interface GenealogyLayoutLink {
-    sourceIndex: number;
-    targetIndex: number;
+    sourceIndex: number
+    targetIndex: number
 }
 
-
 interface GenealogyViewProps {
-    allStrains: Strain[];
-    onNodeClick: (strain: Strain) => void;
+    allStrains: Strain[]
+    onNodeClick: (strain: Strain) => void
 }
 
 // ---------------------------------------------------------------------------
 // Error-Fallback – wird angezeigt, wenn ein lokaler Fehler aufgetreten ist.
 // ---------------------------------------------------------------------------
-const GenealogyError: React.FC<{ message: string; onReset: () => void }> = ({ message, onReset }) => {
-    const { t } = useTranslation();
+const GenealogyError: React.FC<{ message: string; onReset: () => void }> = ({
+    message,
+    onReset,
+}) => {
+    const { t } = useTranslation()
     return (
-    <Card className="text-center py-10">
-        <PhosphorIcons.WarningCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
-        <p className="text-red-300 font-semibold">{message}</p>
-        <p className="text-slate-400 text-sm mt-2">
-            {t('strainsView.genealogyView.pleaseReloadOrContact')}
-        </p>
-        <Button variant="danger" size="sm" className="mt-4" onClick={onReset}>
-            <PhosphorIcons.ArrowClockwise className="mr-1" /> {t('common.resetState')}
-        </Button>
-    </Card>
-    );
-};
+        <Card className="text-center py-10">
+            <PhosphorIcons.WarningCircle className="w-12 h-12 mx-auto text-red-400 mb-4" />
+            <p className="text-red-300 font-semibold">{message}</p>
+            <p className="text-slate-400 text-sm mt-2">
+                {t('strainsView.genealogyView.pleaseReloadOrContact')}
+            </p>
+            <Button variant="danger" size="sm" className="mt-4" onClick={onReset}>
+                <PhosphorIcons.ArrowClockwise className="mr-1" /> {t('common.resetState')}
+            </Button>
+        </Card>
+    )
+}
 
 // ---------------------------------------------------------------------------
-// GenealogyLink – rechtwinklige Verbindungslinien zwischen Knoten.
-// Vollständig in try/catch – bei jeglichem Fehler wird null gerendert.
+// GenealogyLink – smooth cubic-bézier curves between node edges.
 // ---------------------------------------------------------------------------
+const HALF_W = GENEALOGY_NODE_SIZE.width / 2
+const HALF_H = GENEALOGY_NODE_SIZE.height / 2
+
 const GenealogyLink = React.memo<{
-    source: GenealogyLayoutNode;
-    target: GenealogyLayoutNode;
-    orientation: 'horizontal' | 'vertical';
+    source: GenealogyLayoutNode
+    target: GenealogyLayoutNode
+    orientation: 'horizontal' | 'vertical'
 }>(({ source, target, orientation }) => {
-    let pathData = '';
+    let pathData = ''
     try {
         if (
-            source?.x == null || source?.y == null ||
-            target?.x == null || target?.y == null ||
-            !isFinite(source.x) || !isFinite(source.y) ||
-            !isFinite(target.x) || !isFinite(target.y)
+            source?.x == null ||
+            source?.y == null ||
+            target?.x == null ||
+            target?.y == null ||
+            !Number.isFinite(source.x) ||
+            !Number.isFinite(source.y) ||
+            !Number.isFinite(target.x) ||
+            !Number.isFinite(target.y)
         ) {
-            return null;
+            return null
         }
         if (orientation === 'horizontal') {
-            const midY = source.y + (target.y - source.y) / 2;
-            pathData = `M${source.y},${source.x} L${midY},${source.x} L${midY},${target.x} L${target.y},${target.x}`;
+            const sx = source.y + HALF_W
+            const sy = source.x
+            const tx = target.y - HALF_W
+            const ty = target.x
+            const mx = (sx + tx) / 2
+            pathData = `M${sx},${sy} C${mx},${sy} ${mx},${ty} ${tx},${ty}`
         } else {
-            const midY = source.y + (target.y - source.y) / 2;
-            pathData = `M${source.x},${source.y} L${source.x},${midY} L${target.x},${midY} L${target.x},${target.y}`;
+            const sx = source.x
+            const sy = source.y + HALF_H
+            const tx = target.x
+            const ty = target.y - HALF_H
+            const my = (sy + ty) / 2
+            pathData = `M${sx},${sy} C${sx},${my} ${tx},${my} ${tx},${ty}`
         }
     } catch {
-        return null;
+        return null
     }
-    if (!pathData) return null;
-    return <path className="genealogy-link" d={pathData} />;
-});
-GenealogyLink.displayName = 'GenealogyLink';
+    if (!pathData) return null
+    return <path className="genealogy-link" d={pathData} />
+})
+GenealogyLink.displayName = 'GenealogyLink'
 
 // ---------------------------------------------------------------------------
-// AnalysisPanel – genetische Beiträge + Nachfahren-Button.
+// AnalysisPanel – genetische Beiträge, Lineage-Filter + Nachfahren-Button.
 // ---------------------------------------------------------------------------
-const AnalysisPanel = React.memo<{ tree: GenealogyNode | null; onShowDescendants: () => void }>(
-    ({ tree, onShowDescendants }) => {
-        const { t } = useTranslation();
+type HighlightMode = 'none' | 'landraces' | 'sativa' | 'indica'
 
-        const [contributions, setContributions] = useState<
-            { name: string; contribution: number }[]
-        >([]);
+const AnalysisPanel = React.memo<{
+    tree: GenealogyNode | null
+    onShowDescendants: () => void
+    highlightMode: HighlightMode
+    onHighlightModeChange: (mode: HighlightMode) => void
+}>(({ tree, onShowDescendants, highlightMode, onHighlightModeChange }) => {
+    const { t } = useTranslation()
 
-        useEffect(() => {
-            if (!tree) {
-                setContributions([]);
-                return;
+    const [contributions, setContributions] = useState<{ name: string; contribution: number }[]>([])
+
+    useEffect(() => {
+        if (!tree) {
+            setContributions([])
+            return
+        }
+        const worker = new Worker(
+            new URL('../../../workers/genealogy.worker.ts', import.meta.url),
+            { type: 'module' },
+        )
+
+        worker.onmessage = (
+            event: MessageEvent<
+                | {
+                      type: 'CONTRIBUTIONS_RESULT'
+                      contributions: { name: string; contribution: number }[]
+                  }
+                | { type: 'ERROR'; message: string }
+            >,
+        ) => {
+            if (event.data.type === 'CONTRIBUTIONS_RESULT') {
+                setContributions(
+                    Array.isArray(event.data.contributions)
+                        ? event.data.contributions.slice(0, 5)
+                        : [],
+                )
+            } else {
+                console.error('[AnalysisPanel] worker error:', event.data.message)
+                setContributions([])
             }
-            const worker = new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), { type: 'module' });
+        }
 
-            worker.onmessage = (event: MessageEvent<{ type: 'CONTRIBUTIONS_RESULT'; contributions: { name: string; contribution: number }[] } | { type: 'ERROR'; message: string }>) => {
-                if (event.data.type === 'CONTRIBUTIONS_RESULT') {
-                    setContributions(Array.isArray(event.data.contributions) ? event.data.contributions.slice(0, 5) : []);
-                } else {
-                    console.error('[AnalysisPanel] worker error:', event.data.message);
-                    setContributions([]);
-                }
-            };
+        worker.postMessage({ type: 'CONTRIBUTIONS', tree })
 
-            worker.postMessage({ type: 'CONTRIBUTIONS', tree });
+        return () => worker.terminate()
+    }, [tree])
 
-            return () => worker.terminate();
-        }, [tree]);
+    const toggleMode = (mode: HighlightMode) => {
+        onHighlightModeChange(highlightMode === mode ? 'none' : mode)
+    }
 
-        return (
+    return (
+        <div className="space-y-4">
+            {/* Analysis Tools */}
             <Card className="!p-3">
-                <h4 className="font-bold text-slate-200 mb-2">
+                <h4 className="font-bold text-slate-200 mb-3 text-sm uppercase tracking-wider">
+                    {t('strainsView.genealogyView.analysisTools')}
+                </h4>
+                <div className="space-y-1.5">
+                    <button
+                        type="button"
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${highlightMode === 'landraces' ? 'bg-green-900/50 text-green-300 ring-1 ring-green-500/40' : 'text-slate-300 hover:bg-slate-700/50'}`}
+                        onClick={() => toggleMode('landraces')}
+                    >
+                        <PhosphorIcons.Leafy className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+                        {t('strainsView.genealogyView.highlightLandraces')}
+                    </button>
+                    <button
+                        type="button"
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${highlightMode === 'sativa' ? 'bg-amber-900/50 text-amber-300 ring-1 ring-amber-500/40' : 'text-slate-300 hover:bg-slate-700/50'}`}
+                        onClick={() => toggleMode('sativa')}
+                    >
+                        <PhosphorIcons.Sun className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+                        {t('strainsView.genealogyView.traceSativa')}
+                    </button>
+                    <button
+                        type="button"
+                        className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${highlightMode === 'indica' ? 'bg-indigo-900/50 text-indigo-300 ring-1 ring-indigo-500/40' : 'text-slate-300 hover:bg-slate-700/50'}`}
+                        onClick={() => toggleMode('indica')}
+                    >
+                        <PhosphorIcons.Star className="w-4 h-4 inline-block mr-2 -mt-0.5" />
+                        {t('strainsView.genealogyView.traceIndica')}
+                    </button>
+                    {highlightMode !== 'none' && (
+                        <button
+                            type="button"
+                            className="w-full text-left px-3 py-1.5 rounded-md text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                            onClick={() => onHighlightModeChange('none')}
+                        >
+                            <PhosphorIcons.X className="w-3 h-3 inline-block mr-1 -mt-0.5" />
+                            {t('strainsView.genealogyView.clearHighlight')}
+                        </button>
+                    )}
+                </div>
+            </Card>
+
+            {/* Genetic Influence */}
+            <Card className="!p-3">
+                <h4 className="font-bold text-slate-200 mb-2 text-sm uppercase tracking-wider">
                     {t('strainsView.genealogyView.geneticInfluence')}
                 </h4>
-                <ul className="space-y-1 text-sm">
-                    {contributions.map((c, idx) => (
-                        <li key={`contrib-${c?.name ?? idx}`} className="flex justify-between items-center">
-                            <span className="text-slate-300 truncate" title={c?.name ?? ''}>
-                                {c?.name ?? '—'}
-                            </span>
-                            <span className="font-mono text-primary-300 flex-shrink-0 ml-2">
-                                {typeof c?.contribution === 'number' ? c.contribution.toFixed(1) : '0.0'}%
-                            </span>
-                        </li>
-                    ))}
-                </ul>
-                <Button variant="secondary" size="sm" className="w-full mt-4" onClick={onShowDescendants}>
-                    {t('strainsView.genealogyView.showDescendants')}
-                </Button>
+                {contributions.length > 0 ? (
+                    <ul className="space-y-1.5 text-sm">
+                        {contributions.map((c, idx) => (
+                            <li
+                                key={`contrib-${c?.name ?? idx}`}
+                                className="flex justify-between items-center gap-2"
+                            >
+                                <span className="text-slate-300 truncate" title={c?.name ?? ''}>
+                                    {c?.name ?? '—'}
+                                </span>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <div className="w-16 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-primary-500 rounded-full"
+                                            style={{
+                                                width: `${Math.min(100, c?.contribution ?? 0)}%`,
+                                            }}
+                                        />
+                                    </div>
+                                    <span className="font-mono text-primary-300 text-xs w-12 text-right tabular-nums">
+                                        {typeof c?.contribution === 'number'
+                                            ? c.contribution.toFixed(1)
+                                            : '0.0'}
+                                        %
+                                    </span>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p className="text-slate-500 text-xs">
+                        {t('strainsView.genealogyView.noStrainSelected')}
+                    </p>
+                )}
             </Card>
-        );
-    },
-);
-AnalysisPanel.displayName = 'GenealogyAnalysisPanel';
+
+            {/* Descendants */}
+            <Button variant="secondary" size="sm" className="w-full" onClick={onShowDescendants}>
+                <PhosphorIcons.ShareNetwork className="w-4 h-4 mr-1.5" />
+                {t('strainsView.genealogyView.showDescendants')}
+            </Button>
+        </div>
+    )
+})
+AnalysisPanel.displayName = 'GenealogyAnalysisPanel'
 
 // ---------------------------------------------------------------------------
 // GenealogyView – Hauptkomponente (extrem bulletproof)
@@ -171,9 +277,9 @@ AnalysisPanel.displayName = 'GenealogyAnalysisPanel';
 //   5. Debug-Logging am Mount für Diagnose.
 // ---------------------------------------------------------------------------
 export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNodeClick }) => {
-    const { t } = useTranslation();
-    const dispatch = useAppDispatch();
-    const genealogyState = useAppSelector(selectGenealogyState);
+    const { t } = useTranslation()
+    const dispatch = useAppDispatch()
+    const genealogyState = useAppSelector(selectGenealogyState)
 
     // ── Debug: State beim Mount loggen ────────────────────────────────
     useEffect(() => {
@@ -181,249 +287,262 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
             console.debug(
                 '[GenealogyView] mount – genealogyState:',
                 JSON.stringify(genealogyState, null, 2),
-            );
+            )
         } catch {
-            console.debug('[GenealogyView] mount – genealogyState could not be serialized');
+            console.debug('[GenealogyView] mount – genealogyState could not be serialized')
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [])
 
     // ── Defensive Destructuring ──────────────────────────────────────
-    const computedTrees = useMemo(() => genealogyState?.computedTrees ?? {}, [genealogyState?.computedTrees]);
-    const status = genealogyState?.status ?? 'idle';
-    const selectedStrainId = genealogyState?.selectedStrainId ?? null;
-    const zoomTransform = genealogyState?.zoomTransform ?? null;
-    const layoutOrientation = genealogyState?.layoutOrientation ?? 'horizontal';
+    const computedTrees = useMemo(
+        () => genealogyState?.computedTrees ?? {},
+        [genealogyState?.computedTrees],
+    )
+    const status = genealogyState?.status ?? 'idle'
+    const selectedStrainId = genealogyState?.selectedStrainId ?? null
+    const zoomTransform = genealogyState?.zoomTransform ?? null
+    const layoutOrientation = genealogyState?.layoutOrientation ?? 'horizontal'
 
     // ── Lokaler State ────────────────────────────────────────────────
-    const [localError, setLocalError] = useState<string | null>(null);
-    const [wasReset, setWasReset] = useState(false);
-    const [dataReady, setDataReady] = useState(false);
+    const [localError, setLocalError] = useState<string | null>(null)
+    const [wasReset, setWasReset] = useState(false)
+    const [dataReady, setDataReady] = useState(false)
     const [descendants, setDescendants] = useState<{
-        children: Strain[];
-        grandchildren: Strain[];
-    } | null>(null);
+        children: Strain[]
+        grandchildren: Strain[]
+    } | null>(null)
+    const [highlightMode, setHighlightMode] = useState<HighlightMode>('none')
 
     // d3-Layout-Ergebnisse: werden im Worker berechnet, NIE im Render
-    const [layoutNodes, setLayoutNodes] = useState<GenealogyLayoutNode[]>([]);
-    const [layoutLinks, setLayoutLinks] = useState<GenealogyLayoutLink[]>([]);
+    const [layoutNodes, setLayoutNodes] = useState<GenealogyLayoutNode[]>([])
+    const [layoutLinks, setLayoutLinks] = useState<GenealogyLayoutLink[]>([])
 
     // Refs
-    const svgRef = useRef<SVGSVGElement>(null);
-    const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-    const zoomTransformRef = useRef(zoomTransform);
-    zoomTransformRef.current = zoomTransform;
+    const svgRef = useRef<SVGSVGElement>(null)
+    const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null)
+    const zoomTransformRef = useRef(zoomTransform)
+    zoomTransformRef.current = zoomTransform
 
     // ── Mount-Check: Datenbereitschaft ───────────────────────────────
     useEffect(() => {
         try {
             if (Array.isArray(allStrains) && allStrains.length > 0) {
-                setDataReady(true);
+                setDataReady(true)
             }
         } catch {
-            setDataReady(false);
+            setDataReady(false)
         }
-    }, [allStrains]);
+    }, [allStrains])
 
     // ── Mount-Check: korrupten persisted State zurücksetzen ──────────
     useEffect(() => {
         try {
             if (isGenealogyStateCorrupt(genealogyState)) {
-                console.warn('[GenealogyView] Corrupt persisted state detected on mount – resetting.');
-                dispatch(resetGenealogy());
-                setWasReset(true);
+                console.warn(
+                    '[GenealogyView] Corrupt persisted state detected on mount – resetting.',
+                )
+                dispatch(resetGenealogy())
+                setWasReset(true)
             }
         } catch (err) {
-            console.error('[GenealogyView] Corruption check itself failed:', err);
+            console.error('[GenealogyView] Corruption check itself failed:', err)
             try {
-                dispatch(resetGenealogy());
-            } catch { /* letzte Rettung fehlgeschlagen */ }
-            setWasReset(true);
+                dispatch(resetGenealogy())
+            } catch {
+                /* letzte Rettung fehlgeschlagen */
+            }
+            setWasReset(true)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dispatch]);
+    }, [dispatch])
 
     // ── Tree aus computedTrees ableiten (sicher) ─────────────────────
     const tree = useMemo(() => {
         try {
-            if (!selectedStrainId) return null;
-            const cached = computedTrees?.[selectedStrainId];
-            return cached ?? null;
+            if (!selectedStrainId) return null
+            const cached = computedTrees?.[selectedStrainId]
+            return cached ?? null
         } catch (err) {
-            console.error('[GenealogyView] tree derivation error:', err);
-            return null;
+            console.error('[GenealogyView] tree derivation error:', err)
+            return null
         }
-    }, [computedTrees, selectedStrainId]);
+    }, [computedTrees, selectedStrainId])
 
     // ── Tree laden wenn nicht gecacht ─────────────────────────────────
     useEffect(() => {
-        if (!selectedStrainId || !dataReady) return;
+        if (!selectedStrainId || !dataReady) return
         try {
             if (computedTrees?.[selectedStrainId] === undefined) {
-                dispatch(fetchAndBuildGenealogy({ strainId: selectedStrainId, allStrains }));
+                dispatch(fetchAndBuildGenealogy({ strainId: selectedStrainId, allStrains }))
             }
         } catch (err) {
-            console.error('[GenealogyView] fetchAndBuildGenealogy dispatch error:', err);
-            setLocalError(t('strainsView.genealogyView.errorLoadingTree'));
+            console.error('[GenealogyView] fetchAndBuildGenealogy dispatch error:', err)
+            setLocalError(t('strainsView.genealogyView.errorLoadingTree'))
         }
-    }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch, t]);
+    }, [selectedStrainId, allStrains, dataReady, computedTrees, dispatch, t])
 
     // ── d3-Layout-Berechnung im Worker (NICHT im Render) ──────────
     useEffect(() => {
         if (!tree) {
-            setLayoutNodes([]);
-            setLayoutLinks([]);
-            return;
+            setLayoutNodes([])
+            setLayoutLinks([])
+            return
         }
-        const worker = new Worker(new URL('../../../workers/genealogy.worker.ts', import.meta.url), { type: 'module' });
+        const worker = new Worker(
+            new URL('../../../workers/genealogy.worker.ts', import.meta.url),
+            { type: 'module' },
+        )
 
-        worker.onmessage = (event: MessageEvent<{ type: 'LAYOUT_RESULT'; nodes: GenealogyLayoutNode[]; links: GenealogyLayoutLink[] } | { type: 'ERROR'; message: string }>) => {
+        worker.onmessage = (
+            event: MessageEvent<
+                | {
+                      type: 'LAYOUT_RESULT'
+                      nodes: GenealogyLayoutNode[]
+                      links: GenealogyLayoutLink[]
+                  }
+                | { type: 'ERROR'; message: string }
+            >,
+        ) => {
             if (event.data.type === 'LAYOUT_RESULT') {
-                setLayoutNodes(event.data.nodes);
-                setLayoutLinks(event.data.links);
-                return;
+                setLayoutNodes(event.data.nodes)
+                setLayoutLinks(event.data.links)
+                return
             }
 
-            console.error('[GenealogyView] worker error:', event.data.message);
-            setLocalError(t('strainsView.genealogyView.errorCalculatingTree'));
-            setLayoutNodes([]);
-            setLayoutLinks([]);
-        };
+            console.error('[GenealogyView] worker error:', event.data.message)
+            setLocalError(t('strainsView.genealogyView.errorCalculatingTree'))
+            setLayoutNodes([])
+            setLayoutLinks([])
+        }
 
         worker.postMessage({
             type: 'LAYOUT',
             tree,
             orientation: layoutOrientation,
-        });
+        })
 
-        return () => worker.terminate();
-    }, [tree, layoutOrientation, t]);
+        return () => worker.terminate()
+    }, [tree, layoutOrientation, t])
 
     // ── Handler (alle in try/catch) ──────────────────────────────────
     const handleNodeClick = useCallback(
         (nodeData: GenealogyNode) => {
             try {
-                const strain = allStrains?.find((s) => s?.id === nodeData?.id);
-                if (strain) onNodeClick(strain);
+                const strain = allStrains?.find((s) => s?.id === nodeData?.id)
+                if (strain) onNodeClick(strain)
             } catch (err) {
-                console.error('[GenealogyView] handleNodeClick error:', err);
+                console.error('[GenealogyView] handleNodeClick error:', err)
             }
         },
         [allStrains, onNodeClick],
-    );
+    )
 
     const handleNodeFocus = useCallback(
         (nodeData: GenealogyNode) => {
-            if (!svgRef.current || !zoomRef.current) return;
+            if (!svgRef.current || !zoomRef.current) return
             try {
-                const target = layoutNodes?.find((n) => n?.data?.id === nodeData?.id);
-                if (!target) return;
-                const { width, height } = svgRef.current.getBoundingClientRect();
-                const isHorizontal = layoutOrientation === 'horizontal';
-                const nodeX = isHorizontal ? (target?.y ?? 0) : (target?.x ?? 0);
-                const nodeY = isHorizontal ? (target?.x ?? 0) : (target?.y ?? 0);
-                if (!isFinite(nodeX) || !isFinite(nodeY)) return;
-                const currentK = d3.zoomTransform(svgRef.current).k;
-                const scale = Math.max(isFinite(currentK) ? currentK : 1, 0.8);
-                const tx = width / 2 - nodeX * scale;
-                const ty = height / 2 - nodeY * scale;
+                const target = layoutNodes?.find((n) => n?.data?.id === nodeData?.id)
+                if (!target) return
+                const { width, height } = svgRef.current.getBoundingClientRect()
+                const isHorizontal = layoutOrientation === 'horizontal'
+                const nodeX = isHorizontal ? (target?.y ?? 0) : (target?.x ?? 0)
+                const nodeY = isHorizontal ? (target?.x ?? 0) : (target?.y ?? 0)
+                if (!isFinite(nodeX) || !isFinite(nodeY)) return
+                const currentK = d3.zoomTransform(svgRef.current).k
+                const scale = Math.max(isFinite(currentK) ? currentK : 1, 0.8)
+                const tx = width / 2 - nodeX * scale
+                const ty = height / 2 - nodeY * scale
                 d3.select(svgRef.current)
                     .transition()
                     .duration(600)
                     .ease(d3.easeCubicInOut)
-                    .call(
-                        zoomRef.current.transform,
-                        d3.zoomIdentity.translate(tx, ty).scale(scale),
-                    );
+                    .call(zoomRef.current.transform, d3.zoomIdentity.translate(tx, ty).scale(scale))
             } catch (err) {
-                console.error('[GenealogyView] handleNodeFocus error:', err);
+                console.error('[GenealogyView] handleNodeFocus error:', err)
             }
         },
         [layoutNodes, layoutOrientation],
-    );
+    )
 
     const handleToggle = useCallback(
         (nodeId: string) => {
             try {
                 if (selectedStrainId && typeof nodeId === 'string') {
-                    dispatch(toggleGenealogyNode({ strainId: selectedStrainId, nodeId }));
+                    dispatch(toggleGenealogyNode({ strainId: selectedStrainId, nodeId }))
                 }
             } catch (err) {
-                console.error('[GenealogyView] handleToggle error:', err);
+                console.error('[GenealogyView] handleToggle error:', err)
             }
         },
         [dispatch, selectedStrainId],
-    );
+    )
 
     const handleSelectChange = useCallback(
         (e: { target: { value: string | number } }) => {
             try {
                 dispatch(
-                    setSelectedGenealogyStrain(
-                        e?.target?.value ? String(e.target.value) : null,
-                    ),
-                );
+                    setSelectedGenealogyStrain(e?.target?.value ? String(e.target.value) : null),
+                )
             } catch (err) {
-                console.error('[GenealogyView] handleSelectChange error:', err);
+                console.error('[GenealogyView] handleSelectChange error:', err)
             }
         },
         [dispatch],
-    );
+    )
 
     const handleShowDescendants = useCallback(() => {
-        if (!selectedStrainId) return;
+        if (!selectedStrainId) return
         try {
-            const data = geneticsService.findDescendants(selectedStrainId, allStrains ?? []);
-            setDescendants(data ?? null);
+            const data = geneticsService.findDescendants(selectedStrainId, allStrains ?? [])
+            setDescendants(data ?? null)
         } catch (err) {
-            console.error('[GenealogyView] findDescendants error:', err);
+            console.error('[GenealogyView] findDescendants error:', err)
         }
-    }, [selectedStrainId, allStrains]);
+    }, [selectedStrainId, allStrains])
 
     const handleDescendantClick = useCallback(
         (strain: Strain) => {
             try {
-                setDescendants(null);
-                onNodeClick(strain);
+                setDescendants(null)
+                onNodeClick(strain)
             } catch (err) {
-                console.error('[GenealogyView] handleDescendantClick error:', err);
+                console.error('[GenealogyView] handleDescendantClick error:', err)
             }
         },
         [onNodeClick],
-    );
+    )
 
     const handleResetError = useCallback(() => {
         try {
-            setLocalError(null);
-            dispatch(resetGenealogy());
-            setWasReset(true);
+            setLocalError(null)
+            dispatch(resetGenealogy())
+            setWasReset(true)
         } catch {
             // Letzte Rettung – zumindest Error-State aufräumen
-            setLocalError(null);
+            setLocalError(null)
         }
-    }, [dispatch]);
+    }, [dispatch])
 
     const sortedStrains = useMemo(() => {
         try {
-            if (!Array.isArray(allStrains)) return [];
-            return [...allStrains].sort((a, b) =>
-                compareText(a?.name, b?.name),
-            );
+            if (!Array.isArray(allStrains)) return []
+            return [...allStrains].sort((a, b) => compareText(a?.name, b?.name))
         } catch {
-            return [];
+            return []
         }
-    }, [allStrains]);
+    }, [allStrains])
 
     // ── Zoom-Setup (useEffect) ───────────────────────────────────────
     useEffect(() => {
-        const svgEl = svgRef.current;
-        if (!svgEl) return;
+        const svgEl = svgRef.current
+        if (!svgEl) return
 
-        let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown>;
+        let zoomBehavior: d3.ZoomBehavior<SVGSVGElement, unknown>
 
         try {
-            const svg = d3.select(svgEl);
-            const g = svg.select<SVGGElement>('g.genealogy-content');
+            const svg = d3.select(svgEl)
+            const g = svg.select<SVGGElement>('g.genealogy-content')
 
             zoomBehavior = d3
                 .zoom<SVGSVGElement, unknown>()
@@ -431,7 +550,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 .on('zoom', (event) => {
                     try {
                         if (!g.empty()) {
-                            g.attr('transform', event?.transform?.toString?.() ?? '');
+                            g.attr('transform', event?.transform?.toString?.() ?? '')
                         }
                     } catch {
                         // Veraltete Selektion – ignorieren
@@ -440,7 +559,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 .on('end', (event) => {
                     try {
                         if (event?.sourceEvent) {
-                            const tr = event?.transform;
+                            const tr = event?.transform
                             if (
                                 tr &&
                                 typeof tr.k === 'number' &&
@@ -450,162 +569,190 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                 typeof tr.y === 'number' &&
                                 isFinite(tr.y)
                             ) {
-                                dispatch(setGenealogyZoom({ k: tr.k, x: tr.x, y: tr.y }));
+                                dispatch(setGenealogyZoom({ k: tr.k, x: tr.x, y: tr.y }))
                             }
                         }
                     } catch {
                         // Dispatch-Fehler darf den Zoom nicht crashen
                     }
-                });
+                })
 
-            svg.call(zoomBehavior);
-            zoomRef.current = zoomBehavior;
+            svg.call(zoomBehavior)
+            zoomRef.current = zoomBehavior
 
-            const savedTransform = zoomTransformRef.current;
+            const savedTransform = zoomTransformRef.current
             if (savedTransform === null) {
-                const { width, height } = svgEl.getBoundingClientRect();
+                const { width, height } = svgEl.getBoundingClientRect()
                 const [ix, iy] =
                     layoutOrientation === 'horizontal'
                         ? [width * 0.1, height / 2]
-                        : [width / 2, height * 0.1];
+                        : [width / 2, height * 0.1]
                 svg.transition()
                     .duration(750)
-                    .call(
-                        zoomBehavior.transform,
-                        d3.zoomIdentity.translate(ix, iy),
-                    );
+                    .call(zoomBehavior.transform, d3.zoomIdentity.translate(ix, iy))
             } else {
                 svg.call(
                     zoomBehavior.transform,
                     d3.zoomIdentity
                         .translate(savedTransform.x, savedTransform.y)
                         .scale(savedTransform.k),
-                );
+                )
             }
         } catch (err) {
-            console.error('[GenealogyView] d3 zoom setup error:', err);
-            setLocalError(t('strainsView.genealogyView.errorInitZoom'));
+            console.error('[GenealogyView] d3 zoom setup error:', err)
+            setLocalError(t('strainsView.genealogyView.errorInitZoom'))
         }
 
         // ── ResizeObserver: re-center bei Container-Resize (nur ohne gespeicherten Zoom)
-        let resizeObserver: ResizeObserver | undefined;
+        let resizeObserver: ResizeObserver | undefined
         try {
-            let resizeRafId = 0;
+            let resizeRafId = 0
             resizeObserver = new ResizeObserver(() => {
-                cancelAnimationFrame(resizeRafId);
+                cancelAnimationFrame(resizeRafId)
                 resizeRafId = requestAnimationFrame(() => {
                     try {
-                        if (!svgEl || !zoomRef.current || zoomTransformRef.current !== null) return;
-                        const { width, height } = svgEl.getBoundingClientRect();
-                        if (width === 0 || height === 0) return;
+                        if (!svgEl || !zoomRef.current || zoomTransformRef.current !== null) return
+                        const { width, height } = svgEl.getBoundingClientRect()
+                        if (width === 0 || height === 0) return
                         const [ix, iy] =
                             layoutOrientation === 'horizontal'
                                 ? [width * 0.1, height / 2]
-                                : [width / 2, height * 0.1];
+                                : [width / 2, height * 0.1]
                         d3.select(svgEl)
                             .transition()
                             .duration(300)
-                            .call(
-                                zoomRef.current!.transform,
-                                d3.zoomIdentity.translate(ix, iy),
-                            );
+                            .call(zoomRef.current!.transform, d3.zoomIdentity.translate(ix, iy))
                     } catch {
                         // ResizeObserver-Callback-Fehler ignorieren
                     }
-                });
-            });
-            resizeObserver.observe(svgEl);
+                })
+            })
+            resizeObserver.observe(svgEl)
         } catch {
             // ResizeObserver nicht verfügbar
         }
 
         return () => {
             try {
-                resizeObserver?.disconnect();
-            } catch { /* ResizeObserver cleanup */ }
+                resizeObserver?.disconnect()
+            } catch {
+                /* ResizeObserver cleanup */
+            }
             try {
-                if (svgEl) d3.select(svgEl).on('.zoom', null);
+                if (svgEl) d3.select(svgEl).on('.zoom', null)
             } catch {
                 // Cleanup-Fehler abfangen
             }
-            zoomRef.current = null;
-        };
-    }, [dispatch, tree, layoutOrientation, t]);
+            zoomRef.current = null
+        }
+    }, [dispatch, tree, layoutOrientation, t])
 
     const handleResetZoom = useCallback(() => {
-        if (!svgRef.current || !zoomRef.current) return;
+        if (!svgRef.current || !zoomRef.current) return
         try {
-            const { width, height } = svgRef.current.getBoundingClientRect();
+            const { width, height } = svgRef.current.getBoundingClientRect()
             const [ix, iy] =
                 layoutOrientation === 'horizontal'
                     ? [width * 0.1, height / 2]
-                    : [width / 2, height * 0.1];
+                    : [width / 2, height * 0.1]
             d3.select(svgRef.current)
                 .transition()
                 .duration(750)
-                .call(
-                    zoomRef.current.transform,
-                    d3.zoomIdentity.translate(ix, iy),
-                );
+                .call(zoomRef.current.transform, d3.zoomIdentity.translate(ix, iy))
         } catch (err) {
-            console.error('[GenealogyView] handleResetZoom error:', err);
+            console.error('[GenealogyView] handleResetZoom error:', err)
         }
-    }, [layoutOrientation]);
+    }, [layoutOrientation])
 
     // ── Sichere Render-Helfer ────────────────────────────────────────
-    const MAX_RENDERED_NODES = 500;
-    const isTruncated = layoutNodes.length > MAX_RENDERED_NODES;
-    const visibleNodes = isTruncated ? layoutNodes.slice(0, MAX_RENDERED_NODES) : layoutNodes;
-    const visibleNodeIds = isTruncated ? new Set(visibleNodes.map(n => n?.data?.id)) : null;
-
+    const MAX_RENDERED_NODES = 500
+    const isTruncated = layoutNodes.length > MAX_RENDERED_NODES
+    const visibleNodes = isTruncated ? layoutNodes.slice(0, MAX_RENDERED_NODES) : layoutNodes
+    const visibleNodeIds = isTruncated ? new Set(visibleNodes.map((n) => n?.data?.id)) : null
+    const nodeMatchesHighlight = useCallback(
+        (nodeData: GenealogyNode): boolean => {
+            if (highlightMode === 'none') return true
+            if (highlightMode === 'landraces') return !!nodeData.isLandrace
+            if (highlightMode === 'sativa') return nodeData.type === StrainType.Sativa
+            if (highlightMode === 'indica') return nodeData.type === StrainType.Indica
+            return true
+        },
+        [highlightMode],
+    )
     const renderLinks = (): React.ReactNode => {
         try {
-            if (!Array.isArray(layoutLinks) || layoutLinks.length === 0) return null;
+            if (!Array.isArray(layoutLinks) || layoutLinks.length === 0) return null
             return layoutLinks
                 .filter((link) => {
-                    if (!visibleNodeIds) return true;
-                    const source = layoutNodes[link.sourceIndex];
-                    const target = layoutNodes[link.targetIndex];
-                    return !!source && !!target && visibleNodeIds.has(source?.data?.id) && visibleNodeIds.has(target?.data?.id);
+                    if (!visibleNodeIds) return true
+                    const source = layoutNodes[link.sourceIndex]
+                    const target = layoutNodes[link.targetIndex]
+                    return (
+                        !!source &&
+                        !!target &&
+                        visibleNodeIds.has(source?.data?.id) &&
+                        visibleNodeIds.has(target?.data?.id)
+                    )
                 })
                 .map((link, i) => {
-                try {
-                    const source = layoutNodes[link.sourceIndex];
-                    const target = layoutNodes[link.targetIndex];
-                    if (!source || !target) return null;
-                    return (
-                        <GenealogyLink
-                            key={`link-${source?.data?.id ?? 'src'}-${target?.data?.id ?? 'tgt'}-${i}`}
-                            source={source}
-                            target={target}
-                            orientation={layoutOrientation}
-                        />
-                    );
-                } catch {
-                    return null;
-                }
-            });
+                    try {
+                        const source = layoutNodes[link.sourceIndex]
+                        const target = layoutNodes[link.targetIndex]
+                        if (!source || !target) return null
+                        const isDimmed =
+                            highlightMode !== 'none' &&
+                            (!nodeMatchesHighlight(source.data) ||
+                                !nodeMatchesHighlight(target.data))
+                        return (
+                            <g
+                                key={`link-${source?.data?.id ?? 'src'}-${target?.data?.id ?? 'tgt'}-${i}`}
+                                style={
+                                    isDimmed
+                                        ? { opacity: 0.12, transition: 'opacity 0.3s' }
+                                        : { transition: 'opacity 0.3s' }
+                                }
+                            >
+                                <GenealogyLink
+                                    source={source}
+                                    target={target}
+                                    orientation={layoutOrientation}
+                                />
+                            </g>
+                        )
+                    } catch {
+                        return null
+                    }
+                })
         } catch (err) {
-            console.error('[GenealogyView] renderLinks error:', err);
-            return null;
+            console.error('[GenealogyView] renderLinks error:', err)
+            return null
         }
-    };
+    }
 
     const renderNodes = (): React.ReactNode => {
         try {
-            if (!Array.isArray(visibleNodes) || visibleNodes.length === 0) return null;
+            if (!Array.isArray(visibleNodes) || visibleNodes.length === 0) return null
             return visibleNodes.map((node, idx) => {
                 try {
-                    if (!node?.data) return null;
-                    const isHorizontal = layoutOrientation === 'horizontal';
-                    const x = isHorizontal ? (node?.y ?? 0) : (node?.x ?? 0);
-                    const y = isHorizontal ? (node?.x ?? 0) : (node?.y ?? 0);
-                    if (!isFinite(x) || !isFinite(y)) return null;
+                    if (!node?.data) return null
+                    const isHorizontal = layoutOrientation === 'horizontal'
+                    const x = isHorizontal ? (node?.y ?? 0) : (node?.x ?? 0)
+                    const y = isHorizontal ? (node?.x ?? 0) : (node?.y ?? 0)
+                    if (!isFinite(x) || !isFinite(y)) return null
+                    const matches = nodeMatchesHighlight(node.data)
+                    const isDimmed = highlightMode !== 'none' && !matches
                     return (
                         <g
                             key={`node-${node?.data?.id ?? 'unknown'}-${node?.depth ?? 0}-${idx}`}
                             transform={`translate(${x}, ${y})`}
-                            style={{ transition: 'transform 0.4s ease-in-out' }}
+                            className={
+                                isDimmed
+                                    ? 'genealogy-node-dimmed'
+                                    : highlightMode !== 'none' && matches
+                                      ? 'genealogy-node-highlighted'
+                                      : ''
+                            }
+                            style={{ transition: 'transform 0.4s ease-in-out, opacity 0.3s ease' }}
                         >
                             <foreignObject
                                 x={-GENEALOGY_NODE_SIZE.width / 2}
@@ -621,21 +768,21 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                 />
                             </foreignObject>
                         </g>
-                    );
+                    )
                 } catch {
-                    return null;
+                    return null
                 }
-            });
+            })
         } catch (err) {
-            console.error('[GenealogyView] renderNodes error:', err);
-            return null;
+            console.error('[GenealogyView] renderNodes error:', err)
+            return null
         }
-    };
+    }
 
     // ── RENDER ────────────────────────────────────────────────────────
     // Priorität 1: Lokaler Fehler → nur Error-Fallback zeigen
     if (localError) {
-        return <GenealogyError message={localError} onReset={handleResetError} />;
+        return <GenealogyError message={localError} onReset={handleResetError} />
     }
 
     // Priorität 2: Daten noch nicht bereit
@@ -645,7 +792,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                 <SkeletonLoader count={3} />
                 <p className="mt-4">{t('strainsView.genealogyView.dataLoading')}</p>
             </Card>
-        );
+        )
     }
 
     return (
@@ -688,13 +835,15 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     {t('strainsView.genealogyView.children')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {descendants?.children?.filter((strain): strain is Strain => !!strain).map((strain) => (
-                                        <StrainCompactItem
-                                            key={`child-${strain.id}`}
-                                            strain={strain}
-                                            onClick={() => handleDescendantClick(strain)}
-                                        />
-                                    ))}
+                                    {descendants?.children
+                                        ?.filter((strain): strain is Strain => !!strain)
+                                        .map((strain) => (
+                                            <StrainCompactItem
+                                                key={`child-${strain.id}`}
+                                                strain={strain}
+                                                onClick={() => handleDescendantClick(strain)}
+                                            />
+                                        ))}
                                 </div>
                             </div>
                         )}
@@ -704,13 +853,15 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     {t('strainsView.genealogyView.grandchildren')}
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                    {descendants?.grandchildren?.filter((strain): strain is Strain => !!strain).map((strain) => (
-                                        <StrainCompactItem
-                                            key={`grandchild-${strain.id}`}
-                                            strain={strain}
-                                            onClick={() => handleDescendantClick(strain)}
-                                        />
-                                    ))}
+                                    {descendants?.grandchildren
+                                        ?.filter((strain): strain is Strain => !!strain)
+                                        .map((strain) => (
+                                            <StrainCompactItem
+                                                key={`grandchild-${strain.id}`}
+                                                strain={strain}
+                                                onClick={() => handleDescendantClick(strain)}
+                                            />
+                                        ))}
                                 </div>
                             </div>
                         )}
@@ -760,9 +911,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                                 ? 'vertical'
                                                 : 'horizontal',
                                         ),
-                                    );
+                                    )
                                 } catch (err) {
-                                    console.error('[GenealogyView] layout toggle error:', err);
+                                    console.error('[GenealogyView] layout toggle error:', err)
                                 }
                             }}
                         >
@@ -775,9 +926,9 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                             title={t('strainsView.genealogyView.resetCache')}
                             onClick={() => {
                                 try {
-                                    dispatch(resetGenealogyCache());
+                                    dispatch(resetGenealogyCache())
                                 } catch (err) {
-                                    console.error('[GenealogyView] resetGenealogyCache error:', err);
+                                    console.error('[GenealogyView] resetGenealogyCache error:', err)
                                 }
                             }}
                         >
@@ -802,12 +953,7 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                     <p className="text-sm text-slate-400 mt-1">
                         {t('strainsView.genealogyView.noStrainSelected')}
                     </p>
-                    <Button
-                        variant="danger"
-                        size="sm"
-                        className="mt-4"
-                        onClick={handleResetError}
-                    >
+                    <Button variant="danger" size="sm" className="mt-4" onClick={handleResetError}>
                         <PhosphorIcons.ArrowClockwise className="mr-1" /> {t('common.resetState')}
                     </Button>
                 </Card>
@@ -845,7 +991,12 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                                     })}
                                 </div>
                             )}
-                            <svg ref={svgRef} className="w-full h-full cursor-move" role="img" aria-label={t('common.accessibility.genealogyTree')}>
+                            <svg
+                                ref={svgRef}
+                                className="w-full h-full cursor-move"
+                                role="img"
+                                aria-label={t('common.accessibility.genealogyTree')}
+                            >
                                 <g className="genealogy-content">
                                     {renderLinks()}
                                     {renderNodes()}
@@ -854,13 +1005,18 @@ export const GenealogyView = React.memo<GenealogyViewProps>(({ allStrains, onNod
                         </Card>
                     </div>
                     <div className="lg:col-span-1 space-y-4">
-                        <AnalysisPanel tree={tree} onShowDescendants={handleShowDescendants} />
+                        <AnalysisPanel
+                            tree={tree}
+                            onShowDescendants={handleShowDescendants}
+                            highlightMode={highlightMode}
+                            onHighlightModeChange={setHighlightMode}
+                        />
                     </div>
                 </div>
             )}
         </div>
-    );
-});
-GenealogyView.displayName = 'GenealogyView';
+    )
+})
+GenealogyView.displayName = 'GenealogyView'
 
-export default GenealogyView;
+export default GenealogyView

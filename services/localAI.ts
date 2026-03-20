@@ -329,7 +329,7 @@ class LocalAiService {
                         void setCachedInference(prompt, content, {
                             model: WEBLLM_MODEL_ID,
                             task: 'text-generation',
-                        })
+                        }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
                         debouncedPersistSnapshot()
                         return content
                     }
@@ -373,7 +373,7 @@ class LocalAiService {
                     void setCachedInference(prompt, generated, {
                         model: TEXT_MODEL_ID,
                         task: 'text-generation',
-                    })
+                    }).catch((e) => captureLocalAiError(e, { stage: 'cache-persist' }))
                     debouncedPersistSnapshot()
                     return generated
                 }
@@ -496,6 +496,11 @@ class LocalAiService {
         mimeType: string,
     ): Promise<Array<{ label: string; score: number }>> {
         try {
+            // Guard against oversized images that could cause OOM
+            if (base64Image.length > 5_000_000) {
+                console.warn('[LocalAI] Image too large for local processing, skipping.')
+                return []
+            }
             const classifier = await this.loadVisionPipeline()
             const image = await fetch(toDataUrl(base64Image, mimeType)).then((response) =>
                 response.blob(),

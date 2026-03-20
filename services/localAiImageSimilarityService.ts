@@ -195,11 +195,13 @@ export const findSimilarImages = async (
 ): Promise<SimilarityResult[]> => {
     if (candidates.length === 0) return []
 
+    // Cap candidates to prevent memory exhaustion on large collections
+    const maxCandidates = Math.min(candidates.length, 100)
     const queryFeatures = await extractImageFeatures(queryImage.base64, queryImage.mimeType)
 
     // Process candidates sequentially to avoid memory pressure
     const results: SimilarityResult[] = []
-    for (let i = 0; i < candidates.length; i++) {
+    for (let i = 0; i < maxCandidates; i++) {
         try {
             const candidateFeatures = await extractImageFeatures(
                 candidates[i].base64,

@@ -146,7 +146,8 @@ export const localAiPreloadService = {
                 lastError = error
                 if (attempt < PRELOAD_MAX_RETRIES) {
                     writeStatus({ ...inProgress, details: `retry-${attempt + 1}` })
-                    await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)))
+                    const jitter = Math.random() * 500
+                    await new Promise((r) => setTimeout(r, 1500 * (attempt + 1) + jitter))
                 }
             }
         }

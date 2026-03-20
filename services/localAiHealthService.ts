@@ -132,7 +132,12 @@ export const getStorageInfo = async (): Promise<StorageInfo> => {
     }
 
     try {
-        const estimate = await navigator.storage.estimate()
+        const estimate = await Promise.race([
+            navigator.storage.estimate(),
+            new Promise<{ usage?: number; quota?: number }>((_, reject) =>
+                setTimeout(() => reject(new Error('storage estimate timeout')), 5000),
+            ),
+        ])
         const usageMB = estimate.usage ? estimate.usage / (1024 * 1024) : null
         const quotaMB = estimate.quota ? estimate.quota / (1024 * 1024) : null
         const usagePercent =

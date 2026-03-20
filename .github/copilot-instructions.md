@@ -16,12 +16,12 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Frontend:** React 19 + TypeScript (strict mode, zero `any`)
 - **State:** Redux Toolkit + RTK Query (memoized selectors, listener middleware)
 - **AI:** Google Gemini (primary), OpenAI, xAI/Grok, Anthropic (multi-provider BYOK)
-- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web
+- **Local AI:** @xenova/transformers (ONNX: WebGPU/WASM), @mlc-ai/web-llm (WebGPU), TensorFlow.js, onnxruntime-web — 11 services, 8 ML models, 3-layer fallback (WebLLM → Transformers.js → Heuristics)
 - **Build:** Vite 7 + vite-plugin-pwa (InjectManifest)
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE, 13 namespaces)
-- **Testing:** Vitest (307+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
+- **Testing:** Vitest (413+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
 - **Error Tracking:** Sentry (browser SDK)
 - **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri (desktop), Capacitor (mobile)
 
@@ -63,6 +63,19 @@ docs/                # Developer guides, roadmap
 
 6. **Archive Capping:** Mentor: 100 entries, Advisor: 50/plant, FIFO culling.
 
+7. **Local AI Stack:** 11 service modules orchestrate on-device ML:
+    - `localAI.ts` — Core orchestration (text gen, vision, diagnosis, preload)
+    - `localAIModelLoader.ts` — ONNX backend detection, pipeline loading (max 3 concurrent), cache
+    - `localAiNlpService.ts` — Sentiment analysis, summarization, zero-shot classification
+    - `localAiEmbeddingService.ts` — MiniLM-L6 embeddings, semantic ranking, batch processing
+    - `localAiFallbackService.ts` — Heuristic fallback when models unavailable
+    - `localAiLanguageDetectionService.ts` — EN/DE detection (model + heuristic)
+    - `localAiImageSimilarityService.ts` — CLIP feature extraction, photo comparison, growth tracking
+    - `localAiHealthService.ts` — Device classification, memory monitoring, adaptive model selection
+    - `localAiPreloadService.ts` — Model preload state (localStorage persistence)
+    - `localAiTelemetryService.ts` — Inference latency/success tracking
+    - `localAiCacheService.ts` — IndexedDB inference cache (256 entries, 7d TTL)
+
 ---
 
 ## Coding Standards
@@ -100,11 +113,14 @@ docs/                # Developer guides, roadmap
 
 ### AI Integration
 
-- All AI calls go through `services/geminiService.ts` or provider abstraction
+- All cloud AI calls go through `services/geminiService.ts` or provider abstraction
 - Rate limiting: 15 req/min sliding window
 - Use `responseSchema` for structured JSON output
 - RAG via `growLogRagService.ts` for journal context
-- local AI fallback when API unreachable
+- Local AI fallback when API unreachable (3-layer: WebLLM → Transformers.js → Heuristics)
+- All local AI services use `captureLocalAiError()` for Sentry error tracking
+- Input validation: DOMPurify sanitization + length limits on all user-facing AI inputs
+- Image inputs: MIME type allow-listing, size validation, EXIF stripping
 
 ### i18n
 
@@ -119,7 +135,7 @@ docs/                # Developer guides, roadmap
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 307+ tests, 0 failures
+- Baseline: 413+ tests, 0 failures
 
 ### Git
 
@@ -173,16 +189,28 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 
 ## Important Files
 
-| File                            | Purpose                                       |
-| ------------------------------- | --------------------------------------------- |
-| `index.tsx`                     | App bootstrap, SW registration, safe recovery |
-| `stores/store.ts`               | Redux store creation, IndexedDB hydration     |
-| `services/geminiService.ts`     | Gemini API abstraction (all AI features)      |
-| `services/aiProviderService.ts` | Multi-provider AI routing                     |
-| `services/sentryService.ts`     | Sentry error tracking initialization          |
-| `simulation.worker.ts`          | VPD simulation Web Worker                     |
-| `sw.js`                         | Service Worker (precache + runtime caching)   |
-| `constants.ts`                  | App-wide constants                            |
-| `types.ts`                      | Core TypeScript types                         |
-| `i18n.ts`                       | i18next initialization                        |
-| `vite.config.ts`                | Build configuration                           |
+| File                                          | Purpose                                               |
+| --------------------------------------------- | ----------------------------------------------------- |
+| `index.tsx`                                   | App bootstrap, SW registration, safe recovery         |
+| `stores/store.ts`                             | Redux store creation, IndexedDB hydration             |
+| `services/geminiService.ts`                   | Gemini API abstraction (all AI features)              |
+| `services/aiProviderService.ts`               | Multi-provider AI routing                             |
+| `services/aiService.ts`                       | Unified AI service (cloud + local routing)            |
+| `services/localAI.ts`                         | Core local AI orchestration                           |
+| `services/localAIModelLoader.ts`              | ONNX pipeline loader (WebGPU/WASM, concurrency guard) |
+| `services/localAiNlpService.ts`               | NLP pipelines (sentiment, summarization, zero-shot)   |
+| `services/localAiEmbeddingService.ts`         | MiniLM embeddings, semantic ranking                   |
+| `services/localAiFallbackService.ts`          | Heuristic fallback for all AI features                |
+| `services/localAiLanguageDetectionService.ts` | On-device EN/DE language detection                    |
+| `services/localAiImageSimilarityService.ts`   | CLIP image comparison, growth tracking                |
+| `services/localAiHealthService.ts`            | Device classification, health monitoring              |
+| `services/localAiPreloadService.ts`           | Model preload state management                        |
+| `services/localAiTelemetryService.ts`         | Inference performance tracking                        |
+| `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                  |
+| `services/sentryService.ts`                   | Sentry error tracking initialization                  |
+| `simulation.worker.ts`                        | VPD simulation Web Worker                             |
+| `sw.js`                                       | Service Worker (precache + runtime caching)           |
+| `constants.ts`                                | App-wide constants                                    |
+| `types.ts`                                    | Core TypeScript types                                 |
+| `i18n.ts`                                     | i18next initialization                                |
+| `vite.config.ts`                              | Build configuration                                   |

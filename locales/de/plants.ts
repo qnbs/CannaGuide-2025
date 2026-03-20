@@ -525,5 +525,11 @@ export const plantsView = {
         legendOptimal: 'Optimal',
         legendCaution: 'Vorsicht',
         legendDanger: 'Gefahr',
+        fullscreen: 'Vollbild',
+        exitFullscreen: 'Vollbild verlassen',
+        contextLost: 'WebGL-Kontext verloren – die 3D-Ansicht wird automatisch wiederhergestellt.',
+        loading: '3D-Szene wird geladen…',
+        canvasAriaLabel: '3D-Visualisierung des Grow-Rooms mit {{count}} aktiven Pflanzen',
+        legendAriaLabel: 'VPD-Status-Legende',
     },
 }

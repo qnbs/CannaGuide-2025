@@ -1,14 +1,38 @@
 {
     "name": "CannaGuide 2025",
     "image": "mcr.microsoft.com/playwright:v1.58.0-noble",
+
+    "hostRequirements": {
+        "cpus": 4,
+        "memory": "16gb",
+        "storage": "32gb"
+    },
+
     "postCreateCommand": "npm ci && npx playwright install --with-deps chromium",
-    "forwardPorts": [5173],
+
+    "postStartCommand": "node packages/iot-mocks/src/server.mjs &disown && node docker/tauri-mock/server.mjs &disown && for i in $(seq 1 15); do curl -sf http://localhost:3001/health >/dev/null 2>&1 && curl -sf http://localhost:3002/health >/dev/null 2>&1 && echo '✅ IoT mocks healthy' && break || sleep 1; done",
+
+    "forwardPorts": [5173, 3001, 3002],
     "portsAttributes": {
         "5173": {
             "label": "Vite Dev Server",
             "onAutoForward": "openBrowser"
+        },
+        "3001": {
+            "label": "ESP32 Sensor Mock",
+            "onAutoForward": "silent"
+        },
+        "3002": {
+            "label": "Tauri IPC Mock",
+            "onAutoForward": "silent"
         }
     },
+
+    "containerEnv": {
+        "VITE_ESP32_URL": "http://localhost:3001",
+        "VITE_TAURI_MOCK_URL": "http://localhost:3002"
+    },
+
     "customizations": {
         "vscode": {
             "settings": {

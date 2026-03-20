@@ -30,7 +30,7 @@ jobs:
                   cache: npm
 
             - name: Install dependencies
-              run: npm ci
+              run: npm ci --prefer-offline
 
             - name: Restore Vite cache
               uses: actions/cache@v4
@@ -39,6 +39,14 @@ jobs:
                   key: vite-${{ runner.os }}-${{ hashFiles('vite.config.ts', 'tsconfig.json', 'package-lock.json') }}
                   restore-keys: |
                       vite-${{ runner.os }}-
+
+            - name: Restore TypeScript build info
+              uses: actions/cache@v4
+              with:
+                  path: tsconfig.tsbuildinfo
+                  key: tsc-${{ runner.os }}-${{ hashFiles('tsconfig.json', 'package-lock.json') }}
+                  restore-keys: |
+                      tsc-${{ runner.os }}-
 
             - name: Security audit
               continue-on-error: true

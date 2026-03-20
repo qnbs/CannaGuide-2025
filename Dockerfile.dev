@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1.7
+
+# ── Dev container – Vite HMR with volume-mounted source ─────────────────
+FROM node:20-alpine AS dev
+WORKDIR /app
+
+# Install dependencies first (cacheable layer)
+COPY package*.json ./
+RUN npm ci
+
+# Source is volume-mounted at runtime – this COPY is a fallback
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npx", "vite", "--host", "0.0.0.0"]

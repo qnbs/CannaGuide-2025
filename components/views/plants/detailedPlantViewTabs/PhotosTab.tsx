@@ -30,7 +30,9 @@ const PhotoItem: React.FC<{
                 .then((storedImage) => {
                     if (isMounted && storedImage) setImageUrl(storedImage.data)
                 })
-                .catch(console.error)
+                .catch((err) => {
+                    console.error('[PhotosTab] Failed to load image:', err)
+                })
                 .finally(() => {
                     if (isMounted) setIsLoading(false)
                 })
@@ -85,6 +87,7 @@ PhotoItem.displayName = 'PhotoItem'
 
 const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () => void }> = memo(
     ({ imageUrl, entry, onClose }) => {
+        const { t } = useTranslation()
         const details = entry.details as PhotoDetails
 
         useEffect(() => {
@@ -110,7 +113,7 @@ const Lightbox: React.FC<{ imageUrl: string; entry: JournalEntry; onClose: () =>
                         type="button"
                         className="absolute -top-3 -right-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-slate-800 text-white ring-1 ring-white/20 hover:bg-slate-700 transition-colors"
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={t('common.close')}
                     >
                         <PhosphorIcons.X className="w-5 h-5" />
                     </button>

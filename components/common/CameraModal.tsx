@@ -11,7 +11,12 @@ interface CameraModalProps {
     triggerRef?: React.RefObject<HTMLButtonElement | null>
 }
 
-export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCapture, triggerRef }) => {
+export const CameraModal: React.FC<CameraModalProps> = ({
+    isOpen,
+    onClose,
+    onCapture,
+    triggerRef,
+}) => {
     const { t } = useTranslation()
     const videoRef = useRef<HTMLVideoElement>(null)
     const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -35,10 +40,13 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         event.preventDefault()
     }, [])
 
-    const handleCloseAutoFocus = useCallback((event: Event) => {
-        event.preventDefault()
-        requestAnimationFrame(() => triggerRef?.current?.focus())
-    }, [triggerRef])
+    const handleCloseAutoFocus = useCallback(
+        (event: Event) => {
+            event.preventDefault()
+            requestAnimationFrame(() => triggerRef?.current?.focus())
+        },
+        [triggerRef],
+    )
 
     useEffect(() => {
         if (isOpen) {
@@ -153,7 +161,11 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
                     ></video>
                     <canvas ref={canvasRef} className="hidden"></canvas>
                     {capturedImage && (
-                        <img src={capturedImage} alt="Captured" className="w-full h-auto max-h-[60dvh] object-contain rounded-md" />
+                        <img
+                            src={capturedImage}
+                            alt={t('common.capturedImage')}
+                            className="w-full h-auto max-h-[60dvh] object-contain rounded-md"
+                        />
                     )}
                 </div>
             )}

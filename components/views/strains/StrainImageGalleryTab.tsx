@@ -54,7 +54,7 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
                 >
                     <img
                         src={selectedImage}
-                        alt="Full screen strain"
+                        alt={t('strainsView.fullScreenImage')}
                         className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
                         loading="eager"
                         decoding="async"

@@ -1,29 +1,24 @@
-import { VisualGuide } from '@/types';
+import { VisualGuide } from '@/types'
 
 export const visualGuidesData: VisualGuide[] = [
-  {
-    id: 'local-ai-preload',
-    titleKey: 'visualGuides.localAiPreload.title',
-    descriptionKey: 'visualGuides.localAiPreload.description',
-  },
-  {
-    id: 'topping',
-    titleKey: 'visualGuides.topping.title',
-    descriptionKey: 'visualGuides.topping.description',
-  },
-  {
-    id: 'lst',
-    titleKey: 'visualGuides.lst.title',
-    descriptionKey: 'visualGuides.lst.description',
-  },
-  {
-    id: 'defoliation',
-    titleKey: 'visualGuides.defoliation.title',
-    descriptionKey: 'visualGuides.defoliation.description',
-  },
-  {
-    id: 'harvesting',
-    titleKey: 'visualGuides.harvesting.title',
-    descriptionKey: 'visualGuides.harvesting.description',
-  },
-];
+    {
+        id: 'topping',
+        titleKey: 'visualGuides.topping.title',
+        descriptionKey: 'visualGuides.topping.description',
+    },
+    {
+        id: 'lst',
+        titleKey: 'visualGuides.lst.title',
+        descriptionKey: 'visualGuides.lst.description',
+    },
+    {
+        id: 'defoliation',
+        titleKey: 'visualGuides.defoliation.title',
+        descriptionKey: 'visualGuides.defoliation.description',
+    },
+    {
+        id: 'harvesting',
+        titleKey: 'visualGuides.harvesting.title',
+        descriptionKey: 'visualGuides.harvesting.description',
+    },
+]

@@ -16,6 +16,7 @@ export const helpView = {
     itemCount: '{{count}} items',
     termCount: '{{count}} terms',
     sectionCount: '{{count}} sections',
+    subSectionCount: '{{count}} sub-sections',
     guideCount: '{{count}} guides',
     faq: {
         title: 'Frequently Asked Questions',
@@ -33,18 +34,7 @@ export const helpView = {
     },
     guides: {
         title: 'Visual Guides',
-        subtitle: 'App workflow guidance stays separate from hands-on grow techniques.',
-    },
-    visualGuides: {
-        groups: {
-            app: 'App Workflow',
-            cultivation: 'Cultivation Techniques',
-        },
-        localAiPreload: {
-            title: 'Local AI Offline Cache',
-            description:
-                'Warm up the local text and vision models while you are online so the app can diagnose plants without a network connection.',
-        },
+        subtitle: 'Step-by-step visual guides for essential cultivation techniques.',
     },
     lexicon: {
         title: "Grower's Lexicon",

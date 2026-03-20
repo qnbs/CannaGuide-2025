@@ -77,7 +77,10 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     photoDetails.capturedAt = Date.now()
                 }
                 if (!photoDetails.timelineLabel) {
-                    photoDetails.timelineLabel = photoTimelineService.buildPhotoTimelineMetadata(plant, photoDetails.capturedAt).timelineLabel
+                    photoDetails.timelineLabel = photoTimelineService.buildPhotoTimelineMetadata(
+                        plant,
+                        photoDetails.capturedAt,
+                    ).timelineLabel
                 }
             } catch {
                 dispatch(
@@ -92,14 +95,27 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
         }
 
         const finalNotes =
-            notes || t(`plantsView.actionModals.defaultNotes.${type}`, { defaultValue: `${type} logged.` })
+            notes ||
+            t(`plantsView.actionModals.defaultNotes.${type}`, { defaultValue: `${type} logged.` })
 
         switch (type) {
             case 'watering':
-                dispatch(applyWateringAction({ plantId: plant.id, data: finalDetails, notes: finalNotes }))
+                dispatch(
+                    applyWateringAction({
+                        plantId: plant.id,
+                        data: finalDetails,
+                        notes: finalNotes,
+                    }),
+                )
                 break
             case 'training':
-                dispatch(applyTrainingAction({ plantId: plant.id, data: finalDetails, notes: finalNotes }))
+                dispatch(
+                    applyTrainingAction({
+                        plantId: plant.id,
+                        data: finalDetails,
+                        notes: finalNotes,
+                    }),
+                )
                 break
             case 'pestControl':
                 dispatch(
@@ -111,7 +127,13 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                 )
                 break
             case 'amendment':
-                dispatch(applyAmendmentAction({ plantId: plant.id, data: finalDetails, notes: finalNotes }))
+                dispatch(
+                    applyAmendmentAction({
+                        plantId: plant.id,
+                        data: finalDetails,
+                        notes: finalNotes,
+                    }),
+                )
                 break
             case 'feeding':
             case 'observation':
@@ -152,19 +174,27 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                     isOpen={isCameraOpen}
                     onClose={() => setIsCameraOpen(false)}
                     onCapture={async (dataUrl) => {
-                        const timelineMetadata = photoTimelineService.buildPhotoTimelineMetadata(plant, Date.now())
+                        const timelineMetadata = photoTimelineService.buildPhotoTimelineMetadata(
+                            plant,
+                            Date.now(),
+                        )
                         setDetails((current) => ({
                             ...current,
                             capturedAt: timelineMetadata.capturedAt,
                             timelineLabel: timelineMetadata.timelineLabel,
                         }))
                         try {
-                            const resizedImage = await resizeImage(dataUrl);
-                            setImage(resizedImage);
+                            const resizedImage = await resizeImage(dataUrl)
+                            setImage(resizedImage)
                         } catch (err) {
-                            console.error("Image resizing failed:", err);
-                            setImage(dataUrl); // fallback to original
-                            dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }));
+                            console.error('Image resizing failed:', err)
+                            setImage(dataUrl) // fallback to original
+                            dispatch(
+                                addNotification({
+                                    message: t('common.imageResizeFailed'),
+                                    type: 'error',
+                                }),
+                            )
                         }
                         setIsCameraOpen(false)
                     }}
@@ -176,24 +206,30 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <Select
                             label={t('plantsView.actionModals.logTraining')}
                             value={(details as Partial<TrainingDetails>)?.type || ''}
-                            onChange={(e: { target: { value: string | number } }) => setDetails({ type: e.target.value as TrainingType })}
-                            options={(['LST', 'Topping', 'FIMing', 'Defoliation'] as TrainingType[]).map(
-                                (tValue) => ({
-                                    value: tValue,
-                                    label: t(`plantsView.actionModals.trainingTypes.${tValue}`),
-                                }),
-                            )}
+                            onChange={(e: { target: { value: string | number } }) =>
+                                setDetails({ type: e.target.value as TrainingType })
+                            }
+                            options={(
+                                ['LST', 'Topping', 'FIMing', 'Defoliation'] as TrainingType[]
+                            ).map((tValue) => ({
+                                value: tValue,
+                                label: t(`plantsView.actionModals.trainingTypes.${tValue}`),
+                            }))}
                         />
                     )}
                     {type === 'amendment' && (
                         <Select
                             label={t('plantsView.actionModals.logAmendment')}
                             value={(details as Partial<AmendmentDetails>)?.type || ''}
-                            onChange={(e: { target: { value: string | number } }) => setDetails({ type: e.target.value as AmendmentType })}
-                            options={(['Mycorrhizae', 'WormCastings'] as AmendmentType[]).map((a) => ({
-                                value: a,
-                                label: t(`plantsView.actionModals.amendmentTypes.${a}`),
-                            }))}
+                            onChange={(e: { target: { value: string | number } }) =>
+                                setDetails({ type: e.target.value as AmendmentType })
+                            }
+                            options={(['Mycorrhizae', 'WormCastings'] as AmendmentType[]).map(
+                                (a) => ({
+                                    value: a,
+                                    label: t(`plantsView.actionModals.amendmentTypes.${a}`),
+                                }),
+                            )}
                         />
                     )}
                     {type === 'photo' && (
@@ -216,7 +252,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                             </p>
                             {image ? (
                                 <div className="relative">
-                                    <img src={image} alt="preview" className="rounded-md" decoding="async" />
+                                    <img
+                                        src={image}
+                                        alt={t('common.imagePreview')}
+                                        className="rounded-md"
+                                        decoding="async"
+                                    />
                                     <Button
                                         variant="danger"
                                         className="!h-11 !w-11 !p-0 absolute top-2 right-2"
@@ -246,15 +287,25 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                         onChange={async (e) => {
                                             if (e.target.files?.[0]) {
                                                 const file = e.target.files[0]
-                                                const dataUrl = await new Promise<string>((resolve, reject) => {
-                                                    const reader = new FileReader()
-                                                    reader.onload = () => resolve(reader.result as string)
-                                                    reader.onerror = () => reject(reader.error)
-                                                    reader.readAsDataURL(file)
-                                                })
+                                                const dataUrl = await new Promise<string>(
+                                                    (resolve, reject) => {
+                                                        const reader = new FileReader()
+                                                        reader.onload = () =>
+                                                            resolve(reader.result as string)
+                                                        reader.onerror = () => reject(reader.error)
+                                                        reader.readAsDataURL(file)
+                                                    },
+                                                )
 
-                                                const capturedAt = (await photoTimelineService.readCaptureTimestamp(file)) ?? Date.now()
-                                                const timelineMetadata = photoTimelineService.buildPhotoTimelineMetadata(plant, capturedAt)
+                                                const capturedAt =
+                                                    (await photoTimelineService.readCaptureTimestamp(
+                                                        file,
+                                                    )) ?? Date.now()
+                                                const timelineMetadata =
+                                                    photoTimelineService.buildPhotoTimelineMetadata(
+                                                        plant,
+                                                        capturedAt,
+                                                    )
 
                                                 setDetails((current) => ({
                                                     ...current,
@@ -268,7 +319,12 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                                 } catch (err) {
                                                     console.error('Image resizing failed:', err)
                                                     setImage(dataUrl)
-                                                    dispatch(addNotification({ message: t('common.imageResizeFailed'), type: 'error' }))
+                                                    dispatch(
+                                                        addNotification({
+                                                            message: t('common.imageResizeFailed'),
+                                                            type: 'error',
+                                                        }),
+                                                    )
                                                 }
                                             }
                                         }}
@@ -278,7 +334,8 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                                         className="w-full min-h-11"
                                         onClick={() => setIsCameraOpen(true)}
                                     >
-                                        <PhosphorIcons.Camera /> {t('plantsView.aiDiagnostics.capture')}
+                                        <PhosphorIcons.Camera />{' '}
+                                        {t('plantsView.aiDiagnostics.capture')}
                                     </Button>
                                 </div>
                             )}
@@ -288,7 +345,11 @@ export const LogActionModal: React.FC<LogActionModalProps> = ({
                         <label className="block text-sm font-semibold text-slate-300 mb-1">
                             {t('common.notes')}
                         </label>
-                        <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="min-h-[120px]" />
+                        <Textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="min-h-[120px]"
+                        />
                     </div>
                 </div>
             </Modal>

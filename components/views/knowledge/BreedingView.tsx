@@ -135,7 +135,12 @@ const BreedingView: React.FC = () => {
     } | null>(null)
 
     useEffect(() => {
-        strainService.getAllStrains().then(setAllStrains).catch(console.error)
+        strainService
+            .getAllStrains()
+            .then(setAllStrains)
+            .catch((err) => {
+                console.error('[BreedingView] Failed to load strains:', err)
+            })
     }, [])
 
     const seedA = useMemo(

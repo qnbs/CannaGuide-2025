@@ -152,7 +152,10 @@ export const InlineStrainSelector: React.FC<InlineStrainSelectorProps> = ({
                 setAllStrains(strains)
                 setIsLoading(false)
             })
-            .catch(() => setIsLoading(false))
+            .catch((err) => {
+                console.error('[InlineStrainSelector] Failed to load strains:', err)
+                setIsLoading(false)
+            })
     }, [])
 
     const filteredStrains = useMemo(() => {

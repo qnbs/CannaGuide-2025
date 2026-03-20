@@ -1,7 +1,14 @@
-import { AppSettings, PlantStage, Strain, StrainType } from '@/types'
+import { PlantStage, StrainType } from '@/types'
+import type { AppSettings, Strain } from '@/types'
 import { defaultSettings } from '@/stores/slices/settingsSlice'
-import { RootState } from '@/stores/store'
-import { APP_VERSION, GENEALOGY_STATE_VERSION, SLICE_SCHEMA_VERSIONS, VersionedSliceName } from '@/constants'
+import type { RootState } from '@/stores/store'
+import {
+    APP_VERSION,
+    GENEALOGY_STATE_VERSION,
+    SLICE_SCHEMA_VERSIONS,
+    VersionedSliceName,
+} from '@/constants'
+import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
 // This represents the shape of the persisted state object.
 export type PersistedState = Partial<RootState> & {
@@ -32,7 +39,11 @@ export const createSnapshotDiff = (before: unknown, after: unknown): SnapshotDif
         added: [...afterKeys].filter((key) => !beforeKeys.has(key)).sort(),
         removed: [...beforeKeys].filter((key) => !afterKeys.has(key)).sort(),
         changed: [...beforeKeys]
-            .filter((key) => afterKeys.has(key) && JSON.stringify(before[key]) !== JSON.stringify(after[key]))
+            .filter(
+                (key) =>
+                    afterKeys.has(key) &&
+                    JSON.stringify(before[key]) !== JSON.stringify(after[key]),
+            )
             .sort(),
     }
 }
@@ -70,35 +81,61 @@ const ensureSimulationShape = (state: PersistedState): void => {
                 plant.mediumType = 'Soil'
             }
             if (typeof plant.createdAt !== 'number') {
-                plant.createdAt = typeof plant.lastUpdated === 'number' ? plant.lastUpdated : Date.now()
+                plant.createdAt =
+                    typeof plant.lastUpdated === 'number' ? plant.lastUpdated : Date.now()
             }
             if (typeof plant.lastUpdated !== 'number') {
-                plant.lastUpdated = typeof plant.createdAt === 'number' ? plant.createdAt : Date.now()
+                plant.lastUpdated =
+                    typeof plant.createdAt === 'number' ? plant.createdAt : Date.now()
             }
             if (typeof plant.harvestData === 'undefined') {
                 plant.harvestData = null
             } else if (plant.harvestData && typeof plant.harvestData === 'object') {
                 const harvestData = plant.harvestData as Record<string, unknown>
-                const terpeneProfile = plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
-                    ? plant.terpeneProfile as Record<string, unknown>
-                    : {}
-                const plantStage = typeof plant.stage === 'string' ? plant.stage as PlantStage : PlantStage.Seed
-                const isPostHarvestStage = [PlantStage.Harvest, PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plantStage)
+                const terpeneProfile =
+                    plant.terpeneProfile && typeof plant.terpeneProfile === 'object'
+                        ? (plant.terpeneProfile as Record<string, unknown>)
+                        : {}
+                const plantStage =
+                    typeof plant.stage === 'string' ? (plant.stage as PlantStage) : PlantStage.Seed
+                const isPostHarvestStage = [
+                    PlantStage.Harvest,
+                    PlantStage.Drying,
+                    PlantStage.Curing,
+                    PlantStage.Finished,
+                ].includes(plantStage)
 
                 if (typeof harvestData.wetWeight !== 'number') harvestData.wetWeight = 0
                 if (typeof harvestData.dryWeight !== 'number') harvestData.dryWeight = 0
-                if (typeof harvestData.currentDryDay !== 'number') harvestData.currentDryDay = plantStage === PlantStage.Drying ? 1 : 0
-                if (typeof harvestData.currentCureDay !== 'number') harvestData.currentCureDay = plantStage === PlantStage.Curing || plantStage === PlantStage.Finished ? 1 : 0
+                if (typeof harvestData.currentDryDay !== 'number')
+                    harvestData.currentDryDay = plantStage === PlantStage.Drying ? 1 : 0
+                if (typeof harvestData.currentCureDay !== 'number')
+                    harvestData.currentCureDay =
+                        plantStage === PlantStage.Curing || plantStage === PlantStage.Finished
+                            ? 1
+                            : 0
                 if (typeof harvestData.lastBurpDay !== 'number') harvestData.lastBurpDay = 0
-                if (typeof harvestData.jarHumidity !== 'number') harvestData.jarHumidity = plantStage === PlantStage.Curing || plantStage === PlantStage.Finished ? 62 : 68
-                if (typeof harvestData.chlorophyllPercent !== 'number') harvestData.chlorophyllPercent = isPostHarvestStage ? 100 : 0
-                if (typeof harvestData.terpeneRetentionPercent !== 'number') harvestData.terpeneRetentionPercent = isPostHarvestStage ? 100 : 0
+                if (typeof harvestData.jarHumidity !== 'number')
+                    harvestData.jarHumidity =
+                        plantStage === PlantStage.Curing || plantStage === PlantStage.Finished
+                            ? 62
+                            : 68
+                if (typeof harvestData.chlorophyllPercent !== 'number')
+                    harvestData.chlorophyllPercent = isPostHarvestStage ? 100 : 0
+                if (typeof harvestData.terpeneRetentionPercent !== 'number')
+                    harvestData.terpeneRetentionPercent = isPostHarvestStage ? 100 : 0
                 if (typeof harvestData.moldRiskPercent !== 'number') harvestData.moldRiskPercent = 0
                 if (typeof harvestData.finalQuality !== 'number') harvestData.finalQuality = 0
-                if (!harvestData.cannabinoidProfile || typeof harvestData.cannabinoidProfile !== 'object') {
+                if (
+                    !harvestData.cannabinoidProfile ||
+                    typeof harvestData.cannabinoidProfile !== 'object'
+                ) {
                     harvestData.cannabinoidProfile = { thc: 0, cbn: 0 }
                 } else {
-                    const cannabinoidProfile = harvestData.cannabinoidProfile as Record<string, unknown>
+                    const cannabinoidProfile = harvestData.cannabinoidProfile as Record<
+                        string,
+                        unknown
+                    >
                     if (typeof cannabinoidProfile.thc !== 'number') cannabinoidProfile.thc = 0
                     if (typeof cannabinoidProfile.cbn !== 'number') cannabinoidProfile.cbn = 0
                 }
@@ -108,11 +145,18 @@ const ensureSimulationShape = (state: PersistedState): void => {
             }
 
             if (!plant.environment || typeof plant.environment !== 'object') {
-                plant.environment = { internalTemperature: 24, internalHumidity: 65, vpd: 0, co2Level: 400 }
+                plant.environment = {
+                    internalTemperature: 24,
+                    internalHumidity: 65,
+                    vpd: 0,
+                    co2Level: 400,
+                }
             } else {
                 const environment = plant.environment as Record<string, unknown>
-                if (typeof environment.internalTemperature !== 'number') environment.internalTemperature = 24
-                if (typeof environment.internalHumidity !== 'number') environment.internalHumidity = 65
+                if (typeof environment.internalTemperature !== 'number')
+                    environment.internalTemperature = 24
+                if (typeof environment.internalHumidity !== 'number')
+                    environment.internalHumidity = 65
                 if (typeof environment.vpd !== 'number') environment.vpd = 0
                 if (typeof environment.co2Level !== 'number') environment.co2Level = 400
             }
@@ -152,7 +196,14 @@ const ensureSimulationShape = (state: PersistedState): void => {
                 if (typeof structuralModel.nodes !== 'number') structuralModel.nodes = 1
             }
             if (!plant.medium || typeof plant.medium !== 'object') {
-                plant.medium = { ph: 6.5, ec: 0.8, moisture: 80, microbeHealth: 80, substrateWater: 0, nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 } }
+                plant.medium = {
+                    ph: 6.5,
+                    ec: 0.8,
+                    moisture: 80,
+                    microbeHealth: 80,
+                    substrateWater: 0,
+                    nutrientConcentration: { nitrogen: 100, phosphorus: 100, potassium: 100 },
+                }
             } else {
                 const medium = plant.medium as Record<string, unknown>
                 if (typeof medium.ph !== 'number') medium.ph = 6.5
@@ -160,13 +211,26 @@ const ensureSimulationShape = (state: PersistedState): void => {
                 if (typeof medium.moisture !== 'number') medium.moisture = 80
                 if (typeof medium.microbeHealth !== 'number') medium.microbeHealth = 80
                 if (typeof medium.substrateWater !== 'number') medium.substrateWater = 0
-                if (!medium.nutrientConcentration || typeof medium.nutrientConcentration !== 'object') {
-                    medium.nutrientConcentration = { nitrogen: 100, phosphorus: 100, potassium: 100 }
+                if (
+                    !medium.nutrientConcentration ||
+                    typeof medium.nutrientConcentration !== 'object'
+                ) {
+                    medium.nutrientConcentration = {
+                        nitrogen: 100,
+                        phosphorus: 100,
+                        potassium: 100,
+                    }
                 } else {
-                    const nutrientConcentration = medium.nutrientConcentration as Record<string, unknown>
-                    if (typeof nutrientConcentration.nitrogen !== 'number') nutrientConcentration.nitrogen = 100
-                    if (typeof nutrientConcentration.phosphorus !== 'number') nutrientConcentration.phosphorus = 100
-                    if (typeof nutrientConcentration.potassium !== 'number') nutrientConcentration.potassium = 100
+                    const nutrientConcentration = medium.nutrientConcentration as Record<
+                        string,
+                        unknown
+                    >
+                    if (typeof nutrientConcentration.nitrogen !== 'number')
+                        nutrientConcentration.nitrogen = 100
+                    if (typeof nutrientConcentration.phosphorus !== 'number')
+                        nutrientConcentration.phosphorus = 100
+                    if (typeof nutrientConcentration.potassium !== 'number')
+                        nutrientConcentration.potassium = 100
                 }
             }
             if (!plant.nutrientPool || typeof plant.nutrientPool !== 'object') {
@@ -181,7 +245,8 @@ const ensureSimulationShape = (state: PersistedState): void => {
                 plant.simulationClock = { accumulatedDayMs: 0 }
             } else {
                 const simulationClock = plant.simulationClock as Record<string, unknown>
-                if (typeof simulationClock.accumulatedDayMs !== 'number') simulationClock.accumulatedDayMs = 0
+                if (typeof simulationClock.accumulatedDayMs !== 'number')
+                    simulationClock.accumulatedDayMs = 0
             }
             if (!Array.isArray(plant.history)) {
                 plant.history = []
@@ -223,7 +288,9 @@ const sanitizeGenealogyNodeMigration = (raw: unknown, depth = 0): boolean => {
     // Recurse into children / _children
     for (const key of ['children', '_children'] as const) {
         if (Array.isArray(n[key])) {
-            n[key] = (n[key] as unknown[]).filter((c) => sanitizeGenealogyNodeMigration(c, depth + 1))
+            n[key] = (n[key] as unknown[]).filter((c) =>
+                sanitizeGenealogyNodeMigration(c, depth + 1),
+            )
         }
     }
     return true
@@ -234,11 +301,15 @@ const sanitizeGenealogyNodeMigration = (raw: unknown, depth = 0): boolean => {
  * that RTK selectors require.  Runs on EVERY boot to guard against
  * corrupt / legacy IndexedDB data.
  */
-const ensureEntityAdapterShape = (obj: unknown): { ids: string[]; entities: Record<string, unknown> } => {
+const ensureEntityAdapterShape = (
+    obj: unknown,
+): { ids: string[]; entities: Record<string, unknown> } => {
     if (
-        obj && typeof obj === 'object' &&
+        obj &&
+        typeof obj === 'object' &&
         Array.isArray((obj as Record<string, unknown>).ids) &&
-        (obj as Record<string, unknown>).entities && typeof (obj as Record<string, unknown>).entities === 'object'
+        (obj as Record<string, unknown>).entities &&
+        typeof (obj as Record<string, unknown>).entities === 'object'
     ) {
         return obj as { ids: string[]; entities: Record<string, unknown> }
     }
@@ -266,6 +337,42 @@ const ensureSavedItemsShape = (state: PersistedState): void => {
     items.savedExports = ensureEntityAdapterShape(items.savedExports)
 }
 
+const normalizeSavedStrainTipImages = (state: PersistedState): void => {
+    const s = state as Record<string, unknown>
+    const savedItems = s.savedItems as Record<string, unknown> | undefined
+    if (!savedItems || typeof savedItems !== 'object') {
+        return
+    }
+
+    const savedStrainTips = savedItems.savedStrainTips as Record<string, unknown> | undefined
+    if (!savedStrainTips || typeof savedStrainTips !== 'object') {
+        return
+    }
+
+    const entities = savedStrainTips.entities as Record<string, unknown> | undefined
+    if (!entities || typeof entities !== 'object') {
+        return
+    }
+
+    for (const tip of Object.values(entities)) {
+        if (!tip || typeof tip !== 'object') {
+            continue
+        }
+
+        const savedTip = tip as Record<string, unknown>
+        if (typeof savedTip.imageUrl !== 'string') {
+            continue
+        }
+
+        const normalizedImageUrl = normalizeImageDataUrl(savedTip.imageUrl)
+        if (normalizedImageUrl) {
+            savedTip.imageUrl = normalizedImageUrl
+        } else {
+            delete savedTip.imageUrl
+        }
+    }
+}
+
 const ensureFavoritesShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (!s.favorites || typeof s.favorites !== 'object') {
@@ -288,7 +395,10 @@ const ensureArchivesShape = (state: PersistedState): void => {
     if (!Array.isArray(archives.archivedMentorResponses)) {
         archives.archivedMentorResponses = []
     }
-    if (!archives.archivedAdvisorResponses || typeof archives.archivedAdvisorResponses !== 'object') {
+    if (
+        !archives.archivedAdvisorResponses ||
+        typeof archives.archivedAdvisorResponses !== 'object'
+    ) {
         archives.archivedAdvisorResponses = {}
     }
 }
@@ -347,7 +457,12 @@ const ensureSandboxShape = (state: PersistedState): void => {
 const ensureStrainsViewShape = (state: PersistedState): void => {
     const s = state as Record<string, unknown>
     if (!s.strainsView || typeof s.strainsView !== 'object') {
-        s.strainsView = { strainsViewTab: 'all', strainsViewMode: 'list', selectedStrainIds: [], selectedStrainId: null }
+        s.strainsView = {
+            strainsViewTab: 'all',
+            strainsViewMode: 'list',
+            selectedStrainIds: [],
+            selectedStrainId: null,
+        }
         return
     }
     const sv = s.strainsView as Record<string, unknown>
@@ -370,7 +485,7 @@ const ensureGenealogyShape = (state: PersistedState): void => {
         return
     }
 
-    const g = (state.genealogy as unknown) as Record<string, unknown>
+    const g = state.genealogy as unknown as Record<string, unknown>
 
     // Version mismatch → wipe cache, preserve user preferences
     if (g._version !== GENEALOGY_STATE_VERSION) {
@@ -414,9 +529,13 @@ const ensureGenealogyShape = (state: PersistedState): void => {
     if (g.zoomTransform && typeof g.zoomTransform === 'object') {
         const zt = g.zoomTransform as Record<string, unknown>
         if (
-            typeof zt.k !== 'number' || !isFinite(zt.k) || (zt.k as number) <= 0 ||
-            typeof zt.x !== 'number' || !isFinite(zt.x) ||
-            typeof zt.y !== 'number' || !isFinite(zt.y)
+            typeof zt.k !== 'number' ||
+            !isFinite(zt.k) ||
+            (zt.k as number) <= 0 ||
+            typeof zt.x !== 'number' ||
+            !isFinite(zt.x) ||
+            typeof zt.y !== 'number' ||
+            !isFinite(zt.y)
         ) {
             g.zoomTransform = null
         }
@@ -452,7 +571,10 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
                 if (!target[key] || !isObject(target[key])) {
                     target[key] = {}
                 }
-                merge(target[key] as Record<string, unknown>, sourceValue as Record<string, unknown>)
+                merge(
+                    target[key] as Record<string, unknown>,
+                    sourceValue as Record<string, unknown>,
+                )
             } else if (sourceValue !== undefined) {
                 target[key] = sourceValue
             }
@@ -462,8 +584,13 @@ const deepMergeSettings = (persisted: Partial<AppSettings>): AppSettings => {
         merge(output, persisted)
     }
 
-    const simulationSettings = (output as Record<string, unknown>).simulation as Record<string, unknown> | undefined
-    if (simulationSettings && Object.prototype.hasOwnProperty.call(simulationSettings, 'speedMultiplier')) {
+    const simulationSettings = (output as Record<string, unknown>).simulation as
+        | Record<string, unknown>
+        | undefined
+    if (
+        simulationSettings &&
+        Object.prototype.hasOwnProperty.call(simulationSettings, 'speedMultiplier')
+    ) {
         delete simulationSettings.speedMultiplier
     }
 
@@ -488,9 +615,13 @@ const migrateV1ToV2 = (state: PersistedState): PersistedState => {
         migratedState.settings = { settings: defaultSettings, version: 1 }
     }
 
-    const legacyPlantsView = migratedState.settings.settings.plantsView as unknown as Record<string, unknown>
+    const legacyPlantsView = migratedState.settings.settings.plantsView as unknown as Record<
+        string,
+        unknown
+    >
     if (typeof legacyPlantsView.showArchivedInPlantsView !== 'undefined') {
-        migratedState.settings.settings.plantsView.showArchived = legacyPlantsView.showArchivedInPlantsView as boolean
+        migratedState.settings.settings.plantsView.showArchived =
+            legacyPlantsView.showArchivedInPlantsView as boolean
         delete legacyPlantsView.showArchivedInPlantsView
     }
 
@@ -514,7 +645,9 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
 
     if (migratedState.simulation?.plants?.entities) {
         for (const id in migratedState.simulation.plants.entities) {
-            const plant = migratedState.simulation.plants.entities[id] as unknown as Record<string, unknown> | undefined
+            const plant = migratedState.simulation.plants.entities[id] as unknown as
+                | Record<string, unknown>
+                | undefined
             if (plant && !plant.mediumType) {
                 plant.mediumType = 'Soil'
             }
@@ -528,7 +661,10 @@ const migrateV2ToV3 = (state: PersistedState): PersistedState => {
  * Merges strain catalogs by id and keeps a stable superset during updates.
  * New bundled entries win for overlapping ids, while unknown legacy ids are retained.
  */
-export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStrains: Strain[]): Strain[] => {
+export const mergeStrainCatalogForUpdate = (
+    legacyStrains: Strain[],
+    bundledStrains: Strain[],
+): Strain[] => {
     const mergedById = new Map<string, Strain>()
     const bundledIds = new Set<string>()
     const duplicateIds: string[] = []
@@ -569,7 +705,10 @@ export const mergeStrainCatalogForUpdate = (legacyStrains: Strain[], bundledStra
     })
 
     if (duplicateIds.length > 0) {
-        console.warn('[MigrationLogic] Duplicate bundled strain ids detected:', duplicateIds.slice(0, 10))
+        console.warn(
+            '[MigrationLogic] Duplicate bundled strain ids detected:',
+            duplicateIds.slice(0, 10),
+        )
     }
 
     return Array.from(mergedById.values())
@@ -712,7 +851,9 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     let migratedState: PersistedState = persistedState
 
     if (stateVersion < APP_VERSION) {
-        console.debug(`[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`)
+        console.debug(
+            `[MigrationLogic] Migrating from version ${stateVersion} to ${APP_VERSION}...`,
+        )
 
         if (stateVersion < 2) {
             migratedState = migrateV1ToV2(migratedState)
@@ -750,6 +891,7 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     ensureGenealogyShape(migratedState)
     ensureUserStrainsShape(migratedState)
     ensureSavedItemsShape(migratedState)
+    normalizeSavedStrainTipImages(migratedState)
     ensureFavoritesShape(migratedState)
     ensureArchivesShape(migratedState)
     ensureNotesShape(migratedState)
@@ -762,7 +904,11 @@ export const migrateState = (persistedState: PersistedState): PersistedState => 
     stripTransientState(migratedState)
 
     const snapshotDiff = createSnapshotDiff(snapshotBeforeMigration, migratedState)
-    if (snapshotDiff.added.length > 0 || snapshotDiff.removed.length > 0 || snapshotDiff.changed.length > 0) {
+    if (
+        snapshotDiff.added.length > 0 ||
+        snapshotDiff.removed.length > 0 ||
+        snapshotDiff.changed.length > 0
+    ) {
         console.debug('[MigrationLogic] Snapshot diff summary:', snapshotDiff)
     }
 

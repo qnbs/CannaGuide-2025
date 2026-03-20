@@ -212,6 +212,43 @@ describe('migrationLogic', () => {
         expect(migrated.savedItems!.savedExports).toEqual({ ids: [], entities: {} })
     })
 
+    it('repairs legacy saved strain tip image urls', () => {
+        const migrated = migrateState({
+            version: 5,
+            _sliceVersions: { settings: 2, simulation: 2, genealogy: 3 },
+            savedItems: {
+                savedSetups: { ids: [], entities: {} },
+                savedStrainTips: {
+                    ids: ['tip-1'],
+                    entities: {
+                        'tip-1': {
+                            id: 'tip-1',
+                            createdAt: 123,
+                            strainId: 'strain-1',
+                            strainName: 'Aurora',
+                            title: 'Aurora tips',
+                            nutrientTip: 'Nutrient',
+                            trainingTip: 'Training',
+                            environmentalTip: 'Environment',
+                            proTip: 'Pro',
+                            imageUrl:
+                                'data:image/jpeg;base64,data:image/svg+xml;charset=utf-8,%3Csvg%3Elegacy%3C/svg%3E',
+                        },
+                    },
+                },
+                savedExports: { ids: [], entities: {} },
+            },
+        } as never)
+
+        const savedTip = migrated.savedItems?.savedStrainTips.entities?.['tip-1'] as
+            | { imageUrl?: string }
+            | undefined
+
+        expect(savedTip?.imageUrl).toBe(
+            'data:image/svg+xml;charset=utf-8,%3Csvg%3Elegacy%3C/svg%3E',
+        )
+    })
+
     it('repairs missing favorites shape', () => {
         const migrated = migrateState({
             version: 5,

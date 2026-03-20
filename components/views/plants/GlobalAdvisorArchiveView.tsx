@@ -85,7 +85,8 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                             <input
                                 type="checkbox"
                                 checked={
-                                    selectedIds.size === filteredAdvice.length && filteredAdvice.length > 0
+                                    selectedIds.size === filteredAdvice.length &&
+                                    filteredAdvice.length > 0
                                 }
                                 onChange={handleToggleAll}
                                 className="custom-checkbox"
@@ -111,7 +112,9 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                                         <div className="flex justify-between items-start">
                                             <h4
                                                 className={`font-bold mt-1 ${
-                                                    isProactive ? 'text-amber-300' : 'text-primary-300'
+                                                    isProactive
+                                                        ? 'text-amber-300'
+                                                        : 'text-primary-300'
                                                 } flex items-center gap-2`}
                                             >
                                                 {isProactive && (
@@ -121,7 +124,9 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
                                             </h4>
                                             <div className="text-xs text-slate-400 text-right flex-shrink-0 ml-2">
                                                 <p className="font-semibold">{res.plantName}</p>
-                                                <p>{new Date(res.createdAt).toLocaleDateString()}</p>
+                                                <p>
+                                                    {new Date(res.createdAt).toLocaleDateString()}
+                                                </p>
                                             </div>
                                         </div>
                                         <SafeHtml
@@ -145,3 +150,5 @@ export const GlobalAdvisorArchiveView: React.FC = () => {
         </Card>
     )
 }
+
+GlobalAdvisorArchiveView.displayName = 'GlobalAdvisorArchiveView'

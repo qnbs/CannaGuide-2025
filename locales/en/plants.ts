@@ -140,6 +140,22 @@ export const plantsView = {
         tasksNoEntries: 'No completed tasks yet.',
         tasksCompleted: 'Completed: {{date}}',
         photosNoEntries: 'No photos have been logged for this plant yet.',
+        journalEntries: 'entries',
+        completedTasks: 'Completed',
+    },
+    journal: {
+        details: {
+            amount: 'Amount',
+            type: 'Type',
+            diagnosis: 'Diagnosis',
+            category: 'Category',
+            timeline: 'Timeline',
+            method: 'Method',
+            product: 'Product',
+        },
+    },
+    lifecycle: {
+        remaining: 'remaining',
     },
     postHarvest: {
         title: 'Post-Harvest Processing',

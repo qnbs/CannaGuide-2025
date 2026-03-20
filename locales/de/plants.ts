@@ -141,6 +141,22 @@ export const plantsView = {
         tasksNoEntries: 'Noch keine abgeschlossenen Aufgaben.',
         tasksCompleted: 'Abgeschlossen: {{date}}',
         photosNoEntries: 'Für diese Pflanze wurden noch keine Fotos protokolliert.',
+        journalEntries: 'Einträge',
+        completedTasks: 'Abgeschlossen',
+    },
+    journal: {
+        details: {
+            amount: 'Menge',
+            type: 'Typ',
+            diagnosis: 'Diagnose',
+            category: 'Kategorie',
+            timeline: 'Zeitlinie',
+            method: 'Methode',
+            product: 'Produkt',
+        },
+    },
+    lifecycle: {
+        remaining: 'verbleibend',
     },
     postHarvest: {
         title: 'Nachernte-Verarbeitung',

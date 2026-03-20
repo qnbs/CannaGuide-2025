@@ -1,26 +1,26 @@
-import React, { useState, useEffect, useMemo, memo } from 'react';
-import { Card } from '@/components/common/Card';
-import { PhosphorIcons } from '@/components/icons/PhosphorIcons';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect, useMemo, memo } from 'react'
+import { Card } from '@/components/common/Card'
+import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { useTranslation } from 'react-i18next'
 
 export const TipOfTheDay: React.FC = memo(() => {
-    const { t } = useTranslation();
-    const [tip, setTip] = useState('');
+    const { t } = useTranslation()
+    const [tip, setTip] = useState('')
 
     const allTips = useMemo(() => {
-        const tipsOrKey = t('tipOfTheDay.tips', { returnObjects: true });
-        return Array.isArray(tipsOrKey) ? tipsOrKey : [];
-    }, [t]);
+        const tipsOrKey = t('tipOfTheDay.tips', { returnObjects: true })
+        return Array.isArray(tipsOrKey) ? tipsOrKey : []
+    }, [t])
 
     useEffect(() => {
         if (allTips.length > 0) {
-            const randomIndex = Math.floor(Math.random() * allTips.length);
-            setTip(allTips[randomIndex]);
+            const randomIndex = Math.floor(Math.random() * allTips.length)
+            setTip(allTips[randomIndex])
         }
-    }, [allTips]);
+    }, [allTips])
 
     if (!tip) {
-        return null;
+        return null
     }
 
     return (
@@ -31,5 +31,7 @@ export const TipOfTheDay: React.FC = memo(() => {
             </h3>
             <p className="text-primary-300 text-sm">{tip}</p>
         </Card>
-    );
-});
+    )
+})
+
+TipOfTheDay.displayName = 'TipOfTheDay'

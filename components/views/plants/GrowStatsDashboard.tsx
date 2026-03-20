@@ -29,14 +29,12 @@ const GrowStatsDashboardComponent: React.FC = () => {
     const activePlants = useAppSelector(selectActivePlants)
     const allPlants = useAppSelector(selectAllPlants)
     const openTasks = useAppSelector(selectOpenTasksSummary)
-    const { prediction, isLoading: isYieldModelLoading } = useYieldPrediction(allPlants, activePlants)
+    const { prediction, isLoading: isYieldModelLoading } = useYieldPrediction(
+        allPlants,
+        activePlants,
+    )
 
-    const {
-        yieldForecast,
-        energyCostPerDay,
-        totalTrackedCost,
-        timeline,
-    } = useMemo(() => {
+    const { yieldForecast, energyCostPerDay, totalTrackedCost, timeline } = useMemo(() => {
         const yieldForecastValue = activePlants.reduce((sum, plant) => {
             if (plant.harvestData?.dryWeight) {
                 return sum + plant.harvestData.dryWeight
@@ -46,29 +44,41 @@ const GrowStatsDashboardComponent: React.FC = () => {
         }, 0)
 
         const dailyEnergyCost = activePlants.reduce((sum, plant) => {
-            const dailyKwh = (plant.equipment.light.wattage * plant.equipment.light.lightHours) / 1000
+            const dailyKwh =
+                (plant.equipment.light.wattage * plant.equipment.light.lightHours) / 1000
             return sum + dailyKwh * ENERGY_PRICE_EUR_PER_KWH
         }, 0)
 
-        const nutrientCostPerDay = activePlants.reduce((sum, plant) => sum + plant.medium.ec * 0.08, 0)
+        const nutrientCostPerDay = activePlants.reduce(
+            (sum, plant) => sum + plant.medium.ec * 0.08,
+            0,
+        )
 
         const estimatedRunningCost = activePlants.reduce((sum, plant) => {
             const perPlantDailyKwh =
                 (plant.equipment.light.wattage * plant.equipment.light.lightHours) / 1000
-            const perPlantDailyCost = perPlantDailyKwh * ENERGY_PRICE_EUR_PER_KWH + plant.medium.ec * 0.08
+            const perPlantDailyCost =
+                perPlantDailyKwh * ENERGY_PRICE_EUR_PER_KWH + plant.medium.ec * 0.08
             return sum + perPlantDailyCost * Math.max(1, plant.age)
         }, 0)
 
         const timelineItems: string[] = []
 
         openTasks.slice(0, 3).forEach((task) => {
-            timelineItems.push(t('plantsView.growStats.taskPrefix', { title: task.title, plantName: task.plantName }))
+            timelineItems.push(
+                t('plantsView.growStats.taskPrefix', {
+                    title: task.title,
+                    plantName: task.plantName,
+                }),
+            )
         })
 
         activePlants.forEach((plant) => {
             const remainingDays = Math.max(0, Math.round(totalDaysToHarvest - plant.age))
             if (remainingDays <= 14) {
-                timelineItems.push(t('plantsView.growStats.harvestEta', { name: plant.name, days: remainingDays }))
+                timelineItems.push(
+                    t('plantsView.growStats.harvestEta', { name: plant.name, days: remainingDays }),
+                )
             }
         })
 
@@ -83,44 +93,71 @@ const GrowStatsDashboardComponent: React.FC = () => {
     return (
         <Card>
             <div className="flex items-center justify-between gap-4 mb-4">
-                <h3 className="text-xl font-bold font-display text-primary-300">{t('plantsView.growStats.title')}</h3>
+                <h3 className="text-xl font-bold font-display text-primary-300">
+                    {t('plantsView.growStats.title')}
+                </h3>
                 <PhosphorIcons.ChartLineUp className="w-6 h-6 text-primary-300" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.yieldForecast')}</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                        {t('plantsView.growStats.yieldForecast')}
+                    </p>
                     <p className="text-2xl font-bold text-slate-100 mt-1">
-                        {prediction ? prediction.predictedDryWeight.toFixed(1) : yieldForecast.toFixed(1)} g
+                        {prediction
+                            ? prediction.predictedDryWeight.toFixed(1)
+                            : yieldForecast.toFixed(1)}{' '}
+                        g
                     </p>
                     <p className="text-xs text-slate-400 mt-2">
                         {prediction ? (
                             <>
-                                {t('plantsView.growStats.mlForecast')} {prediction.confidence.toFixed(0)}% {t('plantsView.growStats.confidence')}
+                                {t('plantsView.growStats.mlForecast')}{' '}
+                                {prediction.confidence.toFixed(0)}%{' '}
+                                {t('plantsView.growStats.confidence')}
                             </>
                         ) : (
                             t('plantsView.growStats.heuristicFallback')
                         )}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
-                        {isYieldModelLoading ? t('plantsView.growStats.modelTraining') : prediction?.explanation ?? t('plantsView.growStats.modelIdle')}
+                        {isYieldModelLoading
+                            ? t('plantsView.growStats.modelTraining')
+                            : (prediction?.explanation ?? t('plantsView.growStats.modelIdle'))}
                     </p>
                 </div>
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.costTracker')}</p>
-                    <p className="text-2xl font-bold text-slate-100 mt-1">{energyCostPerDay.toFixed(2)} EUR</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                        {t('plantsView.growStats.costTracker')}
+                    </p>
+                    <p className="text-2xl font-bold text-slate-100 mt-1">
+                        {energyCostPerDay.toFixed(2)} EUR
+                    </p>
                 </div>
                 <div className="rounded-lg bg-slate-800/60 p-3 ring-1 ring-inset ring-white/20">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">{t('plantsView.growStats.trackedTotal')}</p>
-                    <p className="text-2xl font-bold text-slate-100 mt-1">{totalTrackedCost.toFixed(0)} EUR</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">
+                        {t('plantsView.growStats.trackedTotal')}
+                    </p>
+                    <p className="text-2xl font-bold text-slate-100 mt-1">
+                        {totalTrackedCost.toFixed(0)} EUR
+                    </p>
                 </div>
             </div>
 
             {prediction && (
                 <div className="mt-3 rounded-lg bg-slate-900/60 p-3 ring-1 ring-inset ring-white/20 text-sm text-slate-300">
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <span>{t('plantsView.growStats.trainingSamples', { count: prediction.sampleCount })}</span>
-                        <span>{t('plantsView.growStats.heuristicBaseline', { value: prediction.heuristicDryWeight.toFixed(1) })}</span>
+                        <span>
+                            {t('plantsView.growStats.trainingSamples', {
+                                count: prediction.sampleCount,
+                            })}
+                        </span>
+                        <span>
+                            {t('plantsView.growStats.heuristicBaseline', {
+                                value: prediction.heuristicDryWeight.toFixed(1),
+                            })}
+                        </span>
                         {prediction.usedTensorflowModel ? (
                             <span>{t('plantsView.growStats.modelReady')}</span>
                         ) : (
@@ -131,7 +168,9 @@ const GrowStatsDashboardComponent: React.FC = () => {
             )}
 
             <div className="mt-4 rounded-lg bg-slate-900/60 p-3 ring-1 ring-inset ring-white/20">
-                <p className="text-sm font-semibold text-slate-200 mb-2">{t('plantsView.growStats.timeline')}</p>
+                <p className="text-sm font-semibold text-slate-200 mb-2">
+                    {t('plantsView.growStats.timeline')}
+                </p>
                 {timeline.length > 0 ? (
                     <ul className="space-y-1.5 text-sm text-slate-300">
                         {timeline.map((item, index) => (
@@ -150,3 +189,4 @@ const GrowStatsDashboardComponent: React.FC = () => {
 }
 
 export const GrowStatsDashboard = memo(GrowStatsDashboardComponent)
+GrowStatsDashboard.displayName = 'GrowStatsDashboard'

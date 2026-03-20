@@ -21,7 +21,10 @@ const GrowReminderPanelComponent: React.FC = () => {
         return new URLSearchParams(window.location.search).get('reminderBatch')
     })
 
-    const reminders = useMemo(() => growReminderService.buildReminders(activePlants), [activePlants])
+    const reminders = useMemo(
+        () => growReminderService.buildReminders(activePlants),
+        [activePlants],
+    )
     const batches = useMemo(() => growReminderService.buildReminderBatches(reminders), [reminders])
 
     useEffect(() => {
@@ -74,7 +77,9 @@ const GrowReminderPanelComponent: React.FC = () => {
         <Card>
             <div className="flex items-start justify-between gap-4">
                 <div>
-                    <h3 className="text-lg font-bold font-display text-primary-300">{t('plantsView.growReminderPanel.title')}</h3>
+                    <h3 className="text-lg font-bold font-display text-primary-300">
+                        {t('plantsView.growReminderPanel.title')}
+                    </h3>
                     <p className="text-sm text-slate-300 mt-1">
                         {t('plantsView.growReminderPanel.description')}
                     </p>
@@ -92,7 +97,9 @@ const GrowReminderPanelComponent: React.FC = () => {
                     className="w-full"
                 >
                     <PhosphorIcons.Bell className="w-5 h-5 mr-2" />
-                    {permission === 'granted' ? t('plantsView.growReminderPanel.enabledBtn') : t('plantsView.growReminderPanel.enableBtn')}
+                    {permission === 'granted'
+                        ? t('plantsView.growReminderPanel.enabledBtn')
+                        : t('plantsView.growReminderPanel.enableBtn')}
                 </Button>
                 <Button
                     onClick={handleCheckNow}
@@ -113,11 +120,17 @@ const GrowReminderPanelComponent: React.FC = () => {
                 <div className="mt-5 border-t border-white/10 pt-4">
                     <div className="flex items-center justify-between gap-3 mb-3">
                         <div>
-                            <h4 className="text-sm font-semibold text-slate-100">{t('plantsView.growReminderPanel.batchTitle')}</h4>
-                            <p className="text-xs text-slate-400">{t('plantsView.growReminderPanel.batchDescription')}</p>
+                            <h4 className="text-sm font-semibold text-slate-100">
+                                {t('plantsView.growReminderPanel.batchTitle')}
+                            </h4>
+                            <p className="text-xs text-slate-400">
+                                {t('plantsView.growReminderPanel.batchDescription')}
+                            </p>
                         </div>
                         <span className="text-xs px-2 py-1 rounded-full bg-primary-500/15 text-primary-200 ring-1 ring-inset ring-primary-400/30">
-                            {t('plantsView.growReminderPanel.batchCount', { count: batches.length })}
+                            {t('plantsView.growReminderPanel.batchCount', {
+                                count: batches.length,
+                            })}
                         </span>
                     </div>
 
@@ -133,38 +146,63 @@ const GrowReminderPanelComponent: React.FC = () => {
                                 >
                                     <div className="flex items-start justify-between gap-3 mb-3">
                                         <div>
-                                            <p className="text-sm font-semibold text-slate-100">{batch.plantName}</p>
+                                            <p className="text-sm font-semibold text-slate-100">
+                                                {batch.plantName}
+                                            </p>
                                             <p className="text-xs text-slate-400">{batch.body}</p>
                                         </div>
-                                        <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">{batch.severity}</span>
+                                        <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400">
+                                            {batch.severity}
+                                        </span>
                                     </div>
 
                                     <div className="flex items-center gap-3">
                                         <div className="bg-white p-2 rounded-lg shrink-0">
-                                            <QRCodeSVG value={triggerUrl} size={96} level="M" includeMargin />
+                                            <QRCodeSVG
+                                                value={triggerUrl}
+                                                size={96}
+                                                level="M"
+                                                includeMargin
+                                            />
                                         </div>
                                         <div className="min-w-0 flex-1">
-                                            <p className="text-xs text-slate-300">{t('plantsView.growReminderPanel.batchQrLabel')}</p>
-                                            <p className="text-[11px] text-slate-500 break-all mt-1">{triggerUrl}</p>
+                                            <p className="text-xs text-slate-300">
+                                                {t('plantsView.growReminderPanel.batchQrLabel')}
+                                            </p>
+                                            <p className="text-[11px] text-slate-500 break-all mt-1">
+                                                {triggerUrl}
+                                            </p>
                                             <div className="mt-3 flex flex-wrap gap-2">
                                                 <Button
                                                     variant="secondary"
                                                     className="h-9 px-3 text-xs"
-                                                    onClick={() => void handleCopyBatchLink(batch.plantId)}
+                                                    onClick={() =>
+                                                        void handleCopyBatchLink(batch.plantId)
+                                                    }
                                                 >
                                                     <PhosphorIcons.ShareNetwork className="w-4 h-4 mr-2" />
-                                                    {t('plantsView.growReminderPanel.copyBatchLink')}
+                                                    {t(
+                                                        'plantsView.growReminderPanel.copyBatchLink',
+                                                    )}
                                                 </Button>
                                                 <Button
-                                                    variant={isActiveTrigger ? 'primary' : 'secondary'}
+                                                    variant={
+                                                        isActiveTrigger ? 'primary' : 'secondary'
+                                                    }
                                                     className="h-9 px-3 text-xs"
                                                     onClick={async () => {
-                                                        await growReminderService.notifyDueReminders(reminders, settings, batch.plantId)
+                                                        await growReminderService.notifyDueReminders(
+                                                            reminders,
+                                                            settings,
+                                                            batch.plantId,
+                                                        )
                                                         await growReminderService.triggerWorkerReminderCheck()
                                                     }}
                                                 >
                                                     <PhosphorIcons.BellSimple className="w-4 h-4 mr-2" />
-                                                    {t('plantsView.growReminderPanel.triggerBatchBtn')}
+                                                    {t(
+                                                        'plantsView.growReminderPanel.triggerBatchBtn',
+                                                    )}
                                                 </Button>
                                             </div>
                                         </div>
@@ -180,3 +218,4 @@ const GrowReminderPanelComponent: React.FC = () => {
 }
 
 export const GrowReminderPanel = memo(GrowReminderPanelComponent)
+GrowReminderPanel.displayName = 'GrowReminderPanel'

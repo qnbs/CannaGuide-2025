@@ -1,5 +1,5 @@
-import React, { lazy, Suspense, useState } from 'react'
-import { Plant, ModalType, JournalEntryType } from '@/types'
+import React, { lazy, Suspense, useState, useMemo, memo, useCallback } from 'react'
+import { Plant, ModalType, JournalEntryType, PlantStage } from '@/types'
 import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
 import { EquipmentControls } from '../EquipmentControls'
@@ -12,6 +12,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { PlantVisualizer } from '../PlantVisualizer'
 import { exportService } from '@/services/exportService'
 import { dbService } from '@/services/dbService'
+import { RealtimeStatus } from '../RealtimeStatus'
 
 const HistoryChart = lazy(() =>
     import('../HistoryChart').then((m) => ({ default: m.HistoryChart })),
@@ -22,16 +23,47 @@ interface OverviewTabProps {
     plant: Plant
 }
 
-export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
+const VitalStat: React.FC<{
+    label: string
+    value: string
+    icon: React.ReactNode
+    tone?: 'good' | 'warn' | 'critical'
+}> = ({ label, value, icon, tone = 'good' }) => {
+    const toneClasses = {
+        good: 'text-emerald-400 bg-emerald-500/10 ring-emerald-400/20',
+        warn: 'text-amber-400 bg-amber-500/10 ring-amber-400/20',
+        critical: 'text-red-400 bg-red-500/10 ring-red-400/20',
+    }
+    return (
+        <div
+            className={`flex items-center gap-3 rounded-lg p-3 ring-1 ring-inset ${toneClasses[tone]}`}
+        >
+            <div className="w-5 h-5 flex-shrink-0">{icon}</div>
+            <div className="min-w-0">
+                <p className="text-xs text-slate-400">{label}</p>
+                <p className="text-sm font-bold">{value}</p>
+            </div>
+        </div>
+    )
+}
+
+export const OverviewTab: React.FC<OverviewTabProps> = memo(({ plant }) => {
     const { t } = useTranslation()
     const dispatch = useAppDispatch()
     const [isExporting, setIsExporting] = useState(false)
 
-    const openActionModalAction = (type: ModalType) => {
-        dispatch(openActionModal({ plantId: plant.id, type }))
-    }
+    const openActionModalAction = useCallback(
+        (type: ModalType) => {
+            dispatch(openActionModal({ plantId: plant.id, type }))
+        },
+        [dispatch, plant.id],
+    )
 
-    const handleExportReport = async () => {
+    const handleDiagnose = useCallback(() => {
+        dispatch(openDiagnosticsModal(plant.id))
+    }, [dispatch, plant.id])
+
+    const handleExportReport = useCallback(async () => {
         setIsExporting(true)
         try {
             const photoEntries = plant.journal
@@ -62,17 +94,89 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
         } finally {
             setIsExporting(false)
         }
-    }
+    }, [plant, t])
+
+    const vitalsTone = useCallback(
+        (value: number, min: number, max: number): 'good' | 'warn' | 'critical' => {
+            if (value < min * 0.8 || value > max * 1.2) return 'critical'
+            if (value < min || value > max) return 'warn'
+            return 'good'
+        },
+        [],
+    )
+
+    const isPostHarvest = useMemo(
+        () => [PlantStage.Drying, PlantStage.Curing, PlantStage.Finished].includes(plant.stage),
+        [plant.stage],
+    )
+
+    const quickVitals = useMemo(
+        () => [
+            {
+                label: t('plantsView.vitals.ph'),
+                value: plant.medium.ph.toFixed(2),
+                icon: <span className="font-bold text-xs">pH</span>,
+                tone: vitalsTone(plant.medium.ph, 5.8, 6.8),
+            },
+            {
+                label: t('plantsView.vitals.ec'),
+                value: plant.medium.ec.toFixed(2),
+                icon: <PhosphorIcons.Lightning className="w-full h-full" />,
+                tone: vitalsTone(plant.medium.ec, 0.8, 2.4),
+            },
+            {
+                label: t('plantsView.vitals.moisture'),
+                value: `${plant.medium.moisture.toFixed(0)}%`,
+                icon: <PhosphorIcons.Drop className="w-full h-full" />,
+                tone: vitalsTone(plant.medium.moisture, 30, 70),
+            },
+            {
+                label: t('plantsView.gardenVitals.avgTemp'),
+                value: `${plant.environment.internalTemperature.toFixed(1)}°C`,
+                icon: <PhosphorIcons.Thermometer className="w-full h-full" />,
+                tone: vitalsTone(plant.environment.internalTemperature, 20, 30),
+            },
+            {
+                label: t('plantsView.gardenVitals.avgHumidity'),
+                value: `${plant.environment.internalHumidity.toFixed(0)}%`,
+                icon: <PhosphorIcons.Drop className="w-full h-full" />,
+                tone: vitalsTone(plant.environment.internalHumidity, 40, 70),
+            },
+            {
+                label: 'VPD',
+                value: `${plant.environment.vpd.toFixed(2)} kPa`,
+                icon: <PhosphorIcons.ChartLineUp className="w-full h-full" />,
+                tone: vitalsTone(plant.environment.vpd, 0.8, 1.6),
+            },
+        ],
+        [plant.medium, plant.environment, t, vitalsTone],
+    )
 
     return (
         <div className="space-y-6">
-            {/* 1. Visualizer */}
+            {/* 1. Visualizer + Quick Vitals */}
             <Card>
                 <h3 className="text-xl font-bold font-display text-primary-400 mb-3">
                     {t('plantsView.detailedView.growthAndVisuals')}
                 </h3>
-                <div className="h-64 md:h-80 flex items-center justify-center">
-                    <PlantVisualizer plant={plant} className="w-64 h-64" />
+                <div className="flex flex-col md:flex-row gap-6 items-center">
+                    <div className="h-64 md:h-72 flex items-center justify-center flex-shrink-0">
+                        <PlantVisualizer plant={plant} className="w-56 h-56 md:w-64 md:h-64" />
+                    </div>
+                    <div className="flex-grow w-full space-y-3">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {quickVitals.map((vital) => (
+                                <VitalStat
+                                    key={vital.label}
+                                    label={vital.label}
+                                    value={vital.value}
+                                    icon={vital.icon}
+                                    tone={vital.tone as 'good' | 'warn' | 'critical'}
+                                />
+                            ))}
+                        </div>
+                        {!isPostHarvest && <RealtimeStatus createdAt={plant.createdAt} />}
+                    </div>
                 </div>
             </Card>
 
@@ -89,11 +193,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
                 <div className="p-3 bg-slate-800/50 rounded-lg">
                     <ActionToolbar onLogAction={openActionModalAction} />
                 </div>
-                <Button
-                    onClick={() => dispatch(openDiagnosticsModal(plant.id))}
-                    size="sm"
-                    className="w-full mt-4"
-                >
+                <Button onClick={handleDiagnose} size="sm" className="w-full mt-4">
                     <PhosphorIcons.Sparkle className="w-5 h-5 mr-2" />
                     {t('plantsView.aiDiagnostics.diagnoseProblem')}
                 </Button>
@@ -152,4 +252,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ plant }) => {
             </Card>
         </div>
     )
-}
+})
+
+OverviewTab.displayName = 'OverviewTab'

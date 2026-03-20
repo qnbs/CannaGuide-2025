@@ -1,0 +1,51 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**"],
+            "inputs": [
+                "src/**",
+                "components/**",
+                "stores/**",
+                "services/**",
+                "hooks/**",
+                "data/**",
+                "locales/**",
+                "workers/**",
+                "utils/**",
+                "types/**",
+                "lib/**",
+                "public/**",
+                "vite.config.ts",
+                "tsconfig.json",
+                "tailwind.config.cjs",
+                "postcss.config.cjs",
+                "index.html",
+                "index.tsx"
+            ]
+        },
+        "dev": {
+            "dependsOn": ["^build"],
+            "cache": false,
+            "persistent": true
+        },
+        "test": {
+            "dependsOn": ["^build"],
+            "outputs": ["coverage/**"]
+        },
+        "test:e2e": {
+            "dependsOn": ["build"],
+            "outputs": ["test-results/**"]
+        },
+        "lint": {
+            "dependsOn": ["^build"]
+        },
+        "lint:full": {
+            "dependsOn": ["^build"]
+        },
+        "typecheck": {
+            "dependsOn": ["^build"]
+        }
+    }
+}

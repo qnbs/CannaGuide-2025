@@ -21,6 +21,8 @@ export default [
             'scripts/**',
             'sw.js',
             'docker/**',
+            'packages/iot-mocks/**',
+            'apps/desktop/**',
             'types/**/*.d.ts',
         ],
     },

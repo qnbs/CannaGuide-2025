@@ -2,6 +2,7 @@ import mqtt from 'mqtt'
 import DOMPurify from 'dompurify'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
+import { sensorStore } from '@/stores/sensorStore'
 
 // ---------------------------------------------------------------------------
 // MQTT Sensor Service — connects to a local MQTT broker (e.g. Mosquitto)
@@ -322,6 +323,10 @@ class MqttSensorService {
 
     private emitReading(reading: SensorReading): void {
         this.lastReading = reading
+
+        // Push into Zustand sensor store (high-frequency, bypasses Redux)
+        sensorStore.getState().pushReading(reading, 'mqtt')
+
         for (const callback of this.sensorCallbacks) {
             try {
                 callback(reading)
@@ -333,6 +338,10 @@ class MqttSensorService {
 
     private setConnectionState(state: MqttConnectionState): void {
         this.connectionState = state
+
+        // Sync connection state to Zustand sensor store
+        sensorStore.getState().setConnectionState(state)
+
         for (const callback of this.stateCallbacks) {
             try {
                 callback(state)

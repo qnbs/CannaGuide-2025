@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "strict": true,
+        "noImplicitAny": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noEmit": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "jsx": "react-jsx",
+        "declaration": true,
+        "declarationMap": true,
+        "composite": true
+    },
+    "include": ["src/**/*.ts", "src/**/*.tsx"]
+}

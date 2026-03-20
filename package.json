@@ -5,6 +5,10 @@
     "version": "1.1.0",
     "homepage": "https://qnbs.github.io/CannaGuide-2025/",
     "type": "module",
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
     "keywords": [
         "cannabis",
         "cultivation",
@@ -27,6 +31,10 @@
         "build:sourcemap": "vite build --sourcemap",
         "build:gh": "vite build && cp dist/index.html dist/404.html",
         "build:docker": "BUILD_BASE_PATH=/ vite build",
+        "turbo:build": "turbo run build",
+        "turbo:test": "turbo run test",
+        "turbo:lint": "turbo run lint",
+        "turbo:typecheck": "turbo run typecheck",
         "bundle:visualize": "ANALYZE=1 vite build --sourcemap",
         "bundle:explore": "node ./scripts/explore-bundle.mjs",
         "benchmark": "npm run build:analyze && npm run bundle:explore",
@@ -113,7 +121,8 @@
         "recharts": "^3.8.0",
         "tailwind-merge": "^3.5.0",
         "three": "^0.180.0",
-        "zod": "^3.25.76"
+        "zod": "^3.25.76",
+        "zustand": "^5.0.12"
     },
     "devDependencies": {
         "@aikidosec/safe-chain": "^1.4.4",
@@ -162,6 +171,7 @@
         "snyk": "^1.1303.1",
         "source-map-explorer": "^2.5.3",
         "tailwindcss": "^3.4.19",
+        "turbo": "^2.8.20",
         "vite": "^7.3.1",
         "vite-plugin-imagemin": "^0.6.1",
         "vite-plugin-pwa": "^1.2.0",

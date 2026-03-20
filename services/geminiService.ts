@@ -343,7 +343,7 @@ class GeminiService implements BaseAIProvider {
                 throw primaryError
             }
 
-            console.warn(
+            console.debug(
                 `[Gemini] Primary model ${model} failed, retrying with ${fallbackModel}.`,
                 primaryError,
             )
@@ -443,7 +443,7 @@ class GeminiService implements BaseAIProvider {
         if (schema) {
             const result = schema.safeParse(sanitized)
             if (!result.success) {
-                console.warn('[AI] Response schema validation failed:', result.error.format())
+                console.debug('[AI] Response schema validation failed:', result.error.format())
                 throw new Error(errorKey)
             }
             return result.data

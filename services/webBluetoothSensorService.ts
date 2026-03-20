@@ -77,10 +77,15 @@ class WebBluetoothSensorService {
         const temperatureRaw = temperatureValue.getInt16(0, true)
         const humidityRaw = humidityValue.getUint16(0, true)
 
+        // Clamp to physically plausible ranges to reject garbage sensor data
+        const temperatureC = Math.max(-40, Math.min(80, temperatureRaw / 100))
+        const humidityPercent = Math.max(0, Math.min(100, humidityRaw / 100))
+        const clampedPh = phValue !== null ? Math.max(0, Math.min(14, phValue)) : null
+
         return {
-            temperatureC: temperatureRaw / 100,
-            humidityPercent: humidityRaw / 100,
-            ph: phValue,
+            temperatureC,
+            humidityPercent,
+            ph: clampedPh,
             receivedAt: Date.now(),
         }
     }

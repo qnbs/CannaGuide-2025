@@ -203,6 +203,7 @@ export const common = {
         fetchFailed: 'Gist konnte nicht abgerufen werden ({{status}}).',
         noPayload: 'Gist enthält keine importierbaren Sortendaten.',
         invalidPayload: 'Ungültiges Sortenformat im Gist: {{details}}',
+        blockedByLocalOnly: 'Community-Sharing ist im lokalen Modus deaktiviert.',
     },
     noImageGenerated: 'Die API hat kein Bild generiert.',
     noJournalEntries: 'Keine Journal-Einträge verfügbar.',

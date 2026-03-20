@@ -1,5 +1,6 @@
 export const settingsView = {
     title: 'Settings',
+    searchPlaceholder: 'Search settings...',
     saveSuccess: 'Settings saved!',
     categories: {
         general: 'General & UI',

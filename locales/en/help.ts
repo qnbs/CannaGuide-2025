@@ -6,12 +6,26 @@ export const helpView = {
         guides: 'Visual Guides',
         lexicon: 'Lexicon',
         manual: 'User Manual',
+        faqDescription: 'Quick answers to the most common questions about the app and growing.',
+        guidesDescription:
+            'Step-by-step visual walkthroughs for training techniques and app workflows.',
+        lexiconDescription:
+            'A comprehensive glossary of cannabinoids, terpenes, flavonoids, and grow terms.',
+        manualDescription: 'The complete user manual covering every feature of the app in detail.',
     },
+    itemCount: '{{count}} items',
+    termCount: '{{count}} terms',
+    sectionCount: '{{count}} sections',
+    guideCount: '{{count}} guides',
     faq: {
         title: 'Frequently Asked Questions',
         subtitle: 'Split into app operations, AI/offline support, and cultivation topics.',
         searchPlaceholder: 'Search questions...',
         noResults: 'No results found for "{{term}}".',
+        expandAll: 'Expand All',
+        collapseAll: 'Collapse All',
+        resultCount: '{{count}} questions found',
+        resultCountFiltered: '{{count}} of {{total}} questions match',
         groups: {
             localAi: 'Local AI, Sync & App Recovery',
             grow: 'Cultivation & Plant Care',
@@ -34,8 +48,11 @@ export const helpView = {
     },
     lexicon: {
         title: "Grower's Lexicon",
+        subtitle:
+            'Explore the science behind cannabinoids, terpenes, flavonoids, and essential grow terminology.',
         searchPlaceholder: 'Search terms...',
         noResults: 'No terms found for "{{term}}".',
+        resultCount: 'Showing {{count}} of {{total}} terms',
         categories: {
             all: 'All',
             cannabinoid: 'Cannabinoids',
@@ -262,6 +279,7 @@ export const helpView = {
     },
     manual: {
         title: 'User Manual',
+        toc: 'Jump to Section',
         introduction: {
             title: 'Introduction & Philosophy',
             content: `Welcome to CannaGuide 2025, your ultimate co-pilot for cannabis cultivation. This manual guides you through the app's advanced features.<h4>Our Core Principles:</h4><ul><li><strong>Offline First:</strong> 100% functionality without an internet connection. Actions are queued and synced later. A three-layer local AI stack ensures diagnostics and advice stay available even without network.</li><li><strong>Performance-Driven:</strong> A fluid UI thanks to offloading complex simulations to a Web Worker and ONNX-optimised inference with LRU caching.</li><li><strong>Data Sovereignty:</strong> Complete control with full backup, restore, and encrypted one-tap cloud sync via GitHub Gist. No server ever sees your data.</li><li><strong>Multi-Provider AI:</strong> Bring your own key for Google Gemini, OpenAI, Anthropic, or xAI/Grok — or use the on-device local AI stack with zero API keys required.</li></ul>`,

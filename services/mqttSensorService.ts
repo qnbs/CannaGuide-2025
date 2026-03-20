@@ -1,5 +1,4 @@
 import mqtt from 'mqtt'
-import DOMPurify from 'dompurify'
 import type { SensorReading } from './webBluetoothSensorService'
 import { getT } from '@/i18n'
 import { sensorStore } from '@/stores/sensorStore'
@@ -309,9 +308,15 @@ class MqttSensorService {
         }
         try {
             const raw = payload.toString('utf-8')
-            // Sanitize the raw string to strip any embedded HTML/script content
-            const sanitized = DOMPurify.sanitize(raw, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })
-            return JSON.parse(sanitized) as Record<string, unknown>
+            // Parse JSON directly — DOMPurify is not appropriate for JSON data
+            // as it can corrupt valid payloads. Sensor values are validated
+            // downstream via clampSensorValue().
+            const parsed = JSON.parse(raw) as Record<string, unknown>
+            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+                console.warn('[MQTT] Payload is not a JSON object, discarding.')
+                return null
+            }
+            return parsed
         } catch (error) {
             console.warn(
                 '[MQTT] Failed to parse JSON payload:',

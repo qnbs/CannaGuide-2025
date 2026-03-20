@@ -55,7 +55,6 @@ const pendingCallbacks = new Map<
 const queue: QueuedTask[] = []
 let activeCount = 0
 const MAX_CONCURRENT = 1
-let idCounter = 0
 
 // ─── Worker Lifecycle ────────────────────────────────────────────────────────
 
@@ -152,7 +151,7 @@ export const enqueueInference = (task: InferenceTask): Promise<unknown> => {
             return
         }
 
-        const id = `inf_${++idCounter}_${Date.now()}`
+        const id = crypto.randomUUID()
         const priority = task.priority ?? 'normal'
         const request: InferenceWorkerRequest = {
             id,
@@ -220,5 +219,4 @@ export const terminateInferenceWorker = (): void => {
 /** Reset worker failure state so it can be retried. */
 export const resetWorkerState = (): void => {
     workerFailed = false
-    idCounter = 0
 }

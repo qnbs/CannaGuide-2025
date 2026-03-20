@@ -1,39 +1,39 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "CannaGuide 2025",
-  "version": "0.1.0",
-  "identifier": "com.cannaguide.app",
-  "build": {
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build",
-    "frontendDist": "../dist",
-    "devUrl": "http://localhost:5173"
-  },
-  "app": {
-    "windows": [
-      {
-        "title": "CannaGuide 2025",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 375,
-        "minHeight": 600,
-        "resizable": true,
-        "fullscreen": false
-      }
-    ],
-    "security": {
-      "csp": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https:; font-src 'self' https://fonts.gstatic.com https: data:; img-src 'self' data: blob: https:; connect-src 'self' https:; worker-src 'self' blob:"
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "CannaGuide 2025",
+    "version": "1.1.0",
+    "identifier": "com.cannaguide.app",
+    "build": {
+        "beforeDevCommand": "npm run dev",
+        "beforeBuildCommand": "npm run build",
+        "frontendDist": "../dist",
+        "devUrl": "http://localhost:5173"
+    },
+    "app": {
+        "windows": [
+            {
+                "title": "CannaGuide 2025",
+                "width": 1280,
+                "height": 800,
+                "minWidth": 375,
+                "minHeight": 600,
+                "resizable": true,
+                "fullscreen": false
+            }
+        ],
+        "security": {
+            "csp": "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https:; connect-src 'self' https://generativelanguage.googleapis.com https://api.openai.com https://api.x.ai https://api.anthropic.com; worker-src 'self' blob:"
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "icon": [
+            "icons/32x32.png",
+            "icons/128x128.png",
+            "icons/128x128@2x.png",
+            "icons/icon.icns",
+            "icons/icon.ico"
+        ]
     }
-  },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
-  }
 }

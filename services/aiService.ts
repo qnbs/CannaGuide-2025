@@ -2,6 +2,7 @@ import type { ImageStyle } from '@/types/aiProvider'
 import { localAiPreloadService } from '@/services/localAiPreloadService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
 import { growLogRagService } from '@/services/growLogRagService'
+import { isLocalOnlyMode } from '@/services/localOnlyModeService'
 import {
     Language,
     Plant,
@@ -50,11 +51,13 @@ export const getAiMode = (): AiMode => _aiMode
 /**
  * Determines whether to use the local AI stack instead of the cloud API.
  *
+ * - **localOnlyMode**: always route locally (privacy mode — no outbound traffic)
  * - **local**:  always route locally (device-only)
  * - **cloud**:  only route locally when the device is offline
  * - **hybrid**: route locally when offline OR when local models are pre-loaded
  */
 const shouldRouteLocally = (): boolean => {
+    if (isLocalOnlyMode()) return true
     if (_aiMode === 'local') return true
     if (_aiMode === 'cloud') return isOffline()
     // hybrid: original smart-routing logic
@@ -67,13 +70,13 @@ const shouldRouteLocally = (): boolean => {
  * `localFallback` callback is invoked instead so the user always gets a
  * response.
  *
- * In **local** mode the cloud call is never attempted.
+ * In **local** or **localOnlyMode** the cloud call is never attempted.
  */
 async function withLocalFallback<T>(
     cloudFn: () => Promise<T>,
     localFallback: () => T | Promise<T>,
 ): Promise<T> {
-    if (_aiMode === 'local') return localFallback()
+    if (_aiMode === 'local' || isLocalOnlyMode()) return localFallback()
     try {
         return await cloudFn()
     } catch (error) {

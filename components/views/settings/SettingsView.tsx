@@ -1810,6 +1810,23 @@ const PrivacySettingsTab: React.FC = () => {
                 >
                     <div className="sm:col-span-2 space-y-6">
                         <SettingsRow
+                            label={t('settingsView.privacy.localOnlyMode')}
+                            description={t('settingsView.privacy.localOnlyModeDesc')}
+                        >
+                            <Switch
+                                checked={privacy.localOnlyMode}
+                                onChange={(value) =>
+                                    dispatch(setSetting({ path: 'privacy.localOnlyMode', value }))
+                                }
+                            />
+                        </SettingsRow>
+                        {privacy.localOnlyMode && (
+                            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
+                                <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
+                                {t('settingsView.privacy.localOnlyModeActive')}
+                            </div>
+                        )}
+                        <SettingsRow
                             label={t('settingsView.privacy.requirePin')}
                             description={t('settingsView.privacy.requirePinDesc')}
                         >

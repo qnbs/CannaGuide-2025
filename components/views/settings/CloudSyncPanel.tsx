@@ -10,6 +10,7 @@ import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { addNotification } from '@/stores/slices/uiSlice'
 import { syncService } from '@/services/syncService'
+import { generateSyncEncryptionKey } from '@/services/syncEncryptionService'
 import { indexedDBStorage } from '@/stores/indexedDBStorage'
 import { REDUX_STATE_KEY } from '@/constants'
 
@@ -23,13 +24,38 @@ const CloudSyncPanel: React.FC = () => {
     const dispatch = useAppDispatch()
     const settings = useAppSelector(selectSettings)
     const { cloudSync } = settings.data
+    const isLocalOnly = settings.privacy.localOnlyMode
 
     const [isPushing, setIsPushing] = useState(false)
     const [isPulling, setIsPulling] = useState(false)
     const [pullGistInput, setPullGistInput] = useState('')
     const [isPullConfirmOpen, setIsPullConfirmOpen] = useState(false)
+    const [showEncryptionKey, setShowEncryptionKey] = useState(false)
 
     const isSyncEnabled = cloudSync.provider === 'gist'
+    const hasEncryptionKey = Boolean(cloudSync.encryptionKeyBase64)
+
+    const handleGenerateEncryptionKey = async (): Promise<void> => {
+        const key = await generateSyncEncryptionKey()
+        dispatch(setSetting({ path: 'data.cloudSync.encryptionKeyBase64', value: key }))
+        dispatch(
+            addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.sync.e2ee.keyGenerated')),
+            }),
+        )
+    }
+
+    const handleCopyEncryptionKey = async (): Promise<void> => {
+        if (!cloudSync.encryptionKeyBase64) return
+        await navigator.clipboard.writeText(cloudSync.encryptionKeyBase64)
+        dispatch(
+            addNotification({
+                type: 'success',
+                message: String(t('settingsView.data.sync.e2ee.keyCopied')),
+            }),
+        )
+    }
 
     const handleToggleSync = (): void => {
         if (isSyncEnabled) {
@@ -51,7 +77,11 @@ const CloudSyncPanel: React.FC = () => {
                 return
             }
 
-            const result = await syncService.pushToGist(stateJson, cloudSync.gistId)
+            const result = await syncService.pushToGist(
+                stateJson,
+                cloudSync.gistId,
+                cloudSync.encryptionKeyBase64,
+            )
             dispatch(setSetting({ path: 'data.cloudSync.gistId', value: result.gistId }))
             dispatch(setSetting({ path: 'data.cloudSync.lastSyncAt', value: result.syncedAt }))
             dispatch(
@@ -84,7 +114,7 @@ const CloudSyncPanel: React.FC = () => {
             const gistRef = pullGistInput.trim() || cloudSync.gistId
             if (!gistRef) return
 
-            const result = await syncService.pullFromGist(gistRef)
+            const result = await syncService.pullFromGist(gistRef, cloudSync.encryptionKeyBase64)
             await indexedDBStorage.setItem(REDUX_STATE_KEY, result.state)
             dispatch(
                 addNotification({
@@ -163,8 +193,64 @@ const CloudSyncPanel: React.FC = () => {
                     {t('settingsView.data.sync.description')}
                 </p>
 
+                {isLocalOnly && (
+                    <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-900/10 p-3 text-sm text-amber-300">
+                        <PhosphorIcons.Warning className="h-4 w-4 shrink-0" />
+                        {t('settingsView.data.sync.blockedByLocalOnly')}
+                    </div>
+                )}
+
                 {isSyncEnabled && (
                     <div className="space-y-4">
+                        {/* E2EE Encryption */}
+                        <div className="rounded-lg border border-primary-500/20 bg-primary-900/10 p-3 space-y-3">
+                            <div className="flex items-center gap-2">
+                                <PhosphorIcons.Lock className="h-4 w-4 text-primary-400" />
+                                <span className="text-sm font-medium text-primary-300">
+                                    {t('settingsView.data.sync.e2ee.title')}
+                                </span>
+                            </div>
+                            <p className="text-xs text-slate-400">
+                                {t('settingsView.data.sync.e2ee.description')}
+                            </p>
+                            {hasEncryptionKey ? (
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2 text-xs text-green-400">
+                                        <PhosphorIcons.ShieldCheck className="h-3.5 w-3.5" />
+                                        {t('settingsView.data.sync.e2ee.active')}
+                                    </div>
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={() => setShowEncryptionKey((v) => !v)}
+                                        >
+                                            {showEncryptionKey
+                                                ? t('settingsView.data.sync.e2ee.hideKey')
+                                                : t('settingsView.data.sync.e2ee.showKey')}
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="secondary"
+                                            onClick={handleCopyEncryptionKey}
+                                        >
+                                            {t('settingsView.data.sync.e2ee.copyKey')}
+                                        </Button>
+                                    </div>
+                                    {showEncryptionKey && (
+                                        <code className="block break-all rounded bg-slate-800 p-2 text-xs text-slate-200 font-mono">
+                                            {cloudSync.encryptionKeyBase64}
+                                        </code>
+                                    )}
+                                </div>
+                            ) : (
+                                <Button size="sm" onClick={handleGenerateEncryptionKey}>
+                                    <PhosphorIcons.Key className="mr-2 h-3.5 w-3.5" />
+                                    {t('settingsView.data.sync.e2ee.generateKey')}
+                                </Button>
+                            )}
+                        </div>
+
                         {/* Status */}
                         <div className="flex items-center justify-between text-sm bg-slate-800/50 rounded-lg p-3">
                             <span className="text-slate-300">
@@ -190,7 +276,7 @@ const CloudSyncPanel: React.FC = () => {
                         <div className="flex flex-col sm:flex-row gap-2">
                             <Button
                                 onClick={handlePush}
-                                disabled={isPushing || isPulling}
+                                disabled={isPushing || isPulling || isLocalOnly}
                                 className="flex-1 justify-center"
                             >
                                 <PhosphorIcons.CloudArrowUp className="mr-2" />
@@ -204,6 +290,7 @@ const CloudSyncPanel: React.FC = () => {
                                 disabled={
                                     isPushing ||
                                     isPulling ||
+                                    isLocalOnly ||
                                     (!pullGistInput.trim() && !cloudSync.gistId)
                                 }
                                 className="flex-1 justify-center"

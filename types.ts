@@ -604,12 +604,16 @@ export interface AppSettings {
             provider: 'none' | 'gist'
             gistId: string | null
             lastSyncAt: number | null
+            /** Base64-encoded AES-GCM key for E2EE of Gist backups. */
+            encryptionKeyBase64: string | null
         }
     }
     privacy: {
         requirePinOnLaunch: boolean
         pin: string | null
         clearAiHistoryOnExit: boolean
+        /** When true, blocks ALL outbound network requests (Sentry, cloud AI, Gist sync). */
+        localOnlyMode: boolean
     }
 }
 

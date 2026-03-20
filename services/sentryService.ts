@@ -2,6 +2,28 @@ type SentryModule = typeof import('@sentry/react')
 
 let _sentry: SentryModule | null = null
 let _initPromise: Promise<void> | null = null
+let _sentryDisabledByLocalOnly = false
+
+/**
+ * Disables Sentry at runtime (used by Local-Only Mode).
+ * After calling this, all Sentry proxy methods become no-ops.
+ */
+export const disableSentry = (): void => {
+    _sentryDisabledByLocalOnly = true
+    if (_sentry) {
+        _sentry.close()
+        _sentry = null
+    }
+}
+
+/** Re-enables Sentry. Takes effect only if DSN is configured and in production. */
+export const enableSentry = (): void => {
+    _sentryDisabledByLocalOnly = false
+    // Re-init on next call (lazy)
+    if (!_sentry && !_initPromise) {
+        initSentry()
+    }
+}
 
 /**
  * Initializes Sentry error tracking for the application.
@@ -12,7 +34,7 @@ export const initSentry = (): void => {
     const dsn = import.meta.env.VITE_SENTRY_DSN as string | undefined
     const isProd = import.meta.env.PROD
 
-    if (!dsn || !isProd) {
+    if (!dsn || !isProd || _sentryDisabledByLocalOnly) {
         return
     }
 
@@ -59,12 +81,14 @@ export const initSentry = (): void => {
     })
 }
 
-/** Lazy Sentry proxy — no-ops safely when SDK is not loaded. */
+/** Lazy Sentry proxy — no-ops safely when SDK is not loaded or Local-Only Mode is active. */
 export const Sentry = {
     captureException(error: unknown, hint?: Parameters<SentryModule['captureException']>[1]): void {
+        if (_sentryDisabledByLocalOnly) return
         _sentry?.captureException(error, hint)
     },
     captureMessage(message: string, level?: Parameters<SentryModule['captureMessage']>[1]): void {
+        if (_sentryDisabledByLocalOnly) return
         _sentry?.captureMessage(message, level)
     },
     get ready(): Promise<void> {

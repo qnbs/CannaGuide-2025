@@ -454,6 +454,23 @@ export const settingsView = {
             confirmPullTitle: 'Aus der Cloud wiederherstellen?',
             syncing: 'Synchronisiere...',
             connected: 'Mit Gist verbunden',
+            blockedByLocalOnly:
+                'Cloud-Sync ist deaktiviert, solange der Nur-Lokal-Modus aktiv ist. Deaktiviere den Nur-Lokal-Modus unter Privatsphäre & Sicherheit, um Cloud-Sync zu nutzen.',
+            encryptionKeyRequired:
+                'Dieses Backup ist verschlüsselt. Bitte gib den Verschlüsselungsschlüssel an, um es wiederherzustellen.',
+            e2ee: {
+                title: 'Ende-zu-Ende-Verschlüsselung',
+                description:
+                    'Verschlüssele dein Backup vor dem Hochladen. Ohne den Schlüssel sind deine Gist-Daten unlesbar — selbst für GitHub.',
+                active: 'E2EE aktiv — Backups sind verschlüsselt',
+                generateKey: 'Verschlüsselungsschlüssel generieren',
+                keyGenerated:
+                    'Verschlüsselungsschlüssel generiert. Bewahre ihn sicher auf — du brauchst ihn, um Backups auf anderen Geräten wiederherzustellen.',
+                showKey: 'Schlüssel anzeigen',
+                hideKey: 'Schlüssel verbergen',
+                copyKey: 'Schlüssel kopieren',
+                keyCopied: 'Verschlüsselungsschlüssel in die Zwischenablage kopiert.',
+            },
         },
         replayOnboarding: 'Einführung erneut anzeigen',
         replayOnboardingConfirm:
@@ -524,6 +541,11 @@ export const settingsView = {
     },
     privacy: {
         title: 'Privatsphäre & Sicherheit',
+        localOnlyMode: 'Nur-Lokal-Modus',
+        localOnlyModeDesc:
+            'Blockiert ALLEN ausgehenden Netzwerkverkehr: Sentry-Fehlertracking, Cloud-KI-Anfragen und Gist-Sync. Nur lokale KI-Inferenz und lokale Speicherung sind erlaubt.',
+        localOnlyModeActive:
+            'Nur-Lokal-Modus ist aktiv. Alle externen Netzwerk-Anfragen sind blockiert. Deaktiviere diesen Schalter, um Cloud-Funktionen wiederherzustellen.',
         requirePin: 'PIN beim Start anfordern',
         requirePinDesc: 'Schütze deine App mit einer 4-stelligen PIN.',
         setPin: 'PIN festlegen/ändern',

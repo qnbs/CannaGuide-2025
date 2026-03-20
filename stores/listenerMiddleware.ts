@@ -63,6 +63,18 @@ const syncAiMode = async (mode: AiMode) => {
     setAiMode(mode)
 }
 
+const syncLocalOnlyMode = async (enabled: boolean) => {
+    const { setLocalOnlyMode } = await import('@/services/localOnlyModeService')
+    setLocalOnlyMode(enabled)
+    if (enabled) {
+        const { disableSentry } = await import('@/services/sentryService')
+        disableSentry()
+    } else {
+        const { enableSentry } = await import('@/services/sentryService')
+        enableSentry()
+    }
+}
+
 /**
  * Listener to synchronize the AI execution mode when the setting is updated.
  */
@@ -71,6 +83,9 @@ startAppListening({
     effect: async (action) => {
         if (action.payload.path === 'aiMode') {
             await syncAiMode(action.payload.value as AiMode)
+        }
+        if (action.payload.path === 'privacy.localOnlyMode') {
+            await syncLocalOnlyMode(action.payload.value as boolean)
         }
     },
 })

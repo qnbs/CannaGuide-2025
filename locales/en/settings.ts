@@ -445,6 +445,23 @@ export const settingsView = {
             confirmPullTitle: 'Restore from Cloud?',
             syncing: 'Syncing...',
             connected: 'Connected to Gist',
+            blockedByLocalOnly:
+                'Cloud sync is disabled while Local-Only Mode is active. Disable Local-Only Mode in Privacy & Security to use cloud sync.',
+            encryptionKeyRequired:
+                'This backup is encrypted. Please provide the encryption key to restore it.',
+            e2ee: {
+                title: 'End-to-End Encryption',
+                description:
+                    'Encrypt your backup before uploading. Without the key, your Gist data is unreadable — even to GitHub.',
+                active: 'E2EE active — backups are encrypted',
+                generateKey: 'Generate Encryption Key',
+                keyGenerated:
+                    'Encryption key generated. Save it securely — you need it to restore backups on other devices.',
+                showKey: 'Show Key',
+                hideKey: 'Hide Key',
+                copyKey: 'Copy Key',
+                keyCopied: 'Encryption key copied to clipboard.',
+            },
         },
         replayOnboarding: 'Show Tutorial Again',
         replayOnboardingConfirm:
@@ -514,6 +531,11 @@ export const settingsView = {
     },
     privacy: {
         title: 'Privacy & Security',
+        localOnlyMode: 'Local-Only Mode',
+        localOnlyModeDesc:
+            'Blocks ALL outbound network traffic: Sentry error tracking, cloud AI requests, and Gist sync. Only local AI inference and local storage are allowed.',
+        localOnlyModeActive:
+            'Local-Only Mode is active. All external network requests are blocked. Disable this toggle to restore cloud features.',
         requirePin: 'Require PIN on Launch',
         requirePinDesc: 'Protect your app with a 4-digit PIN.',
         setPin: 'Set/Change PIN',

@@ -169,6 +169,7 @@ export const defaultSettings: AppSettings = {
             provider: 'none',
             gistId: null,
             lastSyncAt: null,
+            encryptionKeyBase64: null,
         },
     },
 
@@ -176,6 +177,7 @@ export const defaultSettings: AppSettings = {
         requirePinOnLaunch: false,
         pin: null,
         clearAiHistoryOnExit: false,
+        localOnlyMode: false,
     },
 }
 

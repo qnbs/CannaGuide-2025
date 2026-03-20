@@ -21,9 +21,10 @@ CannaGuide 2025 is a production-grade, AI-powered Progressive Web App (PWA) for 
 - **Styling:** Tailwind CSS + Radix UI + 9 cannabis themes
 - **Persistence:** Dual IndexedDB (`CannaGuideStateDB` + `CannaGuideDB`)
 - **i18n:** i18next (EN + DE, 13 namespaces)
-- **Testing:** Vitest (413+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
+- **Testing:** Vitest (529+ tests) + Playwright E2E + Playwright Component Tests + Stryker mutation
 - **Error Tracking:** Sentry (browser SDK)
-- **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri (desktop), Capacitor (mobile)
+- **Security Scanning:** Semgrep, Gitleaks, Trojan-source, npm audit
+- **Distribution:** GitHub Pages, Netlify (PR previews), Docker, Tauri v2 (desktop), Capacitor (mobile)
 
 ### Project Structure
 
@@ -40,11 +41,14 @@ types/               # TypeScript types + Zod schemas
 tests/               # E2E (tests/e2e/) + Component tests (tests/ct/)
 lib/                 # Utility library (cn(), VPD calculations)
 public/              # Static assets, SW, manifest
-src-tauri/           # Tauri desktop config (Rust backend)
+src-tauri/           # Tauri v2 desktop config (Rust backend + capabilities)
+apps/desktop/        # Tauri desktop wrapper (Rust IPC commands)
+packages/iot-mocks/  # ESP32 sensor mock server (port 3001)
 scripts/             # Build/lint/merge scripts
-docker/              # nginx config
+docker/              # nginx config, esp32-mock, tauri-mock
 docs/                # Developer guides, roadmap
-.github/             # 15 CI/CD workflows, issue templates
+.github/             # 17 CI/CD workflows, issue templates
+.devcontainer/       # Codespaces/DevContainer config (IoT mocks auto-start)
 ```
 
 ### Key Patterns
@@ -107,9 +111,13 @@ docs/                # Developer guides, roadmap
 - **AES-256-GCM** encryption for API keys at rest (cryptoService.ts)
 - **EXIF/GPS stripping** before image AI transmission
 - **30+ regex patterns** block prompt injection in AI prompts
-- **CSP hardened** across 4 delivery paths
+- **CSP hardened** across 4 delivery paths (no `unsafe-inline` in script-src for Tauri)
+- **Tauri v2 capabilities**: Minimal permission set in `src-tauri/capabilities/default.json`
+- **Local-only mode guard**: All outbound network services must check `isLocalOnlyMode()` before fetch
 - **No `console.log`** in production — use `console.debug` (stripped) or `console.warn`/`console.error`
+- **No `console.warn`** for error detail logging — use `console.debug` to prevent info leaks
 - **Sentry** captures runtime errors — use `Sentry.captureException()` for explicit reporting
+- **Security scanners**: Semgrep, Gitleaks, Trojan-source all pass with 0 findings
 
 ### AI Integration
 
@@ -135,7 +143,7 @@ docs/                # Developer guides, roadmap
 - Playwright E2E tests in `tests/e2e/` (pattern: `*.e2e.ts`)
 - Playwright Component tests in `tests/ct/` (pattern: `*.ct.tsx`)
 - Mocks in `tests/mocks/` for Gemini, IndexedDB, etc.
-- Baseline: 413+ tests, 0 failures
+- Baseline: 529+ tests across 58 files, 0 failures
 
 ### Git
 
@@ -152,12 +160,14 @@ npm run dev              # Vite dev server (localhost:5173)
 npm run build            # Production build
 npm test                 # Vitest unit/integration
 npm run test:e2e         # Playwright E2E (requires build)
+npm run test:ct          # Playwright Component tests
 npm run lint             # ESLint changed files
 npm run lint:full        # ESLint entire project
 npx tsc --noEmit         # Type check
 npm run format           # Prettier format
 npm run lighthouse:ci    # Lighthouse audit
 npm run test:mutation    # Stryker mutation testing
+npm run security:scan    # Full security scan (semgrep, gitleaks, trivy, etc.)
 ```
 
 ---
@@ -208,9 +218,15 @@ Sentry is integrated for runtime error monitoring. Configuration is in `services
 | `services/localAiTelemetryService.ts`         | Inference performance tracking                        |
 | `services/localAiCacheService.ts`             | IndexedDB inference cache (LRU, TTL)                  |
 | `services/sentryService.ts`                   | Sentry error tracking initialization                  |
+| `services/communityShareService.ts`           | Anonymous Gist strain sharing (local-only guarded)    |
+| `services/tauriIpcService.ts`                 | Tauri binary IPC bridge (image + sensor)              |
+| `services/pluginService.ts`                   | Plugin architecture (nutrient, hardware, grow)        |
 | `simulation.worker.ts`                        | VPD simulation Web Worker                             |
 | `sw.js`                                       | Service Worker (precache + runtime caching)           |
 | `constants.ts`                                | App-wide constants                                    |
 | `types.ts`                                    | Core TypeScript types                                 |
 | `i18n.ts`                                     | i18next initialization                                |
 | `vite.config.ts`                              | Build configuration                                   |
+| `src-tauri/capabilities/default.json`         | Tauri v2 capability permissions (minimal set)         |
+| `apps/desktop/src/ipc.rs`                     | Tauri Rust IPC commands (image, sensor, sysinfo)      |
+| `.devcontainer/devcontainer.json`             | DevContainer config (IoT mocks, ports, extensions)    |

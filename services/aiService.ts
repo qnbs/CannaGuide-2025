@@ -1,4 +1,3 @@
-import { geminiService } from '@/services/geminiService'
 import type { ImageStyle } from '@/types/aiProvider'
 import { localAiPreloadService } from '@/services/localAiPreloadService'
 import { localAiFallbackService } from '@/services/localAiFallbackService'
@@ -17,6 +16,11 @@ import {
 } from '@/types'
 
 const DYNAMIC_IMPORT_TIMEOUT_MS = 15_000
+
+const getGeminiService = async () => {
+    const { geminiService } = await import('@/services/geminiService')
+    return geminiService
+}
 
 const getLocalAiService = async () => {
     const importPromise = import('@/services/localAI').then((m) => m.localAiService)
@@ -89,7 +93,7 @@ export const aiService = {
         }
 
         return withLocalFallback(
-            () => geminiService.getEquipmentRecommendation(prompt, lang),
+            async () => (await getGeminiService()).getEquipmentRecommendation(prompt, lang),
             async () => {
                 const local = await getLocalAiService()
                 return local.getEquipmentRecommendation(prompt, lang)
@@ -122,7 +126,7 @@ export const aiService = {
         }
 
         return withLocalFallback(
-            () => geminiService.getNutrientRecommendation(context, lang),
+            async () => (await getGeminiService()).getNutrientRecommendation(context, lang),
             async () => {
                 const local = await getLocalAiService()
                 return local.getNutrientRecommendation(context, lang)
@@ -142,7 +146,14 @@ export const aiService = {
             return local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
         }
         return withLocalFallback(
-            () => geminiService.diagnosePlant(base64Image, mimeType, plant, userNotes, lang),
+            async () =>
+                (await getGeminiService()).diagnosePlant(
+                    base64Image,
+                    mimeType,
+                    plant,
+                    userNotes,
+                    lang,
+                ),
             async () => {
                 const local = await getLocalAiService()
                 return local.diagnosePlant(base64Image, mimeType, plant, userNotes, lang)
@@ -156,7 +167,7 @@ export const aiService = {
             return local.getPlantAdvice(plant, lang)
         }
         return withLocalFallback(
-            () => geminiService.getPlantAdvice(plant, lang),
+            async () => (await getGeminiService()).getPlantAdvice(plant, lang),
             () => localAiFallbackService.getPlantAdvice(plant, lang),
         )
     },
@@ -167,7 +178,7 @@ export const aiService = {
             return local.getProactiveDiagnosis(plant, lang)
         }
         return withLocalFallback(
-            () => geminiService.getProactiveDiagnosis(plant, lang),
+            async () => (await getGeminiService()).getProactiveDiagnosis(plant, lang),
             () => localAiFallbackService.getPlantAdvice(plant, lang),
         )
     },
@@ -188,7 +199,7 @@ export const aiService = {
             return local.getMentorResponse(plant, query, lang, ragContext)
         }
         return withLocalFallback(
-            () => geminiService.getMentorResponse(plant, query, lang),
+            async () => (await getGeminiService()).getMentorResponse(plant, query, lang),
             () => localAiFallbackService.getMentorResponse(plant, query, '', lang),
         )
     },
@@ -203,7 +214,7 @@ export const aiService = {
             return local.getStrainTips(strain, context, lang)
         }
         return withLocalFallback(
-            () => geminiService.getStrainTips(strain, context, lang),
+            async () => (await getGeminiService()).getStrainTips(strain, context, lang),
             () => localAiFallbackService.getStrainTips(strain, lang),
         )
     },
@@ -220,7 +231,7 @@ export const aiService = {
         }
 
         return withLocalFallback(
-            () => geminiService.generateStrainImage(strain, style, criteria),
+            async () => (await getGeminiService()).generateStrainImage(strain, style, criteria),
             async () => {
                 const local = await getLocalAiService()
                 return local.generateStrainImage(strain, style, criteria, lang)
@@ -234,7 +245,7 @@ export const aiService = {
             return local.generateDeepDive(topic, plant, lang)
         }
         return withLocalFallback(
-            () => geminiService.generateDeepDive(topic, plant, lang),
+            async () => (await getGeminiService()).generateDeepDive(topic, plant, lang),
             async () => {
                 const local = await getLocalAiService()
                 return local.generateDeepDive(topic, plant, lang)
@@ -248,7 +259,7 @@ export const aiService = {
             return local.getGardenStatusSummary(plants, lang)
         }
         return withLocalFallback(
-            () => geminiService.getGardenStatusSummary(plants, lang),
+            async () => (await getGeminiService()).getGardenStatusSummary(plants, lang),
             () => localAiFallbackService.getGardenStatusSummary(plants, lang),
         )
     },
@@ -265,7 +276,7 @@ export const aiService = {
             return local.getGrowLogRagAnswer(plants, query, lang, ragContext)
         }
         return withLocalFallback(
-            () => geminiService.getGrowLogRagAnswer(plants, query, lang),
+            async () => (await getGeminiService()).getGrowLogRagAnswer(plants, query, lang),
             () => localAiFallbackService.getGrowLogRagAnswer(query, '', lang),
         )
     },

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import { SavedStrainTip, Strain, StructuredGrowTips } from '@/types'
+import type { SavedStrainTip, Strain, StructuredGrowTips } from '@/types'
 import { Card } from '@/components/common/Card'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
@@ -16,6 +16,7 @@ import { Speakable } from '@/components/common/Speakable'
 import { exportStrainTips } from '@/stores/slices/savedItemsSlice'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { compareText } from './compareText'
+import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
 interface StrainTipsViewProps {
     savedTips: SavedStrainTip[]
@@ -32,6 +33,7 @@ const TipItem: React.FC<{
     isSelected: boolean
 }> = ({ tip, onEdit, onDelete, onSelect, isSelected }) => {
     const { t } = useTranslation()
+    const imageUrl = normalizeImageDataUrl(tip.imageUrl)
     const tipCategories = [
         {
             key: 'nutrientTip',
@@ -63,10 +65,10 @@ const TipItem: React.FC<{
                 className="mt-1 h-4 w-4 rounded border-slate-500 bg-transparent text-primary-500 focus:ring-primary-500 flex-shrink-0"
             />
             <div className="flex-1">
-                {tip.imageUrl && (
+                {imageUrl && (
                     <div className="mb-4 -mx-3 -mt-3">
                         <img
-                            src={tip.imageUrl}
+                            src={imageUrl}
                             alt={tip.strainName}
                             className="rounded-t-lg w-full"
                             loading="lazy"

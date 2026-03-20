@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react'
-import { Strain, SavedStrainTip } from '@/types'
+import type { Strain, SavedStrainTip } from '@/types'
 import { useAppSelector } from '@/stores/store'
 import { selectSavedStrainTips } from '@/stores/selectors'
 import { Card } from '@/components/common/Card'
 import { useTranslation } from 'react-i18next'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
+import { normalizeImageDataUrl } from '@/utils/imageDataUrl'
 
 interface StrainImageGalleryTabProps {
     strain: Strain
@@ -21,10 +22,13 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
             (savedTips as SavedStrainTip[])
                 .filter((tip) => tip?.strainId === strain.id && tip.imageUrl)
                 .map((tip) => ({
-                    url: tip.imageUrl as string,
+                    url: normalizeImageDataUrl(tip.imageUrl),
                     createdAt: tip.createdAt,
                     title: tip.title ?? '',
                 }))
+                .filter((image): image is { url: string; createdAt: number; title: string } =>
+                    Boolean(image.url),
+                )
                 .sort((a, b) => b.createdAt - a.createdAt),
         [savedTips, strain.id],
     )
@@ -59,9 +63,9 @@ export const StrainImageGalleryTab: React.FC<StrainImageGalleryTabProps> = ({ st
                 </div>
             )}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {images.map((image, index) => (
+                {images.map((image) => (
                     <Card
-                        key={index}
+                        key={`${image.url}-${image.createdAt}`}
                         className="p-0 overflow-hidden cursor-pointer group"
                         onClick={() => setSelectedImage(image.url)}
                     >

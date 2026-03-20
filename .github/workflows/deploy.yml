@@ -66,10 +66,7 @@ jobs:
             # Key includes vite config + tsconfig so cache is invalidated on config changes.
             # ── Quality gates ───────────────────────────────────────────────────
             - name: 🔒 Security audit
-              # Only audit production deps – devDep advisories (workbox-build,
-              # @lhci/cli) are transitive and don't ship to users.
-              run: npm audit --audit-level=high --omit=dev
-              continue-on-error: true
+              run: npm audit --audit-level=critical --omit=dev
 
             - name: 🔍 Lint changed files
               env:

@@ -15,9 +15,17 @@ import {
     AiMode,
 } from '@/types'
 
+const DYNAMIC_IMPORT_TIMEOUT_MS = 15_000
+
 const getLocalAiService = async () => {
-    const module = await import('@/services/localAI')
-    return module.localAiService
+    const importPromise = import('@/services/localAI').then((m) => m.localAiService)
+    const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(
+            () => reject(new Error('Local AI dynamic import timeout')),
+            DYNAMIC_IMPORT_TIMEOUT_MS,
+        ),
+    )
+    return Promise.race([importPromise, timeoutPromise])
 }
 
 /** True when the device is offline or has no usable network. */
@@ -63,7 +71,11 @@ async function withLocalFallback<T>(
     if (_aiMode === 'local') return localFallback()
     try {
         return await cloudFn()
-    } catch {
+    } catch (error) {
+        console.warn(
+            '[AI] Cloud call failed, falling back to local AI:',
+            error instanceof Error ? error.message : error,
+        )
         return localFallback()
     }
 }

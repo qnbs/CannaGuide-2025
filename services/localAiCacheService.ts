@@ -102,7 +102,8 @@ export const getCachedInference = async (prompt: string): Promise<string | null>
             }
             getReq.onerror = () => resolve(null)
         })
-    } catch {
+    } catch (error) {
+        captureLocalAiError(error, { stage: 'cache-read' })
         return null
     }
 }
@@ -169,8 +170,8 @@ export const setCachedInference = async (
                 reject(tx.error)
             }
         })
-    } catch {
-        // Silently ignore — fall back to in-memory cache
+    } catch (error) {
+        captureLocalAiError(error, { stage: 'cache-write' })
     }
 }
 
@@ -187,8 +188,8 @@ export const clearPersistentCache = async (): Promise<void> => {
             tx.oncomplete = () => resolve()
             tx.onerror = () => reject(tx.error)
         })
-    } catch {
-        // Ignore
+    } catch (error) {
+        captureLocalAiError(error, { stage: 'cache-clear' })
     }
 }
 

@@ -243,7 +243,11 @@ class LocalAiService {
                 {
                     quantized: true,
                 },
-            )
+            ).catch((error: unknown) => {
+                this.visionPipelinePromise = null
+                captureLocalAiError(error, { model: VISION_MODEL_ID, stage: 'preload' })
+                throw error
+            })
         }
         return this.visionPipelinePromise
     }

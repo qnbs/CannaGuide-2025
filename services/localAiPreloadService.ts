@@ -1,4 +1,6 @@
 import type { LocalAiPreloadReport } from './localAI'
+import { probeGpuVram, isVramInsufficient } from './localAiHealthService'
+import { setVramInsufficientOverride } from './localAIModelLoader'
 
 export type LocalAiPreloadState = 'idle' | 'preloading' | 'ready' | 'partial' | 'error'
 
@@ -54,14 +56,41 @@ const writeStatus = (status: LocalAiPreloadStatus): LocalAiPreloadStatus => {
     return status
 }
 
-const getPersistentStorageAccess = async (): Promise<boolean | null> => {
+/**
+ * Proactively request persistent storage to prevent browser eviction of
+ * cached AI models in IndexedDB. Retries once with a delay if the first
+ * attempt is denied, as some browsers grant on second interaction.
+ * Also triggers VRAM profiling to inform adaptive model selection.
+ */
+export const ensurePersistentStorage = async (): Promise<boolean | null> => {
     if (typeof navigator === 'undefined' || !('storage' in navigator)) {
         return null
     }
 
     try {
-        const persisted = await navigator.storage.persist?.()
-        return typeof persisted === 'boolean' ? persisted : null
+        // Check if already persisted
+        const alreadyPersisted = await navigator.storage.persisted?.()
+        if (alreadyPersisted) return true
+
+        // First attempt
+        const granted = await navigator.storage.persist?.()
+        if (granted) {
+            console.debug('[LocalAI] Persistent storage granted on first request.')
+            return true
+        }
+
+        // Single retry after short delay (some browsers grant after user interaction)
+        await new Promise((r) => setTimeout(r, 2000))
+        const retryGranted = await navigator.storage.persist?.()
+        if (retryGranted) {
+            console.debug('[LocalAI] Persistent storage granted on retry.')
+            return true
+        }
+
+        console.debug(
+            '[LocalAI] Persistent storage denied by browser. Model caches may be evicted.',
+        )
+        return false
     } catch {
         return null
     }
@@ -107,7 +136,20 @@ export const localAiPreloadService = {
         onProgress?: (loaded: number, total: number, label: string) => void,
     ): Promise<LocalAiPreloadStatus> {
         const startedAt = Date.now()
-        const persisted = await getPersistentStorageAccess()
+
+        // Run VRAM probe and persistent storage request in parallel at preload start
+        const [persisted] = await Promise.all([
+            ensurePersistentStorage(),
+            probeGpuVram().then(() => {
+                // Apply VRAM-based WASM override to model loader
+                if (isVramInsufficient()) {
+                    setVramInsufficientOverride(true)
+                    console.debug(
+                        '[LocalAI] VRAM insufficient — forcing WASM backend for all pipelines.',
+                    )
+                }
+            }),
+        ])
         const inProgress = writeStatus({
             ...readStatus(),
             state: 'preloading',

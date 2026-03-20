@@ -25,6 +25,15 @@ import { getCacheSize } from './localAiCacheService'
 export type DeviceClass = 'high-end' | 'mid-range' | 'low-end' | 'unknown'
 export type HealthStatus = 'healthy' | 'degraded' | 'critical' | 'unknown'
 
+export interface VramInfo {
+    /** Detected VRAM in MB via WebGPU adapter (null if unavailable). */
+    vramMB: number | null
+    /** Whether the device was probed successfully. */
+    probed: boolean
+    /** GPU adapter description (if available). */
+    adapterDescription: string | null
+}
+
 export interface MemoryInfo {
     /** Estimated JS heap size in MB (if available). */
     usedHeapMB: number | null
@@ -67,6 +76,8 @@ export interface HealthReport {
     preloadStatus: LocalAiPreloadStatus
     /** Memory diagnostics. */
     memory: MemoryInfo
+    /** GPU VRAM diagnostics. */
+    vram: VramInfo
     /** Storage diagnostics. */
     storage: StorageInfo
     /** Performance snapshot (current session). */
@@ -121,6 +132,69 @@ export const getMemoryInfo = (): MemoryInfo => {
     }
 }
 
+// ─── GPU VRAM Detection ──────────────────────────────────────────────────────
+
+let cachedVramInfo: VramInfo | null = null
+
+/** Minimum VRAM in MB to allow WebGPU model loading. Below this → force WASM/quantized. */
+const MIN_VRAM_FOR_WEBGPU_MB = 4096
+
+/**
+ * Probe actual GPU VRAM via WebGPU adapter.
+ * Caches the result after the first successful probe.
+ * Falls back gracefully if WebGPU is unavailable or adapter request fails.
+ */
+export const probeGpuVram = async (): Promise<VramInfo> => {
+    if (cachedVramInfo) return cachedVramInfo
+
+    if (typeof navigator === 'undefined' || !('gpu' in navigator)) {
+        cachedVramInfo = { vramMB: null, probed: false, adapterDescription: null }
+        return cachedVramInfo
+    }
+
+    try {
+        const gpu = navigator.gpu as GPU
+        const adapter = await Promise.race([
+            gpu.requestAdapter(),
+            new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000)),
+        ])
+
+        if (!adapter) {
+            cachedVramInfo = { vramMB: null, probed: true, adapterDescription: null }
+            return cachedVramInfo
+        }
+
+        // maxBufferSize is a reliable proxy for usable VRAM
+        const maxBufferBytes = (adapter.limits as GPUSupportedLimits).maxBufferSize ?? 0
+        const vramMB = maxBufferBytes > 0 ? Math.round(maxBufferBytes / (1024 * 1024)) : null
+        const adapterDescription =
+            (adapter as unknown as { info?: { description?: string } }).info?.description ?? null
+
+        cachedVramInfo = { vramMB, probed: true, adapterDescription }
+        console.debug(
+            `[LocalAI] GPU probe: VRAM ≈ ${vramMB ?? 'unknown'}MB, adapter: ${adapterDescription ?? 'unknown'}`,
+        )
+        return cachedVramInfo
+    } catch {
+        cachedVramInfo = { vramMB: null, probed: true, adapterDescription: null }
+        return cachedVramInfo
+    }
+}
+
+/** Synchronous access to the last probed VRAM info (null if not yet probed). */
+export const getCachedVramInfo = (): VramInfo | null => cachedVramInfo
+
+/** Returns true if VRAM is known and below the safe threshold for WebGPU models. */
+export const isVramInsufficient = (): boolean => {
+    if (!cachedVramInfo?.probed || cachedVramInfo.vramMB === null) return false
+    return cachedVramInfo.vramMB < MIN_VRAM_FOR_WEBGPU_MB
+}
+
+/** Reset the cached VRAM info (useful for tests). */
+export const resetVramCache = (): void => {
+    cachedVramInfo = null
+}
+
 // ─── Storage Monitoring ──────────────────────────────────────────────────────
 
 /**
@@ -170,6 +244,12 @@ export const classifyDevice = (): DeviceClass => {
     const hasWebGpu = 'gpu' in navigator
     const coreCount = navigator.hardwareConcurrency ?? 0
     const memoryGB = (navigator as unknown as { deviceMemory?: number }).deviceMemory ?? 0
+    const vram = cachedVramInfo
+
+    // Downgrade if VRAM is probed and insufficient (<4GB)
+    if (vram?.probed && vram.vramMB !== null && vram.vramMB < MIN_VRAM_FOR_WEBGPU_MB) {
+        return coreCount >= 4 ? 'mid-range' : 'low-end'
+    }
 
     // High-end: WebGPU + 8+ cores + 8+ GB RAM
     if (hasWebGpu && coreCount >= 8 && memoryGB >= 8) return 'high-end'
@@ -192,6 +272,7 @@ export const getModelRecommendation = (): ModelRecommendation => {
     const deviceClass = classifyDevice()
     const memory = getMemoryInfo()
     const backend = detectOnnxBackend()
+    const vram = cachedVramInfo
 
     if (memory.pressureDetected) {
         return {
@@ -199,6 +280,16 @@ export const getModelRecommendation = (): ModelRecommendation => {
             enableWebLlm: false,
             preferredBackend: 'wasm',
             reason: 'Memory pressure detected — using lightweight model and WASM backend.',
+        }
+    }
+
+    // Force WASM + quantized model when VRAM is insufficient for WebGPU
+    if (vram?.probed && vram.vramMB !== null && vram.vramMB < MIN_VRAM_FOR_WEBGPU_MB) {
+        return {
+            textModel: 'qwen3',
+            enableWebLlm: false,
+            preferredBackend: 'wasm',
+            reason: `Low VRAM detected (${vram.vramMB}MB < ${MIN_VRAM_FOR_WEBGPU_MB}MB) — forcing quantized model and WASM backend to prevent GPU crash.`,
         }
     }
 
@@ -306,6 +397,7 @@ const assessHealth = (
 export const generateHealthReport = async (): Promise<HealthReport> => {
     const preloadStatus = localAiPreloadService.getStatus()
     const memory = getMemoryInfo()
+    const vram = await probeGpuVram()
     const storage = await getStorageInfo()
     const telemetry = getSnapshot()
     const persistedTelemetry = loadPersistedSnapshot()
@@ -323,11 +415,19 @@ export const generateHealthReport = async (): Promise<HealthReport> => {
 
     const { status, warnings } = assessHealth(preloadStatus, memory, telemetry)
 
+    // Add VRAM warning if insufficient
+    if (vram.probed && vram.vramMB !== null && vram.vramMB < MIN_VRAM_FOR_WEBGPU_MB) {
+        warnings.push(
+            `Low GPU VRAM detected (${vram.vramMB}MB). WebGPU disabled — using WASM backend with quantized models.`,
+        )
+    }
+
     return {
         status,
         deviceClass,
         preloadStatus,
         memory,
+        vram,
         storage,
         telemetry: telemetry.totalInferences > 0 ? telemetry : null,
         persistedTelemetry,

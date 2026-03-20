@@ -45,9 +45,18 @@ describe('localAiPreloadService', () => {
     })
 
     it('stores an error status when preload fails', async () => {
+        vi.useFakeTimers()
         preloadOfflineAssetsMock.mockRejectedValue(new Error('download failed'))
 
-        const status = await localAiPreloadService.preloadOfflineModels()
+        const promise = localAiPreloadService.preloadOfflineModels()
+
+        // Advance past all retry delays
+        for (let i = 0; i < 3; i++) {
+            await vi.advanceTimersByTimeAsync(5000)
+        }
+
+        const status = await promise
+        vi.useRealTimers()
 
         expect(status.state).toBe('error')
         expect(status.details).toBe('download failed')

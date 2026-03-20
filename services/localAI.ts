@@ -768,8 +768,9 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
         strain: Strain,
         style: ImageStyle,
         criteria: { focus: string; composition: string; mood: string },
+        lang: Language = 'en',
     ): Promise<string> {
-        return localAiFallbackService.generateStrainImage(strain, style, criteria, 'en')
+        return localAiFallbackService.generateStrainImage(strain, style, criteria, lang)
     }
 
     private buildMentorPrompt(

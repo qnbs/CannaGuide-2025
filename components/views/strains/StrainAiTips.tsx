@@ -236,7 +236,7 @@ export const StrainAiTips: React.FC<StrainAiTipsProps> = ({ strain }) => {
             context: { focus: focusText, stage: stageText, experienceLevel: experienceText },
             lang,
         })
-        generateStrainImage({ strain, style: imageStyle, criteria: imageCriteria })
+        generateStrainImage({ strain, style: imageStyle, criteria: imageCriteria, lang })
     }
 
     const handleSaveTip = () => {

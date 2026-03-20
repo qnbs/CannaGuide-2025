@@ -161,6 +161,7 @@ self.addEventListener('fetch', (event) => {
         IMAGE_EXTENSIONS.some((extension) => url.pathname.toLowerCase().endsWith(extension))
 
     if (isImageRequest) {
+        // Cache-First for images – essential for poor-connectivity environments
         event.respondWith(
             caches.open(IMAGE_CACHE_NAME).then(async (cache) => {
                 const cachedResponse = await cache.match(request)
@@ -172,6 +173,17 @@ self.addEventListener('fetch', (event) => {
                     const networkResponse = await fetch(request)
                     if (networkResponse && networkResponse.status === 200) {
                         cache.put(request, networkResponse.clone())
+
+                        // Prune image cache to prevent unbounded growth (max 150 entries)
+                        const keys = await cache.keys()
+                        const MAX_IMAGE_CACHE_ENTRIES = 150
+                        if (keys.length > MAX_IMAGE_CACHE_ENTRIES) {
+                            const entriesToDelete = keys.slice(
+                                0,
+                                keys.length - MAX_IMAGE_CACHE_ENTRIES,
+                            )
+                            await Promise.all(entriesToDelete.map((key) => cache.delete(key)))
+                        }
                     }
                     return networkResponse
                 } catch (error) {
@@ -184,6 +196,7 @@ self.addEventListener('fetch', (event) => {
     }
 
     if (request.mode === 'navigate') {
+        // Network-First for navigation – ensures fresh HTML, falls back to cache or offline page
         event.respondWith(
             fetch(request)
                 .then((networkResponse) => {
@@ -207,8 +220,34 @@ self.addEventListener('fetch', (event) => {
         return
     }
 
-    // Stale-while-revalidate: serve from cache immediately, update cache in background.
-    // Ensures users see fresh content after the next navigation.
+    // Cache-First for hashed Vite assets (JS/CSS chunks with content hashes).
+    // These are immutable — once cached, they never change. This is critical for
+    // offline reliability in environments with poor connectivity (grow rooms, basements).
+    const isHashedAsset =
+        url.origin === self.location.origin &&
+        url.pathname.includes('/assets/') &&
+        /\.[a-f0-9]{8,}\.(js|css|woff2?)$/i.test(url.pathname)
+
+    if (isHashedAsset) {
+        event.respondWith(
+            caches.open(CACHE_NAME).then(async (cache) => {
+                const cachedResponse = await cache.match(request)
+                if (cachedResponse) {
+                    return cachedResponse
+                }
+
+                const networkResponse = await fetch(request)
+                if (networkResponse && networkResponse.status === 200) {
+                    cache.put(request, networkResponse.clone())
+                }
+                return networkResponse
+            }),
+        )
+        return
+    }
+
+    // Stale-while-revalidate for everything else (non-hashed assets, JSON data, etc.).
+    // Serves cached content immediately while updating in the background.
     event.respondWith(
         caches.open(CACHE_NAME).then(async (cache) => {
             const cachedResponse = await cache.match(request)

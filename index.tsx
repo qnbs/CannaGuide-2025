@@ -156,12 +156,20 @@ const renderBootstrapConsentGate = (onAccept: () => Promise<void>) => {
 
 const mountHydratedApp = async () => {
     try {
-        window.addEventListener('cannaguide-runtime-error', () => {
-            void triggerSafeRecovery('runtime-error-event')
-        })
-        window.addEventListener('cannaguide-safe-recovery-request', () => {
-            void triggerSafeRecovery('manual-safe-recovery')
-        })
+        window.addEventListener(
+            'cannaguide-runtime-error',
+            () => {
+                void triggerSafeRecovery('runtime-error-event')
+            },
+            { once: true },
+        )
+        window.addEventListener(
+            'cannaguide-safe-recovery-request',
+            () => {
+                void triggerSafeRecovery('manual-safe-recovery')
+            },
+            { once: true },
+        )
 
         // 1. Wait for i18n to be ready
         await i18nPromise

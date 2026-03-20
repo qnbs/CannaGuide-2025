@@ -10,7 +10,6 @@ import { PlantLifecycleTimeline } from '../PlantLifecycleTimeline'
 import { Button } from '@/components/common/Button'
 import { PhosphorIcons } from '@/components/icons/PhosphorIcons'
 import { PlantVisualizer } from '../PlantVisualizer'
-import { exportService } from '@/services/exportService'
 import { dbService } from '@/services/dbService'
 import { RealtimeStatus } from '../RealtimeStatus'
 
@@ -85,6 +84,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = memo(({ plant }) => {
                 }
             }
 
+            const { exportService } = await import('@/services/exportService')
             await exportService.exportPlantReportPdf({
                 plant,
                 t,

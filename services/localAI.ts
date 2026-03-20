@@ -26,6 +26,7 @@ import { captureLocalAiError } from '@/services/sentryService'
 import {
     loadTransformersPipeline,
     detectOnnxBackend,
+    clearPipelineCache,
     type LocalAiPipeline,
 } from './localAIModelLoader'
 import { getCachedInference, setCachedInference } from './localAiCacheService'
@@ -987,6 +988,15 @@ Return a concise plain-text answer with practical next steps, EC/pH guidance, an
                 proTip: sanitizeText(topic),
             }
         )
+    }
+
+    /** Release all loaded model pipelines and WebLLM engine to free GPU/WASM memory. */
+    dispose(): void {
+        this.textPipelinePromise = null
+        this.visionPipelinePromise = null
+        this.webLlmPromise = null
+        clearPipelineCache()
+        clearInferenceCache()
     }
 }
 

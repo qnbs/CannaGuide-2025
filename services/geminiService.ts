@@ -210,8 +210,8 @@ const createCompactPlantSnapshot = (plant: Plant) => ({
     journalSummary: summarizeJournalForPrompt(plant.journal, 8),
 })
 
-type ImageCriteria = { focus: string; composition: string; mood: string }
-export type ImageStyle = 'random' | 'fantasy' | 'botanical' | 'psychedelic' | 'macro' | 'cyberpunk'
+export type { ImageStyle, ImageCriteria } from '@/types/aiProvider'
+import type { BaseAIProvider, ImageStyle, ImageCriteria } from '@/types/aiProvider'
 const availableStyles: ImageStyle[] = ['fantasy', 'botanical', 'psychedelic', 'macro', 'cyberpunk']
 
 const AI_ERROR_KEYS = new Set([
@@ -244,7 +244,9 @@ const getLocalAiService = async () => {
     return module.localAiService
 }
 
-class GeminiService {
+class GeminiService implements BaseAIProvider {
+    readonly id = 'gemini' as const
+
     private sanitizeValue<T>(value: T): T {
         if (typeof value === 'string') {
             return DOMPurify.sanitize(value) as T
@@ -866,7 +868,7 @@ PLANT CONTEXT:
             console.error('Gemini getMentorResponse Error:', error)
             if (this.shouldUseLocalFallback(error)) {
                 const localAiService = await getLocalAiService()
-                return localAiService.getMentorResponse(plant, query, ragContext, lang)
+                return localAiService.getMentorResponse(plant, query, lang, ragContext)
             }
             this.rethrowKnownError(error, 'ai.error.generic')
         }
@@ -953,7 +955,8 @@ PLANT CONTEXT:
 
         let selectedStyle = style
         if (selectedStyle === 'random') {
-            selectedStyle = availableStyles[Math.floor(Math.random() * availableStyles.length)]
+            selectedStyle =
+                availableStyles[Math.floor(Math.random() * availableStyles.length)] ?? 'botanical'
         }
 
         const stylePrompts: Record<Exclude<ImageStyle, 'random'>, string> = {

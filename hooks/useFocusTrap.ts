@@ -12,7 +12,7 @@ export const useFocusTrap = (isOpen: boolean) => {
             previouslyFocusedElement.current = document.activeElement as HTMLElement
 
             const focusableElements = Array.from(
-                containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS)
+                containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS),
             ) as HTMLElement[]
 
             if (focusableElements.length > 0) {
@@ -27,7 +27,7 @@ export const useFocusTrap = (isOpen: boolean) => {
                 if (e.key !== 'Tab' || !containerRef.current) return
 
                 const focusableContent = Array.from(
-                    containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS)
+                    containerRef.current.querySelectorAll(FOCUSABLE_SELECTORS),
                 ) as HTMLElement[]
 
                 if (focusableContent.length === 0) {
@@ -42,13 +42,13 @@ export const useFocusTrap = (isOpen: boolean) => {
                 if (e.shiftKey) {
                     // Shift + Tab
                     if (activeElement === firstElement) {
-                        lastElement.focus()
+                        lastElement?.focus()
                         e.preventDefault()
                     }
                 } else {
                     // Tab
                     if (activeElement === lastElement) {
-                        firstElement.focus()
+                        firstElement?.focus()
                         e.preventDefault()
                     }
                 }

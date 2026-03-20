@@ -113,7 +113,7 @@ export const useVirtualizer = ({
         offsets[0] = 0
 
         for (let index = 0; index < count; index += 1) {
-            offsets[index + 1] = offsets[index] + resolvedSizes[index]
+            offsets[index + 1] = (offsets[index] ?? 0) + (resolvedSizes[index] ?? estimateSize)
         }
 
         const totalSize = offsets[count] ?? 0

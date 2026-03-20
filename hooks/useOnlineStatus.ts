@@ -1,20 +1,17 @@
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
+import { useEventListener } from '@/hooks/useEventListener'
 
 export const useOnlineStatus = () => {
     const [isOffline, setIsOffline] = useState(!navigator.onLine)
 
-    useEffect(() => {
-        const handleOffline = () => setIsOffline(true)
-        const handleOnline = () => setIsOffline(false)
-
-        window.addEventListener('offline', handleOffline)
-        window.addEventListener('online', handleOnline)
-
-        return () => {
-            window.removeEventListener('offline', handleOffline)
-            window.removeEventListener('online', handleOnline)
-        }
-    }, [])
+    useEventListener(
+        'offline',
+        useCallback(() => setIsOffline(true), []),
+    )
+    useEventListener(
+        'online',
+        useCallback(() => setIsOffline(false), []),
+    )
 
     return isOffline
 }

@@ -21,10 +21,10 @@ export const i18nInstance = i18next.createInstance()
  * This is the single source of truth for translations outside of React components (e.g., in services, stores).
  * @returns The translation function.
  */
-export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance);
+export const getT = (): TFunction => i18nInstance.t.bind(i18nInstance)
 
 // Detect initial language from browser settings. The store will sync it up later upon hydration.
-const detectedLang = navigator.language.split('-')[0]
+const detectedLang = typeof navigator !== 'undefined' ? navigator.language.split('-')[0] : 'en'
 const initialLang: 'en' | 'de' = detectedLang === 'de' ? 'de' : 'en'
 
 // The initialization is now a promise that the app will wait for

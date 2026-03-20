@@ -199,17 +199,18 @@ export const aiService = {
         strain: Strain,
         style: ImageStyle,
         criteria: { focus: string; composition: string; mood: string },
+        lang: Language,
     ): Promise<string> {
         if (shouldRouteLocally()) {
             const local = await getLocalAiService()
-            return local.generateStrainImage(strain, style, criteria)
+            return local.generateStrainImage(strain, style, criteria, lang)
         }
 
         return withLocalFallback(
             () => geminiService.generateStrainImage(strain, style, criteria),
             async () => {
                 const local = await getLocalAiService()
-                return local.generateStrainImage(strain, style, criteria)
+                return local.generateStrainImage(strain, style, criteria, lang)
             },
         )
     },

@@ -31,7 +31,10 @@ const mapAiErrorMessage = (error: unknown): string => {
             const seconds = parts[1] ?? '60'
             return t('ai.error.rateLimited', { seconds })
         }
-        if (error.message.startsWith('ai.error.') || error.message.startsWith('settingsView.security.')) {
+        if (
+            error.message.startsWith('ai.error.') ||
+            error.message.startsWith('settingsView.security.')
+        ) {
             return t(error.message)
         }
         return error.message
@@ -170,14 +173,21 @@ export const geminiApi = createApi({
                 strain,
                 style,
                 criteria,
+                lang,
             }: {
                 strain: Strain
                 style: string
                 criteria: { focus: string; composition: string; mood: string }
+                lang: Language
             }): Promise<{ data: string } | { error: { message: string } }> {
                 try {
                     const aiService = await getAiService()
-                    const data = await aiService.generateStrainImage(strain, style as import('@/services/geminiService').ImageStyle, criteria)
+                    const data = await aiService.generateStrainImage(
+                        strain,
+                        style as import('@/services/geminiService').ImageStyle,
+                        criteria,
+                        lang,
+                    )
                     return { data }
                 } catch (error) {
                     return { error: { message: mapAiErrorMessage(error) } }

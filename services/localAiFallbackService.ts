@@ -502,6 +502,21 @@ const buildEquipmentRecommendation = (prompt: string, lang: Language): Recommend
     }
 }
 
+const AVAILABLE_STYLES: Exclude<ImageStyle, 'random'>[] = [
+    'fantasy',
+    'botanical',
+    'psychedelic',
+    'macro',
+    'cyberpunk',
+]
+
+const resolveStyle = (style: ImageStyle): Exclude<ImageStyle, 'random'> => {
+    if (style === 'random') {
+        return AVAILABLE_STYLES[Math.floor(Math.random() * AVAILABLE_STYLES.length)]
+    }
+    return style as Exclude<ImageStyle, 'random'>
+}
+
 const buildStylePalette = (
     style: ImageStyle,
 ): { a: string; b: string; c: string; accent: string } => {
@@ -521,14 +536,69 @@ const buildStylePalette = (
     }
 }
 
+/** Build a type-specific cannabis leaf SVG shape (Indica=broad, Sativa=narrow, Hybrid=blend). */
+const buildLeafPath = (strainType: string): string => {
+    const t = strainType.toLowerCase()
+    if (t.includes('indica')) {
+        // Broad, rounded indica leaf
+        return 'M0 -240 C80 -170 160 -80 150 20 C144 90 80 170 0 280 C-80 170 -144 90 -150 20 C-160 -80 -80 -170 0 -240Z'
+    }
+    if (t.includes('sativa')) {
+        // Tall, narrow sativa leaf
+        return 'M0 -320 C40 -250 75 -140 72 -20 C70 60 50 180 0 310 C-50 180 -70 60 -72 -20 C-75 -140 -40 -250 0 -320Z'
+    }
+    // Hybrid — balanced shape
+    return 'M0 -290 C60 -210 120 -130 128 -30 C132 40 88 120 0 250 C-88 120 -132 40 -128 -30 C-120 -130 -60 -210 0 -290Z'
+}
+
+/** Render a horizontal data bar at the given y position. */
+const svgDataBar = (
+    x: number,
+    y: number,
+    label: string,
+    value: number,
+    maxVal: number,
+    barColor: string,
+): string => {
+    const barWidth = Math.min(1, Math.max(0, value / maxVal)) * 380
+    return `<text x="${x}" y="${y}" font-size="20" fill="#94a3b8" font-family="Inter, Arial, sans-serif">${escapeXml(label)}</text>
+    <rect x="${x + 120}" y="${y - 14}" width="380" height="16" rx="8" fill="#1e293b" opacity="0.7"/>
+    <rect x="${x + 120}" y="${y - 14}" width="${barWidth}" height="16" rx="8" fill="${barColor}" opacity="0.85"/>
+    <text x="${x + 510}" y="${y}" font-size="18" fill="#e2e8f0" font-family="Inter, Arial, sans-serif">${value}%</text>`
+}
+
+/** Render terpene dots (colored circles for up to 5 dominant terpenes). */
+const svgTerpeneDots = (x: number, y: number, terpenes: string[], accent: string): string => {
+    const terpeneColors: Record<string, string> = {
+        myrcene: '#86efac',
+        limonene: '#fde047',
+        caryophyllene: '#f97316',
+        pinene: '#34d399',
+        linalool: '#c084fc',
+        terpinolene: '#22d3ee',
+        ocimene: '#fb923c',
+        humulene: '#a78bfa',
+        bisabolol: '#f9a8d4',
+    }
+    const shown = terpenes.slice(0, 5)
+    return shown
+        .map((t, i) => {
+            const color = terpeneColors[t.toLowerCase()] ?? accent
+            const cx = x + i * 40
+            return `<circle cx="${cx}" cy="${y}" r="12" fill="${color}" opacity="0.9"/>
+        <text x="${cx}" y="${y + 28}" font-size="11" fill="#94a3b8" font-family="Inter, Arial, sans-serif" text-anchor="middle">${escapeXml(t.slice(0, 4))}</text>`
+        })
+        .join('\n    ')
+}
+
 const buildStrainImageSvg = (
-    prompt: string,
-    style: ImageStyle,
+    strain: Strain,
+    style: Exclude<ImageStyle, 'random'>,
     criteria: { focus: string; composition: string; mood: string },
     lang: Language,
 ): string => {
     const palette = buildStylePalette(style)
-    const cleanPrompt = escapeXml(prompt)
+    const cleanName = escapeXml(strain.name).slice(0, 42)
     const cleanFocus = escapeXml(criteria.focus)
     const cleanComposition = escapeXml(criteria.composition)
     const cleanMood = escapeXml(criteria.mood)
@@ -536,45 +606,119 @@ const buildStrainImageSvg = (
     const subtitle = isGerman(lang)
         ? 'SVG-Poster aus dem lokalen Fallback'
         : 'SVG poster from local fallback'
+    const leafPath = buildLeafPath(strain.type)
+    const typeLabel = escapeXml(strain.type)
+    const thcLabel = isGerman(lang) ? 'THC' : 'THC'
+    const cbdLabel = isGerman(lang) ? 'CBD' : 'CBD'
+    const diffLabel = isGerman(lang) ? 'Schwierigkeit' : 'Difficulty'
+    const yieldLabel = isGerman(lang) ? 'Ertrag' : 'Yield'
+
+    const difficultyMap: Record<string, number> = {
+        easy: 25,
+        moderate: 50,
+        difficult: 75,
+        expert: 100,
+    }
+    const yieldMap: Record<string, number> = { low: 25, medium: 50, high: 75, 'very high': 100 }
+    const diffVal = difficultyMap[strain.agronomic.difficulty] ?? 50
+    const yieldVal = yieldMap[strain.agronomic.yield] ?? 50
+
+    const terpenes = strain.dominantTerpenes ?? []
+    const aromas = (strain.aromas ?? [])
+        .slice(0, 4)
+        .map((a) => escapeXml(a))
+        .join(' · ')
+    const floweringText = isGerman(lang)
+        ? `${strain.floweringTime} Tage Blüte`
+        : `${strain.floweringTime}d flowering`
 
     return `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1400" role="img" aria-label="${cleanPrompt}">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1400" role="img" aria-label="${cleanName} — ${typeLabel} cannabis strain poster">
     <defs>
         <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stop-color="${palette.a}" />
             <stop offset="55%" stop-color="${palette.b}" />
             <stop offset="100%" stop-color="${palette.c}" />
         </linearGradient>
-        <radialGradient id="glow" cx="50%" cy="40%" r="55%">
-            <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.5" />
+        <radialGradient id="glow" cx="50%" cy="35%" r="50%">
+            <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.45" />
             <stop offset="100%" stop-color="${palette.accent}" stop-opacity="0" />
         </radialGradient>
         <filter id="blur"><feGaussianBlur stdDeviation="18" /></filter>
+        <filter id="softglow">
+            <feGaussianBlur stdDeviation="6" result="glow"/>
+            <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
     </defs>
+
+    <!-- Background -->
     <rect width="1200" height="1400" fill="url(#bg)" />
     <rect width="1200" height="1400" fill="url(#glow)" />
-    <g filter="url(#blur)" opacity="0.38">
-        <circle cx="250" cy="280" r="140" fill="${palette.accent}" />
-        <circle cx="920" cy="380" r="180" fill="${palette.c}" />
-        <circle cx="820" cy="1100" r="220" fill="${palette.a}" />
+
+    <!-- Ambient shapes -->
+    <g filter="url(#blur)" opacity="0.32">
+        <circle cx="250" cy="260" r="140" fill="${palette.accent}" />
+        <circle cx="920" cy="350" r="180" fill="${palette.c}" />
+        <circle cx="180" cy="1050" r="200" fill="${palette.b}" />
+        <circle cx="950" cy="1150" r="160" fill="${palette.accent}" />
     </g>
-    <g transform="translate(600 640)">
-        <path d="M0 -290 C60 -210 120 -130 128 -30 C132 40 88 120 0 250 C-88 120 -132 40 -128 -30 C-120 -130 -60 -210 0 -290Z" fill="none" stroke="${palette.accent}" stroke-width="22" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
-        <path d="M0 -220 C90 -150 130 -60 128 12 C126 80 86 152 0 220 C-86 152 -126 80 -128 12 C-130 -60 -90 -150 0 -220Z" fill="none" stroke="${palette.accent}" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>
-        <circle cx="0" cy="0" r="92" fill="${palette.accent}" opacity="0.12" />
-        <circle cx="0" cy="0" r="34" fill="${palette.accent}" opacity="0.9" />
-    </g>
+
+    <!-- Header -->
     <g fill="#e2e8f0" font-family="Inter, Arial, sans-serif">
-        <text x="86" y="126" font-size="44" font-weight="700" letter-spacing="4">${escapeXml(title.toUpperCase())}</text>
-        <text x="86" y="180" font-size="24" opacity="0.86">${escapeXml(subtitle)}</text>
-        <text x="86" y="1210" font-size="74" font-weight="700">${cleanPrompt.slice(0, 42)}</text>
-        <text x="86" y="1268" font-size="30" opacity="0.9">${cleanFocus}</text>
-        <text x="86" y="1320" font-size="26" opacity="0.78">${cleanComposition} · ${cleanMood}</text>
+        <text x="86" y="110" font-size="40" font-weight="700" letter-spacing="4">${escapeXml(title.toUpperCase())}</text>
+        <text x="86" y="154" font-size="22" opacity="0.75">${escapeXml(subtitle)}</text>
     </g>
-    <g fill="${palette.accent}" opacity="0.9">
-        <circle cx="112" cy="1034" r="6" />
-        <circle cx="142" cy="1034" r="6" />
-        <circle cx="172" cy="1034" r="6" />
+
+    <!-- Type badge -->
+    <rect x="86" y="178" width="${typeLabel.length * 13 + 36}" height="32" rx="16" fill="${palette.accent}" opacity="0.2"/>
+    <text x="104" y="200" font-size="18" font-weight="600" fill="${palette.accent}" font-family="Inter, Arial, sans-serif">${typeLabel}</text>
+
+    <!-- Style badge -->
+    <rect x="${86 + typeLabel.length * 13 + 52}" y="178" width="${style.length * 11 + 36}" height="32" rx="16" fill="${palette.c}" opacity="0.2"/>
+    <text x="${104 + typeLabel.length * 13 + 52}" y="200" font-size="16" font-weight="600" fill="${palette.c}" font-family="Inter, Arial, sans-serif">${escapeXml(style)}</text>
+
+    <!-- Leaf (type-specific shape) -->
+    <g transform="translate(600 560)" filter="url(#softglow)">
+        <path d="${leafPath}" fill="none" stroke="${palette.accent}" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>
+        <path d="${leafPath}" fill="${palette.accent}" opacity="0.06"/>
+        <circle cx="0" cy="0" r="80" fill="${palette.accent}" opacity="0.1" />
+        <circle cx="0" cy="0" r="30" fill="${palette.accent}" opacity="0.8" />
+        <line x1="0" y1="-100" x2="0" y2="100" stroke="${palette.accent}" stroke-width="2" opacity="0.4"/>
+    </g>
+
+    <!-- Data section: THC / CBD bars -->
+    <g>
+        ${svgDataBar(86, 900, thcLabel, strain.thc, 35, palette.accent)}
+        ${svgDataBar(86, 940, cbdLabel, strain.cbd, 25, palette.c)}
+        ${svgDataBar(86, 980, diffLabel, diffVal, 100, '#f97316')}
+        ${svgDataBar(86, 1020, yieldLabel, yieldVal, 100, '#22c55e')}
+    </g>
+
+    <!-- Terpene indicators -->
+    ${
+        terpenes.length > 0
+            ? `<g transform="translate(86, 1070)">
+        <text x="0" y="0" font-size="18" fill="#94a3b8" font-family="Inter, Arial, sans-serif">${isGerman(lang) ? 'Terpene' : 'Terpenes'}</text>
+        ${svgTerpeneDots(0, 30, terpenes, palette.accent)}
+    </g>`
+            : ''
+    }
+
+    <!-- Aromas -->
+    ${aromas.length > 0 ? `<text x="86" y="${terpenes.length > 0 ? 1150 : 1080}" font-size="18" fill="#94a3b8" font-family="Inter, Arial, sans-serif">${isGerman(lang) ? 'Aromen' : 'Aromas'}: ${aromas}</text>` : ''}
+
+    <!-- Strain name & metadata -->
+    <g fill="#e2e8f0" font-family="Inter, Arial, sans-serif">
+        <text x="86" y="1230" font-size="68" font-weight="700">${cleanName}</text>
+        <text x="86" y="1282" font-size="26" opacity="0.85">${cleanFocus} · ${cleanComposition} · ${cleanMood}</text>
+        <text x="86" y="1320" font-size="22" opacity="0.6">${floweringText}${strain.genetics ? ` · ${escapeXml(strain.genetics).slice(0, 50)}` : ''}</text>
+    </g>
+
+    <!-- Decorative dots -->
+    <g fill="${palette.accent}" opacity="0.8">
+        <circle cx="1060" cy="1280" r="5" />
+        <circle cx="1085" cy="1280" r="5" />
+        <circle cx="1110" cy="1280" r="5" />
     </g>
 </svg>`
 }
@@ -673,8 +817,8 @@ class LocalAiFallbackService {
         criteria: { focus: string; composition: string; mood: string },
         lang: Language,
     ): string {
-        const prompt = `${strain.name} | ${strain.type} | ${style} | ${criteria.focus} | ${criteria.composition} | ${criteria.mood}`
-        const svg = buildStrainImageSvg(prompt, style, criteria, lang)
+        const resolved = resolveStyle(style)
+        const svg = buildStrainImageSvg(strain, resolved, criteria, lang)
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
     }
 

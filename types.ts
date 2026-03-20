@@ -737,16 +737,29 @@ export type ExperienceLevel = 'beginner' | 'intermediate' | 'expert'
 export type GrowPriority = 'yield' | 'quality' | 'stealth' | 'easeOfUse' | 'energy'
 
 // Other types from slices
+export type CommandGroup =
+    | 'Navigation'
+    | 'Strains'
+    | 'Plants'
+    | 'Equipment'
+    | 'Knowledge'
+    | 'Appearance'
+    | 'Accessibility'
+    | 'AI'
+    | 'General'
+
 export interface Command {
     id: string
     title: string
     subtitle?: string
-    group: string
+    group: CommandGroup | string
     icon: FC
     action: () => void
     keywords?: string
     shortcut?: string[]
     isHeader?: boolean
+    /** Higher = shown first when no query (default 0) */
+    priority?: number
 }
 
 export interface SpeechQueueItem {
